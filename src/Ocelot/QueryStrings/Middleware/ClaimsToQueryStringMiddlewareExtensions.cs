@@ -1,7 +1,7 @@
-﻿namespace Ocelot.QueryStrings.Middleware
-{
-    using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
+namespace Ocelot.QueryStrings.Middleware
+{
     public static class ClaimsToQueryStringMiddlewareExtensions
     {
         public static IApplicationBuilder UseClaimsToQueryStringMiddleware(this IApplicationBuilder builder)

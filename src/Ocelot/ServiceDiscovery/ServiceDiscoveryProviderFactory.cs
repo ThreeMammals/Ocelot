@@ -1,15 +1,22 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.ServiceDiscovery.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Configuration;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
 namespace Ocelot.ServiceDiscovery
 {
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery.Configuration;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Values;
-    using System;
-    using System.Collections.Generic;
-
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         private readonly IOcelotLoggerFactory _factory;
@@ -34,7 +41,7 @@ namespace Ocelot.ServiceDiscovery
 
             foreach (var downstreamAddress in route.DownstreamAddresses)
             {
-                var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, new string[0]);
+                var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, Array.Empty<string>());
 
                 services.Add(service);
             }

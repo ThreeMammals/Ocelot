@@ -1,20 +1,22 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class LeastConnection : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
         private readonly List<Lease> _leases;
         private readonly string _serviceName;
-        private static readonly object _syncLock = new object();
+        private static readonly object SyncLock = new();
 
         public LeastConnection(Func<Task<List<Service>>> services, string serviceName)
         {
@@ -37,7 +39,7 @@
                 return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"services were empty for {_serviceName}"));
             }
 
-            lock (_syncLock)
+            lock (SyncLock)
             {
                 //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
                 UpdateServices(services);
@@ -56,7 +58,7 @@
 
         public void Release(ServiceHostAndPort hostAndPort)
         {
-            lock (_syncLock)
+            lock (SyncLock)
             {
                 var matchingLease = _leases.FirstOrDefault(l => l.HostAndPort.DownstreamHost == hostAndPort.DownstreamHost
                     && l.HostAndPort.DownstreamPort == hostAndPort.DownstreamPort);
@@ -72,7 +74,7 @@
             }
         }
 
-        private Lease AddConnection(Lease lease)
+        private static Lease AddConnection(Lease lease)
         {
             return new Lease(lease.HostAndPort, lease.Connections + 1);
         }

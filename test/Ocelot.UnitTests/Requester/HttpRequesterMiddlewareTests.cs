@@ -1,34 +1,39 @@
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Requester;
+using Ocelot.Requester.Middleware;
+
+using Ocelot.UnitTests.Responder;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Requester
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Requester;
-    using Ocelot.Requester.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.UnitTests.Responder;
-    using Shouldly;
-    using System;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure.RequestData;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class HttpRequesterMiddlewareTests
     {
         private readonly Mock<IHttpRequester> _requester;
         private Response<HttpResponseMessage> _response;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly HttpRequesterMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public HttpRequesterMiddlewareTests()
         {
@@ -114,7 +119,7 @@ namespace Ocelot.UnitTests.Requester
         private void WarningIsLogged()
         {
             _logger.Verify(
-                x => x.LogWarning(                 
+                x => x.LogWarning(
                     It.IsAny<string>()
                    ),
                 Times.Once);

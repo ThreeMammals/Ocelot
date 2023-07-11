@@ -1,9 +1,11 @@
-﻿namespace Ocelot.Provider.Consul
-{
-    using Logging;
-    using Microsoft.Extensions.DependencyInjection;
-    using ServiceDiscovery;
+﻿using Ocelot.Logging;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.ServiceDiscovery;
+
+namespace Ocelot.Provider.Consul
+{
     public static class ConsulProviderFactory
     {
         public static ServiceDiscoveryFinderDelegate Get = (provider, config, route) =>

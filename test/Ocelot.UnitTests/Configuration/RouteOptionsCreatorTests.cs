@@ -1,14 +1,18 @@
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class RouteOptionsCreatorTests
     {
         private readonly RouteOptionsCreator _creator;
@@ -27,21 +31,21 @@ namespace Ocelot.UnitTests.Configuration
             {
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    EnableRateLimiting = true
+                    EnableRateLimiting = true,
                 },
-                AuthenticationOptions = new FileAuthenticationOptions()
+                AuthenticationOptions = new FileAuthenticationOptions
                 {
-                    AuthenticationProviderKey = "Test"
+                    AuthenticationProviderKey = "Test",
                 },
-                RouteClaimsRequirement = new Dictionary<string, string>()
+                RouteClaimsRequirement = new Dictionary<string, string>
                 {
-                    {"",""}
+                    {string.Empty,string.Empty},
                 },
                 FileCacheOptions = new FileCacheOptions
                 {
-                    TtlSeconds = 1
+                    TtlSeconds = 1,
                 },
-                ServiceName = "west"
+                ServiceName = "west",
             };
 
             var expected = new RouteOptionsBuilder()

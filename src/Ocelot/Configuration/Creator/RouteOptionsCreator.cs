@@ -1,8 +1,9 @@
+using Ocelot.Configuration.Builder;
+
+using Ocelot.Configuration.File;
+
 namespace Ocelot.Configuration.Creator
 {
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.File;
-
     public class RouteOptionsCreator : IRouteOptionsCreator
     {
         public RouteOptions Create(FileRoute fileRoute)
@@ -24,24 +25,12 @@ namespace Ocelot.Configuration.Creator
             return options;
         }
 
-        private static bool IsEnableRateLimiting(FileRoute fileRoute)
-        {
-            return (fileRoute.RateLimitOptions != null && fileRoute.RateLimitOptions.EnableRateLimiting) ? true : false;
-        }
+        private static bool IsEnableRateLimiting(FileRoute fileRoute) => fileRoute.RateLimitOptions?.EnableRateLimiting == true;
 
-        private bool IsAuthenticated(FileRoute fileRoute)
-        {
-            return !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
-        }
+        private static bool IsAuthenticated(FileRoute fileRoute) => !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
 
-        private bool IsAuthorized(FileRoute fileRoute)
-        {
-            return fileRoute.RouteClaimsRequirement?.Count > 0;
-        }
+        private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;
 
-        private bool IsCached(FileRoute fileRoute)
-        {
-            return fileRoute.FileCacheOptions.TtlSeconds > 0;
-        }
+        private static bool IsCached(FileRoute fileRoute) => fileRoute.FileCacheOptions.TtlSeconds > 0;
     }
 }

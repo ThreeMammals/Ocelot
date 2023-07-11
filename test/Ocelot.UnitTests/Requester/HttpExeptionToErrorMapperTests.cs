@@ -1,16 +1,21 @@
-﻿namespace Ocelot.UnitTests.Requester
-{
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Errors;
-    using Ocelot.Requester;
-    using Responder;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Errors;
+using Ocelot.Requester;
+
+using Ocelot.UnitTests.Responder;
+
+using Shouldly;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Requester
+{
     public class HttpExeptionToErrorMapperTests
     {
         private HttpExeptionToErrorMapper _mapper;

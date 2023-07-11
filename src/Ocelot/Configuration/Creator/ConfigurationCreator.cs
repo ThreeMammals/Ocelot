@@ -1,11 +1,14 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.DependencyInjection;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Ocelot.Configuration.Creator
 {
-    using DependencyInjection;
-    using File;
-    using Microsoft.Extensions.DependencyInjection;
-    using System;
-    using System.Collections.Generic;
-
     public class ConfigurationCreator : IConfigurationCreator
     {
         private readonly IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
@@ -42,7 +45,7 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
 
-            var adminPath = _adminPath != null ? _adminPath.Path : null;
+            var adminPath = _adminPath?.Path;
 
             var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
 

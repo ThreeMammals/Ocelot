@@ -3,6 +3,7 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Validators;
+
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
 
@@ -14,13 +15,12 @@ namespace Ocelot.Benchmarks
         private RegExUrlMatcher _urlPathMatcher;
         private UpstreamPathTemplate _pathTemplate;
         private string _downstreamUrlPath;
-        private string _upstreamQuery;
 
         public UrlPathToUrlPathTemplateMatcherBenchmarks()
         {
-            Add(StatisticColumn.AllStatistics);
-            Add(MemoryDiagnoser.Default);
-            Add(BaselineValidator.FailOnError);
+            AddColumn(StatisticColumn.AllStatistics);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddValidator(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]
@@ -34,7 +34,7 @@ namespace Ocelot.Benchmarks
         [Benchmark(Baseline = true)]
         public void Baseline()
         {
-            _urlPathMatcher.Match(_downstreamUrlPath, _upstreamQuery, _pathTemplate);
+            _urlPathMatcher.Match(_downstreamUrlPath, null, _pathTemplate);
         }
 
         // * Summary *

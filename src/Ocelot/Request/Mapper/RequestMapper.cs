@@ -1,17 +1,20 @@
-﻿namespace Ocelot.Request.Mapper
-{
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Extensions;
-    using Microsoft.Extensions.Primitives;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Primitives;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Request.Mapper
+{
     public class RequestMapper : IRequestMapper
     {
         private readonly string[] _unsupportedHeaders = { "host" };
@@ -20,7 +23,7 @@
         {
             try
             {
-                var requestMessage = new HttpRequestMessage()
+                var requestMessage = new HttpRequestMessage
                 {
                     Content = await MapContent(request),
                     Method = MapMethod(request, downstreamRoute),
@@ -38,7 +41,7 @@
             }
         }
 
-        private async Task<HttpContent> MapContent(HttpRequest request)
+        private static async Task<HttpContent> MapContent(HttpRequest request)
         {
             if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0))
             {
@@ -64,16 +67,16 @@
             return content;
         }
 
-        private void AddHeaderIfExistsOnRequest(string key, HttpContent content, HttpRequest request)
+        private static void AddHeaderIfExistsOnRequest(string key, HttpContent content, HttpRequest request)
         {
             if (request.Headers.ContainsKey(key))
             {
                 content.Headers
-                    .TryAddWithoutValidation(key, request.Headers[key].ToList());
+                    .TryAddWithoutValidation(key, request.Headers[key].ToArray());
             }
         }
 
-        private HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute)
+        private static HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute)
         {
             if (!string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod))
             {
@@ -83,10 +86,7 @@
             return new HttpMethod(request.Method);
         }
 
-        private Uri MapUri(HttpRequest request)
-        {
-            return new Uri(request.GetEncodedUrl());
-        }
+        private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
 
         private void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
         {
@@ -104,9 +104,9 @@
             return !_unsupportedHeaders.Contains(header.Key.ToLower());
         }
 
-        private async Task<byte[]> ToByteArray(Stream stream)
+        private static async Task<byte[]> ToByteArray(Stream stream)
         {
-            using (stream)
+            await using (stream)
             {
                 using (var memStream = new MemoryStream())
                 {

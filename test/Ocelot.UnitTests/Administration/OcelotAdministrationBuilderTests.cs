@@ -1,20 +1,25 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Administration;
+using Ocelot.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Administration
 {
-    using IdentityServer4.AccessTokenValidation;
-    using Microsoft.AspNetCore.Authentication.JwtBearer;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Administration;
-    using Ocelot.DependencyInjection;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class OcelotAdministrationBuilderTests
     {
         private readonly IServiceCollection _services;
@@ -27,11 +32,11 @@ namespace Ocelot.UnitTests.Administration
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
         }
-        
-        private IWebHostEnvironment GetHostingEnvironment()
+
+        private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();
             environment

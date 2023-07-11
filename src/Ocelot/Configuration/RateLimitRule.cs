@@ -10,15 +10,27 @@
         }
 
         /// <summary>
-        /// Rate limit period as in 1s, 1m, 1h,1d
+        /// Rate limit period as in 1s, 1m, 1h, 1d.
         /// </summary>
-        public string Period { get; private set; }
-
-        public double PeriodTimespan { get; private set; }
+        /// <value>
+        /// A string value with rate limit period.
+        /// </value>
+        public string Period { get; }
 
         /// <summary>
-        /// Maximum number of requests that a client can make in a defined period
+        /// Timespan to wait after reaching the rate limit, in seconds.
         /// </summary>
-        public long Limit { get; private set; }
+        /// <value>
+        /// A double floating-point integer with timespan, in seconds.
+        /// </value>
+        public double PeriodTimespan { get; }
+
+        /// <summary>
+        /// Maximum number of requests that a client can make in a defined period.
+        /// </summary>
+        /// <value>
+        /// A long integer with maximum number of requests.
+        /// </value>
+        public long Limit { get; }
     }
 }

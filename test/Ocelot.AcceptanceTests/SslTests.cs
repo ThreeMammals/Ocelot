@@ -1,13 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class SslTests : IDisposable
     {
         private readonly Steps _steps;
@@ -23,29 +27,29 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = true
-                        }
-                    }
+                            DangerousAcceptAnyServerCertificateValidator = true,
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
@@ -60,29 +64,29 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_dangerous_accept_any_server_certificate_validator()
         {
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "https",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = false
-                        }
-                    }
+                            DangerousAcceptAnyServerCertificateValidator = false,
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
@@ -95,7 +99,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, int port)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, "idsrv3test.pfx", "idsrv3test", port, async context =>
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, "mycert.pfx", "password", port, async context =>
             {
                 _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 

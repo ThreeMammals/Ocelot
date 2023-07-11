@@ -1,19 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Configuration.File;
+using Ocelot.Middleware;
+using Ocelot.Multiplexer;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Ocelot.Middleware;
-    using Ocelot.Multiplexer;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class AggregateTests : IDisposable
     {
         private readonly Steps _steps;
@@ -35,7 +40,7 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key1data/{userid}",
@@ -43,7 +48,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -51,7 +56,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key1",
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key2data/{userid}",
@@ -59,7 +64,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -67,7 +72,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key2",
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key3data/{userid}",
@@ -75,7 +80,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -83,7 +88,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         Key = "key3",
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key4data/{userid}",
@@ -91,7 +96,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
@@ -102,7 +107,7 @@ namespace Ocelot.AcceptanceTests
                 },
                 Aggregates = new List<FileAggregateRoute>
                 {
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>{
                             "key1",
@@ -112,7 +117,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                     },
-                    new FileAggregateRoute
+                    new()
                     {
                         RouteKeys = new List<string>{
                             "key1",
@@ -148,13 +153,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -164,13 +169,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Comments",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/users/{userId}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -180,13 +185,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "UserDetails",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/posts/{postId}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port3,
@@ -199,7 +204,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -211,8 +216,8 @@ namespace Ocelot.AcceptanceTests
                             },
                             RouteKeysConfig = new List<AggregateRouteConfig>()
                             {
-                                new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-                                new AggregateRouteConfig(){RouteKey = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
+                                new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+                                new(){RouteKey = "PostDetails",JsonPath = "$[*].postId",Parameter = "postId"},
                             },
                         },
                     },
@@ -244,13 +249,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -260,13 +265,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -279,7 +284,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -315,13 +320,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -331,13 +336,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -350,7 +355,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -385,13 +390,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -401,13 +406,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -420,7 +425,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -455,13 +460,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -471,13 +476,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -490,7 +495,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",
@@ -525,13 +530,13 @@ namespace Ocelot.AcceptanceTests
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port1,
@@ -541,13 +546,13 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             Key = "Laura",
                         },
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = port2,
@@ -560,7 +565,7 @@ namespace Ocelot.AcceptanceTests
                     },
                 Aggregates = new List<FileAggregateRoute>
                     {
-                        new FileAggregateRoute
+                        new()
                         {
                             UpstreamPathTemplate = "/",
                             UpstreamHost = "localhost",

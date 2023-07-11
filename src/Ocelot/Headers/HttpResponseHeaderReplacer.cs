@@ -1,15 +1,19 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
+
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Extensions;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Headers
 {
-    using Ocelot.Configuration;
-    using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.Extensions;
-    using Ocelot.Middleware;
-    using Ocelot.Responses;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
         private readonly IPlaceholders _placeholders;

@@ -1,7 +1,8 @@
-using Ocelot.Middleware;
-using Ocelot.Responses;
 using System.Collections.Generic;
 using System.Linq;
+
+using Ocelot.Middleware;
+using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
@@ -10,11 +11,11 @@ namespace Ocelot.Headers
         /// <summary>
         /// Some webservers return headers that cannot be forwarded to the client
         /// in a given context such as transfer encoding chunked when ASP.NET is not
-        /// returning the response in this manner
+        /// returning the response in this manner.
         /// </summary>
         private readonly string[] _unsupportedRequestHeaders =
         {
-            "Transfer-Encoding"
+            "Transfer-Encoding",
         };
 
         public Response Remove(List<Header> headers)

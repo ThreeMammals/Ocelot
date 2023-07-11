@@ -1,13 +1,16 @@
-﻿namespace Ocelot.DownstreamPathManipulation.Middleware
-{
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Ocelot.Logging;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Middleware;
-    using Ocelot.PathManipulation;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.PathManipulation;
+
+namespace Ocelot.DownstreamPathManipulation.Middleware
+{
     public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

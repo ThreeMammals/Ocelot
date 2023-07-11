@@ -1,13 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
-using Shouldly;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
+using Ocelot.Values;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
@@ -17,16 +22,16 @@ namespace Ocelot.UnitTests.LoadBalancer
         private readonly RoundRobin _roundRobin;
         private readonly List<Service> _services;
         private Response<ServiceHostAndPort> _hostAndPort;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
 
         public RoundRobinTests()
         {
             _httpContext = new DefaultHttpContext();
             _services = new List<Service>
             {
-                new Service("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, new string[0]),
-                new Service("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, new string[0]),
-                new Service("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, new string[0])
+                new("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, Array.Empty<string>()),
+                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
+                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             _roundRobin = new RoundRobin(() => Task.FromResult(_services));

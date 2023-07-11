@@ -1,12 +1,16 @@
+using System.Collections.Generic;
+
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Responses;
 using Ocelot.Values;
+
 using Shouldly;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
@@ -35,7 +39,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .When(x => x.WhenIReplaceTheTemplateVariables())
-                .Then(x => x.ThenTheDownstreamUrlPathIsReturned(""))
+                .Then(x => x.ThenTheDownstreamUrlPathIsReturned(string.Empty))
                 .BDDfy();
         }
 
@@ -108,9 +112,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_one_template_variable()
         {
-            var templateVariables = new List<PlaceholderNameAndValue>()
+            var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new PlaceholderNameAndValue("{productId}", "1")
+                new("{productId}", "1"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -129,9 +133,9 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_one_template_variable_with_path_after()
         {
-            var templateVariables = new List<PlaceholderNameAndValue>()
+            var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new PlaceholderNameAndValue("{productId}", "1")
+                new("{productId}", "1"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -150,10 +154,10 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_two_template_variable()
         {
-            var templateVariables = new List<PlaceholderNameAndValue>()
+            var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new PlaceholderNameAndValue("{productId}", "1"),
-                new PlaceholderNameAndValue("{variantId}", "12")
+                new("{productId}", "1"),
+                new("{variantId}", "12"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
@@ -172,11 +176,11 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
         [Fact]
         public void can_replace_url_three_template_variable()
         {
-            var templateVariables = new List<PlaceholderNameAndValue>()
+            var templateVariables = new List<PlaceholderNameAndValue>
             {
-                new PlaceholderNameAndValue("{productId}", "1"),
-                new PlaceholderNameAndValue("{variantId}", "12"),
-                new PlaceholderNameAndValue("{categoryId}", "34")
+                new("{productId}", "1"),
+                new("{variantId}", "12"),
+                new("{categoryId}", "34"),
             };
 
             this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,

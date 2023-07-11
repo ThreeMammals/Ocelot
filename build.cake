@@ -1,11 +1,9 @@
-#tool "nuget:?package=GitVersion.CommandLine&version=5.0.1"
-#addin nuget:?package=Cake.Json
+#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
+#tool "dotnet:?package=coveralls.net&version=4.0.1"
 #addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Net.Http&version=4.3.4
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=coveralls.net&version=0.7.0"
-#addin Cake.Coveralls&version=0.10.1
+#tool "nuget:?package=ReportGenerator&version=5.1.19"
+#addin Cake.Coveralls&version=1.1.0
 
 // compile
 var compileConfig = Argument("configuration", "Release");
@@ -82,12 +80,12 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
-		var settings = new DotNetCoreBuildSettings
+		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
 		
-		DotNetCoreBuild(slnFile, settings);
+		DotNetBuild(slnFile, settings);
 	});
 
 Task("Clean")
@@ -95,7 +93,10 @@ Task("Clean")
 	{
         if (DirectoryExists(artifactsDir))
         {
-            DeleteDirectory(artifactsDir, recursive:true);
+            DeleteDirectory(artifactsDir, new DeleteDirectorySettings {
+				Recursive = true,
+				Force = true
+			});
         }
         CreateDirectory(artifactsDir);
 	});
@@ -176,7 +177,7 @@ Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var testSettings = new DotNetCoreTestSettings
+		var testSettings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
@@ -186,17 +187,15 @@ Task("RunUnitTests")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetCoreTest(unitTestAssemblies, testSettings);
+		DotNetTest(unitTestAssemblies, testSettings);
 
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
-		// todo bring back report generator to get a friendly report
-		// ReportGenerator(coverageSummaryFile, artifactsForUnitTestsDir);
-		// https://github.com/danielpalme/ReportGenerator
+		GenerateReport(coverageSummaryFile);
 		
-		if (IsRunningOnCircleCI() && IsMaster())
+		if (IsRunningOnCircleCI() && IsMainOrDevelop())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -231,7 +230,7 @@ Task("RunAcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetCoreTestSettings
+		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ArgumentCustomization = args => args
@@ -240,14 +239,14 @@ Task("RunAcceptanceTests")
 		};
 
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-		DotNetCoreTest(acceptanceTestAssemblies, settings);
+		DotNetTest(acceptanceTestAssemblies, settings);
 	});
 
 Task("RunIntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetCoreTestSettings
+		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ArgumentCustomization = args => args
@@ -256,7 +255,7 @@ Task("RunIntegrationTests")
 		};
 
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-		DotNetCoreTest(integrationTestAssemblies, settings);
+		DotNetTest(integrationTestAssemblies, settings);
 	});
 
 Task("CreateArtifacts")
@@ -364,6 +363,21 @@ Task("PublishToNuget")
 
 RunTarget(target);
 
+private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
+{
+	var dir = System.IO.Directory.GetCurrentDirectory();
+	Information(dir);
+
+	var reportSettings = new ProcessArgumentBuilder();
+	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
+	reportSettings.Append($"-reports:" + coverageSummaryFile);
+
+	var toolpath = Context.Tools.Resolve("net7.0/ReportGenerator.dll");
+	Information($"Tool Path : {toolpath.ToString()}");
+
+	DotNetExecute(toolpath, reportSettings);
+}
+
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
@@ -416,9 +430,9 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			
 			Information("Calling NuGetPush");
 
-			NuGetPush(
+			DotNetNuGetPush(
 				codePackage,
-				new NuGetPushSettings {
+				new DotNetNuGetPushSettings {
 					ApiKey = feedApiKey,
 					Source = codeFeedUrl
 				});
@@ -427,7 +441,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
 	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -483,7 +497,7 @@ private void UploadFileToGitHubRelease(FilePath file)
 
 private void CompleteGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"master\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -541,7 +555,19 @@ private bool IsRunningOnCircleCI()
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
 
-private bool IsMaster()
+private bool IsMainOrDevelop()
 {
-    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "master";
+	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
+
+	if(env == "main") 
+	{
+		return true;
+	}
+
+	if(env == "develop") 
+	{
+		return true;
+	}
+
+    return false;
 }

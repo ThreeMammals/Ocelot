@@ -1,17 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+
+using Newtonsoft.Json;
+
 namespace Ocelot.DependencyInjection
 {
-    using Ocelot.Configuration.File;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Configuration.Memory;
-    using Newtonsoft.Json;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using Microsoft.Extensions.Hosting;
-
     public static class ConfigurationBuilderExtensions
     {
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
@@ -21,8 +23,8 @@ namespace Ocelot.DependencyInjection
             {
                 InitialData = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("BaseUrl", baseUrl)
-                }
+                    new("BaseUrl", baseUrl),
+                },
             };
 
             builder.Add(memorySource);
@@ -43,7 +45,7 @@ namespace Ocelot.DependencyInjection
 
             const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
 
-            string excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
+            var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
             var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
@@ -61,7 +63,7 @@ namespace Ocelot.DependencyInjection
 
             foreach (var file in files)
             {
-                if (files.Count > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
+                if (files.Length > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

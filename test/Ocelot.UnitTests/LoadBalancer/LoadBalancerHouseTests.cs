@@ -1,20 +1,23 @@
-﻿using Moq;
+﻿using System;
+using System.Threading.Tasks;
+
+using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
+
 using Shouldly;
-using System;
-using System.Threading.Tasks;
+
 using TestStack.BDDfy;
+
 using Xunit;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    using Microsoft.AspNetCore.Http;
-
     public class LoadBalancerHouseTests
     {
         private DownstreamRoute _route;
@@ -47,7 +50,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_not_store_load_balancer_on_second_request()
         {
             var route = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
                 .WithLoadBalancerKey("test")
                 .Build();
 
@@ -61,12 +64,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_store_load_balancers_by_key()
         {
             var route = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
                 .WithLoadBalancerKey("test")
                 .Build();
 
             var routeTwo = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeRoundRobinLoadBalancer", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeRoundRobinLoadBalancer", string.Empty, 0))
                 .WithLoadBalancerKey("testtwo")
                 .Build();
 
@@ -93,12 +96,12 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_get_new_load_balancer_if_route_load_balancer_has_changed()
         {
             var route = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
                 .WithLoadBalancerKey("test")
                 .Build();
 
             var routeTwo = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", "", 0))
+                .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", string.Empty, 0))
                 .WithLoadBalancerKey("test")
                 .Build();
 

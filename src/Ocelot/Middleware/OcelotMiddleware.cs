@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.Logging;
+﻿using Ocelot.Logging;
 
+namespace Ocelot.Middleware
+{
     public abstract class OcelotMiddleware
     {
         protected OcelotMiddleware(IOcelotLogger logger)

@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Infrastructure.Claims.Parser
-{
-    using Ocelot.Errors;
+﻿using Ocelot.Errors;
 
+namespace Ocelot.Infrastructure.Claims.Parser
+{
     public class CannotFindClaimError : Error
     {
         public CannotFindClaimError(string message)

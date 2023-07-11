@@ -3,7 +3,7 @@ using System;
 namespace Ocelot.Logging
 {
     /// <summary>
-    /// Thin wrapper around the DotNet core logging framework, used to allow the scopedDataRepository to be injected giving access to the Ocelot RequestId
+    /// Thin wrapper around the DotNet core logging framework, used to allow the scopedDataRepository to be injected giving access to the Ocelot RequestId.
     /// </summary>
     public interface IOcelotLogger
     {

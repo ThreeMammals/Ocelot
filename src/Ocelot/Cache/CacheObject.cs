@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Cache
-{
-    using System;
+﻿using System;
 
+namespace Ocelot.Cache
+{
     internal class CacheObject<T>
     {
         public CacheObject(T value, DateTime expires)

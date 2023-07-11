@@ -1,22 +1,31 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Middleware;
+
+using Ocelot.UnitTests.Responder;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Multiplexing
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Middleware;
-    using Ocelot.Multiplexer;
-    using Ocelot.Responses;
-    using Ocelot.UnitTests.Responder;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class UserDefinedResponseAggregatorTests
     {
         private readonly UserDefinedResponseAggregator _aggregator;
@@ -44,7 +53,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var contextB = new DefaultHttpContext();
             contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
-            var contexts = new List<HttpContext>()
+            var contexts = new List<HttpContext>
             {
                 contextA,
                 contextB,
@@ -73,7 +82,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var contextB = new DefaultHttpContext();
             contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
-            var contexts = new List<HttpContext>()
+            var contexts = new List<HttpContext>
             {
                 contextA,
                 contextB,

@@ -1,8 +1,9 @@
-﻿using Ocelot.Configuration;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
@@ -46,7 +47,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             return new ErrorResponse<DownstreamRouteHolder>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
         }
 
-        private bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
+        private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
         {
             return (route.UpstreamHttpMethod.Count == 0 || route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
                    (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);

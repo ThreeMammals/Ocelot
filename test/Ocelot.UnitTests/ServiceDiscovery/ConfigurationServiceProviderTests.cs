@@ -1,8 +1,13 @@
+using System;
+using System.Collections.Generic;
+
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
+
 using Shouldly;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
@@ -20,7 +25,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
             var services = new List<Service>
             {
-                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
+                new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             this.Given(x => x.GivenServices(services))

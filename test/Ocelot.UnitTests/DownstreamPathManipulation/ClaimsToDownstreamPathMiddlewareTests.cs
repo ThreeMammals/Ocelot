@@ -1,35 +1,39 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.PathManipulation;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {
-    using Ocelot.DownstreamPathManipulation.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.PathManipulation;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class ClaimsToDownstreamPathMiddlewareTests
     {
         private readonly Mock<IChangeDownstreamPathTemplate> _changePath;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
-        private ClaimsToDownstreamPathMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
+        private readonly ClaimsToDownstreamPathMiddleware _middleware;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public ClaimsToDownstreamPathMiddlewareTests()
         {
@@ -52,7 +56,7 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToDownstreamPath(new List<ClaimToThing>
                         {
-                            new ClaimToThing("UserId", "Subject", "", 0),
+                            new("UserId", "Subject", string.Empty, 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())
@@ -64,7 +68,6 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
                .When(x => x.WhenICallTheMiddleware())
                .Then(x => x.ThenChangeDownstreamPathIsCalledCorrectly())
                .BDDfy();
-
         }
 
         private void WhenICallTheMiddleware()
@@ -99,6 +102,5 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
             _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
-
     }
 }

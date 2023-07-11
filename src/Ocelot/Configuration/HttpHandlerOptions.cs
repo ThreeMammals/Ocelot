@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Describes configuration parameters for http handler,
-    /// that is created to handle a request to service
+    /// that is created to handle a request to service.
     /// </summary>
     public class HttpHandlerOptions
     {
@@ -15,35 +15,34 @@
             MaxConnectionsPerServer = maxConnectionsPerServer;
         }
 
+        /// <summary>
+        /// Specify if auto redirect is enabled.
+        /// </summary>
+        /// <value>AllowAutoRedirect.</value>
+        public bool AllowAutoRedirect { get; }
 
         /// <summary>
-        /// Specify if auto redirect is enabled
+        /// Specify is handler has to use a cookie container.
         /// </summary>
-        /// <value>AllowAutoRedirect</value>
-        public bool AllowAutoRedirect { get; private set; }
+        /// <value>UseCookieContainer.</value>
+        public bool UseCookieContainer { get; }
 
         /// <summary>
-        /// Specify is handler has to use a cookie container
+        /// Specify is handler has to use a opentracing.
         /// </summary>
-        /// <value>UseCookieContainer</value>
-        public bool UseCookieContainer { get; private set; }
+        /// <value>UseTracing.</value>
+        public bool UseTracing { get; }
 
         /// <summary>
-        /// Specify is handler has to use a opentracing
+        /// Specify if handler has to use a proxy.
         /// </summary>
-        /// <value>UseTracing</value>
-        public bool UseTracing { get; private set; }
+        /// <value>UseProxy.</value>
+        public bool UseProxy { get; }
 
         /// <summary>
-        /// Specify if handler has to use a proxy
+        /// Specify the maximum of concurrent connection to a network endpoint.
         /// </summary>
-        /// <value>UseProxy</value>
-        public bool UseProxy { get; private set; }
-
-        /// <summary>
-        /// Specify the maximum of concurrent connection to a network endpoint
-        /// </summary>
-        /// <value>MaxConnectionsPerServer</value>
-        public int MaxConnectionsPerServer { get; private set; }
+        /// <value>MaxConnectionsPerServer.</value>
+        public int MaxConnectionsPerServer { get; }
     }
 }

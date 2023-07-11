@@ -1,27 +1,28 @@
-﻿namespace Ocelot.UnitTests.Consul
-{
-    using global::Consul;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Newtonsoft.Json;
-    using Ocelot.Logging;
-    using Provider.Consul;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
+﻿using global::Consul;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Moq;
+using Newtonsoft.Json;
+using Ocelot.Logging;
+using Ocelot.Provider.Consul;
+using Ocelot.Values;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TestStack.BDDfy;
+using Xunit;
+using _Consul_ = Ocelot.Provider.Consul.Consul;
 
+namespace Ocelot.UnitTests.Consul
+{
     public class ConsulServiceDiscoveryProviderTests : IDisposable
     {
         private IWebHost _fakeConsulBuilder;
         private readonly List<ServiceEntry> _serviceEntries;
-        private Consul _provider;
+        private _Consul_ _provider;
         private readonly string _serviceName;
         private readonly int _port;
         private readonly string _consulHost;
@@ -44,24 +45,24 @@
             _factory = new Mock<IOcelotLoggerFactory>();
             _clientFactory = new ConsulClientFactory();
             _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<Consul>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<_Consul_>()).Returns(_logger.Object);
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
-            _provider = new Consul(config, _factory.Object, _clientFactory);
+            _provider = new _Consul_(config, _factory.Object, _clientFactory);
         }
 
         [Fact]
         public void should_return_service_from_consul()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -77,17 +78,17 @@
         {
             var token = "test token";
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
-            _provider = new Consul(config, _factory.Object, _clientFactory);
+            _provider = new _Consul_(config, _factory.Object, _clientFactory);
 
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0],
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -102,27 +103,27 @@
         [Fact]
         public void should_not_return_services_with_invalid_address()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "http://localhost",
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "http://localhost",
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -137,27 +138,27 @@
         [Fact]
         public void should_not_return_services_with_empty_address()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
-                    Address = "",
+                    Address = string.Empty,
                     Port = 50881,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = null,
                     Port = 50888,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
@@ -172,27 +173,27 @@
         [Fact]
         public void should_not_return_services_with_invalid_port()
         {
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = -1,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 
-            var serviceEntryTwo = new ServiceEntry()
+            var serviceEntryTwo = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = _serviceName,
                     Address = "localhost",
                     Port = 0,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = new string[0]
+                    Tags = Array.Empty<string>(),
                 },
             };
 

@@ -1,8 +1,11 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
@@ -147,7 +150,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         [Fact]
         public void can_match_down_stream_url()
         {
-            this.Given(x => x.GivenIHaveAUpstreamPath(""))
+            this.Given(x => x.GivenIHaveAUpstreamPath(string.Empty))
                 .And(x => x.GivenIHaveAnUpstreamUrlTemplatePattern("^$"))
                 .When(x => x.WhenIMatchThePaths())
                 .And(x => x.ThenTheResultIsTrue())

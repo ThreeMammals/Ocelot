@@ -1,29 +1,32 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.QueryStrings.Middleware;
-    using Ocelot.RateLimit.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Requester.Middleware;
-    using Ocelot.RequestId.Middleware;
-    using Ocelot.Responder.Middleware;
-    using Ocelot.Security.Middleware;
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Authorization.Middleware;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Claims.Middleware;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Headers.Middleware;
-    using Ocelot.LoadBalancer.Middleware;
-    using System;
-    using System.Threading.Tasks;
-    using Ocelot.DownstreamPathManipulation.Middleware;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.WebSockets.Middleware;
-    using Ocelot.Multiplexer;
+﻿using System;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Authentication.Middleware;
+using Ocelot.Authorization.Middleware;
+using Ocelot.Cache.Middleware;
+using Ocelot.Claims.Middleware;
+using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.Errors.Middleware;
+using Ocelot.Headers.Middleware;
+using Ocelot.LoadBalancer.Middleware;
+using Ocelot.QueryStrings.Middleware;
+using Ocelot.RateLimit.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Requester.Middleware;
+using Ocelot.RequestId.Middleware;
+using Ocelot.Responder.Middleware;
+using Ocelot.Security.Middleware;
+using Ocelot.WebSockets.Middleware;
+
+namespace Ocelot.Middleware
+{
     public static class OcelotPipelineExtensions
     {
         public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app,

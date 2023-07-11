@@ -1,11 +1,15 @@
-﻿using Ocelot.Configuration;
+﻿using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+
 using Shouldly;
-using System;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
@@ -15,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration
         private FileRoute _fileRoute;
         private FileGlobalConfiguration _fileGlobalConfig;
         private bool _enabled;
-        private RateLimitOptionsCreator _creator;
+        private readonly RateLimitOptionsCreator _creator;
         private RateLimitOptions _result;
 
         public RateLimitOptionsCreatorTests()
@@ -34,8 +38,8 @@ namespace Ocelot.UnitTests.Configuration
                     Period = "Period",
                     Limit = 1,
                     PeriodTimespan = 1,
-                    EnableRateLimiting = true
-                }
+                    EnableRateLimiting = true,
+                },
             };
             var fileGlobalConfig = new FileGlobalConfiguration
             {
@@ -45,8 +49,8 @@ namespace Ocelot.UnitTests.Configuration
                     DisableRateLimitHeaders = true,
                     QuotaExceededMessage = "QuotaExceededMessage",
                     RateLimitCounterPrefix = "RateLimitCounterPrefix",
-                    HttpStatusCode = 200
-                }
+                    HttpStatusCode = 200,
+                },
             };
             var expected = new RateLimitOptionsBuilder()
                 .WithClientIdHeader("ClientIdHeader")
@@ -60,6 +64,8 @@ namespace Ocelot.UnitTests.Configuration
                        fileRoute.RateLimitOptions.PeriodTimespan,
                        fileRoute.RateLimitOptions.Limit))
                 .Build();
+
+            _enabled = false;
 
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .And(x => x.GivenTheFollowingFileGlobalConfig(fileGlobalConfig))
@@ -91,6 +97,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheFollowingIsReturned(RateLimitOptions expected)
         {
+            _enabled.ShouldBeTrue();
             _result.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
             _result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
             _result.DisableRateLimitHeaders.ShouldBe(expected.DisableRateLimitHeaders);

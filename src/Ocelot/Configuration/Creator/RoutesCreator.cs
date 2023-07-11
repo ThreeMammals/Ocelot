@@ -1,11 +1,14 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration.Builder;
+
+using Ocelot.Cache;
+
+using Ocelot.Configuration.File;
+
 namespace Ocelot.Configuration.Creator
 {
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Cache;
-    using Ocelot.Configuration.File;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public class RoutesCreator : IRoutesCreator
     {
         private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
