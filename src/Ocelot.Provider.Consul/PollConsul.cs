@@ -32,7 +32,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
             _polling = true;
             await Poll();
             _polling = false;
-        }, null, 0, pollingInterval);
+        }, null, 0, pollingInterval); // the dueTime parameter is 0 (zero) to start timer callback (task) immediately
     }
 
     public void Dispose()
