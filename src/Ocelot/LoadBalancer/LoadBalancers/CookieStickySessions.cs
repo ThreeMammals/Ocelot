@@ -9,8 +9,10 @@ namespace Ocelot.LoadBalancer.LoadBalancers;
 public class CookieStickySessions : ILoadBalancer
 {
     private readonly int _keyExpiryInMs;
+    private readonly string _key;
     private readonly string _cookieName;
     private readonly ILoadBalancer _loadBalancer;
+    private readonly IStickySessionStorage _storage;
     private readonly IBus<StickySession> _bus;
 
     private static readonly object Locker = new();
@@ -22,6 +24,7 @@ public class CookieStickySessions : ILoadBalancer
     public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus, IStickySessionStorage storage)
     {
         _bus = bus;
+        _key = key;
         _cookieName = cookieName;
         _keyExpiryInMs = keyExpiryInMs;
         _loadBalancer = loadBalancer;
