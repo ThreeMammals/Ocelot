@@ -1,16 +1,14 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using Ocelot.Configuration.File;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
-
-using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
