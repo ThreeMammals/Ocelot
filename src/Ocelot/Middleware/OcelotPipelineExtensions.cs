@@ -119,9 +119,6 @@ namespace Ocelot.Middleware
                 app.Use(pipelineConfiguration.AuthorizationMiddleware);
             }
 
-            // Now we can run the claims to headers transformation middleware	
-            app.UseClaimsToHeadersMiddleware();
-
             // Allow the user to implement their own query string manipulation logic
             app.UseIfNotNull(pipelineConfiguration.PreQueryStringBuilderMiddleware);
 
