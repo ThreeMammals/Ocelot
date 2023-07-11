@@ -10,7 +10,6 @@ using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer.Middleware;
-using Ocelot.Multiplexer;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.RateLimiting.Middleware;
 using Ocelot.Request.Middleware;
@@ -119,8 +118,16 @@ namespace Ocelot.Middleware
                 app.Use(pipelineConfiguration.AuthorizationMiddleware);
             }
 
-            // Now we can run the claims to headers transformation middleware
-            app.UseClaimsToHeadersMiddleware();
+            // Now we can run the claims to headers transformation middleware.
+            // We allow the ocelot middleware to be overriden by whatever the user wants
+            if (pipelineConfiguration.ClaimsToHeadersMiddleware == null)
+            {
+                app.UseClaimsToHeadersMiddleware();
+            }
+            else
+            {
+                app.Use(pipelineConfiguration.ClaimsToHeadersMiddleware);
+            }
 
             // Allow the user to implement their own query string manipulation logic
             app.UseIfNotNull(pipelineConfiguration.PreQueryStringBuilderMiddleware);
