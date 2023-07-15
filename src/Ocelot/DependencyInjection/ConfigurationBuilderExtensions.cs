@@ -49,12 +49,9 @@ namespace Ocelot.DependencyInjection
 
             var files = new DirectoryInfo(folder)
                .EnumerateFiles()
-               .Where(fi => reg.IsMatch(fi.Name)
-                               && (fi.Name != excludeConfigName)
-                               
-                               // Added to support sub services maping ex: ocelot.order.{EnvironmentName}.json
-                               && (fi.Name.Contains(env.EnvironmentName) || fi.Name.Contains(globalConfigFile))
-                               )
+               .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName)                               
+                    // Added to support sub services maping ex: ocelot.order.{EnvironmentName}.json
+                    && (fi.Name.Contains(env.EnvironmentName) || fi.Name.Contains(globalConfigFile)))
                .ToList();
 
             var fileConfiguration = new FileConfiguration();
