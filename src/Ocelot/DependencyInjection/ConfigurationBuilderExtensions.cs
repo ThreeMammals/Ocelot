@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.Hosting;
@@ -50,9 +49,8 @@ namespace Ocelot.DependencyInjection
             var files = new DirectoryInfo(folder)
                .EnumerateFiles()
                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName)                               
-                    // Added to support sub services maping ex: ocelot.order.{EnvironmentName}.json
-                    && (fi.Name.Contains(env.EnvironmentName) || fi.Name.Contains(globalConfigFile)))
-               .ToList();
+                    && (fi.Name.Contains(env.EnvironmentName) || fi.Name.Contains(globalConfigFile))) // Added to support sub services maping ex: ocelot.order.{EnvironmentName}.json
+               .ToArray();
 
             var fileConfiguration = new FileConfiguration();
 
