@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -17,15 +10,14 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator
@@ -163,7 +155,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                         new List<PlaceholderNameAndValue>
                         {
                             new PlaceholderNameAndValue("{subscriptionId}", "1"),
-                            new PlaceholderNameAndValue("{unitId}", "2")
+                            new PlaceholderNameAndValue("{unitId}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)

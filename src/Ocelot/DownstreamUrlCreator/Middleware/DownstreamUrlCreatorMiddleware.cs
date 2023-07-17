@@ -1,24 +1,16 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Middleware;
-using Ocelot.Request.Middleware;
-
-using Ocelot.Responses;
-
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-
-using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
