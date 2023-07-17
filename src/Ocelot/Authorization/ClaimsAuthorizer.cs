@@ -66,14 +66,13 @@ namespace Ocelot.Authorization
                     }
                     else
                     {
-                        // static claim
-                        
                         //if required value is not specified
                         if (string.IsNullOrEmpty(required.Value))
                         {
                             continue;
                         }
-                        
+
+                        // static claim
                         var authorized = values.Data.Contains(required.Value);
                         if (!authorized)
                         {
