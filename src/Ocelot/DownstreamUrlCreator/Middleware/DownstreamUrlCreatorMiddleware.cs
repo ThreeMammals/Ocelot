@@ -118,7 +118,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static string GetPath(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(0, dsPath.Value.IndexOf('?', StringComparison.Ordinal));
+            int length = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            return dsPath.Value[..length];
         }
 
         private static string GetQueryString(DownstreamPath dsPath)
