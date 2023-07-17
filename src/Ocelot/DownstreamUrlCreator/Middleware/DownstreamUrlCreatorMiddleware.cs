@@ -110,7 +110,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
-                        downstreamRequest.Query = '?' + downstreamRequest.Query.Substring(1);
+                        downstreamRequest.Query = string.Concat("?", downstreamRequest.Query.AsSpan(1));
                     }
                 }
             }
