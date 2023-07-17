@@ -124,7 +124,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static string GetQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(dsPath.Value.IndexOf('?', StringComparison.Ordinal));
+            int startIndex = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            return dsPath.Value[startIndex..];
         }
 
         private static bool ContainsQueryString(DownstreamPath dsPath)
