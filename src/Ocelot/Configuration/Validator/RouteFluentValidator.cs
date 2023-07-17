@@ -12,7 +12,6 @@ namespace Ocelot.Configuration.Validator
         private static readonly Regex _minutesRegEx = new Regex("^[0-9]+m", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
         private static readonly Regex _hoursRegEx = new Regex("^[0-9]+h", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
         private static readonly Regex _daysRegEx = new Regex("^[0-9]+d", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
-        //
 
         public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {

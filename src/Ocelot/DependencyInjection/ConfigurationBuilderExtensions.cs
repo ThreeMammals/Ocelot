@@ -4,29 +4,17 @@ using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 
-
-using Newtonsoft.Json;
-
-
-using Newtonsoft.Json;
-
 namespace Ocelot.DependencyInjection
+{
+    /// <summary>
+    /// Defines extension-methods for the <see cref="IConfigurationBuilder"/> interface.
+    /// </summary>
+    public static partial class ConfigurationBuilderExtensions
+    {
         public const string PrimaryConfigFile = "ocelot.json";
         public const string GlobalConfigFile = "ocelot.global.json";
         public const string EnvironmentConfigFile = "ocelot.{0}.json";
 
-#if NET7_0_OR_GREATER
-        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
-        private static partial Regex SubConfigRegex();
-#else
-        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
-        private static Regex SubConfigRegex() => SubConfigRegexVar;
-#endif
-
-{
-    /// <summary>
-    /// Defines extension-methods for the <see cref="IConfigurationBuilder"/> interface.
-    {
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
@@ -53,13 +41,13 @@ namespace Ocelot.DependencyInjection
 
         /// <summary>
         /// Adds Ocelot configuration by environment, reading the required files from the specified folder.
-            => builder.AddOcelot(folder, env, MergeOcelotJson.ToFile);
+        /// </summary>
+        /// <param name="builder">Configuration builder to extend.</param>
         /// <param name="folder">Folder to read files from.</param>
-        {
-            const string primaryConfigFile = "ocelot.json";
+        /// <param name="env">Web hosting environment object.</param>
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
-        {
-            const string primaryConfigFile = "ocelot.json";
+            => builder.AddOcelot(folder, env, MergeOcelotJson.ToFile);
 
         /// <summary>
         /// Adds Ocelot configuration by environment and merge option, reading the required files from the current default folder.
@@ -72,6 +60,12 @@ namespace Ocelot.DependencyInjection
         /// <param name="globalConfigFile">Global config file.</param>
         /// <param name="environmentConfigFile">Environment config file.</param>
         /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
+        /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env, MergeOcelotJson mergeTo,
+            string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+            => builder.AddOcelot(".", env, mergeTo, primaryConfigFile, globalConfigFile, environmentConfigFile, optional, reloadOnChange);
+
         /// <summary>
         /// Adds Ocelot configuration by environment and merge option, reading the required files from the specified folder.
         /// </summary>
@@ -93,7 +87,7 @@ namespace Ocelot.DependencyInjection
             primaryConfigFile ??= Path.Join(folder, PrimaryConfigFile); // if not specified, merge & write back to the same folder
             return ApplyMergeOcelotJsonOption(builder, mergeTo, json, primaryConfigFile, optional, reloadOnChange);
         }
-        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
+
         private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
             string primaryConfigFile, bool? optional, bool? reloadOnChange)
         {
@@ -102,6 +96,13 @@ namespace Ocelot.DependencyInjection
                 AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 
+#if NET7_0_OR_GREATER
+        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1000, "en-US")]
+        private static partial Regex SubConfigRegex();
+#else
+        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+        private static Regex SubConfigRegex() => SubConfigRegexVar;
+#endif
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
@@ -110,17 +111,11 @@ namespace Ocelot.DependencyInjection
             environmentFile ??= Path.Join(folder, string.Format(EnvironmentConfigFile, envName));
             var reg = SubConfigRegex();
             var environmentFileInfo = new FileInfo(environmentFile);
-
-            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var files = new DirectoryInfo(folder)
+                .EnumerateFiles()
                 .Where(fi => reg.IsMatch(fi.Name) &&
                     !fi.Name.Equals(environmentFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
                     !fi.FullName.Equals(environmentFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
-
-            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
-            var files = new DirectoryInfo(folder)
-                .EnumerateFiles()
-                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
                 .ToArray();
 
             fileConfiguration ??= new FileConfiguration();
