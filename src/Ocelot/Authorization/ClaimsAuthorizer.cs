@@ -5,6 +5,12 @@ using System.Security.Claims;
 
 namespace Ocelot.Authorization
 {
+    /// <summary>
+    /// Authorizer which is implemented using Claims-based authorization.
+    /// <para>
+    /// Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims?view=aspnetcore-7.0">Claims-based authorization in ASP.NET Core</see>.
+    /// </para>
+    /// </summary>
     public partial class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
