@@ -58,11 +58,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
+                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
 
                 //todo check this works again hope there is a test..
-                downstreamRequest.AbsolutePath = pathAndQuery.Path;
-                downstreamRequest.Query = pathAndQuery.Query;
+                downstreamRequest.AbsolutePath = path;
+                downstreamRequest.Query = query;
             }
             else
             {
