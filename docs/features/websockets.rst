@@ -50,7 +50,7 @@ In your Configure method you need to tell your application to use SignalR.
 
      Configure(app =>
     {
-        app.UseSignalR();
+        app.UseSignalR(); // obsolete since ASP.NET 5
         app.UseOcelot().Wait();
     })
 
