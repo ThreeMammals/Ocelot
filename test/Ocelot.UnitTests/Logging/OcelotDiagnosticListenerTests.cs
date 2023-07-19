@@ -1,10 +1,14 @@
+using System;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+
 using Moq;
+
 using Ocelot.Logging;
-using Ocelot.Middleware;
-using System;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Logging
@@ -12,16 +16,17 @@ namespace Ocelot.UnitTests.Logging
     public class OcelotDiagnosticListenerTests
     {
         private readonly OcelotDiagnosticListener _listener;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
-        private IServiceCollection _serviceCollection;
-        private IServiceProvider _serviceProvider;
-        private DownstreamContext _downstreamContext;
+        private readonly IServiceCollection _serviceCollection;
+        private readonly IServiceProvider _serviceProvider;
         private string _name;
         private Exception _exception;
+        private readonly HttpContext _httpContext;
 
         public OcelotDiagnosticListenerTests()
         {
+            _httpContext = new DefaultHttpContext();
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _serviceCollection = new ServiceCollection();
@@ -31,43 +36,11 @@ namespace Ocelot.UnitTests.Logging
         }
 
         [Fact]
-        public void should_trace_ocelot_middleware_started()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .When(_ => WhenOcelotMiddlewareStartedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareStarted: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_trace_ocelot_middleware_finished()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .When(_ => WhenOcelotMiddlewareFinishedCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_trace_ocelot_middleware_exception()
-        {
-            this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
-                .And(_ => GivenAException(new Exception("oh no")))
-                .When(_ => WhenOcelotMiddlewareExceptionCalled())
-                .Then(_ => ThenTheLogIs($"Ocelot.MiddlewareException: {_name}; {_exception.Message};"))
-                .BDDfy();
-        }
-
-        [Fact]
         public void should_trace_middleware_started()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareStartedCalled())
-                .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_downstreamContext.HttpContext.Request.Path}"))
+                .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}"))
                 .BDDfy();
         }
 
@@ -75,9 +48,8 @@ namespace Ocelot.UnitTests.Logging
         public void should_trace_middleware_finished()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .When(_ => WhenMiddlewareFinishedCalled())
-                .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_downstreamContext.HttpContext.Response.StatusCode}"))
+                .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}"))
                 .BDDfy();
         }
 
@@ -85,7 +57,6 @@ namespace Ocelot.UnitTests.Logging
         public void should_trace_middleware_exception()
         {
             this.Given(_ => GivenAMiddlewareName())
-                .And(_ => GivenAContext())
                 .And(_ => GivenAException(new Exception("oh no")))
                 .When(_ => WhenMiddlewareExceptionCalled())
                 .Then(_ => ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};"))
@@ -97,39 +68,19 @@ namespace Ocelot.UnitTests.Logging
             _exception = exception;
         }
 
-        private void WhenOcelotMiddlewareStartedCalled()
-        {
-            _listener.OcelotMiddlewareStarted(_downstreamContext, _name);
-        }
-
-        private void WhenOcelotMiddlewareFinishedCalled()
-        {
-            _listener.OcelotMiddlewareFinished(_downstreamContext, _name);
-        }
-
-        private void WhenOcelotMiddlewareExceptionCalled()
-        {
-            _listener.OcelotMiddlewareException(_exception, _downstreamContext, _name);
-        }
-
         private void WhenMiddlewareStartedCalled()
         {
-            _listener.OnMiddlewareStarting(_downstreamContext.HttpContext, _name);
+            _listener.OnMiddlewareStarting(_httpContext, _name);
         }
 
         private void WhenMiddlewareFinishedCalled()
         {
-            _listener.OnMiddlewareFinished(_downstreamContext.HttpContext, _name);
+            _listener.OnMiddlewareFinished(_httpContext, _name);
         }
 
         private void WhenMiddlewareExceptionCalled()
         {
             _listener.OnMiddlewareException(_exception, _name);
-        }
-
-        private void GivenAContext()
-        {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
         }
 
         private void GivenAMiddlewareName()

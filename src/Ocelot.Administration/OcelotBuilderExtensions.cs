@@ -1,15 +1,20 @@
-﻿using Ocelot.DependencyInjection;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Tokens;
+
+using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Ocelot.Administration
 {
@@ -18,7 +23,8 @@ namespace Ocelot.Administration
         public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, string secret)
         {
             var administrationPath = new AdministrationPath(path);
-            builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(IdentityServerMiddlewareConfigurationProvider.Get);
+
+            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
 
             //add identity server for admin area
             var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
@@ -32,10 +38,10 @@ namespace Ocelot.Administration
             return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
         }
 
-        public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, Action<IdentityServerAuthenticationOptions> configureOptions)
+        public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, Action<JwtBearerOptions> configureOptions)
         {
             var administrationPath = new AdministrationPath(path);
-            builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(IdentityServerMiddlewareConfigurationProvider.Get);
+            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
 
             if (configureOptions != null)
             {
@@ -46,21 +52,23 @@ namespace Ocelot.Administration
             return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
         }
 
-        private static void AddIdentityServer(Action<IdentityServerAuthenticationOptions> configOptions, IOcelotBuilder builder)
+        private static void AddIdentityServer(Action<JwtBearerOptions> configOptions, IOcelotBuilder builder)
         {
             builder.Services
                 .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(configOptions);
+                .AddJwtBearer("Bearer", configOptions);
         }
 
         private static void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
         {
-            builder.Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
+            builder.Services.TryAddSingleton(identityServerConfiguration);
             var identityServerBuilder = builder.Services
                 .AddIdentityServer(o =>
                 {
                     o.IssuerUri = "Ocelot";
+                    o.EmitStaticAudienceClaim = true;
                 })
+                .AddInMemoryApiScopes(ApiScopes(identityServerConfiguration))
                 .AddInMemoryApiResources(Resources(identityServerConfiguration))
                 .AddInMemoryClients(Client(identityServerConfiguration));
 
@@ -68,14 +76,17 @@ namespace Ocelot.Administration
             var baseSchemeUrlAndPort = urlFinder.Find();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            builder.Services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(o =>
+            builder.Services
+                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddJwtBearer("Bearer", options =>
                 {
-                    o.Authority = baseSchemeUrlAndPort + adminPath.Path;
-                    o.ApiName = identityServerConfiguration.ApiName;
-                    o.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-                    o.SupportedTokens = SupportedTokens.Both;
-                    o.ApiSecret = identityServerConfiguration.ApiSecret;
+                    options.Authority = baseSchemeUrlAndPort + adminPath.Path;
+                    options.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateAudience = false,
+                    };
                 });
 
             //todo - refactor naming..
@@ -91,19 +102,24 @@ namespace Ocelot.Administration
             }
         }
 
+        private static IEnumerable<ApiScope> ApiScopes(IIdentityServerConfiguration identityServerConfiguration)
+        {
+            return identityServerConfiguration.AllowedScopes.Select(s => new ApiScope(s));
+        }
+
         private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
         {
             return new List<ApiResource>
             {
-                new ApiResource(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+                new(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
                 {
                     ApiSecrets = new List<Secret>
                     {
-                        new Secret
+                        new()
                         {
-                            Value = identityServerConfiguration.ApiSecret.Sha256()
-                        }
-                    }
+                            Value = identityServerConfiguration.ApiSecret.Sha256(),
+                        },
+                    },
                 },
             };
         }
@@ -112,13 +128,13 @@ namespace Ocelot.Administration
         {
             return new List<Client>
             {
-                new Client
+                new()
                 {
                     ClientId = identityServerConfiguration.ApiName,
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = new List<Secret> {new Secret(identityServerConfiguration.ApiSecret.Sha256())},
-                    AllowedScopes = { identityServerConfiguration.ApiName }
-                }
+                    ClientSecrets = new List<Secret> {new(identityServerConfiguration.ApiSecret.Sha256())},
+                    AllowedScopes = identityServerConfiguration.AllowedScopes,
+                },
             };
         }
     }

@@ -15,68 +15,68 @@ namespace Ocelot.UnitTests.Security
 {
     public class IPSecurityPolicyTests
     {
-        private readonly DownstreamContext _downstreamContext;
-        private readonly DownstreamReRouteBuilder _downstreamReRouteBuilder;
+        private readonly DownstreamRouteBuilder _downstreamRouteBuilder;
         private readonly IPSecurityPolicy _ipSecurityPolicy;
         private Response response;
+        private readonly HttpContext _httpContext;
 
         public IPSecurityPolicyTests()
         {
-            _downstreamContext = new DownstreamContext(new DefaultHttpContext());
-            _downstreamContext.DownstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com"));
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
-            _downstreamReRouteBuilder = new DownstreamReRouteBuilder();
+            _httpContext = new DefaultHttpContext();
+            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _downstreamRouteBuilder = new DownstreamRouteBuilder();
             _ipSecurityPolicy = new IPSecurityPolicy();
         }
 
         [Fact]
-        private void should_No_blocked_Ip_and_allowed_Ip()
+        public void should_No_blocked_Ip_and_allowed_Ip()
         {
-            this.Given(x => x.GivenSetDownstreamReRoute())
+            this.Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
 
         [Fact]
-        private void should_blockedIp_clientIp_block()
+        public void should_blockedIp_clientIp_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetBlockedIP())
-                .Given(x => x.GivenSetDownstreamReRoute())
+                .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
 
         [Fact]
-        private void should_blockedIp_clientIp_Not_block()
+        public void should_blockedIp_clientIp_Not_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetBlockedIP())
-                .Given(x => x.GivenSetDownstreamReRoute())
+                .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
 
         [Fact]
-        private void should_allowedIp_clientIp_block()
+        public void should_allowedIp_clientIp_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetAllowedIP())
-                .Given(x => x.GivenSetDownstreamReRoute())
+                .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
 
         [Fact]
-        private void should_allowedIp_clientIp_Not_block()
+        public void should_allowedIp_clientIp_Not_block()
         {
-            _downstreamContext.HttpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetAllowedIP())
-                .Given(x => x.GivenSetDownstreamReRoute())
+                .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
@@ -84,22 +84,22 @@ namespace Ocelot.UnitTests.Security
 
         private void GivenSetAllowedIP()
         {
-            _downstreamReRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>()));
+            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>()));
         }
 
         private void GivenSetBlockedIP()
         {
-            _downstreamReRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }));
+            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }));
         }
 
-        private void GivenSetDownstreamReRoute()
+        private void GivenSetDownstreamRoute()
         {
-            _downstreamContext.DownstreamReRoute = _downstreamReRouteBuilder.Build();
+            _httpContext.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
         }
 
         private void WhenTheSecurityPolicy()
         {
-            response = this._ipSecurityPolicy.Security(_downstreamContext).GetAwaiter().GetResult();
+            response = _ipSecurityPolicy.Security(_httpContext.Items.DownstreamRoute(), _httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenSecurityPassing()

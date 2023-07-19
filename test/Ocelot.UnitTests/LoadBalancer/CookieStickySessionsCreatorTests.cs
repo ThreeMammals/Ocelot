@@ -1,20 +1,20 @@
-﻿namespace Ocelot.UnitTests.LoadBalancer
-{
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Ocelot.Responses;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.LoadBalancer
+{
     public class CookieStickySessionsCreatorTests
     {
         private readonly CookieStickySessionsCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
-        private DownstreamReRoute _reRoute;
+        private DownstreamRoute _route;
         private Response<ILoadBalancer> _loadBalancer;
         private string _typeName;
 
@@ -23,20 +23,20 @@
             _creator = new CookieStickySessionsCreator();
             _serviceProvider = new Mock<IServiceDiscoveryProvider>();
         }
-        
+
         [Fact]
         public void should_return_instance_of_expected_load_balancer_type()
         {
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithLoadBalancerOptions(new LoadBalancerOptions("myType", "myKey", 1000))
                 .Build();
 
-            this.Given(x => x.GivenAReRoute(reRoute))
+            this.Given(x => x.GivenARoute(route))
                 .When(x => x.WhenIGetTheLoadBalancer())
                 .Then(x => x.ThenTheLoadBalancerIsReturned<CookieStickySessions>())
                 .BDDfy();
         }
-                
+
         [Fact]
         public void should_return_expected_name()
         {
@@ -45,16 +45,16 @@
                 .BDDfy();
         }
 
-        private void GivenAReRoute(DownstreamReRoute reRoute)
+        private void GivenARoute(DownstreamRoute route)
         {
-            _reRoute = reRoute;
+            _route = route;
         }
 
         private void WhenIGetTheLoadBalancer()
         {
-            _loadBalancer = _creator.Create(_reRoute, _serviceProvider.Object);
+            _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
         }
-        
+
         private void WhenIGetTheLoadBalancerTypeName()
         {
             _typeName = _creator.Type;

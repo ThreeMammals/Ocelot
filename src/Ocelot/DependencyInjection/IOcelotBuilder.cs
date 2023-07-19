@@ -1,10 +1,12 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Middleware.Multiplexer;
 using System;
 using System.Net.Http;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 using Ocelot.Configuration;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Multiplexer;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.DependencyInjection
@@ -30,7 +32,7 @@ namespace Ocelot.DependencyInjection
 
         IOcelotBuilder AddCustomLoadBalancer<T>()
             where T : ILoadBalancer, new();
-        
+
         IOcelotBuilder AddCustomLoadBalancer<T>(Func<T> loadBalancerFactoryFunc)
             where T : ILoadBalancer;
 
@@ -38,11 +40,11 @@ namespace Ocelot.DependencyInjection
             where T : ILoadBalancer;
 
         IOcelotBuilder AddCustomLoadBalancer<T>(
-            Func<DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            Func<DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer;
 
         IOcelotBuilder AddCustomLoadBalancer<T>(
-            Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+            Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
             where T : ILoadBalancer;
 
         IOcelotBuilder AddConfigPlaceholders();

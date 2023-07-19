@@ -1,8 +1,12 @@
 using FluentValidation.Results;
+
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
@@ -25,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var fileHostAndPort = new FileHostAndPort
             {
-                Host = host
+                Host = host,
             };
 
             this.Given(_ => GivenThe(fileHostAndPort))
@@ -40,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var fileHostAndPort = new FileHostAndPort
             {
-                Host = "test"
+                Host = "test",
             };
 
             this.Given(_ => GivenThe(fileHostAndPort))
@@ -66,7 +70,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private void ThenTheErorrIs()
         {
-            _result.Errors[0].ErrorMessage.ShouldBe("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!");
+            _result.Errors[0].ErrorMessage.ShouldBe("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!");
         }
 
         private void ThenTheResultIsInValid()

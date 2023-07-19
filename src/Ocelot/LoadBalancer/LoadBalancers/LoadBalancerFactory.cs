@@ -1,11 +1,14 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
+﻿using System.Collections.Generic;
+using System.Linq;
 
+using Ocelot.Configuration;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class LoadBalancerFactory : ILoadBalancerFactory
     {
         private readonly IServiceDiscoveryProviderFactory _serviceProviderFactory;
@@ -17,9 +20,9 @@
             _loadBalancerCreators = loadBalancerCreators;
         }
 
-        public Response<ILoadBalancer> Get(DownstreamReRoute reRoute, ServiceProviderConfiguration config)
+        public Response<ILoadBalancer> Get(DownstreamRoute route, ServiceProviderConfiguration config)
         {
-            var serviceProviderFactoryResponse = _serviceProviderFactory.Get(config, reRoute);
+            var serviceProviderFactoryResponse = _serviceProviderFactory.Get(config, route);
 
             if (serviceProviderFactoryResponse.IsError)
             {
@@ -27,7 +30,7 @@
             }
 
             var serviceProvider = serviceProviderFactoryResponse.Data;
-            var requestedType = reRoute.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
+            var requestedType = route.LoadBalancerOptions?.Type ?? nameof(NoLoadBalancer);
             var applicableCreator = _loadBalancerCreators.SingleOrDefault(c => c.Type == requestedType);
 
             if (applicableCreator == null)
@@ -35,7 +38,7 @@
                 return new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreator($"Could not find load balancer creator for Type: {requestedType}, please check your config specified the correct load balancer and that you have registered a class with the same name."));
             }
 
-            var createdLoadBalancerResponse = applicableCreator.Create(reRoute, serviceProvider);
+            var createdLoadBalancerResponse = applicableCreator.Create(route, serviceProvider);
 
             if (createdLoadBalancerResponse.IsError)
             {

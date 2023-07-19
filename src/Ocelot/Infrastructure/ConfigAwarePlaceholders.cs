@@ -1,11 +1,14 @@
+using System;
+using System.Text.RegularExpressions;
+
+using Microsoft.Extensions.Configuration;
+
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Infrastructure
 {
-    using System;
-    using System.Text.RegularExpressions;
-    using Microsoft.Extensions.Configuration;
-    using Request.Middleware;
-    using Responses;
-
     public class ConfigAwarePlaceholders : IPlaceholders
     {
         private readonly IConfiguration _configuration;
@@ -16,7 +19,7 @@ namespace Ocelot.Infrastructure
             _configuration = configuration;
             _placeholders = placeholders;
         }
-        
+
         public Response<string> Get(string key)
         {
             var placeholderResponse = _placeholders.Get(key);
@@ -32,7 +35,7 @@ namespace Ocelot.Infrastructure
         public Response<string> Get(string key, DownstreamRequest request)
         {
             var placeholderResponse = _placeholders.Get(key, request);
-            
+
             if (!placeholderResponse.IsError)
             {
                 return placeholderResponse;
@@ -47,14 +50,14 @@ namespace Ocelot.Infrastructure
         public Response Remove(string key)
             => _placeholders.Remove(key);
 
-        private string CleanKey(string key) 
+        private static string CleanKey(string key)
             => Regex.Replace(key, @"[{}]", string.Empty, RegexOptions.None);
 
         private Response<string> GetFromConfig(string key)
         {
             var valueFromConfig = _configuration[key];
             return valueFromConfig == null
-                ? (Response<string>) new ErrorResponse<string>(new CouldNotFindPlaceholderError(key))
+                ? new ErrorResponse<string>(new CouldNotFindPlaceholderError(key))
                 : new OkResponse<string>(valueFromConfig);
         }
     }

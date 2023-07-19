@@ -1,24 +1,25 @@
-﻿namespace Ocelot.Requester
-{
-    using Configuration;
-    using System;
-    using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
+using Ocelot.Configuration;
+
+namespace Ocelot.Requester
+{
     public class MemoryHttpClientCache : IHttpClientCache
     {
-        private readonly ConcurrentDictionary<DownstreamReRoute, IHttpClient> _httpClientsCache;
+        private readonly ConcurrentDictionary<DownstreamRoute, IHttpClient> _httpClientsCache;
 
         public MemoryHttpClientCache()
         {
-            _httpClientsCache = new ConcurrentDictionary<DownstreamReRoute, IHttpClient>();
+            _httpClientsCache = new ConcurrentDictionary<DownstreamRoute, IHttpClient>();
         }
 
-        public void Set(DownstreamReRoute key, IHttpClient client, TimeSpan expirationTime)
+        public void Set(DownstreamRoute key, IHttpClient client, TimeSpan expirationTime)
         {
             _httpClientsCache.AddOrUpdate(key, client, (k, oldValue) => client);
         }
 
-        public IHttpClient Get(DownstreamReRoute key)
+        public IHttpClient Get(DownstreamRoute key)
         {
             //todo handle error?
             return _httpClientsCache.TryGetValue(key, out var client) ? client : null;

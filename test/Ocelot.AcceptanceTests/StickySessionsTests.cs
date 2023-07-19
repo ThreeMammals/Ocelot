@@ -1,19 +1,24 @@
+using System;
+using System.Collections.Generic;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class StickySessionsTests : IDisposable
     {
         private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
-        private static readonly object SyncLock = new object();
+        private static readonly object SyncLock = new();
         private readonly ServiceHandler _serviceHandler;
 
         public StickySessionsTests()
@@ -32,9 +37,9 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -44,23 +49,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -83,9 +88,9 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -95,23 +100,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
                         },
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -121,23 +126,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "bestid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
+                                    Port = downstreamPortTwo,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortOne,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -161,9 +166,9 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -173,23 +178,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
                         },
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -199,23 +204,23 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Type = "CookieStickySessions",
                                 Key = "sessionid",
-                                Expiry = 300000
+                                Expiry = 300000,
                             },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
+                                    Port = downstreamPortTwo,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
-                                }
-                            }
-                        }
-                    }
+                                    Port = downstreamPortOne,
+                                },
+                            },
+                        },
+                    },
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -245,12 +250,13 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
+                    string response;
                     lock (SyncLock)
                     {
                         _counterOne++;
                         response = _counterOne.ToString();
                     }
+
                     context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync(response);
                 }
@@ -267,7 +273,7 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
+                    string response;
                     lock (SyncLock)
                     {
                         _counterTwo++;

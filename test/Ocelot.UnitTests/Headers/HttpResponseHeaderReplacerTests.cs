@@ -1,33 +1,33 @@
+using Microsoft.AspNetCore.Http;
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Headers;
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Responses;
+using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.UnitTests.Headers
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Headers;
-    using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class HttpResponseHeaderReplacerTests
     {
         private DownstreamResponse _response;
-        private Placeholders _placeholders;
+        private readonly Placeholders _placeholders;
         private readonly HttpResponseHeaderReplacer _replacer;
         private List<HeaderFindAndReplace> _headerFindAndReplaces;
         private Response _result;
         private DownstreamRequest _request;
-        private Mock<IBaseUrlFinder> _finder;
-        private Mock<IRequestScopedDataRepository> _repo;
-        private Mock<IHttpContextAccessor> _accessor;
+        private readonly Mock<IBaseUrlFinder> _finder;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
+        private readonly Mock<IHttpContextAccessor> _accessor;
 
         public HttpResponseHeaderReplacerTests()
         {
@@ -42,12 +42,12 @@ namespace Ocelot.UnitTests.Headers
         public void should_replace_headers()
         {
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                }, "");
+                    new("test", new List<string> {"test"}),
+                }, string.Empty);
 
-            var fAndRs = new List<HeaderFindAndReplace> { new HeaderFindAndReplace("test", "test", "chiken", 0) };
+            var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
 
             this.Given(x => GivenTheHttpResponse(response))
                 .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
@@ -60,10 +60,10 @@ namespace Ocelot.UnitTests.Headers
         public void should_not_replace_headers()
         {
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("test", new List<string> {"test"})
-                }, "");
+                    new("test", new List<string> {"test"}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>();
 
@@ -83,14 +83,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -110,14 +110,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -137,14 +137,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -164,14 +164,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -191,14 +191,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -218,14 +218,14 @@ namespace Ocelot.UnitTests.Headers
                 new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
 
             var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>()
+                new List<KeyValuePair<string, IEnumerable<string>>>
                 {
-                    new KeyValuePair<string, IEnumerable<string>>("Location", new List<string> {downstreamUrl})
-                }, "");
+                    new("Location", new List<string> {downstreamUrl}),
+                }, string.Empty);
 
             var fAndRs = new List<HeaderFindAndReplace>
             {
-                new HeaderFindAndReplace("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0)
+                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0),
             };
 
             this.Given(x => GivenTheHttpResponse(response))
@@ -263,8 +263,11 @@ namespace Ocelot.UnitTests.Headers
 
         private void WhenICallTheReplacer()
         {
-            var context = new DownstreamContext(new DefaultHttpContext()) { DownstreamResponse = _response, DownstreamRequest = _request };
-            _result = _replacer.Replace(context, _headerFindAndReplaces);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.UpsertDownstreamResponse(_response);
+            httpContext.Items.UpsertDownstreamRequest(_request);
+
+            _result = _replacer.Replace(httpContext, _headerFindAndReplaces);
         }
 
         private void ThenTheHeaderShouldBe(string key, string value)

@@ -1,19 +1,24 @@
-using Microsoft.AspNetCore.Http;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Middleware;
-using Ocelot.Responses;
-using Ocelot.Values;
-using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
+using Ocelot.Values;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
     public class NoLoadBalancerTests
     {
-        private List<Service> _services;
+        private readonly List<Service> _services;
         private NoLoadBalancer _loadBalancer;
         private Response<ServiceHostAndPort> _result;
 
@@ -30,7 +35,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var services = new List<Service>
             {
-                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
+                new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             this.Given(x => x.GivenServices(services))
@@ -54,7 +59,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var services = new List<Service>
             {
-                new Service("product", hostAndPort, string.Empty, string.Empty, new string[0])
+                new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
             this.Given(_ => WhenIGetTheNextHostAndPort())
@@ -91,7 +96,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheNextHostAndPort()
         {
-            _result = _loadBalancer.Lease(new DownstreamContext(new DefaultHttpContext())).Result;
+            _result = _loadBalancer.Lease(new DefaultHttpContext()).Result;
         }
 
         private void ThenTheHostAndPortIs(ServiceHostAndPort expected)

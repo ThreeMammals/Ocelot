@@ -1,4 +1,9 @@
-﻿using Moq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+
+using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -8,11 +13,11 @@ using Ocelot.PathManipulation;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
+
 using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation
@@ -39,13 +44,13 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
         {
             var claims = new List<Claim>
             {
-                new Claim("test", "data"),
+                new("test", "data"),
             };
             var placeHolderValues = new List<PlaceholderNameAndValue>();
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new ClaimToThing("path-key", "", "", 0),
+                    new("path-key", string.Empty, string.Empty, 0),
                 }))
                 .And(x => x.GivenClaims(claims))
                 .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))
@@ -62,16 +67,16 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
         {
             var claims = new List<Claim>
             {
-                new Claim("test", "data"),
+                new("test", "data"),
             };
             var placeHolderValues = new List<PlaceholderNameAndValue>
             {
-                new PlaceholderNameAndValue ("{path-key}", "old_value"),
+                new("{path-key}", "old_value"),
             };
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new ClaimToThing("path-key", "", "", 0),
+                    new("path-key", string.Empty, string.Empty, 0),
                 }))
                 .And(x => x.GivenClaims(claims))
                 .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))
@@ -88,13 +93,13 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
         {
             var claims = new List<Claim>
             {
-                new Claim("test", "data"),
+                new("test", "data"),
             };
             var placeHolderValues = new List<PlaceholderNameAndValue>();
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new ClaimToThing("path-key", "", "", 0),
+                    new("path-key", string.Empty, string.Empty, 0),
                 }))
                 .And(x => x.GivenClaims(claims))
                 .And(x => x.GivenDownstreamPathTemplate("/api/test"))
@@ -110,13 +115,13 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
         {
             var claims = new List<Claim>
             {
-                new Claim("test", "data"),
+                new("test", "data"),
             };
             var placeHolderValues = new List<PlaceholderNameAndValue>();
             this.Given(
                 x => x.GivenAClaimToThing(new List<ClaimToThing>
                 {
-                    new ClaimToThing("path-key", "", "", 0),
+                    new("path-key", string.Empty, string.Empty, 0),
                 }))
                 .And(x => x.GivenClaims(claims))
                 .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))

@@ -1,8 +1,10 @@
+using System.Net.Http;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
 namespace Ocelot.Requester
 {
-    using Configuration;
-    using Logging;
-    using System.Net.Http;
-
-    public delegate DelegatingHandler QosDelegatingHandlerDelegate(DownstreamReRoute reRoute, IOcelotLoggerFactory logger);
+    public delegate DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute route, IOcelotLoggerFactory logger);
 }

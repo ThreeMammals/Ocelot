@@ -12,12 +12,12 @@ namespace Ocelot.RateLimit
             Reset = reset;
         }
 
-        public HttpContext Context { get; private set; }
+        public HttpContext Context { get; }
 
-        public string Limit { get; private set; }
+        public string Limit { get; }
 
-        public string Remaining { get; private set; }
+        public string Remaining { get; }
 
-        public string Reset { get; private set; }
+        public string Reset { get; }
     }
 }

@@ -1,46 +1,45 @@
-﻿namespace Ocelot.UnitTests.Configuration
-{
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Validator;
-    using Ocelot.Errors;
-    using Ocelot.Responses;
-    using Ocelot.UnitTests.Responder;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Validator;
+using Ocelot.Errors;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
+using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Configuration
+{
     public class FileInternalConfigurationCreatorTests
     {
         private readonly Mock<IConfigurationValidator> _validator;
-        private readonly Mock<IReRoutesCreator> _reRoutesCreator;
+        private readonly Mock<IRoutesCreator> _routesCreator;
         private readonly Mock<IAggregatesCreator> _aggregatesCreator;
         private readonly Mock<IDynamicsCreator> _dynamicsCreator;
         private readonly Mock<IConfigurationCreator> _configCreator;
-        private Response<IInternalConfiguration> _config;
         private FileConfiguration _fileConfiguration;
         private readonly FileInternalConfigurationCreator _creator;
         private Response<IInternalConfiguration> _result;
-        private List<ReRoute> _reRoutes;
-        private List<ReRoute> _aggregates;
-        private List<ReRoute> _dynamics;
+        private List<Route> _routes;
+        private List<Route> _aggregates;
+        private List<Route> _dynamics;
         private InternalConfiguration _internalConfig;
 
         public FileInternalConfigurationCreatorTests()
         {
             _validator = new Mock<IConfigurationValidator>();
-            _reRoutesCreator = new Mock<IReRoutesCreator>();
+            _routesCreator = new Mock<IRoutesCreator>();
             _aggregatesCreator = new Mock<IAggregatesCreator>();
             _dynamicsCreator = new Mock<IDynamicsCreator>();
             _configCreator = new Mock<IConfigurationCreator>();
 
-            _creator = new FileInternalConfigurationCreator(_validator.Object, _reRoutesCreator.Object, _aggregatesCreator.Object, _dynamicsCreator.Object, _configCreator.Object);
+            _creator = new FileInternalConfigurationCreator(_validator.Object, _routesCreator.Object, _aggregatesCreator.Object, _dynamicsCreator.Object, _configCreator.Object);
         }
 
         [Fact]
@@ -70,29 +69,29 @@
 
         private void ThenTheDependenciesAreCalledCorrectly()
         {
-            _reRoutesCreator.Verify(x => x.Create(_fileConfiguration), Times.Once);
-            _aggregatesCreator.Verify(x => x.Create(_fileConfiguration, _reRoutes), Times.Once);
+            _routesCreator.Verify(x => x.Create(_fileConfiguration), Times.Once);
+            _aggregatesCreator.Verify(x => x.Create(_fileConfiguration, _routes), Times.Once);
             _dynamicsCreator.Verify(x => x.Create(_fileConfiguration), Times.Once);
 
-            var mergedReRoutes = _reRoutes
+            var mergedRoutes = _routes
                 .Union(_aggregates)
                 .Union(_dynamics)
                 .ToList();
 
-            _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<List<ReRoute>>(y => y.Count == mergedReRoutes.Count)), Times.Once);
+            _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<List<Route>>(y => y.Count == mergedRoutes.Count)), Times.Once);
         }
 
         private void GivenTheDependenciesAreSetUp()
         {
-            _reRoutes = new List<ReRoute> { new ReRouteBuilder().Build() };
-            _aggregates = new List<ReRoute> { new ReRouteBuilder().Build() };
-            _dynamics = new List<ReRoute> { new ReRouteBuilder().Build() };
-            _internalConfig = new InternalConfiguration(null, "", null, "", null, "", null, null, null);
+            _routes = new List<Route> { new RouteBuilder().Build() };
+            _aggregates = new List<Route> { new RouteBuilder().Build() };
+            _dynamics = new List<Route> { new RouteBuilder().Build() };
+            _internalConfig = new InternalConfiguration(null, string.Empty, null, string.Empty, null, string.Empty, null, null, null);
 
-            _reRoutesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_reRoutes);
-            _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_aggregates);
+            _routesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_routes);
+            _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_aggregates);
             _dynamicsCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_dynamics);
-            _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<ReRoute>>())).Returns(_internalConfig);
+            _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_internalConfig);
         }
 
         private void GivenTheValidationSucceeds()

@@ -10,9 +10,9 @@
             ExistingKey = existingKey;
         }
 
-        public string ExistingKey { get; private set; }
-        public string NewKey { get; private set; }
-        public string Delimiter { get; private set; }
-        public int Index { get; private set; }
+        public string ExistingKey { get; }
+        public string NewKey { get; }
+        public string Delimiter { get; }
+        public int Index { get; }
     }
 }

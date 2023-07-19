@@ -1,14 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
 using System;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Setter;
+using Ocelot.Configuration.Repository;
+
 namespace Ocelot.Configuration
 {
-    using Repository;
-
     [Authorize]
     [Route("configuration")]
     public class FileConfigurationController : Controller
@@ -38,7 +39,7 @@ namespace Ocelot.Configuration
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FileConfiguration fileConfiguration)
+        public async Task<IActionResult> Post([FromBody] FileConfiguration fileConfiguration)
         {
             try
             {

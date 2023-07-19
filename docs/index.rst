@@ -12,7 +12,8 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    introduction/gettingstarted
    introduction/contributing
    introduction/notsupported
-   
+   introduction/gotchas
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -26,7 +27,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/servicefabric
    features/kubernetes
    features/authentication
-   features/authorisation
+   features/authorization
    features/websockets
    features/administration
    features/ratelimiting
@@ -41,7 +42,6 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    features/middlewareinjection
    features/loadbalancer
    features/delegatinghandlers
-   features/raft
    features/errorcodes
 
 .. toctree::

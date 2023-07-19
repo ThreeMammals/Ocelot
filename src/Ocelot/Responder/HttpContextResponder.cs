@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Primitives;
-using Ocelot.Headers;
-using Ocelot.Middleware;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
+
+using Ocelot.Headers;
+using Ocelot.Middleware;
 
 namespace Ocelot.Responder
 {
     /// <summary>
     /// Cannot unit test things in this class due to methods not being implemented
-    /// on .net concretes used for testing
+    /// on .net concretes used for testing.
     /// </summary>
     public class HttpContextResponder : IHttpResponder
     {
@@ -52,7 +54,7 @@ namespace Ocelot.Responder
                 AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
             }
 
-            using (content)
+            await using (content)
             {
                 if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
                 {
@@ -66,7 +68,25 @@ namespace Ocelot.Responder
             SetStatusCode(context, statusCode);
         }
 
-        private void SetStatusCode(HttpContext context, int statusCode)
+        public async Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response)
+        {
+            var content = await response.Content.ReadAsStreamAsync();
+
+            if (response.Content.Headers.ContentLength != null)
+            {
+                AddHeaderIfDoesntExist(context, new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
+            }
+
+            await using (content)
+            {
+                if (context.Response.ContentLength != 0)
+                {
+                    await content.CopyToAsync(context.Response.Body);
+                }
+            }
+        }
+
+        private static void SetStatusCode(HttpContext context, int statusCode)
         {
             if (!context.Response.HasStarted)
             {

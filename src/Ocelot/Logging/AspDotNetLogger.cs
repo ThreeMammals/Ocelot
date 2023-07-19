@@ -1,6 +1,8 @@
-using Microsoft.Extensions.Logging;
-using Ocelot.Infrastructure.RequestData;
 using System;
+
+using Microsoft.Extensions.Logging;
+
+using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Logging
 {
@@ -14,17 +16,7 @@ namespace Ocelot.Logging
         {
             _logger = logger;
             _scopedDataRepository = scopedDataRepository;
-            _func = (state, exception) => 
-            {
-                if (exception == null)
-                {
-                    return state;
-                }
-                else
-                {
-                    return $"{state}, exception: {exception}";
-                }  
-            };
+            _func = (state, exception) => exception == null ? state : $"{state}, exception: {exception}";
         }
 
         public void LogTrace(string message)
@@ -34,7 +26,7 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Trace, default(EventId), state, null, _func);
+            _logger.Log(LogLevel.Trace, default, state, null, _func);
         }
 
         public void LogDebug(string message)
@@ -44,7 +36,7 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Debug, default(EventId), state, null, _func);
+            _logger.Log(LogLevel.Debug, default, state, null, _func);
         }
 
         public void LogInformation(string message)
@@ -54,7 +46,7 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Information, default(EventId), state, null, _func);           
+            _logger.Log(LogLevel.Information, default, state, null, _func);
         }
 
         public void LogWarning(string message)
@@ -64,7 +56,7 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Warning, default(EventId), state, null, _func);            
+            _logger.Log(LogLevel.Warning, default, state, null, _func);
         }
 
         public void LogError(string message, Exception exception)
@@ -74,7 +66,7 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Error,default(EventId), state, exception, _func);
+            _logger.Log(LogLevel.Error, default, state, exception, _func);
         }
 
         public void LogCritical(string message, Exception exception)
@@ -84,31 +76,21 @@ namespace Ocelot.Logging
 
             var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
 
-            _logger.Log(LogLevel.Critical, default(EventId), state, exception, _func);
+            _logger.Log(LogLevel.Critical, default, state, exception, _func);
         }
 
         private string GetOcelotRequestId()
         {
             var requestId = _scopedDataRepository.Get<string>("RequestId");
 
-            if (requestId == null || requestId.IsError)
-            {
-                return "no request id";
-            }
-
-            return requestId.Data;
+            return requestId == null || requestId.IsError ? "no request id" : requestId.Data;
         }
 
         private string GetOcelotPreviousRequestId()
         {
             var requestId = _scopedDataRepository.Get<string>("PreviousRequestId");
 
-            if (requestId == null || requestId.IsError)
-            {
-                return "no previous request id";
-            }
-
-            return requestId.Data;
+            return requestId == null || requestId.IsError ? "no previous request id" : requestId.Data;
         }
     }
 }

@@ -3,19 +3,17 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Diagnostics.Tracing;
+
 namespace OcelotApplicationApiGateway
 {
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.Fabric;
-    using Microsoft.ServiceFabric.Services.Runtime;
-
     /// <summary>
     /// Implements methods for logging service related events.
     /// </summary>
     public class ServiceEventSource : EventSource
     {
-        public static ServiceEventSource Current = new ServiceEventSource();
+        public static ServiceEventSource Current = new();
 
         // Define an instance method for each event you want to record and apply an [Event] attribute to it.
         // The method name is the name of the event.
@@ -28,10 +26,10 @@ namespace OcelotApplicationApiGateway
         [NonEvent]
         public void Message(string message, params object[] args)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
                 var finalMessage = string.Format(message, args);
-                this.Message(finalMessage);
+                Message(finalMessage);
             }
         }
 
@@ -40,9 +38,9 @@ namespace OcelotApplicationApiGateway
         [Event(MessageEventId, Level = EventLevel.Informational, Message = "{0}")]
         public void Message(string message)
         {
-            if (this.IsEnabled())
+            if (IsEnabled())
             {
-                this.WriteEvent(MessageEventId, message);
+                WriteEvent(MessageEventId, message);
             }
         }
 
@@ -51,13 +49,13 @@ namespace OcelotApplicationApiGateway
         [Event(ServiceTypeRegisteredEventId, Level = EventLevel.Informational, Message = "Service host process {0} registered service type {1}")]
         public void ServiceTypeRegistered(int hostProcessId, string serviceType)
         {
-            this.WriteEvent(ServiceTypeRegisteredEventId, hostProcessId, serviceType);
+            WriteEvent(ServiceTypeRegisteredEventId, hostProcessId, serviceType);
         }
 
         [NonEvent]
         public void ServiceHostInitializationFailed(Exception e)
         {
-            this.ServiceHostInitializationFailed(e.ToString());
+            ServiceHostInitializationFailed(e.ToString());
         }
 
         private const int ServiceHostInitializationFailedEventId = 4;
@@ -65,13 +63,13 @@ namespace OcelotApplicationApiGateway
         [Event(ServiceHostInitializationFailedEventId, Level = EventLevel.Error, Message = "Service host initialization failed: {0}")]
         private void ServiceHostInitializationFailed(string exception)
         {
-            this.WriteEvent(ServiceHostInitializationFailedEventId, exception);
+            WriteEvent(ServiceHostInitializationFailedEventId, exception);
         }
 
         [NonEvent]
         public void ServiceWebHostBuilderFailed(Exception e)
         {
-            this.ServiceWebHostBuilderFailed(e.ToString());
+            ServiceWebHostBuilderFailed(e.ToString());
         }
 
         private const int ServiceWebHostBuilderFailedEventId = 5;
@@ -79,7 +77,7 @@ namespace OcelotApplicationApiGateway
         [Event(ServiceWebHostBuilderFailedEventId, Level = EventLevel.Error, Message = "Service Owin Web Host Builder Failed: {0}")]
         private void ServiceWebHostBuilderFailed(string exception)
         {
-            this.WriteEvent(ServiceWebHostBuilderFailedEventId, exception);
+            WriteEvent(ServiceWebHostBuilderFailedEventId, exception);
         }
 
     }

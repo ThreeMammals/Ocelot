@@ -1,18 +1,18 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Sockets;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
+namespace Ocelot.AcceptanceTests
+{
     public static class RandomPortFinder
     {
         private const int TrialNumber = 100;
         private const int BeginPortRange = 20000;
         private const int EndPortRange = 45000;
-        private static readonly Random Random = new Random();
-        private static readonly ConcurrentBag<int> UsedPorts = new ConcurrentBag<int>();
+        private static readonly Random Random = new();
+        private static readonly ConcurrentBag<int> UsedPorts = new();
 
         public static int GetRandomPort()
         {

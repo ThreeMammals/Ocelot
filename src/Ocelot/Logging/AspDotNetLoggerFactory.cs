@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+
 using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Logging

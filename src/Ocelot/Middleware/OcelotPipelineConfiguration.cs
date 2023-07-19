@@ -1,10 +1,12 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.Middleware.Pipeline;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+namespace Ocelot.Middleware
+{
     public class OcelotPipelineConfiguration
     {
         /// <summary>
@@ -12,38 +14,57 @@
         /// is the next thing called in the Ocelot pipeline. Anything after next.invoke is the last thing called
         /// in the Ocelot pipeline before we go to the global error handler.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreErrorResponderMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreErrorResponderMiddleware { get; set; }
 
         /// <summary>
-        /// This is to allow the user to run any extra authentication before the Ocelot authentication
-        /// kicks in
+        /// This is to allow the user to run any extra authentication before the Ocelot authentication kicks in.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreAuthenticationMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreAuthenticationMiddleware { get; set; }
 
         /// <summary>
-        /// This allows the user to completely override the ocelot authentication middleware
+        /// This allows the user to completely override the ocelot authentication middleware.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
 
         /// <summary>
-        /// This is to allow the user to run any extra authorisation before the Ocelot authentication
-        /// kicks in
+        /// This is to allow the user to run any extra authorization before the Ocelot authentication kicks in.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreAuthorisationMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreAuthorizationMiddleware { get; set; }
 
         /// <summary>
-        /// This allows the user to completely override the ocelot authorisation middleware
+        /// This allows the user to completely override the ocelot authorization middleware.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> AuthorisationMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> AuthorizationMiddleware { get; set; }
 
         /// <summary>
-        /// This allows the user to implement there own query string manipulation logic
+        /// This allows the user to implement there own query string manipulation logic.
         /// </summary>
-        public Func<DownstreamContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
 
         /// <summary>
-        /// This is an extension that will branch to different pipes
+        /// This is an extension that will branch to different pipes.
         /// </summary>
-        public List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>> MapWhenOcelotPipeline { get; } = new List<Func<IOcelotPipelineBuilder, Func<DownstreamContext, bool>>>();
+        /// <value>
+        /// A <see cref="Dictionary{TFunc, TAction}"/> collection.
+        /// </value>
+        public Dictionary<Func<HttpContext, bool>, Action<IApplicationBuilder>> MapWhenOcelotPipeline { get; } = new(); // TODO fix this data structure
     }
 }

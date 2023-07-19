@@ -1,10 +1,15 @@
 using FluentValidation.Results;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Requester;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
@@ -12,7 +17,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
     public class FileQoSOptionsFluentValidatorTests
     {
         private FileQoSOptionsFluentValidator _validator;
-        private ServiceCollection _services;
+        private readonly ServiceCollection _services;
         private ValidationResult _result;
         private FileQoSOptions _qosOptions;
 
@@ -38,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var qosOptions = new FileQoSOptions
             {
                 TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1
+                ExceptionsAllowedBeforeBreaking = 1,
             };
 
             this.Given(_ => GivenThe(qosOptions))
@@ -54,7 +59,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var qosOptions = new FileQoSOptions
             {
                 TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1
+                ExceptionsAllowedBeforeBreaking = 1,
             };
 
             this.Given(_ => GivenThe(qosOptions))
@@ -66,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private void ThenTheErrorIs()
         {
-            _result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a ReRoute or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+            _result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
         }
 
         private void ThenTheResultIsInValid()
@@ -80,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 return null;
             };
-            _services.AddSingleton<QosDelegatingHandlerDelegate>(fake);
+            _services.AddSingleton(fake);
             var provider = _services.BuildServiceProvider();
             _validator = new FileQoSOptionsFluentValidator(provider);
         }

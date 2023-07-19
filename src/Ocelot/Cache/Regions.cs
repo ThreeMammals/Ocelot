@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace Ocelot.Cache
 {
-    using System.Collections.Generic;
-
     public class Regions
     {
         public Regions(List<string> value)

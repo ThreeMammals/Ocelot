@@ -1,17 +1,17 @@
-﻿namespace Ocelot.UnitTests.Consul
-{
-    using Moq;
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Provider.Consul;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
+﻿using Moq;
+using Ocelot.Infrastructure;
+using Ocelot.Logging;
+using Ocelot.Provider.Consul;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Consul
+{
     public class PollingConsulServiceDiscoveryProviderTests
     {
         private readonly int _delay;
@@ -34,7 +34,7 @@
         [Fact]
         public void should_return_service_from_consul()
         {
-            var service = new Service("", new ServiceHostAndPort("", 0), "", "", new List<string>());
+            var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
 
             this.Given(x => GivenConsulReturns(service))
                 .When(x => WhenIGetTheServices(1))

@@ -1,19 +1,20 @@
-﻿namespace Ocelot.UnitTests.Eureka
-{
-    using Moq;
-    using Provider.Eureka;
-    using Shouldly;
-    using Steeltoe.Common.Discovery;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
+﻿using Moq;
+using Ocelot.Values;
+using Shouldly;
+using Steeltoe.Common.Discovery;
+using Steeltoe.Discovery;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
+using _Eureka_ = Ocelot.Provider.Eureka.Eureka;
 
+namespace Ocelot.UnitTests.Eureka
+{
     public class EurekaServiceDiscoveryProviderTests
     {
-        private readonly Eureka _provider;
+        private readonly _Eureka_ _provider;
         private readonly Mock<IDiscoveryClient> _client;
         private readonly string _serviceId;
         private List<IServiceInstance> _instances;
@@ -23,7 +24,7 @@
         {
             _serviceId = "Laura";
             _client = new Mock<IDiscoveryClient>();
-            _provider = new Eureka(_serviceId, _client.Object);
+            _provider = new _Eureka_(_serviceId, _client.Object);
         }
 
         [Fact]
@@ -39,7 +40,7 @@
         {
             var instances = new List<IServiceInstance>
             {
-                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>())
+                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
             };
 
             this.Given(_ => GivenThe(instances))
@@ -56,7 +57,7 @@
             var instances = new List<IServiceInstance>
             {
                 new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
-                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>())
+                new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
             };
 
             this.Given(_ => GivenThe(instances))

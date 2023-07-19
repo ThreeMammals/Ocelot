@@ -1,27 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
-    using Ocelot.ServiceDiscovery.Providers;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
-
     public class ServiceDiscoveryProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
         private Response<IServiceDiscoveryProvider> _result;
         private ServiceDiscoveryProviderFactory _factory;
-        private DownstreamReRoute _reRoute;
+        private DownstreamRoute _route;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private Mock<IOcelotLogger> _logger;
         private IServiceProvider _provider;
@@ -42,9 +50,9 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
 
-            var reRoute = new DownstreamReRouteBuilder().Build();
+            var route = new DownstreamRouteBuilder().Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
                 .BDDfy();
@@ -56,15 +64,15 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
 
-            var downstreamAddresses = new List<DownstreamHostAndPort>()
+            var downstreamAddresses = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("asdf.com", 80),
-                new DownstreamHostAndPort("abc.com", 80)
+                new("asdf.com", 80),
+                new("abc.com", 80),
             };
 
-            var reRoute = new DownstreamReRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
+            var route = new DownstreamRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
                 .Then(x => ThenTheFollowingServicesAreReturned(downstreamAddresses))
@@ -74,7 +82,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_provider_because_type_matches_reflected_type_from_delegate()
         {
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
                 .WithUseServiceDiscovery(true)
                 .Build();
@@ -83,7 +91,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .WithType(nameof(Fake))
                 .Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .And(x => GivenAFakeDelegate())
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheDelegateIsCalled())
@@ -93,7 +101,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_not_return_provider_because_type_doesnt_match_reflected_type_from_delegate()
         {
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
                 .WithUseServiceDiscovery(true)
                 .Build();
@@ -102,7 +110,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .WithType("Wookie")
                 .Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .And(x => GivenAFakeDelegate())
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheResultIsError())
@@ -112,7 +120,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [Fact]
         public void should_return_service_fabric_provider()
         {
-            var reRoute = new DownstreamReRouteBuilder()
+            var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
                 .WithUseServiceDiscovery(true)
                 .Build();
@@ -121,7 +129,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .WithType("ServiceFabric")
                 .Build();
 
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
                 .BDDfy();
@@ -158,7 +166,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var result = (ConfigurationServiceProvider)_result.Data;
             var services = result.Get().Result;
 
-            for (int i = 0; i < services.Count; i++)
+            for (var i = 0; i < services.Count; i++)
             {
                 var service = services[i];
                 var downstreamAddress = downstreamAddresses[i];
@@ -168,15 +176,15 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             }
         }
 
-        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
+        private void GivenTheRoute(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
         {
             _serviceConfig = serviceConfig;
-            _reRoute = reRoute;
+            _route = route;
         }
 
         private void WhenIGetTheServiceProvider()
         {
-            _result = _factory.Get(_serviceConfig, _reRoute);
+            _result = _factory.Get(_serviceConfig, _route);
         }
 
         private void ThenTheServiceProviderIs<T>()

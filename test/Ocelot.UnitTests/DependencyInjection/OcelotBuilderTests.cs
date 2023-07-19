@@ -1,50 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Configuration.Setter;
+using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Middleware;
+using Ocelot.Requester;
+
+using Ocelot.UnitTests.Requester;
+
 using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
 using Ocelot.Values;
+
+using Xunit;
+
+using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration.Setter;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Infrastructure;
-    using Ocelot.Middleware.Multiplexer;
-    using Ocelot.Requester;
-    using Ocelot.UnitTests.Requester;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Reflection;
-    using TestStack.BDDfy;
-    using Xunit;
-    using static Ocelot.UnitTests.Middleware.UserDefinedResponseAggregatorTests;
-
     public class OcelotBuilderTests
     {
         private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
-        private readonly int _maxRetries;
         private Exception _ex;
 
         public OcelotBuilderTests()
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
-            _maxRetries = 100;
         }
 
-        private IWebHostEnvironment GetHostingEnvironment()
+        private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();
             environment
@@ -185,11 +193,11 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void should_add_custom_load_balancer_creators_by_factory_method_with_arguments()
         {
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => _ocelotBuilder.AddCustomLoadBalancer((reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((route, discoveryProvider) => new FakeCustomLoadBalancer()))
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void should_replace_iplaceholder()
         {
@@ -204,7 +212,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void should_add_custom_load_balancer_creators()
         {
             this.Given(x => WhenISetUpOcelotServices())
-                .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, reroute, discoveryProvider) => new FakeCustomLoadBalancer()))
+                .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, route, discoveryProvider) => new FakeCustomLoadBalancer()))
                 .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
                 .BDDfy();
         }
@@ -214,7 +222,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             _ocelotBuilder.AddSingletonDefinedAggregator<T>();
         }
-        
+
         private void AddTransientDefinedAggregator<T>()
             where T : class, IDefinedAggregator
         {
@@ -289,7 +297,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
         }
-        
+
         private void ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators()
         {
             _serviceProvider = _services.BuildServiceProvider();
@@ -388,7 +396,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private class FakeCustomLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 // Not relevant for these tests
                 throw new NotImplementedException();

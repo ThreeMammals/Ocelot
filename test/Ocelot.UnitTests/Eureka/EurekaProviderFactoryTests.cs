@@ -1,13 +1,13 @@
-﻿namespace Ocelot.UnitTests.Eureka
-{
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration.Builder;
-    using Provider.Eureka;
-    using Shouldly;
-    using Steeltoe.Common.Discovery;
-    using Xunit;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Configuration.Builder;
+using Ocelot.Provider.Eureka;
+using Shouldly;
+using Steeltoe.Discovery;
+using Xunit;
 
+namespace Ocelot.UnitTests.Eureka
+{
     public class EurekaProviderFactoryTests
     {
         [Fact]
@@ -25,13 +25,13 @@
             var config = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
             var client = new Mock<IDiscoveryClient>();
             var services = new ServiceCollection();
-            services.AddSingleton<IDiscoveryClient>(client.Object);
+            services.AddSingleton(client.Object);
             var sp = services.BuildServiceProvider();
-            var reRoute = new DownstreamReRouteBuilder()
-                .WithServiceName("")
+            var route = new DownstreamRouteBuilder()
+                .WithServiceName(string.Empty)
                 .Build();
-            var provider = EurekaProviderFactory.Get(sp, config, reRoute);
-            provider.ShouldBeOfType<Eureka>();
+            var provider = EurekaProviderFactory.Get(sp, config, route);
+            provider.ShouldBeOfType<Provider.Eureka.Eureka>();
         }
     }
 }
