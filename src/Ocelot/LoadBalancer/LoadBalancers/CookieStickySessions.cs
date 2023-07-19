@@ -1,13 +1,17 @@
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+
+using Ocelot.Infrastructure;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.Values;
+
 namespace Ocelot.LoadBalancer.LoadBalancers
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Middleware;
-    using Responses;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Threading.Tasks;
-    using Values;
-
     public class CookieStickySessions : ILoadBalancer
     {
         private readonly int _keyExpiryInMs;
@@ -15,7 +19,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private readonly ILoadBalancer _loadBalancer;
         private readonly ConcurrentDictionary<string, StickySession> _stored;
         private readonly IBus<StickySession> _bus;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, IBus<StickySession> bus)
         {
@@ -41,9 +45,9 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             });
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext context)
+        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
         {
-            var key = context.HttpContext.Request.Cookies[_key];
+            var key = httpContext.Request.Cookies[_key];
 
             lock (_lock)
             {
@@ -61,7 +65,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                 }
             }
 
-            var next = await _loadBalancer.Lease(context);
+            var next = await _loadBalancer.Lease(httpContext);
 
             if (next.IsError)
             {

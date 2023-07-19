@@ -1,14 +1,14 @@
 ﻿using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace ApiGateway
 {
-    using Microsoft.AspNetCore;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Middleware;
-
     public class Program
     {
         public static void Main(string[] args)

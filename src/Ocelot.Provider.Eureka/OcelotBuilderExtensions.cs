@@ -1,20 +1,18 @@
-﻿namespace Ocelot.Provider.Eureka
-{
-    using DependencyInjection;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Middleware;
-    using ServiceDiscovery;
-    using Steeltoe.Discovery.Client;
-    using System.Linq;
+﻿using Ocelot.DependencyInjection;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Steeltoe.Discovery.Client;
+
+namespace Ocelot.Provider.Eureka
+{
     public static class OcelotBuilderExtensions
     {
         public static IOcelotBuilder AddEureka(this IOcelotBuilder builder)
         {
             builder.Services.AddDiscoveryClient(builder.Configuration);
-            builder.Services.AddSingleton<ServiceDiscoveryFinderDelegate>(EurekaProviderFactory.Get);
-            builder.Services.AddSingleton<OcelotMiddlewareConfigurationDelegate>(EurekaMiddlewareConfigurationProvider.Get);
+            builder.Services.AddSingleton(EurekaProviderFactory.Get);
+            builder.Services.AddSingleton(EurekaMiddlewareConfigurationProvider.Get);
             return builder;
         }
     }

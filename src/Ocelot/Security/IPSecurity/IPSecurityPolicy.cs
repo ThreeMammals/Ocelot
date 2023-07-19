@@ -1,17 +1,21 @@
-﻿using Ocelot.Configuration;
+﻿using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+
 using Ocelot.Middleware;
+
 using Ocelot.Responses;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace Ocelot.Security.IPSecurity
 {
     public class IPSecurityPolicy : ISecurityPolicy
     {
-        public async Task<Response> Security(DownstreamContext context)
+        public async Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext)
         {
-            IPAddress clientIp = context.HttpContext.Connection.RemoteIpAddress;
-            SecurityOptions securityOptions = context.DownstreamReRoute.SecurityOptions;
+            var clientIp = httpContext.Connection.RemoteIpAddress;
+            var securityOptions = downstreamRoute.SecurityOptions;
             if (securityOptions == null)
             {
                 return new OkResponse();
@@ -21,16 +25,16 @@ namespace Ocelot.Security.IPSecurity
             {
                 if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($" This request rejects access to {clientIp.ToString()} IP");
+                    var error = new UnauthenticatedError($" This request rejects access to {clientIp} IP");
                     return new ErrorResponse(error);
                 }
             }
 
-            if (securityOptions.IPAllowedList != null && securityOptions.IPAllowedList.Count > 0)
+            if (securityOptions.IPAllowedList?.Count > 0)
             {
                 if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
-                    var error = new UnauthenticatedError($"{clientIp.ToString()} does not allow access, the request is invalid");
+                    var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
                     return new ErrorResponse(error);
                 }
             }

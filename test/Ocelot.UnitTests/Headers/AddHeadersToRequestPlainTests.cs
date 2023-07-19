@@ -1,25 +1,26 @@
-﻿namespace Ocelot.UnitTests.Headers
-{
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Headers;
-    using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Ocelot.Logging;
-    using Responder;
-    using Responses;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Moq;
+using Ocelot.Configuration.Creator;
+using Ocelot.Headers;
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Logging;
+using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.Headers
+{
     public class AddHeadersToRequestPlainTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private HttpContext _context;
         private AddHeader _addedHeader;
         private readonly Mock<IPlaceholders> _placeholders;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
 
         public AddHeadersToRequestPlainTests()
@@ -78,15 +79,7 @@
 
         private void GivenHttpRequestWithoutHeaders()
         {
-            _context = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Headers =
-                    {
-                    }
-                }
-            };
+            _context = new DefaultHttpContext();
         }
 
         private void GivenHttpRequestWithHeader(string headerKey, string headerValue)
@@ -97,9 +90,9 @@
                 {
                     Headers =
                     {
-                        { headerKey, headerValue }
-                    }
-                }
+                        { headerKey, headerValue },
+                    },
+                },
             };
         }
 
@@ -114,7 +107,7 @@
             var requestHeaders = _context.Request.Headers;
             requestHeaders.ContainsKey(_addedHeader.Key).ShouldBeTrue($"Header {_addedHeader.Key} was expected but not there.");
             var value = requestHeaders[_addedHeader.Key];
-            value.ShouldNotBeNull($"Value of header {_addedHeader.Key} was expected to not be null.");
+            value.ShouldNotBe(default(StringValues), $"Value of header {_addedHeader.Key} was expected to not be null.");
             value.ToString().ShouldBe(_addedHeader.Value);
         }
 

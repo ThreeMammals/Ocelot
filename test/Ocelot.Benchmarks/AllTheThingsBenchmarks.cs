@@ -1,22 +1,26 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Validators;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Validators;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
+
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace Ocelot.Benchmarks
 {
@@ -29,9 +33,9 @@ namespace Ocelot.Benchmarks
 
         public AllTheThingsBenchmarks()
         {
-            Add(StatisticColumn.AllStatistics);
-            Add(MemoryDiagnoser.Default);
-            Add(BaselineValidator.FailOnError);
+            AddColumn(StatisticColumn.AllStatistics);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddValidator(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]
@@ -39,24 +43,24 @@ namespace Ocelot.Benchmarks
         {
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51879,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty);
@@ -118,7 +122,7 @@ namespace Ocelot.Benchmarks
             _ocelot.Start();
         }
 
-        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 

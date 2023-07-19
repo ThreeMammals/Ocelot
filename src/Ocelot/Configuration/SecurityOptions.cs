@@ -6,12 +6,12 @@ namespace Ocelot.Configuration
     {
         public SecurityOptions(List<string> allowedList, List<string> blockedList)
         {
-            this.IPAllowedList = allowedList;
-            this.IPBlockedList = blockedList;
+            IPAllowedList = allowedList;
+            IPBlockedList = blockedList;
         }
 
-        public List<string> IPAllowedList { get; private set; }
+        public List<string> IPAllowedList { get; }
 
-        public List<string> IPBlockedList { get; private set; }
+        public List<string> IPBlockedList { get; }
     }
 }

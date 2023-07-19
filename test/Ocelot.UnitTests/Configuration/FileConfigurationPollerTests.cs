@@ -19,13 +19,13 @@ namespace Ocelot.UnitTests.Configuration
     public class FileConfigurationPollerTests : IDisposable
     {
         private readonly FileConfigurationPoller _poller;
-        private Mock<IOcelotLoggerFactory> _factory;
+        private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IFileConfigurationRepository> _repo;
         private readonly FileConfiguration _fileConfig;
-        private Mock<IFileConfigurationPollerOptions> _config;
+        private readonly Mock<IFileConfigurationPollerOptions> _config;
         private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo;
         private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator;
-        private IInternalConfiguration _internalConfig;
+        private readonly Mock<IInternalConfiguration> _internalConfig;
 
         public FileConfigurationPollerTests()
         {
@@ -37,9 +37,10 @@ namespace Ocelot.UnitTests.Configuration
             _config = new Mock<IFileConfigurationPollerOptions>();
             _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
             _config.Setup(x => x.Delay).Returns(100);
+            _internalConfig = new Mock<IInternalConfiguration>();
             _internalConfigRepo = new Mock<IInternalConfigurationRepository>();
             _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
-            _internalConfigCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse<IInternalConfiguration>(_internalConfig));
+            _internalConfigCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse<IInternalConfiguration>(_internalConfig.Object));
             _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
         }
 
@@ -56,19 +57,19 @@ namespace Ocelot.UnitTests.Configuration
         {
             var newConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -82,19 +83,19 @@ namespace Ocelot.UnitTests.Configuration
         {
             var newConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -108,19 +109,19 @@ namespace Ocelot.UnitTests.Configuration
         {
             var newConfig = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
-                                Host = "test"
-                            }
+                                Host = "test",
+                            },
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => GivenPollerHasStarted())
@@ -167,7 +168,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 try
                 {
-                    _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.Exactly(times));
+                    _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig.Object), Times.Exactly(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.Exactly(times));
                     return true;
                 }
@@ -185,7 +186,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 try
                 {
-                    _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig), Times.AtLeast(times));
+                    _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig.Object), Times.AtLeast(times));
                     _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.AtLeast(times));
                     return true;
                 }

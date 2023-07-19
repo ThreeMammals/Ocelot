@@ -1,7 +1,8 @@
-﻿using Ocelot.ServiceDiscovery.Configuration;
-using Ocelot.Values;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery.Providers
 {
@@ -18,11 +19,11 @@ namespace Ocelot.ServiceDiscovery.Providers
         {
             return Task.FromResult(new List<Service>
             {
-                new Service(_configuration.ServiceName,
+                new(_configuration.ServiceName,
                     new ServiceHostAndPort(_configuration.HostName, _configuration.Port),
                     "doesnt matter with service fabric",
                     "doesnt matter with service fabric",
-                    new List<string>())
+                    new List<string>()),
             });
         }
     }

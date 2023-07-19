@@ -1,11 +1,15 @@
-﻿using Ocelot.Middleware;
+﻿using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+
 using Ocelot.Responses;
-using System.Threading.Tasks;
 
 namespace Ocelot.Security
 {
     public interface ISecurityPolicy
     {
-        Task<Response> Security(DownstreamContext context);
+        Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext);
     }
 }

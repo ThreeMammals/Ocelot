@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Ocelot.Middleware.Pipeline;
 
 namespace Ocelot.Cache.Middleware
 {
     public static class OutputCacheMiddlewareExtensions
     {
-        public static IOcelotPipelineBuilder UseOutputCacheMiddleware(this IOcelotPipelineBuilder builder)
+        public static IApplicationBuilder UseOutputCacheMiddleware(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<OutputCacheMiddleware>();
         }

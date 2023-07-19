@@ -3,10 +3,10 @@
 namespace Ocelot.Configuration.Creator
 {
     /// <summary>
-    /// Describes creation of HttpHandlerOptions
+    /// Describes creation of HttpHandlerOptions.
     /// </summary>
     public interface IHttpHandlerOptionsCreator
     {
-        HttpHandlerOptions Create(FileHttpHandlerOptions fileReRoute);
+        HttpHandlerOptions Create(FileHttpHandlerOptions fileRoute);
     }
 }

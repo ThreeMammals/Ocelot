@@ -1,15 +1,20 @@
-﻿namespace Ocelot.Provider.Consul
-{
-    using global::Consul;
-    using Infrastructure.Extensions;
-    using Logging;
-    using ServiceDiscovery.Providers;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Values;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+using global::Consul;
+
+using Ocelot.Infrastructure.Extensions;
+
+using Ocelot.Logging;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Values;
+
+namespace Ocelot.Provider.Consul
+{
     public class Consul : IServiceDiscoveryProvider
     {
         private readonly ConsulRegistryConfiguration _config;
@@ -54,7 +59,7 @@
             return services.ToList();
         }
 
-        private Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
+        private static Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
         {
             return new Service(
                 serviceEntry.Service.Service,
@@ -64,7 +69,7 @@
                 serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
         }
 
-        private bool IsValid(ServiceEntry serviceEntry)
+        private static bool IsValid(ServiceEntry serviceEntry)
         {
             if (string.IsNullOrEmpty(serviceEntry.Service.Address) || serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
             {
@@ -74,7 +79,7 @@
             return true;
         }
 
-        private string GetVersionFromStrings(IEnumerable<string> strings)
+        private static string GetVersionFromStrings(IEnumerable<string> strings)
         {
             return strings
                 ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))

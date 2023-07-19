@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+
 using Shouldly;
-using System.Collections.Generic;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
@@ -11,7 +15,7 @@ namespace Ocelot.UnitTests.Configuration
     public class DownstreamAddressesCreatorTests
     {
         public DownstreamAddressesCreator _creator;
-        private FileReRoute _reRoute;
+        private FileRoute _route;
         private List<DownstreamHostAndPort> _result;
 
         public DownstreamAddressesCreatorTests()
@@ -22,15 +26,11 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_do_nothing()
         {
-            var reRoute = new FileReRoute
-            {
-            };
+            var route = new FileRoute();
 
-            var expected = new List<DownstreamHostAndPort>
-            {
-            };
+            var expected = new List<DownstreamHostAndPort>();
 
-            this.Given(x => GivenTheFollowingReRoute(reRoute))
+            this.Given(x => GivenTheFollowingRoute(route))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
@@ -39,24 +39,24 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_downstream_addresses_from_old_downstream_path_and_port()
         {
-            var reRoute = new FileReRoute
+            var route = new FileRoute
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "test",
-                        Port = 80
-                    }
+                        Port = 80,
+                    },
                 },
             };
 
             var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("test", 80),
+                new("test", 80),
             };
 
-            this.Given(x => GivenTheFollowingReRoute(reRoute))
+            this.Given(x => GivenTheFollowingRoute(route))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
@@ -65,50 +65,50 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_create_downstream_addresses_from_downstream_host_and_ports()
         {
-            var reRoute = new FileReRoute
+            var route = new FileRoute
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "test",
-                        Port = 80
+                        Port = 80,
                     },
-                    new FileHostAndPort
+                    new()
                     {
                         Host = "west",
-                        Port = 443
-                    }
-                }
+                        Port = 443,
+                    },
+                },
             };
 
             var expected = new List<DownstreamHostAndPort>
             {
-                new DownstreamHostAndPort("test", 80),
-                new DownstreamHostAndPort("west", 443)
+                new("test", 80),
+                new("west", 443),
             };
 
-            this.Given(x => GivenTheFollowingReRoute(reRoute))
+            this.Given(x => GivenTheFollowingRoute(route))
                 .When(x => WhenICreate())
                 .Then(x => TheThenFollowingIsReturned(expected))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingReRoute(FileReRoute reRoute)
+        private void GivenTheFollowingRoute(FileRoute route)
         {
-            _reRoute = reRoute;
+            _route = route;
         }
 
         private void WhenICreate()
         {
-            _result = _creator.Create(_reRoute);
+            _result = _creator.Create(_route);
         }
 
         private void TheThenFollowingIsReturned(List<DownstreamHostAndPort> expecteds)
         {
             _result.Count.ShouldBe(expecteds.Count);
 
-            for (int i = 0; i < _result.Count; i++)
+            for (var i = 0; i < _result.Count; i++)
             {
                 var result = _result[i];
                 var expected = expecteds[i];

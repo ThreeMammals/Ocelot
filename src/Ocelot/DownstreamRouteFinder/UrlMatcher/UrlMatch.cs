@@ -7,6 +7,6 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
             Match = match;
         }
 
-        public bool Match { get; private set; }
+        public bool Match { get; }
     }
 }

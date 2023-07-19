@@ -1,13 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class ServiceFabricTests : IDisposable
     {
         private readonly Steps _steps;
@@ -27,26 +31,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/{everything}",
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/{everything}",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                        }
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
@@ -65,26 +69,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/api/values",
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/EquipmentInterfaces",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                        }
+                            ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
@@ -103,26 +107,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/values",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/EquipmentInterfaces",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "OcelotServiceApplication/OcelotApplicationService"
-                    }
+                        ServiceName = "OcelotServiceApplication/OcelotApplicationService",
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
@@ -141,26 +145,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/values",
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/api/{version}/values",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "Service_{version}/Api"
-                        }
+                            ServiceName = "Service_{version}/Api",
+                        },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Host = "localhost",
                         Port = port,
-                        Type = "ServiceFabric"
-                    }
-                }
+                        Type = "ServiceFabric",
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/Service_1.0/Api/values", 200, "Hello from Laura", "test=best"))

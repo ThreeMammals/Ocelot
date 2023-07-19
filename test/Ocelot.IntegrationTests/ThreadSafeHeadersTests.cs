@@ -1,19 +1,25 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using Shouldly;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+
+using Newtonsoft.Json;
+
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.IntegrationTests
@@ -42,15 +48,15 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = 51611,
@@ -122,7 +128,7 @@ namespace Ocelot.IntegrationTests
             _builder.Start();
         }
 
-        private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
@@ -153,7 +159,7 @@ namespace Ocelot.IntegrationTests
         {
             var tasks = new Task[times];
 
-            for (int i = 0; i < times; i++)
+            for (var i = 0; i < times; i++)
             {
                 var urlCopy = url;
                 var random = _random.Next(0, 50);
@@ -169,7 +175,7 @@ namespace Ocelot.IntegrationTests
             request.Headers.Add("ThreadSafeHeadersTest", new List<string> { random.ToString() });
             var response = await _httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-            int result = int.Parse(content);
+            var result = int.Parse(content);
             var tshtr = new ThreadSafeHeadersTestResult(result, random);
             _results.Add(tshtr);
         }
@@ -197,8 +203,8 @@ namespace Ocelot.IntegrationTests
                 Random = random;
             }
 
-            public int Result { get; private set; }
-            public int Random { get; private set; }
+            public int Result { get; }
+            public int Random { get; }
         }
     }
 }

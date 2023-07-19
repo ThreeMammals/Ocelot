@@ -1,26 +1,34 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+
+using Ocelot.LoadBalancer.LoadBalancers;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery.Providers;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration.File;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Configuration;
-    using Middleware;
-    using Responses;
-    using ServiceDiscovery.Providers;
-    using TestStack.BDDfy;
-    using Values;
-    using Xunit;
-
     public class LoadBalancerTests : IDisposable
     {
         private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
-        private static readonly object _syncLock = new object();
+        private static readonly object SyncLock = new();
         private readonly ServiceHandler _serviceHandler;
 
         public LoadBalancerTests()
@@ -32,17 +40,17 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_load_balance_request_with_least_connection()
         {
-            int portOne = RandomPortFinder.GetRandomPort();
-            int portTwo = RandomPortFinder.GetRandomPort();
+            var portOne = RandomPortFinder.GetRandomPort();
+            var portTwo = RandomPortFinder.GetRandomPort();
 
             var downstreamServiceOneUrl = $"http://localhost:{portOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{portTwo}";
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -51,22 +59,20 @@ namespace Ocelot.AcceptanceTests
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = portOne
+                                    Port = portOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = portTwo
-                                }
-                            }
-                        }
+                                    Port = portTwo,
+                                },
+                            },
+                        },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                }
+                GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -89,9 +95,9 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -100,22 +106,20 @@ namespace Ocelot.AcceptanceTests
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortOne
+                                    Port = downstreamPortOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
-                                    Port = downstreamPortTwo
-                                }
-                            }
-                        }
+                                    Port = downstreamPortTwo,
+                                },
+                            },
+                        },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
-                {
-                }
+                GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
@@ -138,9 +142,9 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                     {
-                        new FileReRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
@@ -149,12 +153,12 @@ namespace Ocelot.AcceptanceTests
                             LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(CustomLoadBalancer) },
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortOne,
                                 },
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = downstreamPortTwo,
@@ -165,7 +169,7 @@ namespace Ocelot.AcceptanceTests
                 GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
-            Func<IServiceProvider, DownstreamReRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, reRoute, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
+            Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
@@ -180,7 +184,7 @@ namespace Ocelot.AcceptanceTests
         private class CustomLoadBalancer : ILoadBalancer
         {
             private readonly Func<Task<List<Service>>> _services;
-            private readonly object _lock = new object();
+            private readonly object _lock = new();
 
             private int _last;
 
@@ -189,7 +193,7 @@ namespace Ocelot.AcceptanceTests
                 _services = services;
             }
 
-            public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
+            public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 var services = await _services();
                 lock (_lock)
@@ -228,8 +232,8 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
-                    lock (_syncLock)
+                    string response;
+                    lock (SyncLock)
                     {
                         _counterOne++;
                         response = _counterOne.ToString();
@@ -251,8 +255,8 @@ namespace Ocelot.AcceptanceTests
             {
                 try
                 {
-                    var response = string.Empty;
-                    lock (_syncLock)
+                    string response;
+                    lock (SyncLock)
                     {
                         _counterTwo++;
                         response = _counterTwo.ToString();

@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
+
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
@@ -10,7 +14,7 @@ namespace Ocelot.UnitTests.Infrastructure
     public class HttpDataRepositoryTests
     {
         private readonly HttpContext _httpContext;
-        private IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpDataRepository _httpDataRepository;
         private object _result;
 
@@ -72,7 +76,7 @@ namespace Ocelot.UnitTests.Infrastructure
         private void ThenTheResultIsAnErrorReposnse<T>(object resultValue)
         {
             _result.ShouldBeOfType<ErrorResponse<T>>();
-            ((ErrorResponse<T>)_result).Data.ShouldBeNull();
+            ((ErrorResponse<T>)_result).Data.ShouldBe(default(T));
             ((ErrorResponse<T>)_result).IsError.ShouldBe(true);
             ((ErrorResponse<T>)_result).Errors.ShouldHaveSingleItem()
                 .ShouldBeOfType<CannotFindDataError>()

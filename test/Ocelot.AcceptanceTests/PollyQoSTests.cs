@@ -1,15 +1,19 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using Configuration.File;
-    using Microsoft.AspNetCore.Http;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
+{
     public class PollyQoSTests : IDisposable
     {
         private readonly Steps _steps;
@@ -29,18 +33,18 @@
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
@@ -48,10 +52,10 @@
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1000,
-                            ExceptionsAllowedBeforeBreaking = 10
-                        }
-                    }
-                }
+                            ExceptionsAllowedBeforeBreaking = 10,
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
@@ -70,18 +74,18 @@
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
@@ -89,10 +93,10 @@
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 10,
-                            ExceptionsAllowedBeforeBreaking = 10
-                        }
-                    }
-                }
+                            ExceptionsAllowedBeforeBreaking = 10,
+                        },
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
@@ -111,19 +115,19 @@
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -131,10 +135,10 @@
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
                             TimeoutValue = 500,
-                            DurationOfBreak = 1000
+                            DurationOfBreak = 1000,
                         },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
@@ -149,7 +153,7 @@
                 .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => x.GivenIWaitMilliseconds(3000))
+                .Given(x => GivenIWaitMilliseconds(3000))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -157,26 +161,26 @@
         }
 
         [Fact]
-        public void open_circuit_should_not_effect_different_reRoute()
+        public void open_circuit_should_not_effect_different_route()
         {
             var port1 = RandomPortFinder.GetRandomPort();
             var port2 = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                 {
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port1,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -184,25 +188,25 @@
                         {
                             ExceptionsAllowedBeforeBreaking = 1,
                             TimeoutValue = 500,
-                            DurationOfBreak = 1000
-                        }
+                            DurationOfBreak = 1000,
+                        },
                     },
-                    new FileReRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = port2,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/working",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
@@ -221,14 +225,14 @@
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => x.GivenIWaitMilliseconds(3000))
+                .And(x => GivenIWaitMilliseconds(3000))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
-        private void GivenIWaitMilliseconds(int ms)
+        private static void GivenIWaitMilliseconds(int ms)
         {
             Thread.Sleep(ms);
         }

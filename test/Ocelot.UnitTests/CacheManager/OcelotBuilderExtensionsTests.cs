@@ -1,28 +1,26 @@
-﻿namespace Ocelot.UnitTests.CacheManager
-{
-    using global::CacheManager.Core;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting.Internal;
-    using Moq;
-    using Ocelot.Cache;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.File;
-    using Ocelot.DependencyInjection;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using global::CacheManager.Core;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Ocelot.Cache;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using TestStack.BDDfy;
+using Xunit;
 
+namespace Ocelot.UnitTests.CacheManager
+{
     public class OcelotBuilderExtensionsTests
     {
         private readonly IServiceCollection _services;
-        private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private readonly int _maxRetries;
@@ -32,12 +30,12 @@
         {
             _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
             _services = new ServiceCollection();
-            _services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
             _maxRetries = 100;
         }
 
-        private IWebHostEnvironment GetHostingEnvironment()
+        private static IWebHostEnvironment GetHostingEnvironment()
         {
             var environment = new Mock<IWebHostEnvironment>();
             environment

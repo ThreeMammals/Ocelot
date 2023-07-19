@@ -1,13 +1,16 @@
-﻿namespace Ocelot.Request.Mapper
-{
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using System.Net.Http;
-    using System.Threading.Tasks;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Request.Mapper
+{
     public interface IRequestMapper
     {
-        Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamReRoute downstreamReRoute);
+        Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute);
     }
 }

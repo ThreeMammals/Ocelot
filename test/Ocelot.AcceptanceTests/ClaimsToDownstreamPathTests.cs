@@ -1,29 +1,33 @@
 ﻿using Xunit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+
+using Ocelot.Configuration.File;
+
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+using Shouldly;
+
+using TestStack.BDDfy;
 
 namespace Ocelot.AcceptanceTests
 {
-    using IdentityServer4.AccessTokenValidation;
-    using IdentityServer4.Models;
-    using IdentityServer4.Test;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration.File;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using TestStack.BDDfy;
-
     public class ClaimsToDownstreamPathTests : IDisposable
     {
         private IWebHost _servicebuilder;
         private IWebHost _identityServerBuilder;
         private readonly Steps _steps;
-        private Action<IdentityServerAuthenticationOptions> _options;
-        private string _identityServerRootUrl;
+        private readonly Action<IdentityServerAuthenticationOptions> _options;
+        private readonly string _identityServerRootUrl;
         private string _downstreamFinalPath;
 
         public ClaimsToDownstreamPathTests()
@@ -44,25 +48,25 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_200_and_change_downstream_path()
         {
-            var user = new TestUser()
+            var user = new TestUser
             {
                 Username = "test",
                 Password = "test",
                 SubjectId = "registered|1231231",
             };
 
-            int port = RandomPortFinder.GetRandomPort();
+            var port = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                ReRoutes = new List<FileReRoute>
+                Routes = new List<FileRoute>
                    {
-                       new FileReRoute
+                       new()
                        {
                            DownstreamPathTemplate = "/users/{userId}",
                            DownstreamHostAndPorts = new List<FileHostAndPort>
                            {
-                               new FileHostAndPort
+                               new()
                                {
                                    Host = "localhost",
                                    Port = port,
@@ -96,8 +100,13 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("UserId: 1231231"))
-                .And(x => _downstreamFinalPath.ShouldBe("/users/1231231"))
+                .And(x => ThenTheDownstreamPathIs("/users/1231231"))
                 .BDDfy();
+        }
+
+        private void ThenTheDownstreamPathIs(string path)
+        {
+            _downstreamFinalPath.ShouldBe(path);
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
@@ -114,7 +123,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         _downstreamFinalPath = context.Request.Path.Value;
 
-                        string userId = _downstreamFinalPath.Replace("/users/", string.Empty);
+                        var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
 
                         var responseBody = $"UserId: {userId}";
                         context.Response.StatusCode = statusCode;
@@ -139,49 +148,56 @@ namespace Ocelot.AcceptanceTests
                     services.AddLogging();
                     services.AddIdentityServer()
                         .AddDeveloperSigningCredential()
+                        .AddInMemoryApiScopes(new List<ApiScope>
+                        {
+                            new(apiName, "test"),
+                            new("openid", "test"),
+                            new("offline_access", "test"),
+                            new("api.readOnly", "test"),
+                        })
                         .AddInMemoryApiResources(new List<ApiResource>
                         {
-                            new ApiResource
+                            new()
                             {
                                 Name = apiName,
                                 Description = "My API",
                                 Enabled = true,
                                 DisplayName = "test",
-                                Scopes = new List<Scope>()
+                                Scopes = new List<string>
                                 {
-                                    new Scope("api"),
-                                    new Scope("openid"),
-                                    new Scope("offline_access")
+                                    "api",
+                                    "openid",
+                                    "offline_access",
                                 },
-                                ApiSecrets = new List<Secret>()
+                                ApiSecrets = new List<Secret>
                                 {
-                                    new Secret
+                                    new()
                                     {
-                                        Value = "secret".Sha256()
-                                    }
+                                        Value = "secret".Sha256(),
+                                    },
                                 },
-                                UserClaims = new List<string>()
+                                UserClaims = new List<string>
                                 {
-                                    "CustomerId", "LocationId", "UserType", "UserId"
-                                }
-                            }
+                                    "CustomerId", "LocationId", "UserType", "UserId",
+                                },
+                            },
                         })
                         .AddInMemoryClients(new List<Client>
                         {
-                            new Client
+                            new()
                             {
                                 ClientId = "client",
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                                ClientSecrets = new List<Secret> {new Secret("secret".Sha256())},
+                                ClientSecrets = new List<Secret> {new("secret".Sha256())},
                                 AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
-                                RequireClientSecret = false
-                            }
+                                RequireClientSecret = false,
+                            },
                         })
                         .AddTestUsers(new List<TestUser>
                         {
-                            user
+                            user,
                         });
                 })
                 .Configure(app =>

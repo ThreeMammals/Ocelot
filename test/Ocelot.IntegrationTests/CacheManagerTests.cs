@@ -1,35 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+
+using Ocelot.Administration;
+
+using CacheManager.Core;
+
+using Ocelot.Configuration.File;
+
+using Ocelot.DependencyInjection;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using Ocelot.Middleware;
+
+using Newtonsoft.Json;
+
+using Ocelot.Cache.CacheManager;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.IntegrationTests
 {
-    using Configuration.File;
-    using DependencyInjection;
-    using global::CacheManager.Core;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using Ocelot.Administration;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Middleware;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class CacheManagerTests : IDisposable
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private readonly HttpClient _httpClientTwo;
         private HttpResponseMessage _response;
         private IHost _builder;
         private IHostBuilder _webHostBuilder;
-        private string _ocelotBaseUrl;
+        private readonly string _ocelotBaseUrl;
         private BearerToken _token;
 
         public CacheManagerTests()
@@ -45,16 +55,14 @@ namespace Ocelot.IntegrationTests
         {
             var initialConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
+                GlobalConfiguration = new FileGlobalConfiguration(),
+                Routes = new List<FileRoute>
                 {
-                },
-                ReRoutes = new List<FileReRoute>()
-                {
-                    new FileReRoute()
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 80,
@@ -69,11 +77,11 @@ namespace Ocelot.IntegrationTests
                             TtlSeconds = 10,
                         },
                     },
-                    new FileReRoute()
+                    new()
                     {
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = 80,
@@ -112,10 +120,10 @@ namespace Ocelot.IntegrationTests
             var tokenUrl = $"{adminPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("client_id", "admin"),
-                new KeyValuePair<string, string>("client_secret", "secret"),
-                new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                new("client_id", "admin"),
+                new("client_secret", "secret"),
+                new("scope", "admin"),
+                new("grant_type", "client_credentials"),
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -146,20 +154,20 @@ namespace Ocelot.IntegrationTests
                     {
                         s.WithMicrosoftLogging(log =>
                         {
-                             //log.AddConsole(LogLevel.Debug);
-                         })
+                            //log.AddConsole(LogLevel.Debug);
+                        })
                         .WithDictionaryHandle();
                     };
                     x.AddMvc(option => option.EnableEndpointRouting = false);
                     x.AddOcelot()
                     .AddCacheManager(settings)
                     .AddAdministration("/administration", "secret");
-                })  
+                })
                 .ConfigureWebHost(webBuilder =>
             {
                 webBuilder.UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())                
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app =>
                 {
                     app.UseOcelot().Wait();
@@ -171,7 +179,7 @@ namespace Ocelot.IntegrationTests
             _builder.Start();
         }
 
-        private void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
@@ -210,11 +218,10 @@ namespace Ocelot.IntegrationTests
 
         public void Dispose()
         {
-            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", "");
-            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "");
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE", string.Empty);
+            Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", string.Empty);
             _builder?.Dispose();
             _httpClient?.Dispose();
-            //_identityServerBuilder?.Dispose();
         }
     }
 }
