@@ -1,10 +1,14 @@
-﻿using Ocelot.Errors;
-using Ocelot.Responder;
-using Shouldly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
+
+using Ocelot.Errors;
+using Ocelot.Responder;
+
+using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Responder
@@ -29,8 +33,8 @@ namespace Ocelot.UnitTests.Responder
 
         [Theory]
         [InlineData(OcelotErrorCode.CannotFindClaimError)]
-        [InlineData(OcelotErrorCode.ClaimValueNotAuthorisedError)]
-        [InlineData(OcelotErrorCode.ScopeNotAuthorisedError)]
+        [InlineData(OcelotErrorCode.ClaimValueNotAuthorizedError)]
+        [InlineData(OcelotErrorCode.ScopeNotAuthorizedError)]
         [InlineData(OcelotErrorCode.UnauthorizedError)]
         [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)]
         public void should_return_forbidden(OcelotErrorCode errorCode)
@@ -104,13 +108,13 @@ namespace Ocelot.UnitTests.Responder
         }
 
         [Fact]
-        public void AuthorisationErrorsHaveSecondHighestPriority()
+        public void AuthorizationErrorsHaveSecondHighestPriority()
         {
             var errors = new List<OcelotErrorCode>
             {
                 OcelotErrorCode.CannotAddDataError,
                 OcelotErrorCode.CannotFindClaimError,
-                OcelotErrorCode.RequestTimedOutError
+                OcelotErrorCode.RequestTimedOutError,
             };
 
             ShouldMapErrorsToStatusCode(errors, HttpStatusCode.Forbidden);

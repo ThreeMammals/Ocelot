@@ -1,15 +1,21 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using Configuration.File;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Steeltoe.Common.Discovery;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Steeltoe.Common.Discovery;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
+{
     public class EurekaServiceDiscoveryTests : IDisposable
     {
         private readonly Steps _steps;
@@ -23,12 +29,15 @@
             _eurekaInstances = new List<IServiceInstance>();
         }
 
-        [Fact]
-        public void should_use_eureka_service_discovery_and_make_request()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
         {
+            Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
             var eurekaPort = 8761;
             var serviceName = "product";
-            var downstreamServicePort = RandomPortFinder.GetRandomPort();           
+            var downstreamServicePort = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 
@@ -38,24 +47,24 @@
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new FileRoute
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        }
-                    },
-                GlobalConfiguration = new FileGlobalConfiguration()
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    new()
                     {
-                        Type = "Eureka"
-                    }
-                }
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ServiceName = serviceName,
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                    },
+                },
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Type = "Eureka",
+                    },
+                },
             };
 
             this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl))
@@ -91,42 +100,42 @@
                         {
                             name = serviceName,
                             instance = new List<Instance>
+                            {
+                                new()
+                                {
+                                    instanceId = $"{serviceInstance.Host}:{serviceInstance}",
+                                    hostName = serviceInstance.Host,
+                                    app = serviceName,
+                                    ipAddr = "127.0.0.1",
+                                    status = "UP",
+                                    overriddenstatus = "UNKNOWN",
+                                    port = new Port {value = serviceInstance.Port, enabled = "true"},
+                                    securePort = new SecurePort {value = serviceInstance.Port, enabled = "true"},
+                                    countryId = 1,
+                                    dataCenterInfo = new DataCenterInfo {value = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", name = "MyOwn"},
+                                    leaseInfo = new LeaseInfo
                                     {
-                                        new Instance
-                                        {
-                                            instanceId = $"{serviceInstance.Host}:{serviceInstance}",
-                                            hostName = serviceInstance.Host,
-                                            app = serviceName,
-                                            ipAddr = "127.0.0.1",
-                                            status = "UP",
-                                            overriddenstatus = "UNKNOWN",
-                                            port = new Port {value = serviceInstance.Port, enabled = "true"},
-                                            securePort = new SecurePort {value = serviceInstance.Port, enabled = "true"},
-                                            countryId = 1,
-                                            dataCenterInfo = new DataCenterInfo {value = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", name = "MyOwn"},
-                                            leaseInfo = new LeaseInfo
-                                            {
-                                                renewalIntervalInSecs = 30,
-                                                durationInSecs = 90,
-                                                registrationTimestamp = 1457714988223,
-                                                lastRenewalTimestamp= 1457716158319,
-                                                evictionTimestamp = 0,
-                                                serviceUpTimestamp = 1457714988223
-                                            },
-                                            metadata = new Metadata
-                                            {
-                                                value = "java.util.Collections$EmptyMap"
-                                            },
-                                            homePageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                            statusPageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                            healthCheckUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                            vipAddress = serviceName,
-                                            isCoordinatingDiscoveryServer = "false",
-                                            lastUpdatedTimestamp = "1457714988223",
-                                            lastDirtyTimestamp = "1457714988172",
-                                            actionType = "ADDED"
-                                        }
-                                    }
+                                        renewalIntervalInSecs = 30,
+                                        durationInSecs = 90,
+                                        registrationTimestamp = 1457714988223,
+                                        lastRenewalTimestamp= 1457716158319,
+                                        evictionTimestamp = 0,
+                                        serviceUpTimestamp = 1457714988223,
+                                    },
+                                    metadata = new Metadata
+                                    {
+                                        value = "java.util.Collections$EmptyMap",
+                                    },
+                                    homePageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                    statusPageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                    healthCheckUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                                    vipAddress = serviceName,
+                                    isCoordinatingDiscoveryServer = "false",
+                                    lastUpdatedTimestamp = "1457714988223",
+                                    lastDirtyTimestamp = "1457714988172",
+                                    actionType = "ADDED",
+                                },
+                            },
                         };
 
                         apps.Add(a);
@@ -138,8 +147,8 @@
                         {
                             application = apps,
                             apps__hashcode = "UP_1_",
-                            versions__delta = "1"
-                        }
+                            versions__delta = "1",
+                        },
                     };
 
                     var json = JsonConvert.SerializeObject(applications);

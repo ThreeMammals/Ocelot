@@ -1,35 +1,37 @@
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Authorization.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Headers;
+using Ocelot.Headers.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Headers
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Authorisation.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.Headers;
-    using Ocelot.Headers.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class HttpHeadersTransformationMiddlewareTests
     {
         private readonly Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
         private readonly Mock<IHttpResponseHeaderReplacer> _postReplacer;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly HttpHeadersTransformationMiddleware _middleware;
-        private RequestDelegate _next;
+        private readonly RequestDelegate _next;
         private readonly Mock<IAddHeadersToResponse> _addHeadersToResponse;
         private readonly Mock<IAddHeadersToRequest> _addHeadersToRequest;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
 
         public HttpHeadersTransformationMiddlewareTests()
         {
@@ -38,7 +40,7 @@ namespace Ocelot.UnitTests.Headers
             _postReplacer = new Mock<IHttpResponseHeaderReplacer>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _loggerFactory.Setup(x => x.CreateLogger<AuthorisationMiddleware>()).Returns(_logger.Object);
+            _loggerFactory.Setup(x => x.CreateLogger<AuthorizationMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _addHeadersToResponse = new Mock<IAddHeadersToResponse>();
             _addHeadersToRequest = new Mock<IAddHeadersToRequest>();

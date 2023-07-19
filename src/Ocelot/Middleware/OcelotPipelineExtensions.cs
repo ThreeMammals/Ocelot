@@ -1,29 +1,32 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.QueryStrings.Middleware;
-    using Ocelot.RateLimit.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Requester.Middleware;
-    using Ocelot.RequestId.Middleware;
-    using Ocelot.Responder.Middleware;
-    using Ocelot.Security.Middleware;
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Authorisation.Middleware;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Claims.Middleware;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.Errors.Middleware;
-    using Ocelot.Headers.Middleware;
-    using Ocelot.LoadBalancer.Middleware;
-    using System;
-    using System.Threading.Tasks;
-    using Ocelot.DownstreamPathManipulation.Middleware;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.WebSockets.Middleware;
-    using Ocelot.Multiplexer;
+﻿using System;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Authentication.Middleware;
+using Ocelot.Authorization.Middleware;
+using Ocelot.Cache.Middleware;
+using Ocelot.Claims.Middleware;
+using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.Errors.Middleware;
+using Ocelot.Headers.Middleware;
+using Ocelot.LoadBalancer.Middleware;
+using Ocelot.QueryStrings.Middleware;
+using Ocelot.RateLimit.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Requester.Middleware;
+using Ocelot.RequestId.Middleware;
+using Ocelot.Responder.Middleware;
+using Ocelot.Security.Middleware;
+using Ocelot.WebSockets.Middleware;
+
+namespace Ocelot.Middleware
+{
     public static class OcelotPipelineExtensions
     {
         public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app,
@@ -102,23 +105,23 @@
                 app.Use(pipelineConfiguration.AuthenticationMiddleware);
             }
 
-            // The next thing we do is look at any claims transforms in case this is important for authorisation
+            // The next thing we do is look at any claims transforms in case this is important for authorization
             app.UseClaimsToClaimsMiddleware();
 
-            // Allow pre authorisation logic. The idea being people might want to run something custom before what is built in.
-            app.UseIfNotNull(pipelineConfiguration.PreAuthorisationMiddleware);
+            // Allow pre authorization logic. The idea being people might want to run something custom before what is built in.
+            app.UseIfNotNull(pipelineConfiguration.PreAuthorizationMiddleware);
 
             // Now we have authenticated and done any claims transformation we
-            // can authorise the request
+            // can authorize the request
             // We allow the ocelot middleware to be overriden by whatever the
             // user wants
-            if (pipelineConfiguration.AuthorisationMiddleware == null)
+            if (pipelineConfiguration.AuthorizationMiddleware == null)
             {
-                app.UseAuthorisationMiddleware();
+                app.UseAuthorizationMiddleware();
             }
             else
             {
-                app.Use(pipelineConfiguration.AuthorisationMiddleware);
+                app.Use(pipelineConfiguration.AuthorizationMiddleware);
             }
 
             // Now we can run the claims to headers transformation middleware

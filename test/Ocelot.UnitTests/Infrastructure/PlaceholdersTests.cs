@@ -1,18 +1,24 @@
+using System;
+using System.Net;
+using System.Net.Http;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Infrastructure
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Infrastructure;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using Shouldly;
-    using System;
-    using System.Net;
-    using System.Net.Http;
-    using Xunit;
-
     public class PlaceholdersTests
     {
         private readonly IPlaceholders _placeholders;
@@ -40,7 +46,7 @@ namespace Ocelot.UnitTests.Infrastructure
         [Fact]
         public void should_return_remote_ip_address()
         {
-            var httpContext = new DefaultHttpContext() { Connection = { RemoteIpAddress = IPAddress.Any } };
+            var httpContext = new DefaultHttpContext { Connection = { RemoteIpAddress = IPAddress.Any } };
             _accessor.Setup(x => x.HttpContext).Returns(httpContext);
             var result = _placeholders.Get("{RemoteIpAddress}");
             result.Data.ShouldBe(httpContext.Connection.RemoteIpAddress.ToString());

@@ -1,11 +1,14 @@
-﻿namespace Ocelot.LoadBalancer.LoadBalancers
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using Ocelot.ServiceDiscovery;
+﻿using System.Collections.Generic;
+using System.Linq;
 
+using Ocelot.Configuration;
+
+using Ocelot.Responses;
+
+using Ocelot.ServiceDiscovery;
+
+namespace Ocelot.LoadBalancer.LoadBalancers
+{
     public class LoadBalancerFactory : ILoadBalancerFactory
     {
         private readonly IServiceDiscoveryProviderFactory _serviceProviderFactory;

@@ -1,17 +1,22 @@
+using Moq;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Multiplexing
 {
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Multiplexer;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class ResponseAggregatorFactoryTests
     {
         private readonly InMemoryResponseAggregatorFactory _factory;
-        private Mock<IDefinedAggregatorProvider> _provider;
+        private readonly Mock<IDefinedAggregatorProvider> _provider;
         private Route _route;
         private IResponseAggregator _aggregator;
 

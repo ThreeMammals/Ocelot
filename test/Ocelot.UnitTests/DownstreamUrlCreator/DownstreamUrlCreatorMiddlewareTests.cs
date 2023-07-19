@@ -1,38 +1,45 @@
-﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
-{
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.Responses;
-    using Ocelot.Values;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.DownstreamUrlCreator
+{
     public class DownstreamUrlCreatorMiddlewareTests
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private OkResponse<DownstreamPath> _downstreamPath;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private DownstreamUrlCreatorMiddleware _middleware;
         private readonly RequestDelegate _next;
         private readonly HttpRequestMessage _request;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
         private Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamUrlCreatorMiddlewareTests()
@@ -91,8 +98,8 @@
                     new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
-                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
-                            new PlaceholderNameAndValue("{unitId}", "2")
+                            new("{subscriptionId}", "1"),
+                            new("{unitId}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -103,7 +110,7 @@
                 .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates"))
-                .And(x => ThenTheQueryStringIs(""))
+                .And(x => ThenTheQueryStringIs(string.Empty))
                 .BDDfy();
         }
 
@@ -123,8 +130,8 @@
                     new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
-                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
-                            new PlaceholderNameAndValue("{unitId}", "2")
+                            new("{subscriptionId}", "1"),
+                            new("{unitId}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -155,9 +162,9 @@
                     new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
-                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
-                            new PlaceholderNameAndValue("{unitId}", "2"),
-                            new PlaceholderNameAndValue("{unitIdIty}", "3")
+                            new("{subscriptionId}", "1"),
+                            new("{unitId}", "2"),
+                            new("{unitIdIty}", "3"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -168,7 +175,7 @@
                 .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates/3"))
-                .And(x => ThenTheQueryStringIs(""))
+                .And(x => ThenTheQueryStringIs(string.Empty))
                 .BDDfy();
         }
 
@@ -211,7 +218,7 @@
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            var downstreamRouteHolder = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
                 new RouteBuilder()
                     .WithDownstreamRoute(downstreamRoute)
@@ -241,7 +248,7 @@
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            var downstreamRouteHolder = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
                 new RouteBuilder()
                     .WithDownstreamRoute(downstreamRoute)
@@ -271,7 +278,7 @@
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            var downstreamRouteHolder = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
                 new RouteBuilder()
                     .WithDownstreamRoute(downstreamRoute)
@@ -295,7 +302,7 @@
         [Fact]
         public void should_create_service_fabric_url_with_version_from_upstream_path_template()
         {
-            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            var downstreamRoute = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
                 new RouteBuilder().WithDownstreamRoute(
                         new DownstreamRouteBuilder()
@@ -337,8 +344,8 @@
                     new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
                         {
-                            new PlaceholderNameAndValue("{action}", "1"),
-                            new PlaceholderNameAndValue("{server}", "2")
+                            new("{action}", "1"),
+                            new("{server}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -357,12 +364,12 @@
         public void should_not_replace_by_empty_scheme()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
-                .WithDownstreamScheme("")
+                .WithDownstreamScheme(string.Empty)
                 .WithServiceName("Ocelot/OcelotApp")
                 .WithUseServiceDiscovery(true)
                 .Build();
 
-            var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            var downstreamRouteHolder = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
                 new RouteBuilder()
                     .WithDownstreamRoute(downstreamRoute)
@@ -395,7 +402,7 @@
             _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
-        private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+        private void GivenTheDownStreamRouteIs(DownstreamRouteHolder downstreamRoute)
         {
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 

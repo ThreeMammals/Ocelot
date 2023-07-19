@@ -1,11 +1,14 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Multiplexer
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Middleware;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
     public class UserDefinedResponseAggregator : IResponseAggregator
     {
         private readonly IDefinedAggregatorProvider _provider;

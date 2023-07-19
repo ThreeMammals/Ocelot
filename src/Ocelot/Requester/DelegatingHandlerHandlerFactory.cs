@@ -1,15 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+
+using Ocelot.Configuration;
+
+using Ocelot.Logging;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.Requester.QoS;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester
 {
-    using Logging;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.Configuration;
-    using Ocelot.Responses;
-    using QoS;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-
     public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
     {
         private readonly ITracingHandlerFactory _tracingFactory;
@@ -33,7 +38,7 @@ namespace Ocelot.Requester
         {
             var globalDelegatingHandlers = _serviceProvider
                 .GetServices<GlobalDelegatingHandler>()
-                .ToList();
+                .ToArray();
 
             var routeSpecificHandlers = _serviceProvider
                 .GetServices<DelegatingHandler>()
@@ -57,10 +62,7 @@ namespace Ocelot.Requester
             {
                 var sorted = SortByConfigOrder(downstreamRoute, routeSpecificHandlers);
 
-                foreach (var handler in sorted)
-                {
-                    handlers.Add(() => handler);
-                }
+                handlers.AddRange(sorted.Select(handler => (Func<DelegatingHandler>)(() => handler)));
             }
 
             if (downstreamRoute.HttpHandlerOptions.UseTracing)
@@ -72,7 +74,7 @@ namespace Ocelot.Requester
             {
                 var handler = _qoSFactory.Get(downstreamRoute);
 
-                if (handler != null && !handler.IsError)
+                if (handler?.IsError == false)
                 {
                     handlers.Add(() => handler.Data);
                 }
@@ -86,7 +88,7 @@ namespace Ocelot.Requester
             return new OkResponse<List<Func<DelegatingHandler>>>(handlers);
         }
 
-        private List<DelegatingHandler> SortByConfigOrder(DownstreamRoute request, List<DelegatingHandler> routeSpecificHandlers)
+        private static IEnumerable<DelegatingHandler> SortByConfigOrder(DownstreamRoute request, IEnumerable<DelegatingHandler> routeSpecificHandlers)
         {
             return routeSpecificHandlers
                 .Where(x => request.DelegatingHandlers.Contains(x.GetType().Name))
@@ -95,12 +97,10 @@ namespace Ocelot.Requester
                     var type = d.GetType().Name;
                     var pos = request.DelegatingHandlers.IndexOf(type);
                     return pos;
-                }).ToList();
+                }).ToArray();
         }
 
-        private bool GlobalIsInHandlersConfig(DownstreamRoute request, GlobalDelegatingHandler handler)
-        {
-            return request.DelegatingHandlers.Contains(handler.DelegatingHandler.GetType().Name);
-        }
+        private static bool GlobalIsInHandlersConfig(DownstreamRoute request, GlobalDelegatingHandler handler) =>
+            request.DelegatingHandlers.Contains(handler.DelegatingHandler.GetType().Name);
     }
 }

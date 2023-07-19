@@ -1,9 +1,11 @@
+using System;
+
+using Microsoft.Extensions.Options;
+
+using Ocelot.Configuration.Repository;
+
 namespace Ocelot.Configuration.ChangeTracking
 {
-    using System;
-    using Microsoft.Extensions.Options;
-    using Ocelot.Configuration.Repository;
-
     public class OcelotConfigurationMonitor : IOptionsMonitor<IInternalConfiguration>
     {
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
@@ -22,7 +24,7 @@ namespace Ocelot.Configuration.ChangeTracking
 
         public IDisposable OnChange(Action<IInternalConfiguration, string> listener)
         {
-            return _changeTokenSource.ChangeToken.RegisterChangeCallback(_ => listener(CurrentValue, ""), null);
+            return _changeTokenSource.ChangeToken.RegisterChangeCallback(_ => listener(CurrentValue, string.Empty), null);
         }
 
         public IInternalConfiguration CurrentValue => _repo.Get().Data;

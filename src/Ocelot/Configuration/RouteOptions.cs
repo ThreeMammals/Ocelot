@@ -2,19 +2,19 @@ namespace Ocelot.Configuration
 {
     public class RouteOptions
     {
-        public RouteOptions(bool isAuthenticated, bool isAuthorised, bool isCached, bool isEnableRateLimiting, bool useServiceDiscovery)
+        public RouteOptions(bool isAuthenticated, bool isAuthorized, bool isCached, bool isEnableRateLimiting, bool useServiceDiscovery)
         {
             IsAuthenticated = isAuthenticated;
-            IsAuthorised = isAuthorised;
+            IsAuthorized = isAuthorized;
             IsCached = isCached;
             EnableRateLimiting = isEnableRateLimiting;
             UseServiceDiscovery = useServiceDiscovery;
         }
 
-        public bool IsAuthenticated { get; private set; }
-        public bool IsAuthorised { get; private set; }
-        public bool IsCached { get; private set; }
-        public bool EnableRateLimiting { get; private set; }
-        public bool UseServiceDiscovery { get; private set; }
+        public bool IsAuthenticated { get; }
+        public bool IsAuthorized { get; }
+        public bool IsCached { get; }
+        public bool EnableRateLimiting { get; }
+        public bool UseServiceDiscovery { get; }
     }
 }

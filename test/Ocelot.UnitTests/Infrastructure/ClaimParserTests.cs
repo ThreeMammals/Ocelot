@@ -1,15 +1,19 @@
 ﻿using Ocelot.Errors;
+using System.Collections.Generic;
+using System.Security.Claims;
+
+using Ocelot.Infrastructure.Claims.Parser;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
-    using Ocelot.Infrastructure.Claims.Parser;
-    using Responses;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class ClaimParserTests
     {
         private readonly IClaimsParser _claimsParser;
@@ -43,7 +47,7 @@ namespace Ocelot.UnitTests.Infrastructure
                 .When(x => x.WhenICallTheParser())
                 .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
                 {
-                    new CannotFindClaimError($"Cannot find claim for key: {_key}")
+                    new CannotFindClaimError($"Cannot find claim for key: {_key}"),
                 })))
                 .BDDfy();
         }
@@ -70,7 +74,7 @@ namespace Ocelot.UnitTests.Infrastructure
                 .When(x => x.WhenICallTheParser())
                 .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
                 {
-                    new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}")
+                    new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}"),
                 })))
                 .BDDfy();
         }
@@ -85,7 +89,7 @@ namespace Ocelot.UnitTests.Infrastructure
                 .When(x => x.WhenICallTheParser())
                 .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
                 {
-                    new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}")
+                    new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}"),
                 })))
                 .BDDfy();
         }

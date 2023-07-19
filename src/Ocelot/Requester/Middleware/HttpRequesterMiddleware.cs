@@ -1,14 +1,17 @@
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using System.Net;
-    using System.Net.Http;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System.Threading.Tasks;
-    using Ocelot.Responses;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class HttpRequesterMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -52,11 +55,11 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogInformation(
                     $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
-            } 
+            }
             else if (response.Data?.StatusCode >= HttpStatusCode.BadRequest)
             {
                 Logger.LogWarning(
-                    $"{(int) response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
+                    $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
             }
         }
     }

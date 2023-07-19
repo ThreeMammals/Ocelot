@@ -1,13 +1,14 @@
-﻿namespace Ocelot.AcceptanceTests.Caching
-{
-    using CacheManager.Core;
-    using CacheManager.Core.Internal;
-    using CacheManager.Core.Logging;
-    using CacheManager.Core.Utility;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 
+using CacheManager.Core;
+using CacheManager.Core.Internal;
+using CacheManager.Core.Logging;
+using CacheManager.Core.Utility;
+
+namespace Ocelot.AcceptanceTests.Caching
+{
     public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
     {
         private readonly ICacheSerializer _serializer;
@@ -37,7 +38,7 @@
             var key = string.Concat(region, ":");
             foreach (var item in _cache.Where(p => p.Key.StartsWith(key, StringComparison.OrdinalIgnoreCase)))
             {
-                _cache.TryRemove(item.Key, out Tuple<Type, byte[]> val);
+                _cache.TryRemove(item.Key, out var val);
             }
         }
 
@@ -74,13 +75,13 @@
 
             CacheItem<TCacheValue> deserializedResult = null;
 
-            if (_cache.TryGetValue(fullKey, out Tuple<Type, byte[]> result))
+            if (_cache.TryGetValue(fullKey, out var result))
             {
                 deserializedResult = _serializer.DeserializeCacheItem<TCacheValue>(result.Item2, result.Item1);
 
                 if (deserializedResult.ExpirationMode != ExpirationMode.None && IsExpired(deserializedResult, DateTime.UtcNow))
                 {
-                    _cache.TryRemove(fullKey, out Tuple<Type, byte[]> removeResult);
+                    _cache.TryRemove(fullKey, out var removeResult);
                     TriggerCacheSpecificRemove(key, region, CacheItemRemovedReason.Expired, deserializedResult.Value);
                     return null;
                 }
@@ -93,7 +94,7 @@
         {
             Guard.NotNull(item, nameof(item));
 
-            var serializedItem = _serializer.SerializeCacheItem<TCacheValue>(item);
+            var serializedItem = _serializer.SerializeCacheItem(item);
 
             _cache[GetKey(item.Key, item.Region)] = new Tuple<Type, byte[]>(item.Value.GetType(), serializedItem);
         }
@@ -103,7 +104,7 @@
         protected override bool RemoveInternal(string key, string region)
         {
             var fullKey = GetKey(key, region);
-            return _cache.TryRemove(fullKey, out Tuple<Type, byte[]> val);
+            return _cache.TryRemove(fullKey, out var val);
         }
 
         private static string GetKey(string key, string region)

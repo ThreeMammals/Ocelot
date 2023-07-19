@@ -1,16 +1,18 @@
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using Ocelot.Infrastructure.RequestData;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
 namespace Ocelot.RequestId.Middleware
 {
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
-
     public class RequestIdMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
@@ -62,20 +64,19 @@ namespace Ocelot.RequestId.Middleware
             }
         }
 
-        private bool ShouldAddRequestId(RequestId requestId, HttpRequestHeaders headers)
+        private static bool ShouldAddRequestId(RequestId requestId, HttpRequestHeaders headers)
         {
             return !string.IsNullOrEmpty(requestId?.RequestIdKey)
                    && !string.IsNullOrEmpty(requestId.RequestIdValue)
                    && !RequestIdInHeaders(requestId, headers);
         }
 
-        private bool RequestIdInHeaders(RequestId requestId, HttpRequestHeaders headers)
+        private static bool RequestIdInHeaders(RequestId requestId, HttpRequestHeaders headers)
         {
-            IEnumerable<string> value;
-            return headers.TryGetValues(requestId.RequestIdKey, out value);
+            return headers.TryGetValues(requestId.RequestIdKey, out var value);
         }
 
-        private void AddRequestIdHeader(RequestId requestId, DownstreamRequest httpRequestMessage)
+        private static void AddRequestIdHeader(RequestId requestId, DownstreamRequest httpRequestMessage)
         {
             httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
         }

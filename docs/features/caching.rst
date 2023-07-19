@@ -29,7 +29,7 @@ Finally in order to use caching on a route in your Route configuration add this 
 
 In this example ttl seconds is set to 15 which means the cache will expire after 15 seconds.
 
-If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/master/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager is setup and then passed into the Ocelot AddCacheManager configuration method. You can use any settings supported by the CacheManager package and just pass them in.
+If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager is setup and then passed into the Ocelot AddCacheManager configuration method. You can use any settings supported by the CacheManager package and just pass them in.
 
 Anyway Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache. You can also clear the cache for a region by calling Ocelot's administration API.
 

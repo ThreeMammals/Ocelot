@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+
+using Microsoft.Extensions.Primitives;
+
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
 
 namespace Ocelot.QueryStrings
 {
@@ -49,7 +51,7 @@ namespace Ocelot.QueryStrings
             return new OkResponse();
         }
 
-        private Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
+        private static Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
         {
             var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
                 .ParseQuery(queryString);
@@ -57,29 +59,29 @@ namespace Ocelot.QueryStrings
             return query;
         }
 
-        private string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
+        private static string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
         {
             var builder = new StringBuilder();
 
-            builder.Append("?");
+            builder.Append('?');
 
-            int outerCount = 0;
+            var outerCount = 0;
 
             foreach (var query in queryDictionary)
             {
-                for (int innerCount = 0; innerCount < query.Value.Count; innerCount++)
+                for (var innerCount = 0; innerCount < query.Value.Count; innerCount++)
                 {
                     builder.Append($"{query.Key}={query.Value[innerCount]}");
 
                     if (innerCount < (query.Value.Count - 1))
                     {
-                        builder.Append("&");
+                        builder.Append('&');
                     }
                 }
 
                 if (outerCount < (queryDictionary.Count - 1))
                 {
-                    builder.Append("&");
+                    builder.Append('&');
                 }
 
                 outerCount++;

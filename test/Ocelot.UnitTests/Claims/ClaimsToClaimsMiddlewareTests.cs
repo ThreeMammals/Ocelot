@@ -1,31 +1,34 @@
 ﻿using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Claims;
+using Ocelot.Claims.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+
+using Ocelot.Responses;
+
+using TestStack.BDDfy;
+
+using Xunit;
 
 namespace Ocelot.UnitTests.Claims
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Claims;
-    using Ocelot.Claims.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Logging;
-    using Ocelot.Responses;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class ClaimsToClaimsMiddlewareTests
     {
         private readonly Mock<IAddClaimsToRequest> _addHeaders;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly ClaimsToClaimsMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public ClaimsToClaimsMiddlewareTests()
         {
@@ -47,7 +50,7 @@ namespace Ocelot.UnitTests.Claims
                         .WithDownstreamPathTemplate("any old string")
                         .WithClaimsToClaims(new List<ClaimToThing>
                         {
-                            new ClaimToThing("sub", "UserType", "|", 0)
+                            new("sub", "UserType", "|", 0),
                         })
                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())

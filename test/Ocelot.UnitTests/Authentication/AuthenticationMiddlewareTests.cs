@@ -1,33 +1,35 @@
 ﻿using Xunit;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Authentication.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.UnitTests.Authentication
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Authentication.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class AuthenticationMiddlewareTests
     {
         private AuthenticationMiddleware _middleware;
         private readonly Mock<IOcelotLoggerFactory> _factory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
         private Mock<IRequestScopedDataRepository> _repo;
 
         public AuthenticationMiddlewareTests()
@@ -68,7 +70,7 @@ namespace Ocelot.UnitTests.Authentication
         {
             _next = (context) =>
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
+                var byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
                 _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
@@ -81,7 +83,7 @@ namespace Ocelot.UnitTests.Authentication
         {
             _next = (context) =>
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
+                var byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
                 var stream = new MemoryStream(byteArray);
                 _httpContext.Response.Body = stream;
                 return Task.CompletedTask;
@@ -111,7 +113,7 @@ namespace Ocelot.UnitTests.Authentication
         {
             using (var reader = new StreamReader(stream))
             {
-                string text = reader.ReadToEnd();
+                var text = reader.ReadToEnd();
                 return text;
             }
         }

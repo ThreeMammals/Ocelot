@@ -1,22 +1,29 @@
-﻿namespace Ocelot.AcceptanceTests
-{
-    using Cache;
-    using Configuration.File;
-    using Consul;
-    using Infrastructure;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Newtonsoft.Json;
-    using Shouldly;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Text;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
 
+using Ocelot.Cache;
+
+using Ocelot.Configuration.File;
+
+using Consul;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+using Newtonsoft.Json;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
+{
     public class ConsulConfigurationInConsulTests : IDisposable
     {
         private IWebHost _builder;
@@ -34,44 +41,44 @@
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var consulPort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                     {
-                        new FileRoute
+                        new()
                         {
                             DownstreamPathTemplate = "/",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
+                                new()
                                 {
                                     Host = "localhost",
                                     Port = servicePort,
-                                }
+                                },
                             },
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
+                        },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "", 200, "Hello from Laura"))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -84,19 +91,19 @@
         public void should_load_configuration_out_of_consul()
         {
             var consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -105,35 +112,35 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -147,19 +154,19 @@
         public void should_load_configuration_out_of_consul_if_it_is_changed()
         {
             var consulPort = RandomPortFinder.GetRandomPort();
-            int servicePort = RandomPortFinder.GetRandomPort();
+            var servicePort = RandomPortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -168,66 +175,66 @@
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             var secondConsulConfig = new FileConfiguration
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "localhost",
                                 Port = servicePort,
-                            }
+                            },
                         },
                         UpstreamPathTemplate = "/cs/status/awesome",
-                        UpstreamHttpMethod = new List<string> {"Get"}
-                    }
+                        UpstreamHttpMethod = new List<string> {"Get"},
+                    },
                 },
-                GlobalConfiguration = new FileGlobalConfiguration()
+                GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider()
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, ""))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -242,20 +249,20 @@
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
         {
-            int consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = RandomPortFinder.GetRandomPort();
             const string serviceName = "web";
-            int downstreamServicePort = RandomPortFinder.GetRandomPort();
+            var downstreamServicePort = RandomPortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry()
+            var serviceEntryOne = new ServiceEntry
             {
-                Service = new AgentService()
+                Service = new AgentService
                 {
                     Service = serviceName,
                     Address = "localhost",
                     Port = downstreamServicePort,
                     ID = "web_90_0_2_224_8080",
-                    Tags = new[] { "version-v1" }
+                    Tags = new[] { "version-v1" },
                 },
             };
 
@@ -263,18 +270,18 @@
             {
                 DynamicRoutes = new List<FileDynamicRoute>
                 {
-                    new FileDynamicRoute
+                    new()
                     {
                         ServiceName = serviceName,
-                        RateLimitRule = new FileRateLimitRule()
+                        RateLimitRule = new FileRateLimitRule
                         {
                             EnableRateLimiting = true,
                             ClientWhitelist = new List<string>(),
                             Limit = 3,
                             Period = "1s",
-                            PeriodTimespan = 1000
-                        }
-                    }
+                            PeriodTimespan = 1000,
+                        },
+                    },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
@@ -282,18 +289,18 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
+                        Port = consulPort,
                     },
-                    RateLimitOptions = new FileRateLimitOptions()
+                    RateLimitOptions = new FileRateLimitOptions
                     {
                         ClientIdHeader = "ClientId",
                         DisableRateLimitHeaders = false,
-                        QuotaExceededMessage = "",
-                        RateLimitCounterPrefix = "",
-                        HttpStatusCode = 428
+                        QuotaExceededMessage = string.Empty,
+                        RateLimitCounterPrefix = string.Empty,
+                        HttpStatusCode = 428,
                     },
                     DownstreamScheme = "http",
-                }
+                },
             };
 
             var configuration = new FileConfiguration
@@ -304,9 +311,9 @@
                     {
                         Scheme = "http",
                         Host = "localhost",
-                        Port = consulPort
-                    }
-                }
+                        Port = consulPort,
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
@@ -377,7 +384,7 @@
                                         var base64 = Convert.ToBase64String(bytes);
 
                                         var kvp = new FakeConsulGetResponse(base64);
-                                        json = JsonConvert.SerializeObject(new FakeConsulGetResponse[] { kvp });
+                                        json = JsonConvert.SerializeObject(new[] { kvp });
                                         context.Response.Headers.Add("Content-Type", "application/json");
                                         await context.Response.WriteAsync(json);
                                     }
@@ -428,7 +435,7 @@
             public int LockIndex => 200;
             public string Key => "InternalConfiguration";
             public int Flags => 0;
-            public string Value { get; private set; }
+            public string Value { get; }
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 

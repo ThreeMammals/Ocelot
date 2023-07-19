@@ -1,5 +1,12 @@
-﻿using Castle.Components.DictionaryAdapter;
+﻿using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+
+using Castle.Components.DictionaryAdapter;
+
 using Microsoft.AspNetCore.Http;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -7,12 +14,11 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
+
 using Shouldly;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexing
@@ -35,30 +41,30 @@ namespace Ocelot.UnitTests.Multiplexing
             var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
 
             var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("", 0, false, "/v1/users/{userId}"))
+                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 0, false, "/v1/users/{userId}"))
                 .Build();
 
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 commentsDownstreamRoute,
-                userDetailsDownstreamRoute
+                userDetailsDownstreamRoute,
             };
 
             var route = new RouteBuilder()
                 .WithDownstreamRoutes(downstreamRoutes)
-                .WithAggregateRouteConfig(new List<AggregateRouteConfig>()
+                .WithAggregateRouteConfig(new List<AggregateRouteConfig>
                 {
-                    new AggregateRouteConfig(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"}
+                    new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
                 })
                 .Build();
 
-            var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":1,""text"":""text1""},{""id"":2,""writerId"":2,""postId"":2,""text"":""text2""},{""id"":3,""writerId"":2,""postId"":1,""text"":""text21""}]";
+            var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
 
             var commentsDownstreamContext = new DefaultHttpContext();
             commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
             commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
 
-            var userDetailsResponseContent = @"[{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""},{""id"":2,""firstName"":""reza"",""lastName"":""rezaei""}]";
+            var userDetailsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptyfirstNamestring.Empty:string.Emptyabolfazlstring.Empty,string.EmptylastNamestring.Empty:string.Emptyrajabpourstring.Empty},{string.Emptyidstring.Empty:2,string.EmptyfirstNamestring.Empty:string.Emptyrezastring.Empty,string.EmptylastNamestring.Empty:string.Emptyrezaeistring.Empty}]";
             var userDetailsDownstreamContext = new DefaultHttpContext();
             userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
             userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
@@ -87,7 +93,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 billDownstreamRoute,
-                georgeDownstreamRoute
+                georgeDownstreamRoute,
             };
 
             var route = new RouteBuilder()
@@ -126,7 +132,7 @@ namespace Ocelot.UnitTests.Multiplexing
             var downstreamRoutes = new List<DownstreamRoute>
             {
                 billDownstreamRoute,
-                georgeDownstreamRoute
+                georgeDownstreamRoute,
             };
 
             var route = new RouteBuilder()

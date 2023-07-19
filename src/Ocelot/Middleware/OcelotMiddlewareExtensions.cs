@@ -1,22 +1,27 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.DependencyInjection;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Options;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Repository;
-    using Ocelot.Configuration.Setter;
-    using Ocelot.Logging;
-    using Ocelot.Responses;
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Setter;
+
+using Ocelot.DependencyInjection;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Middleware
+{
     public static class OcelotMiddlewareExtensions
     {
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
@@ -154,7 +159,7 @@
 
         private static void ThrowToStopOcelotStarting(Response config)
         {
-            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(",", config.Errors.Select(x => x.ToString()))}");
+            throw new Exception($"Unable to start Ocelot, errors are: {string.Join(',', config.Errors.Select(x => x.ToString()))}");
         }
 
         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)

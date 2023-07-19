@@ -1,20 +1,24 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.LoadBalancer.Middleware;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.WebSockets.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Middleware
 {
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.DependencyInjection;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-    using Ocelot.WebSockets.Middleware;
-    using Shouldly;
-    using TestStack.BDDfy;
-    using Xunit;
-
     public class OcelotPipelineExtensionsTests
     {
         private ApplicationBuilder _builder;
@@ -50,8 +54,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIExpandBuild()
         {
-            OcelotPipelineConfiguration configuration = new OcelotPipelineConfiguration();
-            //Func<HttpContext,  bool>, Action<IApplicationBuilder>
+            var configuration = new OcelotPipelineConfiguration();
             configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
             {
                 app.UseDownstreamRouteFinderMiddleware();

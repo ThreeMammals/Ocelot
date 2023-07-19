@@ -1,30 +1,32 @@
 ﻿using Ocelot.Middleware;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Errors;
+using Ocelot.Logging;
+using Ocelot.Responder;
+using Ocelot.Responder.Middleware;
+
+using TestStack.BDDfy;
+
+using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.DownstreamRouteFinder.Finder;
-    using Ocelot.Errors;
-    using Ocelot.Logging;
-    using Ocelot.Responder;
-    using Ocelot.Responder.Middleware;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Ocelot.Infrastructure.RequestData;
-    using TestStack.BDDfy;
-    using Xunit;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class ResponderMiddlewareTests
     {
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IErrorsToHttpStatusCodeMapper> _codeMapper;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
         private readonly ResponderMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly HttpContext _httpContext;
 
         public ResponderMiddlewareTests()
         {

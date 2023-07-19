@@ -1,20 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
 using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
+
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Requester
@@ -25,9 +30,9 @@ namespace Ocelot.UnitTests.Requester
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
         private Response<HttpResponseMessage> _response;
         private readonly HttpClientHttpRequester _httpClientRequester;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
-        private Mock<IExceptionToErrorMapper> _mapper;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
+        private readonly Mock<IExceptionToErrorMapper> _mapper;
         private HttpContext _httpContext;
 
         public HttpClientHttpRequesterTest()
@@ -52,7 +57,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_correctly()
         {
-            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -60,14 +65,14 @@ namespace Ocelot.UnitTests.Requester
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
-                .WithLoadBalancerKey("")
+                .WithLoadBalancerKey(string.Empty)
                 .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             var httpContext = new DefaultHttpContext();
             httpContext.Items.UpsertDownstreamRoute(route);
-            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://www.bbc.co.uk") }));
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage { RequestUri = new Uri("http://www.bbc.co.uk") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
                 .And(x => GivenTheHouseReturnsOkHandler())
@@ -79,7 +84,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_request_unable_to_complete_request()
         {
-            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -87,14 +92,14 @@ namespace Ocelot.UnitTests.Requester
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
-                .WithLoadBalancerKey("")
+                .WithLoadBalancerKey(string.Empty)
                 .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().Build())
                 .Build();
 
             var httpContext = new DefaultHttpContext();
             httpContext.Items.UpsertDownstreamRoute(route);
-            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(x => x.GivenTheRequestIs(httpContext))
                 .When(x => x.WhenIGetResponse())
@@ -105,7 +110,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void http_client_request_times_out()
         {
-            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue("").Build();
+            var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -113,14 +118,14 @@ namespace Ocelot.UnitTests.Requester
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(qosOptions)
                 .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue))
-                .WithLoadBalancerKey("")
+                .WithLoadBalancerKey(string.Empty)
                 .WithUpstreamPathTemplate(upstreamTemplate)
                 .WithQosOptions(new QoSOptionsBuilder().WithTimeoutValue(1).Build())
                 .Build();
 
             var httpContext = new DefaultHttpContext();
             httpContext.Items.UpsertDownstreamRoute(route);
-            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage() { RequestUri = new Uri("http://localhost:60080") }));
+            httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage { RequestUri = new Uri("http://localhost:60080") }));
 
             this.Given(_ => GivenTheRequestIs(httpContext))
                 .And(_ => GivenTheHouseReturnsTimeoutHandler())
@@ -160,7 +165,7 @@ namespace Ocelot.UnitTests.Requester
         {
             var handlers = new List<Func<DelegatingHandler>>
             {
-                () => new OkDelegatingHandler()
+                () => new OkDelegatingHandler(),
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
@@ -170,7 +175,7 @@ namespace Ocelot.UnitTests.Requester
         {
             var handlers = new List<Func<DelegatingHandler>>
             {
-                () => new TimeoutDelegatingHandler()
+                () => new TimeoutDelegatingHandler(),
             };
 
             _factory.Setup(x => x.Get(It.IsAny<DownstreamRoute>())).Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));

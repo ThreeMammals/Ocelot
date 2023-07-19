@@ -1,16 +1,21 @@
-﻿namespace Ocelot.UnitTests.Requester
-{
-    using Microsoft.Extensions.DependencyInjection;
-    using Moq;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Requester;
-    using Ocelot.Requester.QoS;
-    using Shouldly;
-    using System.Net.Http;
-    using Xunit;
+﻿using System.Net.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Requester;
+using Ocelot.Requester.QoS;
+
+using Shouldly;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.Requester
+{
     public class QoSFactoryTests
     {
         private QoSFactory _factory;

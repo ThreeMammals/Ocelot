@@ -1,12 +1,14 @@
-﻿namespace Ocelot.Headers.Middleware
-{
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+namespace Ocelot.Headers.Middleware
+{
     public class ClaimsToHeadersMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

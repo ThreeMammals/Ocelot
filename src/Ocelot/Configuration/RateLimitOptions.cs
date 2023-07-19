@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Ocelot.Configuration
 {
     /// <summary>
-    /// RateLimit Options
+    /// RateLimit Options.
     /// </summary>
     public class RateLimitOptions
     {
@@ -23,43 +23,71 @@ namespace Ocelot.Configuration
             HttpStatusCode = httpStatusCode;
         }
 
-        public RateLimitRule RateLimitRule { get; private set; }
+        /// <summary>
+        /// Gets a Rate Limit rule.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Configuration.RateLimitRule"/> object that represents the rule.
+        /// </value>
+        public RateLimitRule RateLimitRule { get; }
 
         /// <summary>
-        /// Gets the list of white listed clients
+        /// Gets the list of white listed clients.
         /// </summary>
-        public List<string> ClientWhitelist { get => _getClientWhitelist(); }
+        /// <value>
+        /// A <see cref="List{T}"/> collection with white listed clients.
+        /// </value>
+        public List<string> ClientWhitelist => _getClientWhitelist();
 
         /// <summary>
-        /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId
+        /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.
         /// </summary>
-        public string ClientIdHeader { get; private set; }
+        /// <value>
+        /// A string value with the HTTP header.
+        /// </value>
+        public string ClientIdHeader { get; }
 
         /// <summary>
-        /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
+        /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests).
         /// </summary>
-        public int HttpStatusCode { get; private set; }
+        /// <value>
+        /// An integer value with the HTTP Status code.
+        /// <para>Default value: 429 (Too Many Requests).</para>
+        /// </value>
+        public int HttpStatusCode { get; }
 
         /// <summary>
         /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
-        /// If none specified the default will be:
-        /// API calls quota exceeded! maximum admitted {0} per {1}
+        /// <para>If none specified the default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
         /// </summary>
-        public string QuotaExceededMessage { get; private set; }
+        /// <value>
+        /// A string value with a formatter for the QuotaExceeded response message.
+        /// <para>Default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
+        /// </value>
+        public string QuotaExceededMessage { get; }
 
         /// <summary>
-        /// Gets or sets the counter prefix, used to compose the rate limit counter cache key
+        /// Gets or sets the counter prefix, used to compose the rate limit counter cache key.
         /// </summary>
-        public string RateLimitCounterPrefix { get; private set; }
+        /// <value>
+        /// A string value with the counter prefix.
+        /// </value>
+        public string RateLimitCounterPrefix { get; }
 
         /// <summary>
-        /// Enables endpoint rate limiting based URL path and HTTP verb
+        /// Enables endpoint rate limiting based URL path and HTTP verb.
         /// </summary>
-        public bool EnableRateLimiting { get; private set; }
+        /// <value>
+        /// A boolean value for enabling endpoint rate limiting based URL path and HTTP verb.
+        /// </value>
+        public bool EnableRateLimiting { get; }
 
         /// <summary>
-        /// Disables X-Rate-Limit and Rety-After headers
+        /// Disables X-Rate-Limit and Rety-After headers.
         /// </summary>
-        public bool DisableRateLimitHeaders { get; private set; }
+        /// <value>
+        /// A boolean value for disabling X-Rate-Limit and Rety-After headers.
+        /// </value>
+        public bool DisableRateLimitHeaders { get; }
     }
 }

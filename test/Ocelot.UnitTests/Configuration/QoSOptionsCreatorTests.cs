@@ -2,15 +2,18 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+
 using Shouldly;
+
 using TestStack.BDDfy;
+
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
     public class QoSOptionsCreatorTests
     {
-        private QoSOptionsCreator _creator;
+        private readonly QoSOptionsCreator _creator;
         private FileRoute _fileRoute;
         private QoSOptions _result;
 
@@ -28,8 +31,8 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     ExceptionsAllowedBeforeBreaking = 1,
                     DurationOfBreak = 1,
-                    TimeoutValue = 1
-                }
+                    TimeoutValue = 1,
+                },
             };
             var expected = new QoSOptionsBuilder()
                 .WithDurationOfBreak(1)

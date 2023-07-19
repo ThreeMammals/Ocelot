@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace Ocelot.Configuration.File
 {
-    using System.Collections.Generic;
-
     public class FileAggregateRoute : IRoute
     {
         public List<string> RouteKeys { get; set; }
@@ -12,10 +12,7 @@ namespace Ocelot.Configuration.File
         public string Aggregator { get; set; }
 
         // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
-        public List<string> UpstreamHttpMethod
-        {
-            get { return new List<string> { "Get" }; }
-        }
+        public List<string> UpstreamHttpMethod => new() { "Get" };
 
         public int Priority { get; set; } = 1;
     }

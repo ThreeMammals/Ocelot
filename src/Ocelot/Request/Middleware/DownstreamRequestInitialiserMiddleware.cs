@@ -1,12 +1,15 @@
+using System.Threading.Tasks;
+
+using Ocelot.Request.Creator;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Request.Middleware
 {
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Creator;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-
     public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

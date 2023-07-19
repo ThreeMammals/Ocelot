@@ -1,12 +1,15 @@
-﻿namespace Ocelot.Middleware
-{
-    using Ocelot.Configuration;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.Errors;
-    using Ocelot.Request.Middleware;
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+using Ocelot.Configuration;
+
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+using Ocelot.Errors;
+
+using Ocelot.Request.Middleware;
+
+namespace Ocelot.Middleware
+{
     public static class HttpItemsExtensions
     {
         public static void UpsertDownstreamRequest(this IDictionary<object, object> input, DownstreamRequest downstreamRequest)
@@ -19,7 +22,7 @@
             input.Upsert("DownstreamResponse", downstreamResponse);
         }
 
-        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, Configuration.DownstreamRoute downstreamRoute)
+        public static void UpsertDownstreamRoute(this IDictionary<object, object> input, DownstreamRoute downstreamRoute)
         {
             input.Upsert("DownstreamRoute", downstreamRoute);
         }
@@ -41,7 +44,7 @@
 
         public static void SetError(this IDictionary<object, object> input, Error error)
         {
-            var errors = new List<Error>() { error };
+            var errors = new List<Error> { error };
             input.Upsert("Errors", errors);
         }
 
@@ -58,43 +61,28 @@
         public static List<Error> Errors(this IDictionary<object, object> input)
         {
             var errors = input.Get<List<Error>>("Errors");
-            return errors == null ? new List<Error>() : errors;
+            return errors ?? new List<Error>();
         }
 
-        public static DownstreamRouteFinder.DownstreamRouteHolder DownstreamRouteHolder(this IDictionary<object, object> input)
-        {
-            return input.Get<DownstreamRouteFinder.DownstreamRouteHolder>("DownstreamRouteHolder");
-        }
+        public static DownstreamRouteFinder.DownstreamRouteHolder
+            DownstreamRouteHolder(this IDictionary<object, object> input) =>
+            input.Get<DownstreamRouteFinder.DownstreamRouteHolder>("DownstreamRouteHolder");
 
-        public static List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues(this IDictionary<object, object> input)
-        {
-            return input.Get<List<PlaceholderNameAndValue>>("TemplatePlaceholderNameAndValues");
-        }
+        public static List<PlaceholderNameAndValue>
+            TemplatePlaceholderNameAndValues(this IDictionary<object, object> input) =>
+            input.Get<List<PlaceholderNameAndValue>>("TemplatePlaceholderNameAndValues");
 
-        public static DownstreamRequest DownstreamRequest(this IDictionary<object, object> input)
-        {
-            return input.Get<DownstreamRequest>("DownstreamRequest");
-        }
+        public static DownstreamRequest DownstreamRequest(this IDictionary<object, object> input) =>
+            input.Get<DownstreamRequest>("DownstreamRequest");
 
-        public static DownstreamResponse DownstreamResponse(this IDictionary<object, object> input)
-        {
-            return input.Get<DownstreamResponse>("DownstreamResponse");
-        }
+        public static DownstreamResponse DownstreamResponse(this IDictionary<object, object> input) =>
+            input.Get<DownstreamResponse>("DownstreamResponse");
 
-        public static Configuration.DownstreamRoute DownstreamRoute(this IDictionary<object, object> input)
-        {
-            return input.Get<Configuration.DownstreamRoute>("DownstreamRoute");
-        }
+        public static DownstreamRoute DownstreamRoute(this IDictionary<object, object> input) =>
+            input.Get<DownstreamRoute>("DownstreamRoute");
 
-        private static T Get<T>(this IDictionary<object, object> input, string key)
-        {
-            if (input.TryGetValue(key, out var value))
-            {
-                return (T)value;
-            }
-
-            return default(T);
-        }
+        private static T Get<T>(this IDictionary<object, object> input, string key) =>
+        input.TryGetValue(key, out var value) ? (T)value : default;
 
         private static void Upsert<T>(this IDictionary<object, object> input, string key, T value)
         {
@@ -109,9 +97,6 @@
             }
         }
 
-        private static bool DoesntExist(this IDictionary<object, object> input, string key)
-        {
-            return !input.ContainsKey(key);
-        }
+        private static bool DoesntExist(this IDictionary<object, object> input, string key) => !input.ContainsKey(key);
     }
 }

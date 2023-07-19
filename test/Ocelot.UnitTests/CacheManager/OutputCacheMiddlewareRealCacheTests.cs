@@ -1,41 +1,47 @@
-﻿namespace Ocelot.UnitTests.CacheManager
-{
-    using global::CacheManager.Core;
-    using Microsoft.AspNetCore.Http;
-    using Moq;
-    using Ocelot.Cache;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder.Middleware;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Shouldly;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
-    using TestStack.BDDfy;
-    using Xunit;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
+using global::CacheManager.Core;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Cache.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.CacheManager
+{
     public class OutputCacheMiddlewareRealCacheTests
     {
         private readonly IOcelotCache<CachedResponse> _cacheManager;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly OutputCacheMiddleware _middleware;
-        private RequestDelegate _next;
-        private Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
-        private HttpContext _httpContext;
+        private readonly RequestDelegate _next;
+        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        private readonly Mock<IOcelotLogger> _logger;
+        private readonly HttpContext _httpContext;
 
         public OutputCacheMiddlewareRealCacheTests()
         {
             _httpContext = new DefaultHttpContext();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();            
+            _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             var cacheManagerOutputCache = CacheFactory.Build<CachedResponse>("OcelotOutputCache", x =>
             {
@@ -53,7 +59,7 @@
         {
             var content = new StringContent("{\"Test\": 1}")
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
             };
 
             var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
@@ -72,7 +78,7 @@
 
         private void ThenTheContentTypeHeaderIsCached()
         {
-            string cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+            var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
             var result = _cacheManager.Get(cacheKey, "kanken");
             var header = result.ContentHeaders["Content-Type"];
             header.First().ShouldBe("application/json");
