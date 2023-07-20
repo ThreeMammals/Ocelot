@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Ocelot.IntegrationTests
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Sockets;
-
     public static class RandomPortFinder
     {
         private const int TrialNumber = 100;
