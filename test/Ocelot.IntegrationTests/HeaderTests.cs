@@ -30,7 +30,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_pass_remote_ip_address_if_as_x_forwarded_for_header()
+        public void Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
         {
             var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
@@ -139,7 +139,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            var text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
 
             configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
@@ -150,7 +150,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
         }
 
         private async Task WhenIGetUrlOnTheApiGateway(string url)

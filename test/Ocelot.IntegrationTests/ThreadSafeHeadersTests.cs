@@ -30,7 +30,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
+        public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
         {
             var port = RandomPortFinder.GetRandomPort();
             var configuration = new FileConfiguration
@@ -128,7 +128,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            var text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
 
             configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
@@ -139,7 +139,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
         }
 
         private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times)
@@ -180,6 +180,7 @@ namespace Ocelot.IntegrationTests
             _builder?.Dispose();
             _httpClient?.Dispose();
             _downstreamBuilder?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private class ThreadSafeHeadersTestResult
