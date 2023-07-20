@@ -4,55 +4,51 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Ocelot.IntegrationTests
+namespace Ocelot.IntegrationTests;
+
+public static class RandomPortFinder
 {
-    public static class RandomPortFinder
+    private const int TrialNumber = 100;
+    private const int BeginPortRange = 20000;
+    private const int EndPortRange = 45000;
+    private static readonly Random Random = new Random();
+    private static readonly ConcurrentBag<int> UsedPorts = new ConcurrentBag<int>();
+
+    public static int GetRandomPort()
     {
-        private const int TrialNumber = 100;
-        private const int BeginPortRange = 20000;
-        private const int EndPortRange = 45000;
-        private static readonly Random Random = new Random();
-        private static readonly ConcurrentBag<int> UsedPorts = new ConcurrentBag<int>();
-
-        public static int GetRandomPort()
+        for (var i = 0; i < TrialNumber; i++)
         {
-            for (var i = 0; i < TrialNumber; i++)
-            {
-                var randomPort = Random.Next(BeginPortRange, EndPortRange);
+            var randomPort = Random.Next(BeginPortRange, EndPortRange);
 
-                if (!PortInUse(randomPort))
+            if (!PortInUse(randomPort))
+            {
+                try
                 {
-                    try
-                    {
-                        return UsePort(randomPort);
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
+                    return UsePort(randomPort);
+                }
+                catch (Exception)
+                {
+                    // ignored
                 }
             }
-
-            throw new Exception("Cannot find available port to bind to.");
         }
 
-        private static int UsePort(int randomPort)
+        throw new Exception("Cannot find available port to bind to.");
+    }
+
+    private static int UsePort(int randomPort)
+    {
+        UsedPorts.Add(randomPort);
+
+        var ipe = new IPEndPoint(IPAddress.Loopback, randomPort);
+
+        using (var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
         {
-            UsedPorts.Add(randomPort);
-
-            var ipe = new IPEndPoint(IPAddress.Loopback, randomPort);
-
-            using (var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
-            {
-                socket.Bind(ipe);
-                socket.Close();
-                return randomPort;
-            }
-        }
-
-        private static bool PortInUse(int randomPort)
-        {
-            return UsedPorts.Any(p => p == randomPort);
+            socket.Bind(ipe);
+            socket.Close();
+            return randomPort;
         }
     }
+
+    private static bool PortInUse(int randomPort) => UsedPorts.Any(p => p == randomPort);
 }
