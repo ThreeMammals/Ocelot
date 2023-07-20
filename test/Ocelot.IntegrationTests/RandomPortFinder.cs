@@ -11,8 +11,8 @@ public static class RandomPortFinder
     private const int TrialNumber = 100;
     private const int BeginPortRange = 20000;
     private const int EndPortRange = 45000;
-    private static readonly Random Random = new Random();
-    private static readonly ConcurrentBag<int> UsedPorts = new ConcurrentBag<int>();
+    private static readonly Random Random = new();
+    private static readonly ConcurrentBag<int> UsedPorts = new();
 
     public static int GetRandomPort()
     {
@@ -42,12 +42,10 @@ public static class RandomPortFinder
 
         var ipe = new IPEndPoint(IPAddress.Loopback, randomPort);
 
-        using (var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
-        {
-            socket.Bind(ipe);
-            socket.Close();
-            return randomPort;
-        }
+        using var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(ipe);
+        socket.Close();
+        return randomPort;
     }
 
     private static bool PortInUse(int randomPort) => UsedPorts.Any(p => p == randomPort);

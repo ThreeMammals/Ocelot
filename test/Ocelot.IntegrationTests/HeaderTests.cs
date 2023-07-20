@@ -181,6 +181,7 @@ namespace Ocelot.IntegrationTests
             _builder?.Dispose();
             _httpClient?.Dispose();
             _downstreamBuilder?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
