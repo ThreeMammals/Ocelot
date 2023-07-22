@@ -528,13 +528,11 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                response.EnsureSuccessStatusCode();
-                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-            }
+            using var httpClient = new HttpClient();
+            var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            response.EnsureSuccessStatusCode();
+            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName)
@@ -596,11 +594,9 @@ namespace Ocelot.IntegrationTests
 
             _identityServerBuilder.Start();
 
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
-                response.EnsureSuccessStatusCode();
-            }
+            using var httpClient = new HttpClient();
+            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+            response.EnsureSuccessStatusCode();
         }
 
         private void GivenAnotherOcelotIsRunning(string baseUrl)
