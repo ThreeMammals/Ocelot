@@ -1,14 +1,14 @@
 Getting Started
 ===============
 
-Ocelot is designed to work with ASP.NET and is currently on net6.0.
+Ocelot is designed to work with ASP.NET and is currently on net7.0.
 
 .NET 7.0
 ^^^^^^^^
 
 **Install NuGet package**
 
-Install Ocelot and it's dependencies using nuget. You will need to create a net6.0 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
+Install Ocelot and it's dependencies using nuget. You will need to create a net7.0 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
 to get up and running.
 
    ``Install-Package Ocelot``
