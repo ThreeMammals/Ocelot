@@ -10,7 +10,7 @@ namespace Ocelot.Infrastructure
     {
         private readonly IConfiguration _configuration;
         private readonly IPlaceholders _placeholders;
-        private static readonly Regex _regex = new Regex(@"[{}]", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        private static readonly Regex Regex = new Regex(@"[{}]", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
 
         public ConfigAwarePlaceholders(IConfiguration configuration, IPlaceholders placeholders)
         {
@@ -49,7 +49,7 @@ namespace Ocelot.Infrastructure
             => _placeholders.Remove(key);
 
         private string CleanKey(string key)
-            => _regex.Replace(key, string.Empty);
+            => Regex.Replace(key, string.Empty);
 
         private Response<string> GetFromConfig(string key)
         {
