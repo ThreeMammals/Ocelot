@@ -6,31 +6,29 @@ namespace Ocelot.Cache
     {
         public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
         {
-            string hashedContent = null;
-            var downStreamUrlKeyBuilder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
+            var builder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
 
             var cacheOptionsHeader = downstreamRoute?.CacheOptions?.Header;
 
             if (!string.IsNullOrEmpty(cacheOptionsHeader))
             {
-                var header = downstreamRequest.Headers.FirstOrDefault(r =>
-                        r.Key.Equals(cacheOptionsHeader, StringComparison.OrdinalIgnoreCase))
+                var header = downstreamRequest.Headers
+                    .FirstOrDefault(r => r.Key.Equals(cacheOptionsHeader, StringComparison.OrdinalIgnoreCase))
                     .Value?.FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(header))
                 {
-                    downStreamUrlKeyBuilder.Append(header);
+                    builder.Append(header);
                 }
             }
 
             if (downstreamRequest.Content != null)
             {
                 var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
-                downStreamUrlKeyBuilder.Append(requestContentString);
+                builder.Append(requestContentString);
             }
 
-            var hashedContent = MD5Helper.GenerateMd5(downStreamUrlKeyBuilder.ToString());
-            return hashedContent;
+            return MD5Helper.GenerateMd5(builder.ToString());
         }
     }
 }

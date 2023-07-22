@@ -1,4 +1,6 @@
 ﻿using Ocelot.Cache;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Cache
