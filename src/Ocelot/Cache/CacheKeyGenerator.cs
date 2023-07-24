@@ -1,7 +1,6 @@
-﻿using System.Text;
+﻿using Ocelot.Request.Middleware;
+using System.Text;
 using System.Threading.Tasks;
-
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.Cache
 {

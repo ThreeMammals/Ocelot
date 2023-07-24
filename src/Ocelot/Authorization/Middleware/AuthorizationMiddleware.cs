@@ -1,14 +1,9 @@
-﻿using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-
 using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
+using System.Threading.Tasks;
 
 namespace Ocelot.Authorization.Middleware
 {

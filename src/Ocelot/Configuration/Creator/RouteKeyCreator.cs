@@ -1,7 +1,6 @@
-using System.Linq;
-
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
+using System.Linq;
 
 namespace Ocelot.Configuration.Creator
 {

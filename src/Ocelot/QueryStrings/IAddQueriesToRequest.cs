@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Ocelot.QueryStrings
 {

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-
-using Ocelot.Multiplexer;
-
 using Ocelot.Authentication.Middleware;
 using Ocelot.Authorization.Middleware;
 using Ocelot.Cache.Middleware;
@@ -16,6 +10,7 @@ using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer.Middleware;
+using Ocelot.Multiplexer;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.RateLimit.Middleware;
 using Ocelot.Request.Middleware;
@@ -24,6 +19,8 @@ using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
 using Ocelot.Security.Middleware;
 using Ocelot.WebSockets.Middleware;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.Middleware
 {

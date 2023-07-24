@@ -1,13 +1,10 @@
-using System;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Hosting;
-
 using Newtonsoft.Json;
-
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
+using System;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Repository
 {

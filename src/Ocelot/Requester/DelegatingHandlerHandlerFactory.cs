@@ -1,17 +1,12 @@
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Requester.QoS;
+using Ocelot.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-
-using Ocelot.Configuration;
-
-using Ocelot.Logging;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Ocelot.Requester.QoS;
-
-using Ocelot.Responses;
 
 namespace Ocelot.Requester
 {

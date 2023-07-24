@@ -1,8 +1,6 @@
-﻿using System;
-
-using Microsoft.Extensions.Caching.Distributed;
-
+﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using System;
 
 namespace Ocelot.RateLimit
 {

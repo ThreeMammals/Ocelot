@@ -1,8 +1,6 @@
-using System.Net.Http;
-
 using Ocelot.Configuration;
-
 using Ocelot.Responses;
+using System.Net.Http;
 
 namespace Ocelot.Requester.QoS
 {

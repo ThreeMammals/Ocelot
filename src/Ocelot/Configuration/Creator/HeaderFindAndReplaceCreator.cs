@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
+using System;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {

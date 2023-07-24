@@ -1,9 +1,7 @@
+using Ocelot.Configuration.Creator;
+using Ocelot.Values;
 using System;
 using System.Collections.Generic;
-
-using Ocelot.Configuration.Creator;
-
-using Ocelot.Values;
 
 namespace Ocelot.Configuration
 {

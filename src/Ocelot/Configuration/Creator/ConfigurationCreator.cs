@@ -1,11 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using System;
 using System.Collections.Generic;
-
-using Ocelot.DependencyInjection;
-
-using Ocelot.Configuration.File;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Configuration.Creator
 {

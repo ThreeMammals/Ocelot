@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
-
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
+using System.Collections.Generic;
 
 namespace Ocelot.Headers
 {

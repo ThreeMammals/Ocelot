@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Ocelot.Headers
 {

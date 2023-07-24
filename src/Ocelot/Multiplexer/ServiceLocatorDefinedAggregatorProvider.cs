@@ -1,11 +1,9 @@
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
+using Ocelot.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Ocelot.Configuration;
-using Ocelot.Responses;
 
 namespace Ocelot.Multiplexer
 {

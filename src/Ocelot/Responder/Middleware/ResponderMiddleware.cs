@@ -1,16 +1,11 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Ocelot.Errors;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Middleware;
 
 namespace Ocelot.Responder.Middleware
 {

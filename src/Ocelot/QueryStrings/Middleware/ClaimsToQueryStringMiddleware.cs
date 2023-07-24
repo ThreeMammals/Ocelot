@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.QueryStrings.Middleware
 {

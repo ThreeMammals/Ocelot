@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-
 using Ocelot.Configuration.Parser;
 using Ocelot.Logging;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {

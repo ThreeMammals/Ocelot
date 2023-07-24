@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-using Ocelot.Configuration;
-
+﻿using Ocelot.Configuration;
 using Ocelot.Responses;
-
 using Ocelot.ServiceDiscovery;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {

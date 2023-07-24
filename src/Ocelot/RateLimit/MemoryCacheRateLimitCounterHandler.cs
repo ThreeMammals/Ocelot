@@ -1,6 +1,5 @@
-﻿using System;
-
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System;
 
 namespace Ocelot.RateLimit
 {

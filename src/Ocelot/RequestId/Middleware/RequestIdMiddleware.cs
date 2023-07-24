@@ -1,15 +1,11 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-
-using Ocelot.Infrastructure.RequestData;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Middleware;
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.RequestId.Middleware
 {

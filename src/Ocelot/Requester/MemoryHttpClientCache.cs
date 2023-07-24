@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Ocelot.Configuration;
+using System;
 using System.Collections.Concurrent;
-
-using Ocelot.Configuration;
 
 namespace Ocelot.Requester
 {

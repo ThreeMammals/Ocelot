@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Configuration;
 
 namespace Ocelot.RateLimit
 {

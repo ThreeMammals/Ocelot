@@ -1,8 +1,6 @@
-﻿using System;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
+using System;
 
 namespace Ocelot.Infrastructure.RequestData
 {

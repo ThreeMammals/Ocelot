@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
-
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Setter
 {

@@ -1,6 +1,5 @@
-using System.Linq;
-
 using Ocelot.Configuration.File;
+using System.Linq;
 
 namespace Ocelot.Cache
 {

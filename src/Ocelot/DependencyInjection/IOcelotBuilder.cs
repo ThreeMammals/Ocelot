@@ -1,13 +1,11 @@
-using System;
-using System.Net.Http;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Multiplexer;
 using Ocelot.ServiceDiscovery.Providers;
+using System;
+using System.Net.Http;
 
 namespace Ocelot.DependencyInjection
 {

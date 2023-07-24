@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-
-using Ocelot.Configuration.File;
-
+﻿using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Ocelot.Configuration
 {

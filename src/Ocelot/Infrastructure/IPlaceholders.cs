@@ -1,7 +1,6 @@
-using System;
-
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using System;
 
 namespace Ocelot.Infrastructure
 {

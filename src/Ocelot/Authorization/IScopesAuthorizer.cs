@@ -1,7 +1,6 @@
-﻿using System.Security.Claims;
-
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Ocelot.Authorization
 {

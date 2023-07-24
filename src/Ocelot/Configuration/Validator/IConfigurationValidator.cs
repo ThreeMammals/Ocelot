@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
+﻿using Ocelot.Configuration.File;
 using Ocelot.Responses;
+using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Validator
 {

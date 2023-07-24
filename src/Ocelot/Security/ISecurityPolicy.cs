@@ -1,10 +1,7 @@
-﻿using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Responses;
+using System.Threading.Tasks;
 
 namespace Ocelot.Security
 {

@@ -1,13 +1,9 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
-
 using Ocelot.PathManipulation;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.DownstreamPathManipulation.Middleware
 {

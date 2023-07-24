@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
+using Ocelot.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Ocelot.Configuration;
-
-using Ocelot.Logging;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
