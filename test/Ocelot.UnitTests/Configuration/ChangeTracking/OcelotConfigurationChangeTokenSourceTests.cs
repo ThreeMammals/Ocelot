@@ -1,9 +1,6 @@
 using Ocelot.Configuration.ChangeTracking;
-
 using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.ChangeTracking

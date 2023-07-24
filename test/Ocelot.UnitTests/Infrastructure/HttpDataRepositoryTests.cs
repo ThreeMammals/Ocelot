@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Responses;
-
 using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure

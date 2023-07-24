@@ -1,19 +1,14 @@
-﻿using Ocelot.Middleware;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Moq;
-
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Errors;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Responder;
 using Ocelot.Responder.Middleware;
-
+using System.Net.Http;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Responder

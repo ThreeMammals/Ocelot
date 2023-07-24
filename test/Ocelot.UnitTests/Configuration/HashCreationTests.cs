@@ -1,8 +1,6 @@
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System;
 using System.Security.Cryptography;
-
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration

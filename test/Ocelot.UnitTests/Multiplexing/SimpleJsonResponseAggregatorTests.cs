@@ -1,12 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-
-using Castle.Components.DictionaryAdapter;
-
+﻿using Castle.Components.DictionaryAdapter;
 using Microsoft.AspNetCore.Http;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -14,11 +7,12 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexing

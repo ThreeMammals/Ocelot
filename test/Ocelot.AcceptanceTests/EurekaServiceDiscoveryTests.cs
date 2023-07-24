@@ -1,17 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Ocelot.Configuration.File;
+using Steeltoe.Common.Discovery;
+using System;
 using System.Collections.Generic;
 using System.Net;
-
-using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Http;
-
-using Newtonsoft.Json;
-
-using Steeltoe.Common.Discovery;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests

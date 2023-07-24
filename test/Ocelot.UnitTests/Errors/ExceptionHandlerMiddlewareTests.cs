@@ -1,22 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
-
 using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Errors.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-
 using Shouldly;
-
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Errors

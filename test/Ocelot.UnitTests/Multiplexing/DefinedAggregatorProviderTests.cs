@@ -1,16 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Multiplexer;
 using Ocelot.Responses;
-
 using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
-
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.Multiplexing

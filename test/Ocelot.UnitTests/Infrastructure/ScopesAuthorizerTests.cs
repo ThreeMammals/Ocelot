@@ -1,17 +1,12 @@
-using System.Collections.Generic;
-using System.Security.Claims;
-
 using Moq;
-
 using Ocelot.Authorization;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Security.Claims;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure

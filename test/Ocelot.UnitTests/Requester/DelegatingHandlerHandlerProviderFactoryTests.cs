@@ -1,25 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
-
-using Ocelot.UnitTests.Responder;
-
 using Ocelot.Responses;
-
+using Ocelot.UnitTests.Responder;
 using Shouldly;
-
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Requester

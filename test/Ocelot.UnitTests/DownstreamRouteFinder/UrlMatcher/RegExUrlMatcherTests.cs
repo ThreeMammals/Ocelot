@@ -1,11 +1,8 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
-
 using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher

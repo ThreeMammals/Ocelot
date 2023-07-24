@@ -1,22 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Moq;
-
-using Ocelot.Multiplexer;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-
+using Ocelot.Multiplexer;
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexing

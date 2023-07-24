@@ -1,12 +1,8 @@
-﻿using System;
-using System.Threading;
-
-using Microsoft.Extensions.Caching.Memory;
-
+﻿using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Cache;
-
 using Shouldly;
-
+using System;
+using System.Threading;
 using Xunit;
 
 namespace Ocelot.UnitTests.Cache

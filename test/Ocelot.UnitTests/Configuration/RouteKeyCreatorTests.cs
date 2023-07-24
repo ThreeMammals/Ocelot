@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Linq;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Configuration

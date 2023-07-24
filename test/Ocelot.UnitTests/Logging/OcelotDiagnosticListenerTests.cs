@@ -1,14 +1,9 @@
-using System;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
-
 using Ocelot.Logging;
-
+using System;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Logging

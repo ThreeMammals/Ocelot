@@ -1,24 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-
-using Moq;
-
+﻿using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Headers;
+using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Logging;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using TestStack.BDDfy;
-
 using Xunit;
-using Ocelot.Infrastructure;
-using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Headers
 {

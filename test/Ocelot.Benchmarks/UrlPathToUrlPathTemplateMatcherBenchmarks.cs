@@ -3,7 +3,6 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Validators;
-
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
 

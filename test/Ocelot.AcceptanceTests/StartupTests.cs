@@ -1,17 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.Responses;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
-
-using Microsoft.AspNetCore.Http;
-
-using Ocelot.Responses;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests

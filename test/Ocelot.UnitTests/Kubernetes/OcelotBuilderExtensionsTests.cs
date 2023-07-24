@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
-
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes;
-
 using Shouldly;
-
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes

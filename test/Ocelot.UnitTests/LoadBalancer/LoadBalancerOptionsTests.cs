@@ -1,8 +1,6 @@
 using Ocelot.Configuration;
 using Ocelot.LoadBalancer.LoadBalancers;
-
 using Shouldly;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer

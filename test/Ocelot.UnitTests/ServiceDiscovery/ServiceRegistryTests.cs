@@ -1,12 +1,8 @@
+using Ocelot.Values;
+using Shouldly;
 using System;
 using System.Collections.Generic;
-
-using Ocelot.Values;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 // nothing in use

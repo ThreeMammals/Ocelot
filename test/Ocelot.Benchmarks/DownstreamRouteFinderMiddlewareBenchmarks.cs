@@ -1,28 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Validators;
-
-using Ocelot.Configuration;
-
-using Ocelot.DependencyInjection;
-
-using Ocelot.DownstreamRouteFinder.Finder;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using Ocelot.Middleware;
-
+using Ocelot.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Benchmarks
 {

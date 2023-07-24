@@ -1,15 +1,10 @@
-using System.Collections.Generic;
-
 using Microsoft.AspNetCore.Http;
-
 using Ocelot.Configuration;
 using Ocelot.Headers;
 using Ocelot.Responses;
-
 using Shouldly;
-
+using System.Collections.Generic;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Headers

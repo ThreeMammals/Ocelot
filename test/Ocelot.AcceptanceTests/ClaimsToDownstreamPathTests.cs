@@ -1,23 +1,18 @@
-﻿using Xunit;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-
-using Ocelot.Configuration.File;
-
-using IdentityServer4.AccessTokenValidation;
+﻿using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
+using Ocelot.Configuration.File;
 using Shouldly;
-
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using TestStack.BDDfy;
+using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

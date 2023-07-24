@@ -1,16 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
-
-using global::CacheManager.Core;
-
+﻿using global::CacheManager.Core;
 using Microsoft.AspNetCore.Http;
-
 using Moq;
-
 using Ocelot.Cache;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Cache.Middleware;
@@ -18,11 +8,14 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.CacheManager

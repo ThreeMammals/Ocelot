@@ -1,33 +1,22 @@
+using CacheManager.Core;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using Ocelot.Administration;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-
-using Ocelot.Administration;
-
-using CacheManager.Core;
-
-using Ocelot.Configuration.File;
-
-using Ocelot.DependencyInjection;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-using Ocelot.Middleware;
-
-using Newtonsoft.Json;
-
-using Ocelot.Cache.CacheManager;
-
-using Shouldly;
-
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.IntegrationTests
