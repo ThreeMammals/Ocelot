@@ -1,4 +1,4 @@
-﻿using global::CacheManager.Core;
+﻿using CacheManager.Core;
 using Ocelot.Cache.CacheManager;
 
 namespace Ocelot.UnitTests.CacheManager

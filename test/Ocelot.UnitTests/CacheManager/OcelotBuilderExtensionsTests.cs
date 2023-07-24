@@ -1,4 +1,4 @@
-﻿using global::CacheManager.Core;
+﻿using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-﻿using global::Consul;
+﻿using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Values;
-using _Consul_ = Ocelot.Provider.Consul.Consul;
+using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
 namespace Ocelot.UnitTests.Consul
 {
@@ -14,7 +14,7 @@ namespace Ocelot.UnitTests.Consul
     {
         private IWebHost _fakeConsulBuilder;
         private readonly List<ServiceEntry> _serviceEntries;
-        private _Consul_ _provider;
+        private ConsulProvider _provider;
         private readonly string _serviceName;
         private readonly int _port;
         private readonly string _consulHost;
@@ -37,10 +37,10 @@ namespace Ocelot.UnitTests.Consul
             _factory = new Mock<IOcelotLoggerFactory>();
             _clientFactory = new ConsulClientFactory();
             _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<_Consul_>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
-            _provider = new _Consul_(config, _factory.Object, _clientFactory);
+            _provider = new ConsulProvider(config, _factory.Object, _clientFactory);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Consul
         {
             var token = "test token";
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
-            _provider = new _Consul_(config, _factory.Object, _clientFactory);
+            _provider = new ConsulProvider(config, _factory.Object, _clientFactory);
 
             var serviceEntryOne = new ServiceEntry
             {

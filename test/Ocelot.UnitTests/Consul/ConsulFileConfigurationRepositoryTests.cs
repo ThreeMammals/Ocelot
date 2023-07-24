@@ -1,4 +1,4 @@
-﻿using global::Consul;
+﻿using Consul;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Ocelot.Cache;

@@ -1,4 +1,4 @@
-﻿using global::CacheManager.Core;
+﻿using CacheManager.Core;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Cache;
 using Ocelot.Cache.CacheManager;
