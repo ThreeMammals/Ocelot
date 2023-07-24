@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-
-namespace Ocelot.Configuration.File
+﻿namespace Ocelot.Configuration.File
 {
     public class FileRateLimitRule
     {

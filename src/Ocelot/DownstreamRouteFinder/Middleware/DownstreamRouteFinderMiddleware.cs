@@ -3,8 +3,6 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
 {

@@ -1,6 +1,5 @@
 ﻿using Ocelot.Middleware;
 using Ocelot.Responses;
-using System.Collections.Generic;
 
 namespace Ocelot.Headers
 {

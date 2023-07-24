@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.Cache
 {

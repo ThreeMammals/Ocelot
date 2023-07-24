@@ -1,7 +1,5 @@
 using Ocelot.Configuration.File;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {

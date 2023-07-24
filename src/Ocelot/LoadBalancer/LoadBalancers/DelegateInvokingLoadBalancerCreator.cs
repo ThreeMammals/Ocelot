@@ -1,7 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
-using System;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {

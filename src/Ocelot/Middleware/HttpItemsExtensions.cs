@@ -2,7 +2,6 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Request.Middleware;
-using System.Collections.Generic;
 
 namespace Ocelot.Middleware
 {

@@ -4,8 +4,6 @@ using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 
 namespace Ocelot.PathManipulation

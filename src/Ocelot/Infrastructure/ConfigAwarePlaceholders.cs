@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using System;
-using System.Text.RegularExpressions;
 
 namespace Ocelot.Infrastructure
 {

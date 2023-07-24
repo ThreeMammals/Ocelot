@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Repository;
 using Ocelot.Errors.Middleware;
 using Ocelot.Logging;
-using System.Threading.Tasks;
 
 namespace Ocelot.Middleware
 {

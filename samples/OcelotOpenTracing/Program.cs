@@ -1,14 +1,9 @@
 ﻿using Jaeger;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Tracing.OpenTracing;
 using OpenTracing.Util;
-using System.IO;
 
 namespace OcelotOpenTracing
 {

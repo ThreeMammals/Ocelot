@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.Configuration.ChangeTracking
 {

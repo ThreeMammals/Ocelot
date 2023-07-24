@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Ocelot.Administration;
+﻿using Ocelot.Administration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using System.IO;
 
 namespace AdministrationApi
 {

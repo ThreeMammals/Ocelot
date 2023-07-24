@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using System;
 
 namespace Ocelot.Requester
 {

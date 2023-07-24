@@ -4,8 +4,6 @@ using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Middleware;
 using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.Headers
 {

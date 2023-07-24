@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Repository;
-using System;
 
 namespace Ocelot.Configuration.ChangeTracking
 {

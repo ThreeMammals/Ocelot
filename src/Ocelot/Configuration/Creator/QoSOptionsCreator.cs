@@ -1,7 +1,5 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.Configuration.Creator
 {

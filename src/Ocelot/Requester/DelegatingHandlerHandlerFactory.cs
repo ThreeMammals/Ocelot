@@ -3,10 +3,6 @@ using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 
 namespace Ocelot.Requester
 {

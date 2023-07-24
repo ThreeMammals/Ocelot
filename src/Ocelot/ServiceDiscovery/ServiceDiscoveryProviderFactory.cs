@@ -5,8 +5,6 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.ServiceDiscovery
 {

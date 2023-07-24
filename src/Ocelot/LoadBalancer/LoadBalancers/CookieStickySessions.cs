@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
 {

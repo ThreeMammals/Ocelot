@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
-using System;
-using System.Threading.Tasks;
 
 namespace Ocelot.Configuration.Repository
 {

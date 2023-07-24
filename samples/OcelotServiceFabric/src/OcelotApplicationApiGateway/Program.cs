@@ -4,9 +4,7 @@
 // ------------------------------------------------------------
 
 using Microsoft.ServiceFabric.Services.Runtime;
-using System;
 using System.Diagnostics.Tracing;
-using System.Threading;
 
 namespace OcelotApplicationApiGateway
 

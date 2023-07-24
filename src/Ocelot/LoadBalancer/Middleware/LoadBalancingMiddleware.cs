@@ -2,8 +2,6 @@
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
-using System.Threading.Tasks;
 
 namespace Ocelot.LoadBalancer.Middleware
 {

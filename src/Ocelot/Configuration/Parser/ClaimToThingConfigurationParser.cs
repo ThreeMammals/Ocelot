@@ -1,6 +1,4 @@
 ﻿using Ocelot.Responses;
-using System;
-using System.Text.RegularExpressions;
 
 namespace Ocelot.Configuration.Parser
 {

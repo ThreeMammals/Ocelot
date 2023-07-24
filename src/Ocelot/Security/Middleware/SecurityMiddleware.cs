@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Ocelot.Security.Middleware
 {

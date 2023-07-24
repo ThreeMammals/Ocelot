@@ -2,10 +2,6 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Ocelot.RateLimit.Middleware
 {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Middleware;
-using System.Threading.Tasks;
 
 namespace Ocelot.Responder
 {

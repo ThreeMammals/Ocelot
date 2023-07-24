@@ -19,8 +19,6 @@ using Ocelot.RequestId.Middleware;
 using Ocelot.Responder.Middleware;
 using Ocelot.Security.Middleware;
 using Ocelot.WebSockets.Middleware;
-using System;
-using System.Threading.Tasks;
 
 namespace Ocelot.Middleware
 {

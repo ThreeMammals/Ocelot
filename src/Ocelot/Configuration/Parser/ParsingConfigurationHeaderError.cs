@@ -1,5 +1,4 @@
 ﻿using Ocelot.Errors;
-using System;
 
 namespace Ocelot.Configuration.Parser
 {

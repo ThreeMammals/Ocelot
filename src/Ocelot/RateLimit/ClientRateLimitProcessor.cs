@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using System;
 
 namespace Ocelot.RateLimit
 {

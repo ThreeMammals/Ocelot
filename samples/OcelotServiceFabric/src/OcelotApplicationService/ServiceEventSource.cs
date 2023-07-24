@@ -1,7 +1,5 @@
-using System;
 using System.Diagnostics.Tracing;
 using System.Fabric;
-using System.Threading.Tasks;
 
 namespace OcelotApplicationService
 {

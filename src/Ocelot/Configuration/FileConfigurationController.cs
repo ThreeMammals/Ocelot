@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
-using System;
-using System.Threading.Tasks;
 
 namespace Ocelot.Configuration
 {

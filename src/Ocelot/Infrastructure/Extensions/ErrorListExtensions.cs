@@ -1,6 +1,4 @@
 ﻿using Ocelot.Errors;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.Infrastructure.Extensions
 {

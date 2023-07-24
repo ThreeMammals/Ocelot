@@ -1,9 +1,5 @@
 ﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {

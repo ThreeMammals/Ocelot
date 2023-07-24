@@ -2,7 +2,6 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace Ocelot.PathManipulation

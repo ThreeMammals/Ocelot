@@ -3,9 +3,6 @@ using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.Responder.Middleware
 {

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Threading.Tasks;
 
 namespace Ocelot.Authentication.Middleware
 {

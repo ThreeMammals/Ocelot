@@ -10,10 +10,7 @@ using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.Middleware
 {

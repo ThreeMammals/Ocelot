@@ -2,8 +2,6 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.PathManipulation;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.DownstreamPathManipulation.Middleware
 {

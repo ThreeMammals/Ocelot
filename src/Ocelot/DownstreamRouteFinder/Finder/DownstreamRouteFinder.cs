@@ -1,8 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {

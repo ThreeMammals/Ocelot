@@ -1,6 +1,5 @@
 using Ocelot.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
-using System;
 
 namespace Ocelot.ServiceDiscovery
 {

@@ -1,8 +1,5 @@
 using Ocelot.Configuration;
 using Ocelot.Responses;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 
 namespace Ocelot.Requester
 {

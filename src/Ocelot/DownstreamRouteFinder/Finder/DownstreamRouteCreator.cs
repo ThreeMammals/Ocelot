@@ -4,9 +4,6 @@ using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {

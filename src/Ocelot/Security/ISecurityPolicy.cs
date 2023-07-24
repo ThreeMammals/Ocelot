@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Responses;
-using System.Threading.Tasks;
 
 namespace Ocelot.Security
 {

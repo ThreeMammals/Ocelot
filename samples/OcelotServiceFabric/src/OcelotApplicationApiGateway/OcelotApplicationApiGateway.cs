@@ -5,7 +5,6 @@
 
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
-using System.Collections.Generic;
 using System.Fabric;
 
 namespace OcelotApplicationApiGateway
