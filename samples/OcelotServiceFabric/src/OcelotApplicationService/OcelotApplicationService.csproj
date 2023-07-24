@@ -2,6 +2,8 @@
   <PropertyGroup>
     <Description>Stateless Service Application</Description>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <AssemblyName>OcelotApplicationService</AssemblyName>
     <PackageId>OcelotApplicationService</PackageId>
     <PackageTargetFallback>$(PackageTargetFallback)</PackageTargetFallback>

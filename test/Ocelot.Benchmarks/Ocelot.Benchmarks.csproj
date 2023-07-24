@@ -3,6 +3,8 @@
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <AssemblyName>Ocelot.Benchmarks</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.Benchmarks</PackageId>

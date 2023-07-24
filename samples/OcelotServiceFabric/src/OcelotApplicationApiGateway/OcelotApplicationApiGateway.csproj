@@ -2,6 +2,8 @@
   <PropertyGroup>
     <Description>Stateless Web Service for Stateful OcelotApplicationApiGateway App</Description>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <AssemblyName>OcelotApplicationApiGateway</AssemblyName>
     <PackageId>OcelotApplicationApiGateway</PackageId>
     <PlatformTarget>x64</PlatformTarget>

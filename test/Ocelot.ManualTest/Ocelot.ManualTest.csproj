@@ -2,6 +2,8 @@
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>Ocelot.ManualTest</AssemblyName>
     <OutputType>Exe</OutputType>

@@ -3,7 +3,9 @@
 	<PropertyGroup>
 		<VersionPrefix>0.0.0-dev</VersionPrefix>
 		<TargetFramework>net7.0</TargetFramework>
-		<AssemblyName>Ocelot.UnitTests</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Ocelot.UnitTests</AssemblyName>
 		<PackageId>Ocelot.UnitTests</PackageId>
 		<OutputType>Exe</OutputType>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>

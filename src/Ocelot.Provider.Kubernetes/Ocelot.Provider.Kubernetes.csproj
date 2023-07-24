@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Product>Ocelot</Product>
     <Description>Provides Ocelot extensions to use kubernetes</Description>
