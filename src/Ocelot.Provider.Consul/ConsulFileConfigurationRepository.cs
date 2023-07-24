@@ -1,19 +1,13 @@
-﻿using System;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using global::Consul;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-
-using global::Consul;
-
 using Ocelot.Logging;
-
-using Microsoft.Extensions.Options;
-
-using Newtonsoft.Json;
-
 using Ocelot.Responses;
+using System;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Consul
 {

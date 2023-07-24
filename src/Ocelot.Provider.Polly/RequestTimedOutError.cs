@@ -1,6 +1,5 @@
-﻿using System;
-
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
+using System;
 
 namespace Ocelot.Provider.Polly
 {

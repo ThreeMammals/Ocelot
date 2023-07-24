@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
+using Steeltoe.Discovery;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Ocelot.ServiceDiscovery.Providers;
-
-using Steeltoe.Discovery;
-
-using Ocelot.Values;
 
 namespace Ocelot.Provider.Eureka
 {

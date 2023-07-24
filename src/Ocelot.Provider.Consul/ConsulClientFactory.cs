@@ -1,6 +1,5 @@
-﻿using System;
-
-using global::Consul;
+﻿using global::Consul;
+using System;
 
 namespace Ocelot.Provider.Consul
 {

@@ -1,4 +1,4 @@
-﻿using Consul;
+﻿using global::Consul;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;

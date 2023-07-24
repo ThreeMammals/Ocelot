@@ -1,7 +1,5 @@
-﻿using Ocelot.Logging;
-
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Provider.Consul

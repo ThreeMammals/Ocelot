@@ -1,18 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Consul
 {

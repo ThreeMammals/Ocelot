@@ -2,17 +2,17 @@
 // Copyright (c) ThreeMammals. All rights reserved.
 // </copyright>
 
-namespace Ocelot.Tracing.OpenTracing;
-
+using global::OpenTracing;
+using global::OpenTracing.Propagation;
+using global::OpenTracing.Tag;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using global::OpenTracing;
-using global::OpenTracing.Propagation;
-using global::OpenTracing.Tag;
-using Microsoft.AspNetCore.Http;
+
+namespace Ocelot.Tracing.OpenTracing;
 
 /// <summary>
 /// Default tracer implementation for the <see cref="Logging.ITracer"/> interface.

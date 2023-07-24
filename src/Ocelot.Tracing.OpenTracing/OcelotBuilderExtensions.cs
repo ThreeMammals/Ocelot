@@ -2,11 +2,11 @@
 // Copyright (c) ThreeMammals. All rights reserved.
 // </copyright>
 
-namespace Ocelot.Tracing.OpenTracing;
-
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
+
+namespace Ocelot.Tracing.OpenTracing;
 
 /// <summary>
 /// Extension methods for the <see cref="IOcelotBuilder"/> interface.
