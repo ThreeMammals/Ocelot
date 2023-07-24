@@ -1,15 +1,9 @@
-﻿using global::Butterfly.Client.AspNetCore;
-using global::Butterfly.Client.Tracing;
-using global::Butterfly.OpenTracing;
+﻿using Butterfly.Client.AspNetCore;
+using Butterfly.Client.Tracing;
+using Butterfly.OpenTracing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Tracing.Butterfly
 {

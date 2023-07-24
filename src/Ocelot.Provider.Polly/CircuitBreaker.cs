@@ -1,6 +1,4 @@
 using Polly;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ocelot.Provider.Polly
 {

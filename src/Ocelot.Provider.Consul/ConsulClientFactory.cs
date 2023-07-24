@@ -1,5 +1,4 @@
-﻿using global::Consul;
-using System;
+﻿using Consul;
 
 namespace Ocelot.Provider.Consul
 {

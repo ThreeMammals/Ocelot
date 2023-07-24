@@ -1,5 +1,4 @@
-﻿using global::CacheManager.Core;
-using System;
+﻿using CacheManager.Core;
 
 namespace Ocelot.Cache.CacheManager
 {

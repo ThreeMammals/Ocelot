@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
-using System;
 
 namespace Ocelot.Provider.Kubernetes
 {

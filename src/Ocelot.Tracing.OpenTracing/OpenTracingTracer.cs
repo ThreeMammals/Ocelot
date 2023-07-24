@@ -2,15 +2,10 @@
 // Copyright (c) ThreeMammals. All rights reserved.
 // </copyright>
 
-using global::OpenTracing;
-using global::OpenTracing.Propagation;
-using global::OpenTracing.Tag;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+using OpenTracing;
+using OpenTracing.Propagation;
+using OpenTracing.Tag;
 
 namespace Ocelot.Tracing.OpenTracing;
 

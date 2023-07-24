@@ -2,7 +2,6 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Repository;
 using Ocelot.Middleware;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Eureka
 {

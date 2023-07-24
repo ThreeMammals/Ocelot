@@ -1,10 +1,9 @@
-﻿using global::CacheManager.Core;
+﻿using CacheManager.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using System;
 
 namespace Ocelot.Cache.CacheManager
 {

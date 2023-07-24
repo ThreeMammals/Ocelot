@@ -1,13 +1,11 @@
-﻿using global::Consul;
+﻿using Consul;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using System;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Consul
 {
