@@ -1,19 +1,10 @@
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexing
 {

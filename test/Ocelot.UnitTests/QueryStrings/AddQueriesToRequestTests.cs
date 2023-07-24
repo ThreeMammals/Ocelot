@@ -1,18 +1,10 @@
-﻿using Moq;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.QueryStrings
 {

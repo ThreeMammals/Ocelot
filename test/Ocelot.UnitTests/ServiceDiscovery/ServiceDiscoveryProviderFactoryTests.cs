@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -7,12 +6,6 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {

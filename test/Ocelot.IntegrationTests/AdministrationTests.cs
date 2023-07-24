@@ -15,17 +15,8 @@ using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.IntegrationTests
 {

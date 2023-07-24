@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Claims;
 using Ocelot.Claims.Middleware;
 using Ocelot.Configuration;
@@ -8,10 +7,6 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Claims
 {

@@ -1,8 +1,5 @@
 ﻿using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
-using System;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

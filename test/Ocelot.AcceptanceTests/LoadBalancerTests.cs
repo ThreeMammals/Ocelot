@@ -5,12 +5,6 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

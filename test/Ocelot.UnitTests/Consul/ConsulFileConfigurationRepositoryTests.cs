@@ -1,20 +1,12 @@
 ﻿using global::Consul;
 using Microsoft.Extensions.Options;
-using Moq;
 using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Responses;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Consul
 {

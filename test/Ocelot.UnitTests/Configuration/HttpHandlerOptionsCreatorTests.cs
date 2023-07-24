@@ -4,13 +4,6 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
-using Shouldly;
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

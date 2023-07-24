@@ -4,17 +4,8 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Request.Mapper
 {

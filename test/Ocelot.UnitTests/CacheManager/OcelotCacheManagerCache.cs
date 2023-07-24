@@ -1,10 +1,5 @@
 ﻿using global::CacheManager.Core;
-using Moq;
 using Ocelot.Cache.CacheManager;
-using Shouldly;
-using System;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.CacheManager
 {

@@ -1,15 +1,9 @@
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Net;
-using System.Net.Http;
-using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {

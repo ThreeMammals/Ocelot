@@ -1,8 +1,4 @@
 using Ocelot.Request.Middleware;
-using Shouldly;
-using System;
-using System.Net.Http;
-using Xunit;
 
 namespace Ocelot.UnitTests.Request
 {

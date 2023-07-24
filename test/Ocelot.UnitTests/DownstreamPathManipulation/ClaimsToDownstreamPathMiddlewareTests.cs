@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamPathManipulation.Middleware;
@@ -10,12 +9,7 @@ using Ocelot.PathManipulation;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {

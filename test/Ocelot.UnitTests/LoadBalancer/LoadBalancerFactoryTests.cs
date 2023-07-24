@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
@@ -8,12 +7,6 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {

@@ -1,6 +1,4 @@
 ﻿using Ocelot.Infrastructure.Extensions;
-using Shouldly;
-using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {

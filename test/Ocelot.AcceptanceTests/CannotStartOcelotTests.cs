@@ -1,8 +1,4 @@
 using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

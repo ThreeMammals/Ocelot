@@ -5,14 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
 using System.Text;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

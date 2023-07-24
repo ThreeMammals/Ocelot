@@ -1,9 +1,5 @@
 ﻿using Ocelot.Cache;
 using Ocelot.Request.Middleware;
-using Shouldly;
-using System.Net.Http;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Cache
 {

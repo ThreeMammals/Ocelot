@@ -1,14 +1,8 @@
-﻿using Moq;
-using Ocelot.Infrastructure;
+﻿using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes
 {

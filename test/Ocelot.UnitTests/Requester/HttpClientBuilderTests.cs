@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -9,15 +8,6 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Requester
 {

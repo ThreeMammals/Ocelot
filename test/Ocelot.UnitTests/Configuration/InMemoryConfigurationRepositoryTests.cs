@@ -1,14 +1,8 @@
-﻿using Moq;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

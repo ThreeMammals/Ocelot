@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Configuration.File;
-using System;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

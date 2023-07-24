@@ -6,15 +6,7 @@ using Ocelot.Configuration.File;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
-using Shouldly;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests

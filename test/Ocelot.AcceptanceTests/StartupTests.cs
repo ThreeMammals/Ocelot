@@ -2,12 +2,6 @@
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Responses;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

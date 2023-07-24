@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure;
@@ -9,10 +8,6 @@ using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using Shouldly;
-using System.Net.Http;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Request
 {

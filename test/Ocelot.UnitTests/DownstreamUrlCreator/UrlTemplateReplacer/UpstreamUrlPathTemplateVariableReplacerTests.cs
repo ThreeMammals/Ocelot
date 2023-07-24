@@ -4,10 +4,6 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Responses;
 using Ocelot.Values;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
 {

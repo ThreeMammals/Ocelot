@@ -9,15 +9,8 @@ using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.IntegrationTests
 {

@@ -1,13 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

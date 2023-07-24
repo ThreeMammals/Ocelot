@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Net;
+﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 
 namespace Ocelot.AcceptanceTests

@@ -3,12 +3,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 using Ocelot.Responder;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {

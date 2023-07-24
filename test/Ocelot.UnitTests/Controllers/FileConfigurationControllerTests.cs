@@ -1,15 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Controllers
 {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Cache;
 using Ocelot.Cache.Middleware;
 using Ocelot.Configuration;
@@ -8,13 +7,6 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Cache
 {

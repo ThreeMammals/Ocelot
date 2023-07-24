@@ -1,11 +1,5 @@
 ﻿using Ocelot.Errors;
 using Ocelot.Responder;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Responder
 {

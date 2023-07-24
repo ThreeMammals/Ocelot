@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Ocelot.Middleware;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {

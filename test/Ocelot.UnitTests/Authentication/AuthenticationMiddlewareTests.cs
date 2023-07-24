@@ -1,18 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Authentication.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Shouldly;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 

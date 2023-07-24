@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System;
 using System.Security.Cryptography;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

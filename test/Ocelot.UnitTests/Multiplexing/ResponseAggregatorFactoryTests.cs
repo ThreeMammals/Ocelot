@@ -1,10 +1,6 @@
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Multiplexer;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexing
 {

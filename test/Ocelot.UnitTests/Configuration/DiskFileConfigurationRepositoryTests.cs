@@ -1,16 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
-using Moq;
 using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

@@ -1,10 +1,5 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 {

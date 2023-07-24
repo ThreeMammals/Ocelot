@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -9,14 +8,6 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.RequestId.Middleware;
 using Ocelot.Responses;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.RequestId
 {

@@ -6,15 +6,7 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Shouldly;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.IntegrationTests
 {

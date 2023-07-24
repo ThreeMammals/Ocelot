@@ -2,18 +2,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using TestStack.BDDfy;
-using Xunit;
 using _Consul_ = Ocelot.Provider.Consul.Consul;
 
 namespace Ocelot.UnitTests.Consul

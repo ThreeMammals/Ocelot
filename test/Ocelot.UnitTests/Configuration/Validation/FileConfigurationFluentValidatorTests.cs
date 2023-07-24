@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Requester;
@@ -11,13 +10,8 @@ using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
-using Shouldly;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {

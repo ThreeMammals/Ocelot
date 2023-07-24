@@ -9,9 +9,6 @@ using Ocelot.LoadBalancer.Middleware;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.WebSockets.Middleware;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Middleware
 {

@@ -2,9 +2,7 @@
 using CacheManager.Core.Internal;
 using CacheManager.Core.Logging;
 using CacheManager.Core.Utility;
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
 
 namespace Ocelot.AcceptanceTests.Caching
 {

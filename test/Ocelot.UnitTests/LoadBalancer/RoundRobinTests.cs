@@ -2,13 +2,7 @@
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
-using Shouldly;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {

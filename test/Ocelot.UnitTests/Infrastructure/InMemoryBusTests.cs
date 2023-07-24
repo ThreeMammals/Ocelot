@@ -1,7 +1,4 @@
 using Ocelot.Infrastructure;
-using Shouldly;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {

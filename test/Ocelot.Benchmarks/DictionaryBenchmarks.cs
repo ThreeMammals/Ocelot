@@ -1,13 +1,7 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Validators;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Requester;
 using System.Collections.Concurrent;
-using System.Net.Http;
 
 namespace Ocelot.Benchmarks
 {

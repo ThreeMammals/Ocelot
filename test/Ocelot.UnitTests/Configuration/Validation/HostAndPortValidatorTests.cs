@@ -1,9 +1,6 @@
 using FluentValidation.Results;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {

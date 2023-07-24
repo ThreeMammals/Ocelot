@@ -1,4 +1,3 @@
-using Moq;
 using Ocelot.Configuration.Creator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
@@ -6,12 +5,6 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Headers
 {

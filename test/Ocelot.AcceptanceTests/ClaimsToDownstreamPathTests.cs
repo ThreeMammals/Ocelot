@@ -6,13 +6,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

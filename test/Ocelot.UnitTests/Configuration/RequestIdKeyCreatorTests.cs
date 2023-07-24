@@ -1,8 +1,5 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

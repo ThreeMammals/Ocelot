@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Authorization.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -8,11 +7,6 @@ using Ocelot.Headers.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Headers
 {
