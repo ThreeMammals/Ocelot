@@ -5,6 +5,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <AssemblyName>Ocelot.Benchmarks</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.Benchmarks</PackageId>
