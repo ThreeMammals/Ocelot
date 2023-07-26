@@ -140,7 +140,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                         downstreamRequest.Query = string.Concat("?", downstreamRequest.Query.AsSpan(1));
                     }
                 }
-            }
+            } 
         }
 
         private static string GetPath(DownstreamPath dsPath)
