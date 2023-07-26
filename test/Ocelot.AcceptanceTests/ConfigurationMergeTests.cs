@@ -19,7 +19,7 @@ namespace Ocelot.AcceptanceTests
         private TestServer _ocelotServer;
 
         [Fact]
-        public void should_merge_reroutes_custom_properties()
+        public void Should_merge_reroutes_custom_properties()
         {
             this.Given(x => GivenOcelotIsRunningWithMultipleConfigs())
                 .And(x => ThenConfigContentShouldBeMergedWithReRoutesCustomProperties())
@@ -55,17 +55,17 @@ namespace Ocelot.AcceptanceTests
             var ocelotClient = _ocelotServer.CreateClient();
         }
 
-        private void ThenConfigContentShouldBeMergedWithReRoutesCustomProperties()
+        private static void ThenConfigContentShouldBeMergedWithReRoutesCustomProperties()
         {
             var mergedConfigFileName = "ocelot.json";
             File.Exists(mergedConfigFileName).ShouldBeTrue();
             var lines = File.ReadAllText(mergedConfigFileName);
             var config = JObject.Parse(lines);
 
-            config[nameof(FileConfiguration.ReRoutes)].ShouldNotBeNull();
-            config[nameof(FileConfiguration.ReRoutes)].Children().Count().ShouldBe(3);
+            config[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
+            config[nameof(FileConfiguration.Routes)].Children().Count().ShouldBe(3);
 
-            var routeWithCustomPropertyX = config[nameof(FileConfiguration.ReRoutes)].Children()
+            var routeWithCustomPropertyX = config[nameof(FileConfiguration.Routes)].Children()
                 .SingleOrDefault(c => c["CustomStrategyProperty"] != null);
             routeWithCustomPropertyX.ShouldNotBeNull();
             var customPropertyX = routeWithCustomPropertyX["CustomStrategyProperty"];
@@ -76,12 +76,12 @@ namespace Ocelot.AcceptanceTests
             customPropertyX["POST"].Children().Count().ShouldBe(1);
             customPropertyX["POST"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodB");
 
-            var routeWithCustomPropertyGlobal = config[nameof(FileConfiguration.ReRoutes)].Children()
+            var routeWithCustomPropertyGlobal = config[nameof(FileConfiguration.Routes)].Children()
                 .SingleOrDefault(c => c["somethingmore"] != null);
             routeWithCustomPropertyGlobal.ShouldNotBeNull();
             routeWithCustomPropertyGlobal["somethingmore"].ShouldBe("something");
 
-            var routeWithCustomPropertyY = config[nameof(FileConfiguration.ReRoutes)].Children()
+            var routeWithCustomPropertyY = config[nameof(FileConfiguration.Routes)].Children()
                 .SingleOrDefault(c => c["MyCustomProperty"] != null);
             routeWithCustomPropertyY.ShouldNotBeNull();
             routeWithCustomPropertyY["MyCustomProperty"].ShouldBeAssignableTo(typeof(JArray));
