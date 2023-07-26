@@ -75,8 +75,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                     else
                     {
                         var newQueryString = GetQueryString(dsPath).Replace('?', '&');
-                        newQueryString = MergeQueryStringsWithoutDuplicateValues(context.DownstreamRequest.Query, newQueryString);
-                        context.DownstreamRequest.Query = "?" + newQueryString;
+                        newQueryString = MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQueryString);
+                        downstreamRequest.Query = "?" + newQueryString;
                     }
                 }
                 else
@@ -121,7 +121,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             return string.Join("&", dict.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value)));
         }
 
-        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamContext context)
+        private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
