@@ -19,10 +19,10 @@ namespace Ocelot.AcceptanceTests
         private TestServer _ocelotServer;
 
         [Fact]
-        public void Should_merge_reroutes_custom_properties()
+        public void Should_merge_routes_custom_properties()
         {
             this.Given(x => GivenOcelotIsRunningWithMultipleConfigs())
-                .And(x => ThenConfigContentShouldBeMergedWithReRoutesCustomProperties())
+                .And(x => ThenConfigContentShouldBeMergedWithRoutesCustomProperties())
                 .BDDfy();
         }
 
@@ -55,7 +55,7 @@ namespace Ocelot.AcceptanceTests
             var ocelotClient = _ocelotServer.CreateClient();
         }
 
-        private static void ThenConfigContentShouldBeMergedWithReRoutesCustomProperties()
+        private static void ThenConfigContentShouldBeMergedWithRoutesCustomProperties()
         {
             var mergedConfigFileName = "ocelot.json";
             File.Exists(mergedConfigFileName).ShouldBeTrue();
