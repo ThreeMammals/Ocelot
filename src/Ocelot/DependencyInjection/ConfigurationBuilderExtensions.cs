@@ -120,7 +120,7 @@ namespace Ocelot.DependencyInjection
             dynamic fileConfiguration = new JObject();
             fileConfiguration.GlobalConfiguration = new JObject();
             fileConfiguration.Aggregates = new JArray();
-            fileConfiguration.ReRoutes = new JArray();
+            fileConfiguration.Routes = new JArray();
 
             fileConfiguration ??= new FileConfiguration();
             primaryFile ??= Path.Join(folder, PrimaryConfigFile);
@@ -214,7 +214,7 @@ namespace Ocelot.DependencyInjection
             }
 
             MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.Aggregates));
-            MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.ReRoutes));
+            MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.Routes));
         }
 
         private static void MergeConfigSection(JToken destConfig, JToken srcConfig, string sectionName)
