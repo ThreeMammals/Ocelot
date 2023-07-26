@@ -15,7 +15,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_query_string_template()
+        public void Should_return_response_200_with_query_string_template()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -53,7 +53,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_query_string_template_different_keys()
+        public void Should_return_response_200_with_query_string_template_different_keys()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -92,7 +92,7 @@ namespace Ocelot.AcceptanceTests
 
 
         [Fact]
-        public void should_return_response_200_with_query_string_template_additional_key() //issue #327
+        public void Should_return_response_200_with_query_string_template_additional_key() //issue #327
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -131,7 +131,7 @@ namespace Ocelot.AcceptanceTests
 
 
         [Fact]
-        public void should_return_response_200_with_odata_query_string()
+        public void Should_return_response_200_with_odata_query_string()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -169,7 +169,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_query_string_upstream_template()
+        public void Should_return_response_200_with_query_string_upstream_template()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -207,7 +207,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_404_with_query_string_upstream_template_no_query_string()
+        public void Should_return_response_404_with_query_string_upstream_template_no_query_string()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -244,7 +244,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_404_with_query_string_upstream_template_different_query_string()
+        public void Should_return_response_404_with_query_string_upstream_template_different_query_string()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -281,7 +281,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_query_string_upstream_template_multiple_params()
+        public void Should_return_response_200_with_query_string_upstream_template_multiple_params()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
