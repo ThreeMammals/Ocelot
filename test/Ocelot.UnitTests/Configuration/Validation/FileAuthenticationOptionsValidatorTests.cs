@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
             this.Given(_ => GivenThe(authenticationOptions))
                 .And(_ => GivenAnAuthProvider(key))
-                .When(_ => WhenIValidate())
+                .When(_ => WhenIValidateAsync())
                 .Then(_ => ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             };
 
             this.Given(_ => GivenThe(authenticationOptions))
-                .When(_ => WhenIValidate())
+                .When(_ => WhenIValidateAsync())
                 .Then(_ => ThenTheResultIsNotValid())
                 .And(_ => ThenTheErrorIs(key))
                 .BDDfy();
@@ -92,9 +92,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
             _authenticationOptions = authenticationOptions;
         }
 
-        private void WhenIValidate()
+        private async Task WhenIValidateAsync()
         {
-            _result = _validator.Validate(_authenticationOptions);
+            _result = await _validator.ValidateAsync(_authenticationOptions);
         }
 
         private class FakeAuthHandler : IAuthenticationHandler

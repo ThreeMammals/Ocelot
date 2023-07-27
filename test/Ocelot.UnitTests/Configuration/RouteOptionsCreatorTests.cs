@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Configuration
 
             var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(true)
-                .WithIsAuthorised(true)
+                .WithIsAuthorized(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)
@@ -125,7 +125,7 @@ namespace Ocelot.UnitTests.Configuration
 
             var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(true)
-                .WithIsAuthorised(true)
+                .WithIsAuthorized(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)
@@ -169,7 +169,7 @@ namespace Ocelot.UnitTests.Configuration
 
             var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(false)
-                .WithIsAuthorised(true)
+                .WithIsAuthorized(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)
@@ -211,7 +211,7 @@ namespace Ocelot.UnitTests.Configuration
 
             var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(true)
-                .WithIsAuthorised(true)
+                .WithIsAuthorized(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)
@@ -248,7 +248,7 @@ namespace Ocelot.UnitTests.Configuration
 
             var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(false)
-                .WithIsAuthorised(true)
+                .WithIsAuthorized(true)
                 .WithIsCached(true)
                 .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)

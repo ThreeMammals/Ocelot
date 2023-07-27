@@ -79,7 +79,7 @@ namespace Ocelot.Configuration.Creator
 
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-            var authOptionsForRoute = _authOptionsCreator.Create(fileReRoute.AuthenticationOptions, globalConfiguration.AuthenticationOptions);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileRoute.AuthenticationOptions, globalConfiguration.AuthenticationOptions);
 
             var claimsToHeaders = _claimsToThingCreator.Create(fileRoute.AddHeadersToRequest);
 

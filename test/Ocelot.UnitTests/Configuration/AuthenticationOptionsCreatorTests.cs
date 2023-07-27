@@ -8,7 +8,7 @@ namespace Ocelot.UnitTests.Configuration
     public class AuthenticationOptionsCreatorTests
     {
         private readonly AuthenticationOptionsCreator _authOptionsCreator;
-        private FileReRoute _fileReRoute;
+        private FileRoute _fileRoute;
         private FileGlobalConfiguration _fileGlobalConfig;
         private AuthenticationOptions _result;
 
@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Configuration
                     .WithAuthenticationProviderKey("Test")
                     .Build();
 
-            this.Given(x => x.GivenTheFollowingReRoute(fileReRoute))
+            this.Given(x => x.GivenTheFollowingRoute(fileRoute))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreateTheAuthenticationOptions())
                 .Then(x => x.ThenTheFollowingConfigIsReturned(expected))
@@ -45,7 +45,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_global_configuration()
         {
-            var reRoute = new FileReRoute();
+            var route = new FileRoute();
             var globalConfig = new FileGlobalConfiguration
             {
                 AuthenticationOptions = new FileAuthenticationOptions()
@@ -60,7 +60,7 @@ namespace Ocelot.UnitTests.Configuration
                 .WithAuthenticationProviderKey(globalConfig.AuthenticationOptions?.AuthenticationProviderKey)
                 .Build();
 
-            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
+            this.Given(x => x.GivenTheFollowingRoute(route))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreateTheAuthenticationOptions())
                 .Then(x => x.ThenTheFollowingConfigIsReturned(expected))
@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void should_use_route_over_global_specific()
         {
-            var reRoute = new FileReRoute
+            var route = new FileRoute
             {
                 AuthenticationOptions = new FileAuthenticationOptions()
                 {
@@ -120,18 +120,18 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             var expected = new AuthenticationOptionsBuilder()
-                   .WithAllowedScopes(reRoute.AuthenticationOptions?.AllowedScopes)
-                   .WithAuthenticationProviderKey(reRoute.AuthenticationOptions?.AuthenticationProviderKey)
+                   .WithAllowedScopes(route.AuthenticationOptions?.AllowedScopes)
+                   .WithAuthenticationProviderKey(route.AuthenticationOptions?.AuthenticationProviderKey)
                    .Build();
 
-            this.Given(x => x.GivenTheFollowingReRoute(reRoute))
+            this.Given(x => x.GivenTheFollowingRoute(route))
                 .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
                 .When(x => x.WhenICreateTheAuthenticationOptions())
                 .Then(x => x.ThenTheFollowingConfigIsReturned(expected))
                 .BDDfy();
         }
 
-        private void GivenTheFollowingReRoute(FileReRoute fileReRoute)
+        private void GivenTheFollowingRoute(FileRoute fileRoute)
         {
             _fileRoute = fileRoute;
         }
@@ -143,7 +143,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreateTheAuthenticationOptions()
         {
-            _result = _authOptionsCreator.Create(_fileReRoute.AuthenticationOptions, _fileGlobalConfig.AuthenticationOptions);
+            _result = _authOptionsCreator.Create(_fileRoute.AuthenticationOptions, _fileGlobalConfig.AuthenticationOptions);
         }
 
         private void ThenTheFollowingConfigIsReturned(AuthenticationOptions expected)

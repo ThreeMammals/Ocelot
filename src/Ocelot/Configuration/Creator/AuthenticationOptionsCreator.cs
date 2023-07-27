@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.Creator
 {
     public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
     {
-        public AuthenticationOptions Create(FileAuthenticationOptions reRouteAuthOptions, 
+        public AuthenticationOptions Create(FileAuthenticationOptions routeAuthOptions, 
                                             FileAuthenticationOptions globalConfAuthOptions)
         {
             var routeAuthOptionsEmpty = string.IsNullOrEmpty(routeAuthOptions.AuthenticationProviderKey);

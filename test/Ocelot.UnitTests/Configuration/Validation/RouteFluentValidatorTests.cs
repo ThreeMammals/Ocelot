@@ -11,8 +11,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private readonly RouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
         private readonly FileAuthenticationOptionsValidator _fileAuthenticationOptionsValidator;
-        private QosDelegatingHandlerDelegate _qosDelegatingHandler;
-        private Mock<IServiceProvider> _serviceProvider;
+        private readonly Mock<IServiceProvider> _serviceProvider;
         private FileRoute _route;
         private ValidationResult _result;
 
