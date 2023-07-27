@@ -27,7 +27,7 @@ public class FileAuthenticationOptionsValidatorTests
     }
 
     [Fact]
-    public void should_be_valid_if_specified_authentication_provider_is_registered()
+    public void Should_be_valid_if_specified_authentication_provider_is_registered()
     {
         const string key = "JwtLads";
 
@@ -44,7 +44,7 @@ public class FileAuthenticationOptionsValidatorTests
     }
 
     [Fact]
-    public void should_not_be_valid_if_specified_authentication_provider_is_not_registered()
+    public void Should_not_be_valid_if_specified_authentication_provider_is_not_registered()
     {
         const string key = "JwtLads";
 
