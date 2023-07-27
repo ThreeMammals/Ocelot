@@ -15,7 +15,7 @@ namespace Ocelot.UnitTests.Configuration.Validation;
 
 public class FileAuthenticationOptionsValidatorTests
 {
-    private FileAuthenticationOptionsValidator _validator;
+    private readonly FileAuthenticationOptionsValidator _validator;
     private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
     private FileAuthenticationOptions _authenticationOptions;
     private ValidationResult _result;
