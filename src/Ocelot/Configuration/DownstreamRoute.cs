@@ -88,7 +88,7 @@ namespace Ocelot.Configuration
         public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }
         public QoSOptions QosOptions { get; }
-        public string DownstreamScheme { get; }
+        public string DownstreamScheme { get; set; }
         public string RequestIdKey { get; }
         public bool IsCached { get; }
         public CacheOptions CacheOptions { get; }
