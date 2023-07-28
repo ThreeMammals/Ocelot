@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using System.Threading.Tasks;
 
 namespace Ocelot.Security.IPSecurity
 {
@@ -9,7 +10,7 @@ namespace Ocelot.Security.IPSecurity
     {
         public async Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext)
         {
-            var clientIp = context.HttpContext.GetClientIpAddress();
+            var clientIp = httpContext.GetClientIpAddress();
             var securityOptions = downstreamRoute.SecurityOptions;
             if (securityOptions == null)
             {

@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Primitives;
-using Ocelot.Middleware;
+﻿using Ocelot.Request.Middleware;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Ocelot.Request.Middleware;
 
 namespace Ocelot.Cache
 {
@@ -11,22 +10,23 @@ namespace Ocelot.Cache
     {
         public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest)
         {
-            string hashedContent = null;
-            string contentLanguage = "";
-            if (context.HttpContext?.Request?.Headers?.TryGetValue("Content-Language", out StringValues values) ?? false)
-            {
-                contentLanguage = values.ToString();
-            }
-            StringBuilder downStreamUrlKeyBuilder = new StringBuilder($"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}{contentLanguage}");
+            var builder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
 
-            if (context.DownstreamRequest.Content != null)
+            if (downstreamRequest.Headers?.TryGetValues("Content-Language", out IEnumerable<string> values) ?? false)
+            {
+                var contentLanguage = values.Any()
+                    ? "-" + string.Join(string.Empty, values)
+                    : string.Empty;
+                builder.Append(contentLanguage);
+            }
+
+            if (downstreamRequest.Content != null)
             {
                 var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
-                downStreamUrlKeyBuilder.Append(requestContentString);
+                builder.Append(requestContentString);
             }
 
-            var hashedContent = MD5Helper.GenerateMd5(downStreamUrlKeyBuilder.ToString());
-            return hashedContent;
+            return MD5Helper.GenerateMd5(builder.ToString());
         }
     }
 }
