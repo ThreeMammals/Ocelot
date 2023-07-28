@@ -1,4 +1,4 @@
-﻿using Ocelot.Cache;
+using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -25,6 +25,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IRouteKeyCreator> _rrkCreator;
         private readonly Mock<ISecurityOptionsCreator> _soCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
+        private readonly Mock<IUpstreamHeaderRoutingOptionsCreator> _uhroCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -59,6 +60,7 @@ namespace Ocelot.UnitTests.Configuration
             _rrkCreator = new Mock<IRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
             _versionCreator = new Mock<IVersionCreator>();
+            _uhroCreator = new Mock<IUpstreamHeaderRoutingOptionsCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -75,7 +77,8 @@ namespace Ocelot.UnitTests.Configuration
                 _lboCreator.Object,
                 _rrkCreator.Object,
                 _soCreator.Object,
-                _versionCreator.Object
+                _versionCreator.Object,
+                _uhroCreator.Object
                 );
         }
 

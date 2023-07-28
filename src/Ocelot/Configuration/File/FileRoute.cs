@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Configuration.File
+namespace Ocelot.Configuration.File
 {
     public class FileRoute : IRoute, ICloneable
     {
@@ -21,6 +21,7 @@
             RouteClaimsRequirement = new Dictionary<string, string>();
             SecurityOptions = new FileSecurityOptions();
             UpstreamHeaderTransform = new Dictionary<string, string>();
+            UpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions();
             UpstreamHttpMethod = new List<string>();
         }
 
@@ -57,6 +58,7 @@
         public string ServiceNamespace { get; set; }
         public int Timeout { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+        public FileUpstreamHeaderRoutingOptions UpstreamHeaderRoutingOptions { get; set; }
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
@@ -102,6 +104,7 @@
             to.ServiceNamespace = from.ServiceNamespace;
             to.Timeout = from.Timeout;
             to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
+            to.UpstreamHeaderRoutingOptions = from.UpstreamHeaderRoutingOptions;
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;

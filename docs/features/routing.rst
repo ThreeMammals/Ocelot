@@ -292,6 +292,39 @@ Here are two user scenarios.
   So, both ``{userId}`` placeholder and ``userId`` parameter **names are the same**!
   Finally, the ``userId`` parameter is removed.
 
+
+Upstream header-based routing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This feature was requested in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_ and `issue 624 <https://github.com/ThreeMammals/Ocelot/issues/624>`_.
+
+Ocelot allows you to define a Route with upstream headers, each of which may define a set of accepted values. If a Route has a set of upstream headers defined in it, it will no longer match a request's upstream path based solely on upstream path template. The request must also contain one or more headers required by the Route for a match.
+
+A sample configuration might look like the following:
+
+.. code-block:: json
+
+    {
+        "Routes": [
+            {
+                "UpstreamHeaderRoutingOptions": {
+                    "Headers": {
+                        "X-API-Version": [ "1", "2" ],
+                        "X-Tennant-Id": [ "tennantId" ]
+                    },
+                    "TriggerOn": "all"
+                }
+            }
+        ]
+    }
+
+The ``UpstreamHeaderRoutingOptions`` block defines two attributes -- the ``Headers`` block and the ``TriggerOn`` attribute. The ``Headers`` attribute defines required header names as keys and lists of acceptable header values as values. During route matching, both header names and values are matched in *case insensitive* manner. Please note that if a header has more than one acceptable value configured, presence of any of those values in a request is sufficient for a header to be a match.
+
+The second attribute, ``TriggerOn``, defines how the route finder will determine whether a particular header configuration in a request matches a Route's header configuration. The attribute accepts two values:
+
+* ``"Any"`` causes the route finder to match a Route if any value of any configured header is present in a request
+* ``"All"`` causes the route finder to match a Route only if any value of *all* configured headers is present in a request
+
 .. _routing-security-options:
 
 Security Options [#f3]_

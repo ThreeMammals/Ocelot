@@ -1,4 +1,4 @@
-﻿using Ocelot.Configuration.File;
+using Ocelot.Configuration.File;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Builder
@@ -11,6 +11,7 @@ namespace Ocelot.Configuration.Builder
         private List<DownstreamRoute> _downstreamRoutes;
         private List<AggregateRouteConfig> _downstreamRoutesConfig;
         private string _aggregator;
+        private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
 
         public RouteBuilder()
         {
@@ -60,6 +61,12 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public RouteBuilder WithUpstreamHeaderRoutingOptions(UpstreamHeaderRoutingOptions routingOptions)
+        {
+            _upstreamHeaderRoutingOptions = routingOptions;
+            return this;
+        }
+
         public Route Build()
         {
             return new Route(
@@ -68,7 +75,8 @@ namespace Ocelot.Configuration.Builder
                 _upstreamHttpMethod,
                 _upstreamTemplatePattern,
                 _upstreamHost,
-                _aggregator
+                _aggregator,
+                _upstreamHeaderRoutingOptions
                 );
         }
     }
