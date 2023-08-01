@@ -10,8 +10,8 @@ namespace Ocelot.AcceptanceTests
 {
     public class ConfigurationMergeTests : IDisposable
     {
-        private FileConfiguration _globalConfig;
-        private Steps _steps;
+        private readonly FileConfiguration _globalConfig;
+        private readonly Steps _steps;
 
         public ConfigurationMergeTests()
         {
@@ -33,13 +33,13 @@ namespace Ocelot.AcceptanceTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "initialKey"
-                }
+                    RequestIdKey = "initialKey",
+                },
             };
         }
 
         [Fact]
-        public void should_run_with_config_merged_to_memory()
+        public void Should_run_with_config_merged_to_memory()
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(_globalConfig, TestConfiguration.ConfigurationPartPath("global")))
                 .When(x => _steps.WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToMemory))
@@ -48,7 +48,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_run_with_config_merged_to_file()
+        public void Should_run_with_config_merged_to_file()
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(_globalConfig))
                 .When(x => _steps.WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToFile))
@@ -59,11 +59,12 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
 
-        private void TheOcelotJsonFileExists(bool expected)
+        private static void TheOcelotJsonFileExists(bool expected)
         {
-            var primaryConfigFile = Path.Combine("", "ocelot.json");
+            var primaryConfigFile = Path.Combine(string.Empty, "ocelot.json");
             File.Exists(primaryConfigFile).ShouldBe(expected);
         }
     }
