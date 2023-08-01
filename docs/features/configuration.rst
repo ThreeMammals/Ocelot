@@ -141,10 +141,11 @@ You can also give Ocelot a specific path to look in for the configuration files 
 
 Ocelot needs the ``HostingEnvironment`` so it knows to exclude anything environment specific from the algorithm. 
 
-Merging configuration files to memory only
-------------------------------------------
+Merging configuration files to memory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default Ocelot writes the merged configuration back to disk as "ocelot.json" and add that file to config. If your server don't have write permissions to your configuration folder, you can instruct Ocelot to use the merged configuration directly from memory instead.
+By default Ocelot writes the merged configuration back to disk as ``ocelot.json`` and add that file to config.
+If your server don't have write permissions to your configuration folder, you can instruct Ocelot to use the merged configuration directly from memory instead.
 
 .. code-block:: csharp
 
