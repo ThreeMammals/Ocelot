@@ -22,11 +22,11 @@ namespace Ocelot.AcceptanceTests;
 
 public class ClaimsInDelegatingHandlerTests : IDisposable
 {
-    private IWebHost _servicebuilder;
+    private readonly IWebHost _servicebuilder;
     private IWebHost _identityServerBuilder;
     private readonly Steps _steps;
-    private Action<IdentityServerAuthenticationOptions> _options;
-    private string _identityServerRootUrl;
+    private readonly Action<IdentityServerAuthenticationOptions> _options;
+    private readonly string _identityServerRootUrl;
 
     public ClaimsInDelegatingHandlerTests()
     {
@@ -44,7 +44,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
     }
 
     [Fact]
-    public void should_expose_claims_in_global_delegating_handler()
+    public void Should_expose_claims_in_global_delegating_handler()
     {
         var user = new TestUser()
         {
@@ -96,7 +96,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
     }
 
     [Fact]
-    public void should_expose_claims_in_route_specific_delegating_handler()
+    public void Should_expose_claims_in_route_specific_delegating_handler()
     {
         var user = new TestUser()
         {
@@ -152,7 +152,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
     }
 
     [Fact]
-    public void should_update_claims_in_global_delegating_handler()
+    public void Should_update_claims_in_global_delegating_handler()
     {
         var user = new TestUser()
         {
@@ -216,7 +216,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
     }
 
     [Fact]
-    public void should_update_claims_in_route_specific_delegating_handler()
+    public void Should_update_claims_in_route_specific_delegating_handler()
     {
         var user = new TestUser()
         {
@@ -284,12 +284,12 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
             .BDDfy();
     }
 
-    private void ThenClaimsShouldBeExposedInDelegatingHandler()
+    private static void ThenClaimsShouldBeExposedInDelegatingHandler()
     {
         FakeHandler.ClaimsExist.ShouldBeTrue();
     }
 
-    private void ThenClaimSubjectShouldBe(string subject)
+    private static void ThenClaimSubjectShouldBe(string subject)
     {
         FakeHandler.ClaimSubject.ShouldBe(subject);
     }
@@ -374,6 +374,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
         _servicebuilder?.Dispose();
         _steps.Dispose();
         _identityServerBuilder?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private class FakeHandler : DelegatingHandler, IDelegatingHandlerWithHttpContext
