@@ -59,12 +59,12 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
         {
             Routes = new List<FileRoute>
                {
-                   new FileRoute
+                   new()
                    {
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new FileHostAndPort
+                           new()
                            {
                                Host = "localhost",
                                Port = port,
@@ -111,12 +111,12 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
         {
             Routes = new List<FileRoute>
                {
-                   new FileRoute
+                   new()
                    {
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new FileHostAndPort
+                           new()
                            {
                                Host = "localhost",
                                Port = port,
@@ -173,12 +173,12 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
         {
             Routes = new List<FileRoute>
                {
-                   new FileRoute
+                   new()
                    {
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new FileHostAndPort
+                           new()
                            {
                                Host = "localhost",
                                Port = port,
@@ -237,12 +237,12 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
         {
             Routes = new List<FileRoute>
                {
-                   new FileRoute
+                   new()
                    {
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new FileHostAndPort
+                           new()
                            {
                                Host = "localhost",
                                Port = port,
@@ -309,7 +309,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
                     .AddDeveloperSigningCredential()
                     .AddInMemoryApiResources(new List<ApiResource>
                     {
-                        new ApiResource
+                        new()
                         {
                             Name = apiName,
                             Description = "My API",
@@ -323,7 +323,7 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
                             },
                             ApiSecrets = new List<Secret>()
                             {
-                                new Secret
+                                new()
                                 {
                                     Value = "secret".Sha256(),
                                 },
@@ -336,13 +336,13 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
                     })
                     .AddInMemoryApiScopes(new List<ApiScope>()
                     {
-                        new ApiScope("api"),
-                        new ApiScope("openid"),
-                        new ApiScope("offline_access"),
+                        new("api"),
+                        new("openid"),
+                        new("offline_access"),
                     })
                     .AddInMemoryClients(new List<Client>
                     {
-                        new Client
+                        new()
                         {
                             ClientId = "client",
                             AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
