@@ -1,8 +1,7 @@
-﻿namespace Ocelot.DependencyInjection
+﻿namespace Ocelot.DependencyInjection;
+
+public enum MergeOcelotJson
 {
-    public enum MergeOcelotJson
-    {
-        ToFile = 0,
-        ToMemory = 1,
-    }
+    ToFile = 0,
+    ToMemory = 1,
 }
