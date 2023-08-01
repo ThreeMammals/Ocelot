@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Ocelot.Requester
+namespace Ocelot.Requester;
+
+public interface IDelegatingHandlerWithHttpContext
 {
-    public interface IDelegatingHandlerWithHttpContext
-    {
-        HttpContext HttpContext { get; set; }
-    }
+    HttpContext HttpContext { get; set; }
 }
