@@ -22,7 +22,6 @@ namespace Ocelot.AcceptanceTests;
 
 public class ClaimsInDelegatingHandlerTests : IDisposable
 {
-    private readonly IWebHost _servicebuilder;
     private IWebHost _identityServerBuilder;
     private readonly Steps _steps;
     private readonly Action<IdentityServerAuthenticationOptions> _options;
@@ -371,7 +370,6 @@ public class ClaimsInDelegatingHandlerTests : IDisposable
 
     public void Dispose()
     {
-        _servicebuilder?.Dispose();
         _steps.Dispose();
         _identityServerBuilder?.Dispose();
         GC.SuppressFinalize(this);
