@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
