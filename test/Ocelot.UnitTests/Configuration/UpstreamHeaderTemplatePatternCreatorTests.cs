@@ -20,7 +20,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_create_pattern_without_placeholders()
+    public void Should_create_pattern_without_placeholders()
     {
         var fileRoute = new FileRoute
         {
@@ -37,7 +37,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_create_pattern_case_sensitive()
+    public void Should_create_pattern_case_sensitive()
     {
         var fileRoute = new FileRoute
         {
@@ -55,7 +55,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_create_pattern_with_placeholder_in_the_beginning()
+    public void Should_create_pattern_with_placeholder_in_the_beginning()
     {
         var fileRoute = new FileRoute
         {
@@ -72,7 +72,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_create_pattern_with_placeholder_at_the_end()
+    public void Should_create_pattern_with_placeholder_at_the_end()
     {
         var fileRoute = new FileRoute
         {
@@ -89,7 +89,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_create_pattern_with_placeholder_only()
+    public void Should_create_pattern_with_placeholder_only()
     {
         var fileRoute = new FileRoute
         {
@@ -106,7 +106,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     }
 
     [Fact]
-    public void should_crate_pattern_with_more_placeholders()
+    public void Should_crate_pattern_with_more_placeholders()
     {
         var fileRoute = new FileRoute
         {
