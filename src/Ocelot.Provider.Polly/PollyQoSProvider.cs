@@ -28,7 +28,7 @@ namespace Ocelot.Provider.Polly
         {
             _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
 
-            Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
+            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
 
             _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
 

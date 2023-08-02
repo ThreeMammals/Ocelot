@@ -74,8 +74,10 @@ public class PollyCircuitBreakingDelegatingHandlerTests
         fakeResponse.Headers.Add("X-Xunit", nameof(SendAsync_TwoPolicies_HaveWrapped));
 
         var policy1 = new FakeAsyncPolicy("Policy1", fakeResponse);
-        var policy2 = new FakeAsyncPolicy("Policy2", fakeResponse);
-        policy2.IsLast = true;
+        var policy2 = new FakeAsyncPolicy("Policy2", fakeResponse)
+        {
+            IsLast = true,
+        };
 
         pollyQoSProviderMock.SetupGet(x => x.CircuitBreaker)
             .Returns(new CircuitBreaker(policy1, policy2));
@@ -89,14 +91,14 @@ public class PollyCircuitBreakingDelegatingHandlerTests
         ShouldBeWrappedBy(policy2, typeof(AsyncPolicy).FullName);
     }
 
-    private void ShouldHaveXunitHeaderWithNoContent(HttpResponseMessage actual, string headerName)
+    private static void ShouldHaveXunitHeaderWithNoContent(HttpResponseMessage actual, string headerName)
     {
         actual.ShouldNotBeNull();
         actual.StatusCode.ShouldBe(HttpStatusCode.NoContent);
         actual.Headers.GetValues("X-Xunit").ShouldContain(headerName);
     }
 
-    private void ShouldBeWrappedBy(FakeAsyncPolicy policy, string wrapperName)
+    private static void ShouldBeWrappedBy(FakeAsyncPolicy policy, string wrapperName)
     {
         policy.Called.ShouldBeTrue();
         policy.Times.ShouldBe(1);
