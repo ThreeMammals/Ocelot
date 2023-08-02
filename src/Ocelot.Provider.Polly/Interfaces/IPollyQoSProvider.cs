@@ -1,7 +1,6 @@
-﻿namespace Ocelot.Provider.Polly.Interfaces
+﻿namespace Ocelot.Provider.Polly.Interfaces;
+
+public interface IPollyQoSProvider
 {
-    public interface IPollyQoSProvider
-    {
-        CircuitBreaker CircuitBreaker { get; }
-    }
+    CircuitBreaker CircuitBreaker { get; }
 }
