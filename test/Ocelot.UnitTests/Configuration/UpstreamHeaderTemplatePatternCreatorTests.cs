@@ -16,7 +16,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
 
     public UpstreamHeaderTemplatePatternCreatorTests()
     {
-        _creator = new UpstreamHeaderTemplatePatternCreator();
+        _creator = new();
     }
 
     [Fact]

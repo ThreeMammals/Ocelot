@@ -17,8 +17,8 @@ public class RoutingBasedOnHeadersTests : IDisposable
 
     public RoutingBasedOnHeadersTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+        _serviceHandler = new();
+        _steps = new();
     }
 
     [Fact]
@@ -31,27 +31,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -74,27 +74,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -120,28 +120,28 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName1] = headerValue1,
-                            [headerName2] = headerValue2,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName1] = headerValue1,
+                        [headerName2] = headerValue2,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -167,27 +167,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -209,27 +209,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -252,28 +252,28 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName1] = headerValue1,
-                            [headerName2] = headerValue2,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName1] = headerValue1,
+                        [headerName2] = headerValue2,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -299,28 +299,28 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName1] = headerValue1,
-                            [headerName2] = headerValue2,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName1] = headerValue1,
+                        [headerName2] = headerValue2,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -343,27 +343,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -387,56 +387,56 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/a",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/a",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            },
+                            Host = "localhost",
+                            Port = port1,
                         },
-                        UpstreamPathTemplate = "/a",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
                     },
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/b",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            },
-                        },
-                        UpstreamPathTemplate = "/b",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Tom",
-                    },
+                    UpstreamPathTemplate = "/a",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    Key = "Laura",
                 },
+                new()
+                {
+                    DownstreamPathTemplate = "/b",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port2,
+                        },
+                    },
+                    UpstreamPathTemplate = "/b",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    Key = "Tom",
+                },
+            },
             Aggregates = new List<FileAggregateRoute>()
             {
-                new FileAggregateRoute
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys = new List<string>
                     {
-                        UpstreamPathTemplate = "/",
-                        UpstreamHost = "localhost",
-                        RouteKeys = new List<string>
-                        {
-                            "Laura",
-                            "Tom",
-                        },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
-                        },
+                        "Laura",
+                        "Tom",
                     },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
+                },
             },
         };
 
@@ -461,56 +461,56 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/a",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/a",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            },
+                            Host = "localhost",
+                            Port = port1,
                         },
-                        UpstreamPathTemplate = "/a",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
                     },
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/b",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            },
-                        },
-                        UpstreamPathTemplate = "/b",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Tom",
-                    },
+                    UpstreamPathTemplate = "/a",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    Key = "Laura",
                 },
+                new()
+                {
+                    DownstreamPathTemplate = "/b",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port2,
+                        },
+                    },
+                    UpstreamPathTemplate = "/b",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    Key = "Tom",
+                },
+            },
             Aggregates = new List<FileAggregateRoute>()
             {
-                new FileAggregateRoute
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys = new List<string>
                     {
-                        UpstreamPathTemplate = "/",
-                        UpstreamHost = "localhost",
-                        RouteKeys = new List<string>
-                        {
-                            "Laura",
-                            "Tom",
-                        },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue,
-                        },
+                        "Laura",
+                        "Tom",
                     },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue,
+                    },
+                },
             },
         };
 
@@ -532,27 +532,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/api.internal-{code}/products",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/api.internal-{code}/products",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/products",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = "{header:code}",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/products",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = "{header:code}",
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api.internal-uk/products", 200, "Hello from UK"))
@@ -574,27 +574,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/products-info",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/products-info",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/products",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = "product-{header:everything}",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/products",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = "product-{header:everything}",
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products-info", 200, "Hello from products"))
@@ -616,42 +616,42 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/products-admin",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/products-admin",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/products",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = "admin.xxx.com",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
-                    new FileRoute
+                    UpstreamPathTemplate = "/products",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
                     {
-                        DownstreamPathTemplate = "/products",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/products",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        [headerName] = "admin.xxx.com",
                     },
                 },
+                new()
+                {
+                    DownstreamPathTemplate = "/products",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    UpstreamPathTemplate = "/products",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products-admin", 200, "Hello from products admin"))
@@ -673,27 +673,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/{country_code}/{version}/{aa}",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/{country_code}/{version}/{aa}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/{aa}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = "start_{header:country_code}_version_{header:version}_end",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/{aa}",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = "start_{header:country_code}_version_{header:version}_end",
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/pl/v1/bb", 200, "Hello from Laura"))
@@ -715,27 +715,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/aa",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/aa",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = "my_{header}",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = "my_{header}",
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/aa", 200, "Hello from Laura"))
@@ -759,27 +759,27 @@ public class RoutingBasedOnHeadersTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTemplates = new Dictionary<string, string>()
-                        {
-                            [headerName] = headerValue1 + ";{header:whatever}",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHeaderTemplates = new Dictionary<string, string>()
+                    {
+                        [headerName] = headerValue1 + ";{header:whatever}",
+                    },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))

@@ -40,7 +40,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["country"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
+            ["country"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -48,7 +48,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
+            new("{countrycode}", "PL"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
@@ -63,7 +63,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["country"] = new UpstreamHeaderTemplate("^(?<countrycode>.+)-V1$", "{header:countrycode}-V1"),
+            ["country"] = new("^(?<countrycode>.+)-V1$", "{header:countrycode}-V1"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -71,7 +71,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
+            new("{countrycode}", "PL"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
@@ -86,7 +86,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["country"] = new UpstreamHeaderTemplate("^V1-(?<countrycode>.+)$", "V1-{header:countrycode}"),
+            ["country"] = new("^V1-(?<countrycode>.+)$", "V1-{header:countrycode}"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -94,7 +94,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
+            new("{countrycode}", "PL"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
@@ -109,7 +109,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["country"] = new UpstreamHeaderTemplate("^cc:(?<countrycode>.+)-V1$", "cc:{header:countrycode}-V1"),
+            ["country"] = new("^cc:(?<countrycode>.+)-V1$", "cc:{header:countrycode}-V1"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -117,7 +117,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
+            new("{countrycode}", "PL"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
@@ -132,7 +132,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["countryAndVersion"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
+            ["countryAndVersion"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -140,8 +140,8 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
-            new PlaceholderNameAndValue("{version}", "v1"),
+            new("{countrycode}", "PL"),
+            new("{version}", "v1"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
@@ -156,8 +156,8 @@ public class HeaderPlaceholderNameAndValueFinderTests
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
-            ["country"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
-            ["version"] = new UpstreamHeaderTemplate("^(?i)(?<version>.+)$", "{header:version}"),
+            ["country"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
+            ["version"] = new("^(?i)(?<version>.+)$", "{header:version}"),
         };
         var upstreamHeaders = new Dictionary<string, string>
         {
@@ -166,8 +166,8 @@ public class HeaderPlaceholderNameAndValueFinderTests
         };
         var expected = new List<PlaceholderNameAndValue>
         {
-            new PlaceholderNameAndValue("{countrycode}", "PL"),
-            new PlaceholderNameAndValue("{version}", "v1"),
+            new("{countrycode}", "PL"),
+            new("{version}", "v1"),
         };
 
         this.Given(x => x.GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates))
