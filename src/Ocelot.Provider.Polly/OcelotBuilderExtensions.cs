@@ -1,22 +1,15 @@
-﻿using System;
+﻿using global::Polly.CircuitBreaker;
+using global::Polly.Timeout;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.Errors;
+using Ocelot.Logging;
+using Ocelot.Requester;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Ocelot.DependencyInjection;
-
-using Ocelot.Errors;
-
-using global::Polly.CircuitBreaker;
-using global::Polly.Timeout;
-
-using Ocelot.Logging;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Ocelot.Requester;
 
 namespace Ocelot.Provider.Polly
 {

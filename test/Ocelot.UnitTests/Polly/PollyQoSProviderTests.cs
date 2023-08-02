@@ -1,12 +1,8 @@
 ﻿using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
-
 using Ocelot.Provider.Polly;
-
 using Shouldly;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Polly

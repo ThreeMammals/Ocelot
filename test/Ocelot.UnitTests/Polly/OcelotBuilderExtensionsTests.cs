@@ -1,19 +1,13 @@
-﻿using System.IO;
-
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
-using Ocelot.Requester;
-
 using Ocelot.Provider.Polly;
-
+using Ocelot.Requester;
 using Shouldly;
-
+using System.IO;
 using Xunit;
 
 namespace Ocelot.UnitTests.Polly
