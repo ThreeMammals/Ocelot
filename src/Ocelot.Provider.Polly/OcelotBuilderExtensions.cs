@@ -33,7 +33,7 @@ namespace Ocelot.Provider.Polly
 
             builder.Services.AddSingleton(errorMapping);
 
-            DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute route, IOcelotLoggerFactory logger)
+            static DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute route, IOcelotLoggerFactory logger)
             {
                 return new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(route, logger), logger);
             }
