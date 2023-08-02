@@ -23,6 +23,7 @@ namespace Ocelot.UnitTests.RateLimit
         private readonly IRateLimitCounterHandler _rateLimitCounterHandler;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
         private readonly Mock<IOcelotLogger> _logger;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
         private readonly ClientRateLimitMiddleware _middleware;
         private readonly RequestDelegate _next;
         private DownstreamResponse _downstreamResponse;
@@ -37,11 +38,12 @@ namespace Ocelot.UnitTests.RateLimit
             _logger = new Mock<IOcelotLogger>();
             _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
-            _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler);
+            _httpContextAccessor = new Mock<IHttpContextAccessor>();
+            _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCounterHandler, _httpContextAccessor.Object);
         }
 
         [Fact]
-        public void should_call_middleware_and_ratelimiting()
+        public void Should_call_middleware_and_ratelimiting()
         {
             var upstreamTemplate = new UpstreamPathTemplateBuilder().Build();
 
@@ -67,7 +69,7 @@ namespace Ocelot.UnitTests.RateLimit
         }
 
         [Fact]
-        public void should_call_middleware_withWhitelistClient()
+        public void Should_call_middleware_withWhitelistClient()
         {
             var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                  new RouteBuilder()
@@ -107,6 +109,9 @@ namespace Ocelot.UnitTests.RateLimit
                 httpContext.Request.Headers.TryAdd("ClientId", clientId);
                 httpContexts.Add(httpContext);
             }
+
+            var httpContextSeq = _httpContextAccessor.SetupSequence(x => x.HttpContext);
+            httpContexts.ForEach(x => httpContextSeq.Returns(x));
 
             foreach (var httpContext in httpContexts)
             {

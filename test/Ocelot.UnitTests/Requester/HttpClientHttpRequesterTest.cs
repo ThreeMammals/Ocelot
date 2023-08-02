@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_call_request_correctly()
+        public void Should_call_request_correctly()
         {
             var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
@@ -82,7 +82,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_call_request_unable_to_complete_request()
+        public void Should_call_request_unable_to_complete_request()
         {
             var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
@@ -108,7 +108,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void http_client_request_times_out()
+        public void Should_http_client_request_time_out()
         {
             var upstreamTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build();
 
