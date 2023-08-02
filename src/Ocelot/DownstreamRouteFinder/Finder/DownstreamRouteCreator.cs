@@ -11,6 +11,7 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
 {
@@ -25,7 +26,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>>();
         }
 
-        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost, Dictionary<string, string> upstreamHeaders)
         {
             var serviceName = GetServiceName(upstreamUrlPath);
 
