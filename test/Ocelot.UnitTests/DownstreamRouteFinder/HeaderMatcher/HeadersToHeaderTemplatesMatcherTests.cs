@@ -46,7 +46,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -66,7 +66,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^anyHeaderValue$", "anyHeaderValue"),
+            ["anyHeader"] = new("^anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -86,7 +86,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -106,7 +106,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -126,7 +126,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -149,9 +149,9 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["secondHeader"] = new UpstreamHeaderTemplate("^(?i)secondHeaderValue$", "secondHeaderValue"),
-            ["thirdHeader"] = new UpstreamHeaderTemplate("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["secondHeader"] = new("^(?i)secondHeaderValue$", "secondHeaderValue"),
+            ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -174,9 +174,9 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["secondHeader"] = new UpstreamHeaderTemplate("^(?i)secondHeaderValue$", "secondHeaderValue"),
-            ["thirdHeader"] = new UpstreamHeaderTemplate("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)anyHeaderValue$", "anyHeaderValue"),
+            ["secondHeader"] = new("^(?i)secondHeaderValue$", "secondHeaderValue"),
+            ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
+            ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -196,7 +196,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
+            ["anyHeader"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -216,7 +216,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
+            ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
@@ -236,7 +236,7 @@ public class HeadersToHeaderTemplatesMatcherTests
 
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
-            ["anyHeader"] = new UpstreamHeaderTemplate("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
+            ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
 
         this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
