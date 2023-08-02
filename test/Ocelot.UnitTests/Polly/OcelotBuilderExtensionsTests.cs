@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.Polly
     public class OcelotBuilderExtensionsTests
     {
         [Fact]
-        public void should_build()
+        public void Should_build()
         {
             var loggerFactory = new Mock<IOcelotLoggerFactory>();
             var services = new ServiceCollection();
