@@ -3,7 +3,6 @@ using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
-using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
@@ -15,6 +14,8 @@ using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
+    using Ocelot.DownstreamRouteFinder.Finder;
+
     public class DownstreamRouteProviderFactoryTests
     {
         private readonly DownstreamRouteProviderFactory _factory;
