@@ -48,7 +48,6 @@ namespace Ocelot.UnitTests.Configuration
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
-        private SecurityOptions _securityOptions;
         private Version _expectedVersion;
         private Dictionary<string, UpstreamHeaderTemplate> _uht;
 

@@ -1,5 +1,4 @@
-﻿
-using Ocelot.Configuration.Creator;
+﻿using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
 using Shouldly;
