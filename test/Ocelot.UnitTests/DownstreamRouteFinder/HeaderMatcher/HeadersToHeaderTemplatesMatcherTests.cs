@@ -20,7 +20,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_when_no_template_headers()
+    public void Should_match_when_no_template_headers()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -37,7 +37,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_the_same_headers()
+    public void Should_match_the_same_headers()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -57,7 +57,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_not_match_the_same_headers_when_differ_case_and_case_sensitive()
+    public void Should_not_match_the_same_headers_when_differ_case_and_case_sensitive()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -77,7 +77,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_the_same_headers_when_differ_case_and_case_insensitive()
+    public void Should_match_the_same_headers_when_differ_case_and_case_insensitive()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -97,7 +97,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_not_match_different_headers_values()
+    public void Should_not_match_different_headers_values()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -117,7 +117,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_not_match_the_same_headers_names()
+    public void Should_not_match_the_same_headers_names()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -137,7 +137,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_all_the_same_headers()
+    public void Should_match_all_the_same_headers()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -162,7 +162,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_not_match_the_headers_when_one_of_them_different()
+    public void Should_not_match_the_headers_when_one_of_them_different()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -187,7 +187,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_the_header_with_placeholder()
+    public void Should_match_the_header_with_placeholder()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -207,7 +207,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_match_the_header_with_placeholders()
+    public void Should_match_the_header_with_placeholders()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {
@@ -227,7 +227,7 @@ public class HeadersToHeaderTemplatesMatcherTests
     }
 
     [Fact]
-    public void should_not_match_the_header_with_placeholders()
+    public void Should_not_match_the_header_with_placeholders()
     {
         var upstreamHeaders = new Dictionary<string, string>()
         {

@@ -22,7 +22,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_one_header_value()
+    public void Should_match_one_header_value()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -65,7 +65,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_one_header_value_when_more_headers()
+    public void Should_match_one_header_value_when_more_headers()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -109,7 +109,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_two_header_values_when_more_headers()
+    public void Should_match_two_header_values_when_more_headers()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -157,7 +157,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_not_match_one_header_value()
+    public void Should_not_match_one_header_value()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -200,7 +200,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_not_match_one_header_value_when_no_headers()
+    public void Should_not_match_one_header_value_when_no_headers()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -241,7 +241,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_not_match_two_header_values_when_one_different()
+    public void Should_not_match_two_header_values_when_one_different()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -288,7 +288,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_not_match_two_header_values_when_one_not_existing()
+    public void Should_not_match_two_header_values_when_one_not_existing()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -334,7 +334,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_not_match_one_header_value_when_header_duplicated()
+    public void Should_not_match_one_header_value_when_header_duplicated()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -377,7 +377,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_aggregated_route_match_header_value()
+    public void Should_aggregated_route_match_header_value()
     {
         var port1 = RandomPortFinder.GetRandomPort();
         var port2 = RandomPortFinder.GetRandomPort();
@@ -451,7 +451,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_aggregated_route_not_match_header_value()
+    public void Should_aggregated_route_not_match_header_value()
     {
         var port1 = RandomPortFinder.GetRandomPort();
         var port2 = RandomPortFinder.GetRandomPort();
@@ -524,7 +524,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_header_placeholder()
+    public void Should_match_header_placeholder()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "Region";
@@ -566,7 +566,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_header_placeholder_not_in_downstream_path()
+    public void Should_match_header_placeholder_not_in_downstream_path()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "ProductName";
@@ -608,7 +608,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_distinguish_route_for_different_roles()
+    public void Should_distinguish_route_for_different_roles()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "Origin";
@@ -665,7 +665,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_header_and_url_placeholders()
+    public void Should_match_header_and_url_placeholders()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -707,7 +707,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_header_with_braces()
+    public void Should_match_header_with_braces()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -749,7 +749,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     }
 
     [Fact]
-    public void should_match_two_headers_with_the_same_name()
+    public void Should_match_two_headers_with_the_same_name()
     {
         var port = RandomPortFinder.GetRandomPort();
         var headerName = "country_code";

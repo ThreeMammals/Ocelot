@@ -22,7 +22,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_no_placeholders()
+    public void Should_return_no_placeholders()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
         var upstreamHeaders = new Dictionary<string, string>();
@@ -36,7 +36,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_one_placeholder_with_value_when_no_other_text()
+    public void Should_return_one_placeholder_with_value_when_no_other_text()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
@@ -59,7 +59,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_one_placeholder_with_value_when_other_text_on_the_right()
+    public void Should_return_one_placeholder_with_value_when_other_text_on_the_right()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
@@ -82,7 +82,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_one_placeholder_with_value_when_other_text_on_the_left()
+    public void Should_return_one_placeholder_with_value_when_other_text_on_the_left()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
@@ -105,7 +105,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_one_placeholder_with_value_when_other_texts_surrounding()
+    public void Should_return_one_placeholder_with_value_when_other_texts_surrounding()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
@@ -128,7 +128,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_two_placeholders_with_text_between()
+    public void Should_return_two_placeholders_with_text_between()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
@@ -152,7 +152,7 @@ public class HeaderPlaceholderNameAndValueFinderTests
     }
 
     [Fact]
-    public void should_return_placeholders_from_different_headers()
+    public void Should_return_placeholders_from_different_headers()
     {
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>
         {
