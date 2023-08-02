@@ -2,10 +2,9 @@ using Ocelot.Configuration.File;
 using Ocelot.Values;
 using System.Collections.Generic;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IUpstreamHeaderTemplatePatternCreator
 {
-    public interface IUpstreamHeaderTemplatePatternCreator
-    {
-        Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route);
-    }
+    Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route);
 }
