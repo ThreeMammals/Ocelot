@@ -1508,13 +1508,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1526,13 +1526,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
                             { "header2", "value2" },
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1559,13 +1559,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1577,13 +1577,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
                             { "header2", "value2" },
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1609,13 +1609,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1627,13 +1627,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
                             { "header2", "value2" },
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1658,13 +1658,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
             {
                 Routes = new List<FileRoute>
                 {
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/api/products/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
@@ -1676,13 +1676,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
                             { "header2", "value2" },
                         },
                     },
-                    new FileRoute
+                    new()
                     {
                         DownstreamPathTemplate = "/www/test/",
                         UpstreamPathTemplate = "/asdf/",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new FileHostAndPort
+                            new()
                             {
                                 Host = "bbc.co.uk",
                             },
