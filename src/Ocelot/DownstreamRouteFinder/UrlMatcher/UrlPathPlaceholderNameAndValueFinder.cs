@@ -169,14 +169,10 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
         private static bool IsPlaceholder(char character) => character == '{';
 
         private bool IsLastPlaceholder(string path, int counterForPath, string pathTemplate)
-        {
-            return path.Length <= counterForPath && pathTemplate.Length > 1 && pathTemplate.Substring(counterForPath, 2) == "/{" 
+            => path.Length <= counterForPath && pathTemplate.Length > 1
+                && pathTemplate.Substring(counterForPath, 2) == "/{"
                 && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
-        }
 
-        private bool TemplateDoesNotEndInForwardSlash(string pathTemplate)
-        {
-            return !pathTemplate.EndsWith('/');
-        }
+        private bool TemplateDoesNotEndInForwardSlash(string pathTemplate) => !pathTemplate.EndsWith('/');
     }
 }
