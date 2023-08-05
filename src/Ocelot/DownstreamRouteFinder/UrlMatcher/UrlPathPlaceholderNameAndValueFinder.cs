@@ -168,7 +168,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
         private static bool IsPlaceholder(char character) => character == '{';
 
-        private bool IsLastPlaceholder(string path, int counterForPath, string pathTemplate)
+        private static bool IsLastPlaceholder(string path, int counterForPath, string pathTemplate)
             => path.Length <= counterForPath && pathTemplate.Length > 1
                 && pathTemplate.Substring(counterForPath, 2) == "/{"
                 && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
