@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Errors;
@@ -26,7 +26,7 @@ namespace Ocelot.Configuration.Validator
 
             RuleForEach(configuration => configuration.Routes)
                 .Must((config, route) => IsNotDuplicateIn(route, config.Routes))
-                .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} has duplicate");
+                .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} has duplicate upstream path or routing header mapping");
 
             RuleForEach(configuration => configuration.Routes)
                 .Must((config, route) => HaveServiceDiscoveryProviderRegistered(route, config.GlobalConfiguration.ServiceDiscoveryProvider))
@@ -115,7 +115,8 @@ namespace Ocelot.Configuration.Validator
         {
             var matchingRoutes = routes
                 .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
-                            && r.UpstreamHost == route.UpstreamHost)
+                            && r.UpstreamHost == route.UpstreamHost
+                            && AreDuplicateUpstreamRoutingHeaders(route, r))
                 .ToList();
 
             if (matchingRoutes.Count == 1)
@@ -155,6 +156,53 @@ namespace Ocelot.Configuration.Validator
             var matchingRoutes = aggregateRoutes
                 .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate & r.UpstreamHost == route.UpstreamHost);
             return matchingRoutes.Count() <= 1;
+        }
+
+        private static bool AreDuplicateUpstreamRoutingHeaders(FileRoute first, FileRoute second)
+        {
+            if (!first.UpstreamHeaderRoutingOptions.Headers.Any() && !second.UpstreamHeaderRoutingOptions.Headers.Any())
+            {
+                return true;
+            }
+
+            if (first.UpstreamHeaderRoutingOptions.Headers.Any() ^ second.UpstreamHeaderRoutingOptions.Headers.Any())
+            {
+                return false;
+            }
+
+            ISet<string> firstKeySet = first.UpstreamHeaderRoutingOptions.Headers.Keys
+                .Select(k => k.ToLowerInvariant())
+                .ToHashSet();
+            ISet<string> secondKeySet = second.UpstreamHeaderRoutingOptions.Headers.Keys
+                .Select(k => k.ToLowerInvariant())
+                .ToHashSet();
+            if (!firstKeySet.Overlaps(secondKeySet))
+            {
+                return false;
+            }
+
+            foreach (var (key, values) in first.UpstreamHeaderRoutingOptions.Headers)
+            {
+                IDictionary<string, List<string>> secondHeaders = second.UpstreamHeaderRoutingOptions.Headers;
+                if (!secondHeaders.TryGetValue(key, out List<string> secondHeaderValues))
+                {
+                    continue;
+                }
+
+                ISet<string> firstHeaderValuesLowerCase = values
+                    .Select(v => v.ToLowerInvariant())
+                    .ToHashSet();
+                ISet<string> secondHeaderValuesLowerCase = secondHeaderValues
+                    .Select(v => v.ToLowerInvariant())
+                    .ToHashSet();
+
+                if (firstHeaderValuesLowerCase.Overlaps(secondHeaderValuesLowerCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
