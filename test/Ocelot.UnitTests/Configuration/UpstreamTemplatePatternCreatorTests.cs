@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_match_up_to_next_slash()
+        public void Should_match_up_to_next_slash()
         {
             var fileRoute = new FileRoute
             {
@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_re_route_priority()
+        public void Should_use_re_route_priority()
         {
             var fileRoute = new FileRoute
             {
@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_zero_priority()
+        public void Should_use_zero_priority()
         {
             var fileRoute = new FileRoute
             {
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_set_upstream_template_pattern_to_ignore_case_sensitivity()
+        public void Should_set_upstream_template_pattern_to_ignore_case_sensitivity()
         {
             var fileRoute = new FileRoute
             {
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
+        public void Should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
         {
             var fileRoute = new FileRoute
             {
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_set_upstream_template_pattern_to_respect_case_sensitivity()
+        public void Should_set_upstream_template_pattern_to_respect_case_sensitivity()
         {
             var fileRoute = new FileRoute
             {
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_anything_to_end_of_string()
+        public void Should_create_template_pattern_that_matches_anything_to_end_of_string()
         {
             var fileRoute = new FileRoute
             {
@@ -127,7 +127,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_more_than_one_placeholder()
+        public void Should_create_template_pattern_that_matches_more_than_one_placeholder()
         {
             var fileRoute = new FileRoute
             {
@@ -143,7 +143,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
+        public void Should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
         {
             var fileRoute = new FileRoute
             {
@@ -159,7 +159,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_to_end_of_string()
+        public void Should_create_template_pattern_that_matches_to_end_of_string()
         {
             var fileRoute = new FileRoute
             {
@@ -174,7 +174,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
+        public void Should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
         {
             var fileRoute = new FileRoute
             {
@@ -189,7 +189,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
+        public void Should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
         {
             var fileRoute = new FileRoute
             {
@@ -205,7 +205,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_query_string()
+        public void Should_create_template_pattern_that_matches_query_string()
         {
             var fileRoute = new FileRoute
             {
@@ -220,7 +220,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_template_pattern_that_matches_query_string_with_multiple_params()
+        public void Should_create_template_pattern_that_matches_query_string_with_multiple_params()
         {
             var fileRoute = new FileRoute
             {
