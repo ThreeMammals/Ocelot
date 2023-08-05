@@ -87,13 +87,10 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                     }
 
                     var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate);
-
                     var placeholderValue = GetPlaceholderValue(pathTemplate, query, placeholderName, path, counterForPath, delimiter);
-
                     placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
 
                     var endOfPlaceholder = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
-
                     counterForTemplate = endOfPlaceholder;
                 }
 
