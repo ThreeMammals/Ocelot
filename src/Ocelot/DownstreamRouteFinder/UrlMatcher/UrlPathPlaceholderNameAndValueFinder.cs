@@ -173,6 +173,6 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                 && pathTemplate.Substring(counterForPath, 2) == "/{"
                 && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
 
-        private bool TemplateDoesNotEndInForwardSlash(string pathTemplate) => !pathTemplate.EndsWith('/');
+        private static bool TemplateDoesNotEndInForwardSlash(string pathTemplate) => !pathTemplate.EndsWith('/');
     }
 }
