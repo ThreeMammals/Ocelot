@@ -50,16 +50,15 @@ namespace Ocelot.Configuration.Creator
                 var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder, StringComparison.Ordinal);
                 if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf('?', StringComparison.Ordinal) < upstreamTemplate.IndexOf(placeholders[i], StringComparison.Ordinal)))
                 {
-                    if(upstreamTemplate[indexOfPlaceholder -1] == '/')
+                    if (upstreamTemplate[indexOfPlaceholder - 1] == '/')
                     {
-                        upstreamTemplate = upstreamTemplate.Remove(indexOfPlaceholder - 1, 1);                        
+                        upstreamTemplate = upstreamTemplate.Remove(indexOfPlaceholder - 1, 1);
                         upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchLastPlaceHolderZeroOrMoreOfEverything);
                     }
                     else
                     {
                         upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverything);
                     }
-                    
                 }
                 else
                 {
