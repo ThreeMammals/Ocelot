@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             _fileUpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions()
             {
-                Headers = new Dictionary<string, List<string>>()
+                Headers = new Dictionary<string, IList<string>>()
                 {
                     { "Header1", new List<string>() { "Value1", "Value2" }},
                     { "Header2", new List<string>() { "Value3" }},

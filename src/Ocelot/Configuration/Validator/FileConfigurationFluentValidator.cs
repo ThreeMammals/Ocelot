@@ -183,8 +183,8 @@ namespace Ocelot.Configuration.Validator
 
             foreach (var (key, values) in first.UpstreamHeaderRoutingOptions.Headers)
             {
-                IDictionary<string, List<string>> secondHeaders = second.UpstreamHeaderRoutingOptions.Headers;
-                if (!secondHeaders.TryGetValue(key, out List<string> secondHeaderValues))
+                IDictionary<string, IList<string>> secondHeaders = second.UpstreamHeaderRoutingOptions.Headers;
+                if (!secondHeaders.TryGetValue(key, out IList<string> secondHeaderValues))
                 {
                     continue;
                 }

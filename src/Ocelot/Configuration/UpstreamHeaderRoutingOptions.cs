@@ -4,7 +4,7 @@ namespace Ocelot.Configuration
 {
     public class UpstreamHeaderRoutingOptions
     {
-        public UpstreamHeaderRoutingOptions(Dictionary<string, HashSet<string>> headers, UpstreamHeaderRoutingTriggerMode mode)
+        public UpstreamHeaderRoutingOptions(IReadOnlyDictionary<string, HashSet<string>> headers, UpstreamHeaderRoutingTriggerMode mode)
         {
             Headers = new UpstreamRoutingHeaders(headers);
             Mode = mode;

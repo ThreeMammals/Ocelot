@@ -6,11 +6,11 @@ namespace Ocelot.Configuration.File
     {
         public FileUpstreamHeaderRoutingOptions()
         {
-            Headers = new();
+            Headers = new Dictionary<string, IList<string>>();
             TriggerOn = string.Empty;
         }
 
-        public Dictionary<string, List<string>> Headers { get; set; }
+        public IDictionary<string, IList<string>> Headers { get; set; }
 
         public string TriggerOn { get; set; }
     }

@@ -60,7 +60,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private static bool RouteHasHttpMethod(Route route, string httpMethod)
         {
-            return route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower());
+            httpMethod = httpMethod.ToLower();
+            return route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod);
         }
 
         private static bool RouteHasRequiredUpstreamHeaders(Route route, IHeaderDictionary requestHeaders)
