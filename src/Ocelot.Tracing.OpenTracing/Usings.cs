@@ -8,9 +8,5 @@ global using System.Threading;
 global using System.Threading.Tasks;
 
 // Project extra global namespaces
-global using BenchmarkDotNet.Attributes;
-global using BenchmarkDotNet.Columns;
-global using BenchmarkDotNet.Configs;
-global using BenchmarkDotNet.Diagnosers;
-global using BenchmarkDotNet.Validators;
 global using Ocelot;
+global using OpenTracing;

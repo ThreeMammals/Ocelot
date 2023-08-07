@@ -4,7 +4,6 @@
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
-using Ocelot.Logging;
 
 namespace Ocelot.Tracing.OpenTracing;
 
@@ -20,7 +19,7 @@ public static class OcelotBuilderExtensions
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddOpenTracing(this IOcelotBuilder builder)
     {
-        builder.Services.TryAddSingleton<ITracer, OpenTracingTracer>();
+        builder.Services.TryAddSingleton<Logging.ITracer, OpenTracingTracer>();
         return builder;
     }
 }

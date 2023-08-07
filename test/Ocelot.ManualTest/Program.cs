@@ -1,6 +1,10 @@
 ﻿using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Requester;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ocelot.ManualTest
 {
