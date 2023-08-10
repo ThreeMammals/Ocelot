@@ -4,41 +4,40 @@ using Ocelot.Logging;
 
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class DownstreamAddressesCreator : IDownstreamAddressesCreator
 {
-    public class DownstreamAddressesCreator : IDownstreamAddressesCreator
+    private readonly IOcelotLogger _logger;
+
+    public DownstreamAddressesCreator(IOcelotLoggerFactory loggerFactory)
     {
-        private readonly IOcelotLogger _logger;
+        _logger = loggerFactory.CreateLogger<DownstreamAddressesCreator>();
+    }
 
-        public DownstreamAddressesCreator(IOcelotLoggerFactory loggerFactory)
-        {
-            _logger = loggerFactory.CreateLogger<DownstreamAddressesCreator>();
-        }
+    public List<DownstreamHostAndPort> Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    {
+        return EnumerateDownstreamHosts(route, globalConfiguration).ToList();
+    }
 
-        public List<DownstreamHostAndPort> Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    private IEnumerable<DownstreamHostAndPort> EnumerateDownstreamHosts(FileRoute route, FileGlobalConfiguration fileGlobalConfiguration)
+    {
+        foreach (var downstreamHost in route.DownstreamHostAndPorts)
         {
-            return EnumerateDownstreamHosts(route, globalConfiguration).ToList();
-        }
-
-        private IEnumerable<DownstreamHostAndPort> EnumerateDownstreamHosts(FileRoute route, FileGlobalConfiguration fileGlobalConfiguration)
-        {
-            foreach (var downstreamHost in route.DownstreamHostAndPorts)
+            if (string.IsNullOrWhiteSpace(downstreamHost.GlobalHostKey) == false)
             {
-                if (string.IsNullOrWhiteSpace(downstreamHost.GlobalHostKey) == false)
+                if (fileGlobalConfiguration.DownstreamHosts.TryGetValue(downstreamHost.GlobalHostKey, out var globalDownstreamHost))
                 {
-                    if (fileGlobalConfiguration.DownstreamHosts.TryGetValue(downstreamHost.GlobalHostKey, out var globalDownstreamHost))
-                    {
-                        yield return new DownstreamHostAndPort(globalDownstreamHost.Host, globalDownstreamHost.Port);
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Global configuration doesn't contain the definition of '{downstreamHost.GlobalHostKey}' downstream host");
-                    }
+                    yield return new DownstreamHostAndPort(globalDownstreamHost.Host, globalDownstreamHost.Port);
                 }
                 else
                 {
-                    yield return new DownstreamHostAndPort(downstreamHost.Host, downstreamHost.Port);
+                    _logger.LogWarning($"Global configuration doesn't contain the definition of '{downstreamHost.GlobalHostKey}' downstream host");
                 }
+            }
+            else
+            {
+                yield return new DownstreamHostAndPort(downstreamHost.Host, downstreamHost.Port);
             }
         }
     }
