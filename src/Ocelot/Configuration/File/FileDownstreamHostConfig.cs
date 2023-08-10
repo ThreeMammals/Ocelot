@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.File
         /// Key to reference downstream host config from global configuration.
         /// </summary>
         /// <value>
-        /// Key reference from <see cref="FileGlobalConfiguration.DownstreamHosts"/>
+        /// Key reference from <see cref="FileGlobalConfiguration.DownstreamHosts"/>.
         /// </value>
         public string GlobalHostKey { get; set; }
         public string Host { get; set; }
