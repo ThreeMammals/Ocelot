@@ -7,163 +7,164 @@ using Ocelot.Cache;
 
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator;
-
-public class RoutesCreator : IRoutesCreator
+namespace Ocelot.Configuration.Creator
 {
-    private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
-    private readonly IClaimsToThingCreator _claimsToThingCreator;
-    private readonly IAuthenticationOptionsCreator _authOptionsCreator;
-    private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
-    private readonly IRequestIdKeyCreator _requestIdKeyCreator;
-    private readonly IQoSOptionsCreator _qosOptionsCreator;
-    private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
-    private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
-    private readonly IRegionCreator _regionCreator;
-    private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
-    private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
-    private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
-    private readonly IRouteKeyCreator _routeKeyCreator;
-    private readonly ISecurityOptionsCreator _securityOptionsCreator;
-    private readonly IVersionCreator _versionCreator;
-
-    public RoutesCreator(
-        IClaimsToThingCreator claimsToThingCreator,
-        IAuthenticationOptionsCreator authOptionsCreator,
-        IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
-        IRequestIdKeyCreator requestIdKeyCreator,
-        IQoSOptionsCreator qosOptionsCreator,
-        IRouteOptionsCreator fileRouteOptionsCreator,
-        IRateLimitOptionsCreator rateLimitOptionsCreator,
-        IRegionCreator regionCreator,
-        IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-        IHeaderFindAndReplaceCreator headerFAndRCreator,
-        IDownstreamAddressesCreator downstreamAddressesCreator,
-        ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
-        IRouteKeyCreator routeKeyCreator,
-        ISecurityOptionsCreator securityOptionsCreator,
-        IVersionCreator versionCreator
-        )
+    public class RoutesCreator : IRoutesCreator
     {
-        _routeKeyCreator = routeKeyCreator;
-        _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
-        _downstreamAddressesCreator = downstreamAddressesCreator;
-        _headerFAndRCreator = headerFAndRCreator;
-        _regionCreator = regionCreator;
-        _rateLimitOptionsCreator = rateLimitOptionsCreator;
-        _requestIdKeyCreator = requestIdKeyCreator;
-        _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
-        _authOptionsCreator = authOptionsCreator;
-        _claimsToThingCreator = claimsToThingCreator;
-        _qosOptionsCreator = qosOptionsCreator;
-        _fileRouteOptionsCreator = fileRouteOptionsCreator;
-        _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
-        _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
-        _securityOptionsCreator = securityOptionsCreator;
-        _versionCreator = versionCreator;
-    }
+        private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
+        private readonly IClaimsToThingCreator _claimsToThingCreator;
+        private readonly IAuthenticationOptionsCreator _authOptionsCreator;
+        private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
+        private readonly IRequestIdKeyCreator _requestIdKeyCreator;
+        private readonly IQoSOptionsCreator _qosOptionsCreator;
+        private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
+        private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+        private readonly IRegionCreator _regionCreator;
+        private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
+        private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
+        private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
+        private readonly IRouteKeyCreator _routeKeyCreator;
+        private readonly ISecurityOptionsCreator _securityOptionsCreator;
+        private readonly IVersionCreator _versionCreator;
 
-    public List<Route> Create(FileConfiguration fileConfiguration)
-    {
-        return fileConfiguration.Routes
-            .Select(route =>
-            {
-                var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration);
-                return SetUpRoute(route, downstreamRoute);
-            })
-            .ToList();
-    }
+        public RoutesCreator(
+            IClaimsToThingCreator claimsToThingCreator,
+            IAuthenticationOptionsCreator authOptionsCreator,
+            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
+            IRequestIdKeyCreator requestIdKeyCreator,
+            IQoSOptionsCreator qosOptionsCreator,
+            IRouteOptionsCreator fileRouteOptionsCreator,
+            IRateLimitOptionsCreator rateLimitOptionsCreator,
+            IRegionCreator regionCreator,
+            IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
+            IHeaderFindAndReplaceCreator headerFAndRCreator,
+            IDownstreamAddressesCreator downstreamAddressesCreator,
+            ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
+            IRouteKeyCreator routeKeyCreator,
+            ISecurityOptionsCreator securityOptionsCreator,
+            IVersionCreator versionCreator
+            )
+        {
+            _routeKeyCreator = routeKeyCreator;
+            _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
+            _downstreamAddressesCreator = downstreamAddressesCreator;
+            _headerFAndRCreator = headerFAndRCreator;
+            _regionCreator = regionCreator;
+            _rateLimitOptionsCreator = rateLimitOptionsCreator;
+            _requestIdKeyCreator = requestIdKeyCreator;
+            _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
+            _authOptionsCreator = authOptionsCreator;
+            _claimsToThingCreator = claimsToThingCreator;
+            _qosOptionsCreator = qosOptionsCreator;
+            _fileRouteOptionsCreator = fileRouteOptionsCreator;
+            _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
+            _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
+            _securityOptionsCreator = securityOptionsCreator;
+            _versionCreator = versionCreator;
+        }
 
-    private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
-    {
-        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute);
+        public List<Route> Create(FileConfiguration fileConfiguration)
+        {
+            return fileConfiguration.Routes
+                .Select(route =>
+                {
+                    var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration);
+                    return SetUpRoute(route, downstreamRoute);
+                })
+                .ToList();
+        }
 
-        var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
+        private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute);
 
-        var routeKey = _routeKeyCreator.Create(fileRoute);
+            var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
-        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
+            var routeKey = _routeKeyCreator.Create(fileRoute);
 
-        var authOptionsForRoute = _authOptionsCreator.Create(fileRoute);
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-        var claimsToHeaders = _claimsToThingCreator.Create(fileRoute.AddHeadersToRequest);
+            var authOptionsForRoute = _authOptionsCreator.Create(fileRoute);
 
-        var claimsToClaims = _claimsToThingCreator.Create(fileRoute.AddClaimsToRequest);
+            var claimsToHeaders = _claimsToThingCreator.Create(fileRoute.AddHeadersToRequest);
 
-        var claimsToQueries = _claimsToThingCreator.Create(fileRoute.AddQueriesToRequest);
+            var claimsToClaims = _claimsToThingCreator.Create(fileRoute.AddClaimsToRequest);
 
-        var claimsToDownstreamPath = _claimsToThingCreator.Create(fileRoute.ChangeDownstreamPathTemplate);
+            var claimsToQueries = _claimsToThingCreator.Create(fileRoute.AddQueriesToRequest);
 
-        var qosOptions = _qosOptionsCreator.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
+            var claimsToDownstreamPath = _claimsToThingCreator.Create(fileRoute.ChangeDownstreamPathTemplate);
 
-        var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
+            var qosOptions = _qosOptionsCreator.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
-        var region = _regionCreator.Create(fileRoute);
+            var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
 
-        var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
+            var region = _regionCreator.Create(fileRoute);
 
-        var hAndRs = _headerFAndRCreator.Create(fileRoute);
+            var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
 
-        var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute, globalConfiguration);
+            var hAndRs = _headerFAndRCreator.Create(fileRoute);
 
-        var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
+            var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute, globalConfiguration);
 
-        var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions);
+            var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
 
-        var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
+            var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions);
 
-        var route = new DownstreamRouteBuilder()
-            .WithKey(fileRoute.Key)
-            .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
-            .WithAuthenticationOptions(authOptionsForRoute)
-            .WithClaimsToHeaders(claimsToHeaders)
-            .WithClaimsToClaims(claimsToClaims)
-            .WithRouteClaimsRequirement(fileRoute.RouteClaimsRequirement)
-            .WithIsAuthorized(fileRouteOptions.IsAuthorized)
-            .WithClaimsToQueries(claimsToQueries)
-            .WithClaimsToDownstreamPath(claimsToDownstreamPath)
-            .WithRequestIdKey(requestIdKey)
-            .WithIsCached(fileRouteOptions.IsCached)
-            .WithCacheOptions(new CacheOptions(fileRoute.FileCacheOptions.TtlSeconds, region))
-            .WithDownstreamScheme(fileRoute.DownstreamScheme)
-            .WithLoadBalancerOptions(lbOptions)
-            .WithDownstreamAddresses(downstreamAddresses)
-            .WithLoadBalancerKey(routeKey)
-            .WithQosOptions(qosOptions)
-            .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting)
-            .WithRateLimitOptions(rateLimitOption)
-            .WithHttpHandlerOptions(httpHandlerOptions)
-            .WithServiceName(fileRoute.ServiceName)
-            .WithServiceNamespace(fileRoute.ServiceNamespace)
-            .WithUseServiceDiscovery(fileRouteOptions.UseServiceDiscovery)
-            .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
-            .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
-            .WithDelegatingHandlers(fileRoute.DelegatingHandlers)
-            .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
-            .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
-            .WithDangerousAcceptAnyServerCertificateValidator(fileRoute.DangerousAcceptAnyServerCertificateValidator)
-            .WithSecurityOptions(securityOptions)
-            .WithDownstreamHttpVersion(downstreamHttpVersion)
-            .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
-            .Build();
+            var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
-        return route;
-    }
+            var route = new DownstreamRouteBuilder()
+                .WithKey(fileRoute.Key)
+                .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
+                .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
+                .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
+                .WithAuthenticationOptions(authOptionsForRoute)
+                .WithClaimsToHeaders(claimsToHeaders)
+                .WithClaimsToClaims(claimsToClaims)
+                .WithRouteClaimsRequirement(fileRoute.RouteClaimsRequirement)
+                .WithIsAuthorized(fileRouteOptions.IsAuthorized)
+                .WithClaimsToQueries(claimsToQueries)
+                .WithClaimsToDownstreamPath(claimsToDownstreamPath)
+                .WithRequestIdKey(requestIdKey)
+                .WithIsCached(fileRouteOptions.IsCached)
+                .WithCacheOptions(new CacheOptions(fileRoute.FileCacheOptions.TtlSeconds, region))
+                .WithDownstreamScheme(fileRoute.DownstreamScheme)
+                .WithLoadBalancerOptions(lbOptions)
+                .WithDownstreamAddresses(downstreamAddresses)
+                .WithLoadBalancerKey(routeKey)
+                .WithQosOptions(qosOptions)
+                .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting)
+                .WithRateLimitOptions(rateLimitOption)
+                .WithHttpHandlerOptions(httpHandlerOptions)
+                .WithServiceName(fileRoute.ServiceName)
+                .WithServiceNamespace(fileRoute.ServiceNamespace)
+                .WithUseServiceDiscovery(fileRouteOptions.UseServiceDiscovery)
+                .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
+                .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
+                .WithDelegatingHandlers(fileRoute.DelegatingHandlers)
+                .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
+                .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
+                .WithDangerousAcceptAnyServerCertificateValidator(fileRoute.DangerousAcceptAnyServerCertificateValidator)
+                .WithSecurityOptions(securityOptions)
+                .WithDownstreamHttpVersion(downstreamHttpVersion)
+                .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
+                .Build();
 
-    private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
-    {
-        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
+            return route;
+        }
 
-        var route = new RouteBuilder()
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithDownstreamRoute(downstreamRoutes)
-            .WithUpstreamHost(fileRoute.UpstreamHost)
-            .Build();
+        private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
+        {
+            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-        return route;
+            var route = new RouteBuilder()
+                .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
+                .WithUpstreamPathTemplate(upstreamTemplatePattern)
+                .WithDownstreamRoute(downstreamRoutes)
+                .WithUpstreamHost(fileRoute.UpstreamHost)
+                .Build();
+
+            return route;
+        }
     }
 }

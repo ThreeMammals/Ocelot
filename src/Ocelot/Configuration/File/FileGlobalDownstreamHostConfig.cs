@@ -1,7 +1,8 @@
-﻿namespace Ocelot.Configuration.File;
-
-public class FileGlobalDownstreamHostConfig
+﻿namespace Ocelot.Configuration.File
 {
-    public string Host { get; set; }
-    public int Port { get; set; }
+    public class FileGlobalDownstreamHostConfig
+    {
+        public string Host { get; set; }
+        public int Port { get; set; }
+    }
 }

@@ -2,9 +2,10 @@ using System.Collections.Generic;
 
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator;
-
-public interface IDownstreamAddressesCreator
+namespace Ocelot.Configuration.Creator
 {
-    List<DownstreamHostAndPort> Create(FileRoute route, FileGlobalConfiguration globalConfiguration);
+    public interface IDownstreamAddressesCreator
+    {
+        List<DownstreamHostAndPort> Create(FileRoute route, FileGlobalConfiguration globalConfiguration);
+    }
 }
