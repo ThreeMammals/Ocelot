@@ -29,7 +29,7 @@ public class CancelRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_abort_service_work_when_cancelling_the_request()
+    public void Should_abort_service_work_when_cancelling_the_request()
     {
         var port = RandomPortFinder.GetRandomPort();
 
@@ -59,9 +59,9 @@ public class CancelRequestTests : IDisposable
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunning())
             .When(x => _steps.WhenIGetUrlOnTheApiGatewayAndDontWait("/"))
-            .And(x => x.WhenIWaitForNotification(_serviceWorkStartedNotifier))
+            .And(x => WhenIWaitForNotification(_serviceWorkStartedNotifier))
             .And(x => _steps.WhenICancelTheRequest())
-            .And(x => x.WhenIWaitForNotification(_serviceWorkStoppedNotifier))
+            .And(x => WhenIWaitForNotification(_serviceWorkStoppedNotifier))
             .Then(x => x.ThenOcelotClientRequestIsCanceled())
             .BDDfy();
     }
@@ -91,7 +91,7 @@ public class CancelRequestTests : IDisposable
         });
     }
 
-    private async Task WhenIWaitForNotification(Notifier notifier)
+    private static async Task WhenIWaitForNotification(Notifier notifier)
     {
         int waitingTime = 0;
         while (!notifier.NotificationSent)
@@ -119,6 +119,7 @@ public class CancelRequestTests : IDisposable
     {
         _serviceHandler?.Dispose();
         _steps.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     class Notifier
