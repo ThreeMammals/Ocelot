@@ -16,8 +16,8 @@ public class CancelRequestTests : IDisposable
     private const int MAX_WAITING_TIME = 60_000;
     private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
-    private Notifier _serviceWorkStartedNotifier;
-    private Notifier _serviceWorkStoppedNotifier;
+    private readonly Notifier _serviceWorkStartedNotifier;
+    private readonly Notifier _serviceWorkStoppedNotifier;
     private bool _cancelExceptionThrown;
 
     public CancelRequestTests()
