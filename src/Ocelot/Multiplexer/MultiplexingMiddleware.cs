@@ -172,6 +172,7 @@ namespace Ocelot.Multiplexer
             target.Request.Body = source.Request.Body;
             target.Request.ContentLength = source.Request.ContentLength;
             target.Request.ContentType = source.Request.ContentType;
+            target.Request.Form = source.Request.Form;
             target.Request.Host = source.Request.Host;
             target.Request.Method = source.Request.Method;
             target.Request.Path = source.Request.Path;

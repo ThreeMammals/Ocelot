@@ -41,6 +41,10 @@ namespace Ocelot.Request.Mapper
             }
         }
 
+        private static bool IsMultipartContentType(string contentType)
+            => !string.IsNullOrEmpty(contentType)
+                && contentType.Contains("multipart/form-data", StringComparison.OrdinalIgnoreCase);
+
         private static async Task<HttpContent> MapContent(HttpRequest request)
         {
             if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0))
@@ -49,12 +53,39 @@ namespace Ocelot.Request.Mapper
             }
 
             // Never change this to StreamContent again, I forgot it doesnt work in #464.
-            var content = new ByteArrayContent(await ToByteArray(request.Body));
+            HttpContent content;
 
-            if (!string.IsNullOrEmpty(request.ContentType))
+            if (IsMultipartContentType(request.ContentType))
             {
-                content.Headers
-                    .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
+                content = new MultipartFormDataContent();
+                if (request.Form != null && request.Form.Files != null)
+                {
+                    foreach (var f in request.Form.Files)
+                    {
+                        using var memStream = new MemoryStream();
+                        await f.CopyToAsync(memStream);
+                        var fileContent = new ByteArrayContent(memStream.ToArray());
+                        ((MultipartFormDataContent)content).Add(fileContent, f.Name, f.FileName);
+                    }
+                }
+
+                if (request.Form != null)
+                {
+                    foreach (var key in request.Form.Keys)
+                    {
+                        var strContent = new StringContent(request.Form[key]);
+                        ((MultipartFormDataContent)content).Add(strContent, key);
+                    }
+                }
+            }
+            else
+            {
+                content = new ByteArrayContent(await ToByteArray(request.Body));
+                if (!string.IsNullOrEmpty(request.ContentType))
+                {
+                    content.Headers
+                        .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
+                }
             }
 
             AddHeaderIfExistsOnRequest("Content-Language", content, request);
@@ -108,11 +139,9 @@ namespace Ocelot.Request.Mapper
         {
             await using (stream)
             {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
-                }
+                using var memStream = new MemoryStream();
+                await stream.CopyToAsync(memStream);
+                return memStream.ToArray();
             }
         }
     }
