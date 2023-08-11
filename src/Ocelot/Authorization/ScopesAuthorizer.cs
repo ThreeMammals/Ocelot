@@ -16,28 +16,31 @@ namespace Ocelot.Authorization
                 return new OkResponse<bool>(true);
             }
 
-            var userScopes =
-                claimsPrincipal.Claims
-                    .Where(x => x.Type == ScopeClaimKey)
-                    .Select(x => x.Value)
-                    .ToArray();
+            var scopesResponse = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
 
-            if (userScopes.Length == 1)
+            if (scopesResponse.IsError)
             {
-                var userScope = userScopes[0];
+                return new ErrorResponse<bool>(scopesResponse.Errors);
+            }
 
-                var hasMultipleValues = userScope.Contains(" ");
+            var scopes = scopesResponse.Data;
+
+            if (scopes.Count == 1)
+            {
+                var scope = scopes[0];
+
+                var hasMultipleValues = scopes.Contains(" ");
 
                 if (hasMultipleValues)
                 {
-                    userScopes = userScope.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                    scopes = scopes.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
                 }
             }
 
-            if (routeAllowedScopes.Any(s => !userScopes.Contains(s)))
+            if (routeAllowedScopes.Any(s => !scopes.Contains(s)))
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", userScopes)}' do not have all allowed scopes: '{string.Join(",", routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", scopes)}' do not have all allowed scopes: '{string.Join(",", routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
