@@ -16,7 +16,7 @@ namespace Ocelot.Authorization
                 return new OkResponse<bool>(true);
             }
 
-            var scopesResponse = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
+            var scopesResponse = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, ScopeClaimKey);
 
             if (scopesResponse.IsError)
             {
