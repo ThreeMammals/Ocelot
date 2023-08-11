@@ -42,10 +42,8 @@ namespace Ocelot.Request.Mapper
         }
 
         private static bool IsMultipartContentType(string contentType)
-        {
-            return !string.IsNullOrEmpty(contentType)
-                   && contentType.IndexOf("multipart/form-data", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
+            => !string.IsNullOrEmpty(contentType)
+                && contentType.IndexOf("multipart/form-data", StringComparison.OrdinalIgnoreCase) >= 0;
 
         private static async Task<HttpContent> MapContent(HttpRequest request)
         {
