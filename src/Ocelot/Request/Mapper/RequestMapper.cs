@@ -62,12 +62,10 @@ namespace Ocelot.Request.Mapper
                 {
                     foreach (var f in request.Form.Files)
                     {
-                        using (var memStream = new MemoryStream())
-                        {
-                            await f.CopyToAsync(memStream);
-                            var fileContent = new ByteArrayContent(memStream.ToArray());
-                            ((MultipartFormDataContent)content).Add(fileContent, f.Name, f.FileName);
-                        }
+                        using var memStream = new MemoryStream();
+                        await f.CopyToAsync(memStream);
+                        var fileContent = new ByteArrayContent(memStream.ToArray());
+                        ((MultipartFormDataContent)content).Add(fileContent, f.Name, f.FileName);
                     }
                 }
 
@@ -141,11 +139,9 @@ namespace Ocelot.Request.Mapper
         {
             await using (stream)
             {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
-                }
+                using var memStream = new MemoryStream();
+                await stream.CopyToAsync(memStream);
+                return memStream.ToArray();
             }
         }
     }
