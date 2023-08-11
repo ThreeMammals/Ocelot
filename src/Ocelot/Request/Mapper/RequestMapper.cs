@@ -71,6 +71,7 @@ namespace Ocelot.Request.Mapper
 
                     }
                 }
+
                 if (request.Form != null)
                 {
                     foreach (var key in request.Form.Keys)
