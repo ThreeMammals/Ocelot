@@ -55,7 +55,7 @@ namespace Ocelot.Request.Mapper
             // Never change this to StreamContent again, I forgot it doesnt work in #464.
             HttpContent content = null;
 
-            if (this.IsMultipartContentType(request.ContentType))
+            if (IsMultipartContentType(request.ContentType))
             {
                 content = new MultipartFormDataContent();
                 if (request.Form != null && request.Form.Files != null)
