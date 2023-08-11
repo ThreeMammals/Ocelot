@@ -33,7 +33,7 @@ namespace Ocelot.Authorization
 
                 if (hasMultipleValues)
                 {
-                    scopes = scopes.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
+                    scopes = scope.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
                 }
             }
 
