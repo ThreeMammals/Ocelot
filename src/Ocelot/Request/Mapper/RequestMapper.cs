@@ -68,7 +68,6 @@ namespace Ocelot.Request.Mapper
                             var fileContent = new ByteArrayContent(memStream.ToArray());
                             ((MultipartFormDataContent)content).Add(fileContent, f.Name, f.FileName);
                         }
-
                     }
                 }
 
