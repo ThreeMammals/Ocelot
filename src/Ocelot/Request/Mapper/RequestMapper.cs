@@ -53,7 +53,7 @@ namespace Ocelot.Request.Mapper
             }
 
             // Never change this to StreamContent again, I forgot it doesnt work in #464.
-            HttpContent content = null;
+            HttpContent content;
 
             if (IsMultipartContentType(request.ContentType))
             {
