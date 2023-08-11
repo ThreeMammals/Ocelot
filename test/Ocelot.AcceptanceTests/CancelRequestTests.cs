@@ -8,129 +8,128 @@ using System.Threading.Tasks;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class CancelRequestTests : IDisposable
 {
-    public class CancelRequestTests : IDisposable
+    private const int SERVICE_WORK_TIME = 5_000;
+    private const int MAX_WAITING_TIME = 60_000;
+    private readonly Steps _steps;
+    private readonly ServiceHandler _serviceHandler;
+    private Notifier _serviceWorkStartedNotifier;
+    private Notifier _serviceWorkStoppedNotifier;
+    private bool _cancelExceptionThrown;
+
+    public CancelRequestTests()
     {
-        private const int SERVICE_WORK_TIME = 5_000;
-        private const int MAX_WAITING_TIME = 60_000;
-        private readonly Steps _steps;
-        private readonly ServiceHandler _serviceHandler;
-        private Notifier _serviceWorkStartedNotifier;
-        private Notifier _serviceWorkStoppedNotifier;
-        private bool _cancelExceptionThrown;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+        _serviceWorkStartedNotifier = new Notifier("service work started notifier");
+        _serviceWorkStoppedNotifier = new Notifier("service work finished notifier");
+    }
 
-        public CancelRequestTests()
+    [Fact]
+    public void should_abort_service_work_when_cancelling_the_request()
+    {
+        var port = RandomPortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-            _serviceWorkStartedNotifier = new Notifier("service work started notifier");
-            _serviceWorkStoppedNotifier = new Notifier("service work finished notifier");
-        }
-
-        [Fact]
-        public void should_abort_service_work_when_cancelling_the_request()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+            Routes = new List<FileRoute>
+                {
+                    new FileRoute
                     {
-                        new FileRoute
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new FileHostAndPort
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
-            };
+                },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAndDontWait("/"))
-                .And(x => x.WhenIWaitForNotification(_serviceWorkStartedNotifier))
-                .And(x => _steps.WhenICancelTheRequest())
-                .And(x => x.WhenIWaitForNotification(_serviceWorkStoppedNotifier))
-                .Then(x => x.ThenOcelotClientRequestIsCanceled())
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayAndDontWait("/"))
+            .And(x => x.WhenIWaitForNotification(_serviceWorkStartedNotifier))
+            .And(x => _steps.WhenICancelTheRequest())
+            .And(x => x.WhenIWaitForNotification(_serviceWorkStoppedNotifier))
+            .Then(x => x.ThenOcelotClientRequestIsCanceled())
+            .BDDfy();
+    }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl)
+    private void GivenThereIsAServiceRunningOn(string baseUrl)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+            try
             {
-                try
-                {
-                    var response = string.Empty;
+                var response = string.Empty;
 
-                    _serviceWorkStartedNotifier.NotificationSent = true;
-                    await Task.Delay(SERVICE_WORK_TIME, context.RequestAborted);
+                _serviceWorkStartedNotifier.NotificationSent = true;
+                await Task.Delay(SERVICE_WORK_TIME, context.RequestAborted);
 
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    await context.Response.WriteAsync(response);
-                }
-                catch (TaskCanceledException)
-                {
-                    _cancelExceptionThrown = true;
-                }
-                finally
-                {
-                    _serviceWorkStoppedNotifier.NotificationSent = true;
-                }
-            });
-        }
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await context.Response.WriteAsync(response);
+            }
+            catch (TaskCanceledException)
+            {
+                _cancelExceptionThrown = true;
+            }
+            finally
+            {
+                _serviceWorkStoppedNotifier.NotificationSent = true;
+            }
+        });
+    }
 
-        private async Task WhenIWaitForNotification(Notifier notifier)
+    private async Task WhenIWaitForNotification(Notifier notifier)
+    {
+        int waitingTime = 0;
+        while (!notifier.NotificationSent)
         {
-            int waitingTime = 0;
-            while (!notifier.NotificationSent)
-            {
-                var waitingInterval = 50;
-                await Task.Delay(waitingInterval);
-                waitingTime += waitingInterval;
+            var waitingInterval = 50;
+            await Task.Delay(waitingInterval);
+            waitingTime += waitingInterval;
 
-                if (waitingTime > MAX_WAITING_TIME)
-                {
-                    throw new TimeoutException(notifier.Name + $" did not sent notification within {MAX_WAITING_TIME / 1000} second(s).");
-                }
+            if (waitingTime > MAX_WAITING_TIME)
+            {
+                throw new TimeoutException(notifier.Name + $" did not sent notification within {MAX_WAITING_TIME / 1000} second(s).");
             }
         }
+    }
 
-        private void ThenOcelotClientRequestIsCanceled()
+    private void ThenOcelotClientRequestIsCanceled()
+    {
+        _serviceWorkStartedNotifier.NotificationSent.ShouldBeTrue();
+        _serviceWorkStoppedNotifier.NotificationSent.ShouldBeTrue();
+
+        _cancelExceptionThrown.ShouldBeTrue();
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
+    }
+
+    class Notifier
+    {
+        public Notifier(string name)
         {
-            _serviceWorkStartedNotifier.NotificationSent.ShouldBeTrue();
-            _serviceWorkStoppedNotifier.NotificationSent.ShouldBeTrue();
-
-            _cancelExceptionThrown.ShouldBeTrue();
+            Name = name;
         }
 
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+        public bool NotificationSent { get; set; }
 
-        class Notifier
-        {
-            public Notifier(string name)
-            {
-                Name = name;
-            }
-
-            public bool NotificationSent { get; set; }
-
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
     }
 }
