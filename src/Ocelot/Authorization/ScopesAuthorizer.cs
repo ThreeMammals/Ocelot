@@ -38,7 +38,7 @@ namespace Ocelot.Authorization
             if (routeAllowedScopes.Except(userScopes).Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", scopes)}' do not have all allowed route scopes: '{string.Join(",", routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", userScopes)}' do not have all allowed route scopes: '{string.Join(",", routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
