@@ -23,24 +23,22 @@ namespace Ocelot.Authorization
                 return new ErrorResponse<bool>(scopesResponse.Errors);
             }
 
-            var scopes = scopesResponse.Data;
+            IList<string> userScopes = scopesResponse.Data;
 
-            if (scopes.Count == 1)
+            if (userScopes.Count == 1)
             {
-                var scope = scopes[0];
+                var scope = userScopes[0];
 
-                var hasMultipleValues = scopes.Contains(" ");
-
-                if (hasMultipleValues)
+                if (scope.Contains(" "))
                 {
-                    scopes = scope.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
+                    userScopes = scope.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 
-            if (routeAllowedScopes.Any(s => !scopes.Contains(s)))
+            if (routeAllowedScopes.Except(userScopes).Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", scopes)}' do not have all allowed scopes: '{string.Join(",", routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", scopes)}' do not have all allowed route scopes: '{string.Join(",", routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
