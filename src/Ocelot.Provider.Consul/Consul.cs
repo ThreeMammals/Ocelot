@@ -1,17 +1,12 @@
-﻿using System;
+﻿using global::Consul;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using global::Consul;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
-using Ocelot.ServiceDiscovery.Providers;
-
-using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul
 {
