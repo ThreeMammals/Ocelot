@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IUpstreamHeaderRoutingOptionsCreator
 {
-    public interface IUpstreamHeaderRoutingOptionsCreator
-    {
-        UpstreamHeaderRoutingOptions Create(FileUpstreamHeaderRoutingOptions options);
-    }
+    UpstreamHeaderRoutingOptions Create(FileUpstreamHeaderRoutingOptions options);
 }

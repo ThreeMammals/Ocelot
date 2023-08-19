@@ -116,7 +116,9 @@ namespace Ocelot.Configuration.Validator
             var matchingRoutes = routes
                 .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
                             && r.UpstreamHost == route.UpstreamHost
-                            && AreDuplicateUpstreamRoutingHeaders(route, r))
+                            && AreDuplicateUpstreamRoutingHeaders(
+                                route.UpstreamHeaderRoutingOptions.Headers,
+                                r.UpstreamHeaderRoutingOptions.Headers))
                 .ToList();
 
             if (matchingRoutes.Count == 1)
@@ -158,45 +160,39 @@ namespace Ocelot.Configuration.Validator
             return matchingRoutes.Count() <= 1;
         }
 
-        private static bool AreDuplicateUpstreamRoutingHeaders(FileRoute first, FileRoute second)
+        private static bool AreDuplicateUpstreamRoutingHeaders(
+            IDictionary<string, ICollection<string>> first,
+            IDictionary<string, ICollection<string>> second)
         {
-            if (!first.UpstreamHeaderRoutingOptions.Headers.Any() && !second.UpstreamHeaderRoutingOptions.Headers.Any())
+            if (!first.Any() && !second.Any())
             {
                 return true;
             }
 
-            if (first.UpstreamHeaderRoutingOptions.Headers.Any() ^ second.UpstreamHeaderRoutingOptions.Headers.Any())
+            if (first.Any() ^ second.Any())
             {
                 return false;
             }
 
-            ISet<string> firstKeySet = first.UpstreamHeaderRoutingOptions.Headers.Keys
-                .Select(k => k.ToLowerInvariant())
-                .ToHashSet();
-            ISet<string> secondKeySet = second.UpstreamHeaderRoutingOptions.Headers.Keys
-                .Select(k => k.ToLowerInvariant())
-                .ToHashSet();
-            if (!firstKeySet.Overlaps(secondKeySet))
+            var firstKeySet = first.Keys
+                .Select(k => k.ToUpperInvariant())
+                .ToArray();
+            var secondKeySet = second.Keys
+                .Select(k => k.ToUpperInvariant())
+                .ToArray();
+            if (!firstKeySet.Intersect(secondKeySet).Any())
             {
                 return false;
             }
 
-            foreach (var (key, values) in first.UpstreamHeaderRoutingOptions.Headers)
+            foreach (var (key, firstValues) in first)
             {
-                IDictionary<string, IList<string>> secondHeaders = second.UpstreamHeaderRoutingOptions.Headers;
-                if (!secondHeaders.TryGetValue(key, out IList<string> secondHeaderValues))
+                if (!second.TryGetValue(key, out var secondValues))
                 {
                     continue;
                 }
 
-                ISet<string> firstHeaderValuesLowerCase = values
-                    .Select(v => v.ToLowerInvariant())
-                    .ToHashSet();
-                ISet<string> secondHeaderValuesLowerCase = secondHeaderValues
-                    .Select(v => v.ToLowerInvariant())
-                    .ToHashSet();
-
-                if (firstHeaderValuesLowerCase.Overlaps(secondHeaderValuesLowerCase))
+                if (firstValues.Intersect(secondValues, StringComparer.OrdinalIgnoreCase).Any())
                 {
                     return true;
                 }

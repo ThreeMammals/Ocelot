@@ -1,8 +1,7 @@
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration;
+
+public enum UpstreamHeaderRoutingTriggerMode : byte
 {
-    public enum UpstreamHeaderRoutingTriggerMode
-    {
-        Any = 0,
-        All = 1,
-    }
+    Any,
+    All,
 }

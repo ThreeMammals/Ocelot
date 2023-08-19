@@ -1,17 +1,8 @@
-using System.Collections.Generic;
+namespace Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.File
+public class FileUpstreamHeaderRoutingOptions
 {
-    public class FileUpstreamHeaderRoutingOptions
-    {
-        public FileUpstreamHeaderRoutingOptions()
-        {
-            Headers = new Dictionary<string, IList<string>>();
-            TriggerOn = string.Empty;
-        }
+    public IDictionary<string, ICollection<string>> Headers { get; set; } = new Dictionary<string, ICollection<string>>();
 
-        public IDictionary<string, IList<string>> Headers { get; set; }
-
-        public string TriggerOn { get; set; }
-    }
+    public string TriggerOn { get; set; } = string.Empty;
 }

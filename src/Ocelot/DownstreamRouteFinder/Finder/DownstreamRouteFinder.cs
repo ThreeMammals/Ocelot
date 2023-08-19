@@ -55,30 +55,16 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         {
             return (route.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(route, httpMethod)) &&
                    (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost) &&
-                   (route.UpstreamHeaderRoutingOptions == null || !route.UpstreamHeaderRoutingOptions.Enabled() || RouteHasRequiredUpstreamHeaders(route, requestHeaders));
+                   (!(route.UpstreamHeaderRoutingOptions?.Enabled() ?? false) || RouteHasRequiredUpstreamHeaders(route, requestHeaders));
         }
 
-        private static bool RouteHasHttpMethod(Route route, string httpMethod)
-        {
-            httpMethod = httpMethod.ToLower();
-            return route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod);
-        }
+        private static bool RouteHasHttpMethod(Route route, string httpMethod) =>
+            route.UpstreamHttpMethod.Select(x => x.Method).Contains(httpMethod, StringComparer.OrdinalIgnoreCase);
 
-        private static bool RouteHasRequiredUpstreamHeaders(Route route, IHeaderDictionary requestHeaders)
-        {
-            bool result = false;
-            switch (route.UpstreamHeaderRoutingOptions.Mode)
-            {
-                case UpstreamHeaderRoutingTriggerMode.Any:
-                    result = route.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders);
-                    break;
-                case UpstreamHeaderRoutingTriggerMode.All:
-                    result = route.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
-                    break;
-            }
-
-            return result;
-        }
+        private static bool RouteHasRequiredUpstreamHeaders(Route route, IHeaderDictionary requestHeaders) =>
+            route.UpstreamHeaderRoutingOptions.Mode == UpstreamHeaderRoutingTriggerMode.Any
+                ? route.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders)
+                : route.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
 
         private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route)
         {

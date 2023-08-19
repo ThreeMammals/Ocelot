@@ -1,70 +1,62 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration;
+
+public class UpstreamRoutingHeaders
 {
-    public class UpstreamRoutingHeaders
+    public IReadOnlyDictionary<string, ICollection<string>> Headers { get; }
+
+    public UpstreamRoutingHeaders(IReadOnlyDictionary<string, ICollection<string>> headers)
     {
-        public IReadOnlyDictionary<string, HashSet<string>> Headers { get; }
+        Headers = headers;
+    }
 
-        public UpstreamRoutingHeaders(IReadOnlyDictionary<string, HashSet<string>> headers)
+    public bool Any() => Headers.Any();
+
+    public bool HasAnyOf(IHeaderDictionary requestHeaders)
+    {
+        IHeaderDictionary normalizedHeaders = NormalizeHeaderNames(requestHeaders);
+        foreach (var h in Headers)
         {
-            Headers = headers;
+            if (normalizedHeaders.TryGetValue(h.Key, out var values) &&
+                h.Value.Intersect(values, StringComparer.OrdinalIgnoreCase).Any())
+            {
+                return true;
+            }
         }
 
-        public bool Any() => Headers.Any();
+        return false;
+    }
 
-        public bool HasAnyOf(IHeaderDictionary requestHeaders)
+    public bool HasAllOf(IHeaderDictionary requestHeaders)
+    {
+        IHeaderDictionary normalizedHeaders = NormalizeHeaderNames(requestHeaders);
+        foreach (var h in Headers)
         {
-            IHeaderDictionary lowerCaseHeaders = GetLowerCaseHeaders(requestHeaders);
-            foreach (KeyValuePair<string, HashSet<string>> h in Headers)
+            if (!normalizedHeaders.TryGetValue(h.Key, out var values))
             {
-                if (lowerCaseHeaders.TryGetValue(h.Key, out var values))
-                {
-                    HashSet<string> requestHeaderValues = new(values);
-                    if (h.Value.Overlaps(requestHeaderValues))
-                    {
-                        return true;
-                    }
-                }
+                return false;
             }
 
-            return false;
-        }
-
-        public bool HasAllOf(IHeaderDictionary requestHeaders)
-        {
-            IHeaderDictionary lowerCaseHeaders = GetLowerCaseHeaders(requestHeaders);
-            foreach (KeyValuePair<string, HashSet<string>> h in Headers)
+            if (!h.Value.Intersect(values, StringComparer.OrdinalIgnoreCase).Any())
             {
-                if (!lowerCaseHeaders.TryGetValue(h.Key, out var values))
-                {
-                    return false;
-                }
-
-                HashSet<string> requestHeaderValues = new(values);
-                if (!h.Value.Overlaps(requestHeaderValues))
-                {
-                    return false;
-                }
+                return false;
             }
-
-            return true;
         }
 
-        private static IHeaderDictionary GetLowerCaseHeaders(IHeaderDictionary headers)
+        return true;
+    }
+
+    private static IHeaderDictionary NormalizeHeaderNames(IHeaderDictionary headers)
+    {
+        var upperCaseHeaders = new HeaderDictionary();
+        foreach (KeyValuePair<string, StringValues> kv in headers)
         {
-            IHeaderDictionary lowerCaseHeaders = new HeaderDictionary();
-            foreach (KeyValuePair<string, StringValues> kv in headers)
-            {
-                string key = kv.Key.ToLowerInvariant();
-                StringValues values = new(kv.Value.Select(v => v.ToLowerInvariant()).ToArray());
-                lowerCaseHeaders.Add(key, values);
-            }
-
-            return lowerCaseHeaders;
+            var key = kv.Key.ToUpperInvariant();
+            upperCaseHeaders.Add(key, kv.Value);
         }
+
+        return upperCaseHeaders;
     }
 }

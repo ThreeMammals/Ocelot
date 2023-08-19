@@ -7,65 +7,64 @@ using Xunit;
 using TestStack.BDDfy;
 using Shouldly;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class UpstreamHeaderRoutingOptionsCreatorTests
 {
-    public class UpstreamHeaderRoutingOptionsCreatorTests
+    private FileUpstreamHeaderRoutingOptions _fileUpstreamHeaderRoutingOptions;
+    private IUpstreamHeaderRoutingOptionsCreator _creator;
+    private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
+
+    public UpstreamHeaderRoutingOptionsCreatorTests()
     {
-        private FileUpstreamHeaderRoutingOptions _fileUpstreamHeaderRoutingOptions;
-        private IUpstreamHeaderRoutingOptionsCreator _creator;
-        private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
+        _creator = new UpstreamHeaderRoutingOptionsCreator();
+    }
 
-        public UpstreamHeaderRoutingOptionsCreatorTests()
-        {
-            _creator = new UpstreamHeaderRoutingOptionsCreator();
-        }
-
-        [Fact]
-        public void should_create_upstream_routing_header_options()
-        {
-            UpstreamHeaderRoutingOptions expected = new UpstreamHeaderRoutingOptions(
-                headers: new Dictionary<string, HashSet<string>>()
-                {
-                    { "header1", new HashSet<string>() { "value1", "value2" }},
-                    { "header2", new HashSet<string>() { "value3" }},
-                },
-                mode: UpstreamHeaderRoutingTriggerMode.All
-            );
-
-            this.Given(_ => GivenTheseFileUpstreamHeaderRoutingOptions())
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheCreatedMatchesThis(expected))
-                .BDDfy();
-        }
-
-        private void GivenTheseFileUpstreamHeaderRoutingOptions()
-        {
-            _fileUpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions()
+    [Fact]
+    public void should_create_upstream_routing_header_options()
+    {
+        UpstreamHeaderRoutingOptions expected = new(
+            headers: new Dictionary<string, ICollection<string>>()
             {
-                Headers = new Dictionary<string, IList<string>>()
-                {
-                    { "Header1", new List<string>() { "Value1", "Value2" }},
-                    { "Header2", new List<string>() { "Value3" }},
-                },
-                TriggerOn = "all",
-            };
-        }
+                { "HEADER1", new[] { "Value1", "Value2" }},
+                { "HEADER2", new[] { "Value3" }},
+            },
+            mode: UpstreamHeaderRoutingTriggerMode.All
+        );
 
-        private void WhenICreate()
-        {
-            _upstreamHeaderRoutingOptions = _creator.Create(_fileUpstreamHeaderRoutingOptions);
-        }
+        this.Given(_ => GivenTheseFileUpstreamHeaderRoutingOptions())
+            .When(_ => WhenICreate())
+            .Then(_ => ThenTheCreatedMatchesThis(expected))
+            .BDDfy();
+    }
 
-        private void ThenTheCreatedMatchesThis(UpstreamHeaderRoutingOptions expected)
+    private void GivenTheseFileUpstreamHeaderRoutingOptions()
+    {
+        _fileUpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions()
         {
-            _upstreamHeaderRoutingOptions.Headers.Headers.Count.ShouldBe(expected.Headers.Headers.Count);
-            foreach (KeyValuePair<string, HashSet<string>> pair in _upstreamHeaderRoutingOptions.Headers.Headers)
+            Headers = new Dictionary<string, ICollection<string>>()
             {
-                expected.Headers.Headers.TryGetValue(pair.Key, out var expectedValue).ShouldBe(true);
-                expectedValue.SetEquals(pair.Value).ShouldBe(true);
-            }
+                { "Header1", new[] { "Value1", "Value2" }},
+                { "Header2", new[] { "Value3" }},
+            },
+            TriggerOn = "all",
+        };
+    }
 
-            _upstreamHeaderRoutingOptions.Mode.ShouldBe(expected.Mode);
+    private void WhenICreate()
+    {
+        _upstreamHeaderRoutingOptions = _creator.Create(_fileUpstreamHeaderRoutingOptions);
+    }
+
+    private void ThenTheCreatedMatchesThis(UpstreamHeaderRoutingOptions expected)
+    {
+        _upstreamHeaderRoutingOptions.Headers.Headers.Count.ShouldBe(expected.Headers.Headers.Count);
+        foreach (var pair in _upstreamHeaderRoutingOptions.Headers.Headers)
+        {
+            expected.Headers.Headers.TryGetValue(pair.Key, out var expectedValue).ShouldBe(true);
+            expectedValue.ShouldBeEquivalentTo(pair.Value);
         }
+
+        _upstreamHeaderRoutingOptions.Mode.ShouldBe(expected.Mode);
     }
 }

@@ -1,19 +1,16 @@
-using System.Collections.Generic;
+namespace Ocelot.Configuration;
 
-namespace Ocelot.Configuration
+public class UpstreamHeaderRoutingOptions
 {
-    public class UpstreamHeaderRoutingOptions
+    public UpstreamHeaderRoutingOptions(IReadOnlyDictionary<string, ICollection<string>> headers, UpstreamHeaderRoutingTriggerMode mode)
     {
-        public UpstreamHeaderRoutingOptions(IReadOnlyDictionary<string, HashSet<string>> headers, UpstreamHeaderRoutingTriggerMode mode)
-        {
-            Headers = new UpstreamRoutingHeaders(headers);
-            Mode = mode;
-        }
-
-        public bool Enabled() => Headers.Any();
-
-        public UpstreamRoutingHeaders Headers { get; }
-
-        public UpstreamHeaderRoutingTriggerMode Mode { get; }
+        Headers = new UpstreamRoutingHeaders(headers);
+        Mode = mode;
     }
+
+    public bool Enabled() => Headers.Any();
+
+    public UpstreamRoutingHeaders Headers { get; }
+
+    public UpstreamHeaderRoutingTriggerMode Mode { get; }
 }

@@ -823,9 +823,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenUpstreamHeaderRoutingOptions()
         {
-            var headers = new Dictionary<string, HashSet<string>>()
+            var headers = new Dictionary<string, ICollection<string>>()
             {
-                { "header", new HashSet<string>() { "value" }},
+                { "header", new[] { "value" }},
             };
             _upstreamHeaderRoutingOptions = new UpstreamHeaderRoutingOptions(headers, UpstreamHeaderRoutingTriggerMode.All);
         }

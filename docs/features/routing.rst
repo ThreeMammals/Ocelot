@@ -307,12 +307,40 @@ A sample configuration might look like the following:
     {
         "Routes": [
             {
+                "DownstreamPathTemplate": "/api/posts",
+                "DownstreamScheme": "http",
+                "DownstreamHostAndPorts": [
+                        {
+                            "Host": "server1",
+                            "Port": 80,
+                        }
+                    ],
+                "UpstreamPathTemplate": "/posts",
+                "UpstreamHttpMethod": [ "Put", "Delete" ]
                 "UpstreamHeaderRoutingOptions": {
                     "Headers": {
-                        "X-API-Version": [ "1", "2" ],
-                        "X-Tennant-Id": [ "tennantId" ]
+                        "X-API-Version": [ "1" ],
+                        "X-Tenant-Id": [ "tenantId" ]
                     },
                     "TriggerOn": "all"
+                }
+            },
+            {
+                "DownstreamPathTemplate": "/api/posts",
+                "DownstreamScheme": "http",
+                "DownstreamHostAndPorts": [
+                        {
+                            "Host": "server2",
+                            "Port": 80,
+                        }
+                    ],
+                "UpstreamPathTemplate": "/posts",
+                "UpstreamHttpMethod": [ "Put", "Delete" ]
+                "UpstreamHeaderRoutingOptions": {
+                    "Headers": {
+                        "X-API-Version": [ "2" ]
+                    },
+                    "TriggerOn": "any"
                 }
             }
         ]
