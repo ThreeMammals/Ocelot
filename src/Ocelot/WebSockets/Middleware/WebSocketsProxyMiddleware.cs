@@ -3,6 +3,7 @@
 // Modified https://github.com/aspnet/Proxy websockets class to use in Ocelot.
 
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Net.WebSockets;
@@ -71,7 +72,7 @@ namespace Ocelot.WebSockets.Middleware
             await Proxy(httpContext, uri, downstreamRoute);
         }
 
-        private static async Task Proxy(HttpContext context, string serverEndpoint, DownstreamRoute downstreamRoute)
+        private async Task Proxy(HttpContext context, string serverEndpoint, DownstreamRoute downstreamRoute)
         {
             if (context == null)
             {
