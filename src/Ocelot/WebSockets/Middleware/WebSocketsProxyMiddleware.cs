@@ -93,8 +93,7 @@ namespace Ocelot.WebSockets.Middleware
             if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
             {
                 client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
-
-                Logger.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
+                Logger.LogWarning($"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{downstreamRoute.UpstreamPathTemplate}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{downstreamRoute.DownstreamPathTemplate}'.");
             }
 
             foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)

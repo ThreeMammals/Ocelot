@@ -22,7 +22,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
             if (services == null || services.Count == 0)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError("There were no services in RoundRobin"));
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {nameof(RoundRobin)} during {nameof(Lease)} operation."));
             }
 
             lock (_lock)
