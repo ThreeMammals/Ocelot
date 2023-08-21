@@ -135,11 +135,10 @@ Then you need to create a class that implements the ILoadBalancer interface. Bel
 
 .. code-block:: csharp
 
-        private class CustomLoadBalancer : ILoadBalancer
+        public class CustomLoadBalancer : ILoadBalancer
         {
             private readonly Func<Task<List<Service>>> _services;
             private readonly object _lock = new object();
-
             private int _last;
 
             public CustomLoadBalancer(Func<Task<List<Service>>> services)
@@ -153,19 +152,14 @@ Then you need to create a class that implements the ILoadBalancer interface. Bel
                 lock (_lock)
                 {
                     if (_last >= services.Count)
-                    {
                         _last = 0;
-                    }
 
-                    var next = services[_last];
-                    _last++;
+                    var next = services[_last++];
                     return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
                 }
             }
 
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-            }
+            public void Release(ServiceHostAndPort hostAndPort) { }
         }
 
 Finally you need to register this class with Ocelot. I have used the most complex example below to show all of the data / types that can be passed into the factory that creates load balancers.
