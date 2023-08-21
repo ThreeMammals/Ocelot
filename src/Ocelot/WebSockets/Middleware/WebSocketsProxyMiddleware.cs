@@ -14,7 +14,6 @@ namespace Ocelot.WebSockets.Middleware
     {
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
         private const int DefaultWebSocketBufferSize = 4096;
-        private const int StreamCopyBufferSize = 81920;
         private readonly RequestDelegate _next;
 
         public WebSocketsProxyMiddleware(RequestDelegate next,
