@@ -122,11 +122,10 @@ namespace Ocelot.WebSockets.Middleware
 
             var destinationUri = new Uri(serverEndpoint);
             await client.ConnectAsync(destinationUri, context.RequestAborted);
-            using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
-            {
-                var bufferSize = DefaultWebSocketBufferSize;
-                await Task.WhenAll(PumpWebSocket(client, server, bufferSize, context.RequestAborted), PumpWebSocket(server, client, bufferSize, context.RequestAborted));
-            }
+
+            using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
+            var bufferSize = DefaultWebSocketBufferSize;
+            await Task.WhenAll(PumpWebSocket(client, server, bufferSize, context.RequestAborted), PumpWebSocket(server, client, bufferSize, context.RequestAborted));
         }
     }
 }
