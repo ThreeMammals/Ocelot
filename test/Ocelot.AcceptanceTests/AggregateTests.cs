@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
