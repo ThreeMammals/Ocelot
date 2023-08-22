@@ -4,38 +4,39 @@ using Ocelot.Configuration.File;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ocelot.Configuration.Creator;
-
-public class SecurityOptionsCreator : ISecurityOptionsCreator
+namespace Ocelot.Configuration.Creator
 {
-    public SecurityOptions Create(FileSecurityOptions securityOptions)
+    public class SecurityOptionsCreator : ISecurityOptionsCreator
     {
-        var ipAllowedList = new List<string>();
-        var ipBlockedList = new List<string>();
-
-        foreach (var allowed in securityOptions.IPAllowedList)
+        public SecurityOptions Create(FileSecurityOptions securityOptions)
         {
-            if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
+            var ipAllowedList = new List<string>();
+            var ipBlockedList = new List<string>();
+
+            foreach (var allowed in securityOptions.IPAllowedList)
             {
-                var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-                ipAllowedList.AddRange(allowedIps);
+                if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
+                {
+                    var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
+                    ipAllowedList.AddRange(allowedIps);
+                }
             }
-        }
 
-        foreach (var blocked in securityOptions.IPBlockedList)
-        {
-            if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
+            foreach (var blocked in securityOptions.IPBlockedList)
             {
-                var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
-                ipBlockedList.AddRange(blockedIps);
+                if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
+                {
+                    var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
+                    ipBlockedList.AddRange(blockedIps);
+                }
             }
-        }
 
-        if (securityOptions.ExcludeAllowedFromBlocked)
-        {
-            ipBlockedList = ipBlockedList.Except(ipAllowedList).ToList();
-        }
+            if (securityOptions.ExcludeAllowedFromBlocked)
+            {
+                ipBlockedList = ipBlockedList.Except(ipAllowedList).ToList();
+            }
 
-        return new SecurityOptions(ipAllowedList, ipBlockedList);
+            return new SecurityOptions(ipAllowedList, ipBlockedList);
+        }
     }
 }
