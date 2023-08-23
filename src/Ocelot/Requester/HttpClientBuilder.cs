@@ -9,6 +9,13 @@ using Ocelot.Logging;
 
 namespace Ocelot.Requester
 {
+    public interface IHttpClientBuilder { }
+    public interface IHttpClientCache
+    {
+        IHttpClient Get(DownstreamRoute cacheKey);
+        void Set(DownstreamRoute cacheKey, IHttpClient client, TimeSpan span);
+    }
+
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
@@ -65,7 +72,7 @@ namespace Ocelot.Requester
                 Timeout = timeout,
             };
 
-            _client = new HttpClientWrapper(_httpClient, downstreamRoute.ConnectionClose);
+            _client = new HttpClientWrapper(_httpClient, downstreamRoute.ConnectionClose); // TODO
 
             return _client;
         }

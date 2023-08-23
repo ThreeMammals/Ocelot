@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 
 namespace Ocelot.Requester
 {
+    public interface IHttpClient { }
+
     /// <summary>
     /// This class was made to make unit testing easier when HttpClient is used.
     /// </summary>
@@ -11,9 +13,9 @@ namespace Ocelot.Requester
     {
         public HttpClient Client { get; }
 
-        public bool ConnectionClose { get; }
+        public bool ConnectionClose { get; } // TODO
 
-        public HttpClientWrapper(HttpClient client, bool connectionClose = false)
+        public HttpClientWrapper(HttpClient client, bool connectionClose = false) // TODO
         {
             Client = client;
             ConnectionClose = connectionClose;
@@ -21,7 +23,7 @@ namespace Ocelot.Requester
 
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
-            request.Headers.ConnectionClose = ConnectionClose;
+            request.Headers.ConnectionClose = ConnectionClose;  // TODO
             return Client.SendAsync(request, cancellationToken);
         }
     }
