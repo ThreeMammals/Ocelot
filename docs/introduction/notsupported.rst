@@ -57,5 +57,5 @@ If the user wants something to easily test against the Ocelot API then I suggest
 Swagger Alternatives
 --------------------
 
-An alternative could be to use the community package `MMLib.SwaggerForOcelot | GitHub <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_.
-This package covers some common scenarios that you might expect from Swagger documentation over API Gateway.
+An alternative would be to use the `MMLib.SwaggerForOcelot | GitHub <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_ community package.
+This package covers some of the common scenarios you might expect from Swagger documentation over API Gateway.
