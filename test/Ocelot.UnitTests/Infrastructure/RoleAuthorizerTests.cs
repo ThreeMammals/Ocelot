@@ -113,5 +113,4 @@ namespace Ocelot.UnitTests.Infrastructure
             _result.IsError.ShouldBe(expected.IsError);
         }
     }
-
 }

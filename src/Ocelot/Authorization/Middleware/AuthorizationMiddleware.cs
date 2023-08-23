@@ -24,6 +24,7 @@ namespace Ocelot.Authorization.Middleware
             _claimsAuthorizer = claimsAuthorizer;
             _scopesAuthorizer = scopesAuthorizer;
         }
+
         // Note roles is a duplicate of scopes - should refactor based on type
         // Note scopes and roles are processed as OR
         // todo create logic to process policies that we use in the API

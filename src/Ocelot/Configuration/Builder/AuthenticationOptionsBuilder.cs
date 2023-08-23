@@ -12,7 +12,6 @@ namespace Ocelot.Configuration.Builder
         private string _scopeKey;
         private string _policyName;
 
-
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
             _allowedScopes = allowedScopes;
@@ -49,11 +48,13 @@ namespace Ocelot.Configuration.Builder
             _scopeKey = scopeKey;
             return this;
         }
+
         public AuthenticationOptionsBuilder WithPolicyName(string policyName)
         {
             _policyName = policyName;
             return this;
         }
+
         public AuthenticationOptions Build()
         {
             return new AuthenticationOptions(_allowedScopes, _requiredRole, _authenticationProviderKey, _authenticationProviderKeys, _scopeKey, _roleKey, _policyName);
