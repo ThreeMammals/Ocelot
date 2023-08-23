@@ -44,6 +44,7 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private bool _connectionClose;
 
     public DownstreamRouteBuilder()
     {
@@ -263,6 +264,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithConnectionClose(bool connectionClose)
+    {
+        _connectionClose = connectionClose;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -299,6 +306,7 @@ public class DownstreamRouteBuilder
             _dangerousAcceptAnyServerCertificateValidator,
             _securityOptions,
             _downstreamHttpMethod,
-            _downstreamHttpVersion);
+            _downstreamHttpVersion,
+            _connectionClose);
     }
 }
