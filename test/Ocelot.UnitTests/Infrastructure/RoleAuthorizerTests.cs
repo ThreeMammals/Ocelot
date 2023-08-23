@@ -13,8 +13,8 @@ namespace Ocelot.UnitTests.Infrastructure
 {
     public class RoleAuthorizerTests
     {
-        private RolesAuthorizer _authorizer;
-        public Mock<IClaimsParser> _parser;
+        private readonly RolesAuthorizer _authorizer;
+        private readonly Mock<IClaimsParser> _parser;
         private ClaimsPrincipal _principal;
         private List<string> _requiredRole;
         private Response<bool> _result;
@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_ok_if_no_allowed_scopes()
+        public void Should_return_ok_if_no_allowed_scopes()
         {
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheFollowing(new List<string>()))
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_ok_if_null_allowed_scopes()
+        public void Should_return_ok_if_null_allowed_scopes()
         {
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheFollowing((List<string>)null))
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_error_if_claims_parser_returns_error()
+        public void Should_return_error_if_claims_parser_returns_error()
         {
             var fakeError = new FakeError();
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_match_role_and_return_ok_result()
+        public void Should_match_role_and_return_ok_result()
         {
             var claimsPrincipal = new ClaimsPrincipal();
             var requiredRole = new List<string>() { "someRole" };
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_not_match_role_and_return_error_result()
+        public void Should_not_match_role_and_return_error_result()
         {
             var fakeError = new FakeError();
             var claimsPrincipal = new ClaimsPrincipal();
