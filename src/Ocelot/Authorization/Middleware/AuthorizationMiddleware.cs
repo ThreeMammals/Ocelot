@@ -23,6 +23,7 @@ namespace Ocelot.Authorization.Middleware
             _next = next;
             _claimsAuthorizer = claimsAuthorizer;
             _scopesAuthorizer = scopesAuthorizer;
+            _rolesAuthorizer = rolesAuthorizer;
         }
 
         // Note roles is a duplicate of scopes - should refactor based on type
