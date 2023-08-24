@@ -9,6 +9,11 @@ namespace Ocelot.Authorization
         private const string ScopeClaimKey = "scope";
         private readonly IClaimsParser _claimsParser;
 
+        public ScopesAuthorizer(IClaimsParser claimsParser)
+        {
+            _claimsParser = claimsParser;
+        }
+
         public Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes)
         {
             if (routeAllowedScopes == null || routeAllowedScopes.Count == 0)
@@ -29,16 +34,16 @@ namespace Ocelot.Authorization
             {
                 var scope = userScopes[0];
 
-                if (scope.Contains(" "))
+                if (scope.Contains(' '))
                 {
-                    userScopes = scope.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                    userScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 
             if (routeAllowedScopes.Except(userScopes).Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(",", userScopes)}' do not have all allowed route scopes: '{string.Join(",", routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(',', userScopes)}' do not have all allowed route scopes: '{string.Join(',', routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
