@@ -11,7 +11,7 @@ namespace Ocelot.Provider.Consul;
 public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
 {
     private readonly IOcelotLogger _logger;
-    private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
+    private readonly IServiceDiscoveryProvider _provider;
     private Timer _timer;
     private bool _polling;
     private List<Service> _services;
@@ -19,7 +19,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     public PollConsul(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
     {
         _logger = factory.CreateLogger<PollConsul>();
-        _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
+        _provider = consulServiceDiscoveryProvider;
         _services = new List<Service>();
 
         _timer = new Timer(async x =>
@@ -48,6 +48,6 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
 
     private async Task Poll()
     {
-        _services = await _consulServiceDiscoveryProvider.Get();
+        _services = await _provider.Get();
     }
 }
