@@ -18,6 +18,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
 
     public PollConsul(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
     {
+        const int startImmediately = 0;
         _logger = factory.CreateLogger<PollConsul>();
         _provider = consulServiceDiscoveryProvider;
         _services = new List<Service>();
@@ -32,7 +33,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
             _polling = true;
             await Poll();
             _polling = false;
-        }, null, 0, pollingInterval); // the dueTime parameter is 0 (zero) to start timer callback (task) immediately
+        }, null, startImmediately, pollingInterval); // the dueTime parameter is 0 (zero) to start timer callback (task) immediately
     }
 
     public void Dispose()
