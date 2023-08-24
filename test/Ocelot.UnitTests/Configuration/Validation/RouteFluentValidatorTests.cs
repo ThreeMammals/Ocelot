@@ -235,6 +235,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
                 .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
+                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:JwtLads,AllowedScopes:[],RequiredRole:[],ScopeKey:[],RoleKey:[],PolicyName:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 
