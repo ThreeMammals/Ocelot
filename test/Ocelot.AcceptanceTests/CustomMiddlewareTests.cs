@@ -34,7 +34,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_pre_query_string_builder_middleware()
+        public void Should_call_pre_query_string_builder_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -79,7 +79,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_authorization_middleware()
+        public void Should_call_authorization_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_authentication_middleware()
+        public void Should_call_authentication_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -169,7 +169,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_pre_error_middleware()
+        public void Should_call_pre_error_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -214,7 +214,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_pre_authorization_middleware()
+        public void Should_call_pre_authorization_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -259,7 +259,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_after_authorization_middleware()
+        public void Should_call_after_authorization_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -304,7 +304,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_pre_http_authentication_middleware()
+        public void Should_call_pre_http_authentication_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -349,7 +349,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_call_after_http_authentication_middleware()
+        public void Should_call_after_http_authentication_middleware()
         {
             var configuration = new OcelotPipelineConfiguration
             {
@@ -394,7 +394,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
-        public void should_fix_issue_237()
+        public void Should_fix_issue_237()
         {
             Func<object, Task> callback = state =>
             {
