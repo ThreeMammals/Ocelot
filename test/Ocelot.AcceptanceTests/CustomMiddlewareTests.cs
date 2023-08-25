@@ -248,11 +248,11 @@ namespace Ocelot.AcceptanceTests
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                AfterAuthorizationMiddleware =  async (ctx, next) =>
+                AfterAuthorizationMiddleware = async (ctx, next) =>
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -270,13 +270,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
@@ -384,11 +384,11 @@ namespace Ocelot.AcceptanceTests
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                AfterAuthenticationMiddleware =  async (ctx, next) =>
+                AfterAuthenticationMiddleware = async (ctx, next) =>
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -406,13 +406,13 @@ namespace Ocelot.AcceptanceTests
                             {
                                 Host = "localhost",
                                 Port = port,
-                            }
+                            },
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                    }
-                }
+                    },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))

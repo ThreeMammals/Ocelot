@@ -32,18 +32,15 @@ namespace Ocelot.Middleware
         public Func<HttpContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
 
         /// <summary>
-        /// This is to allow the user to run any extra authentication after the Ocelot authentication
-        /// kicks in
+        /// This is to allow the user to run any extra authentication after the Ocelot authentication kicks in.
         /// </summary>
         /// <value>
-        /// <placeholder>This is to allow the user to run any extra authentication after the Ocelot authentication
-        /// kicks in</placeholder>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
         /// </value>
         public Func<HttpContext, Func<Task>, Task> AfterAuthenticationMiddleware { get; set; }
 
         /// <summary>
-        /// This is to allow the user to run any extra authorization before the Ocelot authentication
-        /// kicks in
+        /// This is to allow the user to run any extra authorization before the Ocelot authentication kicks in.
         /// </summary>
         /// <value>
         /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
@@ -59,17 +56,15 @@ namespace Ocelot.Middleware
         public Func<HttpContext, Func<Task>, Task> AuthorizationMiddleware { get; set; }
 
         /// <summary>
-        /// This is to allow the user to run any extra authorization after the Ocelot authentication
-        /// kicks in
+        /// This is to allow the user to run any extra authorization after the Ocelot authorization kicks in.
         /// </summary>
         /// <value>
-        /// <placeholder>This is to allow the user to run any extra authorization after the Ocelot authentication
-        /// kicks in</placeholder>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
         /// </value>
         public Func<HttpContext, Func<Task>, Task> AfterAuthorizationMiddleware { get; set; }
 
         /// <summary>
-        /// This allows the user to implement there own query string manipulation logic
+        /// This allows the user to implement there own query string manipulation logic.
         /// </summary>
         /// <value>
         /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
