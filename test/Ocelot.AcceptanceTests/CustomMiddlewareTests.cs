@@ -496,8 +496,9 @@ namespace Ocelot.AcceptanceTests
 
         public void Dispose()
         {
-            _serviceHandler?.Dispose();
+            _serviceHandler.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public class FakeMiddleware
