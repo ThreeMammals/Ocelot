@@ -60,7 +60,10 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// <summary>
     /// Specify the maximum of concurrent connection to a network endpoint.
     /// </summary>
-    /// <value>MaxConnectionsPerServer.</value>
+    /// <value>
+    /// The maximum number of concurrent connections (per server endpoint) allowed by an <see cref="HttpClient"/> object.
+    /// The property value is assignable to the <see cref="HttpClientHandler.MaxConnectionsPerServer"/> one.
+    /// </value>
     public int MaxConnectionsPerServer { get; init; }
 
     /// <summary>
