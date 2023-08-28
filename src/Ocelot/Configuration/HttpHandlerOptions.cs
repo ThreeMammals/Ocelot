@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Configuration
+﻿using System.Net.Http;
+
+namespace Ocelot.Configuration
 {
     /// <summary>
     /// Describes configuration parameters for http handler, that is created to handle a request to service.
@@ -44,7 +46,10 @@
         /// <summary>
         /// Specify the maximum of concurrent connection to a network endpoint.
         /// </summary>
-        /// <value>MaxConnectionsPerServer.</value>
+        /// <value>
+        /// The maximum number of concurrent connections (per server endpoint) allowed by an <see cref="HttpClient"/> object.
+        /// The property value is assignable to the <see cref="HttpClientHandler.MaxConnectionsPerServer"/> one.
+        /// </value>
         public int MaxConnectionsPerServer { get; }
 
         /// <summary>
@@ -56,7 +61,10 @@
         /// <summary>
         /// Specify is UseDefaultCredentials set on HttpClientHandler.
         /// </summary>
-        /// <value>UseDefaultCredentials.</value>
+        /// <value>
+        /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
+        /// The property value is assignable to the <see cref="HttpClientHandler.UseDefaultCredentials"/> one.
+        /// </value>
         public bool UseDefaultCredentials { get; private set; }
     }
 }
