@@ -74,8 +74,11 @@ namespace Ocelot.WebSockets
         public async Task Invoke(HttpContext httpContext)
         {
             var uri = httpContext.Items.DownstreamRequest().ToUri();
+            uri = uri.Replace("https://", "wss://");
+            uri = uri.Replace("http://", "ws://");
             var downstreamRoute = httpContext.Items.DownstreamRoute();
             await Proxy(httpContext, uri, downstreamRoute);
+            await Proxy(httpContext, uri);
         }
 
         private async Task Proxy(HttpContext context, string serverEndpoint, DownstreamRoute downstreamRoute)
