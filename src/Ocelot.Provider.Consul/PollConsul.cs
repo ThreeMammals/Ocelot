@@ -16,6 +16,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     private Timer _timer;
     private bool _polling;
     private readonly IMemoryCache _cache;
+    private readonly string _serviceName;
     private readonly string _serviceCacheKey;
 
     public PollConsul(
@@ -28,6 +29,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
         _logger = factory.CreateLogger<PollConsul>();
         _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
         _cache = cache;
+        _serviceName = serviceName;
         _serviceCacheKey = $"Consul:Services:{serviceName}";
 
         _timer = new Timer(async x =>
@@ -63,6 +65,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
 
     private async Task Poll()
     {
+        _logger.LogInformation($"Polling services by name: {_serviceName}.");
         var services = await _consulServiceDiscoveryProvider.Get();
         _cache.Set(_serviceCacheKey, services);
     }
