@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Ocelot.Provider.Consul;
 
@@ -14,13 +15,20 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
     private Timer _timer;
     private bool _polling;
-    private List<Service> _services;
+    private readonly IMemoryCache _cache;
+    private readonly string _serviceCacheKey;
 
-    public PollConsul(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
+    public PollConsul(
+        int pollingInterval,
+        string serviceName,
+        IOcelotLoggerFactory factory,
+        IServiceDiscoveryProvider consulServiceDiscoveryProvider,
+        IMemoryCache cache)
     {
         _logger = factory.CreateLogger<PollConsul>();
         _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
-        _services = new List<Service>();
+        _cache = cache;
+        _serviceCacheKey = $"Consul:Services:{serviceName}";
 
         _timer = new Timer(async x =>
         {
@@ -41,13 +49,21 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
         _timer = null;
     }
 
-    public Task<List<Service>> Get()
+    public async Task<List<Service>> Get()
     {
-        return Task.FromResult(_services);
+        if (_cache.TryGetValue<List<Service>>(_serviceCacheKey, out var services))
+        {
+            return services;
+        }
+
+        await Poll();
+
+        return _cache.Get<List<Service>>(_serviceCacheKey);
     }
 
     private async Task Poll()
     {
-        _services = await _consulServiceDiscoveryProvider.Get();
+        var services = await _consulServiceDiscoveryProvider.Get();
+        _cache.Set(_serviceCacheKey, services);
     }
 }
