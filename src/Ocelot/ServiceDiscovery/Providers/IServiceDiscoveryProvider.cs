@@ -1,10 +1,12 @@
-using Ocelot.Values;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
 
-public interface IServiceDiscoveryProvider
+namespace Ocelot.ServiceDiscovery.Providers
 {
-    Task<List<Service>> Get();
+    public interface IServiceDiscoveryProvider
+    {
+        Task<List<Service>> Get();
+    }
 }
