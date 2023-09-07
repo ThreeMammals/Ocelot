@@ -21,8 +21,8 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
         _logger = factory.CreateLogger<PollConsul>();
         _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
 
-        // Solves the bug where the first access _services empty when using PollConsul
-        _services = _consulServiceDiscoveryProvider.Get().Result ?? new();
+        _services = new List<Service>();
+        _services = _consulServiceDiscoveryProvider.Get().Result; //Solves the bug where the first access _services empty when using PollConsul
 
         _timer = new Timer(async x =>
         {
