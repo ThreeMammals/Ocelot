@@ -51,7 +51,7 @@ namespace Ocelot.RateLimit
             return counter;
         }
 
-        private RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
+        private static RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
         {
             // no entry - start counting
             if (!entry.HasValue)
@@ -112,7 +112,7 @@ namespace Ocelot.RateLimit
             return headers;
         }
 
-        public string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        public static string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
             var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
 
@@ -128,7 +128,7 @@ namespace Ocelot.RateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+        public static int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
             var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
@@ -136,7 +136,7 @@ namespace Ocelot.RateLimit
             return retryAfter;
         }
 
-        public TimeSpan ConvertToTimeSpan(string timeSpan)
+        public static TimeSpan ConvertToTimeSpan(string timeSpan)
         {
             var l = timeSpan.Length - 1;
             var value = timeSpan.Substring(0, l);
