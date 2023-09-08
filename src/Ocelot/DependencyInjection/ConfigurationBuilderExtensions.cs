@@ -74,12 +74,11 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            return builder.AddOcelot(fileConfiguration, env);
+            return builder.AddOcelot(fileConfiguration);
         }
 
-
         public static IConfigurationBuilder AddOcelot(
-            this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env)
+            this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
         {
             var json = JsonConvert.SerializeObject(fileConfiguration);
 
