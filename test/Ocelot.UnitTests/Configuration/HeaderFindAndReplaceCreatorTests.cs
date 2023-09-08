@@ -45,7 +45,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create()
+        public void Should_create()
         {
             var route = new FileRoute
             {
@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_with_add_headers_to_request()
+        public void Should_create_with_add_headers_to_request()
         {
             const string key = "X-Forwarded-For";
             const string value = "{RemoteIpAddress}";
@@ -107,7 +107,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_base_url_placeholder()
+        public void Should_use_base_url_placeholder()
         {
             var route = new FileRoute
             {
@@ -132,7 +132,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_log_errors_and_not_add_headers()
+        public void Should_log_errors_and_not_add_headers()
         {
             var route = new FileRoute
             {
@@ -174,7 +174,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_base_url_partial_placeholder()
+        public void Should_use_base_url_partial_placeholder()
         {
             var route = new FileRoute
             {
@@ -222,7 +222,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_trace_id_header()
+        public void Should_add_trace_id_header()
         {
             var route = new FileRoute
             {
@@ -242,7 +242,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_downstream_header_as_is_when_no_replacement_is_given()
+        public void Should_add_downstream_header_as_is_when_no_replacement_is_given()
         {
             var route = new FileRoute
             {
@@ -261,7 +261,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_upstream_header_as_is_when_no_replacement_is_given()
+        public void Should_add_upstream_header_as_is_when_no_replacement_is_given()
         {
             var route = new FileRoute
             {
@@ -280,7 +280,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_merge()
+        public void Should_merge()
         {
             // Arrange
             var local = new Dictionary<string, string>()
