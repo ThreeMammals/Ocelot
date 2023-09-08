@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Ocelot.Configuration.File;
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
-
 using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
     public static class ConfigurationBuilderExtensions
     {
+        private const string PrimaryConfigFile = "ocelot.json";
+
+        private const string GlobalConfigFile = "ocelot.global.json";
+
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
@@ -39,10 +40,7 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
         {
-            const string primaryConfigFile = "ocelot.json";
-
-            const string globalConfigFile = "ocelot.global.json";
-
+            
             const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
 
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
@@ -58,7 +56,7 @@ namespace Ocelot.DependencyInjection
 
             foreach (var file in files)
             {
-                if (files.Length > 1 && file.Name.Equals(primaryConfigFile, StringComparison.OrdinalIgnoreCase))
+                if (files.Length > 1 && file.Name.Equals(PrimaryConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -67,7 +65,7 @@ namespace Ocelot.DependencyInjection
 
                 var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
 
-                if (file.Name.Equals(globalConfigFile, StringComparison.OrdinalIgnoreCase))
+                if (file.Name.Equals(GlobalConfigFile, StringComparison.OrdinalIgnoreCase))
                 {
                     fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
                 }
@@ -76,26 +74,18 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            var json = JsonConvert.SerializeObject(fileConfiguration);
-
-            File.WriteAllText(primaryConfigFile, json);
-
-            builder.AddJsonFile(primaryConfigFile, false, false);
-
-            return builder;
+            return builder.AddOcelot(fileConfiguration, env);
         }
 
 
         public static IConfigurationBuilder AddOcelot(
             this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env)
         {
-            const string primaryConfigFile = "ocelot.json";
-
             var json = JsonConvert.SerializeObject(fileConfiguration);
 
-            File.WriteAllText(primaryConfigFile, json);
+            File.WriteAllText(PrimaryConfigFile, json);
 
-            builder.AddJsonFile(primaryConfigFile, false, false);
+            builder.AddJsonFile(PrimaryConfigFile, false, false);
 
             return builder;
         }
