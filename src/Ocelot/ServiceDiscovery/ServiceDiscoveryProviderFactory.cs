@@ -8,58 +8,59 @@ using Ocelot.Values;
 using System;
 using System.Collections.Generic;
 
-namespace Ocelot.ServiceDiscovery;
-
-public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
+namespace Ocelot.ServiceDiscovery
 {
-    private readonly IOcelotLoggerFactory _factory;
-    private readonly ServiceDiscoveryFinderDelegate _delegates;
-    private readonly IServiceProvider _provider;
-
-    public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
+    public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        _factory = factory;
-        _provider = provider;
-        _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
-    }
+        private readonly IOcelotLoggerFactory _factory;
+        private readonly ServiceDiscoveryFinderDelegate _delegates;
+        private readonly IServiceProvider _provider;
 
-    public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
-    {
-        if (route.UseServiceDiscovery)
+        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
         {
-            return GetServiceDiscoveryProvider(serviceConfig, route);
+            _factory = factory;
+            _provider = provider;
+            _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
         }
 
-        var services = new List<Service>();
-
-        foreach (var downstreamAddress in route.DownstreamAddresses)
+        public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
         {
-            var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, Array.Empty<string>());
-
-            services.Add(service);
-        }
-
-        return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
-    }
-
-    private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
-    {
-        if (config.Type?.ToLower() == "servicefabric")
-        {
-            var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
-            return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
-        }
-
-        if (_delegates != null)
-        {
-            var provider = _delegates?.Invoke(_provider, config, route);
-
-            if (provider.GetType().Name.ToLower() == config.Type.ToLower())
+            if (route.UseServiceDiscovery)
             {
-                return new OkResponse<IServiceDiscoveryProvider>(provider);
+                return GetServiceDiscoveryProvider(serviceConfig, route);
             }
+
+            var services = new List<Service>();
+
+            foreach (var downstreamAddress in route.DownstreamAddresses)
+            {
+                var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, Array.Empty<string>());
+
+                services.Add(service);
+            }
+
+            return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
         }
 
-        return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError($"Unable to find service discovery provider for type: {config.Type}"));
+        private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
+        {
+            if (config.Type?.ToLower() == "servicefabric")
+            {
+                var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
+                return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
+            }
+
+            if (_delegates != null)
+            {
+                var provider = _delegates?.Invoke(_provider, config, route);
+
+                if (provider.GetType().Name.ToLower() == config.Type.ToLower())
+                {
+                    return new OkResponse<IServiceDiscoveryProvider>(provider);
+                }
+            }
+
+            return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError($"Unable to find service discovery provider for type: {config.Type}"));
+        }
     }
 }
