@@ -53,7 +53,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_response_401_with_call_re_routes_controller()
+        public void Should_return_response_401_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
 
@@ -66,7 +66,7 @@ namespace Ocelot.IntegrationTests
 
         //this seems to be be answer https://github.com/IdentityServer/IdentityServer4/issues/4914
         [Fact]
-        public void should_return_response_200_with_call_re_routes_controller()
+        public void Should_return_response_200_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
 
@@ -80,7 +80,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
+        public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
             _ocelotBaseUrl = "http://localhost:5011";
@@ -104,7 +104,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
+        public void Should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
         {
             var configuration = new FileConfiguration();
 
@@ -127,7 +127,7 @@ namespace Ocelot.IntegrationTests
         }
         
         [Fact]
-        public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
+        public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
             var configuration = new FileConfiguration();
 
@@ -142,7 +142,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_file_configuration()
+        public void Should_return_file_configuration()
         {
             var configuration = new FileConfiguration
             {
@@ -211,7 +211,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_get_file_configuration_edit_and_post_updated_version()
+        public void Should_get_file_configuration_edit_and_post_updated_version()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -304,7 +304,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_activate_change_token_when_configuration_is_updated()
+        public void Should_activate_change_token_when_configuration_is_updated()
         {
             var configuration = new FileConfiguration
             {
@@ -362,7 +362,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
+        public void Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
             var fooPort = 47689;
             var barPort = 27654;
@@ -434,7 +434,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_clear_region()
+        public void Should_clear_region()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -494,7 +494,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
+        public void Should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
         {
             var configuration = new FileConfiguration();
 
