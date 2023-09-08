@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -22,45 +23,45 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
 
-    public HeaderFindAndReplaceCreatorTests()
-    {
-        _logger = new Mock<IOcelotLogger>();
-        _factory = new Mock<IOcelotLoggerFactory>();
-        _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
-        _placeholders = new Mock<IPlaceholders>();
-        var fileGlobalConfiguration = new FileGlobalConfiguration();
-        fileGlobalConfiguration.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
-        fileGlobalConfiguration.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
-        fileGlobalConfiguration.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
-        fileGlobalConfiguration.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
-        
-        var options = new Mock<IOptions<FileConfiguration>>();
-        options.Setup(x => x.Value).Returns(new FileConfiguration
+        public HeaderFindAndReplaceCreatorTests()
         {
-            GlobalConfiguration = fileGlobalConfiguration,
-        });
+            _logger = new Mock<IOcelotLogger>();
+            _factory = new Mock<IOcelotLoggerFactory>();
+            _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
+            _placeholders = new Mock<IPlaceholders>();
+            var fileGlobalConfiguration = new FileGlobalConfiguration();
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
 
-        _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
-    }
+            var options = new Mock<IOptions<FileConfiguration>>();
+            options.Setup(x => x.Value).Returns(new FileConfiguration
+            {
+                GlobalConfiguration = fileGlobalConfiguration,
+            });
 
-    [Fact]
-    public void should_create()
-    {
-        var route = new FileRoute
+            _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
+        }
+
+        [Fact]
+        public void should_create()
         {
-            UpstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Test", "Test, Chicken"},
                 {"Moop", "o, a"},
             },
-            DownstreamHeaderTransform = new Dictionary<string, string>
+                DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Pop", "West, East"},
                 {"Bop", "e, r"},
             },
-        };
+            };
 
-        var upstream = new List<HeaderFindAndReplace>
+            var upstream = new List<HeaderFindAndReplace>
         {
             new("Test", "Test", "Chicken", 0),
             new("Moop", "o", "a", 0),
@@ -68,7 +69,7 @@ namespace Ocelot.UnitTests.Configuration
             new("MoopGlobal", "o", "a", 0),
         };
 
-        var downstream = new List<HeaderFindAndReplace>
+            var downstream = new List<HeaderFindAndReplace>
         {
             new("Pop", "West", "East", 0),
             new("Bop", "e", "r", 0),
@@ -76,47 +77,47 @@ namespace Ocelot.UnitTests.Configuration
             new("BopGlobal", "e", "r", 0),
         };
 
-        this.Given(x => GivenTheRoute(route))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingUpstreamIsReturned(upstream))
-            .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
-            .BDDfy();
-    }
+            this.Given(x => GivenTheRoute(route))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingUpstreamIsReturned(upstream))
+                .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
+                .BDDfy();
+        }
 
-    [Fact]
-    public void should_create_with_add_headers_to_request()
-    {
-        const string key = "X-Forwarded-For";
-        const string value = "{RemoteIpAddress}";
-
-        var route = new FileRoute
+        [Fact]
+        public void should_create_with_add_headers_to_request()
         {
-            UpstreamHeaderTransform = new Dictionary<string, string>
+            const string key = "X-Forwarded-For";
+            const string value = "{RemoteIpAddress}";
+
+            var route = new FileRoute
+            {
+                UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {key, value},
             },
-        };
+            };
 
-        var expected = new AddHeader(key, value);
+            var expected = new AddHeader(key, value);
 
-        this.Given(x => GivenTheRoute(route))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
-            .BDDfy();
-    }
+            this.Given(x => GivenTheRoute(route))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
+                .BDDfy();
+        }
 
-    [Fact]
-    public void should_use_base_url_placeholder()
-    {
-        var route = new FileRoute
+        [Fact]
+        public void should_use_base_url_placeholder()
         {
-            DownstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
             },
-        };
+            };
 
-        var downstream = new List<HeaderFindAndReplace>
+            var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
             new("PopGlobal", "West", "East", 0),
@@ -130,60 +131,60 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-    [Fact]
-    public void should_log_errors_and_not_add_headers()
-    {
-        var route = new FileRoute
+        [Fact]
+        public void should_log_errors_and_not_add_headers()
         {
-            DownstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
             },
-            UpstreamHeaderTransform = new Dictionary<string, string>
+                UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
             },
-        };
+            };
 
-        var expectedDownstream = new List<HeaderFindAndReplace>
+            var expectedDownstream = new List<HeaderFindAndReplace>
         {
             new("PopGlobal", "West", "East", 0),
             new("BopGlobal", "e", "r", 0),
         };
-        
-        var expectedUpstream = new List<HeaderFindAndReplace>
+
+            var expectedUpstream = new List<HeaderFindAndReplace>
         {
             new("TestGlobal", "Test", "Chicken", 0),
             new("MoopGlobal", "o", "a", 0),
         };
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenTheBaseUrlErrors())
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingDownstreamIsReturned(expectedDownstream))
-            .And(x => ThenTheFollowingUpstreamIsReturned(expectedUpstream))
-            .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
-            .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
-            .BDDfy();
-    }
+            this.Given(x => GivenTheRoute(route))
+                .And(x => GivenTheBaseUrlErrors())
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingDownstreamIsReturned(expectedDownstream))
+                .And(x => ThenTheFollowingUpstreamIsReturned(expectedUpstream))
+                .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
+                .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
+                .BDDfy();
+        }
 
         private void ThenTheLoggerIsCalledCorrectly(string message)
         {
             _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == message)), Times.Once);
         }
 
-    [Fact]
-    public void should_use_base_url_partial_placeholder()
-    {
-        var route = new FileRoute
+        [Fact]
+        public void should_use_base_url_partial_placeholder()
         {
-            DownstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/pay, {BaseUrl}pay"},
             },
-        };
+            };
 
-        var downstream = new List<HeaderFindAndReplace>
+            var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
             new("PopGlobal", "West", "East", 0),
@@ -231,7 +232,7 @@ namespace Ocelot.UnitTests.Configuration
                 },
             };
 
-        var expected = new AddHeader("Trace-Id", "{TraceId}");
+            var expected = new AddHeader("Trace-Id", "{TraceId}");
 
             this.Given(x => GivenTheRoute(route))
                 .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
@@ -240,133 +241,134 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-    [Fact]
-    public void should_add_downstream_header_as_is_when_no_replacement_is_given()
-    {
-        var route = new FileRoute
+        [Fact]
+        public void should_add_downstream_header_as_is_when_no_replacement_is_given()
         {
-            DownstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"X-Custom-Header", "Value"},
             },
-        };
+            };
 
-        var expected = new AddHeader("X-Custom-Header", "Value");
+            var expected = new AddHeader("X-Custom-Header", "Value");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => WhenICreate())
-            .Then(x => x.ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
-            .BDDfy();
-    }
+            this.Given(x => GivenTheRoute(route))
+                .And(x => WhenICreate())
+                .Then(x => x.ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
+                .BDDfy();
+        }
 
-    [Fact]
-    public void should_add_upstream_header_as_is_when_no_replacement_is_given()
-    {
-        var route = new FileRoute
+        [Fact]
+        public void should_add_upstream_header_as_is_when_no_replacement_is_given()
         {
-            UpstreamHeaderTransform = new Dictionary<string, string>
+            var route = new FileRoute
+            {
+                UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"X-Custom-Header", "Value"},
             },
-        };
+            };
 
-        var expected = new AddHeader("X-Custom-Header", "Value");
+            var expected = new AddHeader("X-Custom-Header", "Value");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => WhenICreate())
-            .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
-            .BDDfy();
-    }
+            this.Given(x => GivenTheRoute(route))
+                .And(x => WhenICreate())
+                .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
+                .BDDfy();
+        }
 
-    [Fact]
-    public void should_merge()
-    {
-        // Arrange
-        var local = new Dictionary<string, string>()
+        [Fact]
+        public void should_merge()
+        {
+            // Arrange
+            var local = new Dictionary<string, string>()
         {
             { "B", "localB" },
             { "C", "localC" },
         };
-        var global = new Dictionary<string, string>()
+            var global = new Dictionary<string, string>()
         {
             { "A", "globalA" },
             { "B", "globalB" },
         };
 
-        // Act
-        var actual = HeaderFindAndReplaceCreator.Merge(local, global);
+            // Act
+            var actual = HeaderFindAndReplaceCreator.Merge(local, global);
 
-        // Assert
-        actual.ShouldNotBeNull();
-        var dictionary = actual.ToDictionary(x => x.Key, x => x.Value);
-        dictionary.Count.ShouldBe(3);
-        dictionary.ContainsKey("A").ShouldBeTrue();
-        dictionary["A"].ShouldBe("globalA");
-        dictionary.ContainsKey("B").ShouldBeTrue();
-        dictionary["B"].ShouldBe("localB"); // local value wins over global one
-        dictionary.ContainsKey("C").ShouldBeTrue();
-        dictionary["C"].ShouldBe("localC");
-    }
+            // Assert
+            actual.ShouldNotBeNull();
+            var dictionary = actual.ToDictionary(x => x.Key, x => x.Value);
+            dictionary.Count.ShouldBe(3);
+            dictionary.ContainsKey("A").ShouldBeTrue();
+            dictionary["A"].ShouldBe("globalA");
+            dictionary.ContainsKey("B").ShouldBeTrue();
+            dictionary["B"].ShouldBe("localB"); // local value wins over global one
+            dictionary.ContainsKey("C").ShouldBeTrue();
+            dictionary["C"].ShouldBe("localC");
+        }
 
         private void GivenThePlaceholderIs(string placeholderValue)
         {
             _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>(placeholderValue));
         }
 
-    private void GivenTheBaseUrlErrors()
-    {
-        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
-    }
-
-    private void ThenTheFollowingAddHeaderToDownstreamIsReturned(AddHeader addHeader)
-    {
-        _result.AddHeadersToDownstream[0].Key.ShouldBe(addHeader.Key);
-        _result.AddHeadersToDownstream[0].Value.ShouldBe(addHeader.Value);
-    }
-
-    private void ThenTheFollowingAddHeaderToUpstreamIsReturned(AddHeader addHeader)
-    {
-        _result.AddHeadersToUpstream[0].Key.ShouldBe(addHeader.Key);
-        _result.AddHeadersToUpstream[0].Value.ShouldBe(addHeader.Value);
-    }
-
-    private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)
-    {
-        _result.Downstream.Count.ShouldBe(downstream.Count);
-
-        for (var i = 0; i < _result.Downstream.Count; i++)
+        private void GivenTheBaseUrlErrors()
         {
-            var result = _result.Downstream[i];
-            var expected = downstream[i];
-            result.Find.ShouldBe(expected.Find);
-            result.Index.ShouldBe(expected.Index);
-            result.Key.ShouldBe(expected.Key);
-            result.Replace.ShouldBe(expected.Replace);
+            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
         }
-    }
 
-    private void GivenTheRoute(FileRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_route);
-    }
-
-    private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)
-    {
-        _result.Upstream.Count.ShouldBe(expecteds.Count);
-
-        for (var i = 0; i < _result.Upstream.Count; i++)
+        private void ThenTheFollowingAddHeaderToDownstreamIsReturned(AddHeader addHeader)
         {
-            var result = _result.Upstream[i];
-            var expected = expecteds[i];
-            result.Find.ShouldBe(expected.Find);
-            result.Index.ShouldBe(expected.Index);
-            result.Key.ShouldBe(expected.Key);
-            result.Replace.ShouldBe(expected.Replace);
+            _result.AddHeadersToDownstream[0].Key.ShouldBe(addHeader.Key);
+            _result.AddHeadersToDownstream[0].Value.ShouldBe(addHeader.Value);
+        }
+
+        private void ThenTheFollowingAddHeaderToUpstreamIsReturned(AddHeader addHeader)
+        {
+            _result.AddHeadersToUpstream[0].Key.ShouldBe(addHeader.Key);
+            _result.AddHeadersToUpstream[0].Value.ShouldBe(addHeader.Value);
+        }
+
+        private void ThenTheFollowingDownstreamIsReturned(List<HeaderFindAndReplace> downstream)
+        {
+            _result.Downstream.Count.ShouldBe(downstream.Count);
+
+            for (var i = 0; i < _result.Downstream.Count; i++)
+            {
+                var result = _result.Downstream[i];
+                var expected = downstream[i];
+                result.Find.ShouldBe(expected.Find);
+                result.Index.ShouldBe(expected.Index);
+                result.Key.ShouldBe(expected.Key);
+                result.Replace.ShouldBe(expected.Replace);
+            }
+        }
+
+        private void GivenTheRoute(FileRoute route)
+        {
+            _route = route;
+        }
+
+        private void WhenICreate()
+        {
+            _result = _creator.Create(_route);
+        }
+
+        private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)
+        {
+            _result.Upstream.Count.ShouldBe(expecteds.Count);
+
+            for (var i = 0; i < _result.Upstream.Count; i++)
+            {
+                var result = _result.Upstream[i];
+                var expected = expecteds[i];
+                result.Find.ShouldBe(expected.Find);
+                result.Index.ShouldBe(expected.Index);
+                result.Key.ShouldBe(expected.Key);
+                result.Replace.ShouldBe(expected.Replace);
+            }
         }
     }
 }
