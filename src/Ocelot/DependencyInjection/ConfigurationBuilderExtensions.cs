@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
+    /// <summary>
+    /// Defines extension-methods for the <see cref="IConfigurationBuilder"/> interface.
+    /// </summary>
     public static partial class ConfigurationBuilderExtensions
     {
         public const string PrimaryConfigFile = "ocelot.json";
@@ -76,6 +79,13 @@ namespace Ocelot.DependencyInjection
             return builder.AddOcelot(fileConfiguration);
         }
 
+        /// <summary>
+        /// Adds Ocelot configuration by ready configuration object and writes JSON to the primary configuration file.<br/>
+        /// Finally, adds JSON file as configuration provider.
+        /// </summary>
+        /// <param name="builder">Configuration builder to extend.</param>
+        /// <param name="fileConfiguration">File configuration to add as JSON provider.</param>
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
         {
             var json = JsonConvert.SerializeObject(fileConfiguration);
