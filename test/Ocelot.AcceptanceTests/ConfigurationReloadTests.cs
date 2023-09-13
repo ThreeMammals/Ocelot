@@ -88,6 +88,7 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
