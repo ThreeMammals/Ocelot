@@ -13,9 +13,9 @@ namespace Ocelot.DependencyInjection
 {
     public static class ConfigurationBuilderExtensions
     {
-        private const string PrimaryConfigFile = "ocelot.json";
-
-        private const string GlobalConfigFile = "ocelot.global.json";
+        public const string PrimaryConfigFile = "ocelot.json";
+        public const string GlobalConfigFile = "ocelot.global.json";
+        private const string SubConfigPattern = @"^ocelot\.(.*?)\.json$";
 
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
@@ -40,12 +40,9 @@ namespace Ocelot.DependencyInjection
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
         {
-            
-            const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
-
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
-            var reg = new Regex(subConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var reg = new Regex(SubConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
@@ -74,19 +71,16 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            return builder.AddOcelot(fileConfiguration);
+            return AddOcelot(builder, fileConfiguration);
         }
 
-        public static IConfigurationBuilder AddOcelot(
-            this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
         {
             var json = JsonConvert.SerializeObject(fileConfiguration);
 
             File.WriteAllText(PrimaryConfigFile, json);
 
-            builder.AddJsonFile(PrimaryConfigFile, false, false);
-
-            return builder;
+            return builder.AddJsonFile(PrimaryConfigFile, false, false);
         }
     }
 }

@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Shouldly;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_add_base_url_to_config()
+        public void Should_add_base_url_to_config()
         {
             this.Given(_ => GivenTheBaseUrl("test"))
                 .When(_ => WhenIGet("BaseUrl"))
@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_merge_files()
+        public void Should_merge_files()
         {
             this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
                 .And(_ => GivenTheEnvironmentIs(null))
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void AddOcelot_WhenProvidedFileConfigurationObject_ShouldStoreGivenConfigurations()
+        public void Should_store_given_configurations_when_provided_file_configuration_object()
         {
             this.Given(_ => GivenCombinedFileConfigurationObject(string.Empty))
                 .And(_ => GivenTheEnvironmentIs(null))
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_merge_files_except_env()
+        public void Should_merge_files_except_env()
         {
             this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, true))
                 .And(_ => GivenTheEnvironmentIs("Env"))
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void should_merge_files_in_specific_folder()
+        public void Should_merge_files_in_specific_folder()
         {
             var configFolder = "ConfigFiles";
             this.Given(_ => GivenMultipleConfigurationFiles(configFolder, false))
@@ -180,123 +180,123 @@ namespace Ocelot.UnitTests.DependencyInjection
         private static List<FileAggregateRoute> GetFileAggregatesRouteData()
         {
             return new List<FileAggregateRoute>
+            {
+                new()
                 {
-                    new()
+                    RouteKeys = new List<string>
                     {
-                        RouteKeys = new List<string>
-                        {
-                            "KeyB",
-                            "KeyBB",
-                        },
-                        UpstreamPathTemplate = "UpstreamPathTemplate",
+                        "KeyB",
+                        "KeyBB",
                     },
-                    new()
+                    UpstreamPathTemplate = "UpstreamPathTemplate",
+                },
+                new()
+                {
+                    RouteKeys = new List<string>
                     {
-                        RouteKeys = new List<string>
-                        {
-                            "KeyB",
-                            "KeyBB",
-                        },
-                        UpstreamPathTemplate = "UpstreamPathTemplate",
+                        "KeyB",
+                        "KeyBB",
                     },
-                };
+                    UpstreamPathTemplate = "UpstreamPathTemplate",
+                },
+            };
         }
 
         private static List<FileRoute> GetServiceARoutes()
         {
             return new List<FileRoute>
+            {
+                new()
                 {
-                    new()
+                    DownstreamScheme = "DownstreamScheme",
+                    DownstreamPathTemplate = "DownstreamPathTemplate",
+                    Key = "Key",
+                    UpstreamHost = "UpstreamHost",
+                    UpstreamHttpMethod = new List<string>
                     {
-                        DownstreamScheme = "DownstreamScheme",
-                        DownstreamPathTemplate = "DownstreamPathTemplate",
-                        Key = "Key",
-                        UpstreamHost = "UpstreamHost",
-                        UpstreamHttpMethod = new List<string>
+                        "UpstreamHttpMethod",
+                    },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
                         {
-                            "UpstreamHttpMethod",
-                        },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "Host",
-                                Port = 80,
-                            },
+                            Host = "Host",
+                            Port = 80,
                         },
                     },
-                };
+                },
+            };
         }
 
         private static List<FileRoute> GetServiceBRoutes()
         {
             return new List<FileRoute>
+            {
+                new()
                 {
-                    new ()
+                    DownstreamScheme = "DownstreamSchemeB",
+                    DownstreamPathTemplate = "DownstreamPathTemplateB",
+                    Key = "KeyB",
+                    UpstreamHost = "UpstreamHostB",
+                    UpstreamHttpMethod = new List<string>
                     {
-                        DownstreamScheme = "DownstreamSchemeB",
-                        DownstreamPathTemplate = "DownstreamPathTemplateB",
-                        Key = "KeyB",
-                        UpstreamHost = "UpstreamHostB",
-                        UpstreamHttpMethod = new List<string>
+                        "UpstreamHttpMethodB",
+                    },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
                         {
-                            "UpstreamHttpMethodB",
-                        },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new ()
-                            {
-                                Host = "HostB",
-                                Port = 80,
-                            },
+                            Host = "HostB",
+                            Port = 80,
                         },
                     },
-                    new()
+                },
+                new()
+                {
+                    DownstreamScheme = "DownstreamSchemeBB",
+                    DownstreamPathTemplate = "DownstreamPathTemplateBB",
+                    Key = "KeyBB",
+                    UpstreamHost = "UpstreamHostBB",
+                    UpstreamHttpMethod = new List<string>
                     {
-                        DownstreamScheme = "DownstreamSchemeBB",
-                        DownstreamPathTemplate = "DownstreamPathTemplateBB",
-                        Key = "KeyBB",
-                        UpstreamHost = "UpstreamHostBB",
-                        UpstreamHttpMethod = new List<string>
+                        "UpstreamHttpMethodBB",
+                    },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
                         {
-                            "UpstreamHttpMethodBB",
-                        },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "HostBB",
-                                Port = 80,
-                            },
+                            Host = "HostBB",
+                            Port = 80,
                         },
                     },
-                };
+                },
+            };
         }
 
         private static List<FileRoute> GetEnvironmentSpecificRoutes()
         {
             return new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamScheme = "DownstreamSchemeSpec",
+                    DownstreamPathTemplate = "DownstreamPathTemplateSpec",
+                    Key = "KeySpec",
+                    UpstreamHost = "UpstreamHostSpec",
+                    UpstreamHttpMethod = new List<string>
+                    {
+                        "UpstreamHttpMethodSpec",
+                    },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
                         new()
                         {
-                            DownstreamScheme = "DownstreamSchemeSpec",
-                            DownstreamPathTemplate = "DownstreamPathTemplateSpec",
-                            Key = "KeySpec",
-                            UpstreamHost = "UpstreamHostSpec",
-                            UpstreamHttpMethod = new List<string>
-                            {
-                                "UpstreamHttpMethodSpec",
-                            },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "HostSpec",
-                                    Port = 80,
-                                },
-                            },
+                            Host = "HostSpec",
+                            Port = 80,
                         },
-                    };
+                    },
+                },
+            };
         }
 
         private void GivenTheEnvironmentIs(string env)
