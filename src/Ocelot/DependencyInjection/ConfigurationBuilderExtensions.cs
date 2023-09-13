@@ -11,11 +11,13 @@ using Newtonsoft.Json;
 
 namespace Ocelot.DependencyInjection
 {
-    public static class ConfigurationBuilderExtensions
+    public static partial class ConfigurationBuilderExtensions
     {
         public const string PrimaryConfigFile = "ocelot.json";
         public const string GlobalConfigFile = "ocelot.global.json";
-        private const string SubConfigPattern = @"^ocelot\.(.*?)\.json$";
+
+        [GeneratedRegex("^ocelot\\.(.*?)\\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+        private static partial Regex SubConfigRegex();
 
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
@@ -42,11 +44,11 @@ namespace Ocelot.DependencyInjection
         {
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
-            var reg = new Regex(SubConfigPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var reg = SubConfigRegex();
 
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
-                .Where(fi => reg.IsMatch(fi.Name) && (fi.Name != excludeConfigName))
+                .Where(fi => reg.IsMatch(fi.Name) && fi.Name != excludeConfigName)
                 .ToArray();
 
             var fileConfiguration = new FileConfiguration();
@@ -71,7 +73,7 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            return AddOcelot(builder, fileConfiguration);
+            return builder.AddOcelot(fileConfiguration);
         }
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
