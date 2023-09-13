@@ -38,11 +38,24 @@ namespace Ocelot.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Adds Ocelot configuration by environment, reading the required files from the default path.
+        /// </summary>
+        /// <param name="builder">Configuration builder to extend.</param>
+        /// <param name="env">Web hosting environment object.</param>
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env)
         {
             return builder.AddOcelot(".", env);
         }
 
+        /// <summary>
+        /// Adds Ocelot configuration by environment, reading the required files from the specified folder.
+        /// </summary>
+        /// <param name="builder">Configuration builder to extend.</param>
+        /// <param name="folder">Folder to read files from.</param>
+        /// <param name="env">Web hosting environment object.</param>
+        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env)
         {
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
