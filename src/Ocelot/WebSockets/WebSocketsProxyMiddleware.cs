@@ -74,11 +74,8 @@ namespace Ocelot.WebSockets
         public async Task Invoke(HttpContext httpContext)
         {
             var uri = httpContext.Items.DownstreamRequest().ToUri();
-            uri = uri.Replace("https://", "wss://");
-            uri = uri.Replace("http://", "ws://");
             var downstreamRoute = httpContext.Items.DownstreamRoute();
             await Proxy(httpContext, uri, downstreamRoute);
-            await Proxy(httpContext, uri);
         }
 
         private async Task Proxy(HttpContext context, string serverEndpoint, DownstreamRoute downstreamRoute)
@@ -128,7 +125,11 @@ namespace Ocelot.WebSockets
                 }
             }
 
-            var destinationUri = new Uri(serverEndpoint);
+            // Only Uris starting with 'ws://' or 'wss://' are supported in System.Net.WebSockets.ClientWebSocket
+            var wsServerEndpoint = serverEndpoint.Replace("https://", "wss://");
+            wsServerEndpoint = wsServerEndpoint.Replace("http://", "ws://");
+            
+            var destinationUri = new Uri(wsServerEndpoint);
             await client.ConnectAsync(destinationUri, context.RequestAborted);
 
             using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
