@@ -1,4 +1,4 @@
-﻿using NetTools; // <PackageReference Include="IPAddressRange" Version="5.0.0" />
+﻿using NetTools; // <PackageReference Include="IPAddressRange" Version="6.0.0" />
 using Ocelot.Configuration.File;
 
 using System.Collections.Generic;
