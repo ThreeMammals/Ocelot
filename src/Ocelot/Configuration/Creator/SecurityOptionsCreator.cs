@@ -17,7 +17,7 @@ namespace Ocelot.Configuration.Creator
             {
                 if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
                 {
-                    var allowedIps = allowedIpAddressRange.Select(x => x.ToString()).ToArray();
+                    var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
                     ipAllowedList.AddRange(allowedIps);
                 }
             }
