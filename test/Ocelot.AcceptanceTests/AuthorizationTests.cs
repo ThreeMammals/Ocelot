@@ -177,7 +177,7 @@ namespace Ocelot.AcceptanceTests
                         AuthenticationOptions = new FileAuthenticationOptions
                         {
                             AuthenticationProviderKey = "Test",
-                            AllowedScopes = new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
+                            AllowedScopes = new List<string>{ "api", "api.readOnly" },
                         },
                     },
                 },
