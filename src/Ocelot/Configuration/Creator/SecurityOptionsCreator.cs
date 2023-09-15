@@ -3,6 +3,7 @@ using Ocelot.Configuration.File;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -17,7 +18,7 @@ namespace Ocelot.Configuration.Creator
             {
                 if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
                 {
-                    var allowedIps = allowedIpAddressRange.AsEnumerable().Select(x => x.ToString());
+                    var allowedIps = allowedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
                     ipAllowedList.AddRange(allowedIps);
                 }
             }
@@ -26,7 +27,7 @@ namespace Ocelot.Configuration.Creator
             {
                 if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
                 {
-                    var blockedIps = blockedIpAddressRange.AsEnumerable().Select(x => x.ToString());
+                    var blockedIps = blockedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
                     ipBlockedList.AddRange(blockedIps);
                 }
             }
