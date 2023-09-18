@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Kubernetes
         /// <summary>
         /// String constant used for provider type definition.
         /// </summary>
-        public const string PollKube = "PollKube";
+        public const string PollKube = nameof(Provider.Kubernetes.PollKube);
 
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
@@ -32,7 +32,7 @@ namespace Ocelot.Provider.Kubernetes
 
             if (PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
             {
-                return new PollKubernetes(config.PollingInterval, factory, k8SServiceDiscoveryProvider);
+                return new PollKube(config.PollingInterval, factory, k8SServiceDiscoveryProvider);
             }
 
             return k8SServiceDiscoveryProvider;
