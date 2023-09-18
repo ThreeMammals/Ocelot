@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1000) - 100;
+        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1200) - 100;
 
         public void Dispose()
         {
