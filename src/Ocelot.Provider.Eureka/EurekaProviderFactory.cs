@@ -12,7 +12,8 @@ public static class EurekaProviderFactory
     /// <summary>
     /// String constant used for provider type definition.
     /// </summary>
-    public const string Eureka = "Eureka";
+    public const string Eureka = nameof(Provider.Eureka.Eureka);
+
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)

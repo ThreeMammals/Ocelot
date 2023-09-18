@@ -14,7 +14,8 @@ public static class ConsulProviderFactory
     /// <summary>
     /// String constant used for provider type definition.
     /// </summary>
-    public const string PollConsul = "PollConsul";
+    public const string PollConsul = nameof(Provider.Consul.PollConsul);
+
     private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
     private static readonly object LockObject = new();
 

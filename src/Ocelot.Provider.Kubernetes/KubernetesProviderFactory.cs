@@ -14,6 +14,7 @@ namespace Ocelot.Provider.Kubernetes
         /// String constant used for provider type definition.
         /// </summary>
         public const string PollKube = "PollKube";
+
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
         private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
