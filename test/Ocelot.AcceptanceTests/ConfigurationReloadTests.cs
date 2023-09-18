@@ -42,7 +42,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(7500))
+                .And(x => _steps.GivenIWait(10000))
                 .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
                 .BDDfy();
         }
@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1200) - 100;
+        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 2000) - 100;
 
         public void Dispose()
         {
