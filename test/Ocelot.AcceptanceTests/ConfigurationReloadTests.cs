@@ -9,32 +9,24 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
+    [Collection("Sequential")]
     public class ConfigurationReloadTests : IDisposable
     {
-        private readonly FileConfiguration _initialConfig;
-        private readonly FileConfiguration _anotherConfig;
-        private readonly Steps _steps;
-
-        public ConfigurationReloadTests()
+        private readonly FileConfiguration _initialConfig = new()
         {
-            _steps = new Steps();
-
-            _initialConfig = new FileConfiguration
+            GlobalConfiguration = new FileGlobalConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    RequestIdKey = "initialKey",
-                },
-            };
-
-            _anotherConfig = new FileConfiguration
+                RequestIdKey = "initialKey",
+            },
+        };
+        private readonly FileConfiguration _anotherConfig = new()
+        {
+            GlobalConfiguration = new FileGlobalConfiguration
             {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    RequestIdKey = "someOtherKey",
-                },
-            };
-        }
+                RequestIdKey = "someOtherKey",
+            },
+        };
+        private readonly Steps _steps = new();
 
         [Fact]
         public void should_reload_config_on_change()
@@ -42,7 +34,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(10000))
+                .And(x => _steps.GivenIWait(7500))
                 .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
                 .BDDfy();
         }
@@ -83,7 +75,7 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 2000) - 100;
+        private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1000) - 100;
 
         public void Dispose()
         {
