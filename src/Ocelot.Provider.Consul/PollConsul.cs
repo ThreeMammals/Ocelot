@@ -13,7 +13,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     private readonly IOcelotLogger _logger;
     private readonly IServiceDiscoveryProvider _provider;
 
-    private Timer _timer;
+    private readonly Timer _timer;
     private const int StartImmediately = 0;
 
     private bool _polling;
@@ -40,7 +40,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
 
     public void Dispose()
     {
-        _timer?.Dispose();
+        _timer.Dispose();
         _timer = null;
     }
 
