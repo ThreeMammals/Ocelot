@@ -128,13 +128,14 @@ namespace Ocelot.WebSockets
             // Only Uris starting with 'ws://' or 'wss://' are supported in System.Net.WebSockets.ClientWebSocket
             if (!serverEndpoint.StartsWith("ws"))
             {
-                Logger.LogWarning("Invalid scheme has detected!");
+                var scheme = context.Items.DownstreamRequest().Scheme;
+                Logger.LogWarning($"Invalid scheme has detected which will be replaced! Scheme '{scheme}' of the downstream '{serverEndpoint}'.");
                 serverEndpoint = serverEndpoint
                     .Replace("http://", "ws://")
                     .Replace("https://", "wss://");
             }
-            var destinationUri = new Uri(serverEndpoint);
 
+            var destinationUri = new Uri(serverEndpoint);
             await client.ConnectAsync(destinationUri, context.RequestAborted);
 
             using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
