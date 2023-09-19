@@ -41,7 +41,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
     public void Dispose()
     {
         _timer.Dispose();
-        _timer = null;
+        GC.SuppressFinalize(this);
     }
 
     public Task<List<Service>> Get()
