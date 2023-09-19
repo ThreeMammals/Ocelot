@@ -1,20 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Server.Kestrel.Core;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class HttpTests : IDisposable
     {
         private readonly Steps _steps;
@@ -125,7 +125,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "2.0",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };
@@ -167,7 +167,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.1",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };
@@ -209,7 +209,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         DownstreamHttpMethod = "POST",
                         DownstreamHttpVersion = "1.1",
-                        DangerousAcceptAnyServerCertificateValidator = true
+                        DangerousAcceptAnyServerCertificateValidator = true,
                     },
                 },
             };

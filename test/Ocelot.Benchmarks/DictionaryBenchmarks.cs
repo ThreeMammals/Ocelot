@@ -1,19 +1,19 @@
+using System.Collections.Concurrent;
+using System.Net.Http;
+
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Validators;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+
+using Ocelot.Requester;
+
 namespace Ocelot.Benchmarks
 {
-    using System.Collections.Concurrent;
-    using System.Net.Http;
-
-    using BenchmarkDotNet.Attributes;
-    using BenchmarkDotNet.Columns;
-    using BenchmarkDotNet.Configs;
-    using BenchmarkDotNet.Diagnosers;
-    using BenchmarkDotNet.Validators;
-
-    using Configuration;
-    using Configuration.Builder;
-
-    using Requester;
-
     [Config(typeof(DictionaryBenchmarks))]
     public class DictionaryBenchmarks : ManualConfig
     {
@@ -25,9 +25,9 @@ namespace Ocelot.Benchmarks
 
         public DictionaryBenchmarks()
         {
-            Add(StatisticColumn.AllStatistics);
-            Add(MemoryDiagnoser.Default);
-            Add(BaselineValidator.FailOnError);
+            AddColumn(StatisticColumn.AllStatistics);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddValidator(BaselineValidator.FailOnError);
         }
 
         [GlobalSetup]

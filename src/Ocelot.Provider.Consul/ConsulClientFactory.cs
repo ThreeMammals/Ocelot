@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Provider.Consul
+﻿using System;
+
+using global::Consul;
+
+namespace Ocelot.Provider.Consul
 {
-    using System;
-
-    using global::Consul;
-
     public class ConsulClientFactory : IConsulClientFactory
     {
         public IConsulClient Get(ConsulRegistryConfiguration config)

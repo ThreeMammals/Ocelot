@@ -1,19 +1,18 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.IO;
-    using System.Net;
-    using System.Threading.Tasks;
-    using System.Security.Authentication;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Server.Kestrel.Core;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Hosting;
-
     public class ServiceHandler : IDisposable
     {
         private IWebHost _builder;
@@ -125,7 +124,7 @@
             _builder.Start();
         }
 
-        public async Task StartFakeDownstreamService(string url, string path, Func<HttpContext, Func<Task>, Task> middleware)
+        public async Task StartFakeDownstreamService(string url, Func<HttpContext, Func<Task>, Task> middleware)
         {
             _builder = new WebHostBuilder()
                 .ConfigureServices(s => { }).UseKestrel()
@@ -158,6 +157,7 @@
         public void Dispose()
         {
             _builder?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,7 +1,7 @@
+using System.Collections.Generic;
+
 namespace Ocelot.Configuration.File
 {
-    using System.Collections.Generic;
-
     public class FileAggregateRoute : IRoute
     {
         public List<string> RouteKeys { get; set; }

@@ -1,19 +1,19 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Ocelot.Errors;
+
+using Ocelot.Infrastructure.Extensions;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Responder.Middleware
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Errors;
-
-    using Infrastructure.Extensions;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
     /// <summary>
     /// Completes and returns the request and request body, if any pipeline errors occured then sets the appropriate HTTP status code instead.
     /// </summary>
@@ -40,6 +40,7 @@ namespace Ocelot.Responder.Middleware
             await _next.Invoke(httpContext);
 
             var errors = httpContext.Items.Errors();
+
             // todo check errors is ok
             if (errors.Count > 0)
             {

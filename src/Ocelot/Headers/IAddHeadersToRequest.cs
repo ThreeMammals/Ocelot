@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
 
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-
-    using Configuration;
-    using Configuration.Creator;
-
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
     public interface IAddHeadersToRequest
     {
         Response SetHeadersOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<System.Security.Claims.Claim> claims, DownstreamRequest downstreamRequest);

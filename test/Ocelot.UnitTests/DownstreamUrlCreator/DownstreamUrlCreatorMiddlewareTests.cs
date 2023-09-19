@@ -1,35 +1,35 @@
-﻿namespace Ocelot.UnitTests.DownstreamUrlCreator
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
-    using Ocelot.DownstreamUrlCreator.Middleware;
-    using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-    using Ocelot.Infrastructure.RequestData;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using Ocelot.Request.Middleware;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class DownstreamUrlCreatorMiddlewareTests
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
@@ -99,7 +99,7 @@
                         new List<PlaceholderNameAndValue>
                         {
                             new("{subscriptionId}", "1"),
-                            new("{unitId}", "2")
+                            new("{unitId}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -131,7 +131,7 @@
                         new List<PlaceholderNameAndValue>
                         {
                             new("{subscriptionId}", "1"),
-                            new("{unitId}", "2")
+                            new("{unitId}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -164,7 +164,7 @@
                         {
                             new("{subscriptionId}", "1"),
                             new("{unitId}", "2"),
-                            new("{unitIdIty}", "3")
+                            new("{unitIdIty}", "3"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
@@ -345,7 +345,7 @@
                         new List<PlaceholderNameAndValue>
                         {
                             new("{action}", "1"),
-                            new("{server}", "2")
+                            new("{server}", "2"),
                         },
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)

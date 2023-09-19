@@ -1,19 +1,14 @@
-﻿namespace Ocelot.Multiplexer
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Ocelot.Multiplexer
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Configuration;
-
-    using DownstreamRouteFinder.UrlMatcher;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Middleware;
-
     public class MultiplexingMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

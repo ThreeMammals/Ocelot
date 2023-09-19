@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Configuration
                         new RouteBuilder()
                             .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> {"Get"})
-                            .Build()
+                            .Build(),
                     };
                 }
             }

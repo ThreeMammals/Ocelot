@@ -1,23 +1,23 @@
-﻿namespace Ocelot.AcceptanceTests
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.File;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Net;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Middleware;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class CustomMiddlewareTests : IDisposable
     {
         private readonly string _configurationPath;
@@ -42,7 +42,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -60,13 +60,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -87,7 +87,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -105,13 +105,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -132,7 +132,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -150,13 +150,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -177,7 +177,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -195,13 +195,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -222,7 +222,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -240,13 +240,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -267,7 +267,7 @@
                 {
                     _counter++;
                     await next.Invoke();
-                }
+                },
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -285,13 +285,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
@@ -334,13 +334,13 @@
                                 {
                                     Host = "localhost",
                                     Port = port,
-                                }
+                                },
                             },
                             DownstreamScheme = "http",
                             UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = new List<string> { "Get" },
-                        }
-                    }
+                        },
+                    },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "/test"))

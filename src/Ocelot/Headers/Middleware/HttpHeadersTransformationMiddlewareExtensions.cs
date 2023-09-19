@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Headers.Middleware
-{
-    using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
+namespace Ocelot.Headers.Middleware
+{
     public static class HttpHeadersTransformationMiddlewareExtensions
     {
         public static IApplicationBuilder UseHttpHeadersTransformationMiddleware(this IApplicationBuilder builder)

@@ -1,32 +1,32 @@
-﻿namespace Ocelot.UnitTests.CacheManager
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using global::CacheManager.Core;
+
+using Microsoft.AspNetCore.Http;
+
+using Moq;
+
+using Ocelot.Cache;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Cache.Middleware;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
+namespace Ocelot.UnitTests.CacheManager
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading.Tasks;
-
-    using global::CacheManager.Core;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Moq;
-
-    using Ocelot.Cache;
-    using Ocelot.Cache.CacheManager;
-    using Ocelot.Cache.Middleware;
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class OutputCacheMiddlewareRealCacheTests
     {
         private readonly IOcelotCache<CachedResponse> _cacheManager;
@@ -59,7 +59,7 @@
         {
             var content = new StringContent("{\"Test\": 1}")
             {
-                Headers = { ContentType = new MediaTypeHeaderValue("application/json") }
+                Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
             };
 
             var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");

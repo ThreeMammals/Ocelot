@@ -1,48 +1,47 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Multiplexer;
+
+using Ocelot.Configuration.Setter;
+using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Requester;
+
+using Ocelot.UnitTests.Requester;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
+using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
+
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Reflection;
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Multiplexer;
-
-    using Ocelot.Configuration.Setter;
-    using Ocelot.DependencyInjection;
-    using Ocelot.Infrastructure;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.Requester;
-
-    using Requester;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
-    using static Multiplexing.UserDefinedResponseAggregatorTests;
-
     public class OcelotBuilderTests
     {
         private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;
         private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
-        private readonly int _maxRetries;
         private Exception _ex;
 
         public OcelotBuilderTests()
@@ -51,7 +50,6 @@ namespace Ocelot.UnitTests.DependencyInjection
             _services = new ServiceCollection();
             _services.AddSingleton(GetHostingEnvironment());
             _services.AddSingleton(_configRoot);
-            _maxRetries = 100;
         }
 
         private static IWebHostEnvironment GetHostingEnvironment()

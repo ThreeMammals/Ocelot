@@ -23,7 +23,7 @@ namespace Ocelot.ServiceDiscovery.Providers
                     new ServiceHostAndPort(_configuration.HostName, _configuration.Port),
                     "doesnt matter with service fabric",
                     "doesnt matter with service fabric",
-                    new List<string>())
+                    new List<string>()),
             });
         }
     }

@@ -1,12 +1,12 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration.Builder;
+
+using Ocelot.Configuration.File;
+
 namespace Ocelot.Configuration.Creator
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Builder;
-
-    using File;
-
     public class DynamicsCreator : IDynamicsCreator
     {
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;

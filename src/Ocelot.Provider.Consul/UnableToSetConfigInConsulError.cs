@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Provider.Consul
-{
-    using Errors;
+﻿using Ocelot.Errors;
 
+namespace Ocelot.Provider.Consul
+{
     public class UnableToSetConfigInConsulError : Error
     {
         public UnableToSetConfigInConsulError(string s)
