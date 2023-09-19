@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Kubernetes
         /// <summary>
         /// String constant used for provider type definition.
         /// </summary>
-        public const string PollKube = nameof(Provider.Kubernetes.PollKube);
+        public const string PollKube = nameof(Kubernetes.PollKube);
 
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
