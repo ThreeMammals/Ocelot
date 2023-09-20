@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Cache
             var route = new FileRoute
             {
                 UpstreamHttpMethod = new List<string> { "Get" },
-                UpstreamPathTemplate = "/testdummy"
+                UpstreamPathTemplate = "/testdummy",
             };
 
             this.Given(_ => GivenTheRoute(route))
@@ -38,8 +38,8 @@ namespace Ocelot.UnitTests.Cache
             {
                 FileCacheOptions = new FileCacheOptions
                 {
-                    Region = "region"
-                }
+                    Region = "region",
+                },
             };
 
             this.Given(_ => GivenTheRoute(route))

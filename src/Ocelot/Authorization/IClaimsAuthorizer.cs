@@ -2,11 +2,10 @@
 
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
+using System.Collections.Generic;
 
 namespace Ocelot.Authorization
 {
-    using System.Collections.Generic;
-
     public interface IClaimsAuthorizer
     {
         Response<bool> Authorize(

@@ -1,17 +1,17 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Requester
 {
-    using System;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
-    using Responses;
-
     public class HttpClientHttpRequester : IHttpRequester
     {
         private readonly IHttpClientCache _cacheHandlers;

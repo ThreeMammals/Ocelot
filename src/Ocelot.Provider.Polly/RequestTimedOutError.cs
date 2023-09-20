@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Provider.Polly
+﻿using System;
+
+using Ocelot.Errors;
+
+namespace Ocelot.Provider.Polly
 {
-    using System;
-
-    using Errors;
-
     public class RequestTimedOutError : Error
     {
         public RequestTimedOutError(Exception exception)

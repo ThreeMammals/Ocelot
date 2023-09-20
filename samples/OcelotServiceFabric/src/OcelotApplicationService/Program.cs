@@ -23,7 +23,7 @@ namespace OcelotApplicationService
                 ServiceRuntime.RegisterServiceAsync("OcelotApplicationServiceType",
                     context => new ApiGateway(context)).GetAwaiter().GetResult();
 
-                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, nameof(ApiGateway));
+                ServiceEventSource.Current.ServiceTypeRegistered(Environment.ProcessId, nameof(ApiGateway));
 
                 // Prevents this host process from terminating so services keeps running. 
                 Thread.Sleep(Timeout.Infinite);

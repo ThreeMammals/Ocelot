@@ -1,14 +1,14 @@
-﻿namespace Ocelot.AcceptanceTests.Caching
+﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
+
+using CacheManager.Core;
+using CacheManager.Core.Internal;
+using CacheManager.Core.Logging;
+using CacheManager.Core.Utility;
+
+namespace Ocelot.AcceptanceTests.Caching
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
-
-    using CacheManager.Core;
-    using CacheManager.Core.Internal;
-    using CacheManager.Core.Logging;
-    using CacheManager.Core.Utility;
-
     public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
     {
         private readonly ICacheSerializer _serializer;

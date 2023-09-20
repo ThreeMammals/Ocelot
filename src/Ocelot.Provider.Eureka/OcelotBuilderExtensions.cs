@@ -1,11 +1,11 @@
-﻿namespace Ocelot.Provider.Eureka
+﻿using Ocelot.DependencyInjection;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Steeltoe.Discovery.Client;
+
+namespace Ocelot.Provider.Eureka
 {
-    using DependencyInjection;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Steeltoe.Discovery.Client;
-
     public static class OcelotBuilderExtensions
     {
         public static IOcelotBuilder AddEureka(this IOcelotBuilder builder)

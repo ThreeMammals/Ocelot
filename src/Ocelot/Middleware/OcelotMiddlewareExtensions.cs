@@ -1,27 +1,27 @@
-﻿namespace Ocelot.Middleware
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Setter;
+
+using Ocelot.DependencyInjection;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+using Ocelot.Responses;
+
+namespace Ocelot.Middleware
 {
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Configuration;
-    using Configuration.Creator;
-    using Configuration.File;
-    using Configuration.Repository;
-    using Configuration.Setter;
-
-    using DependencyInjection;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Options;
-
-    using Responses;
-
     public static class OcelotMiddlewareExtensions
     {
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)

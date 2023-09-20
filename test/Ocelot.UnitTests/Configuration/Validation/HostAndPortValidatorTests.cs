@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var fileHostAndPort = new FileHostAndPort
             {
-                Host = host
+                Host = host,
             };
 
             this.Given(_ => GivenThe(fileHostAndPort))
@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var fileHostAndPort = new FileHostAndPort
             {
-                Host = "test"
+                Host = "test",
             };
 
             this.Given(_ => GivenThe(fileHostAndPort))

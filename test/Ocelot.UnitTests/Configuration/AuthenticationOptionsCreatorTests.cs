@@ -1,18 +1,18 @@
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class AuthenticationOptionsCreatorTests
     {
         private readonly AuthenticationOptionsCreator _authOptionsCreator;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
                 {
                     AuthenticationProviderKey = "Test",
                     AllowedScopes = new List<string> { "cheese" },
-                }
+                },
             };
 
             var expected = new AuthenticationOptionsBuilder()

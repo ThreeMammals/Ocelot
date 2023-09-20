@@ -1,17 +1,17 @@
+using System.Collections.Generic;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.Configuration
 {
-    using System.Collections.Generic;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class DownstreamAddressesCreatorTests
     {
         public DownstreamAddressesCreator _creator;
@@ -46,8 +46,8 @@ namespace Ocelot.UnitTests.Configuration
                     new()
                     {
                         Host = "test",
-                        Port = 80
-                    }
+                        Port = 80,
+                    },
                 },
             };
 
@@ -72,20 +72,20 @@ namespace Ocelot.UnitTests.Configuration
                     new()
                     {
                         Host = "test",
-                        Port = 80
+                        Port = 80,
                     },
                     new()
                     {
                         Host = "west",
-                        Port = 443
-                    }
-                }
+                        Port = 443,
+                    },
+                },
             };
 
             var expected = new List<DownstreamHostAndPort>
             {
                 new("test", 80),
-                new("west", 443)
+                new("west", 443),
             };
 
             this.Given(x => GivenTheFollowingRoute(route))

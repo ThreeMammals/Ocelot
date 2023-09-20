@@ -195,7 +195,7 @@ Task("RunUnitTests")
 
 		GenerateReport(coverageSummaryFile);
 		
-		if (IsRunningOnCircleCI() && IsMain())
+		if (IsRunningOnCircleCI() && IsMainOrDevelop())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
@@ -555,7 +555,19 @@ private bool IsRunningOnCircleCI()
     return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
 }
 
-private bool IsMain()
+private bool IsMainOrDevelop()
 {
-    return Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower() == "main";
+	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
+
+	if(env == "main") 
+	{
+		return true;
+	}
+
+	if(env == "develop") 
+	{
+		return true;
+	}
+
+    return false;
 }

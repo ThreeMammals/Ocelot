@@ -1,15 +1,15 @@
+using System.Collections.Generic;
+
+using Ocelot.Configuration.Creator;
+
+using Ocelot.Infrastructure;
+
+using Ocelot.Logging;
+
+using Ocelot.Middleware;
+
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-
-    using Configuration.Creator;
-
-    using Infrastructure;
-
-    using Logging;
-
-    using Ocelot.Middleware;
-
     public class AddHeadersToResponse : IAddHeadersToResponse
     {
         private readonly IPlaceholders _placeholders;

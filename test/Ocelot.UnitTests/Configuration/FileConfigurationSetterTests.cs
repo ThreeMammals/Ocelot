@@ -16,11 +16,10 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using System;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    using System;
-
     public class FileConfigurationSetterTests
     {
         private FileConfiguration _fileConfiguration;

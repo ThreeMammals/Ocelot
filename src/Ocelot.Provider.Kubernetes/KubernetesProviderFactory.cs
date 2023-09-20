@@ -25,7 +25,7 @@ namespace Ocelot.Provider.Kubernetes
             var k8sRegistryConfiguration = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = route.ServiceName,
-                KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace
+                KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
             };
 
             var k8sServiceDiscoveryProvider = new KubernetesServiceDiscoveryProvider(k8sRegistryConfiguration, factory, kubeClient);
@@ -34,6 +34,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 return new PollKubernetes(config.PollingInterval, factory, k8sServiceDiscoveryProvider);
             }
+
             return k8sServiceDiscoveryProvider;
         }
     }

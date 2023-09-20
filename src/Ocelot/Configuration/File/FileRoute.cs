@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Configuration.File
-{
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+namespace Ocelot.Configuration.File
+{
     public class FileRoute : IRoute
     {
         public FileRoute()

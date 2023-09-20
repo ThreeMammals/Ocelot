@@ -1,19 +1,19 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Ocelot.Configuration;
+
+using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Extensions;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Middleware;
+
+using Ocelot.Responses;
+
 namespace Ocelot.Headers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Configuration;
-
-    using Infrastructure;
-    using Infrastructure.Extensions;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Middleware;
-
-    using Responses;
-
     public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
     {
         private readonly IPlaceholders _placeholders;

@@ -1,25 +1,19 @@
+using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Configuration.Creator;
-    using Ocelot.DownstreamRouteFinder.Finder;
-    using Ocelot.LoadBalancer.LoadBalancers;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class DownstreamRouteCreatorTests
     {
         private readonly DownstreamRouteCreator _creator;
@@ -33,7 +27,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private IInternalConfiguration _configuration;
         private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
-        private string _upstreamQuery;
+        private readonly string _upstreamQuery;
 
         public DownstreamRouteCreatorTests()
         {
@@ -45,6 +39,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
                 .Returns(_qoSOptions);
             _creator = new DownstreamRouteCreator(_qosOptionsCreator.Object);
+            _upstreamQuery = string.Empty;
         }
 
         [Fact]

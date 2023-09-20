@@ -11,13 +11,15 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "posts/1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "OcelotBasic": {
+    "ApiGateway": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "posts/1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

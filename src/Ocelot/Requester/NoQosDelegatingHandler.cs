@@ -1,7 +1,7 @@
+using System.Net.Http;
+
 namespace Ocelot.Requester
 {
-    using System.Net.Http;
-
     public class NoQosDelegatingHandler : DelegatingHandler
     {
     }

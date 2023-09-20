@@ -1,15 +1,15 @@
+using System.Threading.Tasks;
+
+using Ocelot.Configuration.Repository;
+
+using Ocelot.Logging;
+
+using Microsoft.AspNetCore.Http;
+
+using Ocelot.Errors.Middleware;
+
 namespace Ocelot.Middleware
 {
-    using System.Threading.Tasks;
-
-    using Configuration.Repository;
-
-    using Logging;
-
-    using Microsoft.AspNetCore.Http;
-
-    using Ocelot.Errors.Middleware;
-
     public class ConfigurationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

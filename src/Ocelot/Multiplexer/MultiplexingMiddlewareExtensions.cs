@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Multiplexer
-{
-    using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
+namespace Ocelot.Multiplexer
+{
     public static class MultiplexingMiddlewareExtensions
     {
         public static IApplicationBuilder UseMultiplexingMiddleware(this IApplicationBuilder builder)

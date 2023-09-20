@@ -1,12 +1,12 @@
-﻿namespace Ocelot.Configuration
+﻿using System.Collections.Generic;
+using System.Net.Http;
+
+using Ocelot.Configuration.File;
+
+using Ocelot.Values;
+
+namespace Ocelot.Configuration
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-
-    using File;
-
-    using Values;
-
     public class Route
     {
         public Route(List<DownstreamRoute> downstreamRoute,

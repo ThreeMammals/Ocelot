@@ -17,12 +17,11 @@ using Shouldly;
 using TestStack.BDDfy;
 
 using Xunit;
+using Ocelot.Infrastructure;
+using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Headers
 {
-    using Ocelot.Infrastructure;
-    using Ocelot.Logging;
-
     public class AddHeadersToRequestClaimToThingTests
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
@@ -49,13 +48,13 @@ namespace Ocelot.UnitTests.Headers
         {
             var claims = new List<Claim>
             {
-                new("test", "data")
+                new("test", "data"),
             };
 
             this.Given(
                 x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
                 {
-                    new("header-key", string.Empty, string.Empty, 0)
+                    new("header-key", string.Empty, string.Empty, 0),
                 }))
                 .Given(x => x.GivenClaims(claims))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
@@ -71,11 +70,11 @@ namespace Ocelot.UnitTests.Headers
             this.Given(
                 x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
                 {
-                    new("header-key", string.Empty, string.Empty, 0)
+                    new("header-key", string.Empty, string.Empty, 0),
                 }))
                 .Given(x => x.GivenClaims(new List<Claim>
                 {
-                    new("test", "data")
+                    new("test", "data"),
                 }))
                 .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
                 .And(x => x.GivenThatTheRequestContainsHeader("header-key", "initial"))
@@ -91,12 +90,12 @@ namespace Ocelot.UnitTests.Headers
             this.Given(
                x => x.GivenConfigurationHeaderExtractorProperties(new List<ClaimToThing>
                {
-                    new(string.Empty, string.Empty, string.Empty, 0)
+                    new(string.Empty, string.Empty, string.Empty, 0),
                }))
                .Given(x => x.GivenClaims(new List<Claim>()))
                .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
                {
-                   new AnyError()
+                   new AnyError(),
                })))
                .When(x => x.WhenIAddHeadersToTheRequest())
                .Then(x => x.ThenTheResultIsError())

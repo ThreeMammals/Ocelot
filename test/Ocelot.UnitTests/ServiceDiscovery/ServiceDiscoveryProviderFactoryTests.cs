@@ -1,29 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
+
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
+
+using Ocelot.Responses;
+
+using Shouldly;
+
+using TestStack.BDDfy;
+
+using Ocelot.Values;
+
+using Xunit;
+
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Microsoft.Extensions.DependencyInjection;
-
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.Logging;
-    using Ocelot.ServiceDiscovery;
-    using Ocelot.ServiceDiscovery.Providers;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Values;
-
-    using Xunit;
-
     public class ServiceDiscoveryProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var downstreamAddresses = new List<DownstreamHostAndPort>
             {
                 new("asdf.com", 80),
-                new("abc.com", 80)
+                new("abc.com", 80),
             };
 
             var route = new DownstreamRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();

@@ -1,7 +1,7 @@
-﻿namespace Ocelot.Security.Middleware
-{
-    using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 
+namespace Ocelot.Security.Middleware
+{
     public static class SecurityMiddlewareExtensions
     {
         public static IApplicationBuilder UseSecurityMiddleware(this IApplicationBuilder builder)

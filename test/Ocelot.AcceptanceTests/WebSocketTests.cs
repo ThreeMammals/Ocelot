@@ -1,20 +1,16 @@
+using Ocelot.Configuration.File;
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
+using Xunit;
+
 namespace Ocelot.AcceptanceTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.WebSockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Configuration.File;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class WebSocketTests : IDisposable
     {
         private readonly List<string> _secondRecieved;
@@ -31,7 +27,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_proxy_websocket_input_to_downstream_service()
+        public void ShouldProxyWebsocketInputToDownstreamService()
         {
             var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
@@ -50,11 +46,11 @@ namespace Ocelot.AcceptanceTests
                             new()
                             {
                                 Host = downstreamHost,
-                                Port = downstreamPort
-                            }
-                        }
-                    }
-                }
+                                Port = downstreamPort,
+                            },
+                        },
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
@@ -66,7 +62,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_proxy_websocket_input_to_downstream_service_and_use_load_balancer()
+        public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
         {
             var downstreamPort = RandomPortFinder.GetRandomPort();
             var downstreamHost = "localhost";
@@ -87,17 +83,17 @@ namespace Ocelot.AcceptanceTests
                             new()
                             {
                                 Host = downstreamHost,
-                                Port = downstreamPort
+                                Port = downstreamPort,
                             },
                             new()
                             {
                                 Host = secondDownstreamHost,
-                                Port = secondDownstreamPort
-                            }
+                                Port = secondDownstreamPort,
+                            },
                         },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" }
-                    }
-                }
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "RoundRobin" },
+                    },
+                },
             };
 
             this.Given(_ => _steps.GivenThereIsAConfiguration(config))
@@ -237,7 +233,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartFakeDownstreamService(string url, string path)
         {
-            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
+            await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
             {
                 if (context.Request.Path == path)
                 {
@@ -260,7 +256,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartSecondFakeDownstreamService(string url, string path)
         {
-            await _serviceHandler.StartFakeDownstreamService(url, path, async (context, next) =>
+            await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
             {
                 if (context.Request.Path == path)
                 {
@@ -333,10 +329,12 @@ namespace Ocelot.AcceptanceTests
         {
             _firstRecieved.Count.ShouldBe(count);
         }
+
         public void Dispose()
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

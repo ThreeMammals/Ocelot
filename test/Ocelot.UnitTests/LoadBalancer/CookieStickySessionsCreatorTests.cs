@@ -1,20 +1,15 @@
-﻿namespace Ocelot.UnitTests.LoadBalancer
+﻿using Moq;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
+using Shouldly;
+using TestStack.BDDfy;
+using Xunit;
+
+namespace Ocelot.UnitTests.LoadBalancer
 {
-    using Moq;
-
-    using Ocelot.Configuration;
-    using Ocelot.Configuration.Builder;
-    using Ocelot.LoadBalancer.LoadBalancers;
-    using Ocelot.ServiceDiscovery.Providers;
-
-    using Responses;
-
-    using Shouldly;
-
-    using TestStack.BDDfy;
-
-    using Xunit;
-
     public class CookieStickySessionsCreatorTests
     {
         private readonly CookieStickySessionsCreator _creator;

@@ -4,7 +4,7 @@ using Ocelot.Responses;
 namespace Ocelot.Configuration.Repository
 {
     /// <summary>
-    /// Register as singleton
+    /// Register as singleton.
     /// </summary>
     public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
     {
