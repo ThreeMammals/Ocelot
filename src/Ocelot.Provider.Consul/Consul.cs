@@ -83,10 +83,8 @@ namespace Ocelot.Provider.Consul
         }
 
         private static string GetVersionFromStrings(IEnumerable<string> strings)
-        {
-            return strings
-                ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
+            => strings?
+                .FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
                 .TrimStart(VersionPrefix);
-        }
     }
 }
