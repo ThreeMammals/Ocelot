@@ -853,7 +853,7 @@ namespace Ocelot.AcceptanceTests
             {
                 new("client_id", "client"),
                 new("client_secret", "secret"),
-                new("scope", "api.readOnly"),
+                new("scope", "api api.readOnly openid"),
                 new("username", "test"),
                 new("password", "test"),
                 new("grant_type", "password"),

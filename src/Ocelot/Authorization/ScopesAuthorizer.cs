@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
@@ -9,8 +10,9 @@ namespace Ocelot.Authorization
 {
     public class ScopesAuthorizer : IScopesAuthorizer
     {
+        private const string ScopeClaimKey = "scope";
+
         private readonly IClaimsParser _claimsParser;
-        private const string Scope = "scope";
 
         public ScopesAuthorizer(IClaimsParser claimsParser)
         {
@@ -24,21 +26,29 @@ namespace Ocelot.Authorization
                 return new OkResponse<bool>(true);
             }
 
-            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
+            var scopesResponse = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, ScopeClaimKey);
 
-            if (values.IsError)
+            if (scopesResponse.IsError)
             {
-                return new ErrorResponse<bool>(values.Errors);
+                return new ErrorResponse<bool>(scopesResponse.Errors);
             }
 
-            var userScopes = values.Data;
+            IList<string> userScopes = scopesResponse.Data;
 
-            var matchesScopes = routeAllowedScopes.Intersect(userScopes);
+            if (userScopes.Count == 1)
+            {
+                var scope = userScopes[0];
 
-            if (!matchesScopes.Any())
+                if (scope.Contains(' '))
+                {
+                    userScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            if (routeAllowedScopes.Except(userScopes).Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"no one user scope: '{string.Join(',', userScopes)}' match with some allowed scope: '{string.Join(',', routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(',', userScopes)}' do not have all allowed route scopes: '{string.Join(',', routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
