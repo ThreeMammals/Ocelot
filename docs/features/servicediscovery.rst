@@ -250,8 +250,8 @@ Please take a look through all of the docs to understand these options.
 Custom Providers
 ----------------------------------
 
-Ocelot also allows you to create a custom ServiceDiscovery implementation.
-This is done by implementing the ``IServiceDiscoveryProvider`` interface like in the following example:
+Ocelot also allows you to create your own ServiceDiscovery implementation.
+This is done by implementing the ``IServiceDiscoveryProvider`` interface, as shown in the following example:
 
 .. code-block:: csharp
 
@@ -283,7 +283,7 @@ And set its class name as the provider type in **ocelot.json**:
     }
   }
   
-Finally, in the application's **ConfigureServices** method register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
+Finally, in the application's **ConfigureServices** method, register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
 
 .. code-block:: csharp
 
@@ -294,10 +294,10 @@ Finally, in the application's **ConfigureServices** method register a ``ServiceD
     services.AddSingleton(serviceDiscoveryFinder);
     services.AddOcelot();
 
-Custom provider sample
+Custom Provider Sample
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In order to introduce the basic template of custom Service Discovery provider we've prepared nice Web API sample:
+In order to introduce a basic template for a custom Service Discovery provider, we've prepared a good sample:
 
     | **Link**: `samples <../../samples>`_ / `OcelotServiceDiscovery <../../samples/OcelotServiceDiscovery>`_
     | **Solution**: `Ocelot.Samples.ServiceDiscovery.sln <../../samples/OcelotServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_
@@ -307,59 +307,58 @@ This solution contains the following projects:
 - `ApiGateway <#apigateway>`_
 - `DownstreamService <#downstreamservice>`_
 
-This solution is ready for any kind of deployment. All services are linked which means all ports and hosts are prepared for immediate usage (running in Visual Studio).
+This solution is ready for any deployment. All services are bound, meaning all ports and hosts are prepared for immediate use (running in Visual Studio).
 
 All instructions for running this solution are in `README.md <../../samples/OcelotServiceDiscovery/README.md>`_.
 
 DownstreamService
 """""""""""""""""
 
-This project is a single downstream service to be reused in `ApiGateway <#apigateway>`_ routes.
-It has multiple **launchSettings.json** profiles for your favorite startup and hosting scenarios: in Visual Studio running sessions, console Kestrel hosting and Docker deployment for sure.
+This project provides a single downstream service that can be reused across `ApiGateway <#apigateway>`_ routes.
+It has multiple **launchSettings.json** profiles for your favorite launch and hosting scenarios: Visual Studio running sessions, Kestrel console hosting, and Docker deployments.
 
 ApiGateway
 """"""""""
 
-This project includes custom Service Discovery provider, and it has a route(s) to `DownstreamService <#downstreamservice>`_ services only in **ocelot.json** file.
-You are welcome to add more routes!
+This project includes a custom Service Discovery provider and it only has route(s) to `DownstreamService <#downstreamservice>`_ services in the **ocelot.json** file.
+You can add more routes!
 
 The main source code for the custom provider is in the `ServiceDiscovery <../../samples/OcelotServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
 the ``MyServiceDiscoveryProvider`` and ``MyServiceDiscoveryProviderFactory`` classes. You are welcome to design and develop them!
 
-Also, the keystone of this custom provider locates in ``ConfigureServices`` method where you could choose a design & implementation options: easy or more complex:
+Additionally, the cornerstone of this custom provider is the ``ConfigureServices`` method, where you can choose design and implementation options: simple or more complex:
 
 .. code-block:: csharp
 
             builder.ConfigureServices(s =>
             {
-                // Initialize from app configuration or hardcode/choose the best option.
+                // Perform initialization from application configuration or hardcode/choose the best option.
                 bool easyWay = true;
 
                 if (easyWay)
                 {
-                    // Option #1. Define custom finder delegate to instantiate custom provider
-                    // by default factory which is ServiceDiscoveryProviderFactory
+                    // Design #1. Define a custom finder delegate to instantiate a custom provider under the default factory, which is ServiceDiscoveryProviderFactory
                     s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
                         => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
                 }
                 else
                 {
-                    // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
-                    // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
+                    // Design #2. Abstract from the default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
+                    // and create your own factory by implementing the IServiceDiscoveryProviderFactory interface.
                     s.RemoveAll<IServiceDiscoveryProviderFactory>();
                     s.AddSingleton<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
 
-                    // Will not be called, but it is required for internal validators, aka life hack
+                    // It will not be called, but it is necessary for internal validators, it is also a lifehack
                     s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute) => null);
                 }
 
                 s.AddOcelot();
             });
 
-Easy way, simple design means you develop provider class only and specify ``ServiceDiscoveryFinderDelegate`` object for default ``ServiceDiscoveryProviderFactory`` in Ocelot core.
+The easy way, lite design means that you only design the provider class, and specify ``ServiceDiscoveryFinderDelegate`` object for default ``ServiceDiscoveryProviderFactory`` in Ocelot core.
 
-More complex design means you develop both, provider and provider's factory classes. After that you need to add the ``IServiceDiscoveryProviderFactory`` 
-interface to DI-container with removal of registered default ``ServiceDiscoveryProviderFactory`` class.
-Please note, in this case default ``ServiceDiscoveryProviderFactory`` in Ocelot core will not be used.
-Additionally you don't have to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** options of the GlobalConfiguration settings.
+A more complex design means that you design both provider and provider factory classes.
+After this, you need to add the ``IServiceDiscoveryProviderFactory`` interface to the DI-container, removing the default registered ``ServiceDiscoveryProviderFactory`` class.
+Note that in this case the Ocelot core will not use ``ServiceDiscoveryProviderFactory`` by default.
+Additionally, you do not need to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** properties of the **GlobalConfiguration** settings.
 But you can leave this ``Type`` option for compatibility between both designs.
