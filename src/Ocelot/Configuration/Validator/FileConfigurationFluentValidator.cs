@@ -116,9 +116,7 @@ namespace Ocelot.Configuration.Validator
             var matchingRoutes = routes
                 .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
                             && r.UpstreamHost == route.UpstreamHost
-                            && AreDuplicateUpstreamRoutingHeaders(
-                                route.UpstreamHeaderRoutingOptions.Headers,
-                                r.UpstreamHeaderRoutingOptions.Headers))
+                            && AreDuplicates(route.UpstreamHeaderRoutingOptions.Headers, r.UpstreamHeaderRoutingOptions.Headers))
                 .ToList();
 
             if (matchingRoutes.Count == 1)
@@ -160,15 +158,14 @@ namespace Ocelot.Configuration.Validator
             return matchingRoutes.Count() <= 1;
         }
 
-        private static bool AreDuplicateUpstreamRoutingHeaders(
-            IDictionary<string, ICollection<string>> first,
-            IDictionary<string, ICollection<string>> second)
+        private static bool AreDuplicates(IDictionary<string, ICollection<string>> first, IDictionary<string, ICollection<string>> second)
         {
             if (!first.Any() && !second.Any())
             {
                 return true;
             }
 
+            // if either of the two header collections is empty while the other is not, it's obvious that they can never be duplicate
             if (first.Any() ^ second.Any())
             {
                 return false;
