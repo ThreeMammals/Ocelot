@@ -10,7 +10,7 @@ namespace Ocelot.Configuration
             AuthenticationProviderKey = authenticationProviderKey;
         }
 
-        public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, List<string> authenticationProviderKeys)
+        public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, string[] authenticationProviderKeys)
             : this(allowedScopes, authenticationProviderKey)
         {
             AuthenticationProviderKeys = authenticationProviderKeys;
@@ -20,6 +20,6 @@ namespace Ocelot.Configuration
 
         public string AuthenticationProviderKey { get; }
 
-        public List<string> AuthenticationProviderKeys { get; }
+        public string[] AuthenticationProviderKeys { get; }
     }
 }

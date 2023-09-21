@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Builder
@@ -7,7 +8,7 @@ namespace Ocelot.Configuration.Builder
         private List<string> _allowedScopes = new();
         private string _authenticationProviderKey;
 
-        private string[] _authenticationProviderKeys = new();
+        private string[] _authenticationProviderKeys = Array.Empty<string>();
 
 
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
@@ -22,7 +23,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(List<string> authenticationProviderKeys)
+        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(string[] authenticationProviderKeys)
         {
             _authenticationProviderKeys = authenticationProviderKeys;
             return this;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Ocelot.Configuration.File
@@ -8,14 +9,14 @@ namespace Ocelot.Configuration.File
         public FileAuthenticationOptions()
         {
             AllowedScopes = new List<string>();
-            AuthenticationProviderKeys = new List<string>();
+            AuthenticationProviderKeys = Array.Empty<string>();
         }
 
         public List<string> AllowedScopes { get; set; }
 
         public string AuthenticationProviderKey { get; set; }
 
-        public List<string> AuthenticationProviderKeys { get; set; }
+        public string[] AuthenticationProviderKeys { get; set; }
 
         public override string ToString()
         {

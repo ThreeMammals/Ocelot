@@ -89,7 +89,7 @@ namespace Ocelot.UnitTests.Authentication
                     .WithAuthenticationOptions(new Ocelot.Configuration.AuthenticationOptions(
                         null,
                         !isAuthenticationProviderKeys ? "Test" : null,
-                        isAuthenticationProviderKeys ? new List<string> { string.Empty, "Test" } : null
+                        isAuthenticationProviderKeys ? new[] { string.Empty, "Test" } : null
                     ))
                     .WithIsAuthenticated(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Authentication
                     .WithAuthenticationOptions(new Ocelot.Configuration.AuthenticationOptions(
                         null,
                         "Test",
-                        new List<string> { "Test #1", string.Empty }
+                        new[] { "Test #1", string.Empty }
                     ))
                     .WithIsAuthenticated(true)
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
