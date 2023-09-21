@@ -947,10 +947,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test",
-                            AuthenticationProviderKeys = new List<string> { "Test #1", "Test #2" }
-                        }
-                    }
-                }
+                            AuthenticationProviderKeys = new[] { "Test #1", "Test #2" },
+                        },
+                    },
+                },
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())

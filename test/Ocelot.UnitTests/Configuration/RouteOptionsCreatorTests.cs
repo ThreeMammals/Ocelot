@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Configuration
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
                     AuthenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null,
-                    AuthenticationProviderKeys = isAuthenticationProviderKeys ? new List<string> { string.Empty, "Test #1" } : null,
+                    AuthenticationProviderKeys = isAuthenticationProviderKeys ? new[] { string.Empty, "Test #1" } : null,
                 },
                 RouteClaimsRequirement = new Dictionary<string, string>
                 {

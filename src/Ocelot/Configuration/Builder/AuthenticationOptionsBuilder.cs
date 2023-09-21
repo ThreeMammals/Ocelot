@@ -20,7 +20,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(List<string> authenticationProviderKeys)
+        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(string[] authenticationProviderKeys)
         {
             _authenticationProviderKeys = authenticationProviderKeys;
             return this;

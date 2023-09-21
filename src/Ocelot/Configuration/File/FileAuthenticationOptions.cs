@@ -5,7 +5,7 @@
         public FileAuthenticationOptions()
         {
             AllowedScopes = new List<string>();
-            AuthenticationProviderKeys = new List<string>();
+            AuthenticationProviderKeys = Array.Empty<string>();
         }
 
         public FileAuthenticationOptions(FileAuthenticationOptions from)
@@ -18,7 +18,7 @@
 
         public string AuthenticationProviderKey { get; set; }
 
-        public List<string> AuthenticationProviderKeys { get; set; }
+        public string[] AuthenticationProviderKeys { get; set; }
 
         public override string ToString()
         {

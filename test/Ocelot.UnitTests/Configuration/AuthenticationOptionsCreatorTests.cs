@@ -24,15 +24,15 @@ namespace Ocelot.UnitTests.Configuration
         public void should_return_auth_options(bool isAuthenticationProviderKeys)
         {
             string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
-            List<string> authenticationProviderKeys = isAuthenticationProviderKeys ? new List<string> { "Test #1", "Test #2" } : null;
+            string[] authenticationProviderKeys = isAuthenticationProviderKeys ? new[] { "Test #1", "Test #2" } : null;
             var fileRoute = new FileRoute()
             {
                 AuthenticationOptions = new FileAuthenticationOptions
                 {
                     AllowedScopes = new List<string> { "cheese" },
                     AuthenticationProviderKey = authenticationProviderKey,
-                    AuthenticationProviderKeys = authenticationProviderKeys
-                }
+                    AuthenticationProviderKeys = authenticationProviderKeys,
+                },
             };
 
             var expected = new AuthenticationOptionsBuilder()
