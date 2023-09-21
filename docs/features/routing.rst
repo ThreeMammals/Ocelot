@@ -178,7 +178,7 @@ e.g. you could have
     "Priority": 0
   }
 
-and
+and 
 
 .. code-block:: json
 
