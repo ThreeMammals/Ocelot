@@ -956,7 +956,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AllowedScopes:[],RequiredRole:[],ScopeKey:[],RoleKey:[],PolicyName:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 

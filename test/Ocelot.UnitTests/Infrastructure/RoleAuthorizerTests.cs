@@ -1,37 +1,32 @@
-using System.Collections.Generic;
-using System.Security.Claims;
-
 using Moq;
-
 using Ocelot.Authorization;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
-
 using Shouldly;
-
+using System.Collections.Generic;
+using System.Security.Claims;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
-    public class ScopesAuthorizerTests
+    public class RoleAuthorizerTests
     {
-        private readonly ScopesAuthorizer _authorizer;
-        public Mock<IClaimsParser> _parser;
+        private readonly RolesAuthorizer _authorizer;
+        private readonly Mock<IClaimsParser> _parser;
         private ClaimsPrincipal _principal;
-        private List<string> _allowedScopes;
+        private List<string> _requiredRole;
         private Response<bool> _result;
 
-        public ScopesAuthorizerTests()
+        public RoleAuthorizerTests()
         {
             _parser = new Mock<IClaimsParser>();
-            _authorizer = new ScopesAuthorizer(_parser.Object);
+            _authorizer = new RolesAuthorizer(_parser.Object);
         }
 
         [Fact]
-        public void should_return_ok_if_no_allowed_scopes()
+        public void Should_return_ok_if_no_allowed_scopes()
         {
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheFollowing(new List<string>()))
@@ -41,7 +36,7 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_ok_if_null_allowed_scopes()
+        public void Should_return_ok_if_null_allowed_scopes()
         {
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheFollowing((List<string>)null))
@@ -51,42 +46,42 @@ namespace Ocelot.UnitTests.Infrastructure
         }
 
         [Fact]
-        public void should_return_error_if_claims_parser_returns_error()
+        public void Should_return_error_if_claims_parser_returns_error()
         {
             var fakeError = new FakeError();
             this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
             .And(_ => GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError)))
-            .And(_ => GivenTheFollowing(new List<string> { "doesntmatter" }))
+            .And(_ => GivenTheFollowing(new List<string>() { "doesntmatter" }))
             .When(_ => WhenIAuthorize())
             .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
             .BDDfy();
         }
 
         [Fact]
-        public void should_match_scopes_and_return_ok_result()
+        public void Should_match_role_and_return_ok_result()
         {
             var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string> { "someScope" };
+            var requiredRole = new List<string>() { "someRole" };
 
             this.Given(_ => GivenTheFollowing(claimsPrincipal))
-            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes)))
-            .And(_ => GivenTheFollowing(allowedScopes))
+            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(requiredRole)))
+            .And(_ => GivenTheFollowing(requiredRole))
             .When(_ => WhenIAuthorize())
             .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
             .BDDfy();
         }
 
         [Fact]
-        public void should_not_match_scopes_and_return_error_result()
+        public void Should_not_match_role_and_return_error_result()
         {
             var fakeError = new FakeError();
             var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string> { "someScope" };
-            var userScopes = new List<string> { "anotherScope" };
+            var requiredRole = new List<string>() { "someRole" };
+            var userRoles = new List<string>() { "anotherRole" };
 
             this.Given(_ => GivenTheFollowing(claimsPrincipal))
-            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userScopes)))
-            .And(_ => GivenTheFollowing(allowedScopes))
+            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userRoles)))
+            .And(_ => GivenTheFollowing(requiredRole))
             .When(_ => WhenIAuthorize())
             .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
             .BDDfy();
@@ -102,27 +97,20 @@ namespace Ocelot.UnitTests.Infrastructure
             _principal = principal;
         }
 
-        private void GivenTheFollowing(List<string> allowedScopes)
+        private void GivenTheFollowing(List<string> requiredRole)
         {
-            _allowedScopes = allowedScopes;
+            _requiredRole = requiredRole;
         }
 
         private void WhenIAuthorize()
         {
-            _result = _authorizer.Authorize(_principal, _allowedScopes, null);
+            _result = _authorizer.Authorize(_principal, _requiredRole, null);
         }
 
         private void ThenTheFollowingIsReturned(Response<bool> expected)
         {
             _result.Data.ShouldBe(expected.Data);
             _result.IsError.ShouldBe(expected.IsError);
-        }
-    }
-
-    public class FakeError : Error
-    {
-        public FakeError() : base("fake error", OcelotErrorCode.CannotAddDataError, 404)
-        {
         }
     }
 }
