@@ -293,7 +293,7 @@ Here are two user scenarios.
   Finally, the ``userId`` parameter is removed.
 
 
-Upstream header-based routing
+Upstream Header-Based Routing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This feature was requested in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_ and `issue 624 <https://github.com/ThreeMammals/Ocelot/issues/624>`_.
@@ -307,16 +307,8 @@ A sample configuration might look like the following:
     {
         "Routes": [
             {
-                "DownstreamPathTemplate": "/api/posts",
-                "DownstreamScheme": "http",
-                "DownstreamHostAndPorts": [
-                        {
-                            "Host": "server1",
-                            "Port": 80,
-                        }
-                    ],
-                "UpstreamPathTemplate": "/posts",
-                "UpstreamHttpMethod": [ "Put", "Delete" ]
+                // Downstream* props
+                // Upstream* props
                 "UpstreamHeaderRoutingOptions": {
                     "Headers": {
                         "X-API-Version": [ "1" ],
@@ -326,19 +318,11 @@ A sample configuration might look like the following:
                 }
             },
             {
-                "DownstreamPathTemplate": "/api/posts",
-                "DownstreamScheme": "http",
-                "DownstreamHostAndPorts": [
-                        {
-                            "Host": "server2",
-                            "Port": 80,
-                        }
-                    ],
-                "UpstreamPathTemplate": "/posts",
-                "UpstreamHttpMethod": [ "Put", "Delete" ]
+                // Downstream* props
+                // Upstream* props
                 "UpstreamHeaderRoutingOptions": {
                     "Headers": {
-                        "X-API-Version": [ "2" ]
+                        "X-API-Version": [ "1", "2" ]
                     },
                     "TriggerOn": "any"
                 }
@@ -346,11 +330,13 @@ A sample configuration might look like the following:
         ]
     }
 
-The ``UpstreamHeaderRoutingOptions`` block defines two attributes -- the ``Headers`` block and the ``TriggerOn`` attribute. The ``Headers`` attribute defines required header names as keys and lists of acceptable header values as values. During route matching, both header names and values are matched in *case insensitive* manner. Please note that if a header has more than one acceptable value configured, presence of any of those values in a request is sufficient for a header to be a match.
+The ``UpstreamHeaderRoutingOptions`` block defines two attributes: the ``Headers`` block and the ``TriggerOn`` attribute.
+
+The ``Headers`` attribute defines required header names as keys and lists of acceptable header values as values. During route matching, both header names and values are matched in *case insensitive* manner. Please note that if a header has more than one acceptable value configured, presence of any of those values in a request is sufficient for a header to be a match.
 
 The second attribute, ``TriggerOn``, defines how the route finder will determine whether a particular header configuration in a request matches a Route's header configuration. The attribute accepts two values:
 
-* ``"Any"`` causes the route finder to match a Route if any value of any configured header is present in a request
+* ``"Any"`` causes the route finder to match a Route if any value of *any* configured header is present in a request
 * ``"All"`` causes the route finder to match a Route only if any value of *all* configured headers is present in a request
 
 .. _routing-security-options:
