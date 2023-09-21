@@ -52,11 +52,9 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         }
 
         private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost, IHeaderDictionary requestHeaders)
-        {
-            return (route.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(route, httpMethod)) &&
-                   (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost) &&
-                   (!(route.UpstreamHeaderRoutingOptions?.Enabled() ?? false) || RouteHasRequiredUpstreamHeaders(route, requestHeaders));
-        }
+            => (route.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(route, httpMethod)) &&
+                (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost) &&
+                (route.UpstreamHeaderRoutingOptions?.Enabled() != true || RouteHasRequiredUpstreamHeaders(route, requestHeaders));
 
         private static bool RouteHasHttpMethod(Route route, string httpMethod) =>
             route.UpstreamHttpMethod.Contains(new HttpMethod(httpMethod));
