@@ -1,4 +1,4 @@
-﻿using global::Consul;
+﻿using Consul;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;
@@ -19,8 +19,8 @@ namespace Ocelot.Provider.Consul
 
         public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
         {
-            _logger = factory.CreateLogger<Consul>();
             _config = config;
+            _logger = factory.CreateLogger<Consul>();
             _consul = clientFactory.Get(_config);
         }
 
