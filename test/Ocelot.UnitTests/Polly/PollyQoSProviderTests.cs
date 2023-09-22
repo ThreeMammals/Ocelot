@@ -1,12 +1,8 @@
 ﻿using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
-
 using Ocelot.Provider.Polly;
-
 using Shouldly;
-
 using Xunit;
 
 namespace Ocelot.UnitTests.Polly
@@ -14,7 +10,7 @@ namespace Ocelot.UnitTests.Polly
     public class PollyQoSProviderTests
     {
         [Fact]
-        public void should_build()
+        public void Should_build()
         {
             var options = new QoSOptionsBuilder()
                 .WithTimeoutValue(100)
