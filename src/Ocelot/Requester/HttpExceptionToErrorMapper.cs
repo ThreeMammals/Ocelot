@@ -8,11 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Requester
 {
-    public class HttpExeptionToErrorMapper : IExceptionToErrorMapper
+    public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
     {
         private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
 
-        public HttpExeptionToErrorMapper(IServiceProvider serviceProvider)
+        public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
         {
             _mappers = serviceProvider.GetService<Dictionary<Type, Func<Exception, Error>>>();
         }
