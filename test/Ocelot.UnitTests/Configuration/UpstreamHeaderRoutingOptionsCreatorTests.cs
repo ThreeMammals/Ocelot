@@ -12,13 +12,8 @@ namespace Ocelot.UnitTests.Configuration;
 public class UpstreamHeaderRoutingOptionsCreatorTests
 {
     private FileUpstreamHeaderRoutingOptions _fileUpstreamHeaderRoutingOptions;
-    private IUpstreamHeaderRoutingOptionsCreator _creator;
+    private readonly IUpstreamHeaderRoutingOptionsCreator _creator = new UpstreamHeaderRoutingOptionsCreator();
     private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
-
-    public UpstreamHeaderRoutingOptionsCreatorTests()
-    {
-        _creator = new UpstreamHeaderRoutingOptionsCreator();
-    }
 
     [Fact]
     public void should_create_upstream_routing_header_options()

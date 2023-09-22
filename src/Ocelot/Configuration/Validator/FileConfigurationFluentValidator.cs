@@ -171,12 +171,8 @@ namespace Ocelot.Configuration.Validator
                 return false;
             }
 
-            var firstKeySet = first.Keys
-                .Select(k => k.ToUpperInvariant())
-                .ToArray();
-            var secondKeySet = second.Keys
-                .Select(k => k.ToUpperInvariant())
-                .ToArray();
+            var firstKeySet = first.Keys.Select(k => k.ToUpperInvariant());
+            var secondKeySet = second.Keys.Select(k => k.ToUpperInvariant());
             if (!firstKeySet.Intersect(secondKeySet).Any())
             {
                 return false;

@@ -54,15 +54,15 @@ namespace Ocelot.DownstreamRouteFinder.Finder
         private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost, IHeaderDictionary requestHeaders)
             => (route.UpstreamHttpMethod.Count == 0 || RouteHasHttpMethod(route, httpMethod)) &&
                 (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost) &&
-                (route.UpstreamHeaderRoutingOptions?.Enabled() != true || RouteHasRequiredUpstreamHeaders(route, requestHeaders));
+                (route.UpstreamHeaderRoutingOptions?.Enabled() != true || RequiredUpstreamHeadersArePresent(route.UpstreamHeaderRoutingOptions, requestHeaders));
 
         private static bool RouteHasHttpMethod(Route route, string httpMethod) =>
             route.UpstreamHttpMethod.Contains(new HttpMethod(httpMethod));
         
-        private static bool RouteHasRequiredUpstreamHeaders(Route route, IHeaderDictionary requestHeaders) =>
-            route.UpstreamHeaderRoutingOptions.Mode == UpstreamHeaderRoutingTriggerMode.Any
-                ? route.UpstreamHeaderRoutingOptions.Headers.HasAnyOf(requestHeaders)
-                : route.UpstreamHeaderRoutingOptions.Headers.HasAllOf(requestHeaders);
+        private static bool RequiredUpstreamHeadersArePresent(UpstreamHeaderRoutingOptions options, IHeaderDictionary requestHeaders) =>
+            options.Mode == UpstreamHeaderRoutingTriggerMode.Any
+                ? options.Headers.HasAnyOf(requestHeaders)
+                : options.Headers.HasAllOf(requestHeaders);
 
         private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route)
         {
