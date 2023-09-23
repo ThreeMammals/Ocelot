@@ -1,27 +1,32 @@
-using System;
-using System.Net.Http;
-
-using Ocelot.Configuration;
-
 using global::Polly;
 using global::Polly.CircuitBreaker;
 using global::Polly.Timeout;
-
+using Ocelot.Configuration;
 using Ocelot.Logging;
+using Ocelot.Provider.Polly.Interfaces;
+using System;
+using System.Net.Http;
 
 namespace Ocelot.Provider.Polly
 {
-    public class PollyQoSProvider
+    public class PollyQoSProvider : IPollyQoSProvider
     {
         private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
         private readonly AsyncTimeoutPolicy _timeoutPolicy;
         private readonly IOcelotLogger _logger;
 
+        public PollyQoSProvider(AsyncCircuitBreakerPolicy circuitBreakerPolicy, AsyncTimeoutPolicy timeoutPolicy, IOcelotLogger logger)
+        {
+            _circuitBreakerPolicy = circuitBreakerPolicy;
+            _timeoutPolicy = timeoutPolicy;
+            _logger = logger;
+        }
+
         public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
 
-            Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
+            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
 
             _timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
 
