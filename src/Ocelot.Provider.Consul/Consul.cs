@@ -1,17 +1,12 @@
-﻿using System;
+﻿using Consul;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Values;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using global::Consul;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
-using Ocelot.ServiceDiscovery.Providers;
-
-using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul
 {
@@ -24,19 +19,25 @@ namespace Ocelot.Provider.Consul
 
         public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
         {
-            _logger = factory.CreateLogger<Consul>();
             _config = config;
+            _logger = factory.CreateLogger<Consul>();
             _consul = clientFactory.Get(_config);
         }
 
         public async Task<List<Service>> Get()
         {
+            var consulAddress = (_consul as ConsulClient)?.Config.Address;
+            _logger.LogDebug($"Querying Consul {consulAddress} about a service: {_config.KeyOfServiceInConsul}");
+
             var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 
             var services = new List<Service>();
 
             foreach (var serviceEntry in queryResult.Response)
             {
+                var address = serviceEntry.Service.Address;
+                var port = serviceEntry.Service.Port;
+
                 if (IsValid(serviceEntry))
                 {
                     var nodes = await _consul.Catalog.Nodes();
@@ -46,13 +47,15 @@ namespace Ocelot.Provider.Consul
                     }
                     else
                     {
-                        var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
+                        var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == address);
                         services.Add(BuildService(serviceEntry, serviceNode));
                     }
+
+                    _logger.LogDebug($"Consul answer: Address: {address}, Port: {port}");
                 }
                 else
                 {
-                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                    _logger.LogWarning($"Unable to use service Address: {address} and Port: {port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
                 }
             }
 
@@ -80,10 +83,8 @@ namespace Ocelot.Provider.Consul
         }
 
         private static string GetVersionFromStrings(IEnumerable<string> strings)
-        {
-            return strings
-                ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
+            => strings?
+                .FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
                 .TrimStart(VersionPrefix);
-        }
     }
 }
