@@ -1,23 +1,26 @@
 Getting Started
 ===============
 
-Ocelot is designed to work with ASP.NET and is currently on net6.0.
+Ocelot is designed to work with ASP.NET and is currently on ``net7.0``.
 
 .NET 7.0
-^^^^^^^^
+--------
 
-**Install NuGet package**
+Install NuGet package
+^^^^^^^^^^^^^^^^^^^^^
 
-Install Ocelot and it's dependencies using nuget. You will need to create a net6.0 project and bring the package into it. Then follow the Startup below and :doc:`../features/configuration` sections
-to get up and running.
+Install Ocelot and it's dependencies using `nuget <https://www.nuget.org/>`_.
+You will need to create `a net7.0 project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio>`_ and bring the package into it.
+Then follow the Startup below and :doc:`../features/configuration` sections to get up and running.
 
    ``Install-Package Ocelot``
 
 All versions can be found `here <https://www.nuget.org/packages/Ocelot/>`_.
 
-**Configuration**
+Configuration
+^^^^^^^^^^^^^
 
-The following is a very basic ocelot.json. It won't do anything but should get Ocelot starting.
+The following is a very basic **ocelot.json**. It won't do anything but should get Ocelot starting.
 
 .. code-block:: json
 
@@ -56,9 +59,11 @@ The most important thing to note here is BaseUrl. Ocelot needs to know the URL i
 
 If you are using containers and require Ocelot to respond to clients on http://123.12.1.1:6543 then you can do this, however if you are deploying multiple Ocelot's you will probably want to pass this on the command line in some kind of script. Hopefully whatever scheduler you are using can pass the IP.
 
-**Program**
+Program
+^^^^^^^
 
-Then in your Program.cs you will want to have the following. The main things to note are  AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot middleware).
+Then in your **Program.cs** you will want to have the following.
+The main things to note are ``AddOcelot()`` [#f1]_ (adds Ocelot default services), ``UseOcelot().Wait()`` (sets up all the Ocelot middleware).
 
 .. code-block:: csharp
 
@@ -104,3 +109,7 @@ Then in your Program.cs you will want to have the following. The main things to 
             }
         }
     }
+
+""""
+
+.. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
