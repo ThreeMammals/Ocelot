@@ -14,16 +14,18 @@ public class CancelRequestTests : IDisposable
 {
     private const int SERVICE_WORK_TIME = 5_000;
     private const int MAX_WAITING_TIME = 60_000;
+
     private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
     private readonly Notifier _serviceWorkStartedNotifier;
     private readonly Notifier _serviceWorkStoppedNotifier;
+
     private bool _cancelExceptionThrown;
 
     public CancelRequestTests()
     {
-        _serviceHandler = new ServiceHandler();
         _steps = new Steps();
+        _serviceHandler = new ServiceHandler();
         _serviceWorkStartedNotifier = new Notifier("service work started notifier");
         _serviceWorkStoppedNotifier = new Notifier("service work finished notifier");
     }
@@ -36,23 +38,23 @@ public class CancelRequestTests : IDisposable
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
+            {
+                new()
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = "/",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
                 },
+            },
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
@@ -124,13 +126,9 @@ public class CancelRequestTests : IDisposable
 
     class Notifier
     {
-        public Notifier(string name)
-        {
-            Name = name;
-        }
+        public Notifier(string name) => Name = name;
 
         public bool NotificationSent { get; set; }
-
         public string Name { get; set; }
     }
 }
