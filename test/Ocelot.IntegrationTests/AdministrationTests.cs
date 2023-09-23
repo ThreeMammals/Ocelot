@@ -17,6 +17,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 
 namespace Ocelot.IntegrationTests
 {
