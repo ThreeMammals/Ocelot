@@ -966,6 +966,16 @@ namespace Ocelot.AcceptanceTests
             _response = _ocelotClient.GetAsync(url).Result;
         }
 
+        public void WhenIGetUrlOnTheApiGatewayAndDontWait(string url)
+        {
+            _ocelotClient.GetAsync(url);
+        }
+
+        public void WhenICancelTheRequest()
+        {
+            _ocelotClient.CancelPendingRequests();
+        }
+
         public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
         {
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
