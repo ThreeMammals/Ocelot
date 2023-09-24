@@ -1,14 +1,12 @@
-﻿using System;
-
-using Ocelot.Configuration.ChangeTracking;
+﻿using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
-
+using System;
 using TestStack.BDDfy;
-
 using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
+    [Collection("Sequential")]
     public class ConfigurationReloadTests : IDisposable
     {
         private readonly FileConfiguration _initialConfig;
@@ -42,7 +40,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(5000))
+                .And(x => _steps.GivenIWait(7500))
                 .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
                 .BDDfy();
         }
