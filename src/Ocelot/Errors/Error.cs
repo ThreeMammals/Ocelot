@@ -9,7 +9,6 @@ namespace Ocelot.Errors
             Code = code;
         }
 
-        // stupid comment
         public string Message { get; }
         public OcelotErrorCode Code { get; }
         public int HttpStatusCode { get; }
