@@ -147,7 +147,6 @@ namespace Ocelot.AcceptanceTests
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-            DeleteOcelotConfig();
             File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
         }
 
