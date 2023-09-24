@@ -14,9 +14,6 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
-	<ItemGroup>
-	  <None Remove="xunit.runner.json" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="appsettings.product.json">
@@ -76,8 +73,5 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>
