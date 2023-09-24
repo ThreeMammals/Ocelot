@@ -75,23 +75,16 @@ namespace Ocelot.AcceptanceTests
 
         public async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
         {
-            var totalMs = 0;
-            var result = false;
-
-            while (!result && totalMs < timeoutMs)
+            var result = await Wait.WaitFor(timeoutMs).Until(async () =>
             {
-                result = await Wait.WaitFor(1000).Until(async () =>
-                {
-                    var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-                    var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+                var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+                var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
 
-                    var internalConfig = internalConfigRepo.Get();
-                    var config = await internalConfigCreator.Create(fileConfig);
+                var internalConfig = internalConfigRepo.Get();
+                var config = await internalConfigCreator.Create(fileConfig);
 
-                    return internalConfig.Data.RequestId == config.Data.RequestId;
-                });
-                totalMs += 1000;
-            }
+                return internalConfig.Data.RequestId == config.Data.RequestId;
+            });
 
             result.ShouldBe(true);
         }
