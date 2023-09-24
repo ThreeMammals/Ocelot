@@ -65,13 +65,35 @@ namespace Ocelot.AcceptanceTests
         public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
         {
             var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-
             var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
-            var internalConfig = internalConfigRepo.Get();
 
+            var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
 
             internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
+        }
+
+        public async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
+        {
+            var totalMs = 0;
+            var result = false;
+
+            while (!result && totalMs < timeoutMs)
+            {
+                result = await Wait.WaitFor(1000).Until(async () =>
+                {
+                    var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+                    var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+
+                    var internalConfig = internalConfigRepo.Get();
+                    var config = await internalConfigCreator.Create(fileConfig);
+
+                    return internalConfig.Data.RequestId == config.Data.RequestId;
+                });
+                totalMs += 1000;
+            }
+
+            result.ShouldBe(true);
         }
 
         public async Task StartFakeOcelotWithWebSockets()
