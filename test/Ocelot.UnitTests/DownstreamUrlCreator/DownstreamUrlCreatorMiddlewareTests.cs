@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -17,15 +10,14 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
+using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator
@@ -137,7 +129,39 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                             .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Get" })
                             .Build())))
-                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2&productId=2"))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2&productId=2")) // unitId is the first
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2"))
+                .And(x => ThenTheQueryStringIs("?productId=2"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_replace_query_string_but_leave_non_placeholder_queries_2()
+        {
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithDownstreamScheme("https")
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new PlaceholderNameAndValue("{subscriptionId}", "1"),
+                            new PlaceholderNameAndValue("{unitId}", "2"),
+                        },
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?productId=2&unitId=2")) // unitId is the second
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheUrlReplacerWillReturn("api/units/1/2/updates"))
                 .When(x => x.WhenICallTheMiddleware())
