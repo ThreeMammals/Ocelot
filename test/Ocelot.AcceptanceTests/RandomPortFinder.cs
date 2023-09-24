@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
@@ -8,32 +7,24 @@ namespace Ocelot.AcceptanceTests
 {
     public static class RandomPortFinder
     {
-        private const int TrialNumber = 100;
-        private const int BeginPortRange = 20000;
         private const int EndPortRange = 45000;
-        private static readonly Random Random = new();
+        private static int _currentPort = 20000;
+        private static readonly object LockObj = new();
         private static readonly ConcurrentBag<int> UsedPorts = new();
 
         public static int GetRandomPort()
         {
-            for (var i = 0; i < TrialNumber; i++)
+            lock (LockObj)
             {
-                var randomPort = Random.Next(BeginPortRange, EndPortRange);
-
-                if (!PortInUse(randomPort))
+                if (_currentPort > EndPortRange)
                 {
-                    try
-                    {
-                        return UsePort(randomPort);
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
+                    throw new Exception("Cannot find available port to bind to.");
                 }
-            }
 
-            throw new Exception("Cannot find available port to bind to.");
+                var port = UsePort(_currentPort);
+                _currentPort += 1;
+                return port;
+            }
         }
 
         private static int UsePort(int randomPort)
@@ -42,17 +33,10 @@ namespace Ocelot.AcceptanceTests
 
             var ipe = new IPEndPoint(IPAddress.Loopback, randomPort);
 
-            using (var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
-            {
-                socket.Bind(ipe);
-                socket.Close();
-                return randomPort;
-            }
-        }
-
-        private static bool PortInUse(int randomPort)
-        {
-            return UsedPorts.Any(p => p == randomPort);
+            using var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            socket.Bind(ipe);
+            socket.Close();
+            return randomPort;
         }
     }
 }
