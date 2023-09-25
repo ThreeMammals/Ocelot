@@ -18,21 +18,21 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
         public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
         {
-            var services = await _services();
+            var servicesList = await _services();
 
-            if (services == null || services.Count == 0)
+            if (servicesList == null || servicesList.Count == 0)
             {
                 return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {nameof(RoundRobin)} during {nameof(Lease)} operation."));
             }
 
             lock (_lock)
             {
-                if (_last >= services.Count)
+                if (_last >= servicesList.Count)
                 {
                     _last = 0;
                 }
 
-                var next = services[_last];
+                var next = servicesList[_last];
                 _last++;
                 return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
             }
