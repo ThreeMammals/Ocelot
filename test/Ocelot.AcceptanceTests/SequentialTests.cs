@@ -8,5 +8,4 @@ namespace Ocelot.AcceptanceTests;
 [CollectionDefinition(nameof(SequentialTests), DisableParallelization = true)]
 public class SequentialTests
 {
-    // fake change #1
 }
