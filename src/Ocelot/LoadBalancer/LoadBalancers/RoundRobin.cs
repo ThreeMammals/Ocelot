@@ -20,22 +20,21 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {
             var servicesList = await _services();
 
-            if (servicesList == null || servicesList.Count == 0)
+            if (servicesList?.Count != 0)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {nameof(RoundRobin)} during {nameof(Lease)} operation."));
-            }
-
-            lock (_lock)
-            {
-                if (_last >= servicesList.Count)
+                lock (_lock)
                 {
-                    _last = 0;
-                }
+                    if (_last >= servicesList.Count)
+                    {
+                        _last = 0;
+                    }
 
-                var next = servicesList[_last];
-                _last++;
-                return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
+                    var next = servicesList[_last++];
+                    return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
+                }
             }
+
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {nameof(RoundRobin)} during {nameof(Lease)} operation."));
         }
 
         public void Release(ServiceHostAndPort hostAndPort)
