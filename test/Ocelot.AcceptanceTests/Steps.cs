@@ -1,4 +1,33 @@
-﻿using Ocelot.Configuration.ChangeTracking;
+﻿using CacheManager.Core;
+using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Newtonsoft.Json;
+using Ocelot.AcceptanceTests.Caching;
+using Ocelot.Cache.CacheManager;
+using Ocelot.Configuration;
+using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Multiplexer;
+using Ocelot.Provider.Consul;
+using Ocelot.Provider.Eureka;
+using Ocelot.Provider.Polly;
+using Ocelot.Requester;
+using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Tracing.Butterfly;
+using Ocelot.Tracing.OpenTracing;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,55 +39,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using CacheManager.Core;
-
-using Ocelot.AcceptanceTests.Caching;
-
-using Ocelot.Configuration;
-using Ocelot.Configuration.Creator;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
-
-using Ocelot.DependencyInjection;
-
-using IdentityServer4.AccessTokenValidation;
-
-using Ocelot.LoadBalancer.LoadBalancers;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using Ocelot.Middleware;
-
-using Moq;
-
-using Ocelot.Multiplexer;
-
-using Newtonsoft.Json;
-
-using Ocelot.Cache.CacheManager;
-using Ocelot.Provider.Consul;
-using Ocelot.Provider.Polly;
-using Ocelot.Tracing.Butterfly;
-using Ocelot.Tracing.OpenTracing;
-
-using Ocelot.Provider.Eureka;
-
-using Ocelot.Requester;
-
-using Ocelot.ServiceDiscovery.Providers;
-
-using Shouldly;
-
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
-
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
@@ -74,6 +55,7 @@ namespace Ocelot.AcceptanceTests
         private BearerToken _token;
         public string RequestIdKey = "OcRequestId";
         private readonly Random _random;
+        private readonly string _ocelotConfigFileName;
         private IWebHostBuilder _webHostBuilder;
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
@@ -81,19 +63,35 @@ namespace Ocelot.AcceptanceTests
 
         public Steps()
         {
-            _random = new Random();
+            _random = new();
+            _ocelotConfigFileName = $"{Guid.NewGuid():N}-ocelot.json";
         }
 
         public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
         {
             var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-
             var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
-            var internalConfig = internalConfigRepo.Get();
 
+            var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
 
             internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
+        }
+
+        public async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
+        {
+            var result = await Wait.WaitFor(timeoutMs).Until(async () =>
+            {
+                var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+                var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+
+                var internalConfig = internalConfigRepo.Get();
+                var config = await internalConfigCreator.Create(fileConfig);
+
+                return internalConfig.Data.RequestId == config.Data.RequestId;
+            });
+
+            result.ShouldBe(true);
         }
 
         public async Task StartFakeOcelotWithWebSockets()
@@ -113,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
@@ -148,7 +146,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
@@ -168,42 +166,25 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
-            var configurationPath = TestConfiguration.ConfigurationPath;
-
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-
-            if (File.Exists(configurationPath))
-            {
-                try
-                {
-                    File.Delete(configurationPath);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
         }
 
-        public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration, string configurationPath)
+        private void DeleteOcelotConfig()
         {
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-
-            if (File.Exists(configurationPath))
+            if (!File.Exists(_ocelotConfigFileName))
             {
-                try
-                {
-                    File.Delete(configurationPath);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                return;
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            try
+            {
+                File.Delete(_ocelotConfigFileName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public void ThenTheResponseBodyHeaderIs(string key, string value)
@@ -223,7 +204,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: shouldReload);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: false, reloadOnChange: shouldReload);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -259,7 +240,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -293,7 +274,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -322,7 +303,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -356,7 +337,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -394,7 +375,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -433,7 +414,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -481,7 +462,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -518,7 +499,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -552,7 +533,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -583,7 +564,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -616,7 +597,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -649,7 +630,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -681,7 +662,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -712,7 +693,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -751,7 +732,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -789,7 +770,7 @@ namespace Ocelot.AcceptanceTests
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddJsonFile("ocelot.json", false, false)
+                .AddJsonFile(_ocelotConfigFileName, false, false)
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
@@ -913,7 +894,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -942,7 +923,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -1118,13 +1099,6 @@ namespace Ocelot.AcceptanceTests
             responseStatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
-        public void Dispose()
-        {
-            _ocelotClient?.Dispose();
-            _ocelotServer?.Dispose();
-            _ocelotHost?.Dispose();
-        }
-
         public void ThenTheRequestIdIsReturned()
         {
             _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
@@ -1192,7 +1166,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -1226,7 +1200,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", false, false);
+                    config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -1255,7 +1229,7 @@ namespace Ocelot.AcceptanceTests
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -1304,6 +1278,39 @@ namespace Ocelot.AcceptanceTests
             {
                 _logger.Verify(x => x.LogWarning(It.IsAny<string>()), Times.Once);
             }
+        }
+
+        /// <summary>
+        /// Public implementation of Dispose pattern callable by consumers.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private bool _disposedValue;
+
+        /// <summary>
+        /// Protected implementation of Dispose pattern.
+        /// </summary>
+        /// <param name="disposing">Flag to trigger actual disposing operation.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposedValue)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _ocelotClient?.Dispose();
+                _ocelotServer?.Dispose();
+                _ocelotHost?.Dispose();
+                DeleteOcelotConfig();
+            }
+
+            _disposedValue = true;
         }
     }
 }
