@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ConfigurationReloadTests : IDisposable
+    public sealed class ConfigurationReloadTests : IDisposable
     {
         private readonly FileConfiguration _initialConfig;
         private readonly FileConfiguration _anotherConfig;
