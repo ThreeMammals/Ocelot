@@ -7,8 +7,6 @@ namespace Ocelot.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    const int fakeConst = 1;
-
     /// <summary>
     /// Adds default ASP.NET services and Ocelot application services.<br/>
     /// Creates default <see cref="IConfiguration"/> object via the <see cref="ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(IServiceCollection)"/> extension-method.
