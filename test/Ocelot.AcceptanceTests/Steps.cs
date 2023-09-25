@@ -54,13 +54,19 @@ namespace Ocelot.AcceptanceTests
         private HttpContent _postContent;
         private BearerToken _token;
         public string RequestIdKey = "OcRequestId";
-        private readonly Random _random = new();
-        private readonly string _ocelotConfigFileName = $"{Guid.NewGuid():N}-ocelot.json";
+        private readonly Random _random;
+        private readonly string _ocelotConfigFileName;
         private IWebHostBuilder _webHostBuilder;
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
         private IOcelotConfigurationChangeTokenSource _changeToken;
         private bool _disposedValue;
+
+        public Steps()
+        {
+            _random = new();
+            _ocelotConfigFileName = $"{Guid.NewGuid():N}-ocelot.json";
+        }
 
         public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
         {
