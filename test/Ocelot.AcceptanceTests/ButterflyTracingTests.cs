@@ -1,21 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-
 using Butterfly.Client.AspNetCore;
-
-using Ocelot.Configuration.File;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Ocelot.Configuration.File;
 using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests

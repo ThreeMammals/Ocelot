@@ -1,15 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Ocelot.Infrastructure.RequestData;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Configuration;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.Errors.Middleware

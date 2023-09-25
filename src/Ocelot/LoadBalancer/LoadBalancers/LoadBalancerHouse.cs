@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers

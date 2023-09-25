@@ -1,17 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-
-using Ocelot.Configuration.File;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
 {

@@ -1,20 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-
-using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Parser;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

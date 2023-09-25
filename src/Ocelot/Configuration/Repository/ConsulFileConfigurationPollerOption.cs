@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Ocelot.Configuration.Repository
+﻿namespace Ocelot.Configuration.Repository
 {
     public class ConsulFileConfigurationPollerOption : IFileConfigurationPollerOptions
     {

@@ -1,10 +1,6 @@
 ﻿using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Consul;
 

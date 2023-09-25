@@ -3,19 +3,17 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using System;
 using System.Fabric;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 
 namespace OcelotApplicationApiGateway
 {

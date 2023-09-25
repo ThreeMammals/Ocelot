@@ -1,12 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
-
 using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
 
 namespace Ocelot.LoadBalancer.Middleware

@@ -1,14 +1,5 @@
-using System;
-using System.Collections.Generic;
-
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {

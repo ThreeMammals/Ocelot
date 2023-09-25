@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-
-using Ocelot.Errors;
-
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Errors;
 
 namespace Ocelot.Requester
 {

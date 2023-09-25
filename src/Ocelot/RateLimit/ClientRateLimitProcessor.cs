@@ -1,7 +1,4 @@
-﻿using System;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 
 namespace Ocelot.RateLimit

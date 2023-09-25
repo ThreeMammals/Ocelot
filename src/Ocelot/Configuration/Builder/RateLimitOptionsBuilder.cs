@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Ocelot.Configuration.Builder
+﻿namespace Ocelot.Configuration.Builder
 {
     public class RateLimitOptionsBuilder
     {

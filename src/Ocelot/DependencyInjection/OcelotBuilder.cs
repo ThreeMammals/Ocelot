@@ -37,9 +37,6 @@ using Ocelot.Security;
 using Ocelot.Security.IPSecurity;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
-using System;
-using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 
 namespace Ocelot.DependencyInjection

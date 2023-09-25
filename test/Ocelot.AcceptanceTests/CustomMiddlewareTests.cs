@@ -1,20 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Diagnostics;
 
 namespace Ocelot.AcceptanceTests
 {
