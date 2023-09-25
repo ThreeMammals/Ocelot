@@ -10,12 +10,14 @@ Install NuGet package
 ^^^^^^^^^^^^^^^^^^^^^
 
 Install Ocelot and it's dependencies using `nuget <https://www.nuget.org/>`_.
-You will need to create `a net7.0 project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio>`_ and bring the package into it.
+You will need to create a `net7.0 project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio>`_ and bring the package into it.
 Then follow the Startup below and :doc:`../features/configuration` sections to get up and running.
 
-   ``Install-Package Ocelot``
+.. code-block:: powershell
 
-All versions can be found `here <https://www.nuget.org/packages/Ocelot/>`_.
+   Install-Package Ocelot
+
+All versions can be found in the `NuGet Gallery | Ocelot <https://www.nuget.org/packages/Ocelot/>`_.
 
 Configuration
 ^^^^^^^^^^^^^

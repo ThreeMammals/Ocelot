@@ -18,11 +18,11 @@ This achieved by setting the following Route configuration:
         "DownstreamHostAndPorts": [
             {
                 "Host": "localhost",
-                "Port": 53271
+                "Port": 54321
             }
         ],
     }
 
-The key property here is DownstreamHttpMethod which is set as POST and the Route will only match on GET as set by UpstreamHttpMethod.
+The key property here is **DownstreamHttpMethod** which is set as POST and the Route will only match on GET as set by **UpstreamHttpMethod**.
 
-This feature can be useful when interacting with downstream apis that only support POST and you want to present some kind of RESTful interface.
+This feature can be useful when interacting with downstream APIs that only support POST and you want to present some kind of RESTful interface.

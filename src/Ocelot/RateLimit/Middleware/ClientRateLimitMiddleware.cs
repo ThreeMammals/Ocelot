@@ -140,7 +140,7 @@ namespace Ocelot.RateLimit.Middleware
         private static string GetResponseMessage(RateLimitOptions option)
         {
             var message = string.IsNullOrEmpty(option.QuotaExceededMessage)
-                ? $"API calls quota exceeded! Maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
+                ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
                 : option.QuotaExceededMessage;
             return message;
         }
