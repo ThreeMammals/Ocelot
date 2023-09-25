@@ -60,7 +60,6 @@ namespace Ocelot.AcceptanceTests
         private WebHostBuilder _ocelotBuilder;
         private IWebHost _ocelotHost;
         private IOcelotConfigurationChangeTokenSource _changeToken;
-        private bool _disposedValue;
 
         public Steps()
         {
@@ -1281,14 +1280,21 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        // Public implementation of Dispose pattern callable by consumers.
+        /// <summary>
+        /// Public implementation of Dispose pattern callable by consumers.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        // Protected implementation of Dispose pattern.
+        private bool _disposedValue;
+
+        /// <summary>
+        /// Protected implementation of Dispose pattern.
+        /// </summary>
+        /// <param name="disposing">Flag to trigger actual disposing operation.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposedValue)
