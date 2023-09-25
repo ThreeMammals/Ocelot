@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "initialKey",
+                    RequestIdKey = "initialKey123",
                 },
             };
 
@@ -29,7 +29,7 @@ namespace Ocelot.AcceptanceTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    RequestIdKey = "someOtherKey",
+                    RequestIdKey = "someOtherKey123",
                 },
             };
         }
