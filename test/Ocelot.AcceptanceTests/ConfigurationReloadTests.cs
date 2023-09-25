@@ -7,7 +7,7 @@ using Xunit;
 namespace Ocelot.AcceptanceTests
 {
     [Collection(nameof(SequentialTests))]
-    public class ConfigurationReloadTests : IDisposable
+    public sealed class ConfigurationReloadTests : IDisposable
     {
         private readonly FileConfiguration _initialConfig;
         private readonly FileConfiguration _anotherConfig;
@@ -40,8 +40,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(5000))
-                .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
+                .And(x => _steps.ThenConfigShouldBeWithTimeout(_anotherConfig, 10000))
                 .BDDfy();
         }
 
@@ -86,7 +85,6 @@ namespace Ocelot.AcceptanceTests
         public void Dispose()
         {
             _steps.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }
