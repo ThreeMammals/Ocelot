@@ -1,8 +1,9 @@
-﻿using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
 {
+    [Collection(nameof(SequentialTests))]
     public sealed class ConfigurationReloadTests : IDisposable
     {
         private readonly FileConfiguration _initialConfig;
