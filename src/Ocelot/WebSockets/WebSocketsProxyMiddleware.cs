@@ -12,13 +12,16 @@ namespace Ocelot.WebSockets
 {
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
+        private static readonly string[] NotForwardedWebSocketHeaders = new[]
+        {
+            "Connection", "Host", "Upgrade",
+            "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
+        };
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
 
-        public WebSocketsProxyMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory)
-                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+        public WebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
+            : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
         }
