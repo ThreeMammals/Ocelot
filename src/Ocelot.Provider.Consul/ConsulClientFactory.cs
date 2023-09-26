@@ -1,20 +1,14 @@
-﻿using Consul;
+﻿namespace Ocelot.Provider.Consul;
 
-namespace Ocelot.Provider.Consul
+public class ConsulClientFactory : IConsulClientFactory
 {
-    public class ConsulClientFactory : IConsulClientFactory
+    public IConsulClient Get(ConsulRegistryConfiguration config)
     {
-        public IConsulClient Get(ConsulRegistryConfiguration config)
+        return new ConsulClient(c =>
         {
-            return new ConsulClient(c =>
-            {
-                c.Address = new Uri($"{config.Scheme}://{config.Host}:{config.Port}");
+            c.Address = new Uri($"{config.Scheme}://{config.Host}:{config.Port}");
 
-                if (!string.IsNullOrEmpty(config?.Token))
-                {
-                    c.Token = config.Token;
-                }
-            });
-        }
+            if (!string.IsNullOrEmpty(config?.Token)) c.Token = config.Token;
+        });
     }
 }

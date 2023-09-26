@@ -1,25 +1,22 @@
 ﻿using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Consul;
 
 public sealed class PollConsul : IServiceDiscoveryProvider
 {
-    private readonly IOcelotLogger _logger;
     private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
+    private readonly object _lockObject = new();
+    private readonly IOcelotLogger _logger;
 
     private readonly int _pollingInterval;
-    private readonly object _lockObject = new();
 
     private DateTime _lastUpdateTime;
     private List<Service> _services;
 
-    public PollConsul(int pollingInterval, string serviceName, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
+    public PollConsul(int pollingInterval, string serviceName, IOcelotLoggerFactory factory,
+        IServiceDiscoveryProvider consulServiceDiscoveryProvider)
     {
         _logger = factory.CreateLogger<PollConsul>();
         _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
@@ -36,10 +33,10 @@ public sealed class PollConsul : IServiceDiscoveryProvider
     public string ServiceName { get; }
 
     /// <summary>
-    /// Get the services.
-    /// If the first call, retrieve the services and then start the timer.
+    ///     Get the services.
+    ///     If the first call, retrieve the services and then start the timer.
     /// </summary>
-    /// <returns>A <see cref="Task{T}" /> with a <see cref="List{Service}"/> result of <see cref="Service"/>.</returns>
+    /// <returns>A <see cref="Task{T}" /> with a <see cref="List{Service}" /> result of <see cref="Service" />.</returns>
     public Task<List<Service>> Get()
     {
         lock (_lockObject)
