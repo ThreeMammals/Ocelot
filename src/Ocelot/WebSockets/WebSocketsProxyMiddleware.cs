@@ -8,7 +8,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Net.WebSockets;
 
-namespace Ocelot.WebSockets.Middleware
+namespace Ocelot.WebSockets
 {
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
