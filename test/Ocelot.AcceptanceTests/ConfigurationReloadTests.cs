@@ -1,32 +1,35 @@
-﻿using System;
-
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
 namespace Ocelot.AcceptanceTests
 {
-    [Collection("Sequential")]
-    public class ConfigurationReloadTests : IDisposable
+    [Collection(nameof(SequentialTests))]
+    public sealed class ConfigurationReloadTests : IDisposable
     {
-        private readonly FileConfiguration _initialConfig = new()
+        private readonly FileConfiguration _initialConfig;
+        private readonly FileConfiguration _anotherConfig;
+        private readonly Steps _steps;
+
+        public ConfigurationReloadTests()
         {
-            GlobalConfiguration = new FileGlobalConfiguration
+            _steps = new Steps();
+
+            _initialConfig = new FileConfiguration
             {
-                RequestIdKey = "initialKey",
-            },
-        };
-        private readonly FileConfiguration _anotherConfig = new()
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    RequestIdKey = "initialKey",
+                },
+            };
+
+            _anotherConfig = new FileConfiguration
             {
-                RequestIdKey = "someOtherKey",
-            },
-        };
-        private readonly Steps _steps = new();
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    RequestIdKey = "someOtherKey",
+                },
+            };
+        }
 
         [Fact]
         public void should_reload_config_on_change()
@@ -34,8 +37,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(7500))
-                .And(x => _steps.ThenConfigShouldBe(_anotherConfig))
+                .And(x => _steps.ThenConfigShouldBeWithTimeout(_anotherConfig, 10000))
                 .BDDfy();
         }
 

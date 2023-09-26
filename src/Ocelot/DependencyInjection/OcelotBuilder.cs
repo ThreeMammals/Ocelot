@@ -1,14 +1,11 @@
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Ocelot.Authorization;
-
 using Ocelot.Cache;
-
 using Ocelot.Claims;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
@@ -17,52 +14,30 @@ using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
-
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-
 using Ocelot.Headers;
-
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.RequestData;
-
-using Ocelot.LoadBalancer.LoadBalancers;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-
-using Ocelot.Middleware;
-
-using Ocelot.Multiplexer;
-
 using Ocelot.Infrastructure.Claims.Parser;
-
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
-
 using Ocelot.QueryStrings;
-
 using Ocelot.RateLimit;
-
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
-
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
-
 using Ocelot.Responder;
-
 using Ocelot.Security;
 using Ocelot.Security.IPSecurity;
-
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
+using System.Reflection;
 
 namespace Ocelot.DependencyInjection
 {
@@ -72,7 +47,7 @@ namespace Ocelot.DependencyInjection
         public IConfiguration Configuration { get; }
         public IMvcCoreBuilder MvcCoreBuilder { get; }
 
-        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot)
+        public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = null)
         {
             Configuration = configurationRoot;
             Services = services;
@@ -144,8 +119,9 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
-            // see this for why we register this as singleton http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
-            // could maybe use a scoped data repository
+            // See this for why we register this as singleton:
+            // http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
+            // Could maybe use a scoped data repository
             Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
@@ -160,24 +136,55 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
             Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
-            Services.TryAddSingleton<IExceptionToErrorMapper, HttpExeptionToErrorMapper>();
+            Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
 
-            //add security
-            AddSecurity();
+            // Add security
+            Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
+            Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
-            //add asp.net services..
+            // Add ASP.NET services
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
+            MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
+                .Invoke(Services.AddMvcCore(), assembly);
+        }
 
-            MvcCoreBuilder = Services.AddMvcCore()
-                  .AddApplicationPart(assembly)
-                  .AddControllersAsServices()
-                  .AddAuthorization()
-                  .AddNewtonsoftJson();
+        /// <summary>
+        /// Adds default ASP.NET services which are the minimal part of the gateway core.
+        /// <para>
+        /// Finally the builder adds Newtonsoft.Json services via the <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/> extension-method.<br/>
+        /// To remove these services, use custom builder in the <see cref="ServiceCollectionExtensions.AddOcelotUsingBuilder(IServiceCollection, Func{IMvcCoreBuilder, Assembly, IMvcCoreBuilder})"/> extension-method.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Note that the following <see cref="IServiceCollection"/> extensions being called:<br/>
+        /// - <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>, impossible to remove.<br/>
+        /// - <see cref="LoggingServiceCollectionExtensions.AddLogging(IServiceCollection)"/><br/>
+        /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
+        /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
+        /// <para>
+        /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called:<br/>
+        /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
+        /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
+        /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
+        /// - <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/>, removable.
+        /// </para>
+        /// </remarks>
+        /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
+        /// <param name="assembly">The web app assembly.</param>
+        /// <returns>An <see cref="IMvcCoreBuilder"/> object.</returns>
+        protected IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
+        {
+            Services
+                .AddLogging()
+                .AddMiddlewareAnalysis()
+                .AddWebEncoders();
 
-            Services.AddLogging();
-            Services.AddMiddlewareAnalysis();
-            Services.AddWebEncoders();
+            return builder
+                .AddApplicationPart(assembly)
+                .AddControllersAsServices()
+                .AddAuthorization()
+                .AddNewtonsoftJson();
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
@@ -235,17 +242,11 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-        private void AddSecurity()
-        {
-            Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
-            Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
-        }
-
         public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
         {
             if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType))
             {
-                throw new ArgumentOutOfRangeException(nameof(delegateType), delegateType.Name, "It is not a delegatin handler");
+                throw new ArgumentOutOfRangeException(nameof(delegateType), delegateType.Name, "It is not a delegating handler");
             }
 
             if (global)

@@ -1,6 +1,5 @@
-using Ocelot.Configuration.File;
-
 using FluentValidation;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Validator
 {

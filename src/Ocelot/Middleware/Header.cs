@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Ocelot.Middleware
 {
     public class Header

@@ -1,11 +1,6 @@
-﻿using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
 
 namespace Ocelot.Security.IPSecurity

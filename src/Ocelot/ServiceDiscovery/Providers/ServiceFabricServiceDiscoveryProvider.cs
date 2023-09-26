@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Ocelot.ServiceDiscovery.Configuration;
+﻿using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery.Providers

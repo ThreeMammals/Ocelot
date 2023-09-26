@@ -1,9 +1,7 @@
-﻿using Ocelot.Configuration.Repository;
-
-using Ocelot.DependencyInjection;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
 
 namespace Ocelot.Provider.Consul
 {

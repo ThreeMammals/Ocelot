@@ -1,5 +1,4 @@
 using Ocelot.Configuration.Builder;
-
 using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator

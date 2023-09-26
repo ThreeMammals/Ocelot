@@ -1,28 +1,12 @@
-using Xunit;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
-using Ocelot.DependencyInjection;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-
-using Ocelot.Middleware;
-
 using Newtonsoft.Json;
-
-using Shouldly;
-
-using TestStack.BDDfy;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using System.Net;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 

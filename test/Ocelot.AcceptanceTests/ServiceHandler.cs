@@ -5,11 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Net;
 using System.Security.Authentication;
-using System.Threading.Tasks;
 
 namespace Ocelot.AcceptanceTests
 {

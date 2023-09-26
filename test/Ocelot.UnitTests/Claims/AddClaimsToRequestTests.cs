@@ -1,21 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Claims
 {

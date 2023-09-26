@@ -1,9 +1,4 @@
-﻿using System.Net.Http;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure;
@@ -12,14 +7,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Request
 {

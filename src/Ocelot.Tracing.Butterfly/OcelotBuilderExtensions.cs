@@ -1,12 +1,7 @@
-﻿using System;
-
-using Ocelot.DependencyInjection;
-
-using global::Butterfly.Client.AspNetCore;
-
-using Ocelot.Logging;
-
+﻿using Butterfly.Client.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 
 namespace Ocelot.Tracing.Butterfly
 {

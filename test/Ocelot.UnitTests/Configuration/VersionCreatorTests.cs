@@ -1,12 +1,4 @@
-﻿using System;
-
-using Ocelot.Configuration.Creator;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+﻿using Ocelot.Configuration.Creator;
 
 namespace Ocelot.UnitTests.Configuration
 {

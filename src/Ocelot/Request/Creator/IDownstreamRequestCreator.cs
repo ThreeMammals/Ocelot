@@ -1,5 +1,3 @@
-using System.Net.Http;
-
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.Request.Creator
