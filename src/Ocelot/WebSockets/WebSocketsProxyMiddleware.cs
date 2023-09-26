@@ -19,11 +19,15 @@ namespace Ocelot.WebSockets
         };
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
+        private readonly IWebSocketsFactory _factory;
 
-        public WebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
+        public WebSocketsProxyMiddleware(IOcelotLoggerFactory loggerFactory,
+            RequestDelegate next,
+            IWebSocketsFactory factory)
             : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
+            _factory = factory;
         }
 
         private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
@@ -91,7 +95,7 @@ namespace Ocelot.WebSockets
                 throw new InvalidOperationException();
             }
 
-            var client = new ClientWebSocket();
+            var client = _factory.CreateClient(); // new ClientWebSocket();
 
             if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
             {
@@ -127,8 +131,8 @@ namespace Ocelot.WebSockets
             using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
             {
                 await Task.WhenAll(
-                    PumpWebSocket(client, server, DefaultWebSocketBufferSize, context.RequestAborted),
-                    PumpWebSocket(server, client, DefaultWebSocketBufferSize, context.RequestAborted));
+                    PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
+                    PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
             }
         }
     }
