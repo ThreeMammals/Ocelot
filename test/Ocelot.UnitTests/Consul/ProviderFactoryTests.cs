@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
-using Shouldly;
-using System;
-using Xunit;
 
 namespace Ocelot.UnitTests.Consul
 {

@@ -1,11 +1,6 @@
-using System.Linq;
-using System.Threading.Tasks;
-
 using Ocelot.Configuration.File;
-
-using Ocelot.Responses;
-
 using Ocelot.Configuration.Validator;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Creator
 {

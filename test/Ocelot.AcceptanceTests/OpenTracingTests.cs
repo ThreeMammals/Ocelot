@@ -1,27 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-
 using Butterfly.Client.AspNetCore;
-
-using Ocelot.Configuration.File;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Configuration.File;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Diagnostics;
 using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests

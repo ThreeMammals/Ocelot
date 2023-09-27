@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Ocelot.Administration
 {
     public class IdentityServerConfiguration : IIdentityServerConfiguration

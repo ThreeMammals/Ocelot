@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Ocelot.Configuration.File
+﻿namespace Ocelot.Configuration.File
 {
     public class FileConfiguration
     {

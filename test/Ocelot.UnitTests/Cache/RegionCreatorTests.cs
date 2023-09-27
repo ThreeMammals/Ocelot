@@ -1,13 +1,5 @@
-using System.Collections.Generic;
-
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Cache
 {

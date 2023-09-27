@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
-using TestStack.BDDfy;
-
-using Xunit;
+﻿using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
 {

@@ -1,14 +1,7 @@
-using System.Linq;
-using System.Threading.Tasks;
-
-using Ocelot.DownstreamRouteFinder.Finder;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware

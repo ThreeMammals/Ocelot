@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System;
-
 namespace Ocelot.Configuration
 {
     public class InternalConfiguration : IInternalConfiguration

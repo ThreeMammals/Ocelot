@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
-
-using Ocelot.Responses;
+﻿using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {

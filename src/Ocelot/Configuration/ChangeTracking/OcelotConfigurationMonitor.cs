@@ -1,7 +1,4 @@
-using System;
-
 using Microsoft.Extensions.Options;
-
 using Ocelot.Configuration.Repository;
 
 namespace Ocelot.Configuration.ChangeTracking

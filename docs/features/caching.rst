@@ -1,7 +1,7 @@
 Caching
 =======
 
-Ocelot supports some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project. This is an amazing project that is solving a lot of caching problems. I would reccomend using this package to cache with Ocelot. 
+Ocelot supports some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project. This is an amazing project that is solving a lot of caching problems. I would recommend using this package to cache with Ocelot. 
 
 The following example shows how to add CacheManager to Ocelot so that you can do output caching. 
 
@@ -14,6 +14,8 @@ This will give you access to the Ocelot cache manager extension methods.
 The second thing you need to do something like the following to your ConfigureServices..
 
 .. code-block:: csharp
+
+    using Ocelot.Cache.CacheManager;
 
     s.AddOcelot()
         .AddCacheManager(x =>

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Ocelot.Configuration.File
 {
     public class FileAggregateRoute : IRoute

@@ -1,18 +1,9 @@
-using System;
-using System.Collections.Generic;
-
-using Ocelot.ServiceDiscovery.Configuration;
-
-using Ocelot.Logging;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
-
-using Ocelot.ServiceDiscovery.Providers;
-
+using Ocelot.Logging;
 using Ocelot.Responses;
-
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery
