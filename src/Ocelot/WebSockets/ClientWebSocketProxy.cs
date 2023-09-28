@@ -6,14 +6,16 @@ public class ClientWebSocketProxy : WebSocket, IClientWebSocket
 {
     // RealSubject (Service) class of Proxy design pattern
     private readonly ClientWebSocket _realService;
+    private readonly IClientWebSocketOptions _options;
 
     public ClientWebSocketProxy()
     {
         _realService = new ClientWebSocket();
+        _options = new ClientWebSocketOptionsProxy(_realService.Options);
     }
 
     // ClientWebSocket implementations
-    public ClientWebSocketOptions Options => _realService.Options;
+    public IClientWebSocketOptions Options => _options;
 
     public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         => _realService.ConnectAsync(uri, cancellationToken);

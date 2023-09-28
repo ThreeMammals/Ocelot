@@ -7,7 +7,7 @@ public interface IClientWebSocket
     WebSocket ToWebSocket();
 
     // ClientWebSocket definitions
-    ClientWebSocketOptions Options { get; }
+    IClientWebSocketOptions Options { get; }
     Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 
     // WebSocket definitions
