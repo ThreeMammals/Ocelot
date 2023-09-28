@@ -47,7 +47,7 @@ public class WebSocketsProxyMiddlewareTests
 
     private void GivenPropertyDangerousAcceptAnyServerCertificateValidator(bool enabled)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:80");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri.UriSchemeWs}://localhost:12345");
         var downstream = new DownstreamRequest(request);
         var route = new DownstreamRouteBuilder()
             .WithDangerousAcceptAnyServerCertificateValidator(enabled)
