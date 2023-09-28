@@ -7,11 +7,13 @@ Ocelot allows you to specify a service discovery provider and will use this to f
 GlobalConfiguration section which means the same service discovery provider will be used for all Routes you specify a ServiceName for at Route level. 
 
 Consul
-^^^^^^
+------
 
 The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
 
-``Install-Package Ocelot.Provider.Consul``
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Consul
 
 Then add the following to your ConfigureServices method.
 
@@ -92,7 +94,7 @@ Or
         }
 
 ACL Token
----------
+^^^^^^^^^
 
 If you are using ACL with Consul Ocelot supports adding the X-Consul-Token header. In order so this to work you must add the additional property below.
 
@@ -108,13 +110,15 @@ If you are using ACL with Consul Ocelot supports adding the X-Consul-Token heade
 Ocelot will add this token to the Consul client that it uses to make requests and that is then used for every request.
 
 Eureka
-^^^^^^
+------
 
 This feature was requested as part of `Issue 262 <https://github.com/ThreeMammals/Ocelot/issues/262>`_ . to add support for Netflix's Eureka service discovery provider. The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something to do with `Pivotal <https://pivotal.io/platform>`_! Anyway enough of the background.
 
 The first thing you need to do is install the NuGet package that provides Eureka support in Ocelot.
 
-``Install-Package Ocelot.Provider.Eureka``
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Eureka
 
 Then add the following to your ConfigureServices method.
 
@@ -150,7 +154,7 @@ Ocelot will now register all the necessary services when it starts up and if you
 Ocelot will use the scheme (http/https) set in Eureka if these values are not provided in ocelot.json
 
 Dynamic Routing
-^^^^^^^^^^^^^^^
+---------------
 
 This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. The idea is to enable dynamic routing when using a service discovery provider (see that section of the docs for more info). In this mode Ocelot will use the first segment of the upstream path to lookup the downstream service with the service discovery provider. 
 
@@ -242,3 +246,119 @@ Ocelot also allows you to set DynamicRoutes which lets you set rate limiting rul
 This configuration means that if you have a request come into Ocelot on /product/* then dynamic routing will kick in and ocelot will use the rate limiting set against the product service in the DynamicRoutes section.
 
 Please take a look through all of the docs to understand these options.
+
+Custom Providers
+----------------------------------
+
+Ocelot also allows you to create your own ServiceDiscovery implementation.
+This is done by implementing the ``IServiceDiscoveryProvider`` interface, as shown in the following example:
+
+.. code-block:: csharp
+
+    public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
+    {
+        private readonly DownstreamRoute _downstreamRoute;
+        
+        public MyServiceDiscoveryProvider(DownstreamRoute downstreamRoute)
+        {
+            _downstreamRoute = downstreamRoute;
+        }
+       
+        public async Task<List<Service>> Get()
+        {
+            var services = new List<Service>();
+            //...
+            //Add service(s) to the list matching the _downstreamRoute
+            return services;
+        }
+    }
+
+And set its class name as the provider type in **ocelot.json**:
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Type": "MyServiceDiscoveryProvider"
+    }
+  }
+  
+Finally, in the application's **ConfigureServices** method, register a ``ServiceDiscoveryFinderDelegate`` to initialize and return the provider:
+
+.. code-block:: csharp
+
+    ServiceDiscoveryFinderDelegate serviceDiscoveryFinder = (provider, config, route) =>
+    {
+        return new MyServiceDiscoveryProvider(route);
+    };
+    services.AddSingleton(serviceDiscoveryFinder);
+    services.AddOcelot();
+
+Custom Provider Sample
+^^^^^^^^^^^^^^^^^^^^^^
+
+In order to introduce a basic template for a custom Service Discovery provider, we've prepared a good sample:
+
+    | **Link**: `samples <../../samples>`_ / `OcelotServiceDiscovery <../../samples/OcelotServiceDiscovery>`_
+    | **Solution**: `Ocelot.Samples.ServiceDiscovery.sln <../../samples/OcelotServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_
+
+This solution contains the following projects:
+
+- `ApiGateway <#apigateway>`_
+- `DownstreamService <#downstreamservice>`_
+
+This solution is ready for any deployment. All services are bound, meaning all ports and hosts are prepared for immediate use (running in Visual Studio).
+
+All instructions for running this solution are in `README.md <../../samples/OcelotServiceDiscovery/README.md>`_.
+
+DownstreamService
+"""""""""""""""""
+
+This project provides a single downstream service that can be reused across `ApiGateway <#apigateway>`_ routes.
+It has multiple **launchSettings.json** profiles for your favorite launch and hosting scenarios: Visual Studio running sessions, Kestrel console hosting, and Docker deployments.
+
+ApiGateway
+""""""""""
+
+This project includes a custom Service Discovery provider and it only has route(s) to `DownstreamService <#downstreamservice>`_ services in the **ocelot.json** file.
+You can add more routes!
+
+The main source code for the custom provider is in the `ServiceDiscovery <../../samples/OcelotServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
+the ``MyServiceDiscoveryProvider`` and ``MyServiceDiscoveryProviderFactory`` classes. You are welcome to design and develop them!
+
+Additionally, the cornerstone of this custom provider is the ``ConfigureServices`` method, where you can choose design and implementation options: simple or more complex:
+
+.. code-block:: csharp
+
+            builder.ConfigureServices(s =>
+            {
+                // Perform initialization from application configuration or hardcode/choose the best option.
+                bool easyWay = true;
+
+                if (easyWay)
+                {
+                    // Design #1. Define a custom finder delegate to instantiate a custom provider under the default factory, which is ServiceDiscoveryProviderFactory
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
+                        => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
+                }
+                else
+                {
+                    // Design #2. Abstract from the default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
+                    // and create your own factory by implementing the IServiceDiscoveryProviderFactory interface.
+                    s.RemoveAll<IServiceDiscoveryProviderFactory>();
+                    s.AddSingleton<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
+
+                    // It will not be called, but it is necessary for internal validators, it is also a lifehack
+                    s.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute) => null);
+                }
+
+                s.AddOcelot();
+            });
+
+The easy way, lite design means that you only design the provider class, and specify ``ServiceDiscoveryFinderDelegate`` object for default ``ServiceDiscoveryProviderFactory`` in Ocelot core.
+
+A more complex design means that you design both provider and provider factory classes.
+After this, you need to add the ``IServiceDiscoveryProviderFactory`` interface to the DI-container, removing the default registered ``ServiceDiscoveryProviderFactory`` class.
+Note that in this case the Ocelot core will not use ``ServiceDiscoveryProviderFactory`` by default.
+Additionally, you do not need to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** properties of the **GlobalConfiguration** settings.
+But you can leave this ``Type`` option for compatibility between both designs.
