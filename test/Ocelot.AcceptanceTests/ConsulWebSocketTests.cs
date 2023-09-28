@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -142,7 +143,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartClient(string url)
         {
-            var client = new ClientWebSocket();
+            IClientWebSocket client = new ClientWebSocketProxy();
 
             await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
@@ -194,7 +195,7 @@ namespace Ocelot.AcceptanceTests
         {
             await Task.Delay(500);
 
-            var client = new ClientWebSocket();
+            IClientWebSocket client = new ClientWebSocketProxy();
 
             await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
