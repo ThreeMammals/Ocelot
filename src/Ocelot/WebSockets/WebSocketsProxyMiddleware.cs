@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using System.Net.WebSockets;
 
 namespace Ocelot.WebSockets
@@ -73,21 +74,26 @@ namespace Ocelot.WebSockets
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var uri = httpContext.Items.DownstreamRequest().ToUri();
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
             var downstreamRoute = httpContext.Items.DownstreamRoute();
-            await Proxy(httpContext, uri, downstreamRoute);
+            await Proxy(httpContext, downstreamRequest, downstreamRoute);
         }
 
-        private async Task Proxy(HttpContext context, string serverEndpoint, DownstreamRoute downstreamRoute)
+        private async Task Proxy(HttpContext context, DownstreamRequest request, DownstreamRoute route)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (serverEndpoint == null)
+            if (request == null)
             {
-                throw new ArgumentNullException(nameof(serverEndpoint));
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
             }
 
             if (!context.WebSockets.IsWebSocketRequest)
@@ -97,10 +103,10 @@ namespace Ocelot.WebSockets
 
             var client = _factory.CreateClient(); // new ClientWebSocket();
 
-            if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
+            if (route.DangerousAcceptAnyServerCertificateValidator)
             {
                 client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
-                Logger.LogWarning($"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{downstreamRoute.UpstreamPathTemplate}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{downstreamRoute.DownstreamPathTemplate}'.");
+                Logger.LogWarning($"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{route.UpstreamPathTemplate}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{route.DownstreamPathTemplate}'.");
             }
 
             foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
@@ -126,16 +132,15 @@ namespace Ocelot.WebSockets
             }
 
             // Only Uris starting with 'ws://' or 'wss://' are supported in System.Net.WebSockets.ClientWebSocket
-            if (!serverEndpoint.StartsWith("ws"))
+            var scheme = request.Scheme;
+            if (!scheme.StartsWith(Uri.UriSchemeWs))
             {
-                var scheme = context.Items.DownstreamRequest().Scheme;
-                Logger.LogWarning($"Invalid scheme has detected which will be replaced! Scheme '{scheme}' of the downstream '{serverEndpoint}'.");
-                serverEndpoint = serverEndpoint
-                    .Replace("http://", "ws://")
-                    .Replace("https://", "wss://");
+                Logger.LogWarning($"Invalid scheme has detected which will be replaced! Scheme '{scheme}' of the downstream '{request.ToUri()}'.");
+                request.Scheme = scheme == Uri.UriSchemeHttp ? Uri.UriSchemeWs
+                    : scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : scheme;
             }
 
-            var destinationUri = new Uri(serverEndpoint);
+            var destinationUri = new Uri(request.ToUri());
             await client.ConnectAsync(destinationUri, context.RequestAborted);
 
             using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
