@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.Responses;
 using System.Security.Claims;
-
-using Ocelot.Responses;
 
 namespace Ocelot.Infrastructure.Claims.Parser
 {

@@ -1,19 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
-
 using Ocelot.Infrastructure;
-
-using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Logging;
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
 
 namespace Ocelot.Headers

@@ -1,12 +1,8 @@
-using System;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Repository;
+using Ocelot.Configuration.Setter;
 
 namespace Ocelot.Configuration
 {

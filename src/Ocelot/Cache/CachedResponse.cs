@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net;
-
-namespace Ocelot.Cache
+﻿namespace Ocelot.Cache
 {
     public class CachedResponse
     {

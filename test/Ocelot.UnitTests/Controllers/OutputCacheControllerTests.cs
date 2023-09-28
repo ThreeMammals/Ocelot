@@ -1,14 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
-using Moq;
-
 using Ocelot.Cache;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Controllers
 {

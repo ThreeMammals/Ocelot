@@ -1,11 +1,6 @@
-using System;
-
-using Ocelot.Configuration.File;
-
 using FluentValidation;
-
 using Microsoft.Extensions.DependencyInjection;
-
+using Ocelot.Configuration.File;
 using Ocelot.Requester;
 
 namespace Ocelot.Configuration.Validator

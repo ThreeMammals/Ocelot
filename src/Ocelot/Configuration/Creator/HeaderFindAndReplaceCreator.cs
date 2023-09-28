@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;

@@ -1,8 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Ocelot.Requester
+﻿namespace Ocelot.Requester
 {
     public interface IHttpClient
     {
