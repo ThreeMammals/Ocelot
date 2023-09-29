@@ -19,7 +19,9 @@ public static class ConsulMiddlewareConfigurationProvider
         var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
 
         if (UsingConsul(fileConfigRepo))
+        {
             await SetFileConfigInConsul(builder, fileConfigRepo, fileConfig, internalConfigCreator, internalConfigRepo);
+        }
     };
 
     private static bool UsingConsul(IFileConfigurationRepository fileConfigRepo)
@@ -57,10 +59,16 @@ public static class ConsulMiddlewareConfigurationProvider
                 // add the internal config to the internal repo
                 var response = internalConfigRepo.AddOrReplace(internalConfig.Data);
 
-                if (IsError(response)) ThrowToStopOcelotStarting(response);
+                if (IsError(response))
+                {
+                    ThrowToStopOcelotStarting(response);
+                }
             }
 
-            if (IsError(internalConfig)) ThrowToStopOcelotStarting(internalConfig);
+            if (IsError(internalConfig))
+            {
+                ThrowToStopOcelotStarting(internalConfig);
+            }
         }
     }
 

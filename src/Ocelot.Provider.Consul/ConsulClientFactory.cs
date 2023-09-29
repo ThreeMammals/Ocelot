@@ -8,7 +8,10 @@ public class ConsulClientFactory : IConsulClientFactory
         {
             c.Address = new Uri($"{config.Scheme}://{config.Host}:{config.Port}");
 
-            if (!string.IsNullOrEmpty(config?.Token)) c.Token = config.Token;
+            if (!string.IsNullOrEmpty(config.Token))
+            {
+                c.Token = config.Token;
+            }
         });
     }
 }

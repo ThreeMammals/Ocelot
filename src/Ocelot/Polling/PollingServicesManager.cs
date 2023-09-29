@@ -3,7 +3,7 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Polling;
 
-public class PollingServicesManager<T, TU>
+public sealed class PollingServicesManager<T, TU>
     where T : class, IServiceDiscoveryProvider
     where TU : ServicePollingHandler<T>
 {

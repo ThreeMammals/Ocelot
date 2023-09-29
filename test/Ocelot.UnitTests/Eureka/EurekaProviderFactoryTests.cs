@@ -8,12 +8,11 @@ namespace Ocelot.UnitTests.Eureka
     public class EurekaProviderFactoryTests
     {
         [Fact]
-        public void should_not_get()
+        public void should_throw_exception()
         {
             var config = new ServiceProviderConfigurationBuilder().Build();
             var sp = new ServiceCollection().BuildServiceProvider();
-            var provider = EurekaProviderFactory.Get(sp, config, null);
-            provider.ShouldBeNull();
+            Assert.Throws<ArgumentNullException>(() => EurekaProviderFactory.Get(sp, config, null));
         }
 
         [Fact]
