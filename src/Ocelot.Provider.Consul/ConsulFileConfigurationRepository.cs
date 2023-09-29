@@ -40,11 +40,17 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
     {
         var config = _cache.Get(_configurationKey, _configurationKey);
 
-        if (config != null) return new OkResponse<FileConfiguration>(config);
+        if (config != null)
+        {
+            return new OkResponse<FileConfiguration>(config);
+        }
 
         var queryResult = await _consul.KV.Get(_configurationKey);
 
-        if (queryResult.Response == null) return new OkResponse<FileConfiguration>(null);
+        if (queryResult.Response == null)
+        {
+            return new OkResponse<FileConfiguration>(null);
+        }
 
         var bytes = queryResult.Response.Value;
 
@@ -63,7 +69,7 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
 
         var kvPair = new KVPair(_configurationKey)
         {
-            Value = bytes
+            Value = bytes,
         };
 
         var result = await _consul.KV.Put(kvPair);

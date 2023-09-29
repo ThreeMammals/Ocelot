@@ -29,11 +29,15 @@ public static class ConsulProviderFactory
         var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+        {
             lock (LockObject)
             {
                 var discoveryProvider =
                     ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
-                if (discoveryProvider != null) return discoveryProvider;
+                if (discoveryProvider != null)
+                {
+                    return discoveryProvider;
+                }
 
                 discoveryProvider = new PollConsul(
                     config.PollingInterval, route.ServiceName, factory, consulProvider);
@@ -41,6 +45,7 @@ public static class ConsulProviderFactory
 
                 return discoveryProvider;
             }
+        }
 
         return consulProvider;
     }
