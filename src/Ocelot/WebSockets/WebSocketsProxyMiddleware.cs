@@ -1,26 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Modified https://github.com/aspnet/Proxy websockets class to use in Ocelot.
 
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using System.Net.WebSockets;
 
-namespace Ocelot.WebSockets.Middleware
+namespace Ocelot.WebSockets
 {
     public class WebSocketsProxyMiddleware : OcelotMiddleware
     {
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
-        private const int DefaultWebSocketBufferSize = 4096;
-        private const int StreamCopyBufferSize = 81920;
-        private readonly RequestDelegate _next;
+        private static readonly string[] NotForwardedWebSocketHeaders = new[]
+        {
+            "Connection", "Host", "Upgrade",
+            "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
+        };
 
-        public WebSocketsProxyMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory)
-                : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+        private const int DefaultWebSocketBufferSize = 4096;
+        private readonly RequestDelegate _next;
+        private readonly IWebSocketsFactory _factory;
+
+        public const string IgnoredSslWarningFormat = $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{{0}}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{{1}}'.";
+        public const string InvalidSchemeWarningFormat = "Invalid scheme has detected which will be replaced! Scheme '{0}' of the downstream '{1}'.";
+
+        public WebSocketsProxyMiddleware(IOcelotLoggerFactory loggerFactory,
+            RequestDelegate next,
+            IWebSocketsFactory factory)
+            : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
         {
             _next = next;
+            _factory = factory;
         }
 
         private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
@@ -66,20 +78,26 @@ namespace Ocelot.WebSockets.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var uri = httpContext.Items.DownstreamRequest().ToUri();
-            await Proxy(httpContext, uri);
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
+            var downstreamRoute = httpContext.Items.DownstreamRoute();
+            await Proxy(httpContext, downstreamRequest, downstreamRoute);
         }
 
-        private static async Task Proxy(HttpContext context, string serverEndpoint)
+        private async Task Proxy(HttpContext context, DownstreamRequest request, DownstreamRoute route)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (serverEndpoint == null)
+            if (request == null)
             {
-                throw new ArgumentNullException(nameof(serverEndpoint));
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
             }
 
             if (!context.WebSockets.IsWebSocketRequest)
@@ -87,7 +105,14 @@ namespace Ocelot.WebSockets.Middleware
                 throw new InvalidOperationException();
             }
 
-            var client = new ClientWebSocket();
+            var client = _factory.CreateClient(); // new ClientWebSocket();
+
+            if (route.DangerousAcceptAnyServerCertificateValidator)
+            {
+                client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
+                Logger.LogWarning(string.Format(IgnoredSslWarningFormat, route.UpstreamPathTemplate, route.DownstreamPathTemplate));
+            }
+
             foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
             {
                 client.Options.AddSubProtocol(protocol);
@@ -110,12 +135,23 @@ namespace Ocelot.WebSockets.Middleware
                 }
             }
 
-            var destinationUri = new Uri(serverEndpoint);
+            // Only Uris starting with 'ws://' or 'wss://' are supported in System.Net.WebSockets.ClientWebSocket
+            var scheme = request.Scheme;
+            if (!scheme.StartsWith(Uri.UriSchemeWs))
+            {
+                Logger.LogWarning(string.Format(InvalidSchemeWarningFormat, scheme, request.ToUri()));
+                request.Scheme = scheme == Uri.UriSchemeHttp ? Uri.UriSchemeWs
+                    : scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : scheme;
+            }
+
+            var destinationUri = new Uri(request.ToUri());
             await client.ConnectAsync(destinationUri, context.RequestAborted);
+
             using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
             {
-                var bufferSize = DefaultWebSocketBufferSize;
-                await Task.WhenAll(PumpWebSocket(client, server, bufferSize, context.RequestAborted), PumpWebSocket(server, client, bufferSize, context.RequestAborted));
+                await Task.WhenAll(
+                    PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
+                    PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
             }
         }
     }

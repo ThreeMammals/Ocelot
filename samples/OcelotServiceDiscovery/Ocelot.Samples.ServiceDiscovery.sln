@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.ApiGateway", "ApiGateway\Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj", "{411000B6-ACB0-4323-8FE4-A4DE0E590ACB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{4F302EAE-1C67-47CA-ACCE-D05DF00AAAC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{411000B6-ACB0-4323-8FE4-A4DE0E590ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{411000B6-ACB0-4323-8FE4-A4DE0E590ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{411000B6-ACB0-4323-8FE4-A4DE0E590ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{411000B6-ACB0-4323-8FE4-A4DE0E590ACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F302EAE-1C67-47CA-ACCE-D05DF00AAAC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F302EAE-1C67-47CA-ACCE-D05DF00AAAC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F302EAE-1C67-47CA-ACCE-D05DF00AAAC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F302EAE-1C67-47CA-ACCE-D05DF00AAAC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C604707-2EA1-4CCF-A89C-22B613052C8D}
+	EndGlobalSection
+EndGlobal
