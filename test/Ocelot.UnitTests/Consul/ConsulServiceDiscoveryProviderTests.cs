@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Logging;
+using Ocelot.Polling;
 using Ocelot.Provider.Consul;
 using Ocelot.Values;
 using ConsulProvider = Ocelot.Provider.Consul.Consul;
@@ -38,7 +39,7 @@ namespace Ocelot.UnitTests.Consul
             _clientFactory = new ConsulClientFactory();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
-            _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<ServicePollingHandler<ConsulProvider>>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
             _provider = new ConsulProvider(config, _factory.Object, _clientFactory);
         }

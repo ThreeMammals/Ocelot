@@ -1,40 +1,40 @@
 ﻿using HTTPlease;
-using KubeClient;
 using KubeClient.Models;
 using KubeClient.ResourceClients;
 
-namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions
+namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions;
+
+public class EndPointClientV1 : KubeResourceClient
 {
-    public class EndPointClientV1 : KubeResourceClient
+    private readonly HttpRequest _collection =
+        KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+
+    public EndPointClientV1(IKubeApiClient client) : base(client)
     {
-        private readonly HttpRequest _collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+    }
 
-        public EndPointClientV1(IKubeApiClient client) : base(client)
+    public async Task<EndpointsV1> Get(string serviceName, string kubeNamespace = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(serviceName))
         {
+            throw new ArgumentNullException(nameof(serviceName));
         }
 
-        public async Task<EndpointsV1> Get(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
+        var response = await Http.GetAsync(
+            _collection.WithTemplateParameters(new
+            {
+                Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
+                ServiceName = serviceName,
+            }),
+            cancellationToken
+        );
+
+        if (response.IsSuccessStatusCode)
         {
-            if (string.IsNullOrEmpty(serviceName))
-            {
-                throw new ArgumentNullException(nameof(serviceName));
-            }
-
-            var response = await Http.GetAsync(
-                _collection.WithTemplateParameters(new
-                {
-                    Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
-                    ServiceName = serviceName,
-                }),
-                cancellationToken
-            );
-
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.ReadContentAsAsync<EndpointsV1>();
-            }
-
-            return null;
+            return await response.ReadContentAsAsync<EndpointsV1>();
         }
+
+        return null;
     }
 }
