@@ -1,6 +1,5 @@
 ﻿using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using Steeltoe.Discovery;
 
 namespace Ocelot.Provider.Eureka
 {

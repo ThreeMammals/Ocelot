@@ -1,9 +1,6 @@
-﻿using Consul;
+﻿namespace Ocelot.Provider.Consul;
 
-namespace Ocelot.Provider.Consul
+public interface IConsulClientFactory
 {
-    public interface IConsulClientFactory
-    {
-        IConsulClient Get(ConsulRegistryConfiguration config);
-    }
+    IConsulClient Get(ConsulRegistryConfiguration config);
 }

@@ -4,46 +4,56 @@ using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul;
 
-public sealed class PollConsul : IServiceDiscoveryProvider, IDisposable
+public sealed class PollConsul : IServiceDiscoveryProvider
 {
-    private readonly IOcelotLogger _logger;
     private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
-    private Timer _timer;
-    private bool _polling;
+    private readonly object _lockObject = new();
+    private readonly IOcelotLogger _logger;
+
+    private readonly int _pollingInterval;
+
+    private DateTime _lastUpdateTime;
     private List<Service> _services;
 
-    public PollConsul(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider consulServiceDiscoveryProvider)
+    public PollConsul(int pollingInterval, string serviceName, IOcelotLoggerFactory factory,
+        IServiceDiscoveryProvider consulServiceDiscoveryProvider)
     {
         _logger = factory.CreateLogger<PollConsul>();
         _consulServiceDiscoveryProvider = consulServiceDiscoveryProvider;
+        _pollingInterval = pollingInterval;
+
+        // Initialize by DateTime.MinValue as lowest value.
+        // Polling will occur immediately during the first call
+        _lastUpdateTime = DateTime.MinValue;
+
         _services = new List<Service>();
-
-        _timer = new Timer(async x =>
-        {
-            if (_polling)
-            {
-                return;
-            }
-
-            _polling = true;
-            await Poll();
-            _polling = false;
-        }, null, pollingInterval, pollingInterval);
+        ServiceName = serviceName;
     }
 
-    public void Dispose()
-    {
-        _timer?.Dispose();
-        _timer = null;
-    }
+    public string ServiceName { get; }
 
+    /// <summary>
+    ///     Get the services.
+    ///     If the first call, retrieve the services and then start the timer.
+    /// </summary>
+    /// <returns>A <see cref="Task{T}" /> with a <see cref="List{Service}" /> result of <see cref="Service" />.</returns>
     public Task<List<Service>> Get()
     {
-        return Task.FromResult(_services);
-    }
+        lock (_lockObject)
+        {
+            var refreshTime = _lastUpdateTime.AddMilliseconds(_pollingInterval);
 
-    private async Task Poll()
-    {
-        _services = await _consulServiceDiscoveryProvider.Get();
+            // Check if any services available
+            if (refreshTime >= DateTime.UtcNow && _services.Any())
+            {
+                return Task.FromResult(_services);
+            }
+
+            _logger.LogInformation($"Retrieving new client information for service: {ServiceName}.");
+            _services = _consulServiceDiscoveryProvider.Get().Result;
+            _lastUpdateTime = DateTime.UtcNow;
+
+            return Task.FromResult(_services);
+        }
     }
 }

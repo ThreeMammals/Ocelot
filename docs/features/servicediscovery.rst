@@ -3,29 +3,45 @@
 Service Discovery
 =================
 
-Ocelot allows you to specify a service discovery provider and will use this to find the host and port for the downstream service Ocelot is forwarding a request to. At the moment this is only supported in the
-GlobalConfiguration section which means the same service discovery provider will be used for all Routes you specify a ServiceName for at Route level. 
+Ocelot allows you to specify a *service discovery* provider and will use this to find the host and port for the downstream service to which Ocelot forwards the request.
+At the moment this is only supported in the **GlobalConfiguration** section, which means the same *service discovery* provider will be used for all Routes for which you specify a ``ServiceName`` at Route level.
 
 Consul
 ------
 
-The first thing you need to do is install the NuGet package that provides Consul support in Ocelot.
+    | **Namespace**: `Ocelot.Provider.Consul <https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot.Provider.Consul>`_
+
+The first thing you need to do is install `the NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_ that provides `Consul <https://www.consul.io/>`_ support in Ocelot.
 
 .. code-block:: powershell
 
     Install-Package Ocelot.Provider.Consul
 
-Then add the following to your ConfigureServices method.
+Then add the following to your ``ConfigureServices`` method:
 
 .. code-block:: csharp
 
-    s.AddOcelot()
-        .AddConsul();
+    ConfigureServices(services =>
+    {
+        services.AddOcelot()
+            .AddConsul();
+    });
 
-The following is required in the GlobalConfiguration. The Provider is required and if you do not specify a host and port the Consul default
-will be used.
+Currently there are 2 types of Consul *service discovery* providers: ``Consul`` and ``PollConsul``.
+The default provider is ``Consul``, which means that if ``ConsulProviderFactory`` cannot read, understand, or parse the **Type** property of the ``ServiceProviderConfiguration`` object, then a ``Consul`` provider instance is created by the factory.
 
-Please note the Scheme option defaults to HTTP. It was added in this `PR <https://github.com/ThreeMammals/Ocelot/pull/1154>`_. It defaults to HTTP to not introduce a breaking change.
+Explore these types of providers and understand the differences in the subsections below.
+
+Consul Provider Type
+^^^^^^^^^^^^^^^^^^^^
+
+    | **Class**: `Ocelot.Provider.Consul.Consul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+Consul&type=code>`_
+
+The following is required in the `GlobalConfiguration <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22FileGlobalConfiguration+GlobalConfiguration%22&type=code>`_.
+The **ServiceDiscoveryProvider** property is required, and if you do not specify a host and port, the Consul default ones will be used.
+
+Please note the `Scheme <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22public+string+Scheme+%7B+get%3B+%7D%22+path%3A%2F%5Esrc%5C%2FOcelot%5C%2FConfiguration%5C%2F%2F&type=code>`_ option defaults to HTTP.
+It was added in `PR 1154 <https://github.com/ThreeMammals/Ocelot/pull/1154>`_. It defaults to HTTP to not introduce a breaking change.
 
 .. code-block:: json
 
@@ -38,7 +54,10 @@ Please note the Scheme option defaults to HTTP. It was added in this `PR <https:
 
 In the future we can add a feature that allows Route specfic configuration. 
 
-In order to tell Ocelot a Route is to use the service discovery provider for its host and port you must add the ServiceName and load balancer you wish to use when making requests downstream. At the moment Ocelot has a RoundRobin and LeastConnection algorithm you can use. If no load balancer is specified Ocelot will not load balance requests.
+In order to tell Ocelot a Route is to use the *service discovery* provider for its host and port you must add the ServiceName and load balancer you wish to use when making requests downstream.
+At the moment Ocelot has a `RoundRobin <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20RoundRobin&type=code>`_ 
+and `LeastConnection <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+LeastConnection&type=code>`_ algorithm you can use.
+If no load balancer is specified Ocelot will not load balance requests.
 
 .. code-block:: json
 
@@ -53,9 +72,15 @@ In order to tell Ocelot a Route is to use the service discovery provider for its
         },
     }
 
-When this is set up Ocelot will lookup the downstream host and port from the service discover provider and load balance requests across any available services.
+When this is set up Ocelot will lookup the downstream host and port from the *service discovery* provider and load balance requests across any available services.
 
-A lot of people have asked me to implement a feature where Ocelot polls Consul for latest service information rather than per request. If you want to poll Consul for the latest services rather than per request (default behaviour) then you need to set the following configuration.
+PollConsul Provider Type
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+    | **Class**: `Ocelot.Provider.Consul.PollConsul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20PollConsul&type=code>`_
+
+A lot of people have asked me to implement a feature where Ocelot *polls Consul* for latest service information rather than per request.
+If you want to *poll Consul* for the latest services rather than per request (default behaviour) then you need to set the following configuration:
 
 .. code-block:: json
 
@@ -68,11 +93,19 @@ A lot of people have asked me to implement a feature where Ocelot polls Consul f
 
 The polling interval is in milliseconds and tells Ocelot how often to call Consul for changes in service configuration.
 
-Please note there are tradeoffs here. If you poll Consul it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling Consul per request (as sidecar agent). If you are calling a remote Consul agent then polling will be a good performance improvement.
+Please note there are tradeoffs here. If you *poll Consul* it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling Consul per request (as sidecar agent). If you are calling a remote Consul agent then polling will be a good performance improvement.
 
-Your services need to be added to Consul something like below (C# style but hopefully this make sense)...The only important thing to note is not to add http or https to the Address field. I have been contacted before about not accepting scheme in Address and accepting scheme in address. After reading `this <https://www.consul.io/docs/agent/services.html>`_ I don't think the scheme should be in there.
+Service Definition
+^^^^^^^^^^^^^^^^^^
 
-.. code-block: csharp
+Your services need to be added to Consul something like below (C# style but hopefully this make sense)...
+The only important thing to note is not to add ``http`` or ``https`` to the Address field.
+I have been contacted before about not accepting scheme in Address and accepting scheme in address.
+After reading `this <https://developer.hashicorp.com/consul/docs/agent/config>`_ I don't think the scheme should be in there.
+
+In C#
+
+.. code-block:: csharp
 
     new AgentService()
     {
@@ -82,21 +115,22 @@ Your services need to be added to Consul something like below (C# style but hope
         ID = "some-id",
     }
 
-Or 
+Or, in JSON
 
 .. code-block:: json
 
-     "Service": {
-            "ID": "some-id",
-            "Service": "some-service-name",
-            "Address": "localhost",
-            "Port": 8080
-        }
+    "Service": {
+        "ID": "some-id",
+        "Service": "some-service-name",
+        "Address": "localhost",
+        "Port": 8080
+    }
 
 ACL Token
 ^^^^^^^^^
 
-If you are using ACL with Consul Ocelot supports adding the X-Consul-Token header. In order so this to work you must add the additional property below.
+If you are using `ACL <https://developer.hashicorp.com/consul/commands/acl/token>`_ with Consul, Ocelot supports adding the "X-Consul-Token" header.
+In order so this to work you must add the additional property below:
 
 .. code-block:: json
 
@@ -248,7 +282,7 @@ This configuration means that if you have a request come into Ocelot on /product
 Please take a look through all of the docs to understand these options.
 
 Custom Providers
-----------------------------------
+----------------
 
 Ocelot also allows you to create your own ServiceDiscovery implementation.
 This is done by implementing the ``IServiceDiscoveryProvider`` interface, as shown in the following example:

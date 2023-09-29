@@ -5,26 +5,30 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
+using System;
+using System.Collections.Generic;
 
 namespace Ocelot.ServiceDiscovery
 {
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        private readonly IOcelotLoggerFactory _factory;
         private readonly ServiceDiscoveryFinderDelegate _delegates;
         private readonly IServiceProvider _provider;
+        private readonly IOcelotLogger _logger;
 
         public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
         {
-            _factory = factory;
             _provider = provider;
             _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
+            _logger = factory.CreateLogger<ServiceDiscoveryProviderFactory>();
         }
 
         public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
         {
             if (route.UseServiceDiscovery)
             {
+                var routeName = route.UpstreamPathTemplate?.Template ?? route.ServiceName ?? string.Empty;
+                _logger.LogInformation($"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{routeName}' is enabled.");
                 return GetServiceDiscoveryProvider(serviceConfig, route);
             }
 
@@ -42,6 +46,8 @@ namespace Ocelot.ServiceDiscovery
 
         private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
         {
+            _logger.LogInformation($"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
+
             if (config.Type?.ToLower() == "servicefabric")
             {
                 var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
@@ -58,7 +64,10 @@ namespace Ocelot.ServiceDiscovery
                 }
             }
 
-            return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError($"Unable to find service discovery provider for type: {config.Type}"));
+            var message = $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!";
+            _logger.LogWarning(message);
+
+            return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError(message));
         }
     }
 }
