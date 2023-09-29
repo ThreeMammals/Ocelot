@@ -27,7 +27,10 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamQueryString = httpContext.Request.QueryString.ToString();
 
-            var upstreamHost = httpContext.Request.Headers["Host"].ToString().Split(":")[0];
+            var hostHeader = httpContext.Request.Headers["Host"].ToString();
+            var upstreamHost = hostHeader.Contains(':')
+                ? hostHeader.Split(':')[0]
+                : hostHeader;
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 
