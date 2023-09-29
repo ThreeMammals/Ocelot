@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
+using Ocelot.Polling;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Provider.Consul;
@@ -11,9 +12,7 @@ public static class ConsulProviderFactory
     ///     String constant used for provider type definition.
     /// </summary>
     public const string PollConsul = nameof(Provider.Consul.PollConsul);
-
-    private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
-    private static readonly object LockObject = new();
+    private static readonly PollingServicesManager<Consul, PollConsul> ServicesManager = new();
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
@@ -29,18 +28,9 @@ public static class ConsulProviderFactory
         var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
-            lock (LockObject)
-            {
-                var discoveryProvider =
-                    ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
-                if (discoveryProvider != null) return discoveryProvider;
-
-                discoveryProvider = new PollConsul(
-                    config.PollingInterval, route.ServiceName, factory, consulProvider);
-                ServiceDiscoveryProviders.Add(discoveryProvider);
-
-                return discoveryProvider;
-            }
+        {
+            return ServicesManager.GetServicePollingHandler(consulProvider, route.ServiceName, config.PollingInterval, factory);
+        }
 
         return consulProvider;
     }

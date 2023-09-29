@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
+using Ocelot.Polling;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using System;
@@ -14,6 +15,7 @@ namespace Ocelot.Provider.Kubernetes
         /// String constant used for provider type definition.
         /// </summary>
         public const string PollKube = nameof(Kubernetes.PollKube);
+        private static readonly PollingServicesManager<KubernetesServiceDiscoveryProvider, PollKube> ServicesManager = new();
 
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
@@ -32,7 +34,7 @@ namespace Ocelot.Provider.Kubernetes
 
             if (PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
             {
-                return new PollKube(config.PollingInterval, factory, k8SServiceDiscoveryProvider);
+                return ServicesManager.GetServicePollingHandler(k8SServiceDiscoveryProvider, route.ServiceName, config.PollingInterval, factory);
             }
 
             return k8SServiceDiscoveryProvider;

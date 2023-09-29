@@ -1,14 +1,10 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
+using Ocelot.Polling;
 using Ocelot.Provider.Consul;
 using Ocelot.ServiceDiscovery.Providers;
-using Shouldly;
-using Xunit;
 
 namespace Ocelot.UnitTests.Consul;
 
@@ -22,7 +18,8 @@ public class ProviderFactoryTests
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         var logger = new Mock<IOcelotLogger>();
         loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(logger.Object);
-        loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
+        loggerFactory.Setup(x => x.CreateLogger<ServicePollingHandler<Provider.Consul.Consul>>())
+            .Returns(logger.Object);
         var consulFactory = new Mock<IConsulClientFactory>();
         services.AddSingleton(consulFactory.Object);
         services.AddSingleton(loggerFactory.Object);
@@ -46,7 +43,7 @@ public class ProviderFactoryTests
     public void should_return_PollingConsulServiceDiscoveryProvider()
     {
         var provider = DummyPollingConsulServiceFactory(string.Empty);
-        var pollProvider = provider as PollConsul;
+        var pollProvider = provider as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider.ShouldNotBeNull();
     }
 
@@ -58,10 +55,10 @@ public class ProviderFactoryTests
 
         provider.ShouldBeEquivalentTo(provider2);
 
-        var pollProvider = provider as PollConsul;
+        var pollProvider = provider as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider.ShouldNotBeNull();
 
-        var pollProvider2 = provider2 as PollConsul;
+        var pollProvider2 = provider2 as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider2.ShouldNotBeNull();
 
         pollProvider.ServiceName.ShouldBeEquivalentTo(pollProvider2.ServiceName);
@@ -79,17 +76,15 @@ public class ProviderFactoryTests
             providersList.ShouldContain(currentProvider);
         }
 
-        var convertedProvidersList = providersList.Select(x => x as PollConsul).ToList();
+        var convertedProvidersList =
+            providersList.Select(x => x as ServicePollingHandler<Provider.Consul.Consul>).ToList();
 
-        foreach (var convertedProvider in convertedProvidersList)
-        {
-            convertedProvider.ShouldNotBeNull();
-        }
+        foreach (var convertedProvider in convertedProvidersList) convertedProvider.ShouldNotBeNull();
 
         foreach (var serviceName in serviceNames)
         {
             var cProvider = DummyPollingConsulServiceFactory(serviceName);
-            var convertedCProvider = cProvider as PollConsul;
+            var convertedCProvider = cProvider as ServicePollingHandler<Provider.Consul.Consul>;
 
             convertedCProvider.ShouldNotBeNull();
 
