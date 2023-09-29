@@ -6,10 +6,9 @@ namespace Ocelot.Provider.Consul;
 
 public sealed class PollConsul : IServiceDiscoveryProvider
 {
-    private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
-
+    private readonly IServiceDiscoveryProvider _consulServiceDiscoveryProvider;
     private readonly int _pollingInterval;
 
     private DateTime _lastUpdateTime;
@@ -33,11 +32,11 @@ public sealed class PollConsul : IServiceDiscoveryProvider
     public string ServiceName { get; }
 
     /// <summary>
-    ///     Get the services.
-    ///     If the first call, retrieve the services and then start the timer.
+    /// Gets the services.
+    /// <para>If the first call, retrieves the services and then starts the timer.</para>
     /// </summary>
     /// <returns>A <see cref="Task{T}" /> with a <see cref="List{Service}" /> result of <see cref="Service" />.</returns>
-    public Task<List<Service>> Get()
+    public Task<List<Service>> GetAsync()
     {
         lock (_lockObject)
         {
@@ -49,11 +48,16 @@ public sealed class PollConsul : IServiceDiscoveryProvider
                 return Task.FromResult(_services);
             }
 
-            _logger.LogInformation($"Retrieving new client information for service: {ServiceName}.");
-            _services = _consulServiceDiscoveryProvider.Get().Result;
-            _lastUpdateTime = DateTime.UtcNow;
-
-            return Task.FromResult(_services);
+            try
+            {
+                _logger.LogInformation($"Retrieving new client information for service: {ServiceName}...");
+                _services = _consulServiceDiscoveryProvider.GetAsync().Result;
+                return Task.FromResult(_services);
+            }
+            finally
+            {
+                _lastUpdateTime = DateTime.UtcNow;
+            }
         }
     }
 }

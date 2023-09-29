@@ -1,10 +1,6 @@
-﻿using KubeClient;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
-using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
-using System;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -29,13 +25,10 @@ namespace Ocelot.Provider.Kubernetes
             };
 
             var k8SServiceDiscoveryProvider = new KubernetesServiceDiscoveryProvider(k8SRegistryConfiguration, factory, kubeClient);
-
-            if (PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
-            {
-                return new PollKube(config.PollingInterval, factory, k8SServiceDiscoveryProvider);
-            }
-
-            return k8SServiceDiscoveryProvider;
+ 
+            return PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
+                ? new PollKube(config.PollingInterval, factory, k8SServiceDiscoveryProvider)
+                : k8SServiceDiscoveryProvider;
         }
     }
 }

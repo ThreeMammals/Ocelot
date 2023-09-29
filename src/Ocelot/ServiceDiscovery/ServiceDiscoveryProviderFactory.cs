@@ -5,15 +5,13 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.ServiceDiscovery
 {
     public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
-        private readonly ServiceDiscoveryFinderDelegate _delegates;
         private readonly IServiceProvider _provider;
+        private readonly ServiceDiscoveryFinderDelegate _delegates;
         private readonly IOcelotLogger _logger;
 
         public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
@@ -32,14 +30,14 @@ namespace Ocelot.ServiceDiscovery
                 return GetServiceDiscoveryProvider(serviceConfig, route);
             }
 
-            var services = new List<Service>();
-
-            foreach (var downstreamAddress in route.DownstreamAddresses)
-            {
-                var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, Array.Empty<string>());
-
-                services.Add(service);
-            }
+            var services = route.DownstreamAddresses
+                .Select(address => new Service(
+                    route.ServiceName,
+                    new ServiceHostAndPort(address.Host, address.Port, route.DownstreamScheme),
+                    string.Empty,
+                    string.Empty,
+                    Enumerable.Empty<string>()))
+                .ToList();
 
             return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
         }

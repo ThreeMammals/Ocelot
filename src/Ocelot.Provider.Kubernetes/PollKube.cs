@@ -1,17 +1,14 @@
 ﻿using Ocelot.Logging;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Kubernetes
 {
-    public class PollKube : IServiceDiscoveryProvider
+    public class PollKube : IServiceDiscoveryProvider, IDisposable
     {
         private readonly IOcelotLogger _logger;
         private readonly IServiceDiscoveryProvider _kubeServiceDiscoveryProvider;
         private readonly Timer _timer;
+        
         private bool _polling;
         private List<Service> _services;
 
@@ -21,27 +18,34 @@ namespace Ocelot.Provider.Kubernetes
             _kubeServiceDiscoveryProvider = kubeServiceDiscoveryProvider;
             _services = new List<Service>();
 
-            _timer = new Timer(async x =>
-            {
-                if (_polling)
-                {
-                    return;
-                }
-
-                _polling = true;
-                await Poll();
-                _polling = false;
-            }, null, pollingInterval, pollingInterval);
+            _timer = new Timer(OnTimerCallbackAsync, null, pollingInterval, pollingInterval);
         }
 
-        public Task<List<Service>> Get()
+        private async void OnTimerCallbackAsync(object state)
+        {
+            if (_polling)
+            {
+                return;
+            }
+
+            _polling = true;
+            await Poll();
+            _polling = false;
+        }
+
+        public Task<List<Service>> GetAsync()
         {
             return Task.FromResult(_services);
         }
 
         private async Task Poll()
         {
-            _services = await _kubeServiceDiscoveryProvider.Get();
+            _services = await _kubeServiceDiscoveryProvider.GetAsync();
+        }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
         }
     }
 }

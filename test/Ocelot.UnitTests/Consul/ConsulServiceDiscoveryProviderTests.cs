@@ -243,7 +243,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServices()
         {
-            _services = _provider.Get().GetAwaiter().GetResult();
+            _services = _provider.GetAsync().GetAwaiter().GetResult();
         }
 
         private void ThenTheTokenIs(string token)

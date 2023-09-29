@@ -12,7 +12,7 @@ namespace Ocelot.ServiceDiscovery.Providers
             _configuration = configuration;
         }
 
-        public Task<List<Service>> Get()
+        public Task<List<Service>> GetAsync()
         {
             return Task.FromResult(new List<Service>
             {

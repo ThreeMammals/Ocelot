@@ -154,7 +154,7 @@ namespace Ocelot.AcceptanceTests
                 GlobalConfiguration = new FileGlobalConfiguration(),
             };
 
-            Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
+            Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.GetAsync);
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))

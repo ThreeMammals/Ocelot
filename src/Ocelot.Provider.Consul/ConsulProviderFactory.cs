@@ -8,7 +8,7 @@ namespace Ocelot.Provider.Consul;
 public static class ConsulProviderFactory
 {
     /// <summary>
-    ///     String constant used for provider type definition.
+    /// String constant used for provider type definition.
     /// </summary>
     public const string PollConsul = nameof(Provider.Consul.PollConsul);
 
@@ -32,17 +32,14 @@ public static class ConsulProviderFactory
         {
             lock (LockObject)
             {
-                var discoveryProvider =
-                    ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
+                var discoveryProvider = ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
                 if (discoveryProvider != null)
                 {
                     return discoveryProvider;
                 }
 
-                discoveryProvider = new PollConsul(
-                    config.PollingInterval, route.ServiceName, factory, consulProvider);
+                discoveryProvider = new PollConsul(config.PollingInterval, route.ServiceName, factory, consulProvider);
                 ServiceDiscoveryProviders.Add(discoveryProvider);
-
                 return discoveryProvider;
             }
         }

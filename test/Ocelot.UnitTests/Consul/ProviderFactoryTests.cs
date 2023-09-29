@@ -1,14 +1,9 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.ServiceDiscovery.Providers;
-using Shouldly;
-using Xunit;
 
 namespace Ocelot.UnitTests.Consul;
 
@@ -30,7 +25,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_ConsulServiceDiscoveryProvider()
+    public void ShouldReturnConsulServiceDiscoveryProvider()
     {
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
@@ -43,7 +38,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_PollingConsulServiceDiscoveryProvider()
+    public void ShouldReturnPollingConsulServiceDiscoveryProvider()
     {
         var provider = DummyPollingConsulServiceFactory(string.Empty);
         var pollProvider = provider as PollConsul;
@@ -51,7 +46,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_SameProviderForGivenServiceName()
+    public void ShouldReturnSameProviderForGivenServiceName()
     {
         var provider = DummyPollingConsulServiceFactory("test");
         var provider2 = DummyPollingConsulServiceFactory("test");
@@ -69,7 +64,7 @@ public class ProviderFactoryTests
 
     [Theory]
     [InlineData(new object[] { new[] { "service1", "service2", "service3", "service4" } })]
-    public void should_return_ProviderAccordingToServiceName(string[] serviceNames)
+    public void ShouldReturnProviderAccordingToServiceName(string[] serviceNames)
     {
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
 
@@ -93,12 +88,14 @@ public class ProviderFactoryTests
 
             convertedCProvider.ShouldNotBeNull();
 
-            var matchingProviders = convertedProvidersList.Where(x => x.ServiceName == convertedCProvider.ServiceName)
+            var matchingProviders = convertedProvidersList
+                .Where(x => x.ServiceName == convertedCProvider.ServiceName)
                 .ToList();
             matchingProviders.ShouldHaveSingleItem();
 
-            matchingProviders.First().ShouldNotBeNull();
-            matchingProviders.First().ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
+            matchingProviders.First()
+                .ShouldNotBeNull()
+                .ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
         }
     }
 
@@ -110,8 +107,9 @@ public class ProviderFactoryTests
             .WithServiceName(serviceName)
             .Build();
 
-        return ConsulProviderFactory.Get(_provider,
-            new ServiceProviderConfiguration("pollconsul", "http", string.Empty, 1, string.Empty, string.Empty,
-                stopsFromPolling), route);
+        return ConsulProviderFactory.Get?.Invoke(
+            _provider,
+            new ServiceProviderConfiguration(ConsulProviderFactory.PollConsul, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
+            route);
     }
 }

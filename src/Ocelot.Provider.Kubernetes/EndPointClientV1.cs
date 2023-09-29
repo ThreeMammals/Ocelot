@@ -1,16 +1,16 @@
 ﻿using HTTPlease;
-using KubeClient;
 using KubeClient.Models;
 using KubeClient.ResourceClients;
 
-namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions
+namespace Ocelot.Provider.Kubernetes
 {
     public class EndPointClientV1 : KubeResourceClient
     {
-        private readonly HttpRequest _collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+        private readonly HttpRequest _collection;
 
         public EndPointClientV1(IKubeApiClient client) : base(client)
         {
+            _collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
         }
 
         public async Task<EndpointsV1> Get(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
@@ -20,21 +20,18 @@ namespace Ocelot.Provider.Kubernetes.KubeApiClientExtensions
                 throw new ArgumentNullException(nameof(serviceName));
             }
 
-            var response = await Http.GetAsync(
-                _collection.WithTemplateParameters(new
+            var request = _collection
+                .WithTemplateParameters(new
                 {
                     Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
                     ServiceName = serviceName,
-                }),
-                cancellationToken
-            );
+                });
 
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.ReadContentAsAsync<EndpointsV1>();
-            }
+            var response = await Http.GetAsync(request, cancellationToken);
 
-            return null;
+            return response.IsSuccessStatusCode
+                ? await response.ReadContentAsAsync<EndpointsV1>()
+                : null;
         }
     }
 }

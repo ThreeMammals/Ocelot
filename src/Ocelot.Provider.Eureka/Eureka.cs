@@ -14,12 +14,11 @@ namespace Ocelot.Provider.Eureka
             _serviceName = serviceName;
         }
 
-        public Task<List<Service>> Get()
+        public Task<List<Service>> GetAsync()
         {
             var services = new List<Service>();
 
             var instances = _client.GetInstances(_serviceName);
-
             if (instances != null && instances.Any())
             {
                 services.AddRange(instances.Select(i => new Service(i.ServiceId, new ServiceHostAndPort(i.Host, i.Port, i.Uri.Scheme), string.Empty, string.Empty, new List<string>())));

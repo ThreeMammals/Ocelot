@@ -40,7 +40,7 @@ namespace Ocelot.UnitTests.Kubernetes
         private void GivenKubeReturns(Service service)
         {
             _services.Add(service);
-            _kubeServiceDiscoveryProvider.Setup(x => x.Get()).ReturnsAsync(_services);
+            _kubeServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
         }
 
         private void ThenTheCountIs(int count)
@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Kubernetes
             {
                 try
                 {
-                    _result = _provider.Get().GetAwaiter().GetResult();
+                    _result = _provider.GetAsync().GetAwaiter().GetResult();
                     if (_result.Count == expected)
                     {
                         return true;
