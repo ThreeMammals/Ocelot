@@ -1,7 +1,4 @@
-﻿using NetTools;
-using System.Collections.Generic;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
     public class SecurityOptions
     {
