@@ -71,7 +71,7 @@ namespace Ocelot.Configuration.Creator
 
         private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
         {
-            var findAndReplace = input.Value.Split(",");
+            var findAndReplace = input.Value.Split(',');
 
             var replace = findAndReplace[1].TrimStart();
 
