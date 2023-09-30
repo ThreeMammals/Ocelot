@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.Cache
