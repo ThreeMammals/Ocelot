@@ -19,6 +19,8 @@ public class Consul : IServiceDiscoveryProvider
         _logger = factory.CreateLogger<Consul>();
     }
 
+    public const string ServiceValidationWarningFormat = "Unable to use service address: '{0}' and port: {1} as it is invalid for the service: '{2}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
+
     public async Task<List<Service>> GetAsync()
     {
         var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
@@ -27,8 +29,7 @@ public class Consul : IServiceDiscoveryProvider
 
         foreach (var serviceEntry in queryResult.Response)
         {
-            var address = serviceEntry.Service.Address;
-            var port = serviceEntry.Service.Port;
+            var service = serviceEntry.Service;
             if (IsValid(serviceEntry))
             {
                 var nodes = await _consul.Catalog.Nodes();
@@ -38,14 +39,13 @@ public class Consul : IServiceDiscoveryProvider
                 }
                 else
                 {
-                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == address);
+                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == service.Address);
                     services.Add(BuildService(serviceEntry, serviceNode));
                 }
             }
             else
             {
-                _logger.LogWarning(
-                    $"Unable to use service address: {address} and Port: {port} as it is invalid. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
+                _logger.LogWarning(string.Format(ServiceValidationWarningFormat, service.Address, service.Port, service.Service));
             }
         }
 

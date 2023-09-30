@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.Consul
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForInvalidAddress())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Consul
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
@@ -193,47 +193,18 @@ namespace Ocelot.UnitTests.Consul
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForInvalidPorts())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
-        private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidAddress()
+        private void ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(params ServiceEntry[] serviceEntries)
         {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: http://localhost and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: http://localhost and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-        }
-
-        private void ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress()
-        {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address:  and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address:  and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-        }
-
-        private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidPorts()
-        {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: localhost and Port: -1 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: localhost and Port: 0 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
+            foreach (var entry in serviceEntries)
+            {
+                var service = entry.Service;
+                var expected = string.Format(ConsulProvider.ServiceValidationWarningFormat, service.Address, service.Port, service.Service);
+                _logger.Verify(x => x.LogWarning(expected), Times.Once);
+            }
         }
 
         private void ThenTheCountIs(int count)
