@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace Ocelot.AcceptanceTests
+﻿namespace Ocelot.AcceptanceTests
 {
     public static class TestConfiguration
     {

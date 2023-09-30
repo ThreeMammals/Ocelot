@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ocelot.Infrastructure.Extensions
+﻿namespace Ocelot.Infrastructure.Extensions
 {
     /// <summary>
     /// Trivial implementations of methods present in .NET Core 2 but not supported on .NET Standard 2.0.

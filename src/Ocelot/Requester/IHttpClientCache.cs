@@ -1,6 +1,4 @@
-﻿using System;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 
 namespace Ocelot.Requester
 {

@@ -1,10 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
-
-using Ocelot.Configuration.Builder;
-
 using Ocelot.Cache;
-
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator

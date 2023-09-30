@@ -1,23 +1,12 @@
-﻿using Ocelot.Middleware;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Claims;
 using Ocelot.Claims.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
-
+using Ocelot.Middleware;
 using Ocelot.Responses;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Claims
 {

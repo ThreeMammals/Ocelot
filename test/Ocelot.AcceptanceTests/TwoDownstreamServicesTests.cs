@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-
-using Ocelot.Configuration.File;
-
-using Consul;
-
+﻿using Consul;
 using Microsoft.AspNetCore.Http;
-
 using Newtonsoft.Json;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
 {

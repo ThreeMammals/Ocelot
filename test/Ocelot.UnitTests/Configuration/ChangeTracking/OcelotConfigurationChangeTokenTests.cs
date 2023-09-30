@@ -1,11 +1,4 @@
-using Xunit;
-using System;
-
 using Ocelot.Configuration.ChangeTracking;
-
-using Shouldly;
-
-using TestStack.BDDfy;
 
 namespace Ocelot.UnitTests.Configuration.ChangeTracking
 {

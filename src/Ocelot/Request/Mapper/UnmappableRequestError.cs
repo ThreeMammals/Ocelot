@@ -1,6 +1,4 @@
-﻿using System;
-
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 
 namespace Ocelot.Request.Mapper
 {

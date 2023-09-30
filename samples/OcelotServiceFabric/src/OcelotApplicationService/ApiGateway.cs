@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.IO;
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.IO;
 
 namespace OcelotApplicationService
 {

@@ -1,19 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-using Ocelot.Errors;
-
-using Ocelot.Configuration.File;
-
-using FluentValidation;
-
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-
+using Ocelot.Configuration.File;
+using Ocelot.Errors;
 using Ocelot.Responses;
-
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Validator

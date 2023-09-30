@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <Version>0.0.0-dev</Version>
     <Authors>Kjell-Åke Gafvelin</Authors>
     <Description>This package provides OpenTracing support to Ocelot.</Description>
@@ -10,6 +12,7 @@
     <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
 

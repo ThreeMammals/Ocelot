@@ -1,16 +1,6 @@
-using System;
-
 using Microsoft.Extensions.Configuration;
-
-using Moq;
-
 using Ocelot.Infrastructure;
-
 using Ocelot.Responses;
-
-using Shouldly;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Infrastructure
 {

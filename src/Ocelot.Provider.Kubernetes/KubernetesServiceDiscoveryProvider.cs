@@ -4,9 +4,6 @@ using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.KubeApiClientExtensions;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ocelot.Provider.Kubernetes;
 

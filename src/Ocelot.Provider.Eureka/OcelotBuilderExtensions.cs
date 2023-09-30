@@ -1,7 +1,5 @@
-﻿using Ocelot.DependencyInjection;
-
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
+using Ocelot.DependencyInjection;
 using Steeltoe.Discovery.Client;
 
 namespace Ocelot.Provider.Eureka

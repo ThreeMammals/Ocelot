@@ -1,10 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-
-using Moq;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Infrastructure;
@@ -13,12 +7,7 @@ using Ocelot.PathManipulation;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {

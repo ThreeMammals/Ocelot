@@ -1,4 +1,3 @@
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -6,12 +5,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using TestStack.BDDfy;
-using Xunit;
 using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration

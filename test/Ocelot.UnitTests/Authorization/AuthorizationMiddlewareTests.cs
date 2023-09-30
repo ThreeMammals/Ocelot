@@ -1,11 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Authorization;
 using Ocelot.Authorization.Middleware;
 using Ocelot.Configuration;
@@ -13,12 +6,8 @@ using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Authorization
 {

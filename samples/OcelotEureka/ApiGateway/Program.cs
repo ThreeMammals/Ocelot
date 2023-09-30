@@ -1,11 +1,10 @@
-﻿using Ocelot.Provider.Eureka;
-using Ocelot.Provider.Polly;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Eureka;
+using Ocelot.Provider.Polly;
 
 namespace ApiGateway
 {

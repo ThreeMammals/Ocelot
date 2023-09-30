@@ -1,27 +1,17 @@
-﻿using System.IO;
-
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
-using Ocelot.Requester;
-
 using Ocelot.Provider.Polly;
-
-using Shouldly;
-
-using Xunit;
+using Ocelot.Requester;
 
 namespace Ocelot.UnitTests.Polly
 {
     public class OcelotBuilderExtensionsTests
     {
         [Fact]
-        public void should_build()
+        public void Should_build()
         {
             var loggerFactory = new Mock<IOcelotLoggerFactory>();
             var services = new ServiceCollection();

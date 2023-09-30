@@ -1,25 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
-
 using Ocelot.LoadBalancer.LoadBalancers;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Responses;
-
 using Ocelot.ServiceDiscovery.Providers;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

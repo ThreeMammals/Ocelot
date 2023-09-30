@@ -1,15 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Repository;
 using Ocelot.Provider.Eureka;
 using Ocelot.Responses;
-using Shouldly;
 using Steeltoe.Discovery;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Ocelot.UnitTests.Eureka
 {

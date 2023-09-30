@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ocelot.Infrastructure.Extensions
+﻿namespace Ocelot.Infrastructure.Extensions
 {
     public static class StringExtensions
     {

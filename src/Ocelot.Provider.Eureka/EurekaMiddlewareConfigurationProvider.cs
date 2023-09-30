@@ -1,13 +1,7 @@
-﻿using System.Threading.Tasks;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Repository;
-
-using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Middleware;
-
-using Steeltoe.Discovery.Client;
 
 namespace Ocelot.Provider.Eureka
 {

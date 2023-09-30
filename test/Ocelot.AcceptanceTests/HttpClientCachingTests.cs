@@ -2,13 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Requester;
-using Shouldly;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {

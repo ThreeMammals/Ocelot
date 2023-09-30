@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ocelot.Cache
+﻿namespace Ocelot.Cache
 {
     public interface IOcelotCache<T>
     {

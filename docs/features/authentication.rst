@@ -172,6 +172,6 @@ NOTE: In order to get Ocelot to view the scope claim from Okta properly, you hav
 Allowed Scopes
 ^^^^^^^^^^^^^
 
-If you add scopes to AllowedScopes Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has all of the scopes in the list.
+If you add scopes to AllowedScopes Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has at least one of the scopes in the list.
 
 This is a way to restrict access to a Route on a per scope basis.

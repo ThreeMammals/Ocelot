@@ -1,26 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-
-using Ocelot.Cache;
-
-using Ocelot.Configuration.File;
-
-using Consul;
-
+﻿using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-
 using Newtonsoft.Json;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Ocelot.Cache;
+using Ocelot.Configuration.File;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests
 {

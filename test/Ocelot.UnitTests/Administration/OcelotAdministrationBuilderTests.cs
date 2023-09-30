@@ -1,22 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
 using Ocelot.Administration;
 using Ocelot.DependencyInjection;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Administration
 {

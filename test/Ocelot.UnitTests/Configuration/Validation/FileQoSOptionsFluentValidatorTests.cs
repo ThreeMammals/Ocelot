@@ -1,16 +1,8 @@
 using FluentValidation.Results;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Requester;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {

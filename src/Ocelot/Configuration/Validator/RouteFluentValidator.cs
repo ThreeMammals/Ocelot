@@ -1,13 +1,6 @@
-﻿using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
-using FluentValidation;
-
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Validator
 {

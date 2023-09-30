@@ -1,22 +1,8 @@
-﻿using System;
-
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration

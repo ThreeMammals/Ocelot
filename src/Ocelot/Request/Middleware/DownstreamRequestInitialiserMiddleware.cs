@@ -1,12 +1,7 @@
-using System.Threading.Tasks;
-
-using Ocelot.Request.Creator;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Request.Creator;
 
 namespace Ocelot.Request.Middleware
 {

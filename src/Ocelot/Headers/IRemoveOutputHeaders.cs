@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.Middleware;
+﻿using Ocelot.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.Headers

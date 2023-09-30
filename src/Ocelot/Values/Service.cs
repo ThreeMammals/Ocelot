@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Ocelot.Values
 {
     public class Service

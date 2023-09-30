@@ -20,6 +20,7 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    :caption: Features
 
    features/configuration
+   features/dependencyinjection
    features/routing
    features/requestaggregation
    features/graphql

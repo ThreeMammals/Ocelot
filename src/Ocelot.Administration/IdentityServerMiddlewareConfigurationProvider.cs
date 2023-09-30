@@ -1,10 +1,6 @@
-﻿using System.Threading.Tasks;
-
-using Ocelot.Configuration.Repository;
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-
+using Ocelot.Configuration.Repository;
 using Ocelot.Middleware;
 
 namespace Ocelot.Administration

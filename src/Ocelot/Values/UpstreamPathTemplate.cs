@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace Ocelot.Values
 {
     public class UpstreamPathTemplate

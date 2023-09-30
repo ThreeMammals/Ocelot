@@ -1,9 +1,5 @@
-using System.Threading.Tasks;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.Headers.Middleware

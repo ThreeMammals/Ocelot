@@ -1,8 +1,6 @@
 using Ocelot.Configuration;
-
-using Ocelot.ServiceDiscovery.Providers;
-
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.ServiceDiscovery
 {

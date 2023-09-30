@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.WebSockets.Middleware
+namespace Ocelot.WebSockets
 {
     public static class WebSocketsProxyMiddlewareExtensions
     {

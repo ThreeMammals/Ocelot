@@ -1,13 +1,6 @@
-using System;
-
 using Microsoft.Extensions.Logging;
-
-using Moq;
-
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Logging
 {

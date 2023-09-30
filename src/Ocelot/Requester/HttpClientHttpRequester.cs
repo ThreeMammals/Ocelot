@@ -1,13 +1,6 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Logging;
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
 
 namespace Ocelot.Requester

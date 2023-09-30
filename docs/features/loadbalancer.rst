@@ -104,7 +104,7 @@ Please note that if you give more than one DownstreamHostAndPort or you are usin
 Custom Load Balancers
 ^^^^^^^^^^^^^^^^^^^^
 
-`DavidLievrouw <https://github.com/DavidLievrouw`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155`_.
+`David Lievrouw <https://github.com/DavidLievrouw>`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155>`_.
 
 In order to create and use a custom load balancer you can do the following. Below we setup a basic load balancing config and not the Type is CustomLoadBalancer this is the name of a class we will setup to do load balancing.
 
@@ -135,11 +135,10 @@ Then you need to create a class that implements the ILoadBalancer interface. Bel
 
 .. code-block:: csharp
 
-        private class CustomLoadBalancer : ILoadBalancer
+        public class CustomLoadBalancer : ILoadBalancer
         {
             private readonly Func<Task<List<Service>>> _services;
             private readonly object _lock = new object();
-
             private int _last;
 
             public CustomLoadBalancer(Func<Task<List<Service>>> services)
@@ -147,25 +146,20 @@ Then you need to create a class that implements the ILoadBalancer interface. Bel
                 _services = services;
             }
 
-            public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext, HttpContext httpContext)
+            public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
             {
                 var services = await _services();
                 lock (_lock)
                 {
                     if (_last >= services.Count)
-                    {
                         _last = 0;
-                    }
 
-                    var next = services[_last];
-                    _last++;
+                    var next = services[_last++];
                     return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
                 }
             }
 
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-            }
+            public void Release(ServiceHostAndPort hostAndPort) { }
         }
 
 Finally you need to register this class with Ocelot. I have used the most complex example below to show all of the data / types that can be passed into the factory that creates load balancers.

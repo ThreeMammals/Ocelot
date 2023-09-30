@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.Configuration;
-
+﻿using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-
 using Ocelot.Errors;
-
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.Middleware

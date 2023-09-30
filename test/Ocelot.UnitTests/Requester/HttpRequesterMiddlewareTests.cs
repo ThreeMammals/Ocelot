@@ -1,27 +1,11 @@
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
-
-using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
-
-using Ocelot.UnitTests.Responder;
-
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Requester
 {

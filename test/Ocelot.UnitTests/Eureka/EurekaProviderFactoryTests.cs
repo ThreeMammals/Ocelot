@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.Provider.Eureka;
-using Shouldly;
 using Steeltoe.Discovery;
-using Xunit;
 
 namespace Ocelot.UnitTests.Eureka
 {

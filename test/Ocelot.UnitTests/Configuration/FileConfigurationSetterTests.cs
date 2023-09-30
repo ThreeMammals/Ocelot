@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-
-using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -10,13 +6,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
-using System;
 
 namespace Ocelot.UnitTests.Configuration
 {

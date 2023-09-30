@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
     /// <summary>
     /// RateLimit Options.

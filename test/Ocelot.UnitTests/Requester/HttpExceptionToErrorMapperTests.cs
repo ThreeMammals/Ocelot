@@ -1,35 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Requester;
-
 using Ocelot.UnitTests.Responder;
-
-using Shouldly;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class HttpExeptionToErrorMapperTests
+    public class HttpExceptionToErrorMapperTests
     {
-        private HttpExeptionToErrorMapper _mapper;
+        private HttpExceptionToErrorMapper _mapper;
         private readonly ServiceCollection _services;
 
-        public HttpExeptionToErrorMapperTests()
+        public HttpExceptionToErrorMapperTests()
         {
             _services = new ServiceCollection();
             var provider = _services.BuildServiceProvider();
-            _mapper = new HttpExeptionToErrorMapper(provider);
+            _mapper = new HttpExceptionToErrorMapper(provider);
         }
 
         [Fact]
-        public void should_return_default_error_because_mappers_are_null()
+        public void Should_return_default_error_because_mappers_are_null()
         {
             var error = _mapper.Map(new Exception());
 
@@ -37,7 +26,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_request_canceled()
+        public void Should_return_request_canceled()
         {
             var error = _mapper.Map(new OperationCanceledException());
 
@@ -45,7 +34,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_ConnectionToDownstreamServiceError()
+        public void Should_return_ConnectionToDownstreamServiceError()
         {
             var error = _mapper.Map(new HttpRequestException());
 
@@ -53,7 +42,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_request_canceled_for_subtype()
+        public void Should_return_request_canceled_for_subtype()
         {
             var error = _mapper.Map(new SomeException());
 
@@ -61,7 +50,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_error_from_mapper()
+        public void Should_return_error_from_mapper()
         {
             var errorMapping = new Dictionary<Type, Func<Exception, Error>>
             {
@@ -72,7 +61,7 @@ namespace Ocelot.UnitTests.Requester
 
             var provider = _services.BuildServiceProvider();
 
-            _mapper = new HttpExeptionToErrorMapper(provider);
+            _mapper = new HttpExceptionToErrorMapper(provider);
 
             var error = _mapper.Map(new TaskCanceledException());
 

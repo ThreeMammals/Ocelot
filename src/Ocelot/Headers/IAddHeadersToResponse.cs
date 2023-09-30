@@ -1,7 +1,5 @@
-using Ocelot.Middleware;
-using System.Collections.Generic;
-
 using Ocelot.Configuration.Creator;
+using Ocelot.Middleware;
 
 namespace Ocelot.Headers
 {

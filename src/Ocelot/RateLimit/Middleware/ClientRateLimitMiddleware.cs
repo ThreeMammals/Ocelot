@@ -1,14 +1,6 @@
-﻿using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-
 using Ocelot.Logging;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
 
 namespace Ocelot.RateLimit.Middleware

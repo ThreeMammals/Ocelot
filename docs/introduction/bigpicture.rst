@@ -1,7 +1,7 @@
 Big Picture
 ===========
 
-Ocelot is aimed at people using .NET running a micro services / service orientated architecture that need a unified point of entry into their system.
+Ocelot is aimed at people using .NET running a microservices / service-oriented architecture that need a unified point of entry into their system.
 
 In particular I want easy integration with IdentityServer reference and bearer tokens. 
 

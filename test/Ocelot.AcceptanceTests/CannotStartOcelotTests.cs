@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-
 using Ocelot.Configuration.File;
-
-using Shouldly;
-
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
