@@ -2,8 +2,6 @@ using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using System;
-using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -78,8 +76,7 @@ namespace Ocelot.Configuration.Creator
             var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
             if (startOfPlaceholder > -1)
             {
-                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder, StringComparison.Ordinal);
-
+                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder);
 
                 var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder + 1);
 
