@@ -293,11 +293,12 @@ namespace Ocelot.AcceptanceTests
         {
             var configuration = new OcelotPipelineConfiguration
             {
-                PreQueryStringBuilderMiddleware = async (context, next) =>
-                {
-                    _counter++;
-                    return; // do not invoke the rest of the pipeline
-                },
+                PreQueryStringBuilderMiddleware = (context, next) =>
+                    Task.Run(() =>
+                    {
+                        _counter++;
+                        return; // do not invoke the rest of the pipeline
+                    }),
             };
 
             var port = RandomPortFinder.GetRandomPort();
@@ -325,7 +326,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration, _configurationPath))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
                 .And(x => _steps.GivenOcelotIsRunning(configuration))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
