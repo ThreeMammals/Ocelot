@@ -69,16 +69,16 @@ namespace Ocelot.Configuration.Creator
 
         private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
         {
-            var findAndReplace = input.Value.Split(",");
+            var findAndReplace = input.Value.Split(',');
 
             var replace = findAndReplace[1].TrimStart();
 
             var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
             if (startOfPlaceholder > -1)
             {
-                var endOfPlaceholder = replace.IndexOf("}", startOfPlaceholder, StringComparison.Ordinal);
+                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder);
 
-                var placeholder = replace.Substring(startOfPlaceholder, startOfPlaceholder + (endOfPlaceholder + 1));
+                var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder - startOfPlaceholder + 1);
 
                 var value = _placeholders.Get(placeholder);
 
