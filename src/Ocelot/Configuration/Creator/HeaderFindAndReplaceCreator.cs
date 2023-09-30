@@ -78,7 +78,8 @@ namespace Ocelot.Configuration.Creator
             var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
             if (startOfPlaceholder > -1)
             {
-                var endOfPlaceholder = replace.IndexOf("}", startOfPlaceholder, StringComparison.Ordinal);
+                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder, StringComparison.Ordinal);
+
 
                 var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder + 1);
 
