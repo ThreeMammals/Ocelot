@@ -95,29 +95,10 @@ namespace Ocelot.UnitTests.Consul
         [Fact]
         public void should_not_return_services_with_invalid_address()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "http://localhost",
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "http://localhost",
-                    Port = 50888,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(address: "http://localhost", port: 50881)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(address: "http://localhost", port: 50888)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
@@ -130,29 +111,12 @@ namespace Ocelot.UnitTests.Consul
         [Fact]
         public void should_not_return_services_with_empty_address()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = string.Empty,
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = null,
-                    Port = 50888,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(port: 50881)
+                .WithAddress(string.Empty)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(port: 50888)
+                .WithAddress(null)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
@@ -165,29 +129,10 @@ namespace Ocelot.UnitTests.Consul
         [Fact]
         public void should_not_return_services_with_invalid_port()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = -1,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = 0,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(port: -1)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(port: 0)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
@@ -196,6 +141,16 @@ namespace Ocelot.UnitTests.Consul
                 .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
+
+        private AgentService GivenService(string address = null, int? port = null, string id = null, string[] tags = null)
+            => new()
+            {
+                Service = _serviceName,
+                Address = address ?? "localhost",
+                Port = port ?? 123,
+                ID = id ?? Guid.NewGuid().ToString(),
+                Tags = tags ?? Array.Empty<string>(),
+            };
 
         private void ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(params ServiceEntry[] serviceEntries)
         {
