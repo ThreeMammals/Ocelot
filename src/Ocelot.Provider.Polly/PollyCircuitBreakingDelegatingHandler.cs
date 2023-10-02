@@ -1,5 +1,11 @@
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
+
 using Polly;
 using Polly.CircuitBreaker;
 
@@ -28,7 +34,7 @@ namespace Ocelot.Provider.Polly
                     return await base.SendAsync(request, cancellationToken);
                 }
 
-                IAsyncPolicy policy = policies.Length > 1
+                var policy = policies.Length > 1
                     ? Policy.WrapAsync(policies)
                     : policies[0];
 
