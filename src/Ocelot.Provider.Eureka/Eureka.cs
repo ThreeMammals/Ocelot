@@ -5,13 +5,13 @@ namespace Ocelot.Provider.Eureka
 {
     public class Eureka : IServiceDiscoveryProvider
     {
-        private readonly IDiscoveryClient _client;
         private readonly string _serviceName;
+        private readonly IDiscoveryClient _client;
 
         public Eureka(string serviceName, IDiscoveryClient client)
         {
-            _client = client;
-            _serviceName = serviceName;
+            _serviceName = serviceName ?? throw new ArgumentNullException(nameof(serviceName));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         public Task<List<Service>> GetAsync()
