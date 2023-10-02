@@ -12,8 +12,8 @@ namespace Ocelot.UnitTests.Eureka
         {
             var config = new ServiceProviderConfigurationBuilder().Build();
             var sp = new ServiceCollection().BuildServiceProvider();
-            var provider = EurekaProviderFactory.Get(sp, config, null);
-            provider.ShouldBeNull();
+            Should.Throw<NullReferenceException>(() =>
+                EurekaProviderFactory.Get(sp, config, null));
         }
 
         [Fact]
