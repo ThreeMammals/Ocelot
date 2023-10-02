@@ -1,5 +1,3 @@
-using Polly;
-
 namespace Ocelot.Provider.Polly
 {
     public class CircuitBreaker
