@@ -30,7 +30,7 @@ public class Consul : IServiceDiscoveryProvider
         foreach (var serviceEntry in queryResult.Response)
         {
             var service = serviceEntry.Service;
-            if (IsValid(serviceEntry))
+            if (IsValid(service))
             {
                 var nodes = await _consul.Catalog.Nodes();
                 if (nodes.Response == null)
@@ -65,14 +65,11 @@ public class Consul : IServiceDiscoveryProvider
             service.Tags ?? Enumerable.Empty<string>());
     }
 
-    private static bool IsValid(ServiceEntry serviceEntry)
-    {
-        var service = serviceEntry.Service;
-        return !string.IsNullOrEmpty(service.Address)
-               && !service.Address.Contains($"{Uri.UriSchemeHttp}://")
-               && !service.Address.Contains($"{Uri.UriSchemeHttps}://")
-               && service.Port > 0;
-    }
+    private static bool IsValid(AgentService service)
+        => !string.IsNullOrEmpty(service.Address)
+        && !service.Address.Contains($"{Uri.UriSchemeHttp}://")
+        && !service.Address.Contains($"{Uri.UriSchemeHttps}://")
+        && service.Port > 0;
 
     private static string GetVersionFromStrings(IEnumerable<string> strings)
         => strings?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
