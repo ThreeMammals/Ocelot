@@ -12,15 +12,15 @@ public class Consul : IServiceDiscoveryProvider
     private readonly IConsulClient _consul;
     private readonly IOcelotLogger _logger;
 
-    public Consul() { }
+    public Consul() {}
     public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
     {
-        _logger = factory.CreateLogger<Consul>();
         _config = config;
         _consul = clientFactory.Get(_config);
+        _logger = factory.CreateLogger<Consul>();
     }
 
-    public virtual async Task<List<Service>> Get()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 
@@ -28,7 +28,8 @@ public class Consul : IServiceDiscoveryProvider
 
         foreach (var serviceEntry in queryResult.Response)
         {
-            if (IsValid(serviceEntry))
+            var service = serviceEntry.Service;
+            if (IsValid(service))
             {
                 var nodes = await _consul.Catalog.Nodes();
                 if (nodes.Response == null)
@@ -37,14 +38,14 @@ public class Consul : IServiceDiscoveryProvider
                 }
                 else
                 {
-                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
+                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == service.Address);
                     services.Add(BuildService(serviceEntry, serviceNode));
                 }
             }
             else
             {
                 _logger.LogWarning(
-                    $"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+                    $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
             }
         }
 
@@ -53,27 +54,24 @@ public class Consul : IServiceDiscoveryProvider
 
     private static Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
     {
+        var service = serviceEntry.Service;
         return new Service(
-            serviceEntry.Service.Service,
-            new ServiceHostAndPort(serviceNode == null ? serviceEntry.Service.Address : serviceNode.Name,
-                serviceEntry.Service.Port),
-            serviceEntry.Service.ID,
-            GetVersionFromStrings(serviceEntry.Service.Tags),
-            serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
+            service.Service,
+            new ServiceHostAndPort(
+                serviceNode == null ? service.Address : serviceNode.Name,
+                service.Port),
+            service.ID,
+            GetVersionFromStrings(service.Tags),
+            service.Tags ?? Enumerable.Empty<string>());
     }
 
-    private static bool IsValid(ServiceEntry serviceEntry)
-    {
-        return !string.IsNullOrEmpty(serviceEntry.Service.Address)
-               && !serviceEntry.Service.Address.Contains("http://")
-               && !serviceEntry.Service.Address.Contains("https://")
-               && serviceEntry.Service.Port > 0;
-    }
+    private static bool IsValid(AgentService service)
+        => !string.IsNullOrEmpty(service.Address)
+        && !service.Address.Contains($"{Uri.UriSchemeHttp}://")
+        && !service.Address.Contains($"{Uri.UriSchemeHttps}://")
+        && service.Port > 0;
 
     private static string GetVersionFromStrings(IEnumerable<string> strings)
-    {
-        return strings
-            ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
+        => strings?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
             .TrimStart(VersionPrefix);
-    }
 }

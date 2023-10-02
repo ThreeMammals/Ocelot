@@ -2,15 +2,17 @@
 using Ocelot.DependencyInjection;
 using Steeltoe.Discovery.Client;
 
-namespace Ocelot.Provider.Eureka;
-
-public static class OcelotBuilderExtensions
+namespace Ocelot.Provider.Eureka
 {
-    public static IOcelotBuilder AddEureka(this IOcelotBuilder builder)
+    public static class OcelotBuilderExtensions
     {
-        builder.Services.AddDiscoveryClient(builder.Configuration);
-        builder.Services.AddSingleton(EurekaProviderFactory.Get);
-        builder.Services.AddSingleton(EurekaMiddlewareConfigurationProvider.Get);
-        return builder;
+        public static IOcelotBuilder AddEureka(this IOcelotBuilder builder)
+        {
+            builder.Services
+                .AddDiscoveryClient(builder.Configuration)
+                .AddSingleton(EurekaProviderFactory.Get)
+                .AddSingleton(EurekaMiddlewareConfigurationProvider.Get);
+            return builder;
+        }
     }
 }

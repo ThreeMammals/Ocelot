@@ -4,6 +4,6 @@ namespace Ocelot.ServiceDiscovery.Providers
 {
     public interface IServiceDiscoveryProvider
     {
-        Task<List<Service>> Get();
+        Task<List<Service>> GetAsync();
     }
 }

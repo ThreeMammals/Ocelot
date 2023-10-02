@@ -20,7 +20,7 @@ public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
         _downstreamRoute = downstreamRoute;
     }
 
-    public Task<List<Service>> Get()
+    public Task<List<Service>> GetAsync()
     {
 
         // Returns a list of service(s) that match the downstream route passed to the provider

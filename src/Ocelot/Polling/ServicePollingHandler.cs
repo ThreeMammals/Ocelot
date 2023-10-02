@@ -31,7 +31,7 @@ public abstract class ServicePollingHandler<T> : IServiceDiscoveryProvider
 
     public string ServiceName { get; protected set; }
 
-    public Task<List<Service>> Get()
+    public Task<List<Service>> GetAsync()
     {
         if (_baseProvider == null)
         {
@@ -49,7 +49,7 @@ public abstract class ServicePollingHandler<T> : IServiceDiscoveryProvider
             }
 
             _logger.LogInformation($"Retrieving new client information for service: {ServiceName}.");
-            _services = _baseProvider.Get().Result;
+            _services = _baseProvider.GetAsync().Result;
             _lastUpdateTime = DateTime.UtcNow;
 
             return Task.FromResult(_services);

@@ -54,7 +54,7 @@ public class PollingKubeServiceDiscoveryProviderTests
     private void GivenKubeReturns(Service service)
     {
         _services.Add(service);
-        _kubeServiceDiscoveryProvider.Setup(x => x.Get()).ReturnsAsync(_services);
+        _kubeServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
     }
 
     private void ThenTheCountIs(int count)
@@ -70,7 +70,7 @@ public class PollingKubeServiceDiscoveryProviderTests
         {
             try
             {
-                _result = _provider.Get().GetAwaiter().GetResult();
+                _result = _provider.GetAsync().GetAwaiter().GetResult();
                 return _result.Count == expected;
             }
             catch (Exception)
@@ -89,7 +89,7 @@ public class PollingKubeServiceDiscoveryProviderTests
 
         try
         {
-            _result = provider.Get().GetAwaiter().GetResult();
+            _result = provider.GetAsync().GetAwaiter().GetResult();
             result = _result.Count == expected;
         }
         catch (Exception)

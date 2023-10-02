@@ -3,15 +3,15 @@
 public class ConsulClientFactory : IConsulClientFactory
 {
     public IConsulClient Get(ConsulRegistryConfiguration config)
-    {
-        return new ConsulClient(c =>
-        {
-            c.Address = new Uri($"{config.Scheme}://{config.Host}:{config.Port}");
+        => new ConsulClient(c => OverrideConfig(c, config));
 
-            if (!string.IsNullOrEmpty(config.Token))
-            {
-                c.Token = config.Token;
-            }
-        });
+    private static void OverrideConfig(ConsulClientConfiguration to, ConsulRegistryConfiguration from)
+    {
+        to.Address = new Uri($"{from.Scheme}://{from.Host}:{from.Port}");
+
+        if (!string.IsNullOrEmpty(from?.Token))
+        {
+            to.Token = from.Token;
+        }
     }
 }

@@ -52,7 +52,7 @@ public class PollingConsulServiceDiscoveryProviderTests
     private void GivenConsulReturns(Service service)
     {
         _services.Add(service);
-        _consulServiceDiscoveryProvider.Setup(x => x.Get()).ReturnsAsync(_services);
+        _consulServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
     }
 
     private void ThenTheCountIs(int count)
@@ -68,7 +68,7 @@ public class PollingConsulServiceDiscoveryProviderTests
         {
             try
             {
-                _result = provider.Get().GetAwaiter().GetResult();
+                _result = provider.GetAsync().GetAwaiter().GetResult();
                 return _result.Count == expected;
             }
             catch
@@ -87,7 +87,7 @@ public class PollingConsulServiceDiscoveryProviderTests
         bool result;
         try
         {
-            _result = provider.Get().GetAwaiter().GetResult();
+            _result = provider.GetAsync().GetAwaiter().GetResult();
             result = _result.Count == expected;
         }
         catch (Exception)

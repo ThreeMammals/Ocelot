@@ -1,31 +1,30 @@
 ﻿using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
-namespace Ocelot.Provider.Eureka;
-
-public class Eureka : IServiceDiscoveryProvider
+namespace Ocelot.Provider.Eureka
 {
-    private readonly IDiscoveryClient _client;
-    private readonly string _serviceName;
-
-    public Eureka(string serviceName, IDiscoveryClient client)
+    public class Eureka : IServiceDiscoveryProvider
     {
-        _client = client;
-        _serviceName = serviceName;
-    }
+        private readonly string _serviceName;
+        private readonly IDiscoveryClient _client;
 
-    public Task<List<Service>> Get()
-    {
-        var services = new List<Service>();
-
-        var instances = _client.GetInstances(_serviceName);
-
-        if (instances != null && instances.Any())
+        public Eureka(string serviceName, IDiscoveryClient client)
         {
-            services.AddRange(instances.Select(i => new Service(i.ServiceId,
-                new ServiceHostAndPort(i.Host, i.Port, i.Uri.Scheme), string.Empty, string.Empty, new List<string>())));
+            _serviceName = serviceName ?? throw new ArgumentNullException(nameof(serviceName));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        return Task.FromResult(services);
+        public Task<List<Service>> GetAsync()
+        {
+            var services = new List<Service>();
+
+            var instances = _client.GetInstances(_serviceName);
+            if (instances != null && instances.Any())
+            {
+                services.AddRange(instances.Select(i => new Service(i.ServiceId, new ServiceHostAndPort(i.Host, i.Port, i.Uri.Scheme), string.Empty, string.Empty, new List<string>())));
+            }
+
+            return Task.FromResult(services);
+        }
     }
 }

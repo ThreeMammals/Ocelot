@@ -1,29 +1,25 @@
 ﻿using KubeClient.Models;
 using Ocelot.Logging;
-using Ocelot.Provider.Kubernetes.KubeApiClientExtensions;
 using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
 
 public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
-    private readonly IKubeApiClient _kubeApi;
     private readonly KubeRegistryConfiguration _kubeRegistryConfiguration;
     private readonly IOcelotLogger _logger;
+    private readonly IKubeApiClient _kubeApi;
 
-    public KubernetesServiceDiscoveryProvider()
-    {
-    }
+    public KubernetesServiceDiscoveryProvider(){}
 
-    public KubernetesServiceDiscoveryProvider(KubeRegistryConfiguration kubeRegistryConfiguration,
-        IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
+    public KubernetesServiceDiscoveryProvider(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
     {
         _kubeRegistryConfiguration = kubeRegistryConfiguration;
         _logger = factory.CreateLogger<KubernetesServiceDiscoveryProvider>();
         _kubeApi = kubeApi;
     }
 
-    public virtual async Task<List<Service>> Get()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))
@@ -36,8 +32,7 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
         }
         else
         {
-            _logger.LogWarning(
-                $"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+            _logger.LogWarning($"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
         }
 
         return services;

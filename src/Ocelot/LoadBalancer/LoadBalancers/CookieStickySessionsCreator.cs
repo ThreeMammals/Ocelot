@@ -9,7 +9,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     {
         public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
         {
-            var loadBalancer = new RoundRobin(async () => await serviceProvider.Get());
+            var loadBalancer = new RoundRobin(async () => await serviceProvider.GetAsync());
             var bus = new InMemoryBus<StickySession>();
             return new OkResponse<ILoadBalancer>(new CookieStickySessions(loadBalancer, route.LoadBalancerOptions.Key,
                 route.LoadBalancerOptions.ExpiryInMs, bus));
