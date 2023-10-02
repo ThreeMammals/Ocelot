@@ -1,7 +1,11 @@
+using System;
+using System.Net.Http;
+
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 
+using Polly;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
