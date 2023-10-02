@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.Consul
             foreach (var entry in serviceEntries)
             {
                 var service = entry.Service;
-                var expected = string.Format(ConsulProvider.ServiceValidationWarningFormat, service.Address, service.Port, service.Service);
+                var expected = $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
                 _logger.Verify(x => x.LogWarning(expected), Times.Once);
             }
         }
