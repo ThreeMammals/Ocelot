@@ -134,7 +134,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private class Fake : IServiceDiscoveryProvider
         {
-            public Task<List<Service>> Get()
+            public Task<List<Service>> GetAsync()
             {
                 return null;
             }
@@ -164,7 +164,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result.Data;
-            var services = result.Get().Result;
+            var services = result.GetAsync().Result;
 
             for (var i = 0; i < services.Count; i++)
             {

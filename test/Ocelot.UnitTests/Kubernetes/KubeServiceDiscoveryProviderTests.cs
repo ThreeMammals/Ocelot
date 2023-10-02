@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Kubernetes
             _namespaces = "dev";
             _port = 5567;
             _kubeHost = "localhost";
-            _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
+            _fakekubeServiceDiscoveryUrl = $"{Uri.UriSchemeHttp}://{_kubeHost}:{_port}";
             _endpointEntries = new EndpointsV1();
             _factory = new Mock<IOcelotLoggerFactory>();
 
@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests.Kubernetes
 
         private void WhenIGetTheServices()
         {
-            _services = _provider.Get().GetAwaiter().GetResult();
+            _services = _provider.GetAsync().GetAwaiter().GetResult();
         }
 
         private void GivenTheServicesAreRegisteredWithKube(EndpointsV1 endpointEntries)

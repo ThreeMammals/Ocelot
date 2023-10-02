@@ -1,8 +1,5 @@
-﻿using KubeClient;
-using KubeClient.Models;
+﻿using KubeClient.Models;
 using Ocelot.Logging;
-using Ocelot.Provider.Kubernetes.KubeApiClientExtensions;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
@@ -20,7 +17,7 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
         _kubeApi = kubeApi;
     }
 
-    public async Task<List<Service>> Get()
+    public async Task<List<Service>> GetAsync()
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))

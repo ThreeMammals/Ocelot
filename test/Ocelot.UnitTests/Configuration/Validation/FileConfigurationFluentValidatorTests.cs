@@ -1553,7 +1553,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
         {
-            public Task<List<Service>> Get()
+            public Task<List<Service>> GetAsync()
             {
                 throw new System.NotImplementedException();
             }

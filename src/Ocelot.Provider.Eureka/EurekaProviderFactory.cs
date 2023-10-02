@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
-using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
-using Steeltoe.Discovery;
-using System;
 
 namespace Ocelot.Provider.Eureka;
 
@@ -19,12 +16,13 @@ public static class EurekaProviderFactory
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
     {
         var client = provider.GetService<IDiscoveryClient>();
-
-        if (Eureka.Equals(config.Type, StringComparison.OrdinalIgnoreCase) && client != null)
+        if (client == null)
         {
-            return new Eureka(route.ServiceName, client);
+            throw new NullReferenceException($"Cannot get an {nameof(IDiscoveryClient)} service during {nameof(CreateProvider)} operation to instanciate the {nameof(Eureka)} provider!");
         }
 
-        return null;
+        return Eureka.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
+            ? new Eureka(route.ServiceName, client)
+            : null;
     }
 }
