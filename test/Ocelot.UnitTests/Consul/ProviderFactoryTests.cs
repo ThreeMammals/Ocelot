@@ -25,7 +25,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void ShouldReturnConsulServiceDiscoveryProvider()
+    public void should_return_consul_service_discovery_provider()
     {
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
@@ -38,7 +38,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void ShouldReturnPollingConsulServiceDiscoveryProvider()
+    public void should_return_polling_consul_service_discovery_provider()
     {
         var provider = DummyPollingConsulServiceFactory(string.Empty);
         var pollProvider = provider as PollConsul;
@@ -46,7 +46,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void ShouldReturnSameProviderForGivenServiceName()
+    public void should_return_same_provider_for_given_service_name()
     {
         var provider = DummyPollingConsulServiceFactory("test");
         var provider2 = DummyPollingConsulServiceFactory("test");
@@ -64,7 +64,7 @@ public class ProviderFactoryTests
 
     [Theory]
     [InlineData(new object[] { new[] { "service1", "service2", "service3", "service4" } })]
-    public void ShouldReturnProviderAccordingToServiceName(string[] serviceNames)
+    public void should_return_provider_according_to_service_name(string[] serviceNames)
     {
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
 
