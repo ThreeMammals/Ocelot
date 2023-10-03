@@ -34,7 +34,7 @@ var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
 // packaging
 var packagesDir = artifactsDir + Directory("Packages");
-var releaseNotesFile = packagesDir + File("releasenotes.md");
+var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
 // stable releases
@@ -151,7 +151,7 @@ Task("CreateReleaseNotes")
 			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
 		}
 
-		Information("Release notes are\r\n" + System.IO.File.ReadAllText(releaseNotesFile));
+		Information("Release notes are >>>\r\n" + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
 	});
 	
 Task("Version")
@@ -270,14 +270,13 @@ Task("CreateArtifacts")
 
 		foreach(var projectFile in projectFiles)
 		{
-			System.IO.File.AppendAllLines(artifactsFile, new[]{
-				projectFile.GetFilename().FullPath,
-				"releasenotes.md"
-			});
+			System.IO.File.AppendAllLines(
+				artifactsFile,
+				new[] { projectFile.GetFilename().FullPath, "ReleaseNotes.md" }
+			);
 		}
 
-		var artifacts = System.IO.File
-			.ReadAllLines(artifactsFile)
+		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
 			.Distinct();
 		
 		foreach(var artifact in artifacts)
@@ -419,7 +418,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		
 		foreach(var artifact in artifacts)
 		{
-			if (artifact == "releasenotes.md") 
+			if (artifact == "ReleaseNotes.md") 
 			{
 				continue;
 			}
