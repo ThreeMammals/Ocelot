@@ -9,7 +9,7 @@ public class ConsulClientFactory : IConsulClientFactory
     {
         to.Address = new Uri($"{from.Scheme}://{from.Host}:{from.Port}");
 
-        if (!string.IsNullOrEmpty(from?.Token))
+        if (!string.IsNullOrEmpty(from.Token))
         {
             to.Token = from.Token;
         }
