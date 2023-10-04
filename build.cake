@@ -112,7 +112,7 @@ Task("CreateReleaseNotes")
 		Information("Generating release notes at " + releaseNotesFile);
 
 		// local helper function
-		static IEnumerable<string> GitHelper(string command)
+		Func<string, IEnumerable<string>> GitHelper = (command) =>
 		{
 			IEnumerable<string> output;
 			var exitCode = StartProcess(
@@ -122,7 +122,7 @@ Task("CreateReleaseNotes")
 			if (exitCode != 0)
 				throw new Exception("Failed to execute Git command: " + command);
 			return output;
-		}
+		};
 
 		IEnumerable<string> lastReleaseTag = GitHelper("describe --tags --abbrev=0 --exclude net*");
 		var lastRelease = lastReleaseTag.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
