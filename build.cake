@@ -153,7 +153,7 @@ Task("CreateReleaseNotes")
 			string.Empty,
 			"### Honoring :medal_sports: aka Top Contributors :clap:",
 		};
-		var topContributors = new List<string>;
+		var topContributors = new List<string>();
 		var commitsGrouping = summary
 			.GroupBy(x => x.commits)
 			.Select(g => new
