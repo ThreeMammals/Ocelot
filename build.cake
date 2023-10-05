@@ -457,23 +457,20 @@ Task("EnsureStableReleaseRequirements")
     });
 
 Task("DownloadGitHubReleaseArtifacts")
-    .Does(() =>
+    .Does(async () =>
     {
-
 		try
 		{
 			// hack to let GitHub catch up, todo - refactor to poll
 			System.Threading.Thread.Sleep(5000);
-
 			EnsureDirectoryExists(packagesDir);
 
 			var releaseUrl = tagsUrl + versioning.NuGetVersion;
-
-        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
+			var releaseInfo = await GetResourceAsync(releaseUrl);
+        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(releaseInfo)
 				.Value<string>("assets_url");
 
-			var assets = GetResource(assets_url);
-
+			var assets = await GetResourceAsync(assets_url);
 			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(assets))
 			{
 				var file = packagesDir + File(asset.Value<string>("name"));
@@ -657,27 +654,21 @@ private void CompleteGitHubRelease()
 
 
 /// gets the resource from the specified url
-private string GetResource(string url)
+private async Task<string> GetResourceAsync(string url)
 {
 	try
 	{
 		Information("Getting resource from " + url);
 
-		var assetsRequest = System.Net.WebRequest.CreateHttp(url);
-		assetsRequest.Method = "GET";
-		assetsRequest.Accept = "application/vnd.github.v3+json";
-		assetsRequest.UserAgent = "BuildScript";
+		using var client = new System.Net.Http.HttpClient();
+		client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+		client.DefaultRequestHeaders.UserAgent.ParseAdd("BuildScript");
 
-		using (var assetsResponse = assetsRequest.GetResponse())
-		{
-			var assetsStream = assetsResponse.GetResponseStream();
-			var assetsReader = new StreamReader(assetsStream);
-			var response =  assetsReader.ReadToEnd();
-
-			Information("Response is " + response);
-			
-			return response;
-		}
+		using var response = await client.GetAsync(url);
+		response.EnsureSuccessStatusCode();
+		var content = await response.Content.ReadAsStringAsync();
+		Information("Response is >>>" + Environment.NewLine + content + Environment.NewLine + "<<<");
+		return content;
 	}
 	catch(Exception exception)
 	{
