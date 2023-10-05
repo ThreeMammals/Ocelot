@@ -1,1 +1,1 @@
-## September 2023 (version 19.1.0)
+## September 2023 (version {0})

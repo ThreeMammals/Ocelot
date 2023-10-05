@@ -76,6 +76,7 @@ Task("RunTests")
 
 Task("Release")
 	.IsDependentOn("Build")
+	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
 	.IsDependentOn("PublishGitHubRelease")
     .IsDependentOn("PublishToNuget");
@@ -106,14 +107,34 @@ Task("Clean")
         CreateDirectory(artifactsDir);
 	});
 
+Task("Version")
+	.Does(() =>
+	{
+		versioning = GetNuGetVersionForCommit();
+		var nugetVersion = versioning.NuGetVersion;
+		Information("SemVer version number: " + nugetVersion);
+
+		if (IsRunningOnCircleCI())
+		{
+			Information("Persisting version number...");
+			PersistVersion(committedVersion, nugetVersion);
+		}
+		else
+		{
+			Information("We are not running on build server, so we won't persist the version number.");
+		}
+	});
+
 Task("CreateReleaseNotes")
+	.IsDependentOn("Version")
 	.Does(() =>
 	{	
-		Information($"Generating release notes at {releaseNotesFile}...");
-		var releaseNotes = new List<string>
-		{
-			System.IO.File.ReadAllText("./ReleaseNotes.md"), // read main header from Git file, and add content further...
-		};
+		Information($"Generating release notes at {releaseNotesFile}");
+
+		var releaseVersion = versioning.NuGetVersion;
+		// Read main header from Git file, substitute version in header, and add content further...
+		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion);
+		var releaseNotes = new List<string> { releaseHeader };
 
 		// local helper function
 		Func<string, IEnumerable<string>> GitHelper = (command) =>
@@ -274,7 +295,7 @@ Task("CreateReleaseNotes")
 		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
 		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
-		releaseNotes.Add("### Features in the Release");
+		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format-local:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
 		releaseNotes.AddRange(commitsHistory);
 
@@ -289,25 +310,6 @@ Task("CreateReleaseNotes")
 		Information("Release notes are >>>" + Environment.NewLine + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
 	});
 	
-Task("Version")
-	.IsDependentOn("CreateReleaseNotes")
-	.Does(() =>
-	{
-		versioning = GetNuGetVersionForCommit();
-		var nugetVersion = versioning.NuGetVersion;
-		Information("SemVer version number: " + nugetVersion);
-
-		if (IsRunningOnCircleCI())
-		{
-			Information("Persisting version number...");
-			PersistVersion(committedVersion, nugetVersion);
-		}
-		else
-		{
-			Information("We are not running on build server, so we won't persist the version number.");
-		}
-	});
-
 Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
@@ -394,6 +396,7 @@ Task("RunIntegrationTests")
 	});
 
 Task("CreateArtifacts")
+	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("Compile")
 	.Does(() => 
 	{
