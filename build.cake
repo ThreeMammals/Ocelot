@@ -5,6 +5,9 @@
 #tool "nuget:?package=ReportGenerator&version=5.1.19"
 #addin Cake.Coveralls&version=1.1.0
 
+#r "Spectre.Console"
+using Spectre.Console
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -59,6 +62,10 @@ var target = Argument("target", "Default");
 
 Information("target is " + target);
 Information("Build configuration is " + compileConfig);	
+
+TaskTeardown(context => {
+	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
+});
 
 Task("Default")
 	.IsDependentOn("Build");
@@ -455,7 +462,7 @@ Task("EnsureStableReleaseRequirements")
 		}
 
 		Information("Release is stable...");
-    });
+	});
 
 Task("DownloadGitHubReleaseArtifacts")
     .Does(async () =>
@@ -483,7 +490,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			Information("There was an exception " + exception);
 			throw;
 		}
-    });
+	});
 
 Task("PublishToNuget")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
@@ -493,7 +500,7 @@ Task("PublishToNuget")
 		{
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 		}
-    });
+	});
 
 RunTarget(target);
 
