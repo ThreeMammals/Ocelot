@@ -111,6 +111,12 @@ Task("CreateReleaseNotes")
 	{	
 		Information("Generating release notes at " + releaseNotesFile);
 
+		var releaseNotes = new List<string>
+		{
+			System.IO.File.ReadAllText(releaseNotesFile),
+			string.Empty,
+		};
+
 		// local helper function
 		Func<string, IEnumerable<string>> GitHelper = (command) =>
 		{
@@ -124,11 +130,11 @@ Task("CreateReleaseNotes")
 			return output;
 		};
 
-		IEnumerable<string> lastReleaseTag = GitHelper("describe --tags --abbrev=0 --exclude net*");
-		var lastRelease = lastReleaseTag.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
+		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
+		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
 		Information("Last release tag is " + lastRelease);
 
-		IEnumerable<string> shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
+		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
 		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
 		var summary = shortlogSummary
 			.Where(x => re.IsMatch(x))
@@ -141,11 +147,7 @@ Task("CreateReleaseNotes")
 			.ToList();
 
 		// Starring aka Release Influencers
-		var starring = new List<string>
-		{
-			string.Empty,
-			"### Starring :star: aka Release Influencers :bowtie:",
-		};
+		var starring = new List<string>();
 		foreach (var contributor in summary)
 		{
 			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
@@ -153,12 +155,7 @@ Task("CreateReleaseNotes")
 		}
 
 		// Honoring aka Top Contributors
-		const int top3 = 3; // Going to create Top 3
-		var releaseNotes = new List<string>
-		{
-			string.Empty,
-			"### Honoring :medal_sports: aka Top Contributors :clap:",
-		};
+		const int top3 = 3; // going to create Top 3
 		var topContributors = new List<string>();
 		var commitsGrouping = summary
 			.GroupBy(x => x.commits)
@@ -196,13 +193,13 @@ Task("CreateReleaseNotes")
 			}
 			else // multiple candidates with the same number of commits, so, group by files changed
 			{
-				var shortstatRegex = new System.Text.RegularExpressions.Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
+				var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
 				// Collect statistics from git log & shortlog
 				foreach (var author in group.authors)
 				{
 					if (!statistics.Exists(s => s.Contributor == author))
 					{
-						IEnumerable<string> shortstat = GitHelper($"log --no-merges --author='{author}' --shortstat --pretty=oneline {lastRelease}..HEAD");
+						var shortstat = GitHelper($"log --no-merges --author='{author}' --shortstat --pretty=oneline {lastRelease}..HEAD");
 						var data = shortstat
 							.Where(x => shortstatRegex.IsMatch(x))
 							.Select(x => shortstatRegex.Match(x))
@@ -273,11 +270,14 @@ Task("CreateReleaseNotes")
 				}
 			}
 		} // END of Top 3
+		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
 		releaseNotes.AddRange(topContributors);
+		releaseNotes.Add("");
+		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
 		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
-		releaseNotes.Add("### Features Included in the Release");
-		IEnumerable<string> commitsHistory = GitHelper($"log --no-merges --date=format-local:'%A, %B %d at %H:%M' --pretty=format:'<sub>%h by **%aN** on %ad &rarr;</sub>%n%s' {lastRelease}..HEAD");
+		releaseNotes.Add("### Features in the Release");
+		var commitsHistory = GitHelper($"log --no-merges --date=format-local:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
 		releaseNotes.AddRange(commitsHistory);
 
 		EnsureDirectoryExists(packagesDir);
@@ -288,7 +288,7 @@ Task("CreateReleaseNotes")
 			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
 		}
 
-		Information("Release notes are >>>\r\n" + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
+		Information("Release notes are >>>" + Environment.NewLine + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
 	});
 	
 Task("Version")
