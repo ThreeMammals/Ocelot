@@ -109,12 +109,10 @@ Task("Clean")
 Task("CreateReleaseNotes")
 	.Does(() =>
 	{	
-		Information("Generating release notes at " + releaseNotesFile);
-
+		Information($"Generating release notes at {releaseNotesFile}...");
 		var releaseNotes = new List<string>
 		{
-			System.IO.File.ReadAllText(releaseNotesFile),
-			string.Empty,
+			System.IO.File.ReadAllText("./ReleaseNotes.md"), // read main header from Git file, and add content further...
 		};
 
 		// local helper function
@@ -686,15 +684,5 @@ private bool IsMainOrDevelop()
 {
 	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
 
-	if(env == "main") 
-	{
-		return true;
-	}
-
-	if(env == "develop") 
-	{
-		return true;
-	}
-
-    return false;
+    return env == "main" || env == "develop";
 }
