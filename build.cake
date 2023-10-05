@@ -129,9 +129,15 @@ Task("CreateReleaseNotes")
 		Information("Last release tag is " + lastRelease);
 
 		IEnumerable<string> shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
+		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
 		var summary = shortlogSummary
-			.Select(line => line.Split("  ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-			.Select(arr => new { commits = int.Parse(arr[0]), author = arr[1] })
+			.Where(x => re.IsMatch(x))
+			.Select(x => re.Match(x))
+			.Select(m => new
+			{
+				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
+				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+			})
 			.ToList();
 
 		// Starring aka Release Influencers
