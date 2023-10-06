@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Microsoft.AspNetCore.Http;
-
-using Ocelot.Middleware;
-
-using Ocelot.Request.Middleware;
-
 using Ocelot.Infrastructure.RequestData;
-
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.Infrastructure

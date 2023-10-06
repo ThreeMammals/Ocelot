@@ -1,7 +1,4 @@
-using System.Net.Http;
-
 using Ocelot.Configuration;
-
 using Ocelot.Responses;
 
 namespace Ocelot.Requester.QoS

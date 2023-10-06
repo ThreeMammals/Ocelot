@@ -1,13 +1,5 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.Middleware;
+﻿using Ocelot.Middleware;
 using Ocelot.Responses;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Headers
 {

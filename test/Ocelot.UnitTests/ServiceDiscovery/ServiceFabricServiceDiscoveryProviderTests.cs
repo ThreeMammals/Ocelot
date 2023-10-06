@@ -1,15 +1,6 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.ServiceDiscovery.Configuration;
+﻿using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
@@ -42,7 +33,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         {
             _config = new ServiceFabricConfiguration(_host, _port, _serviceName);
             _provider = new ServiceFabricServiceDiscoveryProvider(_config);
-            _services = _provider.Get().GetAwaiter().GetResult();
+            _services = _provider.GetAsync().GetAwaiter().GetResult();
         }
 
         private void ThenTheServiceFabricNamingServiceIsRetured()

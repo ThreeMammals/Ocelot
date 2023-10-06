@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ocelot.Configuration.Creator
+﻿namespace Ocelot.Configuration.Creator
 {
     public interface IVersionCreator
     {

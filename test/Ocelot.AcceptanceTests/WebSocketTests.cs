@@ -1,13 +1,7 @@
 using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
+using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -131,7 +125,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task StartClient(string url)
         {
-            var client = new ClientWebSocket();
+            IClientWebSocket client = new ClientWebSocketProxy();
 
             await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
@@ -183,7 +177,7 @@ namespace Ocelot.AcceptanceTests
         {
             await Task.Delay(500);
 
-            var client = new ClientWebSocket();
+            IClientWebSocket client = new ClientWebSocketProxy();
 
             await client.ConnectAsync(new Uri(url), CancellationToken.None);
 

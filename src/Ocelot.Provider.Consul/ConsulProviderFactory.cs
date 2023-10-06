@@ -1,29 +1,49 @@
-﻿using Ocelot.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.ServiceDiscovery.Providers;
 
-using Microsoft.Extensions.DependencyInjection;
+namespace Ocelot.Provider.Consul;
 
-using Ocelot.ServiceDiscovery;
-
-namespace Ocelot.Provider.Consul
+public static class ConsulProviderFactory
 {
-    public static class ConsulProviderFactory
+    /// <summary>
+    /// String constant used for provider type definition.
+    /// </summary>
+    public const string PollConsul = nameof(Provider.Consul.PollConsul);
+
+    private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
+    private static readonly object LockObject = new();
+
+    public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
+
+    private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider,
+        ServiceProviderConfiguration config, DownstreamRoute route)
     {
-        public static ServiceDiscoveryFinderDelegate Get = (provider, config, route) =>
+        var factory = provider.GetService<IOcelotLoggerFactory>();
+        var consulFactory = provider.GetService<IConsulClientFactory>();
+
+        var consulRegistryConfiguration = new ConsulRegistryConfiguration(
+            config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
+
+        var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
+
+        if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {
-            var factory = provider.GetService<IOcelotLoggerFactory>();
-
-            var consulFactory = provider.GetService<IConsulClientFactory>();
-
-            var consulRegistryConfiguration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
-
-            var consulServiceDiscoveryProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
-
-            if (config.Type?.ToLower() == "pollconsul")
+            lock (LockObject)
             {
-                return new PollConsul(config.PollingInterval, factory, consulServiceDiscoveryProvider);
-            }
+                var discoveryProvider = ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
+                if (discoveryProvider != null)
+                {
+                    return discoveryProvider;
+                }
 
-            return consulServiceDiscoveryProvider;
-        };
+                discoveryProvider = new PollConsul(config.PollingInterval, route.ServiceName, factory, consulProvider);
+                ServiceDiscoveryProviders.Add(discoveryProvider);
+                return discoveryProvider;
+            }
+        }
+
+        return consulProvider;
     }
 }

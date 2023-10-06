@@ -1,10 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Ocelot.Infrastructure.RequestData;
-
+﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
 namespace Ocelot.Requester

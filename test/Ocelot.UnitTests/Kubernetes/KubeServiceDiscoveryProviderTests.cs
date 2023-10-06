@@ -1,28 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-using KubeClient;
+﻿using KubeClient;
 using KubeClient.Models;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-
-using Moq;
-
 using Newtonsoft.Json;
-
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Values;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
@@ -48,7 +32,7 @@ namespace Ocelot.UnitTests.Kubernetes
             _namespaces = "dev";
             _port = 5567;
             _kubeHost = "localhost";
-            _fakekubeServiceDiscoveryUrl = $"http://{_kubeHost}:{_port}";
+            _fakekubeServiceDiscoveryUrl = $"{Uri.UriSchemeHttp}://{_kubeHost}:{_port}";
             _endpointEntries = new EndpointsV1();
             _factory = new Mock<IOcelotLoggerFactory>();
 
@@ -116,7 +100,7 @@ namespace Ocelot.UnitTests.Kubernetes
 
         private void WhenIGetTheServices()
         {
-            _services = _provider.Get().GetAwaiter().GetResult();
+            _services = _provider.GetAsync().GetAwaiter().GetResult();
         }
 
         private void GivenTheServicesAreRegisteredWithKube(EndpointsV1 endpointEntries)

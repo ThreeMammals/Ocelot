@@ -1,13 +1,6 @@
-﻿using Moq;
-using Ocelot.Values;
-using Shouldly;
+﻿using Ocelot.Values;
 using Steeltoe.Common.Discovery;
 using Steeltoe.Discovery;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 using _Eureka_ = Ocelot.Provider.Eureka.Eureka;
 
 namespace Ocelot.UnitTests.Eureka
@@ -86,7 +79,7 @@ namespace Ocelot.UnitTests.Eureka
 
         private async Task WhenIGet()
         {
-            _result = await _provider.Get();
+            _result = await _provider.GetAsync();
         }
 
         private void GivenThe(List<IServiceInstance> instances)
