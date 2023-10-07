@@ -225,7 +225,7 @@ Task("CreateReleaseNotes")
 				{
 					if (!statistics.Exists(s => s.Contributor == author))
 					{
-						var shortstat = GitHelper($"log --no-merges --author='{author}' --shortstat --pretty=oneline {lastRelease}..HEAD");
+						var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
 						var data = shortstat
 							.Where(x => shortstatRegex.IsMatch(x))
 							.Select(x => shortstatRegex.Match(x))
@@ -303,7 +303,7 @@ Task("CreateReleaseNotes")
 		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
-		var commitsHistory = GitHelper($"log --no-merges --date=format-local:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
+		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
 		releaseNotes.AddRange(commitsHistory);
 
 		EnsureDirectoryExists(packagesDir);
