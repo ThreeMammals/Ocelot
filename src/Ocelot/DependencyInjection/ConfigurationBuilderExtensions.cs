@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.DependencyInjection
@@ -140,13 +141,17 @@ namespace Ocelot.DependencyInjection
                 //var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
                 var lines = File.ReadAllText(file.FullName);
                 dynamic config = JToken.Parse(lines);
-                var isGlobal = file.Name.Equals(globalConfigFile, StringComparison.OrdinalIgnoreCase);
+                var isGlobal = file.Name.Equals(GlobalConfigFile, StringComparison.OrdinalIgnoreCase);
 
                 MergeConfig(fileConfiguration, config, isGlobal);                
             }
 
-            return JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+            //return JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+            return AddOcelot(builder, (JObject)fileConfiguration);
         }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, JObject fileConfiguration)
+            => SerializeToFile(builder, fileConfiguration);
 
         /// <summary>
         /// Adds Ocelot configuration by ready configuration object and writes JSON to the primary configuration file.<br/>
@@ -159,8 +164,12 @@ namespace Ocelot.DependencyInjection
         /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
         /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
         /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
-            string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+        //public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
+        //    string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
+            => SerializeToFile(builder, fileConfiguration);
+
+        private static IConfigurationBuilder SerializeToFile(IConfigurationBuilder builder, object fileConfiguration)
         {
             var json = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
             return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);

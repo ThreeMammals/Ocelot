@@ -5,11 +5,6 @@ using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Shouldly;
-using System.IO;
-using System.Linq;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
