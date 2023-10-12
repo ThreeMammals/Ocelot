@@ -64,15 +64,19 @@ namespace Ocelot.Cache.Middleware
 
             var downstreamResponse = httpContext.Items.DownstreamResponse();
 
-            cached = await CreateCachedResponse(downstreamResponse);
-
-            _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
-
-            Logger.LogDebug($"Finished response added to cache for the '{downstreamUrlKey}' key.");
+            if (downstreamResponse.StatusCode == HttpStatusCode.OK)
+            {
+                cached = await CreateCachedResponse(downstreamResponse);
+                _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
+                Logger.LogDebug($"Finished response added to cache for the '{downstreamUrlKey}' key.");
+            }
+            else
+            {
+                Logger.LogDebug($"HTTP request failed: could not create cache for the '{downstreamUrlKey}' key.");
+            }
         }
 
-        private static void SetHttpResponseMessageThisRequest(HttpContext context,
-                                                       DownstreamResponse response)
+        private static void SetHttpResponseMessageThisRequest(HttpContext context, DownstreamResponse response)
         {
             context.Items.UpsertDownstreamResponse(response);
         }

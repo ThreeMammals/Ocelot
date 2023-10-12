@@ -6,15 +6,23 @@ namespace Ocelot.Cache
     {
         public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest)
         {
-            var downStreamUrlKeyBuilder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
-            if (downstreamRequest.Content != null)
+            var builder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
+
+            if (downstreamRequest.Headers?.TryGetValues("Content-Language", out IEnumerable<string> values) ?? false)
             {
-                var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
-                downStreamUrlKeyBuilder.Append(requestContentString);
+                var contentLanguage = values.Any()
+                    ? "-" + string.Join(string.Empty, values)
+                    : string.Empty;
+                builder.Append(contentLanguage);
             }
 
-            var hashedContent = MD5Helper.GenerateMd5(downStreamUrlKeyBuilder.ToString());
-            return hashedContent;
+            if (downstreamRequest.Content != null)
+            {
+                var requestContentString = Task.Run(downstreamRequest.Content.ReadAsStringAsync).Result;
+                builder.Append(requestContentString);
+            }
+
+            return MD5Helper.GenerateMd5(builder.ToString());
         }
     }
 }
