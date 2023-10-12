@@ -38,7 +38,6 @@ using Ocelot.Security.IPSecurity;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.WebSockets;
-using System.Reflection;
 
 namespace Ocelot.DependencyInjection
 {
