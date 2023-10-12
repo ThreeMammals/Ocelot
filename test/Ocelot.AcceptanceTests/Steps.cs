@@ -1178,26 +1178,26 @@ public class Steps : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private bool _disposedValue;
+        private bool _disposedValue;
 
-    /// <summary>
-    /// Protected implementation of Dispose pattern.
-    /// </summary>
-    /// <param name="disposing">Flag to trigger actual disposing operation.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposedValue)
+        /// <summary>
+        /// Protected implementation of Dispose pattern.
+        /// </summary>
+        /// <param name="disposing">Flag to trigger actual disposing operation.</param>
+        protected virtual void Dispose(bool disposing)
         {
-            return;
-        }
+            if (_disposedValue)
+            {
+                return;
+            }
 
-        if (disposing)
-        {
-            _ocelotClient?.Dispose();
-            _ocelotServer?.Dispose();
-            _ocelotHost?.Dispose();
-            DeleteOcelotConfig();
-        }
+            if (disposing)
+            {
+                _ocelotClient?.Dispose();
+                _ocelotServer?.Dispose();
+                _ocelotHost?.Dispose();
+                DeleteOcelotConfig();
+            }
 
         _disposedValue = true;
     }

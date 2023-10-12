@@ -48,7 +48,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .And(_ => GivenTheEnvironmentIs(null))
                 .When(_ => WhenIAddOcelotConfiguration())
                 .Then(_ => ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false))
-                .Then(_ => ThenTheConfigsAreMerged())
                 .And(_ => TheOcelotJsonFileExists(string.Empty, true))
                 .BDDfy();
         }
@@ -90,7 +89,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
                 .And(_ => GivenTheEnvironmentIs(null))
                 .When(_ => WhenIAddOcelotConfigurationWithSpesificMergeTarget(MergeOcelotJson.ToMemory))
-                .Then(_ => ThenTheConfigsAreMerged())
+                .Then(_ => ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false))
                 .And(_ => TheOcelotJsonFileExists(string.Empty, false))
                 .BDDfy();
         }

@@ -36,9 +36,7 @@ namespace Ocelot.DependencyInjection
                 },
             };
 
-            builder.Add(memorySource);
-
-            return builder;
+            return builder.Add(memorySource);
         }
 
         /// <summary>
@@ -64,21 +62,21 @@ namespace Ocelot.DependencyInjection
             return builder.AddOcelot(folder, env, MergeOcelotJson.ToFile);
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env, MergeOcelotJson mergeOcelotJson)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env, MergeOcelotJson mergeTo)
         {
-            return builder.AddOcelot(".", env, mergeOcelotJson);
+            return builder.AddOcelot(".", env, mergeTo);
         }
 
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env, MergeOcelotJson mergeOcelotJson)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env, MergeOcelotJson mergeTo)
         {
             var json = GetMergedOcelotJson(folder, env);
 
-            if (mergeOcelotJson == MergeOcelotJson.ToFile)
+            if (mergeTo == MergeOcelotJson.ToFile)
             {
-                File.WriteAllText(primaryConfigFile, json);
-                builder.AddJsonFile(primaryConfigFile, false, false);
+                File.WriteAllText(PrimaryConfigFile, json);
+                builder.AddJsonFile(PrimaryConfigFile, false, false);
             }
-            else if (mergeOcelotJson == MergeOcelotJson.ToMemory)
+            else if (mergeTo == MergeOcelotJson.ToMemory)
             { 
                 builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
             }
@@ -86,14 +84,8 @@ namespace Ocelot.DependencyInjection
             return builder;
         }
 
-        const string primaryConfigFile = "ocelot.json";
-
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env)
         {
-            const string globalConfigFile = "ocelot.global.json";
-
-            const string subConfigPattern = @"^ocelot\.(.*?)\.json$";
-
             var excludeConfigName = env?.EnvironmentName != null ? $"ocelot.{env.EnvironmentName}.json" : string.Empty;
 
             var reg = SubConfigRegex();
@@ -125,7 +117,7 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            return builder.AddOcelot(fileConfiguration);
+            return JsonConvert.SerializeObject(fileConfiguration);
         }
 
         /// <summary>
