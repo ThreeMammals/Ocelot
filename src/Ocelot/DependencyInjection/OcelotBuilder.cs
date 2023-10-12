@@ -140,7 +140,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
             Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
             Services.TryAddSingleton<IVersionPolicyCreator, VersionPolicyCreator>();
-            Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
 
             // Add security
             Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
