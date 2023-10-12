@@ -883,7 +883,7 @@ namespace Ocelot.IntegrationTests
         private void ThenTheResultHaveMultiLineIndentedJson()
         {
             const string indent = "  ";
-            const int total = 45, skip = 1;
+            const int total = 50, skip = 1;
             var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
             lines.Length.ShouldBe(total);
             lines.First().ShouldNotStartWith(indent);
