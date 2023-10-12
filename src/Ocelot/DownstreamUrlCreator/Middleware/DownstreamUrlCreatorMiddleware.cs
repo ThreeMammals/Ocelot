@@ -7,6 +7,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Web;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
