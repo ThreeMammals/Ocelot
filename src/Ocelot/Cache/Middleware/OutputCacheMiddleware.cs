@@ -67,9 +67,7 @@ namespace Ocelot.Cache.Middleware
             if (downstreamResponse.StatusCode == HttpStatusCode.OK)
             {
                 cached = await CreateCachedResponse(downstreamResponse);
-
                 _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
-
                 Logger.LogDebug($"Finished response added to cache for the '{downstreamUrlKey}' key.");
             }
             else
@@ -78,8 +76,7 @@ namespace Ocelot.Cache.Middleware
             }
         }
 
-        private static void SetHttpResponseMessageThisRequest(HttpContext context,
-                                                       DownstreamResponse response)
+        private static void SetHttpResponseMessageThisRequest(HttpContext context, DownstreamResponse response)
         {
             context.Items.UpsertDownstreamResponse(response);
         }

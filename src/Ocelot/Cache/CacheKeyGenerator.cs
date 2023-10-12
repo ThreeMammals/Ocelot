@@ -1,8 +1,4 @@
 ﻿using Ocelot.Request.Middleware;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ocelot.Cache
 {
@@ -22,7 +18,7 @@ namespace Ocelot.Cache
 
             if (downstreamRequest.Content != null)
             {
-                var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
+                var requestContentString = Task.Run(downstreamRequest.Content.ReadAsStringAsync).Result;
                 builder.Append(requestContentString);
             }
 
