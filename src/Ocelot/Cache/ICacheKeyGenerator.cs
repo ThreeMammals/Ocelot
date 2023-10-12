@@ -5,6 +5,7 @@ namespace Ocelot.Cache
 {
     public interface ICacheKeyGenerator
     {
-        string GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute);
+        ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest,
+            DownstreamRoute downstreamRoute);
     }
 }

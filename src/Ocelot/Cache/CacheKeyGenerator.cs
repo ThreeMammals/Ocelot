@@ -5,7 +5,7 @@ namespace Ocelot.Cache
 {
     public class CacheKeyGenerator : ICacheKeyGenerator
     {
-        public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
+        public async ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
         {
             var builder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
 
@@ -23,11 +23,10 @@ namespace Ocelot.Cache
                 }
             }
 
-            if (downstreamRequest.Content != null)
-            {
-                var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
-                builder.Append(requestContentString);
-            }
+            if (downstreamRequest.Content == null) return MD5Helper.GenerateMd5(builder.ToString());
+
+            var requestContentString = await downstreamRequest.Content.ReadAsStringAsync();
+            builder.Append(requestContentString);
 
             return MD5Helper.GenerateMd5(builder.ToString());
         }
