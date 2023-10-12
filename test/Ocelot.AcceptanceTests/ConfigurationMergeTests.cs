@@ -1,10 +1,5 @@
 ﻿using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Shouldly;
-using System;
-using System.IO;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests;
 
