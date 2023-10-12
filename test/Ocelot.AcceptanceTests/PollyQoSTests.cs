@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Http;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -27,7 +16,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_not_timeout()
+        public void Should_not_timeout()
         {
             var port = RandomPortFinder.GetRandomPort();
 
@@ -68,7 +57,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_timeout()
+        public void Should_timeout()
         {
             var port = RandomPortFinder.GetRandomPort();
 
@@ -93,7 +82,6 @@ namespace Ocelot.AcceptanceTests
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 10,
-                            ExceptionsAllowedBeforeBreaking = 10,
                         },
                     },
                 },
@@ -109,7 +97,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_open_circuit_breaker_then_close()
+        public void Should_open_circuit_breaker_then_close()
         {
             var port = RandomPortFinder.GetRandomPort();
 
@@ -161,7 +149,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void open_circuit_should_not_effect_different_route()
+        public void Open_circuit_should_not_effect_different_route()
         {
             var port1 = RandomPortFinder.GetRandomPort();
             var port2 = RandomPortFinder.GetRandomPort();
@@ -282,6 +270,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,12 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -14,11 +6,6 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security;
 using Ocelot.Security.Middleware;
-
-using TestStack.BDDfy;
-
-using Xunit;
-using Shouldly;
 
 namespace Ocelot.UnitTests.Security
 {

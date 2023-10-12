@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ocelot.RateLimit
+﻿namespace Ocelot.RateLimit
 {
     public interface IRateLimitCounterHandler
     {

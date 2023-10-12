@@ -1,7 +1,4 @@
-﻿using KubeClient;
-
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 
 namespace Ocelot.Provider.Kubernetes
@@ -10,8 +7,9 @@ namespace Ocelot.Provider.Kubernetes
     {
         public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true)
         {
-            builder.Services.AddSingleton(KubernetesProviderFactory.Get);
-            builder.Services.AddKubeClient(usePodServiceAccount);
+            builder.Services
+                .AddSingleton(KubernetesProviderFactory.Get)
+                .AddKubeClient(usePodServiceAccount);
             return builder;
         }
     }

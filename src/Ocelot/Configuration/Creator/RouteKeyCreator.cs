@@ -1,5 +1,3 @@
-using System.Linq;
-
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
 

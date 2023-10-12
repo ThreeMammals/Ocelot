@@ -1,26 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Moq;
-
-using Ocelot.Infrastructure;
+﻿using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
     public class PollingKubeServiceDiscoveryProviderTests
     {
         private readonly int _delay;
-        private PollKubernetes _provider;
+        private PollKube _provider;
         private readonly List<Service> _services;
         private readonly Mock<IOcelotLoggerFactory> _factory;
         private readonly Mock<IOcelotLogger> _logger;
@@ -33,7 +22,7 @@ namespace Ocelot.UnitTests.Kubernetes
             _delay = 1;
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<PollKubernetes>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<PollKube>()).Returns(_logger.Object);
             _kubeServiceDiscoveryProvider = new Mock<IServiceDiscoveryProvider>();
         }
 
@@ -51,7 +40,7 @@ namespace Ocelot.UnitTests.Kubernetes
         private void GivenKubeReturns(Service service)
         {
             _services.Add(service);
-            _kubeServiceDiscoveryProvider.Setup(x => x.Get()).ReturnsAsync(_services);
+            _kubeServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
         }
 
         private void ThenTheCountIs(int count)
@@ -61,13 +50,13 @@ namespace Ocelot.UnitTests.Kubernetes
 
         private void WhenIGetTheServices(int expected)
         {
-            _provider = new PollKubernetes(_delay, _factory.Object, _kubeServiceDiscoveryProvider.Object);
+            _provider = new PollKube(_delay, _factory.Object, _kubeServiceDiscoveryProvider.Object);
 
             var result = Wait.WaitFor(3000).Until(() =>
             {
                 try
                 {
-                    _result = _provider.Get().GetAwaiter().GetResult();
+                    _result = _provider.GetAsync().GetAwaiter().GetResult();
                     if (_result.Count == expected)
                     {
                         return true;

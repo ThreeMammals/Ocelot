@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-
-using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -9,12 +5,6 @@ using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
@@ -111,7 +101,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => GivenTheRoute(route))
-                .And(x => GivenTheBaseUrlIs("http://ocelot.com/"))
+                .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
                 .When(x => WhenICreate())
                 .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
                 .BDDfy();
@@ -166,9 +156,32 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => GivenTheRoute(route))
-                .And(x => GivenTheBaseUrlIs("http://ocelot.com/"))
+                .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
                 .When(x => WhenICreate())
                 .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_map_with_partial_placeholder_in_the_middle()
+        {
+            var route = new FileRoute
+            {
+                DownstreamHeaderTransform = new Dictionary<string, string>
+                {
+                    {"Host-Next", "www.bbc.co.uk, subdomain.{Host}/path"},
+                },
+            };
+
+            var expected = new List<HeaderFindAndReplace>
+            {
+                new("Host-Next", "www.bbc.co.uk", "subdomain.ocelot.next/path", 0),
+            };
+
+            this.Given(x => GivenTheRoute(route))
+                .And(x => GivenThePlaceholderIs("ocelot.next"))
+                .When(x => WhenICreate())
+                .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
                 .BDDfy();
         }
 
@@ -186,7 +199,7 @@ namespace Ocelot.UnitTests.Configuration
             var expected = new AddHeader("Trace-Id", "{TraceId}");
 
             this.Given(x => GivenTheRoute(route))
-                .And(x => GivenTheBaseUrlIs("http://ocelot.com/"))
+                .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
                 .When(x => WhenICreate())
                 .Then(x => ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
                 .BDDfy();
@@ -230,9 +243,9 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenTheBaseUrlIs(string baseUrl)
+        private void GivenThePlaceholderIs(string placeholderValue)
         {
-            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>(baseUrl));
+            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>(placeholderValue));
         }
 
         private void GivenTheBaseUrlErrors()

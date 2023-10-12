@@ -1,5 +1,3 @@
-using System;
-
 using Ocelot.Values;
 
 namespace Ocelot.LoadBalancer.LoadBalancers

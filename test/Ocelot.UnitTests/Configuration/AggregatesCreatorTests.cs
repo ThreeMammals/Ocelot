@@ -1,20 +1,8 @@
-using System.Collections.Generic;
-using System.Net.Http;
-
-using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
 using Ocelot.Values;
-
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {

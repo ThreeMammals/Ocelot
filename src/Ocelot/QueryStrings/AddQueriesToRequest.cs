@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-
-using Microsoft.Extensions.Primitives;
-
+﻿using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using System.Security.Claims;
 
 namespace Ocelot.QueryStrings
 {

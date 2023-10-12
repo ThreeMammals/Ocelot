@@ -1,15 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Ocelot.Errors;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Errors;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.Responder.Middleware
@@ -40,6 +32,7 @@ namespace Ocelot.Responder.Middleware
             await _next.Invoke(httpContext);
 
             var errors = httpContext.Items.Errors();
+            var downstreamResponse = httpContext.Items.DownstreamResponse();
 
             // todo check errors is ok
             if (errors.Count > 0)
@@ -48,11 +41,13 @@ namespace Ocelot.Responder.Middleware
 
                 SetErrorResponse(httpContext, errors);
             }
+            else if (downstreamResponse == null)
+            {
+                Logger.LogDebug($"Pipeline was terminated early in {MiddlewareName}");
+            }
             else
             {
                 Logger.LogDebug("no pipeline errors, setting and returning completed response");
-
-                var downstreamResponse = httpContext.Items.DownstreamResponse();
 
                 await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
             }

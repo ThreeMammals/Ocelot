@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.32112.339
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		GitVersion.yml = GitVersion.yml
 		LICENSE.md = LICENSE.md
 		README.md = README.md
-		releasenotes.md = releasenotes.md
+		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5B401523-36DA-4491-B73A-7590A26E420B}"
@@ -85,6 +85,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "open-tracing", "open-tracing", "{731C6A8A-69ED-445C-A132-C638AA93F9C7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OcelotOpenTracing", "samples\OcelotOpenTracing\OcelotOpenTracing.csproj", "{C9427E78-4281-4F59-A66E-17C0B66550E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service-discovery", "service-discovery", "{25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.ApiGateway", "samples\OcelotServiceDiscovery\ApiGateway\Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj", "{D37209EA-C13E-42AE-B851-A8604F1FCD0E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "samples\OcelotServiceDiscovery\DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{E2AC741A-4120-4D59-B5E4-16382ED45E8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +194,14 @@ Global
 		{C9427E78-4281-4F59-A66E-17C0B66550E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9427E78-4281-4F59-A66E-17C0B66550E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9427E78-4281-4F59-A66E-17C0B66550E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D37209EA-C13E-42AE-B851-A8604F1FCD0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D37209EA-C13E-42AE-B851-A8604F1FCD0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D37209EA-C13E-42AE-B851-A8604F1FCD0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D37209EA-C13E-42AE-B851-A8604F1FCD0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2AC741A-4120-4D59-B5E4-16382ED45E8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2AC741A-4120-4D59-B5E4-16382ED45E8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2AC741A-4120-4D59-B5E4-16382ED45E8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2AC741A-4120-4D59-B5E4-16382ED45E8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -224,6 +238,9 @@ Global
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{731C6A8A-69ED-445C-A132-C638AA93F9C7} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
 		{C9427E78-4281-4F59-A66E-17C0B66550E5} = {731C6A8A-69ED-445C-A132-C638AA93F9C7}
+		{25C30AAA-12DD-4BA5-A53F-9271E54EBAB7} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
+		{D37209EA-C13E-42AE-B851-A8604F1FCD0E} = {25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}
+		{E2AC741A-4120-4D59-B5E4-16382ED45E8D} = {25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}

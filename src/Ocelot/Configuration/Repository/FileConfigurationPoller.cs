@@ -1,12 +1,5 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Microsoft.Extensions.Hosting;
-
 using Newtonsoft.Json;
-
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;

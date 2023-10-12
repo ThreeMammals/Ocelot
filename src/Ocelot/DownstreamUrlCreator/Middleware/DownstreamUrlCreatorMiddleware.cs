@@ -1,23 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
-
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
-
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
@@ -66,11 +54,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
             {
-                var pathAndQuery = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
+                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
 
                 //todo check this works again hope there is a test..
-                downstreamRequest.AbsolutePath = pathAndQuery.Path;
-                downstreamRequest.Query = pathAndQuery.Query;
+                downstreamRequest.AbsolutePath = path;
+                downstreamRequest.Query = query;
             }
             else
             {
@@ -108,18 +96,17 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var name = nAndV.Name.Replace("{", string.Empty).Replace("}", string.Empty);
 
-                if (downstreamRequest.Query.Contains(name) &&
-                    downstreamRequest.Query.Contains(nAndV.Value))
-                {
-                    var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
-                    downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
+                var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
 
-                    var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
+                if (rgx.IsMatch(downstreamRequest.Query))
+                {
+                    var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);                    
                     downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, string.Empty);
+                    downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
-                        downstreamRequest.Query = '?' + downstreamRequest.Query.Substring(1);
+                        downstreamRequest.Query = string.Concat("?", downstreamRequest.Query.AsSpan(1));
                     }
                 }
             }
@@ -127,12 +114,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static string GetPath(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(0, dsPath.Value.IndexOf('?', StringComparison.Ordinal));
+            int length = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            return dsPath.Value[..length];
         }
 
         private static string GetQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Substring(dsPath.Value.IndexOf('?', StringComparison.Ordinal));
+            int startIndex = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            return dsPath.Value[startIndex..];
         }
 
         private static bool ContainsQueryString(DownstreamPath dsPath)

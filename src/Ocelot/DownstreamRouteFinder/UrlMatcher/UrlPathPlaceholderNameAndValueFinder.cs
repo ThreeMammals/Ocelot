@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.UrlMatcher

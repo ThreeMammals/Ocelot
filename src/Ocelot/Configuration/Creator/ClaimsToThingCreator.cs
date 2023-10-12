@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 using Ocelot.Configuration.Parser;
 using Ocelot.Logging;
 

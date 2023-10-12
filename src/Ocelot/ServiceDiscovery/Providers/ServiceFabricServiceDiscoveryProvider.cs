@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using Ocelot.ServiceDiscovery.Configuration;
+﻿using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery.Providers
@@ -15,7 +12,7 @@ namespace Ocelot.ServiceDiscovery.Providers
             _configuration = configuration;
         }
 
-        public Task<List<Service>> Get()
+        public Task<List<Service>> GetAsync()
         {
             return Task.FromResult(new List<Service>
             {

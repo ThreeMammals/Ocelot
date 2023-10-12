@@ -1,11 +1,6 @@
-using System.Collections.Generic;
-
 using Ocelot.Configuration.Creator;
-
 using Ocelot.Infrastructure;
-
 using Ocelot.Logging;
-
 using Ocelot.Middleware;
 
 namespace Ocelot.Headers

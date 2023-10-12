@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 
 namespace Ocelot.Configuration.Validator
 {

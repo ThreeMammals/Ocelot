@@ -6,7 +6,7 @@ Ocelot allows the user to transform headers pre and post downstream request. At 
 Add to Request
 ^^^^^^^^^^^^^^
 
-This feature was requestes in `GitHub #313 <https://github.com/ThreeMammals/Ocelot/issues/313>`_.
+This feature was requested in `GitHub #313 <https://github.com/ThreeMammals/Ocelot/issues/313>`_.
 
 If you want to add a header to your upstream request please add the following to a Route in your ocelot.json:
 
@@ -141,10 +141,10 @@ Ideally this feature would be able to support the fact that a header can have mu
 .. code-block:: json
 
     "DownstreamHeaderTransform": {
-        "Location": "[{one,one},{two,two}"
+        "Location": "[{one,one},{two,two}]"
     },
      "HttpHandlerOptions": {
         "AllowAutoRedirect": false,
     },
 
-If anyone wants to have a go at this please help yourself!!
+If anyone wants to have a go at this please help yourself!

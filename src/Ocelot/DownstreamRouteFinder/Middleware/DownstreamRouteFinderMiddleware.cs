@@ -1,14 +1,7 @@
-using System.Linq;
-using System.Threading.Tasks;
-
-using Ocelot.DownstreamRouteFinder.Finder;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
 using Microsoft.AspNetCore.Http;
-
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 
 namespace Ocelot.DownstreamRouteFinder.Middleware
@@ -34,7 +27,10 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             var upstreamQueryString = httpContext.Request.QueryString.ToString();
 
-            var upstreamHost = httpContext.Request.Headers["Host"];
+            var hostHeader = httpContext.Request.Headers["Host"].ToString();
+            var upstreamHost = hostHeader.Contains(':')
+                ? hostHeader.Split(':')[0]
+                : hostHeader;
 
             Logger.LogDebug($"Upstream url path is {upstreamUrlPath}");
 

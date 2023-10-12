@@ -1,10 +1,6 @@
-﻿using System;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
-
 using Ocelot.Logging;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ocelot.Configuration.Creator
 {

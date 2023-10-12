@@ -1,5 +1,3 @@
-using System;
-
 namespace Ocelot.Infrastructure
 {
     public interface IBus<T>

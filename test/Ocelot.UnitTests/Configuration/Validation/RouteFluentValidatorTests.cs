@@ -1,15 +1,8 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
