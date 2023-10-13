@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Requester;
-
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 

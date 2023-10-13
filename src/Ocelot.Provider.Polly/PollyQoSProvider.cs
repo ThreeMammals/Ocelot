@@ -1,7 +1,6 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
-
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
