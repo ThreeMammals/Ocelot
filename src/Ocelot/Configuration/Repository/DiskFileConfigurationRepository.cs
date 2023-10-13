@@ -20,7 +20,7 @@ namespace Ocelot.Configuration.Repository
         private readonly object _lock = new();
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment,
-            IOcelotConfigurationChangeTokenSource changeTokenSource, Cache.IOcelotCache<FileConfiguration> cache)
+            IOcelotConfigurationChangeTokenSource changeTokenSource, IOcelotCache<FileConfiguration> cache)
         {
             _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
