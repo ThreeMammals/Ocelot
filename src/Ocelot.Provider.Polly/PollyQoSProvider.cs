@@ -10,15 +10,11 @@ namespace Ocelot.Provider.Polly
     {
         public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
         {
-            AsyncCircuitBreakerPolicy circuitBreakerPolicy;
-            var logger = loggerFactory.CreateLogger<PollyQoSProvider>();
-
-            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
-
-            var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
-
+            AsyncCircuitBreakerPolicy circuitBreakerPolicy = null;
             if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
             {
+                var info = $"Route: '{GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
+                var logger = loggerFactory.CreateLogger<PollyQoSProvider>();
                 circuitBreakerPolicy = Policy
                     .Handle<HttpRequestException>()
                     .Or<TimeoutRejectedException>()
@@ -27,25 +23,16 @@ namespace Ocelot.Provider.Polly
                         exceptionsAllowedBeforeBreaking: route.QosOptions.ExceptionsAllowedBeforeBreaking,
                         durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
                         onBreak: (ex, breakDelay) =>
-                        {
-                            logger.LogError(
-                                ".Breaker logging: Breaking the circuit for " + breakDelay.TotalMilliseconds + "ms!", ex);
-                        },
+                            logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex),
                         onReset: () =>
-                        {
-                            logger.LogDebug(".Breaker logging: Call ok! Closed the circuit again.");
-                        },
+                            logger.LogDebug(info + "Call OK! Closed the circuit again."),
                         onHalfOpen: () =>
-                        {
-                            logger.LogDebug(".Breaker logging: Half-open; next call is a trial.");
-                        }
+                            logger.LogDebug(info + "Half-open; Next call is a trial.")
                     );
             }
-            else
-            {
-                circuitBreakerPolicy = null;
-            }
 
+            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
+            var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
             CircuitBreaker = new CircuitBreaker(circuitBreakerPolicy, timeoutPolicy);
         }
 
@@ -58,5 +45,10 @@ namespace Ocelot.Provider.Polly
         }
 
         public CircuitBreaker CircuitBreaker { get; }
+
+        private static string GetRouteName(DownstreamRoute route)
+            => string.IsNullOrWhiteSpace(route.ServiceName)
+                ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
+                : route.ServiceName;
     }
 }
