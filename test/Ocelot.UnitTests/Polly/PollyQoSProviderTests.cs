@@ -1,6 +1,8 @@
 ﻿using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace Ocelot.UnitTests.Polly
 {
@@ -18,7 +20,11 @@ namespace Ocelot.UnitTests.Polly
                 .Build();
             var factory = new Mock<IOcelotLoggerFactory>();
             var pollyQoSProvider = new PollyQoSProvider(route, factory.Object);
-            pollyQoSProvider.CircuitBreaker.ShouldNotBeNull();
+            var policies = pollyQoSProvider.CircuitBreaker.ShouldNotBeNull()
+                .Policies.ShouldNotBeNull();
+            policies.Length.ShouldBeGreaterThan(0);
+            policies.ShouldContain(p => p is AsyncCircuitBreakerPolicy);
+            policies.ShouldContain(p => p is AsyncTimeoutPolicy);
         }
     }
 }

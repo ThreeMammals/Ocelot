@@ -20,15 +20,13 @@ namespace Ocelot.Provider.Polly
                 {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)},
             };
 
-            builder.Services.AddSingleton(errorMapping);
-
-            static DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute route, IOcelotLoggerFactory logger)
-            {
-                return new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(route, logger), logger);
-            }
-
-            builder.Services.AddSingleton((QosDelegatingHandlerDelegate)QosDelegatingHandlerDelegate);
+            builder.Services
+                .AddSingleton(errorMapping)
+                .AddSingleton<QosDelegatingHandlerDelegate>(GetDelegatingHandler);
             return builder;
         }
+
+        private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IOcelotLoggerFactory logger)
+            => new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(route, logger), logger);
     }
 }
