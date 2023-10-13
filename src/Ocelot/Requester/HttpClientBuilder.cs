@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Logging;
 
 namespace Ocelot.Requester
