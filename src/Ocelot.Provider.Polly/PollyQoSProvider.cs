@@ -50,9 +50,12 @@ namespace Ocelot.Provider.Polly
             CircuitBreaker = new CircuitBreaker(circuitBreakerPolicy, timeoutPolicy);
         }
 
-        [Obsolete("Use the constructor PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)")]
+        private const string ObsoleteConstructorMessage = $"Use the constructor {nameof(PollyQoSProvider)}({nameof(DownstreamRoute)} route, {nameof(IOcelotLoggerFactory)} loggerFactory)!";
+
+        [Obsolete(ObsoleteConstructorMessage)]
         public PollyQoSProvider(AsyncCircuitBreakerPolicy circuitBreakerPolicy, AsyncTimeoutPolicy timeoutPolicy, IOcelotLogger logger)
         {
+            throw new NotSupportedException(ObsoleteConstructorMessage);
         }
 
         public CircuitBreaker CircuitBreaker { get; }
