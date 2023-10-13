@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Polly
             AsyncCircuitBreakerPolicy circuitBreakerPolicy = null;
             if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
             {
-                var info = $"Route: '{GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
+                var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
                 var logger = loggerFactory.CreateLogger<PollyQoSProvider>();
                 circuitBreakerPolicy = Policy
                     .Handle<HttpRequestException>()
