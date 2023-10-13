@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
@@ -10,7 +9,6 @@ namespace Ocelot.Request.Mapper;
 public class RequestMapper : IRequestMapper
 {
     private readonly string[] _unsupportedHeaders = { "host" };
-    
 
     public Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
@@ -92,20 +90,5 @@ public class RequestMapper : IRequestMapper
     private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
     {
         return !_unsupportedHeaders.Contains(header.Key.ToLower());
-    }
-
-    private static async Task<ByteArrayContent> CopyAsync(Stream stream)
-    {
-        if (stream == null)
-        {
-            return null;
-        }
-
-        await using (stream)
-        {
-            using var memStream = new MemoryStream();
-            await stream.CopyToAsync(memStream);
-            return new ByteArrayContent(memStream.ToArray());
-        }
     }
 }
