@@ -1,24 +1,24 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Responses;
-using System.Buffers;
 
 namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
     private readonly string[] _unsupportedHeaders = { "host" };
-    private const int DefaultBufferSize = 65536;
+    
 
-    public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
+    public Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
         try
         {
             var requestMessage = new HttpRequestMessage
             {
-                Content = await MapContent(request),
+                Content = MapContent(request),
                 Method = MapMethod(request, downstreamRoute),
                 RequestUri = MapUri(request),
                 Version = downstreamRoute.DownstreamHttpVersion,
@@ -26,23 +26,22 @@ public class RequestMapper : IRequestMapper
 
             MapHeaders(request, requestMessage);
 
-            return new OkResponse<HttpRequestMessage>(requestMessage);
+            return Task.FromResult<Response<HttpRequestMessage>>(new OkResponse<HttpRequestMessage>(requestMessage));
         }
         catch (Exception ex)
         {
-            return new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex));
+            return Task.FromResult<Response<HttpRequestMessage>>(new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex)));
         }
     }
 
-    private static async Task<HttpContent> MapContent(HttpRequest request)
+    private static HttpContent MapContent(HttpRequest request)
     {
-        if (request.Body is { CanSeek: true, Length: <= 0 })
+        if (request.Body is null or { CanSeek: true, Length: <= 0 })
         {
             return null;
         }
 
-        // Never change this to StreamContent again, I forgot it doesnt work in #464.
-        var content = await CopyAsync(request.Body, CancellationToken.None);
+        var content = new StreamHttpContent(request.HttpContext);
 
         if (!string.IsNullOrEmpty(request.ContentType))
         {
@@ -95,27 +94,18 @@ public class RequestMapper : IRequestMapper
         return !_unsupportedHeaders.Contains(header.Key.ToLower());
     }
 
-    private static async Task<ByteArrayContent> CopyAsync(Stream input, CancellationToken cancellation)
+    private static async Task<ByteArrayContent> CopyAsync(Stream stream)
     {
-        if (input == null)
+        if (stream == null)
         {
             return null;
         }
 
-        byte[] buffer = null;
-        try
+        await using (stream)
         {
-            var inputLength = input.CanSeek ? (int)input.Length : DefaultBufferSize;
-            buffer = ArrayPool<byte>.Shared.Rent(inputLength);
-            var read = await input.ReadAsync(buffer.AsMemory(), cancellation);
-            return read == 0 ? null : new ByteArrayContent(buffer.AsMemory(0, read).ToArray());
-        }
-        finally
-        {
-            if (buffer != null)
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
+            using var memStream = new MemoryStream();
+            await stream.CopyToAsync(memStream);
+            return new ByteArrayContent(memStream.ToArray());
         }
     }
 }
