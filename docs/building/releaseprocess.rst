@@ -16,6 +16,7 @@ Ocelot uses the following process to accept work into the NuGet packages.
     - Have I covered all my changes with tests at unit and acceptance level?
     - Have I updated any documentation that my changes may have affected?
     - Does my feature make sense, have I checked all of Ocelot's other features to make sure it doesn't already exist?
+
 In order for a PR to be merged the following must have occured.
     - All new code is covered by unit tests.
     - All new code has at least 1 acceptance test covering the happy path.

@@ -170,7 +170,7 @@ NOTE: In order to get Ocelot to view the scope claim from Okta properly, you hav
 `Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ that contains some code and examples that might help with Okta integration.
 
 Allowed Scopes
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 If you add scopes to AllowedScopes Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has at least one of the scopes in the list.
 

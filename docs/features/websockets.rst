@@ -5,31 +5,31 @@ Ocelot supports proxying websockets with some extra bits. This functionality was
 
 In order to get websocket proxying working with Ocelot you need to do the following.
 
-In your Configure method you need to tell your application to use WebSockets.
+In your ``Configure`` method you need to tell your application to use WebSockets:
 
 .. code-block:: csharp
 
-     Configure(app =>
+    Configure(app =>
     {
         app.UseWebSockets();
         app.UseOcelot().Wait();
     })
 
-Then in your ocelot.json add the following to proxy a Route using websockets.
+Then in your **ocelot.json** add the following to proxy a Route using WebSockets:
 
 .. code-block:: json
 
-       {
-            "DownstreamPathTemplate": "/ws",
-            "UpstreamPathTemplate": "/",
-            "DownstreamScheme": "ws",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
-        }
+  {
+    "DownstreamPathTemplate": "/ws",
+    "UpstreamPathTemplate": "/",
+    "DownstreamScheme": "ws",
+    "DownstreamHostAndPorts": [
+      {
+        "Host": "localhost",
+        "Port": 5001
+      }
+    ],
+  }
 
 With this configuration set Ocelot will match any websocket traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and proxy these to the upstream client.
 
@@ -48,7 +48,7 @@ In your Configure method you need to tell your application to use SignalR.
 
 .. code-block:: csharp
 
-     Configure(app =>
+    Configure(app =>
     {
         app.UseWebSockets();
         app.UseOcelot().Wait();
@@ -58,22 +58,22 @@ Then in your ocelot.json add the following to proxy a Route using SignalR. Note 
 
 .. code-block:: json
 
-   {
-  "Routes": [
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "ws",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5001
-        }
-      ],
-      "UpstreamPathTemplate": "/gateway/{catchAll}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
-    }
- ]
-}
+  {
+    "Routes": [
+      {
+        "DownstreamPathTemplate": "/{catchAll}",
+        "DownstreamScheme": "ws",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 5001
+          }
+        ],
+        "UpstreamPathTemplate": "/gateway/{catchAll}",
+        "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
+      }
+    ]
+  }
 
 With this configuration set Ocelot will match any SignalR traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and proxy these to the upstream client.
 

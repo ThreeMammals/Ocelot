@@ -102,7 +102,7 @@ If you have multiple Routes with the same LoadBalancerOptions then all of those 
 Please note that if you give more than one DownstreamHostAndPort or you are using a Service Discovery provider such as Consul and this returns more than one service then CookieStickySessions uses round robin to select the next server. This is hard coded at the moment but could be changed.
 
 Custom Load Balancers
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 `David Lievrouw <https://github.com/DavidLievrouw>`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155>`_.
 
