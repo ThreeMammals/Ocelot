@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Ocelot'
-copyright = '2023, Tom Pallister'
-author = 'Tom Pallister'
+copyright = '2023, ThreeMammals.org'
+author = 'ThreeMammals.org'
 release = '20.0.0'
 
 # -- General configuration ---------------------------------------------------
