@@ -8,7 +8,7 @@ namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
-    private readonly string[] _unsupportedHeaders = { "host" };
+    private readonly HashSet<string> _unsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host" };
 
     public Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
@@ -89,6 +89,6 @@ public class RequestMapper : IRequestMapper
 
     private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
     {
-        return !_unsupportedHeaders.Contains(header.Key.ToLower());
+        return !_unsupportedHeaders.Contains(header.Key);
     }
 }
