@@ -9,47 +9,58 @@ namespace Ocelot.UnitTests.Cache
     {
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly DownstreamRequest _downstreamRequest;
-        private DownstreamRoute _downstreamRoute;
 
         public CacheKeyGeneratorTests()
         {
             _cacheKeyGenerator = new CacheKeyGenerator();
-            _cacheKeyGenerator = new CacheKeyGenerator();
-            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")
-            {
-                Headers = { { "auth", "123456" } },
-            });
-            _downstreamRoute = new DownstreamRouteBuilder().WithKey("key1").Build();
+            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
+            _downstreamRequest.Headers.Add("auth", "123456");
         }
 
         [Fact]
         public void should_generate_cache_key_from_context()
         {
-            this.Given(x => x.GivenCacheKeyFromContext(_downstreamRequest, _downstreamRoute))
+            CacheOptions options = null;
+            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+
+            this.Given(x => x.GivenDownstreamRoute(options))
+                .When(x => x.WhenGenerateRequestCacheKey())
+                .Then(x => x.ThenGeneratedCacheKeyIs(cachekey))
                 .BDDfy();
         }
 
         [Fact]
         public void should_generate_cache_key_with_header_from_context()
         {
-            _downstreamRoute = new DownstreamRouteBuilder().WithCacheOptions(new CacheOptions(100, "test", "auth")).WithKey("key1").Build();
+            CacheOptions options = new CacheOptions(100, "region", "auth");
+            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123123456");
 
-            this.Given(x => x.GivenCacheKeyWithHeaderFromContext(_downstreamRequest, _downstreamRoute))
+            this.Given(x => x.GivenDownstreamRoute(options))
+                .When(x => x.WhenGenerateRequestCacheKey())
+                .Then(x => x.ThenGeneratedCacheKeyIs(cachekey))
                 .BDDfy();
         }
 
-        private async Task GivenCacheKeyFromContext(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
+        private DownstreamRoute _downstreamRoute;
+
+        private void GivenDownstreamRoute(CacheOptions options)
         {
-            var generatedCacheKey = await _cacheKeyGenerator.GenerateRequestCacheKey(downstreamRequest, downstreamRoute);
-            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
-            generatedCacheKey.ShouldBe(cachekey);
+            _downstreamRoute = new DownstreamRouteBuilder()
+                .WithKey("key1")
+                .WithCacheOptions(options)
+                .Build();
         }
 
-        private async Task GivenCacheKeyWithHeaderFromContext(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
+        private string _generatedCacheKey;
+
+        private async Task WhenGenerateRequestCacheKey()
         {
-            var generatedCacheKey = await _cacheKeyGenerator.GenerateRequestCacheKey(downstreamRequest, downstreamRoute);
-            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123123456");
-            generatedCacheKey.ShouldBe(cachekey);
+            _generatedCacheKey = await _cacheKeyGenerator.GenerateRequestCacheKey(_downstreamRequest, _downstreamRoute);
+        }
+
+        private void ThenGeneratedCacheKeyIs(string expected)
+        {
+            _generatedCacheKey.ShouldBe(expected);
         }
     }
 }
