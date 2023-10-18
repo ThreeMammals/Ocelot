@@ -37,17 +37,17 @@ namespace Ocelot.Responder.Middleware
             // todo check errors is ok
             if (errors.Count > 0)
             {
-                Logger.LogWarning($"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+                Logger.LogWarning(() => $"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
 
                 SetErrorResponse(httpContext, errors);
             }
             else if (downstreamResponse == null)
             {
-                Logger.LogDebug($"Pipeline was terminated early in {MiddlewareName}");
+                Logger.LogDebug(() => $"Pipeline was terminated early in {MiddlewareName}");
             }
             else
             {
-                Logger.LogDebug("no pipeline errors, setting and returning completed response");
+                Logger.LogDebug(() => "no pipeline errors, setting and returning completed response");
 
                 await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
             }

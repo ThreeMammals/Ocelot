@@ -2,76 +2,86 @@ using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
-namespace Ocelot.UnitTests.Logging
+namespace Ocelot.UnitTests.Logging;
+
+public class AspDotNetLoggerTests
 {
-    public class AspDotNetLoggerTests
+    private readonly Mock<ILogger<object>> _coreLogger;
+    private readonly Mock<IRequestScopedDataRepository> _repo;
+    private readonly AspDotNetLogger _logger;
+    private readonly string _b;
+    private readonly string _a;
+    private readonly Exception _ex;
+
+    public AspDotNetLoggerTests()
     {
-        private readonly Mock<ILogger<object>> _coreLogger;
-        private readonly Mock<IRequestScopedDataRepository> _repo;
-        private readonly AspDotNetLogger _logger;
-        private readonly string _b;
-        private readonly string _a;
-        private readonly Exception _ex;
+        _a = "tom";
+        _b = "laura";
+        _ex = new Exception("oh no");
+        _coreLogger = new Mock<ILogger<object>>();
+        _coreLogger.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+        _repo = new Mock<IRequestScopedDataRepository>();
+        _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object);
+    }
 
-        public AspDotNetLoggerTests()
-        {
-            _a = "tom";
-            _b = "laura";
-            _ex = new Exception("oh no");
-            _coreLogger = new Mock<ILogger<object>>();
-            _repo = new Mock<IRequestScopedDataRepository>();
-            _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object);
-        }
+    [Fact]
+    public void should_log_trace()
+    {
+        _logger.LogTrace(() => $"a message from {_a} to {_b}");
 
-        [Fact]
-        public void should_log_trace()
-        {
-            _logger.LogTrace($"a message from {_a} to {_b}");
+        ThenLevelIsLogged(
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+    }
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Trace);
-        }
+    [Fact]
+    public void should_log_info()
+    {
+        _logger.LogInformation(() => $"a message from {_a} to {_b}");
 
-        [Fact]
-        public void should_log_info()
-        {
-            _logger.LogInformation($"a message from {_a} to {_b}");
+        ThenLevelIsLogged(
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+    }
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Information);
-        }
+    [Fact]
+    public void should_log_warning()
+    {
+        _logger.LogWarning(() => $"a message from {_a} to {_b}");
 
-        [Fact]
-        public void should_log_warning()
-        {
-            _logger.LogWarning($"a message from {_a} to {_b}");
+        ThenLevelIsLogged(
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+    }
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Warning);
-        }
+    [Fact]
+    public void should_log_error()
+    {
+        _logger.LogError(() => $"a message from {_a} to {_b}", _ex);
 
-        [Fact]
-        public void should_log_error()
-        {
-            _logger.LogError($"a message from {_a} to {_b}", _ex);
+        ThenLevelIsLogged(
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, _ex);
+    }
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Error, _ex);
-        }
+    [Fact]
+    public void should_log_critical()
+    {
+        _logger.LogCritical(() => $"a message from {_a} to {_b}", _ex);
 
-        [Fact]
-        public void should_log_critical()
-        {
-            _logger.LogCritical($"a message from {_a} to {_b}", _ex);
+        ThenLevelIsLogged(
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, _ex);
+    }
 
-            ThenLevelIsLogged("requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura", LogLevel.Critical, _ex);
-        }
-
-        private void ThenLevelIsLogged(string expected, LogLevel expectedLogLevel, Exception ex = null)
-        {
-            _coreLogger.Verify(
-                x => x.Log(
-                    expectedLogLevel,
-                    default(EventId),
-                    expected,
-                    ex,
-                    It.IsAny<Func<string, Exception, string>>()), Times.Once);
-        }
+    private void ThenLevelIsLogged(string expected, LogLevel expectedLogLevel, Exception ex = null)
+    {
+        _coreLogger.Verify(
+            x => x.Log(
+                expectedLogLevel,
+                default,
+                expected,
+                ex,
+                It.IsAny<Func<string, Exception, string>>()), Times.Once);
     }
 }

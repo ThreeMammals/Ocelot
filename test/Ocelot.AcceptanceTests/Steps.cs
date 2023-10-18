@@ -1258,7 +1258,7 @@ namespace Ocelot.AcceptanceTests
                 if (_logger == null)
                 {
                     _logger = new Mock<IOcelotLogger>();
-                    _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
+                    _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
                 }
 
                 return _logger.Object;

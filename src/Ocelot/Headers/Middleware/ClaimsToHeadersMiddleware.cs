@@ -24,7 +24,7 @@ namespace Ocelot.Headers.Middleware
 
             if (downstreamRoute.ClaimsToHeaders.Any())
             {
-                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
+                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to headers");
 
                 var downstreamRequest = httpContext.Items.DownstreamRequest();
 
@@ -32,13 +32,13 @@ namespace Ocelot.Headers.Middleware
 
                 if (response.IsError)
                 {
-                    Logger.LogWarning("Error setting headers on context, setting pipeline error");
+                    Logger.LogWarning(() => "Error setting headers on context, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(response.Errors);
                     return;
                 }
 
-                Logger.LogInformation("headers have been set on context");
+                Logger.LogInformation(() => "headers have been set on context");
             }
 
             await _next.Invoke(httpContext);

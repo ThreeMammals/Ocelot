@@ -158,7 +158,7 @@ namespace Ocelot.UnitTests.Consul
             {
                 var service = entry.Service;
                 var expected = $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
-                _logger.Verify(x => x.LogWarning(expected), Times.Once);
+                _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == expected)), Times.Once);
             }
         }
 

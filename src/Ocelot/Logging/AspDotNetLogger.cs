@@ -11,69 +11,39 @@ namespace Ocelot.Logging
 
         public AspDotNetLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
         {
-            _logger = logger;
-            _scopedDataRepository = scopedDataRepository;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _scopedDataRepository = scopedDataRepository ?? throw new ArgumentNullException(nameof(scopedDataRepository));
             _func = (state, exception) => exception == null ? state : $"{state}, exception: {exception}";
         }
 
-        public void LogTrace(string message)
+        public void LogTrace(Func<string> messageFactory)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Trace, default, state, null, _func);
+            WriteLog(LogLevel.Trace, messageFactory);
         }
 
-        public void LogDebug(string message)
+        public void LogDebug(Func<string> messageFactory)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Debug, default, state, null, _func);
+            WriteLog(LogLevel.Debug, messageFactory);
         }
 
-        public void LogInformation(string message)
+        public void LogInformation(Func<string> messageFactory)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Information, default, state, null, _func);
+            WriteLog(LogLevel.Information, messageFactory);
         }
 
-        public void LogWarning(string message)
+        public void LogWarning(Func<string> messageFactory)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Warning, default, state, null, _func);
+            WriteLog(LogLevel.Warning, messageFactory);
         }
 
-        public void LogError(string message, Exception exception)
+        public void LogError(Func<string> messageFactory, Exception exception)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Error, default, state, exception, _func);
+            WriteLog(LogLevel.Error, messageFactory, exception);
         }
 
-        public void LogCritical(string message, Exception exception)
+        public void LogCritical(Func<string> messageFactory, Exception exception)
         {
-            var requestId = GetOcelotRequestId();
-            var previousRequestId = GetOcelotPreviousRequestId();
-
-            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {message}";
-
-            _logger.Log(LogLevel.Critical, default, state, exception, _func);
+            WriteLog(LogLevel.Critical, messageFactory, exception);
         }
 
         private string GetOcelotRequestId()
@@ -88,6 +58,21 @@ namespace Ocelot.Logging
             var requestId = _scopedDataRepository.Get<string>("PreviousRequestId");
 
             return requestId == null || requestId.IsError ? "no previous request id" : requestId.Data;
+        }
+
+        private void WriteLog(LogLevel logLevel, Func<string> messageFactory, Exception exception = null)
+        {
+            if (!_logger.IsEnabled(logLevel))
+            {
+                return;
+            }
+
+            var requestId = GetOcelotRequestId();
+            var previousRequestId = GetOcelotPreviousRequestId();
+
+            var state = $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: {messageFactory.Invoke()}";
+
+            _logger.Log(logLevel, default, state, exception, _func);
         }
     }
 }

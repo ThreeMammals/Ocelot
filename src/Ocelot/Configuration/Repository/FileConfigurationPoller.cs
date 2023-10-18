@@ -34,7 +34,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"{nameof(FileConfigurationPoller)} is starting.");
+            _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is starting.");
 
             _timer = new Timer(async x =>
             {
@@ -53,7 +53,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"{nameof(FileConfigurationPoller)} is stopping.");
+            _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
 
             _timer?.Change(Timeout.Infinite, 0);
 
@@ -62,13 +62,13 @@ namespace Ocelot.Configuration.Repository
 
         private async Task Poll()
         {
-            _logger.LogInformation("Started polling");
+            _logger.LogInformation(() => "Started polling");
 
             var fileConfig = await _repo.Get();
 
             if (fileConfig.IsError)
             {
-                _logger.LogWarning($"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+                _logger.LogWarning(() =>$"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
                 return;
             }
 
@@ -86,7 +86,7 @@ namespace Ocelot.Configuration.Repository
                 _previousAsJson = asJson;
             }
 
-            _logger.LogInformation("Finished polling");
+            _logger.LogInformation(() => "Finished polling");
         }
 
         /// <summary>

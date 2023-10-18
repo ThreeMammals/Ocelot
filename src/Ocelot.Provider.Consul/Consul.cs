@@ -44,7 +44,7 @@ public class Consul : IServiceDiscoveryProvider
             else
             {
                 _logger.LogWarning(
-                    $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
+                    () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
             }
         }
 

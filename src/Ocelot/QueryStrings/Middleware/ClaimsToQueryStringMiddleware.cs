@@ -24,7 +24,7 @@ namespace Ocelot.QueryStrings.Middleware
 
             if (downstreamRoute.ClaimsToQueries.Any())
             {
-                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
                 var downstreamRequest = httpContext.Items.DownstreamRequest();
 
@@ -32,7 +32,7 @@ namespace Ocelot.QueryStrings.Middleware
 
                 if (response.IsError)
                 {
-                    Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
+                    Logger.LogWarning(() => "there was an error setting queries on context, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(response.Errors);
                     return;

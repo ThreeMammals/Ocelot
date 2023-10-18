@@ -152,12 +152,12 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
             _logInformationMessages.ShouldNotBeNull()
                 .Count.ShouldBe(2);
-            _logger.Verify(x => x.LogInformation(It.IsAny<string>()),
+            _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()),
                 Times.Exactly(2));
 
             _logWarningMessages.ShouldNotBeNull()
                 .Count.ShouldBe(1);
-            _logger.Verify(x => x.LogWarning(It.IsAny<string>()),
+            _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()),
                 Times.Once());
         }
 
@@ -187,10 +187,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private void WhenIGetTheServiceProvider()
         {
-            _logger.Setup(x => x.LogInformation(It.IsAny<string>()))
-                .Callback<string>(message => _logInformationMessages.Add(message));
-            _logger.Setup(x => x.LogWarning(It.IsAny<string>()))
-                .Callback<string>(message => _logWarningMessages.Add(message));
+            _logger.Setup(x => x.LogInformation(It.IsAny<Func<string>>()))
+                .Callback<Func<string>>(myFunc => _logInformationMessages.Add(myFunc.Invoke()));
+            _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+                .Callback<Func<string>>(myFunc => _logWarningMessages.Add(myFunc.Invoke()));
 
             _result = _factory.Get(_serviceConfig, _route);
         }

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Ocelot.Logging
 {
     /// <summary>
@@ -5,16 +7,16 @@ namespace Ocelot.Logging
     /// </summary>
     public interface IOcelotLogger
     {
-        void LogTrace(string message);
+        void LogTrace(Func<string> messageFactory);
+        
+        void LogDebug(Func<string> messageFactory);
 
-        void LogDebug(string message);
+        void LogInformation(Func<string> messageFactory);
 
-        void LogInformation(string message);
+        void LogWarning(Func<string> messageFactory);
 
-        void LogWarning(string message);
+        void LogError(Func<string> messageFactory, Exception exception);
 
-        void LogError(string message, Exception exception);
-
-        void LogCritical(string message, Exception exception);
+        void LogCritical(Func<string> messageFactory, Exception exception);
     }
 }

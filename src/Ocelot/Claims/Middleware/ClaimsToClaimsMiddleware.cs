@@ -24,13 +24,13 @@ namespace Ocelot.Claims.Middleware
 
             if (downstreamRoute.ClaimsToClaims.Any())
             {
-                Logger.LogDebug("this route has instructions to convert claims to other claims");
+                Logger.LogDebug(() => "this route has instructions to convert claims to other claims");
 
                 var result = _addClaimsToRequest.SetClaimsOnContext(downstreamRoute.ClaimsToClaims, httpContext);
 
                 if (result.IsError)
                 {
-                    Logger.LogDebug("error converting claims to other claims, setting pipeline error");
+                    Logger.LogDebug(() => "error converting claims to other claims, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(result.Errors);
                     return;
