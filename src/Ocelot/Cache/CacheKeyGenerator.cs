@@ -28,12 +28,12 @@ namespace Ocelot.Cache
                 }
             }
 
-            if (downstreamRequest.Content == null)
+            if (!downstreamRequest.HasContent)
             {
                 return MD5Helper.GenerateMd5(builder.ToString());
             }
 
-            var requestContentString = await downstreamRequest.Content.ReadAsStringAsync();
+            var requestContentString = await downstreamRequest.ReadContentAsync();
             builder.Append(Delimiter)
                 .Append(requestContentString);
 
