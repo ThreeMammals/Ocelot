@@ -9,19 +9,21 @@ namespace Ocelot.UnitTests.Cache
     {
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly DownstreamRequest _downstreamRequest;
+        private const string url = "https://some.url/blah?abcd=123";
+        private const string header = nameof(CacheKeyGeneratorTests);
 
         public CacheKeyGeneratorTests()
         {
             _cacheKeyGenerator = new CacheKeyGenerator();
-            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123"));
-            _downstreamRequest.Headers.Add("auth", "123456");
+            _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, url));
+            _downstreamRequest.Headers.Add("auth", header);
         }
 
         [Fact]
         public void should_generate_cache_key_from_context()
         {
             CacheOptions options = null;
-            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+            var cachekey = MD5Helper.GenerateMd5($"GET-{url}");
 
             this.Given(x => x.GivenDownstreamRoute(options))
                 .When(x => x.WhenGenerateRequestCacheKey())
@@ -33,7 +35,7 @@ namespace Ocelot.UnitTests.Cache
         public void should_generate_cache_key_with_header_from_context()
         {
             CacheOptions options = new CacheOptions(100, "region", "auth");
-            var cachekey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123123456");
+            var cachekey = MD5Helper.GenerateMd5($"GET-{url}-{header}");
 
             this.Given(x => x.GivenDownstreamRoute(options))
                 .When(x => x.WhenGenerateRequestCacheKey())
