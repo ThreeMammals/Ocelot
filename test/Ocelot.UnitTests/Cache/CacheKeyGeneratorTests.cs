@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.Cache
             _cacheKeyGenerator = new CacheKeyGenerator();
             _downstreamRequest = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")
             {
-                Headers = { { "auth", "123456" } }
+                Headers = { { "auth", "123456" } },
             });
             _downstreamRoute = new DownstreamRouteBuilder().WithKey("key1").Build();
         }

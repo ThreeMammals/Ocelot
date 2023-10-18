@@ -23,7 +23,10 @@ namespace Ocelot.Cache
                 }
             }
 
-            if (downstreamRequest.Content == null) return MD5Helper.GenerateMd5(builder.ToString());
+            if (downstreamRequest.Content == null)
+            {
+                return MD5Helper.GenerateMd5(builder.ToString());
+            }
 
             var requestContentString = await downstreamRequest.Content.ReadAsStringAsync();
             builder.Append(requestContentString);
