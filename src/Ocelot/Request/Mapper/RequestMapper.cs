@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Server.HttpSys;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Responses;
@@ -9,6 +13,19 @@ namespace Ocelot.Request.Mapper
     public class RequestMapper : IRequestMapper
     {
         private readonly string[] _unsupportedHeaders = { "host" };
+        private readonly long? maxRequestBodySizeHttpsSys;
+        private readonly long? maxRequestBodySizeKerstrelServer;
+        private readonly long? maxRequestBodySizeIISServer;
+        public RequestMapper()
+        {
+        }
+
+        public RequestMapper(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> IISOptions)
+        {
+            maxRequestBodySizeHttpsSys = httpSysOptions.Value.MaxRequestBodySize.GetValueOrDefault();
+            maxRequestBodySizeKerstrelServer = kerstrelServerOptions.Value.Limits.MaxRequestBodySize;
+            maxRequestBodySizeIISServer = IISOptions.Value.MaxRequestBodySize;
+        }
 
         public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
         {
@@ -28,8 +45,18 @@ namespace Ocelot.Request.Mapper
             }
             catch (Exception ex)
             {
+                if (PayloadTooLargeOnAnyHostedServer(request, ex))
+                {
+                    return new ErrorResponse<HttpRequestMessage>(new PayloadTooLargeError(ex));
+                }
+
                 return new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex));
             }
+        }
+
+        private bool PayloadTooLargeOnAnyHostedServer(HttpRequest request, Exception ex)
+        {
+            return (maxRequestBodySizeHttpsSys < request.ContentLength || maxRequestBodySizeIISServer < request.ContentLength || maxRequestBodySizeKerstrelServer < request.ContentLength) && ex is Microsoft.AspNetCore.Http.BadHttpRequestException;
         }
 
         private static async Task<HttpContent> MapContent(HttpRequest request)
