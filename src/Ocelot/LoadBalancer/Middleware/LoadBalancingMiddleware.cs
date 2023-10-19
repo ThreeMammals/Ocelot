@@ -29,7 +29,7 @@ namespace Ocelot.LoadBalancer.Middleware
 
             if (loadBalancer.IsError)
             {
-                Logger.LogDebug(() => "there was an error retriving the loadbalancer, setting pipeline error");
+                Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
                 httpContext.Items.UpsertErrors(loadBalancer.Errors);
                 return;
             }
@@ -37,7 +37,7 @@ namespace Ocelot.LoadBalancer.Middleware
             var hostAndPort = await loadBalancer.Data.Lease(httpContext);
             if (hostAndPort.IsError)
             {
-                Logger.LogDebug(() => "there was an error leasing the loadbalancer, setting pipeline error");
+                Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
                 httpContext.Items.UpsertErrors(hostAndPort.Errors);
                 return;
             }
@@ -63,7 +63,7 @@ namespace Ocelot.LoadBalancer.Middleware
             }
             catch (Exception)
             {
-                Logger.LogDebug(() => "Exception calling next middleware, exception will be thrown to global handler");
+                Logger.LogDebug("Exception calling next middleware, exception will be thrown to global handler");
                 throw;
             }
             finally

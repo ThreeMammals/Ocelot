@@ -34,7 +34,7 @@ namespace Ocelot.DownstreamPathManipulation.Middleware
 
                 if (response.IsError)
                 {
-                    Logger.LogWarning(() => "there was an error setting queries on context, setting pipeline error");
+                    Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(response.Errors);
                     return;

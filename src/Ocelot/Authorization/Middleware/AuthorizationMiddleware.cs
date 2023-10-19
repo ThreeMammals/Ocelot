@@ -29,13 +29,13 @@ namespace Ocelot.Authorization.Middleware
 
             if (!IsOptionsHttpMethod(httpContext) && IsAuthenticatedRoute(downstreamRoute))
             {
-                Logger.LogInformation(() =>"route is authenticated scopes must be checked");
+                Logger.LogInformation("route is authenticated scopes must be checked");
 
                 var authorized = _scopesAuthorizer.Authorize(httpContext.User, downstreamRoute.AuthenticationOptions.AllowedScopes);
 
                 if (authorized.IsError)
                 {
-                    Logger.LogWarning(() => "error authorizing user scopes");
+                    Logger.LogWarning("error authorizing user scopes");
 
                     httpContext.Items.UpsertErrors(authorized.Errors);
                     return;
@@ -43,11 +43,11 @@ namespace Ocelot.Authorization.Middleware
 
                 if (IsAuthorized(authorized))
                 {
-                    Logger.LogInformation(() => "user scopes is authorized calling next authorization checks");
+                    Logger.LogInformation("user scopes is authorized calling next authorization checks");
                 }
                 else
                 {
-                    Logger.LogWarning(() =>"user scopes is not authorized setting pipeline error");
+                    Logger.LogWarning("user scopes is not authorized setting pipeline error");
 
                     httpContext.Items.SetError(new UnauthorizedError(
                             $"{httpContext.User.Identity.Name} unable to access {downstreamRoute.UpstreamPathTemplate.OriginalValue}"));
@@ -56,7 +56,7 @@ namespace Ocelot.Authorization.Middleware
 
             if (!IsOptionsHttpMethod(httpContext) && IsAuthorizedRoute(downstreamRoute))
             {
-                Logger.LogInformation(() => "route is authorized");
+                Logger.LogInformation("route is authorized");
 
                 var authorized = _claimsAuthorizer.Authorize(httpContext.User, downstreamRoute.RouteClaimsRequirement, httpContext.Items.TemplatePlaceholderNameAndValues());
 

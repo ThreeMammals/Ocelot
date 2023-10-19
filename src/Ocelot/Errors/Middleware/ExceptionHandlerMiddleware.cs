@@ -33,13 +33,13 @@ namespace Ocelot.Errors.Middleware
 
                 TrySetGlobalRequestId(httpContext, internalConfiguration);
 
-                Logger.LogDebug(() =>"ocelot pipeline started");
+                Logger.LogDebug("ocelot pipeline started");
 
                 await _next.Invoke(httpContext);
             }
             catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
             {
-                Logger.LogDebug(() =>"operation canceled");
+                Logger.LogDebug("operation canceled");
                 if (!httpContext.Response.HasStarted)
                 {
                     httpContext.Response.StatusCode = 499;
@@ -47,13 +47,13 @@ namespace Ocelot.Errors.Middleware
             }
             catch (Exception e)
             {
-                Logger.LogDebug(() =>"error calling middleware");
+                Logger.LogDebug("error calling middleware");
                 Logger.LogError(() => CreateMessage(httpContext, e), e);
 
                 SetInternalServerErrorOnResponse(httpContext);
             }
 
-            Logger.LogDebug(() =>"ocelot pipeline finished");
+            Logger.LogDebug("ocelot pipeline finished");
         }
 
         private void TrySetGlobalRequestId(HttpContext httpContext, IInternalConfiguration configuration)
