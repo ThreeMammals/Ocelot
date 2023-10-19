@@ -16,65 +16,23 @@ public class AspDotNetLogger : IOcelotLogger
         _func = (state, exception) => exception == null ? state : $"{state}, exception: {exception}";
     }
 
-    public void LogTrace(string message)
-    {
-        LogTrace(() => message);
-    }
+    public void LogTrace(string message) => LogTrace(() => message);
+    public void LogTrace(Func<string> messageFactory) => WriteLog(LogLevel.Trace, messageFactory);
 
-    public void LogTrace(Func<string> messageFactory)
-    {
-        WriteLog(LogLevel.Trace, messageFactory);
-    }
+    public void LogDebug(string message) => LogDebug(() => message);
+    public void LogDebug(Func<string> messageFactory) => WriteLog(LogLevel.Debug, messageFactory);
 
-    public void LogDebug(string message)
-    {
-        LogDebug(() => message);
-    }
+    public void LogInformation(string message) => LogInformation(() => message);
+    public void LogInformation(Func<string> messageFactory) => WriteLog(LogLevel.Information, messageFactory);
 
-    public void LogDebug(Func<string> messageFactory)
-    {
-        WriteLog(LogLevel.Debug, messageFactory);
-    }
+    public void LogWarning(string message) => LogWarning(() => message);
+    public void LogWarning(Func<string> messageFactory) => WriteLog(LogLevel.Warning, messageFactory);
 
-    public void LogInformation(string message)
-    {
-        LogInformation(() => message);
-    }
+    public void LogError(string message, Exception exception) => LogError(() => message, exception);
+    public void LogError(Func<string> messageFactory, Exception exception) => WriteLog(LogLevel.Error, messageFactory, exception);
 
-    public void LogInformation(Func<string> messageFactory)
-    {
-        WriteLog(LogLevel.Information, messageFactory);
-    }
-
-    public void LogWarning(string message)
-    {
-        LogWarning(() => message);
-    }
-
-    public void LogWarning(Func<string> messageFactory)
-    {
-        WriteLog(LogLevel.Warning, messageFactory);
-    }
-
-    public void LogError(string message, Exception exception)
-    {
-        LogError(() => message, exception);
-    }
-
-    public void LogError(Func<string> messageFactory, Exception exception)
-    {
-        WriteLog(LogLevel.Error, messageFactory, exception);
-    }
-
-    public void LogCritical(string message, Exception exception)
-    {
-        LogCritical(() => message, exception);
-    }
-
-    public void LogCritical(Func<string> messageFactory, Exception exception)
-    {
-        WriteLog(LogLevel.Critical, messageFactory, exception);
-    }
+    public void LogCritical(string message, Exception exception) => LogCritical(() => message, exception);
+    public void LogCritical(Func<string> messageFactory, Exception exception) => WriteLog(LogLevel.Critical, messageFactory, exception);
 
     private string GetOcelotRequestId()
     {
