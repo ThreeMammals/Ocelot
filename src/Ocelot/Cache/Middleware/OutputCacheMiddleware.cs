@@ -33,7 +33,7 @@ namespace Ocelot.Cache.Middleware
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
             var downstreamUrlKey = $"{downstreamRequest.Method}-{downstreamRequest.OriginalString}";
-            var downStreamRequestCacheKey = _cacheGenerator.GenerateRequestCacheKey(downstreamRequest);
+            var downStreamRequestCacheKey = await _cacheGenerator.GenerateRequestCacheKey(downstreamRequest, downstreamRoute);
 
             Logger.LogDebug(() => $"Started checking cache for the '{downstreamUrlKey}' key.");
 
