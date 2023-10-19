@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Responses;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.Request.Mapper
 {
@@ -16,15 +19,17 @@ namespace Ocelot.Request.Mapper
         private readonly long? maxRequestBodySizeHttpsSys;
         private readonly long? maxRequestBodySizeKerstrelServer;
         private readonly long? maxRequestBodySizeIISServer;
+        private IServer _server;
         public RequestMapper()
         {
         }
 
-        public RequestMapper(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> IISOptions)
+        public RequestMapper(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> iISOptions,IServer server)
         {
             maxRequestBodySizeHttpsSys = httpSysOptions.Value.MaxRequestBodySize.GetValueOrDefault();
             maxRequestBodySizeKerstrelServer = kerstrelServerOptions.Value.Limits.MaxRequestBodySize;
-            maxRequestBodySizeIISServer = IISOptions.Value.MaxRequestBodySize;
+            maxRequestBodySizeIISServer = iISOptions.Value.MaxRequestBodySize;
+            _server = server;
         }
 
         public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
@@ -56,7 +61,38 @@ namespace Ocelot.Request.Mapper
 
         private bool PayloadTooLargeOnAnyHostedServer(HttpRequest request, Exception ex)
         {
-            return (maxRequestBodySizeHttpsSys < request.ContentLength || maxRequestBodySizeIISServer < request.ContentLength || maxRequestBodySizeKerstrelServer < request.ContentLength) && ex is Microsoft.AspNetCore.Http.BadHttpRequestException;
+            bool isHeavyPayload = false;
+
+            if(_server is KestrelServer)
+            {
+                isHeavyPayload = maxRequestBodySizeKerstrelServer < request.ContentLength;
+            }
+            else if (IsRunningInProcessIIS())
+            {
+               isHeavyPayload = maxRequestBodySizeIISServer < request.ContentLength;
+            }
+            else
+            {
+                isHeavyPayload = maxRequestBodySizeHttpsSys < request.ContentLength && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            }
+
+            return isHeavyPayload && ex is Microsoft.AspNetCore.Http.BadHttpRequestException;
+        }
+
+        /// <summary>
+        /// Check if this process is running on Windows in an in process instance in IIS.
+        /// </summary>
+        /// <returns>True if Windows and in an in process instance on IIS, false otherwise.</returns>
+        public static bool IsRunningInProcessIIS()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return false;
+            }
+
+            string processName = Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
+            return processName.Contains("w3wp", StringComparison.OrdinalIgnoreCase) ||
+                processName.Contains("iisexpress", StringComparison.OrdinalIgnoreCase);
         }
 
         private static async Task<HttpContent> MapContent(HttpRequest request)
