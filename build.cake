@@ -339,7 +339,7 @@ Task("RunUnitTests")
 
 		GenerateReport(coverageSummaryFile);
 		
-		if (IsRunningOnCircleCI() && IsMainOrDevelop())
+		if (IsRunningOnCircleCI())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
