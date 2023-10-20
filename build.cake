@@ -1,5 +1,5 @@
 #tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=4.0.1"
+#tool "dotnet:?package=coveralls.net&version=1.0.0"
 #tool "nuget:?package=ReportGenerator&version=5.1.19"
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
