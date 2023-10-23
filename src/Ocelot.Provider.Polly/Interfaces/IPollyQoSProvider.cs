@@ -1,6 +1,8 @@
-﻿namespace Ocelot.Provider.Polly.Interfaces;
+﻿using Ocelot.Configuration;
+
+namespace Ocelot.Provider.Polly.Interfaces;
 
 public interface IPollyQoSProvider
 {
-    CircuitBreaker CircuitBreaker { get; }
+    CircuitBreaker GetCircuitBreaker(DownstreamRoute route);
 }

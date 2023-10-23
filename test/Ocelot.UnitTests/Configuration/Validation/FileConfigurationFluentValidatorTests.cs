@@ -12,6 +12,9 @@ using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
@@ -1536,8 +1539,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private void GivenAQoSHandler()
         {
             var collection = new ServiceCollection();
-            QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
-            collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
+            DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
+            collection.AddSingleton((QosDelegatingHandlerDelegate)Del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }

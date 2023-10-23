@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
@@ -14,6 +15,7 @@ namespace Ocelot.UnitTests.Polly
         public void Should_build()
         {
             var loggerFactory = new Mock<IOcelotLoggerFactory>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
             var services = new ServiceCollection();
             var options = new QoSOptionsBuilder()
                 .WithTimeoutValue(100)
@@ -34,7 +36,7 @@ namespace Ocelot.UnitTests.Polly
             var handler = provider.GetService<QosDelegatingHandlerDelegate>();
             handler.ShouldNotBeNull();
 
-            var delgatingHandler = handler(route, loggerFactory.Object);
+            var delgatingHandler = handler(route, contextAccessor.Object, loggerFactory.Object);
             delgatingHandler.ShouldNotBeNull();
         }
     }

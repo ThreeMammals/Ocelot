@@ -97,6 +97,49 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_open_circuit_breaker_after_two_exceptions()
+        {
+            var port = RandomPortFinder.GetRandomPort();
+
+            var configuration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        QoSOptions = new FileQoSOptions
+                        {
+                            ExceptionsAllowedBeforeBreaking = 2,
+                            TimeoutValue = 5000,
+                            DurationOfBreak = 1000,
+                        },
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .BDDfy();
+        }
+
+        [Fact]
         public void Should_open_circuit_breaker_then_close()
         {
             var port = PortFinder.GetRandomPort();
@@ -223,6 +266,16 @@ namespace Ocelot.AcceptanceTests
         private static void GivenIWaitMilliseconds(int ms)
         {
             Thread.Sleep(ms);
+        }
+
+
+        private void GivenThereIsABrokenServiceRunningOn(string url)
+        {
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                context.Response.StatusCode = 500;
+                await context.Response.WriteAsync("this is an exception");
+            });
         }
 
         private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)

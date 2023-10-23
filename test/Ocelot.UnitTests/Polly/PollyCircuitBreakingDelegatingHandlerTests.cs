@@ -4,37 +4,34 @@ using Ocelot.Provider.Polly;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly;
 using Polly.Wrap;
-using Shouldly;
-using System;
-using System.Net;
-using System.Net.Http;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Polly;
 
 public class PollyCircuitBreakingDelegatingHandlerTests
 {
-    private readonly Mock<IPollyQoSProvider> pollyQoSProviderMock;
-    private readonly Mock<IOcelotLoggerFactory> loggerFactoryMock;
-    private readonly Mock<IOcelotLogger> loggerMock;
+    private readonly Mock<IPollyQoSProvider> _pollyQoSProviderMock;
+    private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
 
     private readonly PollyCircuitBreakingDelegatingHandler sut;
 
     public PollyCircuitBreakingDelegatingHandlerTests()
     {
-        pollyQoSProviderMock = new Mock<IPollyQoSProvider>();
+        _pollyQoSProviderMock = new Mock<IPollyQoSProvider>();
 
-        loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        loggerMock = new Mock<IOcelotLogger>();
+        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+        var loggerMock = new Mock<IOcelotLogger>();
+        _contextAccessorMock = new Mock<IHttpContextAccessor>();
 
         loggerFactoryMock.Setup(x => x.CreateLogger<PollyCircuitBreakingDelegatingHandler>())
             .Returns(loggerMock.Object);
         loggerMock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
 
-        sut = new PollyCircuitBreakingDelegatingHandler(pollyQoSProviderMock.Object, loggerFactoryMock.Object);
+        sut = new PollyCircuitBreakingDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
     }
 
     [Fact]
@@ -50,9 +47,14 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             .Callback((IInvocation x) => method = x.Method)
             .ReturnsAsync(fakeResponse);
 
-        pollyQoSProviderMock.SetupGet(x => x.CircuitBreaker)
+        _pollyQoSProviderMock.Setup(x => x.GetCircuitBreaker(It.IsAny<DownstreamRoute>()))
             .Returns(new CircuitBreaker(onePolicy.Object));
 
+        var httpContext = new Mock<HttpContext>();
+        httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider)))
+            .Returns(_pollyQoSProviderMock.Object);
+
+        _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
         // Act
         var actual = await InvokeAsync("SendAsync");
 
@@ -75,8 +77,14 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             IsLast = true,
         };
 
-        pollyQoSProviderMock.SetupGet(x => x.CircuitBreaker)
+        _pollyQoSProviderMock.Setup(x => x.GetCircuitBreaker(It.IsAny<DownstreamRoute>()))
             .Returns(new CircuitBreaker(policy1, policy2));
+
+        var httpContext = new Mock<HttpContext>();
+        httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider)))
+            .Returns(_pollyQoSProviderMock.Object);
+
+        _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
 
         // Act
         var actual = await InvokeAsync("SendAsync");
@@ -85,6 +93,27 @@ public class PollyCircuitBreakingDelegatingHandlerTests
         ShouldHaveXunitHeaderWithNoContent(actual, nameof(SendAsync_TwoPolicies_HaveWrapped));
         ShouldBeWrappedBy(policy1, typeof(AsyncPolicyWrap).FullName);
         ShouldBeWrappedBy(policy2, typeof(AsyncPolicy).FullName);
+    }
+
+    private DownstreamRoute DownstreamRouteFactory()
+    {
+        var options = new QoSOptionsBuilder()
+            .WithTimeoutValue(100)
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(200)
+            .Build();
+
+        var upstreamPath = new UpstreamPathTemplateBuilder()
+            .WithTemplate("/")
+            .WithContainsQueryString(false)
+            .WithPriority(1)
+            .WithOriginalValue("/").Build();
+
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(options)
+            .WithUpstreamPathTemplate(upstreamPath).Build();
+
+        return route;
     }
 
     private static void ShouldHaveXunitHeaderWithNoContent(HttpResponseMessage actual, string headerName)

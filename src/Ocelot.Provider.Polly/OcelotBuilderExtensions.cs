@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Logging;
+using Ocelot.Provider.Polly.Interfaces;
 using Ocelot.Requester;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -22,11 +24,12 @@ namespace Ocelot.Provider.Polly
 
             builder.Services
                 .AddSingleton(errorMapping)
+                .AddSingleton<IPollyQoSProvider, PollyQoSProvider>()
                 .AddSingleton<QosDelegatingHandlerDelegate>(GetDelegatingHandler);
             return builder;
         }
 
-        private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IOcelotLoggerFactory logger)
-            => new PollyCircuitBreakingDelegatingHandler(new PollyQoSProvider(route, logger), logger);
+        private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
+            => new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
     }
 }
