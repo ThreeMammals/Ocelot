@@ -43,7 +43,12 @@ public class StreamHttpContent : HttpContent
     private static async Task CopyAsync(Stream input, Stream output, long announcedContentLength,
         bool autoFlush, CancellationToken cancellation)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(DefaultBufferSize);
+        // for smaller payloads, avoid allocating a buffer that is larger than the announced content length
+        var minBufferSize = announcedContentLength != UnknownLength && announcedContentLength < DefaultBufferSize
+            ? (int)announcedContentLength
+            : DefaultBufferSize;
+
+        var buffer = ArrayPool<byte>.Shared.Rent(minBufferSize);
         long contentLength = 0;
         try
         {
@@ -67,7 +72,7 @@ public class StreamHttpContent : HttpContent
 
                     await zeroByteReadTask;
 
-                    buffer = ArrayPool<byte>.Shared.Rent(DefaultBufferSize);
+                    buffer = ArrayPool<byte>.Shared.Rent(minBufferSize);
                 }
 
                 var read = await input.ReadAsync(buffer.AsMemory(), cancellation);
