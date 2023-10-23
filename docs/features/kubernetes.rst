@@ -5,6 +5,8 @@
 |K8s Logo| Kubernetes
 =====================
 
+    Feature: :doc:`../features/servicediscovery`
+
 This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ service discovery provider. 
 
 Ocelot will call the K8s endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
