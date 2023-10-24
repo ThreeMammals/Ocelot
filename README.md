@@ -2,9 +2,9 @@
 
 [![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main)
 
-[![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
+<!-- [![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot) -->
 
-# Ocelot
+## About
 
 Ocelot is a .NET API Gateway. This project is aimed at people using .NET running a microservices / service-oriented architecture 
 that need a unified point of entry into their system. However it will work with anything that speaks HTTP(S) and run on any platform that ASP.NET Core supports.
@@ -27,7 +27,7 @@ A quick list of Ocelot's capabilities, for more information see the [Documentati
 
 * [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html)
 * [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html)
-* [GraphQL](https://ocelot.readthedocs.io/en/latest/features/graphql.html)[^1]
+* [GraphQL](https://ocelot.readthedocs.io/en/latest/features/graphql.html) [^1]
 * [Service Discovery](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html) with Consul & Eureka
 * [Service Fabric](https://ocelot.readthedocs.io/en/latest/features/servicefabric.html)
 * [Kubernetes](https://ocelot.readthedocs.io/en/latest/features/kubernetes.html)
@@ -36,7 +36,7 @@ A quick list of Ocelot's capabilities, for more information see the [Documentati
 * [Authorization](https://ocelot.readthedocs.io/en/latest/features/authorization.html)
 * [Rate Limiting](https://ocelot.readthedocs.io/en/latest/features/ratelimiting.html)
 * [Caching](https://ocelot.readthedocs.io/en/latest/features/caching.html)
-* [Quality of Service (Retry policies via Polly)](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html)
+* [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) [^2]
 * [Load Balancer](https://ocelot.readthedocs.io/en/latest/features/loadbalancer.html)
 * [Logging](https://ocelot.readthedocs.io/en/latest/features/logging.html) / [Tracing](https://ocelot.readthedocs.io/en/latest/features/tracing.html) / [Correlation](https://ocelot.readthedocs.io/en/latest/features/requestid.html)
 * [Headers](https://ocelot.readthedocs.io/en/latest/features/headerstransformation.html) / [Method](https://ocelot.readthedocs.io/en/latest/features/methodtransformation.html) / [Query String](https://ocelot.readthedocs.io/en/latest/search.html?q=Query+String&check_keywords=yes&area=default) / [Claims](https://ocelot.readthedocs.io/en/latest/features/claimstransformation.html) Transformation
@@ -64,7 +64,7 @@ All versions can be found [on nuget](https://www.nuget.org/packages/Ocelot#versi
   <br/>This includes source code of documentation as **.rst** files which are up to date for current development.
 
 ## Coming up
-You can see what we are working on [in backlog](https://github.com/ThreeMammals/Ocelot/issues).
+You can see what we are working on in [backlog](https://github.com/ThreeMammals/Ocelot/issues).
 
 ## Contributing
 
@@ -73,15 +73,15 @@ We love to receive contributions from the community, so please keep them coming 
 
 Please complete the relevant [template](https://github.com/ThreeMammals/Ocelot/tree/main/.github) for [issues](https://github.com/ThreeMammals/Ocelot/blob/main/.github/ISSUE_TEMPLATE.md) and [PRs](https://github.com/ThreeMammals/Ocelot/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 Sometimes it's worth getting in touch with us to [discuss](https://github.com/ThreeMammals/Ocelot/discussions) changes before doing any work in case this is something we are already doing or it might not make sense.
-We can also give advice on the easiest way to do things 🐱
+We can also give advice on the easiest way to do things :octocat: 
 
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
 [![label: medium effort][~mediumeffort]](https://github.com/ThreeMammals/Ocelot/labels/medium%20effort)
-[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort), see all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels).
-If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
-[![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) and 
-[![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) 🐱
+[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort)[^3].
+<br/>If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
+[![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) 
+[![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) :octocat: 
 
 [~helpwanted]: https://img.shields.io/badge/-help%20wanted-128A0C.svg
 [~smalleffort]: https://img.shields.io/badge/-small%20effort-fef2c0.svg
@@ -91,3 +91,5 @@ If you want to contribute for the first time, we suggest looking at a [![label: 
 
 ### Notes
 [^1]: Ocelot doesn’t directly support [GraphQL](https://graphql.org/). Developers can easily integrate the [GraphQL for .NET](/graphql-dotnet/graphql-dotnet) library.
+[^2]: Retry policies only via [Polly](/App-vNext/Polly) library.
+[^3]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) of the repository.
