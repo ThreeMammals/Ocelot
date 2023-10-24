@@ -28,7 +28,7 @@ A quick list of Ocelot's capabilities, for more information see the [Documentati
 * [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html)
 * [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html)
 * [GraphQL](https://ocelot.readthedocs.io/en/latest/features/graphql.html) [^1]
-* [Service Discovery](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html) with Consul & Eureka
+* [Service Discovery](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html) [^2]
 * [Service Fabric](https://ocelot.readthedocs.io/en/latest/features/servicefabric.html)
 * [Kubernetes](https://ocelot.readthedocs.io/en/latest/features/kubernetes.html)
 * [Websockets](https://ocelot.readthedocs.io/en/latest/features/websockets.html)
@@ -36,7 +36,7 @@ A quick list of Ocelot's capabilities, for more information see the [Documentati
 * [Authorization](https://ocelot.readthedocs.io/en/latest/features/authorization.html)
 * [Rate Limiting](https://ocelot.readthedocs.io/en/latest/features/ratelimiting.html)
 * [Caching](https://ocelot.readthedocs.io/en/latest/features/caching.html)
-* [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) [^2]
+* [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) [^3]
 * [Load Balancer](https://ocelot.readthedocs.io/en/latest/features/loadbalancer.html)
 * [Logging](https://ocelot.readthedocs.io/en/latest/features/logging.html) / [Tracing](https://ocelot.readthedocs.io/en/latest/features/tracing.html) / [Correlation](https://ocelot.readthedocs.io/en/latest/features/requestid.html)
 * [Headers](https://ocelot.readthedocs.io/en/latest/features/headerstransformation.html) / [Method](https://ocelot.readthedocs.io/en/latest/features/methodtransformation.html) / [Query String](https://ocelot.readthedocs.io/en/latest/search.html?q=Query+String&check_keywords=yes&area=default) / [Claims](https://ocelot.readthedocs.io/en/latest/features/claimstransformation.html) Transformation
@@ -78,7 +78,7 @@ We can also give advice on the easiest way to do things :octocat:
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
 [![label: medium effort][~mediumeffort]](https://github.com/ThreeMammals/Ocelot/labels/medium%20effort)
-[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort)[^3].
+[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort) [^4].
 <br/>If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) 
 [![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) :octocat: 
@@ -91,5 +91,6 @@ Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](htt
 
 ### Notes
 [^1]: Ocelot doesn’t directly support [GraphQL](https://graphql.org/). Developers can easily integrate the [GraphQL for .NET](/graphql-dotnet/graphql-dotnet) library.
-[^2]: Retry policies only via [Polly](/App-vNext/Polly) library.
-[^3]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) of the repository.
+[^2]: Ocelot does support [Consul](https://www.consul.io/), [Netflix Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka), [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) service discovery providers, and special modes like [Dynamic Routing](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing) and [Custom Providers](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#custom-providers).
+[^3]: Retry policies only via [Polly](/App-vNext/Polly) library.
+[^4]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) of the repository.
