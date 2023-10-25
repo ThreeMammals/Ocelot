@@ -22,11 +22,13 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private DownstreamRoute _downstreamRoute;
 
+        private Mock<IRequestMapperExceptionConditions> _requestMapperExceptionConditionsMock;
         public RequestMapperTests()
         {
             _httpContext = new DefaultHttpContext();
             _inputRequest = _httpContext.Request;
-            _requestMapper = new RequestMapper();
+            _requestMapperExceptionConditionsMock = new();
+            _requestMapper = new RequestMapper(_requestMapperExceptionConditionsMock.Object);
         }
 
         [Theory]
