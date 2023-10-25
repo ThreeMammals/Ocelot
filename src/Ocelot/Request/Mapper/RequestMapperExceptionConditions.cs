@@ -16,6 +16,8 @@ namespace Ocelot.Request.Mapper
         private readonly long? _maxRequestBodySizeKerstrelServer;
         private readonly long? _maxRequestBodySizeIISServer;
         private IServiceProvider _serviceProvider;
+        const string _iisServiceName = "W3SVC";
+        const string _kestrelServer = "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer";
         public RequestMapperExceptionConditions(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> iISOptions, IServiceProvider serviceProvider)
         {
             _maxRequestBodySizeHttpsSys = httpSysOptions.Value.MaxRequestBodySize.GetValueOrDefault();
@@ -27,7 +29,6 @@ namespace Ocelot.Request.Mapper
         public bool PayloadTooLargeOnAnyHostedServer(HttpRequest request, Exception ex)
         {
             var server = _serviceProvider.GetRequiredService<IServer>();
-            const string iisServiceName = "W3SVC";
 
             if (server != null && ex is Microsoft.AspNetCore.Http.BadHttpRequestException)
             {
@@ -35,9 +36,9 @@ namespace Ocelot.Request.Mapper
 
                 switch (serverName)
                 {
-                    case "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer":
+                    case _kestrelServer:
                         return _maxRequestBodySizeKerstrelServer < request.ContentLength;
-                    case iisServiceName:
+                    case _iisServiceName:
                         return _maxRequestBodySizeIISServer < request.ContentLength;
                     default:
                         return _maxRequestBodySizeHttpsSys < request.ContentLength && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
