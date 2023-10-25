@@ -18,7 +18,7 @@ We do not recommend to deploy Ocelot app to IIS environments, but if you do, kee
 
 The community constanly reports `issues related to IIS <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+IIS>`_.
 If you have some troubles in IIS environment to host Ocelot app, first of all, read open/closed issues, and after that, search for `IIS <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20IIS&type=code>`_ in the repository.
-Probably I will find a ready solution by Ocelot community members. 
+Probably you will find a ready solution by Ocelot community members. 
 
 Finally, we have special label |IIS| for all IIS related objects. Feel free to put this label onto issues, PRs, discussions, etc.
 

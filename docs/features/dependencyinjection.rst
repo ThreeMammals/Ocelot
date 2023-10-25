@@ -118,7 +118,7 @@ The next section shows you an example of designing custom Ocelot pipeline by cus
 
 Custom Builder
 --------------
-**Goal**: Replace ``Newtonsoft.Json`` services by ``System.Text.Json`` services.
+**Goal**: Replace ``Newtonsoft.Json`` services with ``System.Text.Json`` services.
 
 The Problem
 ^^^^^^^^^^^

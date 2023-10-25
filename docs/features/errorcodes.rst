@@ -29,4 +29,8 @@ This can be confusing for the developer since the actual status code of the down
 Please, research and review all response headers of upstream service.
 If you did not find statuses and (or) required headers then :doc:`../features/headerstransformation` feature should help.
 
-We expect you to share your user case with us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |:octocat:|
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23
+
+We expect you to share your user case with us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|

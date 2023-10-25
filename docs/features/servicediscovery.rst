@@ -11,7 +11,7 @@ Consul
 
     | **Namespace**: `Ocelot.Provider.Consul <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Consul>`_
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_ that provides `Consul <https://www.consul.io/>`_ support in Ocelot:
+The first thing you need to do is install the `Ocelot.Provider.Consul <https://www.nuget.org/packages/Ocelot.Provider.Consul>`__ package that provides `Consul <https://www.consul.io/>`_ support in Ocelot:
 
 .. code-block:: powershell
 
@@ -147,7 +147,7 @@ This feature was requested as part of `issue 262 <https://github.com/ThreeMammal
 The main reason for this is it is a key part of  `Steeltoe <https://steeltoe.io/>`_ which is something to do with `Pivotal <https://pivotal.io/platform>`_!
 Anyway enough of the background.
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Eureka>`_ that provides Eureka support in Ocelot:
+The first thing you need to do is install the `Ocelot.Provider.Eureka <https://www.nuget.org/packages/Ocelot.Provider.Eureka>`_ package that provides Eureka support in Ocelot:
 
 .. code-block:: powershell
 

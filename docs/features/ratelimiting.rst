@@ -63,4 +63,8 @@ See more about new feature being added into ASP.NET Core 7.0 release:
 
 However, it makes sense to keep the old implementation as a Ocelot built-in native feature, but we are going to migrate to the new Rate Limiter from ``Microsoft.AspNetCore.RateLimiting`` namespace.
 
-Please, share your opinion to us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |:octocat:|
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23
+
+Please, share your opinion to us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|

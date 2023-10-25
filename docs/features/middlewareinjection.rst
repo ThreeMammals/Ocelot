@@ -72,4 +72,8 @@ The community shows an interest in adding more overriden middlewares.
 One of such request is `PR 1497 <https://github.com/ThreeMammals/Ocelot/pull/1497>`_, and possibly it will be included in a next upcoming `release <https://github.com/ThreeMammals/Ocelot/releases>`_.
 
 Anyway, in your opinion, if current overriden middlewares do not provide enough pipeline flexibility,
-you can open new topic in `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |:octocat:|
+you can open new topic in `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|
+
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23

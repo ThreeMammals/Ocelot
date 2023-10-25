@@ -11,7 +11,7 @@ This page details how to perform distributed tracing with Ocelot.
 -------------------------------------
 
 Ocelot providers tracing functionality from the excellent `OpenTracing API for .NET <https://github.com/opentracing/opentracing-csharp>`_ project. 
-The code for the Ocelot integration can be found `here <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.OpenTracing>`_.
+The code for the Ocelot integration can be found in `Ocelot.Tracing.OpenTracing <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.OpenTracing>`_ project.
 
 The example below uses `C# Client for Jaeger <https://github.com/jaegertracing/jaeger-client-csharp>`_ client to provide the tracer used in Ocelot.
 In order to add `OpenTracing <https://opentracing.io/>`_ services we must call the ``AddOpenTracing()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
@@ -52,7 +52,7 @@ Butterfly
 ---------
 
 Ocelot providers tracing functionality from the excellent `Butterfly <https://github.com/liuhaoyang/butterfly>`_ project.
-The code for the Ocelot integration can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_.
+The code for the Ocelot integration can be found in `Ocelot.Tracing.Butterfly <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.Butterfly>`_ project.
 
 In order to use the tracing please read the `Butterfly <https://github.com/liuhaoyang/butterfly>`_ documentation.
 

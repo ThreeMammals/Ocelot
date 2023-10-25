@@ -136,7 +136,11 @@ Future
 * `SignalR docs <https://learn.microsoft.com/en-us/aspnet/core/signalr/introduction>`_
 
 As a team, we cannot advise you on development,
-but feel free to ask questions, get coding recipes in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |:octocat:|
+but feel free to ask questions, get coding recipes in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|
+
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23
 
 Also, we welcome any bug reports, enhancements or proposals regarding this feature.
 

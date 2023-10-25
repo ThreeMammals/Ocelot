@@ -17,7 +17,11 @@ Check out the samples `README.md <https://github.com/ThreeMammals/Ocelot/blob/ma
 Future
 ------
 
-If you have sufficient experience with GraphQL and mentioned .NET `package <https://github.com/graphql-dotnet/graphql-dotnet>`_, we would welcome your contribution to the sample. |:octocat:|
+If you have sufficient experience with GraphQL and mentioned .NET `package <https://github.com/graphql-dotnet/graphql-dotnet>`_, we would welcome your contribution to the sample. |octocat|
+
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23
 
 Who knows, maybe you'll get inspired by the sample development and come up with some design solution in the form of a rough draft of GraphQL feature to implement in Ocelot.
 Good luck!

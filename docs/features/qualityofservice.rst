@@ -49,7 +49,7 @@ If someone needs this to be configurable, open an issue. [#f2]_
 """"
 
 .. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
-.. [#f2] If something doesn't work or you get stuck, please review current `QoS <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ issues filtering by |QoS| label.
+.. [#f2] If something doesn't work or you get stuck, please review current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtering by |QoS_label| label.
 
-.. |QoS| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
+.. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
    :target: https://github.com/ThreeMammals/Ocelot/labels/QoS

@@ -167,7 +167,11 @@ Global Headers Transformation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We have pending open `PR 1659 <https://github.com/ThreeMammals/Ocelot/pull/1659>`_ for the `1658 <https://github.com/ThreeMammals/Ocelot/issues/1658>`_ issue.
-Current version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ provides Route-level *Headers Transformation* feature,
+Current `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ version provides Route-level *Headers Transformation* feature,
 but we hope **global** transformations will be included in the next upcoming `release <https://github.com/ThreeMammals/Ocelot/releases>`_.
 
-Any ideas and proposals can be shared in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository! |:octocat:|
+.. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
+  :alt: octocat
+  :width: 23
+
+Any ideas and proposals can be shared in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository! |octocat|
