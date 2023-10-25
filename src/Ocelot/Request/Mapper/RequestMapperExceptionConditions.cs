@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -11,52 +12,39 @@ namespace Ocelot.Request.Mapper
 {
     public class RequestMapperExceptionConditions : IRequestMapperExceptionConditions
     {
-        private readonly long? maxRequestBodySizeHttpsSys;
-        private readonly long? maxRequestBodySizeKerstrelServer;
-        private readonly long? maxRequestBodySizeIISServer;
-        private IServer _server;
-        public RequestMapperExceptionConditions(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> iISOptions, IServer server)
+        private readonly long? _maxRequestBodySizeHttpsSys;
+        private readonly long? _maxRequestBodySizeKerstrelServer;
+        private readonly long? _maxRequestBodySizeIISServer;
+        private IServiceProvider _serviceProvider;
+        public RequestMapperExceptionConditions(IOptions<HttpSysOptions> httpSysOptions, IOptions<KestrelServerOptions> kerstrelServerOptions, IOptions<IISServerOptions> iISOptions, IServiceProvider serviceProvider)
         {
-            maxRequestBodySizeHttpsSys = httpSysOptions.Value.MaxRequestBodySize.GetValueOrDefault();
-            maxRequestBodySizeKerstrelServer = kerstrelServerOptions.Value.Limits.MaxRequestBodySize;
-            maxRequestBodySizeIISServer = iISOptions.Value.MaxRequestBodySize;
-            _server = server;
-        }
-
-        /// <summary>
-        /// Check if this process is running on Windows in an in process instance in IIS.
-        /// </summary>
-        /// <returns>True if Windows and in an in process instance on IIS, false otherwise.</returns>
-        private static bool IsRunningInProcessIIS()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return false;
-            }
-
-            string processName = Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
-            return processName.Contains("w3wp", StringComparison.OrdinalIgnoreCase) ||
-                processName.Contains("iisexpress", StringComparison.OrdinalIgnoreCase);
+            _maxRequestBodySizeHttpsSys = httpSysOptions.Value.MaxRequestBodySize.GetValueOrDefault();
+            _maxRequestBodySizeKerstrelServer = kerstrelServerOptions.Value.Limits.MaxRequestBodySize;
+            _maxRequestBodySizeIISServer = iISOptions.Value.MaxRequestBodySize;
+            _serviceProvider = serviceProvider;
         }
 
         public bool PayloadTooLargeOnAnyHostedServer(HttpRequest request, Exception ex)
         {
-            bool isHeavyPayload = false;
+            var server = _serviceProvider.GetRequiredService<IServer>();
+            const string iisServiceName = "W3SVC";
 
-            if (_server is KestrelServer)
+            if (server != null && ex is Microsoft.AspNetCore.Http.BadHttpRequestException)
             {
-                isHeavyPayload = maxRequestBodySizeKerstrelServer < request.ContentLength;
-            }
-            else if (IsRunningInProcessIIS())
-            {
-                isHeavyPayload = maxRequestBodySizeIISServer < request.ContentLength;
-            }
-            else
-            {
-                isHeavyPayload = maxRequestBodySizeHttpsSys < request.ContentLength && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                var serverName = server.GetType().FullName;
+
+                switch (serverName)
+                {
+                    case "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer":
+                        return _maxRequestBodySizeKerstrelServer < request.ContentLength;
+                    case iisServiceName:
+                        return _maxRequestBodySizeIISServer < request.ContentLength;
+                    default:
+                        return _maxRequestBodySizeHttpsSys < request.ContentLength && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                }
             }
 
-            return isHeavyPayload && ex is Microsoft.AspNetCore.Http.BadHttpRequestException;
+            return false;
         }
     }
 }
