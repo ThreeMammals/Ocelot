@@ -119,6 +119,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
+            Services.TryAddScoped<IRequestMapperExceptionConditions, RequestMapperExceptionConditions>();
 
             // See this for why we register this as singleton:
             // http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
