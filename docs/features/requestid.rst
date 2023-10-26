@@ -1,40 +1,51 @@
-Request Id / Correlation Id
-===========================
+Request ID
+==========
 
-Ocelot supports a client sending a request id in the form of a header. If set Ocelot willuse the requestid for logging as soon as it becomes available in the middleware pipeline. 
-Ocelot will also forward the request id with the specified header to the downstream service.
+     aka **Correlation ID**
 
-You can still get the asp.net core request id in the logs if you set IncludeScopes true in your logging config.
+Ocelot supports a client sending a *request ID* in the form of a header.
+If set, Ocelot will use the **requestId** for logging as soon as it becomes available in the middleware pipeline. 
+Ocelot will also forward the *request ID* with the specified header to the downstream service.
 
-In order to use the request id feature you have two options.
+You can still get the ASP.NET Core *request ID* in the logs if you set **IncludeScopes** ``true`` in your logging config.
 
-*Global*
+In order to use the *Request ID* feature you have two options.
 
-In your ocelot.json set the following in the GlobalConfiguration section. This will be used for all requests into Ocelot.
+Global
+------
+
+In your **ocelot.json** set the following in the **GlobalConfiguration** section. This will be used for all requests into Ocelot.
 
 .. code-block:: json
 
-   "GlobalConfiguration": {
+  "GlobalConfiguration": {
     "RequestIdKey": "OcRequestId"
   }
 
-I recommend using the GlobalConfiguration unless you really need it to be Route specific.
+We recommend using the **GlobalConfiguration** unless you really need it to be Route specific.
 
-*Route*
+Route
+-----
 
-If you want to override this for a specific Route add the following to ocelot.json for the specific Route.
+If you want to override this for a specific Route, add the following to **ocelot.json** for the specific Route:
 
 .. code-block:: json
 
-    "RequestIdKey": "OcRequestId"
+  "RequestIdKey": "OcRequestId"
 
-Once Ocelot has identified the incoming requests matching Route object it will set the request id based on the Route configuration.
+Once Ocelot has identified the incoming requests matching Route object it will set the *request ID* based on the Route configuration.
 
-This can lead to a small gotcha. If you set a GlobalConfiguration it is possible to get one request id until the Route is identified and then another after that because the request id key can change. This is by design and is the best solution I can think of at the moment. In this case the OcelotLogger will show the request id and previous request id in the logs.
+Gotcha
+------
 
-Below is an example of the logging when set at Debug level for a normal request..
+This can lead to a small gotcha.
+If you set a **GlobalConfiguration**, it is possible to get one *request ID* until the Route is identified and then another after that because the *request ID* key can change.
+This is by design and is the best solution we can think of at the moment.
+In this case the ``OcelotLogger`` will show the *request ID* and previous *request ID* in the logs.
 
-.. code-block:: bash
+Below is an example of the logging when set at ``Debug`` level for a normal request:
+
+.. code-block:: text
 
     dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
           requestId: asdf, previousRequestId: no previous request id, message: ocelot pipeline started,

@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Ocelot'
-copyright = ' 2023, ThreeMammals Ocelot team'
+copyright = ' 2023 ThreeMammals Ocelot team'
 author = 'Tom Pallister, Ocelot Core team at ThreeMammals and Ocelot GitHub community'
-release = '20.0.1'
+release = '20.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -24,5 +24,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_theme
 html_theme = 'alabaster'
+
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_static_path
 html_static_path = ['_static']
