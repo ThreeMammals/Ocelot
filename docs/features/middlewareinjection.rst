@@ -1,5 +1,5 @@
-Middleware Injection and Overrides
-==================================
+Middleware Injection
+====================
 
 Warning, use with caution! If you are seeing any exceptions or strange behavior in your middleware 
 pipeline and you are using any of the following. Remove them and try again!
@@ -24,12 +24,12 @@ This means you can break everything, so use at your own pleasure!
 
 The user can set functions against the following (see more in the `OcelotPipelineConfiguration <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Middleware/OcelotPipelineConfiguration.cs>`_ class):
 
-* ``PreErrorResponderMiddleware`` - Already explained above.
-* ``PreAuthenticationMiddleware`` - This allows the user to run pre authentication logic and then call Ocelot authentication middleware.
-* ``AuthenticationMiddleware`` - This overrides Ocelot authentication middleware.
-* ``PreAuthorizationMiddleware`` - This allows the user to run pre authorization logic and then call Ocelot authorization middleware.
-* ``AuthorizationMiddleware`` - This overrides Ocelots authorization middleware.
-* ``PreQueryStringBuilderMiddleware`` - This allows the user to manipulate the query string on the http request before it is passed to Ocelot request creator.
+* ``PreErrorResponderMiddleware`` injection is already explained above.
+* ``PreAuthenticationMiddleware`` injection allows the user to run pre authentication logic and then call Ocelot authentication middleware.
+* ``AuthenticationMiddleware`` overrides Ocelot authentication middleware. [#f1]_
+* ``PreAuthorizationMiddleware`` injection allows the user to run pre authorization logic and then call Ocelot authorization middleware.
+* ``AuthorizationMiddleware`` overrides Ocelots authorization middleware. [#f1]_
+* ``PreQueryStringBuilderMiddleware`` injection allows the user to manipulate the query string on the http request before it is passed to Ocelot request creator.
 
 Obviously you can just add mentioned Ocelot middleware overridings as normal before the call to ``app.UseOcelot()``.
 It cannot be added after as Ocelot does not call the next Ocelot middleware overridings based on specified middleware configuration.
@@ -77,3 +77,7 @@ you can open new topic in `Discussions <https://github.com/ThreeMammals/Ocelot/d
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
   :width: 23
+
+""""
+
+.. [#f1] **Warning, use mentioned middlewares overridings with caution!** Overridden middleware removes the default implementation! If you are seeing any exceptions or strange behavior in your middleware pipeline, remove overridden middlewares and try again!

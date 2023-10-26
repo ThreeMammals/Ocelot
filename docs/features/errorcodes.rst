@@ -1,5 +1,5 @@
-HTTP Error Status Codes
-=======================
+Error Status Codes
+==================
 
 Ocelot will return HTTP status error codes based on internal logic in certain situations:
 

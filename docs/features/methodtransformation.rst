@@ -1,5 +1,5 @@
-HTTP Method Transformation
-==========================
+Method Transformation
+=====================
 
 Ocelot allows the user to change the HTTP request method that will be used when making a request to a downstream service.
 
