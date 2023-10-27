@@ -800,15 +800,14 @@ public class Steps : IDisposable
         response.EnsureSuccessStatusCode();
     }
 
-    public void GivenOcelotIsRunningWithMinimumLogLevel(LogLevel logLevel, Logger logger)
+    public void GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
     {
         _webHostBuilder = new WebHostBuilder()
             .UseKestrel()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile(appsettingsFileName, false, false);
                 config.AddJsonFile(_ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
             })
@@ -816,7 +815,6 @@ public class Steps : IDisposable
             .ConfigureLogging(logging =>
             {
                 logging.ClearProviders();
-                logging.SetMinimumLevel(logLevel);
                 logging.AddSerilog(logger);
             })
             .Configure(app =>
