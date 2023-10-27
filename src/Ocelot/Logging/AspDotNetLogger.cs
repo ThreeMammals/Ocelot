@@ -48,7 +48,7 @@ public class AspDotNetLogger : IOcelotLogger
         return requestId == null || requestId.IsError ? "no previous request id" : requestId.Data;
     }
 
-    public void WriteLog(LogLevel logLevel, Func<string> messageFactory, Exception exception = null)
+    private void WriteLog(LogLevel logLevel, Func<string> messageFactory, Exception exception = null)
     {
         if (!_logger.IsEnabled(logLevel))
         {

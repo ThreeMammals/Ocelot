@@ -1,6 +1,8 @@
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
+using Org.BouncyCastle.Tsp;
 
 namespace Ocelot.UnitTests.Logging;
 
@@ -74,57 +76,88 @@ public class AspDotNetLoggerTests
             LogLevel.Critical, _ex);
     }
 
-    [Fact]
-    public void if_minimum_log_level_not_set_then_no_logs_are_written()
+    /// <summary>
+    /// Here mocking the original logger implementation to verify
+    /// IsEnabled calls.
+    /// </summary>
+    /// <param name="minimumLevel">chosen minimum log level</param>
+    /// <returns>a mocked ILogger object</returns>
+    private Mock<ILogger<object>> MockLogger(LogLevel? minimumLevel)
     {
+        var logger = LoggerFactory.Create(builder =>
+            {
+                if (minimumLevel.HasValue)
+                {
+                    builder
+                        .AddSimpleConsole()
+                        .SetMinimumLevel(minimumLevel.Value);
+                }
+                else
+                {
+                    builder.AddSimpleConsole();
+                }
+            })
+            .CreateLogger<ILogger<object>>();
+
         var mockedILogger = new Mock<ILogger<object>>();
+        mockedILogger.Setup(x => x.IsEnabled(It.IsAny<LogLevel>()))
+            .Returns(logger.IsEnabled)
+            .Verifiable();
 
-        var repo = new Mock<IRequestScopedDataRepository>();
-
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
-
-        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Debug);
-
-        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Trace);
-
-        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Information);
-
-        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Warning);
-
-        currentLogger.LogError(() => $"a message from {_a} to {_b}", new Exception("test"));
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Error);
-
-        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", new Exception("test"));
-
-        ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Critical);
+        return mockedILogger;
     }
 
     [Fact]
-    public void if_minimum_log_level_set_to_none_then_no_logs_are_written()
+    public void if_minimum_log_level_not_set_then_log_is_called_for_information_and_above()
     {
-        var mockedILogger = new Mock<ILogger<object>>();
-        mockedILogger.Setup(x => x.IsEnabled(It.Is<LogLevel>(y => y == LogLevel.None))).Returns(true);
+        var mockedILogger = MockLogger(null);
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_none_then_log_method_is_never_called()
+    {
+        var mockedILogger = MockLogger(LogLevel.None);
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
@@ -154,17 +187,287 @@ public class AspDotNetLoggerTests
             "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
             LogLevel.Warning);
 
-        currentLogger.LogError(() => $"a message from {_a} to {_b}", new Exception("test"));
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsNotLogged(mockedILogger,
             "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Error);
+            LogLevel.Error, testException);
 
-        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", new Exception("test"));
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsNotLogged(mockedILogger,
             "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
-            LogLevel.Critical);
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_trace_then_log_is_called_for_trace_and_above()
+    {
+        var mockedILogger = MockLogger(LogLevel.Trace);
+
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void string_func_is_never_called_when_log_level_is_disabled()
+    {
+        var mockedFunc = new Mock<Func<string>>();
+        mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
+        var mockedILogger = MockLogger(LogLevel.None);
+        var repo = new Mock<IRequestScopedDataRepository>();
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogTrace(mockedFunc.Object);
+
+        mockedFunc.Verify(x => x.Invoke(), Times.Never);
+    }
+
+    [Fact]
+    public void string_func_is_called_once_when_log_level_is_enabled()
+    {
+        var mockedFunc = new Mock<Func<string>>();
+        mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
+        var mockedILogger = MockLogger(LogLevel.Information);
+        var repo = new Mock<IRequestScopedDataRepository>();
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogInformation(mockedFunc.Object);
+
+        mockedFunc.Verify(x => x.Invoke(), Times.Once);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_debug_then_log_is_called_for_debug_and_above()
+    {
+        var mockedILogger = MockLogger(LogLevel.Debug);
+
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_warning_then_log_is_called_for_warning_and_above()
+    {
+        var mockedILogger = MockLogger(LogLevel.Warning);
+
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_error_then_log_is_called_for_error_and_above()
+    {
+        var mockedILogger = MockLogger(LogLevel.Error);
+
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
+    }
+
+    [Fact]
+    public void if_minimum_log_level_set_to_critical_then_log_is_called_for_critical_and_above()
+    {
+        var mockedILogger = MockLogger(LogLevel.Critical);
+
+        var repo = new Mock<IRequestScopedDataRepository>();
+
+        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+
+        currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Debug);
+
+        currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Trace);
+
+        currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Information);
+
+        currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Warning);
+
+        var testException = new Exception("test");
+
+        currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsNotLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Error, testException);
+
+        currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
+
+        ThenLevelIsLogged(mockedILogger,
+            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            LogLevel.Critical, testException);
     }
 
     private void ThenLevelIsLogged(string expected, LogLevel expectedLogLevel, Exception ex = null)
@@ -178,8 +481,22 @@ public class AspDotNetLoggerTests
                 It.IsAny<Func<string, Exception, string>>()), Times.Once);
     }
 
-    private void ThenLevelIsNotLogged(Mock<ILogger<object>> logger, string expected, LogLevel expectedLogLevel, Exception ex = null)
+    private void ThenLevelIsLogged(Mock<ILogger<object>> logger, string expected, LogLevel expectedLogLevel, Exception ex = null)
     {
+        logger.Verify(
+            x => x.Log(
+                expectedLogLevel,
+                default,
+                expected,
+                ex,
+                It.IsAny<Func<string, Exception, string>>()), Times.Once);
+    }
+
+    private void ThenLevelIsNotLogged(Mock<ILogger<object>> logger, string expected, LogLevel expectedLogLevel,
+        Exception ex = null)
+    {
+        var result = logger.Object.IsEnabled(expectedLogLevel);
+
         logger.Verify(
             x => x.Log(
                 expectedLogLevel,
