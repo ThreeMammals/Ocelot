@@ -25,8 +25,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_load_balance_request_with_least_connection()
         {
-            var portOne = RandomPortFinder.GetRandomPort();
-            var portTwo = RandomPortFinder.GetRandomPort();
+            var portOne = PortFinder.GetRandomPort();
+            var portTwo = PortFinder.GetRandomPort();
 
             var downstreamServiceOneUrl = $"http://localhost:{portOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{portTwo}";
@@ -73,8 +73,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_load_balance_request_with_round_robin()
         {
-            var downstreamPortOne = RandomPortFinder.GetRandomPort();
-            var downstreamPortTwo = RandomPortFinder.GetRandomPort();
+            var downstreamPortOne = PortFinder.GetRandomPort();
+            var downstreamPortTwo = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 
@@ -120,8 +120,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_load_balance_request_with_custom_load_balancer()
         {
-            var downstreamPortOne = RandomPortFinder.GetRandomPort();
-            var downstreamPortTwo = RandomPortFinder.GetRandomPort();
+            var downstreamPortOne = PortFinder.GetRandomPort();
+            var downstreamPortTwo = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
             var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
 

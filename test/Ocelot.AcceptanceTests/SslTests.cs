@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_dangerous_accept_any_server_certificate_validator()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -55,7 +55,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_dangerous_accept_any_server_certificate_validator()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

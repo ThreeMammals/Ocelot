@@ -21,7 +21,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_597()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -132,9 +132,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_advanced_aggregate_configs()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
-            var port3 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var port3 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -229,8 +229,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_user_defined_aggregate()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -300,8 +300,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -370,8 +370,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_one_service_404()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -440,8 +440,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_both_service_404()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -510,8 +510,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_be_thread_safe()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>

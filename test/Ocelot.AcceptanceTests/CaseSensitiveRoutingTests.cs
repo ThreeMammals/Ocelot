@@ -17,7 +17,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_global_ignore_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -52,7 +52,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_route_ignore_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -88,7 +88,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_404_when_route_respect_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -124,7 +124,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_route_respect_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -160,7 +160,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_404_when_global_respect_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -196,7 +196,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_global_respect_case_sensitivity_set()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

@@ -19,7 +19,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -57,7 +57,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -95,7 +95,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -133,7 +133,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -170,7 +170,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -207,7 +207,7 @@ namespace Ocelot.AcceptanceTests
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -248,7 +248,7 @@ namespace Ocelot.AcceptanceTests
             var idValue = "3";
             var queryName = idName + "1";
             var queryValue = "2" + idValue + "12";
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

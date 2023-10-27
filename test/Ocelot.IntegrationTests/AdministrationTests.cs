@@ -75,7 +75,7 @@ namespace Ocelot.IntegrationTests
         public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             _ocelotBaseUrl = $"http://localhost:{port}";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
 
@@ -123,7 +123,7 @@ namespace Ocelot.IntegrationTests
         public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
             var configuration = new FileConfiguration();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
@@ -358,8 +358,8 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
-            var fooPort = RandomPortFinder.GetRandomPort();
-            var barPort = RandomPortFinder.GetRandomPort();
+            var fooPort = PortFinder.GetRandomPort();
+            var barPort = PortFinder.GetRandomPort();
 
             var initialConfiguration = new FileConfiguration
             {
@@ -492,7 +492,7 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration();
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var identityServerRootUrl = $"http://localhost:{port}";
 
             Action<JwtBearerOptions> options = o =>

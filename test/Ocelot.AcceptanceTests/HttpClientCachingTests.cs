@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_cache_one_http_client_same_re_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -62,7 +62,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_cache_two_http_client_different_re_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

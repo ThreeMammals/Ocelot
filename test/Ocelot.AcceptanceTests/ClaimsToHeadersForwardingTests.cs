@@ -24,7 +24,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
-            var identityServerPort = RandomPortFinder.GetRandomPort();
+            var identityServerPort = PortFinder.GetRandomPort();
             _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
@@ -51,7 +51,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

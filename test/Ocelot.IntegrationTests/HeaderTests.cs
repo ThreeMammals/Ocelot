@@ -24,7 +24,7 @@ namespace Ocelot.IntegrationTests
         public HeaderTests()
         {
             _httpClient = new HttpClient();
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             _ocelotBaseUrl = $"http://localhost:{port}";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         }
@@ -32,7 +32,7 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>

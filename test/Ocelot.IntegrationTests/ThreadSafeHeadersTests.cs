@@ -32,7 +32,7 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
