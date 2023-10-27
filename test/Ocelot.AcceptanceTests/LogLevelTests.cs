@@ -13,6 +13,7 @@ public class LogLevelTests : IDisposable
     private readonly string _logFileName;
     private readonly string _appSettingsFileName;
 
+    // appsettings as strings
     private const string CriticalLevelAppSettings =
         "{\"Logging\":{\"LogLevel\":{\"Default\":\"Critical\",\"System\":\"Critical\",\"Microsoft\":\"Critical\"}}}";
     private const string ErrorLevelAppSettings =
