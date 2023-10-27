@@ -1,7 +1,7 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.Responses;
 using Ocelot.Values;
 
