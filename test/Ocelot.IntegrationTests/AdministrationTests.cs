@@ -75,7 +75,8 @@ namespace Ocelot.IntegrationTests
         public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
-            _ocelotBaseUrl = "http://localhost:5011";
+            var port = PortFinder.GetRandomPort();
+            _ocelotBaseUrl = $"http://localhost:{port}";
             _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
 
             var configuration = new FileConfiguration
@@ -122,12 +123,13 @@ namespace Ocelot.IntegrationTests
         public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
             var configuration = new FileConfiguration();
+            var port = PortFinder.GetRandomPort();
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
                 .And(x => GivenOcelotIsRunning())
                 .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenAnotherOcelotIsRunning("http://localhost:5017"))
+                .And(x => GivenAnotherOcelotIsRunning($"http://localhost:{port}"))
                 .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
@@ -356,8 +358,8 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
-            var fooPort = 47689;
-            var barPort = 27654;
+            var fooPort = PortFinder.GetRandomPort();
+            var barPort = PortFinder.GetRandomPort();
 
             var initialConfiguration = new FileConfiguration
             {
@@ -490,7 +492,8 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration();
 
-            var identityServerRootUrl = "http://localhost:5123";
+            var port = PortFinder.GetRandomPort();
+            var identityServerRootUrl = $"http://localhost:{port}";
 
             Action<JwtBearerOptions> options = o =>
             {
@@ -525,13 +528,11 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                response.EnsureSuccessStatusCode();
-                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-            }
+            using var httpClient = new HttpClient();
+            var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            response.EnsureSuccessStatusCode();
+            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName)
@@ -593,11 +594,9 @@ namespace Ocelot.IntegrationTests
 
             _identityServerBuilder.Start();
 
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
-                response.EnsureSuccessStatusCode();
-            }
+            using var httpClient = new HttpClient();
+            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+            response.EnsureSuccessStatusCode();
         }
 
         private void GivenAnotherOcelotIsRunning(string baseUrl)
@@ -851,7 +850,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            var text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
 
             configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
@@ -862,7 +861,7 @@ namespace Ocelot.IntegrationTests
 
             File.WriteAllText(configurationPath, jsonConfiguration);
 
-            text = File.ReadAllText(configurationPath);
+            _ = File.ReadAllText(configurationPath);
         }
 
         private void WhenIGetUrlOnTheApiGateway(string url)
@@ -901,6 +900,7 @@ namespace Ocelot.IntegrationTests
             _builder?.Dispose();
             _httpClient?.Dispose();
             _identityServerBuilder?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void GivenThereIsAFooServiceRunningOn(string baseUrl)

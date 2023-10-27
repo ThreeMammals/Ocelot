@@ -26,7 +26,7 @@ namespace Ocelot.AcceptanceTests
             Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
             var eurekaPort = 8761;
             var serviceName = "product";
-            var downstreamServicePort = RandomPortFinder.GetRandomPort();
+            var downstreamServicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
 

@@ -27,8 +27,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_forward_tracing_information_from_ocelot_and_downstream_services()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -74,7 +74,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            var butterflyPort = RandomPortFinder.GetRandomPort();
+            var butterflyPort = PortFinder.GetRandomPort();
             var butterflyUrl = $"http://localhost:{butterflyPort}";
 
             this.Given(x => GivenFakeButterfly(butterflyUrl))
@@ -100,7 +100,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_tracing_header()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -132,7 +132,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            var butterflyPort = RandomPortFinder.GetRandomPort();
+            var butterflyPort = PortFinder.GetRandomPort();
             var butterflyUrl = $"http://localhost:{butterflyPort}";
 
             this.Given(x => GivenFakeButterfly(butterflyUrl))

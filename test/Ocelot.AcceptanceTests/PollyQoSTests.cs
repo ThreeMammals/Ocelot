@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Should_not_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -59,7 +59,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Should_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Should_open_circuit_breaker_then_close()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -151,8 +151,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Open_circuit_should_not_effect_different_route()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

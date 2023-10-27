@@ -30,7 +30,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -75,7 +75,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -120,7 +120,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -165,7 +165,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -210,7 +210,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -255,7 +255,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -301,7 +301,7 @@ namespace Ocelot.AcceptanceTests
                     }),
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -350,7 +350,7 @@ namespace Ocelot.AcceptanceTests
                 return Task.CompletedTask;
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {

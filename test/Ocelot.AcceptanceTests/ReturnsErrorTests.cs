@@ -48,7 +48,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_log_warning_if_downstream_service_returns_internal_server_error()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

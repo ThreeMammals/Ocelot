@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_re_route_ordered_specific_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -60,7 +60,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -97,7 +97,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers_multiple_times()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -150,7 +150,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers_with_dependency()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

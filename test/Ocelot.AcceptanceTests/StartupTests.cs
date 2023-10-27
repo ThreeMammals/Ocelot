@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

@@ -23,7 +23,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void ShouldProxyWebsocketInputToDownstreamService()
         {
-            var downstreamPort = RandomPortFinder.GetRandomPort();
+            var downstreamPort = PortFinder.GetRandomPort();
             var downstreamHost = "localhost";
 
             var config = new FileConfiguration
@@ -58,9 +58,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
         {
-            var downstreamPort = RandomPortFinder.GetRandomPort();
+            var downstreamPort = PortFinder.GetRandomPort();
             var downstreamHost = "localhost";
-            var secondDownstreamPort = RandomPortFinder.GetRandomPort();
+            var secondDownstreamPort = PortFinder.GetRandomPort();
             var secondDownstreamHost = "localhost";
 
             var config = new FileConfiguration

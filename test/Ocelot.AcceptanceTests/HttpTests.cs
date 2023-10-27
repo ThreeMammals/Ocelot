@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_using_http_one()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -55,7 +55,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_using_http_one_point_one()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -92,7 +92,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_using_http_two_point_zero()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -134,7 +134,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -176,7 +176,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
