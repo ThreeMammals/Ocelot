@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
