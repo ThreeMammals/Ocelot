@@ -37,7 +37,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_critical_then_only_critical_messages_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -91,7 +91,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_error_then_critical_and_error_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -132,7 +132,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -173,7 +173,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -214,7 +214,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -255,7 +255,7 @@ public class LogLevelTests : IDisposable
     [Fact]
     public void if_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
