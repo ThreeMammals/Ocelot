@@ -86,7 +86,7 @@ Task("Release")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
 	.IsDependentOn("PublishGitHubRelease");
-    //.IsDependentOn("PublishToNuget");
+    // .IsDependentOn("PublishToNuget");
 
 Task("Compile")
 	.IsDependentOn("Clean")
