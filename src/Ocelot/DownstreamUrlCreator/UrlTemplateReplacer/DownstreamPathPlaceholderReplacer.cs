@@ -4,7 +4,7 @@ using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
 {
-    public class DownstreamTemplatePathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
+    public class DownstreamPathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
     {
         public Response<DownstreamPath> Replace(string downstreamPathTemplate,
             List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)

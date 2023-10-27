@@ -7,15 +7,15 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    public class DownstreamTemplatePathPlaceholderReplacerTests
+    public class DownstreamPathPlaceholderReplacerTests
     {
         private DownstreamRouteHolder _downstreamRoute;
         private Response<DownstreamPath> _result;
         private readonly IDownstreamPathPlaceholderReplacer _downstreamPathReplacer;
 
-        public DownstreamTemplatePathPlaceholderReplacerTests()
+        public DownstreamPathPlaceholderReplacerTests()
         {
-            _downstreamPathReplacer = new DownstreamTemplatePathPlaceholderReplacer();
+            _downstreamPathReplacer = new DownstreamPathPlaceholderReplacer();
         }
 
         [Fact]
