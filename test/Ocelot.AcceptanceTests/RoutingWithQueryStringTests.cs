@@ -90,7 +90,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void Should_return_response_200_with_query_string_template_additional_key() //issue #327
         {
@@ -128,7 +127,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void Should_return_response_200_with_odata_query_string()

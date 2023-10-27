@@ -92,7 +92,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             await _next.Invoke(httpContext);
         }
 
-
         private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString)
         {
             var queries = HttpUtility.ParseQueryString(queryString);
@@ -104,7 +103,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 if (!string.IsNullOrEmpty(key))
                 {
                     dict.Add(key, newQueries[key]);
-
                 }
             }
 
