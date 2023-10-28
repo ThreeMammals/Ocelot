@@ -15,10 +15,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
 
-        public DownstreamUrlCreatorMiddleware(RequestDelegate next,
+        private const char QuestionMark = '?';
+        private const char Ampersand = '&';
+
+        public DownstreamUrlCreatorMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer
-            )
+            IDownstreamPathPlaceholderReplacer replacer)
                 : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
@@ -38,7 +41,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (response.IsError)
             {
-                Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
+                Logger.LogDebug($"{nameof(IDownstreamPathPlaceholderReplacer)} returned an error, setting pipeline error");
 
                 httpContext.Items.UpsertErrors(response.Errors);
                 return;
@@ -74,9 +77,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                     }
                     else
                     {
-                        var newQueryString = GetQueryString(dsPath).Replace('?', '&');
+                        var newQueryString = GetQueryString(dsPath).Replace(QuestionMark, Ampersand);
                         newQueryString = MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQueryString);
-                        downstreamRequest.Query = "?" + newQueryString;
+                        downstreamRequest.Query = QuestionMark + newQueryString;
                     }
                 }
                 else
@@ -105,7 +108,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 .Where(key => !string.IsNullOrEmpty(key) && !dict.ContainsValue(queries[key]))
                 .All(key => dict.TryAdd(key, queries[key]));
 
-            return string.Join("&", dict.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value)));
+            return string.Join(Ampersand, dict.Select(kvp => $"{kvp.Key}={kvp.Value}"));
         }
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
@@ -124,7 +127,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
-                        downstreamRequest.Query = string.Concat("?", downstreamRequest.Query.AsSpan(1));
+                        downstreamRequest.Query = QuestionMark + downstreamRequest.Query[1..];
                     }
                 }
             } 
@@ -132,19 +135,19 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static string GetPath(DownstreamPath dsPath)
         {
-            int length = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            int length = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
             return dsPath.Value[..length];
         }
 
         private static string GetQueryString(DownstreamPath dsPath)
         {
-            int startIndex = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            int startIndex = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
             return dsPath.Value[startIndex..];
         }
 
         private static bool ContainsQueryString(DownstreamPath dsPath)
         {
-            return dsPath.Value.Contains('?');
+            return dsPath.Value.Contains(QuestionMark);
         }
 
         private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
