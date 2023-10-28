@@ -30,7 +30,7 @@ namespace Ocelot.Claims.Middleware
 
                 if (result.IsError)
                 {
-                    Logger.LogDebug(() => "error converting claims to other claims, setting pipeline error");
+                    Logger.LogDebug("error converting claims to other claims, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(result.Errors);
                     return;
