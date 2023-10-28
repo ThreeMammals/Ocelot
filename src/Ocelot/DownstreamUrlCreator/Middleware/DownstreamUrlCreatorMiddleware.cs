@@ -97,24 +97,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var queries = HttpUtility.ParseQueryString(queryString);
             var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
-            var dict = new Dictionary<string, string>();
-            foreach (var key in newQueries.AllKeys)
-            {
-                if (!string.IsNullOrEmpty(key))
-                {
-                    dict.Add(key, newQueries[key]);
-                }
-            }
+            var dict = newQueries.AllKeys
+                .Where(key => !string.IsNullOrEmpty(key))
+                .ToDictionary(key => key, key => newQueries[key]);
 
-            foreach (var key in queries.AllKeys)
-            {
-                if (string.IsNullOrEmpty(key) || dict.ContainsValue(queries[key]))
-                {
-                    continue;
-                }
-
-                dict.Add(key, queries[key]);
-            }
+            _ = queries.AllKeys
+                .Where(key => !string.IsNullOrEmpty(key) && !dict.ContainsValue(queries[key]))
+                .All(key => dict.TryAdd(key, queries[key]));
 
             return string.Join("&", dict.Select(kvp => string.Format("{0}={1}", kvp.Key, kvp.Value)));
         }
