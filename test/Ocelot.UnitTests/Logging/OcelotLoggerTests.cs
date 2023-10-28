@@ -1,29 +1,26 @@
-using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Org.BouncyCastle.Tsp;
 
 namespace Ocelot.UnitTests.Logging;
 
-public class AspDotNetLoggerTests
+public class OcelotLoggerTests
 {
     private readonly Mock<ILogger<object>> _coreLogger;
-    private readonly Mock<IRequestScopedDataRepository> _repo;
-    private readonly AspDotNetLogger _logger;
+    private readonly OcelotLogger _logger;
     private readonly string _b;
     private readonly string _a;
     private readonly Exception _ex;
 
-    public AspDotNetLoggerTests()
+    public OcelotLoggerTests()
     {
         _a = "tom";
         _b = "laura";
         _ex = new Exception("oh no");
         _coreLogger = new Mock<ILogger<object>>();
         _coreLogger.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-        _repo = new Mock<IRequestScopedDataRepository>();
-        _logger = new AspDotNetLogger(_coreLogger.Object, _repo.Object);
+        var repo = new Mock<IRequestScopedDataRepository>();
+        _logger = new OcelotLogger(_coreLogger.Object, repo.Object);
     }
 
     [Fact]
@@ -113,7 +110,7 @@ public class AspDotNetLoggerTests
         var mockedILogger = MockLogger(null);
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -161,7 +158,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -209,7 +206,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -257,7 +254,7 @@ public class AspDotNetLoggerTests
         mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
         var mockedILogger = MockLogger(LogLevel.None);
         var repo = new Mock<IRequestScopedDataRepository>();
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogTrace(mockedFunc.Object);
 
@@ -271,7 +268,7 @@ public class AspDotNetLoggerTests
         mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
         var mockedILogger = MockLogger(LogLevel.Information);
         var repo = new Mock<IRequestScopedDataRepository>();
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogInformation(mockedFunc.Object);
 
@@ -285,7 +282,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -333,7 +330,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -381,7 +378,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
@@ -429,7 +426,7 @@ public class AspDotNetLoggerTests
 
         var repo = new Mock<IRequestScopedDataRepository>();
 
-        var currentLogger = new AspDotNetLogger(mockedILogger.Object, repo.Object);
+        var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
