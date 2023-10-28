@@ -53,7 +53,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
+            _logger.LogInformation($"{nameof(FileConfigurationPoller)} is stopping.");
 
             _timer?.Change(Timeout.Infinite, 0);
 
