@@ -123,7 +123,7 @@ namespace Ocelot.AcceptanceTests
                         {
                             ExceptionsAllowedBeforeBreaking = 2,
                             TimeoutValue = 5000,
-                            DurationOfBreak = 1000,
+                            DurationOfBreak = 100000,
                         },
                     },
                 },

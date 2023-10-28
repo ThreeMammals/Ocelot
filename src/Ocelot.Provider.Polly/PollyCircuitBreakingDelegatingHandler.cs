@@ -17,7 +17,7 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
 
     public PollyCircuitBreakingDelegatingHandler(
         DownstreamRoute route,
-        IHttpContextAccessor contextAccessor, 
+        IHttpContextAccessor contextAccessor,
         IOcelotLoggerFactory loggerFactory)
     {
         _route = route;
@@ -25,10 +25,10 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
         _logger = loggerFactory.CreateLogger<PollyCircuitBreakingDelegatingHandler>();
     }
 
-    private IPollyQoSProvider GetQoSProvider()
+    private IPollyQoSProvider<HttpResponseMessage> GetQoSProvider()
     {
         Debug.Assert(_contextAccessor.HttpContext != null, "_contextAccessor.HttpContext != null");
-        return _contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSProvider>();
+        return _contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSProvider<HttpResponseMessage>>();
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -37,39 +37,17 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
         var qoSProvider = GetQoSProvider();
         try
         {
-            var policies = qoSProvider.GetCircuitBreaker(_route).Policies;
-            if (!policies.Any())
+            var policy = qoSProvider.GetCircuitBreaker(_route).CircuitBreakerAsyncPolicy;
+            if (policy == null)
             {
                 return await base.SendAsync(request, cancellationToken);
             }
 
-            var policy = policies.Length > 1
-                ? Policy.WrapAsync(policies)
-                : policies[0];
-
-            var policyResult = await policy.ExecuteAsync(async () =>
-            {
-                var result = await base.SendAsync(request, cancellationToken);
-                if (result.StatusCode != HttpStatusCode.InternalServerError)
-                {
-                    return result;
-                }
-
-                var content = await result.Content.ReadAsStringAsync(cancellationToken);
-                throw new HttpRequestException(content);
-
-            });
-
-            return policyResult;
+            return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
         }
         catch (BrokenCircuitException ex)
         {
             _logger.LogError("Reached to allowed number of exceptions. Circuit is open", ex);
-            throw;
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError($"Error in {nameof(PollyCircuitBreakingDelegatingHandler)}.{nameof(SendAsync)}", ex);
             throw;
         }
     }

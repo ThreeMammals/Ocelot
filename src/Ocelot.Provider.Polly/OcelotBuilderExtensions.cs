@@ -9,27 +9,30 @@ using Ocelot.Requester;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
-namespace Ocelot.Provider.Polly
+namespace Ocelot.Provider.Polly;
+
+public static class OcelotBuilderExtensions
 {
-    public static class OcelotBuilderExtensions
+    public static IOcelotBuilder AddPolly(this IOcelotBuilder builder)
     {
-        public static IOcelotBuilder AddPolly(this IOcelotBuilder builder)
+        var errorMapping = new Dictionary<Type, Func<Exception, Error>>
         {
-            var errorMapping = new Dictionary<Type, Func<Exception, Error>>
-            {
-                {typeof(TaskCanceledException), e => new RequestTimedOutError(e)},
-                {typeof(TimeoutRejectedException), e => new RequestTimedOutError(e)},
-                {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)},
-            };
+            { typeof(TaskCanceledException), e => new RequestTimedOutError(e) },
+            { typeof(TimeoutRejectedException), e => new RequestTimedOutError(e) },
+            { typeof(BrokenCircuitException), e => new RequestTimedOutError(e) },
+            { typeof(BrokenCircuitException<HttpResponseMessage>), e => new RequestTimedOutError(e) },
+        };
 
-            builder.Services
-                .AddSingleton(errorMapping)
-                .AddSingleton<IPollyQoSProvider, PollyQoSProvider>()
-                .AddSingleton<QosDelegatingHandlerDelegate>(GetDelegatingHandler);
-            return builder;
-        }
+        builder.Services
+            .AddSingleton(errorMapping)
+            .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, PollyQoSProvider>()
+            .AddSingleton<QosDelegatingHandlerDelegate>(GetDelegatingHandler);
+        return builder;
+    }
 
-        private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
-            => new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
+    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor,
+        IOcelotLoggerFactory loggerFactory)
+    {
+        return new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
     }
 }

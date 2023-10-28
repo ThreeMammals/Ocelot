@@ -2,7 +2,8 @@
 
 namespace Ocelot.Provider.Polly.Interfaces;
 
-public interface IPollyQoSProvider
+public interface IPollyQoSProvider<TResult>
+    where TResult : class
 {
-    CircuitBreaker GetCircuitBreaker(DownstreamRoute route);
+    CircuitBreaker<TResult> GetCircuitBreaker(DownstreamRoute route);
 }
