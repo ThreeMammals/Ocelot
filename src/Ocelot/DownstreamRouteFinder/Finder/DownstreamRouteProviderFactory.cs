@@ -21,7 +21,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             //an upstream path template which means they are dyanmic and service discovery is on...
             if ((!config.Routes.Any() || config.Routes.All(x => string.IsNullOrEmpty(x.UpstreamTemplatePattern?.OriginalValue))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
             {
-                _logger.LogInformation(() => $"Selected {nameof(DownstreamRouteCreator)} as DownstreamRouteProvider for this request");
+                _logger.LogInformation($"Selected {nameof(DownstreamRouteCreator)} as DownstreamRouteProvider for this request");
+
                 return _providers[nameof(DownstreamRouteCreator)];
             }
 
