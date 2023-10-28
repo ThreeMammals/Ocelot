@@ -29,7 +29,7 @@ public class OcelotLoggerTests
         _logger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
     }
 
@@ -39,7 +39,7 @@ public class OcelotLoggerTests
         _logger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
     }
 
@@ -49,7 +49,7 @@ public class OcelotLoggerTests
         _logger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
     }
 
@@ -59,7 +59,7 @@ public class OcelotLoggerTests
         _logger.LogError(() => $"a message from {_a} to {_b}", _ex);
 
         ThenLevelIsLogged(
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, _ex);
     }
 
@@ -69,7 +69,7 @@ public class OcelotLoggerTests
         _logger.LogCritical(() => $"a message from {_a} to {_b}", _ex);
 
         ThenLevelIsLogged(
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, _ex);
     }
 
@@ -115,25 +115,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -141,13 +141,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -163,25 +163,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -189,13 +189,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -211,25 +211,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -237,13 +237,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -287,25 +287,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -313,13 +313,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -335,25 +335,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -361,13 +361,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -383,25 +383,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -409,13 +409,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
@@ -431,25 +431,25 @@ public class OcelotLoggerTests
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Debug);
 
         currentLogger.LogTrace(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Trace);
 
         currentLogger.LogInformation(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Information);
 
         currentLogger.LogWarning(() => $"a message from {_a} to {_b}");
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Warning);
 
         var testException = new Exception("test");
@@ -457,13 +457,13 @@ public class OcelotLoggerTests
         currentLogger.LogError(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsNotLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Error, testException);
 
         currentLogger.LogCritical(() => $"a message from {_a} to {_b}", testException);
 
         ThenLevelIsLogged(mockedILogger,
-            "requestId: no request id, previousRequestId: no previous request id, message: a message from tom to laura",
+            "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'",
             LogLevel.Critical, testException);
     }
 
