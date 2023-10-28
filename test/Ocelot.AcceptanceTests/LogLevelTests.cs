@@ -13,9 +13,8 @@ public class LogLevelTests : IDisposable
     private readonly string _logFileName;
     private readonly string _appSettingsFileName;
 
-    // appsettings as strings
-    string AppSettingsFormat = "{\"Logging\":{\"LogLevel\":{\"{0}\":\"Debug\",\"System\":\"{0}\",\"Microsoft\":\"{0}\"}}}";
-    string appSettings = string.Format(AppSettingsFormat, nameof(LogLevel.Debug));
+    private const string AppSettingsFormat =
+        "{{\"Logging\":{{\"LogLevel\":{{\"Default\":\"{0}\",\"System\":\"{0}\",\"Microsoft\":\"{0}\"}}}}}}";
 
     public LogLevelTests()
     {
@@ -23,47 +22,6 @@ public class LogLevelTests : IDisposable
         _serviceHandler = new ServiceHandler();
         _logFileName = $"ocelot_logs_{Guid.NewGuid()}.log";
         _appSettingsFileName = $"appsettings_{Guid.NewGuid()}.json";
-    }
-
-    [Fact]
-    public void if_minimum_log_level_is_critical_then_only_critical_messages_are_logged()
-    {
-        var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            },
-        };
-
-        var logger = GetLogger(LogLevel.Critical);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(new[] { "TRACE", "INFORMATION", "WARNING", "ERROR" }, new[] { "CRITICAL" }))
-            .BDDfy();
     }
 
     private void ThenMessagesAreLogged(string[] notAllowedMessageTypes, string[] allowedMessageTypes)
@@ -76,11 +34,10 @@ public class LogLevelTests : IDisposable
         logFileLinesWithLogLevel.Count.ShouldBe(0);
 
         var logFileLinesWithAllowedLogLevel = logFileLines.Where(x => allowedMessageTypes.Any(x.Contains)).ToList();
-        logFileLinesWithAllowedLogLevel.Count.ShouldBe(2*allowedMessageTypes.Length);
+        logFileLinesWithAllowedLogLevel.Count.ShouldBe(2 * allowedMessageTypes.Length);
     }
 
-    [Fact]
-    public void if_minimum_log_level_is_error_then_critical_and_error_are_logged()
+    private void TestFactory(string[] notAllowedMessageTypes, string[] allowedMessageTypes, LogLevel level)
     {
         var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
@@ -106,7 +63,7 @@ public class LogLevelTests : IDisposable
             },
         };
 
-        var logger = GetLogger(LogLevel.Error);
+        var logger = GetLogger(level);
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
@@ -116,173 +73,27 @@ public class LogLevelTests : IDisposable
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => _steps.Dispose())
             .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(new[] { "TRACE", "INFORMATION", "WARNING", "DEBUG" }, new[] { "CRITICAL", "ERROR" }))
+            .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
             .BDDfy();
     }
 
     [Fact]
-    public void if_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged()
-    {
-        var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            },
-        };
-
-        var logger = GetLogger(LogLevel.Warning);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(new[] { "TRACE", "INFORMATION", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING" }))
-            .BDDfy();
-    }
+    public void if_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "ERROR" }, new[] { "CRITICAL" }, LogLevel.Critical);
 
     [Fact]
-    public void if_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged()
-    {
-        var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            },
-        };
-
-        var logger = GetLogger(LogLevel.Information);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(new[] { "TRACE", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING", "INFORMATION" }))
-            .BDDfy();
-    }
+    public void if_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "DEBUG" }, new[] { "CRITICAL", "ERROR" }, LogLevel.Error);
 
     [Fact]
-    public void if_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged()
-    {
-        var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            },
-        };
-
-        var logger = GetLogger(LogLevel.Debug);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(new []{ "TRACE" }, new[] { "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }))
-            .BDDfy();
-    }
+    public void if_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING" }, LogLevel.Warning);
+    
+    [Fact]
+    public void if_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(new[] { "TRACE", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Information);
 
     [Fact]
-    public void if_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged()
-    {
-        var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            },
-        };
+    public void if_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(new[] { "TRACE" }, new[] { "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Debug);
 
-        var logger = GetLogger(LogLevel.Trace);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
-            .Then(x => ThenMessagesAreLogged(Array.Empty<string>(), new[] { "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION", "TRACE" }))
-            .BDDfy();
-    }
+    [Fact]  
+    public void if_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(Array.Empty<string>(), new[] { "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Trace);
 
     private Logger GetLogger(LogLevel logLevel)
     {
@@ -324,17 +135,7 @@ public class LogLevelTests : IDisposable
             File.Delete(appSettingsFilePath);
         }
 
-        var appSettings = logLevel switch
-        {
-            LogLevel.Information => InformationLevelAppSettings,
-            LogLevel.Warning => WarningLevelAppSettings,
-            LogLevel.Error => ErrorLevelAppSettings,
-            LogLevel.Critical => CriticalLevelAppSettings,
-            LogLevel.Debug => DebugLevelAppSettings,
-            LogLevel.Trace => TraceLevelAppSettings,
-            LogLevel.None => string.Empty,
-            _ => throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null),
-        };
+        var appSettings = string.Format(AppSettingsFormat, Enum.GetName(typeof(LogLevel), logLevel));
         File.WriteAllText(appSettingsFilePath, appSettings);
     }
 
