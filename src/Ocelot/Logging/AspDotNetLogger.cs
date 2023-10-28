@@ -3,7 +3,7 @@ using Ocelot.Infrastructure.RequestData;
 
 namespace Ocelot.Logging;
 
-public class AspDotNetLogger : IOcelotLogger
+public class OcelotLogger : IOcelotLogger
 {
     private readonly ILogger _logger;
     private readonly IRequestScopedDataRepository _scopedDataRepository;
