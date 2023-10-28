@@ -63,7 +63,8 @@ namespace Ocelot.ServiceDiscovery
             }
 
             var message = $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!";
-            _logger.LogWarning(() => message);
+            _logger.LogWarning(() => $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!");
+
 
             return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError(message));
         }
