@@ -34,7 +34,7 @@ namespace Ocelot.Configuration.Repository
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is starting.");
+            _logger.LogInformation($"{nameof(FileConfigurationPoller)} is starting.");
 
             _timer = new Timer(async x =>
             {
