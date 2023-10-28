@@ -24,7 +24,7 @@ namespace Ocelot.Claims.Middleware
 
             if (downstreamRoute.ClaimsToClaims.Any())
             {
-                Logger.LogDebug(() => "this route has instructions to convert claims to other claims");
+                Logger.LogDebug("this route has instructions to convert claims to other claims");
 
                 var result = _addClaimsToRequest.SetClaimsOnContext(downstreamRoute.ClaimsToClaims, httpContext);
 
