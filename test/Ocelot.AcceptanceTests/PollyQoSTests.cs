@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_open_circuit_breaker_after_two_exceptions()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
