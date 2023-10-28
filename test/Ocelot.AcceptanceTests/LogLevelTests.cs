@@ -14,18 +14,8 @@ public class LogLevelTests : IDisposable
     private readonly string _appSettingsFileName;
 
     // appsettings as strings
-    private const string CriticalLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Critical\",\"System\":\"Critical\",\"Microsoft\":\"Critical\"}}}";
-    private const string ErrorLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Error\",\"System\":\"Error\",\"Microsoft\":\"Error\"}}}";
-    private const string WarningLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Warning\",\"System\":\"Warning\",\"Microsoft\":\"Warning\"}}}";
-    private const string InformationLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Information\",\"System\":\"Information\",\"Microsoft\":\"Information\"}}}";
-    private const string DebugLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Debug\",\"System\":\"Debug\",\"Microsoft\":\"Debug\"}}}";
-    private const string TraceLevelAppSettings =
-        "{\"Logging\":{\"LogLevel\":{\"Default\":\"Trace\",\"System\":\"Trace\",\"Microsoft\":\"Trace\"}}}";
+    string AppSettingsFormat = "{\"Logging\":{\"LogLevel\":{\"{0}\":\"Debug\",\"System\":\"{0}\",\"Microsoft\":\"{0}\"}}}";
+    string appSettings = string.Format(AppSettingsFormat, nameof(LogLevel.Debug));
 
     public LogLevelTests()
     {
