@@ -90,8 +90,8 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void Should_return_response_200_with_query_string_template_additional_key() //issue #327
+        [Fact(DisplayName = "Issue-327: " + nameof(Should_return_response_200_with_query_string_template_additional_key))]
+        public void Should_return_response_200_with_query_string_template_additional_key()
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -316,9 +316,11 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        // to reproduce 1288: query string should contain the placeholder name and value
-        [Fact]
-        public void should_copy_query_string_to_downstream_path_issue_1288()
+        /// <summary>
+        /// To reproduce 1288: query string should contain the placeholder name and value.
+        /// </summary>
+        [Fact(DisplayName = "Issue-1288: " + nameof(Should_copy_query_string_to_downstream_path))]
+        public void Should_copy_query_string_to_downstream_path()
         {
             var idName = "id";
             var idValue = "3";
@@ -336,11 +338,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new FileHostAndPort
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                new() { Host = "localhost", Port = port },
                             },
                             UpstreamPathTemplate = $"/safe/{{{idName}}}",
                             UpstreamHttpMethod = new List<string> { "Get" },
@@ -378,6 +376,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

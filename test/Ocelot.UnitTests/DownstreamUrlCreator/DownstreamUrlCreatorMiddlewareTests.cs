@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private readonly RequestDelegate _next;
         private readonly HttpRequestMessage _request;
         private readonly HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_scheme_and_path()
+        public void Should_replace_scheme_and_path()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string()
+        public void Should_replace_query_string()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -99,7 +99,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_but_leave_non_placeholder_queries()
+        public void Should_replace_query_string_but_leave_non_placeholder_queries()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -131,7 +131,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_but_leave_non_placeholder_queries_2()
+        public void Should_replace_query_string_but_leave_non_placeholder_queries_2()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -163,7 +163,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_exact_match()
+        public void Should_replace_query_string_exact_match()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates/{unitIdIty}")
@@ -196,7 +196,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_not_create_service_fabric_url()
+        public void Should_not_create_service_fabric_url()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -226,7 +226,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url()
+        public void Should_create_service_fabric_url()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -256,7 +256,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_query_string_for_stateless_service()
+        public void Should_create_service_fabric_url_with_query_string_for_stateless_service()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -286,7 +286,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_query_string_for_stateful_service()
+        public void Should_create_service_fabric_url_with_query_string_for_stateful_service()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -316,7 +316,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_version_from_upstream_path_template()
+        public void Should_create_service_fabric_url_with_version_from_upstream_path_template()
         {
             var downstreamRoute = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
@@ -343,14 +343,16 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
-        [Fact]
-        public void issue_473_should_not_remove_additional_query_string()
+        [Fact(DisplayName = "Issue-473: " + nameof(Should_not_remove_additional_query_string))]
+        public void Should_not_remove_additional_query_string()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
                 .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
-                .WithDownstreamScheme("http")
-                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/uc/Authorized/{server}/{action}")
+                    .Build())
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -367,17 +369,17 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                             .WithDownstreamRoute(downstreamRoute)
                             .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
                             .Build())))
-                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d"))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=123456789"))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/Authorized/1?server=2"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d"))
-                .And(x => ThenTheQueryStringIs("?server=2&refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=123456789"))
+                .And(x => ThenTheQueryStringIs("?server=2&refreshToken=123456789"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_not_replace_by_empty_scheme()
+        public void Should_not_replace_by_empty_scheme()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme(string.Empty)
