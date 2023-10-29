@@ -52,8 +52,10 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void Should_return_response_200_with_query_string_template_different_keys()
+        [Theory]
+        [InlineData("")] // Issue 1174
+        [InlineData("&x=y")] // Issue 327
+        public void Should_return_response_200_with_query_string_template_different_keys(string additionalParams)
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -81,48 +83,10 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact(DisplayName = "Issue-327: " + nameof(Should_return_response_200_with_query_string_template_additional_key))]
-        public void Should_return_response_200_with_query_string_template_additional_key()
-        {
-            var subscriptionId = Guid.NewGuid().ToString();
-            var unitId = Guid.NewGuid().ToString();
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api/units/{subscriptionId}/updates?unit={unitId}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}&x=y", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}&x=y"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
