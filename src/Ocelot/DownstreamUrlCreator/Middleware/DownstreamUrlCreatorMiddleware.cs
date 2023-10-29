@@ -67,7 +67,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var dsPath = response.Data;
 
-                if (ContainsQueryString(dsPath))
+                if (dsPath.Value.Contains(QuestionMark)) // dsPath contains query string
                 {
                     downstreamRequest.AbsolutePath = GetPath(dsPath);
 
@@ -143,11 +143,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             int startIndex = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
             return dsPath.Value[startIndex..];
-        }
-
-        private static bool ContainsQueryString(DownstreamPath dsPath)
-        {
-            return dsPath.Value.Contains(QuestionMark);
         }
 
         private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
