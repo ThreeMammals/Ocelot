@@ -1,329 +1,311 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class PollyQoSTests : IDisposable
 {
-    public class PollyQoSTests : IDisposable
+    private readonly Steps _steps;
+    private readonly ServiceHandler _serviceHandler;
+
+    public PollyQoSTests()
     {
-        private readonly Steps _steps;
-        private int _requestCount;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public PollyQoSTests()
+    [Fact]
+    public void Should_not_timeout()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void Should_not_timeout()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1000,
-                            ExceptionsAllowedBeforeBreaking = 10,
-                        },
+                    },
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Post" },
+                    QoSOptions = new FileQoSOptions
+                    {
+                        TimeoutValue = 1000,
+                        ExceptionsAllowedBeforeBreaking = 10,
                     },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithPolly())
+            .And(x => _steps.GivenThePostHasContent("postContent"))
+            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void Should_timeout()
+    [Fact]
+    public void Should_timeout()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 10,
-                        },
+                    },
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Post" },
+                    QoSOptions = new FileQoSOptions
+                    {
+                        TimeoutValue = 10,
                     },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithPolly())
+            .And(x => _steps.GivenThePostHasContent("postContent"))
+            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_open_circuit_breaker_after_two_exceptions()
+    [Fact]
+    public void should_open_circuit_breaker_after_two_exceptions()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            ExceptionsAllowedBeforeBreaking = 2,
-                            TimeoutValue = 5000,
-                            DurationOfBreak = 100000,
-                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    QoSOptions = new FileQoSOptions
+                    {
+                        ExceptionsAllowedBeforeBreaking = 2,
+                        TimeoutValue = 5000,
+                        DurationOfBreak = 100000,
                     },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithPolly())
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void Should_open_circuit_breaker_then_close()
+    [Fact]
+    public void Should_open_circuit_breaker_then_close()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            ExceptionsAllowedBeforeBreaking = 1,
-                            TimeoutValue = 500,
-                            DurationOfBreak = 1000,
-                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    QoSOptions = new FileQoSOptions
+                    {
+                        ExceptionsAllowedBeforeBreaking = 1,
+                        TimeoutValue = 500,
+                        DurationOfBreak = 1000,
                     },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
-                .Given(x => _steps.GivenThereIsAConfiguration(configuration))
-                .Given(x => _steps.GivenOcelotIsRunningWithPolly())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => GivenIWaitMilliseconds(3000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
+            .Given(x => _steps.GivenThereIsAConfiguration(configuration))
+            .Given(x => _steps.GivenOcelotIsRunningWithPolly())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Given(x => GivenIWaitMilliseconds(3000))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void Open_circuit_should_not_effect_different_route()
+    [Fact]
+    public void Open_circuit_should_not_effect_different_route()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port1 = PortFinder.GetRandomPort();
-            var port2 = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            ExceptionsAllowedBeforeBreaking = 1,
-                            TimeoutValue = 500,
-                            DurationOfBreak = 1000,
+                            Host = "localhost",
+                            Port = port1,
                         },
                     },
-                    new()
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    QoSOptions = new FileQoSOptions
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            },
-                        },
-                        UpstreamPathTemplate = "/working",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        ExceptionsAllowedBeforeBreaking = 1,
+                        TimeoutValue = 500,
+                        DurationOfBreak = 1000,
                     },
                 },
-            };
-
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/working"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => GivenIWaitMilliseconds(3000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        private static void GivenIWaitMilliseconds(int ms)
-        {
-            Thread.Sleep(ms);
-        }
-
-
-        private void GivenThereIsABrokenServiceRunningOn(string url)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-            {
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("this is an exception");
-            });
-        }
-
-        private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-            {
-                //circuit starts closed
-                if (_requestCount == 0)
+                new()
                 {
-                    _requestCount++;
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(responseBody);
-                    return;
-                }
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port2,
+                        },
+                    },
+                    UpstreamPathTemplate = "/working",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                },
+            },
+        };
 
-                //request one times out and polly throws exception, circuit opens
-                if (_requestCount == 1)
-                {
-                    _requestCount++;
-                    await Task.Delay(1000);
-                    context.Response.StatusCode = 200;
-                    return;
-                }
+        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithPolly())
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/working"))
+            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => GivenIWaitMilliseconds(3000))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
 
-                //after break closes we return 200 OK
-                if (_requestCount == 2)
-                {
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
+    private static void GivenIWaitMilliseconds(int ms)
+    {
+        Thread.Sleep(ms);
+    }
 
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
+    private void GivenThereIsABrokenServiceRunningOn(string url)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("this is an exception");
+        });
+    }
+
+    private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
+    {
+        var requestCount = 0;
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        {
+            if (requestCount == 1)
             {
-                Thread.Sleep(timeout);
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync(responseBody);
-            });
-        }
+                await Task.Delay(1000);
+            }
 
-        public void Dispose()
+            requestCount++;
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsync(responseBody);
+        });
+    }
+
+    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-            GC.SuppressFinalize(this);
-        }
+            Thread.Sleep(timeout);
+            context.Response.StatusCode = statusCode;
+            await context.Response.WriteAsync(responseBody);
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
