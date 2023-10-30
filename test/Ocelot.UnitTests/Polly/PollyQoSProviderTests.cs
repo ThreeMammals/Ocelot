@@ -102,7 +102,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
                        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(200);
+        await Task.Delay(500);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
@@ -118,7 +118,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(200);
+        await Task.Delay(500);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
