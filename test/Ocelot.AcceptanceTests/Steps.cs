@@ -916,10 +916,6 @@ namespace Ocelot.AcceptanceTests
                     config.AddJsonFile(_ocelotConfigFileName, false, false);
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureLogging(logging => {
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                    logging.AddConsole();
-                })
                 .ConfigureServices(s =>
                 {
                     s.AddOcelot()
