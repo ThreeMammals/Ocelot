@@ -60,7 +60,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
 
         // Assert
         ShouldHaveXunitHeaderWithNoContent(actual, nameof(SendAsync_OnePolicy_NoWrapping));
-        method.DeclaringType.Name.ShouldBe(nameof(IAsyncPolicy));
+        method.DeclaringType.Name.ShouldBe("IAsyncPolicy`1");
         method.DeclaringType.ShouldNotBeOfType<AsyncPolicyWrap>();
     }
 
