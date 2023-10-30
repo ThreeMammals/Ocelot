@@ -50,5 +50,10 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
             _logger.LogError("Reached to allowed number of exceptions. Circuit is open", ex);
             throw;
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError($"Error in {nameof(PollyCircuitBreakingDelegatingHandler)}.{nameof(SendAsync)}", ex);
+            throw;
+        }
     }
 }
