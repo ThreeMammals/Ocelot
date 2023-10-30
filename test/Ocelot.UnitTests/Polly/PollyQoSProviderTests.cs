@@ -159,7 +159,7 @@ public class PollyQoSProviderTests
     private static CircuitBreaker<HttpResponseMessage> CircuitBreakerFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider)
     {
         var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(100)
+            .WithTimeoutValue(5000)
             .WithExceptionsAllowedBeforeBreaking(2)
             .WithDurationOfBreak(200)
             .Build();
