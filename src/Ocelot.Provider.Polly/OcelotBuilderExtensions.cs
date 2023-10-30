@@ -30,9 +30,6 @@ public static class OcelotBuilderExtensions
         return builder;
     }
 
-    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor,
-        IOcelotLoggerFactory loggerFactory)
-    {
-        return new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
-    }
+    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory) 
+        => new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
 }
