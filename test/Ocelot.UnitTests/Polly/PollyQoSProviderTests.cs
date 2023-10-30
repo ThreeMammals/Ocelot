@@ -85,7 +85,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(101);
+        await Task.Delay(100);
 
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
