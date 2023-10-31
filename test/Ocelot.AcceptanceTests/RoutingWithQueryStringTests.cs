@@ -43,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
@@ -83,7 +83,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
@@ -116,7 +116,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/contracts", $"?{expectedOrdered}", 200, "Hello from @sunilk3"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/contracts", $"?{expectedOrdered}", "Hello from @sunilk3"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
@@ -154,7 +154,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/odata/customers", "?$filter=Name%20eq%20'Sam'", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/odata/customers?$filter=Name eq 'Sam' "))
@@ -192,7 +192,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
@@ -230,7 +230,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
@@ -267,7 +267,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
@@ -304,7 +304,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
@@ -343,7 +343,7 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/safe/{idValue}?{queryName}={queryValue}"))
@@ -352,18 +352,18 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string queryString, int statusCode, string responseBody)
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string queryString, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
                 if ((context.Request.PathBase.Value != basePath) || context.Request.QueryString.Value != queryString)
                 {
-                    context.Response.StatusCode = 500;
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                     await context.Response.WriteAsync("downstream path didnt match base path");
                 }
                 else
                 {
-                    context.Response.StatusCode = statusCode;
+                    context.Response.StatusCode = StatusCodes.Status200OK;
                     await context.Response.WriteAsync(responseBody);
                 }
             });
