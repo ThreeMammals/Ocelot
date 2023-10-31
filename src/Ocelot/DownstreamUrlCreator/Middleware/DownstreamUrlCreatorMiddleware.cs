@@ -15,8 +15,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
 
-        private const char QuestionMark = '?';
         private const char Ampersand = '&';
+        private const char QuestionMark = '?';
+        private const char OpeningBrace = '{';
+        private const char ClosingBrace = '}';
 
         public DownstreamUrlCreatorMiddleware(
             RequestDelegate next,
@@ -32,10 +34,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
+            var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
 
             var response = _replacer
-                .Replace(downstreamRoute.DownstreamPathTemplate.Value, templatePlaceholderNameAndValues);
+                .Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
 
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
@@ -57,7 +59,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
             {
-                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
+                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, placeholders, response);
 
                 //todo check this works again hope there is a test..
                 downstreamRequest.AbsolutePath = path;
@@ -67,7 +69,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var dsPath = response.Data;
 
-                if (dsPath.Value.Contains(QuestionMark)) // dsPath contains query string
+                if (dsPath.Value.Contains(QuestionMark))
                 {
                     downstreamRequest.AbsolutePath = GetPath(dsPath);
 
@@ -78,13 +80,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                     else
                     {
                         var newQueryString = GetQueryString(dsPath).Replace(QuestionMark, Ampersand);
-                        newQueryString = MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQueryString);
+                        newQueryString = MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQueryString, placeholders);
                         downstreamRequest.Query = QuestionMark + newQueryString;
                     }
                 }
                 else
                 {
-                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, templatePlaceholderNameAndValues);
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
 
                     downstreamRequest.AbsolutePath = dsPath.Value;
                 }
@@ -95,27 +97,34 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             await _next.Invoke(httpContext);
         }
 
-        private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString)
+        private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
         {
             var queries = HttpUtility.ParseQueryString(queryString);
             var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
-            var dict = newQueries.AllKeys
+            var parameters = newQueries.AllKeys
                 .Where(key => !string.IsNullOrEmpty(key))
                 .ToDictionary(key => key, key => newQueries[key]);
 
             _ = queries.AllKeys
-                .Where(key => !string.IsNullOrEmpty(key) && !dict.ContainsValue(queries[key]))
-                .All(key => dict.TryAdd(key, queries[key]));
+                .Where(key => !string.IsNullOrEmpty(key) && !parameters.ContainsKey(key))
+                .All(key => parameters.TryAdd(key, queries[key]));
 
-            return string.Join(Ampersand, dict.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            // Remove old replaced query parameters
+            foreach (var placeholder in placeholders)
+            {
+                parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
+            }
+
+            var orderedParams = parameters.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value}");
+            return string.Join(Ampersand, orderedParams);
         }
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
-                var name = nAndV.Name.Replace("{", string.Empty).Replace("}", string.Empty);
+                var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
 
                 var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
 

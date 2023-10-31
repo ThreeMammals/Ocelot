@@ -52,10 +52,10 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Theory]
-        [InlineData("")] // Issue 1174
-        [InlineData("&x=y")] // Issue 327
-        public void Should_return_response_200_with_query_string_template_different_keys(string additionalParams)
+        [Theory(DisplayName = "1182: " + nameof(Should_return_200_with_query_string_template_different_keys))]
+        [InlineData("")]
+        [InlineData("&x=xxx")]
+        public void Should_return_200_with_query_string_template_different_keys(string additionalParams)
         {
             var subscriptionId = Guid.NewGuid().ToString();
             var unitId = Guid.NewGuid().ToString();
@@ -67,7 +67,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new()
                         {
-                            DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+                            DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unit}",
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
@@ -77,7 +77,7 @@ namespace Ocelot.AcceptanceTests
                                     Port = port,
                                 },
                             },
-                            UpstreamPathTemplate = "/api/units/{subscriptionId}/updates?unit={unitId}",
+                            UpstreamPathTemplate = "/api/units/{subscriptionId}/updates?unit={unit}",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
                     },
@@ -283,7 +283,7 @@ namespace Ocelot.AcceptanceTests
         /// <summary>
         /// To reproduce 1288: query string should contain the placeholder name and value.
         /// </summary>
-        [Fact(DisplayName = "Issue-1288: " + nameof(Should_copy_query_string_to_downstream_path))]
+        [Fact(DisplayName = "1288: " + nameof(Should_copy_query_string_to_downstream_path))]
         public void Should_copy_query_string_to_downstream_path()
         {
             var idName = "id";
