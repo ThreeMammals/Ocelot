@@ -92,6 +92,39 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Theory(DisplayName = "1174: " + nameof(Should_return_200_and_forward_query_parameters_without_duplicates))]
+        [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "endDate=2019-12-12&projectNumber=45&startDate=2019-12-12")]
+        [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00:00:00z%20and%20DateOfSale%20le%202020-03-15T00:00:00z")]
+        public void Should_return_200_and_forward_query_parameters_without_duplicates(string everythingelse, string expectedOrdered)
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/contracts?{everythingelse}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new() { Host = "localhost", Port = port },
+                        },
+                        UpstreamPathTemplate = "/contracts?{everythingelse}",
+                        UpstreamHttpMethod = new() { "Get" },
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/contracts", $"?{expectedOrdered}", 200, "Hello from @sunilk3"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from @sunilk3"))
+                .BDDfy();
+        }
+
         [Fact]
         public void Should_return_response_200_with_odata_query_string()
         {

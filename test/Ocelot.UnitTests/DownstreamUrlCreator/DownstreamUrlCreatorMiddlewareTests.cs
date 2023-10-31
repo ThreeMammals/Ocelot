@@ -469,6 +469,38 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Theory(DisplayName = "1174: " + nameof(Should_forward_query_parameters_without_duplicates))]
+        [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "endDate=2019-12-12&projectNumber=45&startDate=2019-12-12")]
+        [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
+        public void Should_forward_query_parameters_without_duplicates(string everythingelse, string expectedOrdered)
+        {
+            var methods = new List<string> { "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/contracts?{everythingelse}").Build())
+                .WithDownstreamPathTemplate("/api/contracts?{everythingelse}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+            var config = new ServiceProviderConfigurationBuilder().Build();
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new("{everythingelse}", everythingelse),
+                        },
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000//contracts?{everythingelse}"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/api/contracts?{expectedOrdered}"))
+                .And(x => ThenTheQueryStringIs($"?{expectedOrdered}"))
+                .BDDfy();
+        }
+
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null);
