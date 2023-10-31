@@ -1,5 +1,6 @@
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
+using Polly;
 using Polly.CircuitBreaker;
 
 namespace Ocelot.Provider.Polly
@@ -21,17 +22,31 @@ namespace Ocelot.Provider.Polly
         {
             try
             {
-                var policies = _qoSProvider.CircuitBreaker.Policies;
-                if (!policies.Any())
+                if(_qoSProvider.CircuitBreaker != null)
+                {
+                    var policies = _qoSProvider.CircuitBreaker.Policies;
+                    if (!policies.Any())
+                    {
+                        return await base.SendAsync(request, cancellationToken);
+                    }
+
+                    var policy = policies.Length > 1
+                        ? Policy.WrapAsync(policies)
+                        : policies[0];
+
+                    return await policy.ExecuteAsync(() => base.SendAsync(request, cancellationToken));
+                }
+
+                var retryPolicies = _qoSProvider.Retry.Policies;
+                if (!retryPolicies.Any())
                 {
                     return await base.SendAsync(request, cancellationToken);
                 }
 
-                var policy = policies.Length > 1
-                    ? Policy.WrapAsync(policies)
-                    : policies[0];
-
-                return await policy.ExecuteAsync(() => base.SendAsync(request, cancellationToken));
+                var retryPolicy = retryPolicies.Length > 1
+                        ? Policy.WrapAsync(retryPolicies)
+                        : retryPolicies[0];
+                return await retryPolicy.ExecuteAsync(() => base.SendAsync(request, cancellationToken));
             }
             catch (BrokenCircuitException ex)
             {

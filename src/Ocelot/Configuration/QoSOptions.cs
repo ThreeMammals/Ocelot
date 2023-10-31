@@ -7,6 +7,8 @@
             int durationofBreak,
             int timeoutValue,
             string key,
+            double retryNumber,
+            int retryCount,
             string timeoutStrategy = "Pessimistic")
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
@@ -14,6 +16,8 @@
             TimeoutValue = timeoutValue;
             TimeoutStrategy = timeoutStrategy;
             Key = key;
+            RetryCount = retryCount;
+            RetryNumber = retryNumber;
         }
 
         public int ExceptionsAllowedBeforeBreaking { get; }
@@ -27,5 +31,9 @@
         public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
 
         public string Key { get; }
+
+        public int RetryCount { get; }
+
+        public double RetryNumber { get; }
     }
 }

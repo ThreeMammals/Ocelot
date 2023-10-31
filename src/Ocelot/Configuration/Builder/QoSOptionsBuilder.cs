@@ -10,6 +10,9 @@
 
         private string _key;
 
+        private int _retryCount;
+
+        private double _retryNumber;
         public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
         {
             _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
@@ -34,9 +37,21 @@
             return this;
         }
 
+        public QoSOptionsBuilder WithRetryNumber(double retryNumber)
+        {
+            _retryNumber = retryNumber;
+            return this;    
+        }
+
+        public QoSOptionsBuilder WithRetryCount(int retryCount)
+        {
+            _retryCount = retryCount;
+            return this;
+        }
+
         public QoSOptions Build()
         {
-            return new QoSOptions(_exceptionsAllowedBeforeBreaking, _durationOfBreak, _timeoutValue, _key);
+            return new QoSOptions(_exceptionsAllowedBeforeBreaking, _durationOfBreak, _timeoutValue, _key, _retryNumber, _retryCount);
         }
     }
 }

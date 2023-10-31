@@ -1,7 +1,9 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
+using Polly;
 using Polly.CircuitBreaker;
+using Polly.Retry;
 using Polly.Timeout;
 
 namespace Ocelot.Provider.Polly
@@ -11,7 +13,17 @@ namespace Ocelot.Provider.Polly
         public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
         {
             AsyncCircuitBreakerPolicy circuitBreakerPolicy = null;
-            if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
+            AsyncRetryPolicy retryPolicy = null;
+
+            if (route.QosOptions.RetryCount > 0)
+            {
+                 retryPolicy = Policy
+                        .Handle<Exception>()
+                        .WaitAndRetryAsync(retryCount: route.QosOptions.RetryCount, retryNumber => TimeSpan.FromMilliseconds(route.QosOptions.RetryNumber));
+
+                 Retry = new Retry(retryPolicy);
+            }
+            else if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
             {
                 var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
                 var logger = loggerFactory.CreateLogger<PollyQoSProvider>();
@@ -29,11 +41,10 @@ namespace Ocelot.Provider.Polly
                         onHalfOpen: () =>
                             logger.LogDebug(info + "Half-open; Next call is a trial.")
                     );
+                _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
+                var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
+                CircuitBreaker = new CircuitBreaker(circuitBreakerPolicy, timeoutPolicy);
             }
-
-            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
-            var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
-            CircuitBreaker = new CircuitBreaker(circuitBreakerPolicy, timeoutPolicy);
         }
 
         private const string ObsoleteConstructorMessage = $"Use the constructor {nameof(PollyQoSProvider)}({nameof(DownstreamRoute)} route, {nameof(IOcelotLoggerFactory)} loggerFactory)!";
@@ -45,6 +56,8 @@ namespace Ocelot.Provider.Polly
         }
 
         public CircuitBreaker CircuitBreaker { get; }
+
+        public Retry Retry { get; }
 
         private static string GetRouteName(DownstreamRoute route)
             => string.IsNullOrWhiteSpace(route.ServiceName)

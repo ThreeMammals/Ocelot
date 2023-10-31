@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
             _routes = new List<Route>();
             _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
             _lbo = new LoadBalancerOptionsBuilder().Build();
-            _qoso = new QoSOptions(1, 1, 1, string.Empty);
+            _qoso = new QoSOptions(1, 1, 1, string.Empty,5,50000);
             _hho = new HttpHandlerOptionsBuilder().Build();
 
             _spcCreator.Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(_spc);
