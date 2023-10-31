@@ -1,7 +1,10 @@
 ﻿using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
+using Polly;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
+using Polly.Wrap;
 
 namespace Ocelot.UnitTests.Polly;
 
@@ -22,6 +25,63 @@ public class PollyQoSProviderTests
         var policy = pollyQoSProvider.GetCircuitBreaker(route).ShouldNotBeNull()
             .CircuitBreakerAsyncPolicy.ShouldNotBeNull();
         policy.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void should_build_and_wrap_contains_two_policies()
+    {
+        var pollyQosProvider = PollyQoSProviderFactory();
+        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider);
+        var policy = circuitBreaker.CircuitBreakerAsyncPolicy;
+
+        if (policy is AsyncPolicyWrap<HttpResponseMessage> policyWrap)
+        {
+            policyWrap.ShouldNotBeNull();
+            var policies = policyWrap.GetPolicies().ToList();
+
+            policies.Count.ShouldBe(2);
+            var circuitBreakerPolicyFound = false;
+            var timeoutPolicyFound = false;
+
+            foreach(var currentPolicy in policies)
+            {
+                currentPolicy.ShouldNotBeNull();
+                var convertedPolicy = (IAsyncPolicy<HttpResponseMessage>)currentPolicy;
+
+                switch (convertedPolicy)
+                {
+                    case AsyncCircuitBreakerPolicy<HttpResponseMessage> circuitBreakerPolicy:
+                        circuitBreakerPolicyFound = true;
+                        continue;
+                    case AsyncTimeoutPolicy<HttpResponseMessage> timeoutPolicy:
+                        timeoutPolicyFound = true;
+                        break;
+                }
+            }
+
+            Assert.True(circuitBreakerPolicyFound);
+            Assert.True(timeoutPolicyFound);
+
+            return;
+        }
+
+        Assert.Fail("policy is not AsyncPolicyWrap<HttpResponseMessage>");
+    }
+
+    [Fact]
+    public void should_build_and_contains_one_policy_when_with_exceptions_allowed_before_breaking_is_zero()
+    {
+        var pollyQosProvider = PollyQoSProviderFactory();
+        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider, true);
+        var policy = circuitBreaker.CircuitBreakerAsyncPolicy;
+
+        if (policy is AsyncTimeoutPolicy<HttpResponseMessage> convertedPolicy)
+        {
+            convertedPolicy.ShouldNotBeNull();
+            return;
+        }
+
+        Assert.Fail("policy is not AsyncTimeoutPolicy<HttpResponseMessage>");
     }
 
     [Fact]
@@ -156,11 +216,11 @@ public class PollyQoSProviderTests
         return pollyQoSProvider;
     }
 
-    private static CircuitBreaker<HttpResponseMessage> CircuitBreakerFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider)
+    private static CircuitBreaker<HttpResponseMessage> CircuitBreakerFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider, bool inactiveExceptionsAllowedBeforeBreaking = false)
     {
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(5000)
-            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
             .WithDurationOfBreak(200)
             .Build();
 
