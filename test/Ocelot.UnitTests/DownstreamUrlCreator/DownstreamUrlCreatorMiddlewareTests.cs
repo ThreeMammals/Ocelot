@@ -438,6 +438,37 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ))]
+        public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
+        {
+            var methods = new List<string> { "Post", "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/users?userId={uid}").Build())
+                .WithDownstreamPathTemplate("/persons?personId={uid}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+            var config = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new("{uid}", "webley"),
+                        },
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/persons?personId=webley"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley&userId=webley"))
+                .And(x => ThenTheQueryStringIs($"?personId=webley&userId=webley"))
+                .BDDfy();
+        }
+
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null);
