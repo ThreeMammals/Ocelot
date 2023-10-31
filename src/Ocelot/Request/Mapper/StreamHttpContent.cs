@@ -84,7 +84,7 @@ public class StreamHttpContent : HttpContent
                     throw new InvalidOperationException("More bytes received than the specified Content-Length.");
                 }
 
-                // End of the source stream.
+                // end of the source stream.
                 if (read == 0)
                 {
                     if (announcedContentLength == UnknownLength || contentLength == announcedContentLength)
