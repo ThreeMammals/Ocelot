@@ -201,7 +201,6 @@ namespace Ocelot.UnitTests.Request.Mapper
                 .And(_ => ThenTheMappedRequestHasContentMD5Header(md5bytes))
                 .And(_ => ThenTheMappedRequestHasContentRangeHeader())
                 .And(_ => ThenTheMappedRequestHasContentDispositionHeader("inline"))
-                // .And(_ => ThenTheMappedRequestHasContentSize("This is my content".Length))
                 .And(_ => ThenTheContentHeadersAreNotAddedToNonContentHeaders())
                 .BDDfy();
         }
@@ -217,7 +216,6 @@ namespace Ocelot.UnitTests.Request.Mapper
                 .When(_ => WhenMapped())
                 .Then(_ => ThenNoErrorIsReturned())
                 .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
-                // .And(_ => ThenTheMappedRequestHasContentSize("This is my content".Length))
                 .And(_ => ThenTheOtherContentTypeHeadersAreNotMapped())
                 .BDDfy();
         }
