@@ -71,10 +71,10 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                         _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
-        _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
-        var timeoutPolicy =
-            Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue),
-                strategy);
+        var timeoutPolicy = Policy
+            .TimeoutAsync<HttpResponseMessage>(
+                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
+                TimeoutStrategy.Pessimistic);
 
         return new CircuitBreaker<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
     }

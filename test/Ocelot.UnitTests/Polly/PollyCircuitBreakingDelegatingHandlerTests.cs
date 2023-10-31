@@ -16,8 +16,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
 {
     private readonly Mock<IPollyQoSProvider<HttpResponseMessage>> _pollyQoSProviderMock;
     private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
-
-    private readonly PollyCircuitBreakingDelegatingHandler sut;
+    private readonly PollyCircuitBreakingDelegatingHandler _sut;
 
     public PollyCircuitBreakingDelegatingHandlerTests()
     {
@@ -31,7 +30,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             .Returns(loggerMock.Object);
         loggerMock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
 
-        sut = new PollyCircuitBreakingDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
+        _sut = new PollyCircuitBreakingDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
     }
 
     [Fact]
@@ -137,7 +136,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
     private async Task<HttpResponseMessage> InvokeAsync(string methodName)
     {
         var m = typeof(PollyCircuitBreakingDelegatingHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-        var task = (Task<HttpResponseMessage>)m.Invoke(sut, new object[] { new HttpRequestMessage(), CancellationToken.None });
+        var task = (Task<HttpResponseMessage>)m.Invoke(_sut, new object[] { new HttpRequestMessage(), CancellationToken.None });
         var actual = await task;
         return actual;
     }

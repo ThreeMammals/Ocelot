@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
@@ -37,12 +36,10 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
         var qoSProvider = GetQoSProvider();
         try
         {
+            // at least one policy (timeout) will be returned
+            // CircuitBreakerAsyncPolicy can't be null
+            // CircuitBreaker constructor will throw if no policy is provided
             var policy = qoSProvider.GetCircuitBreaker(_route).CircuitBreakerAsyncPolicy;
-            if (policy == null)
-            {
-                return await base.SendAsync(request, cancellationToken);
-            }
-
             return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
         }
         catch (BrokenCircuitException ex)

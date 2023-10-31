@@ -50,10 +50,10 @@ public class PollyQoSProviderTests
 
                 switch (convertedPolicy)
                 {
-                    case AsyncCircuitBreakerPolicy<HttpResponseMessage> circuitBreakerPolicy:
+                    case AsyncCircuitBreakerPolicy<HttpResponseMessage>:
                         circuitBreakerPolicyFound = true;
                         continue;
-                    case AsyncTimeoutPolicy<HttpResponseMessage> timeoutPolicy:
+                    case AsyncTimeoutPolicy<HttpResponseMessage>:
                         timeoutPolicyFound = true;
                         break;
                 }

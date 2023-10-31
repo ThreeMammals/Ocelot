@@ -4,15 +4,13 @@
     {
         public QoSOptions(
             int exceptionsAllowedBeforeBreaking,
-            int durationofBreak,
-            int timeoutValue,
-            string key,
-            string timeoutStrategy = "Pessimistic")
+            int durationOfBreak,
+            int timeoutValue, 
+            string key)
         {
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-            DurationOfBreak = durationofBreak;
+            DurationOfBreak = durationOfBreak;
             TimeoutValue = timeoutValue;
-            TimeoutStrategy = timeoutStrategy;
             Key = key;
         }
 
@@ -22,10 +20,7 @@
 
         public int TimeoutValue { get; }
 
-        public string TimeoutStrategy { get; }
-
         public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
-
         public string Key { get; }
     }
 }
