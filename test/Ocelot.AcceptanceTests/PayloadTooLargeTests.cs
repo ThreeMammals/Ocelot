@@ -1,6 +1,7 @@
 ﻿using Ocelot.Configuration.File;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -53,9 +54,11 @@ public class PayloadTooLargeTests : IDisposable
             .BDDfy();
     }
 
-    [Fact]
+    [SkippableFact]
     public void should_throw_payload_too_large_exception_using_http_sys()
     {
+        Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
         var port = PortFinder.GetRandomPort();
 
         var configuration = new FileConfiguration
