@@ -33,12 +33,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
-
             var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
-
-            var response = _replacer
-                .Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
-
+            var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
             if (response.IsError)
@@ -68,21 +64,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             else
             {
                 var dsPath = response.Data;
-
                 if (dsPath.Value.Contains(QuestionMark))
                 {
                     downstreamRequest.AbsolutePath = GetPath(dsPath);
-
-                    if (string.IsNullOrEmpty(downstreamRequest.Query))
-                    {
-                        downstreamRequest.Query = GetQueryString(dsPath);
-                    }
-                    else
-                    {
-                        var newQueryString = GetQueryString(dsPath).Replace(QuestionMark, Ampersand);
-                        newQueryString = MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQueryString, placeholders);
-                        downstreamRequest.Query = QuestionMark + newQueryString;
-                    }
+                    var newQuery = GetQueryString(dsPath);
+                    downstreamRequest.Query = string.IsNullOrEmpty(downstreamRequest.Query)
+                        ? newQuery
+                        : MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQuery, placeholders);
                 }
                 else
                 {
@@ -99,6 +87,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
         {
+            newQueryString = newQueryString.Replace(QuestionMark, Ampersand);
             var queries = HttpUtility.ParseQueryString(queryString);
             var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
@@ -117,7 +106,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             }
 
             var orderedParams = parameters.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value}");
-            return string.Join(Ampersand, orderedParams);
+            return QuestionMark + string.Join(Ampersand, orderedParams);
         }
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
