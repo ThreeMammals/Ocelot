@@ -72,7 +72,7 @@ public class LogLevelTests : IDisposable
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => _steps.Dispose())
-            .Then(x => DisposeLogger(logger))
+            .Then(x => logger.Dispose())
             .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
             .BDDfy();
     }
@@ -137,11 +137,6 @@ public class LogLevelTests : IDisposable
 
         var appSettings = string.Format(AppSettingsFormat, Enum.GetName(typeof(LogLevel), logLevel));
         File.WriteAllText(appSettingsFilePath, appSettings);
-    }
-
-    private void DisposeLogger(Logger logger)
-    {
-        logger.Dispose();
     }
 
     private string ResetLogFile()

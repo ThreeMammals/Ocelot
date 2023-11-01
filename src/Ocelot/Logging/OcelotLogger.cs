@@ -9,6 +9,16 @@ public class OcelotLogger : IOcelotLogger
     private readonly IRequestScopedDataRepository _scopedDataRepository;
     private readonly Func<string, Exception, string> _func;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OcelotLogger"/> class.
+    /// Please note:
+    /// the log event message is designed to use placeholders ({RequestId}, {PreviousRequestId}, and {Message}).
+    /// If you're using a logger like Serilog, it will automatically capture these as structured data properties,
+    /// making it easier to query and analyze the logs later.
+    /// </summary>
+    /// <param name="logger">The main logger type, per default the Microsoft implementation.</param>
+    /// <param name="scopedDataRepository">Repository, saving and getting data to/from HttpContext.Items.</param>
+    /// <exception cref="ArgumentNullException">The ILogger object is injected in OcelotLoggerFactory, it can't be verified before.</exception>
     public OcelotLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -48,11 +58,15 @@ public class OcelotLogger : IOcelotLogger
 
     private void WriteLog(LogLevel logLevel, string message, Exception exception = null)
     {
-        string MessageFactory() => message;
-        WriteLog(logLevel, MessageFactory, exception);
+        WriteLog(logLevel, null, message, exception);
     }
 
     private void WriteLog(LogLevel logLevel, Func<string> messageFactory, Exception exception = null)
+    {
+        WriteLog(logLevel, messageFactory, null, exception);
+    }
+
+    private void WriteLog(LogLevel logLevel, Func<string> messageFactory, string message, Exception exception = null)
     {
         if (!_logger.IsEnabled(logLevel))
         {
@@ -61,11 +75,12 @@ public class OcelotLogger : IOcelotLogger
 
         var requestId = GetOcelotRequestId();
         var previousRequestId = GetOcelotPreviousRequestId();
-        var msg = messageFactory?.Invoke() ?? string.Empty;
 
-        // the log event message is designed to use placeholders ({RequestId}, {PreviousRequestId}, and {Message}).
-        // If you're using a logger like Serilog, it will automatically capture these as structured data properties,
-        // making it easier to query and analyze the logs later
-        _logger.Log(logLevel, default, $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: '{msg}'", exception, _func);
+        if (messageFactory != null)
+        {
+            message = messageFactory?.Invoke() ?? string.Empty;
+        }
+
+        _logger.Log(logLevel, default, $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: '{message}'", exception, _func);
     }
 }
