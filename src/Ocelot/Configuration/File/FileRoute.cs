@@ -22,6 +22,7 @@
             LoadBalancerOptions = new FileLoadBalancerOptions();
             SecurityOptions = new FileSecurityOptions();
             Priority = 1;
+            ConnectionClose = false;
         }
 
         public string DownstreamPathTemplate { get; set; }
@@ -55,5 +56,6 @@
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
         public string DownstreamHttpVersion { get; set; }
+        public bool ConnectionClose { get; set; }
     }
 }

@@ -59,7 +59,7 @@ namespace Ocelot.Requester
                 Timeout = timeout,
             };
 
-            _client = new HttpClientWrapper(_httpClient);
+            _client = new HttpClientWrapper(_httpClient, downstreamRoute.ConnectionClose);
 
             return _client;
         }
@@ -81,6 +81,7 @@ namespace Ocelot.Requester
                 UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
                 UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
                 MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
+                
             };
         }
 
