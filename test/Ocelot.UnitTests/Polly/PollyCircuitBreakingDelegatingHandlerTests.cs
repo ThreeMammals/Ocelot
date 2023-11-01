@@ -54,6 +54,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             .Returns(_pollyQoSProviderMock.Object);
 
         _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
+
         // Act
         var actual = await InvokeAsync("SendAsync");
 
@@ -94,7 +95,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
         ShouldBeWrappedBy(policy2, typeof(AsyncPolicy).FullName);
     }
 
-    private DownstreamRoute DownstreamRouteFactory()
+    private static DownstreamRoute DownstreamRouteFactory()
     {
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(100)
@@ -179,7 +180,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             return result;
         }
 
-        public IAsyncPolicy WithPolicyKey(string policyKey)
+        public new IAsyncPolicy WithPolicyKey(string policyKey)
         {
             throw new NotImplementedException();
         }
