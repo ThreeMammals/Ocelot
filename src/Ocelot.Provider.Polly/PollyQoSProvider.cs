@@ -1,9 +1,9 @@
-using System.Net;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
+using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
