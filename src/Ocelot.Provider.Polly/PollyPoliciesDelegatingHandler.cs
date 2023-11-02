@@ -8,20 +8,20 @@ using System.Diagnostics;
 
 namespace Ocelot.Provider.Polly;
 
-public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
+public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {
     private readonly DownstreamRoute _route;
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IOcelotLogger _logger;
 
-    public PollyCircuitBreakingDelegatingHandler(
+    public PollyPoliciesDelegatingHandler(
         DownstreamRoute route,
         IHttpContextAccessor contextAccessor,
         IOcelotLoggerFactory loggerFactory)
     {
         _route = route;
         _contextAccessor = contextAccessor;
-        _logger = loggerFactory.CreateLogger<PollyCircuitBreakingDelegatingHandler>();
+        _logger = loggerFactory.CreateLogger<PollyPoliciesDelegatingHandler>();
     }
 
     private IPollyQoSProvider<HttpResponseMessage> GetQoSProvider()
@@ -49,7 +49,7 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError($"Error in {nameof(PollyCircuitBreakingDelegatingHandler)}.{nameof(SendAsync)}", ex);
+            _logger.LogError($"Error in {nameof(PollyPoliciesDelegatingHandler)}.{nameof(SendAsync)}", ex);
             throw;
         }
     }

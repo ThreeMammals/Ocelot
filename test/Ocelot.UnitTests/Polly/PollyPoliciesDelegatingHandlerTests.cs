@@ -14,7 +14,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
 {
     private readonly Mock<IPollyQoSProvider<HttpResponseMessage>> _pollyQoSProviderMock;
     private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
-    private readonly PollyCircuitBreakingDelegatingHandler _sut;
+    private readonly PollyPoliciesDelegatingHandler _sut;
 
     public PollyCircuitBreakingDelegatingHandlerTests()
     {
@@ -24,11 +24,11 @@ public class PollyCircuitBreakingDelegatingHandlerTests
         var loggerMock = new Mock<IOcelotLogger>();
         _contextAccessorMock = new Mock<IHttpContextAccessor>();
 
-        loggerFactoryMock.Setup(x => x.CreateLogger<PollyCircuitBreakingDelegatingHandler>())
+        loggerFactoryMock.Setup(x => x.CreateLogger<PollyPoliciesDelegatingHandler>())
             .Returns(loggerMock.Object);
         loggerMock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
 
-        _sut = new PollyCircuitBreakingDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
+        _sut = new PollyPoliciesDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class PollyCircuitBreakingDelegatingHandlerTests
 
     private async Task<HttpResponseMessage> InvokeAsync(string methodName)
     {
-        var m = typeof(PollyCircuitBreakingDelegatingHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+        var m = typeof(PollyPoliciesDelegatingHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
         var task = (Task<HttpResponseMessage>)m.Invoke(_sut, new object[] { new HttpRequestMessage(), CancellationToken.None });
         var actual = await task;
         return actual;

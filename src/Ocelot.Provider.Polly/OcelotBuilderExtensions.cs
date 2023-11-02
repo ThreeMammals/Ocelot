@@ -31,5 +31,5 @@ public static class OcelotBuilderExtensions
     }
 
     private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory) 
-        => new PollyCircuitBreakingDelegatingHandler(route, contextAccessor, loggerFactory);
+        => new PollyPoliciesDelegatingHandler(route, contextAccessor, loggerFactory);
 }
