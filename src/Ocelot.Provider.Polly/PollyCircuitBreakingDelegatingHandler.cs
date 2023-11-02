@@ -1,10 +1,10 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
+using System.Diagnostics;
 
 namespace Ocelot.Provider.Polly;
 
@@ -37,9 +37,9 @@ public class PollyCircuitBreakingDelegatingHandler : DelegatingHandler
         try
         {
             // at least one policy (timeout) will be returned
-            // CircuitBreakerAsyncPolicy can't be null
-            // CircuitBreaker constructor will throw if no policy is provided
-            var policy = qoSProvider.GetCircuitBreaker(_route).CircuitBreakerAsyncPolicy;
+            // AsyncPollyPolicy can't be null
+            // AsyncPollyPolicy constructor will throw if no policy is provided
+            var policy = qoSProvider.GetPollyPolicyWrapper(_route).AsyncPollyPolicy;
             return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
         }
         catch (BrokenCircuitException ex)

@@ -9,7 +9,7 @@ namespace Ocelot.Provider.Polly;
 
 public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
 {
-    private readonly Dictionary<string, CircuitBreaker<HttpResponseMessage>> _circuitBreakers = new();
+    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
@@ -38,21 +38,21 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
             : route.ServiceName;
     }
 
-    public CircuitBreaker<HttpResponseMessage> GetCircuitBreaker(DownstreamRoute route)
+    public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
     {
         lock (_lockObject)
         {
             var currentRouteName = GetRouteName(route);
-            if (!_circuitBreakers.ContainsKey(currentRouteName))
+            if (!_policyWrappers.ContainsKey(currentRouteName))
             {
-                _circuitBreakers.Add(currentRouteName, CircuitBreakerFactory(route));
+                _policyWrappers.Add(currentRouteName, PollyPolicyWrapperFactory(route));
             }
 
-            return _circuitBreakers[currentRouteName];
+            return _policyWrappers[currentRouteName];
         }
     }
 
-    private CircuitBreaker<HttpResponseMessage> CircuitBreakerFactory(DownstreamRoute route)
+    private PollyPolicyWrapper<HttpResponseMessage> PollyPolicyWrapperFactory(DownstreamRoute route)
     {
         AsyncCircuitBreakerPolicy<HttpResponseMessage> exceptionsAllowedBeforeBreakingPolicy = null;
         if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
@@ -75,6 +75,6 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                 TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
                 TimeoutStrategy.Pessimistic);
 
-        return new CircuitBreaker<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
+        return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
     }
 }

@@ -1,23 +1,23 @@
 namespace Ocelot.Provider.Polly;
 
-public class CircuitBreaker<TResult>
+public class PollyPolicyWrapper<TResult>
     where TResult : class
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="CircuitBreaker{TResult}"/> class.
+    /// Initializes a new instance of the <see cref="PollyPolicyWrapper{TResult}"/> class.
     /// We expect at least one policy to be passed in, default can't be null.
     /// </summary>
     /// <param name="policies">The policies with at least a <see cref="Policy.Timeout(int)"/> policy.</param>
-    public CircuitBreaker(params IAsyncPolicy<TResult>[] policies)
+    public PollyPolicyWrapper(params IAsyncPolicy<TResult>[] policies)
     {
         var allPolicies = policies.Where(p => p != null).ToArray();
-        CircuitBreakerAsyncPolicy = allPolicies.First();
+        AsyncPollyPolicy = allPolicies.First();
 
         if (allPolicies.Length > 1)
         {
-            CircuitBreakerAsyncPolicy = Policy.WrapAsync(allPolicies);
+            AsyncPollyPolicy = Policy.WrapAsync(allPolicies);
         }
     }
 
-    public IAsyncPolicy<TResult> CircuitBreakerAsyncPolicy { get; }
+    public IAsyncPolicy<TResult> AsyncPollyPolicy { get; }
 }

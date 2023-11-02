@@ -44,8 +44,8 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             .Callback((IInvocation x) => method = x.Method)
             .ReturnsAsync(fakeResponse);
 
-        _pollyQoSProviderMock.Setup(x => x.GetCircuitBreaker(It.IsAny<DownstreamRoute>()))
-            .Returns(new CircuitBreaker<HttpResponseMessage>(onePolicy.Object));
+        _pollyQoSProviderMock.Setup(x => x.GetPollyPolicyWrapper(It.IsAny<DownstreamRoute>()))
+            .Returns(new PollyPolicyWrapper<HttpResponseMessage>(onePolicy.Object));
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider<HttpResponseMessage>)))
@@ -75,8 +75,8 @@ public class PollyCircuitBreakingDelegatingHandlerTests
             IsLast = true,
         };
 
-        _pollyQoSProviderMock.Setup(x => x.GetCircuitBreaker(It.IsAny<DownstreamRoute>()))
-            .Returns(new CircuitBreaker<HttpResponseMessage>(policy1, policy2));
+        _pollyQoSProviderMock.Setup(x => x.GetPollyPolicyWrapper(It.IsAny<DownstreamRoute>()))
+            .Returns(new PollyPolicyWrapper<HttpResponseMessage>(policy1, policy2));
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider<HttpResponseMessage>)))

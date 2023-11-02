@@ -22,8 +22,8 @@ public class PollyQoSProviderTests
             .Build();
         var factory = new Mock<IOcelotLoggerFactory>();
         var pollyQoSProvider = new PollyQoSProvider(factory.Object);
-        var policy = pollyQoSProvider.GetCircuitBreaker(route).ShouldNotBeNull()
-            .CircuitBreakerAsyncPolicy.ShouldNotBeNull();
+        var policy = pollyQoSProvider.GetPollyPolicyWrapper(route).ShouldNotBeNull()
+            .AsyncPollyPolicy.ShouldNotBeNull();
         policy.ShouldNotBeNull();
     }
 
@@ -31,8 +31,8 @@ public class PollyQoSProviderTests
     public void should_build_and_wrap_contains_two_policies()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
-        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider);
-        var policy = circuitBreaker.CircuitBreakerAsyncPolicy;
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", pollyQosProvider);
+        var policy = pollyPolicyWrapper.AsyncPollyPolicy;
 
         if (policy is AsyncPolicyWrap<HttpResponseMessage> policyWrap)
         {
@@ -40,7 +40,7 @@ public class PollyQoSProviderTests
             var policies = policyWrap.GetPolicies().ToList();
 
             policies.Count.ShouldBe(2);
-            var circuitBreakerPolicyFound = false;
+            var circuitBreakerFound = false;
             var timeoutPolicyFound = false;
 
             foreach(var currentPolicy in policies)
@@ -51,7 +51,7 @@ public class PollyQoSProviderTests
                 switch (convertedPolicy)
                 {
                     case AsyncCircuitBreakerPolicy<HttpResponseMessage>:
-                        circuitBreakerPolicyFound = true;
+                        circuitBreakerFound = true;
                         continue;
                     case AsyncTimeoutPolicy<HttpResponseMessage>:
                         timeoutPolicyFound = true;
@@ -59,7 +59,7 @@ public class PollyQoSProviderTests
                 }
             }
 
-            Assert.True(circuitBreakerPolicyFound);
+            Assert.True(circuitBreakerFound);
             Assert.True(timeoutPolicyFound);
 
             return;
@@ -72,8 +72,8 @@ public class PollyQoSProviderTests
     public void should_build_and_contains_one_policy_when_with_exceptions_allowed_before_breaking_is_zero()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
-        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider, true);
-        var policy = circuitBreaker.CircuitBreakerAsyncPolicy;
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", pollyQosProvider, true);
+        var policy = pollyPolicyWrapper.AsyncPollyPolicy;
 
         if (policy is AsyncTimeoutPolicy<HttpResponseMessage> convertedPolicy)
         {
@@ -88,18 +88,18 @@ public class PollyQoSProviderTests
     public void should_return_same_circuit_breaker_for_given_route()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
-        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider);
-        var circuitBreaker2 = CircuitBreakerFactory("/", pollyQosProvider);
-        circuitBreaker.ShouldBe(circuitBreaker2);
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", pollyQosProvider);
+        var pollyPolicyWrapper2 = CircuitBreakerFactory("/", pollyQosProvider);
+        pollyPolicyWrapper.ShouldBe(pollyPolicyWrapper2);
     }
 
     [Fact]
     public void should_return_different_circuit_breaker_for_two_different_routes()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
-        var circuitBreaker = CircuitBreakerFactory("/", pollyQosProvider);
-        var circuitBreaker2 = CircuitBreakerFactory("/test", pollyQosProvider);
-        circuitBreaker.ShouldNotBe(circuitBreaker2);
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", pollyQosProvider);
+        var pollyPolicyWrapper2 = CircuitBreakerFactory("/test", pollyQosProvider);
+        pollyPolicyWrapper.ShouldNotBe(pollyPolicyWrapper2);
     }
 
     [Theory]
@@ -114,96 +114,96 @@ public class PollyQoSProviderTests
     [InlineData(HttpStatusCode.LoopDetected)]
     public async Task should_throw_broken_circuit_exception_after_two_exceptions(HttpStatusCode errorCode)
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(errorCode);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
     }
 
     [Fact]
     public async Task should_not_throw_broken_circuit_exception_if_status_code_ok()
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        Assert.Equal(HttpStatusCode.OK, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
 
     [Fact]
     public async Task should_throw_and_before_delay_should_not_allow_requests()
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
         await Task.Delay(100);
 
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
     }
 
     [Fact]
     public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error()
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-                       await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+                       await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
         await Task.Delay(500);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
 
     [Fact]
     public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error_and_throw()
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
         await Task.Delay(500);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
     }
 
     [Fact]
     public async Task should_throw_but_after_delay_should_allow_one_more_ok_request_and_put_counter_back_to_zero()
     {
-        var circuitBreaker = CircuitBreakerFactory("/", PollyQoSProviderFactory());
+        var pollyPolicyWrapper = CircuitBreakerFactory("/", PollyQoSProviderFactory());
 
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
         await Task.Delay(500);
 
         var response2 = new HttpResponseMessage(HttpStatusCode.OK);
-        Assert.Equal(HttpStatusCode.OK, (await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response2))).StatusCode);
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
-        await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response));
+        Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response2))).StatusCode);
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
+        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
-            await circuitBreaker.CircuitBreakerAsyncPolicy.ExecuteAsync(() => Task.FromResult(response)));
+            await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
     }
 
     private PollyQoSProvider PollyQoSProviderFactory()
@@ -216,7 +216,7 @@ public class PollyQoSProviderTests
         return pollyQoSProvider;
     }
 
-    private static CircuitBreaker<HttpResponseMessage> CircuitBreakerFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider, bool inactiveExceptionsAllowedBeforeBreaking = false)
+    private static PollyPolicyWrapper<HttpResponseMessage> CircuitBreakerFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider, bool inactiveExceptionsAllowedBeforeBreaking = false)
     {
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(5000)
@@ -234,10 +234,10 @@ public class PollyQoSProviderTests
             .WithQosOptions(options)
             .WithUpstreamPathTemplate(upstreamPath).Build();
 
-        var circuitBreaker = pollyQoSProvider.GetCircuitBreaker(route).ShouldNotBeNull();
-        circuitBreaker.ShouldNotBeNull();
-        circuitBreaker.CircuitBreakerAsyncPolicy.ShouldNotBeNull();
+        var pollyPolicyWrapper = pollyQoSProvider.GetPollyPolicyWrapper(route).ShouldNotBeNull();
+        pollyPolicyWrapper.ShouldNotBeNull();
+        pollyPolicyWrapper.AsyncPollyPolicy.ShouldNotBeNull();
 
-        return circuitBreaker;
+        return pollyPolicyWrapper;
     }
 }
