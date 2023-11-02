@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Configuration.Validator
 {
@@ -87,7 +88,7 @@ namespace Ocelot.Configuration.Validator
 
             When(route => !string.IsNullOrEmpty(route.DownstreamVersionPolicy), () =>
             {
-                RuleFor(r => r.DownstreamVersionPolicy).Matches("^(exact|upgradeable|downgradeable)$");
+                RuleFor(r => r.DownstreamVersionPolicy).Matches($@"^({VersionPolicies.Exact}|{VersionPolicies.Upgradeable}|{VersionPolicies.Downgradable})$");
             });
         }
 

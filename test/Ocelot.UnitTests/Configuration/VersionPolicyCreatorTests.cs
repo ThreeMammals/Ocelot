@@ -1,8 +1,4 @@
 ﻿using Ocelot.Configuration.Creator;
-using System.Net.Http;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
@@ -17,28 +13,25 @@ namespace Ocelot.UnitTests.Configuration
             _creator = new VersionPolicyCreator();
         }
 
-        [Fact]
-        public void should_create_version_policy_based_on_input()
+        [Theory]
+        [InlineData(VersionPolicies.Downgradable)]
+        [InlineData(VersionPolicies.Exact)]
+        [InlineData(VersionPolicies.Upgradeable)]
+        public void should_create_version_policy_based_on_input(string versionPolicy)
         {
-            this.Given(_ => GivenTheInput("upgradeable"))
+            this.Given(_ => GivenTheInput(versionPolicy))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrHigher))
+                .Then(_ => ThenTheResultIs(versionPolicy))
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_default_to_request_version_or_lower()
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("invalid version")]
+        public void should_default_to_request_version_or_lower(string versionPolicy)
         {
-            this.Given(_ => GivenTheInput(string.Empty))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_default_to_request_version_or_lower_when_setting_gibberish()
-        {
-            this.Given(_ => GivenTheInput("string is gibberish"))
+            this.Given(_ => GivenTheInput(versionPolicy))
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
                 .BDDfy();
@@ -57,6 +50,17 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheResultIs(HttpVersionPolicy result)
         {
             _result.ShouldBe(result);
+        }
+        
+        private void ThenTheResultIs(string result)
+        {
+            _result.ShouldBe(result switch
+            {
+                VersionPolicies.Upgradeable => HttpVersionPolicy.RequestVersionOrHigher,
+                VersionPolicies.Exact => HttpVersionPolicy.RequestVersionExact,
+                VersionPolicies.Downgradable => HttpVersionPolicy.RequestVersionOrLower,
+                _ => HttpVersionPolicy.RequestVersionOrLower,
+            });
         }
     }
 }

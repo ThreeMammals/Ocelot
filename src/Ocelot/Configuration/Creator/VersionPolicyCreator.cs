@@ -8,9 +8,9 @@ namespace Ocelot.Configuration.Creator
         {
             return downstreamVersionPolicy switch
             {
-                "exact" => HttpVersionPolicy.RequestVersionExact,
-                "upgradeable" => HttpVersionPolicy.RequestVersionOrHigher,
-                "downgradeable" => HttpVersionPolicy.RequestVersionOrLower,
+                VersionPolicies.Exact => HttpVersionPolicy.RequestVersionExact,
+                VersionPolicies.Upgradeable => HttpVersionPolicy.RequestVersionOrHigher,
+                VersionPolicies.Downgradable => HttpVersionPolicy.RequestVersionOrLower,
                 _ => HttpVersionPolicy.RequestVersionOrLower,
             };
         }
