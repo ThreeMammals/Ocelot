@@ -22,7 +22,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
-            var identityServerPort = RandomPortFinder.GetRandomPort();
+            var identityServerPort = PortFinder.GetRandomPort();
             _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
             {
@@ -37,7 +37,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_authorizing_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -97,7 +97,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_authorizing_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -155,7 +155,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_using_identity_server_with_allowed_scope()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -198,7 +198,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_403_using_identity_server_with_scope_not_allowed()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -241,7 +241,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_240()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

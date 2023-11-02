@@ -1,21 +1,21 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
+namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    public class UpstreamUrlPathTemplateVariableReplacerTests
+    public class DownstreamPathPlaceholderReplacerTests
     {
         private DownstreamRouteHolder _downstreamRoute;
         private Response<DownstreamPath> _result;
         private readonly IDownstreamPathPlaceholderReplacer _downstreamPathReplacer;
 
-        public UpstreamUrlPathTemplateVariableReplacerTests()
+        public DownstreamPathPlaceholderReplacerTests()
         {
-            _downstreamPathReplacer = new DownstreamTemplatePathPlaceholderReplacer();
+            _downstreamPathReplacer = new DownstreamPathPlaceholderReplacer();
         }
 
         [Fact]

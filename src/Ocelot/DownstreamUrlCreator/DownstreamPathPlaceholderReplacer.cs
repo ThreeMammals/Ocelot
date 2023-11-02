@@ -2,9 +2,9 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
+namespace Ocelot.DownstreamUrlCreator
 {
-    public class DownstreamTemplatePathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
+    public class DownstreamPathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
     {
         public Response<DownstreamPath> Replace(string downstreamPathTemplate,
             List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)

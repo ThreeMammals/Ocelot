@@ -169,42 +169,104 @@ This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot
 The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the Route config.
 See the docs :doc:`../features/servicediscovery` if this sounds interesting to you.
 
-Query Strings
--------------
+Query String Placeholders
+-------------------------
+
+In addition to URL path `placeholders <#placeholders>`_ Ocelot is able to forward query string parameters with their processing in the form of ``{something}``.
+Also, the query parameter placeholder needs to be present in both the **DownstreamPathTemplate** and **UpstreamPathTemplate** properties.
+Placeholder replacement works bi-directionally between path and query strings, with some `restrictions <#restrictions-on-use>`_ on usage.
+
+Path to Query String direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ocelot allows you to specify a query string as part of the **DownstreamPathTemplate** like the example below:
 
 .. code-block:: json
 
   {
-    "UpstreamHttpMethod": [ "Get" ],
-    "UpstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
-    "DownstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-    "DownstreamScheme": "http",
-    "DownstreamHostAndPorts": [
-      { "Host": "localhost", "Port": 50110 }
-    ]
+    "UpstreamPathTemplate": "/api/units/{subscription}/{unit}/updates",
+    "DownstreamPathTemplate": "/api/subscriptions/{subscription}/updates?unitId={unit}",
   }
 
-In this example Ocelot will use the value from the ``{unitId}`` placeholder in the upstream path template and add it to the downstream request as a query string parameter called ``unitId``!
+In this example Ocelot will use the value from the ``{unit}`` placeholder in the upstream path template and add it to the downstream request as a query string parameter called ``unitId``! Make sure you name the placeholder differently due to `restrictions <#restrictions-on-use>`_ on usage.
+
+
+Query String to Path direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ocelot will also allow you to put query string parameters in the **UpstreamPathTemplate** so you can match certain queries to certain services:
 
 .. code-block:: json
 
   {
-    "UpstreamHttpMethod": [ "Get" ],
-    "UpstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-    "DownstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
-    "DownstreamScheme": "http",
-    "DownstreamHostAndPorts": [
-      { "Host": "localhost", "Port": 50110 }
-    ]
+    "UpstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={uid}",
+    "DownstreamPathTemplate": "/api/units/{subscriptionId}/{uid}/updates",
   }
 
 In this example Ocelot will only match requests that have a matching URL path and the query string starts with ``unitId=something``.
 You can have other queries after this but you must start with the matching parameter.
-Also Ocelot will swap the ``{unitId}`` parameter from the query string and use it in the downstream request path. 
+Also Ocelot will swap the ``{uid}`` parameter from the query string and use it in the downstream request path.
+Note, the best practice is giving different placeholder name than the name of query parameter due to `restrictions <#restrictions-on-use>`_ on usage.
+
+Catch All Query String
+^^^^^^^^^^^^^^^^^^^^^^
+
+Ocelot's routing also supports a *Catch All* style routing to forward all query string parameters.
+The placeholder ``{everything}`` name does not matter, any name will work.
+
+.. code-block:: json
+
+  {
+    "UpstreamPathTemplate": "/contracts?{everything}",
+    "DownstreamPathTemplate": "/apipath/contracts?{everything}",
+  }
+
+This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
+such as OData filters and etc (see issue `1174 <https://github.com/ThreeMammals/Ocelot/issues/1174>`_).
+
+Restrictions on use
+^^^^^^^^^^^^^^^^^^^
+
+The query string parameters are ordered and merged to produce the final downstream URL.
+This is necessary because the ``DownstreamUrlCreatorMiddleware`` needs to have some control when replacing placeholders and merging duplicate parameters.
+So, even if your parameter is presented as the first parameter in the upstream, then in the final downstream URL the said query parameter will have a different position.
+But this doesn't seem to break anything in the downstream API.
+
+Because of parameters merging, special ASP.NET API `model binding <https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-7.0#collections>`_
+for arrays is not supported if you use array items representation like ``selectedCourses=1050&selectedCourses=2000``.
+This query string will be merged as ``selectedCourses=1050`` in downstream URL. So, array data will be lost!
+Make sure upstream clients generate correct query string for array models like ``selectedCourses[0]=1050&selectedCourses[1]=2000``.
+To understand array model bidings, see `Bind arrays and string values from headers and query strings <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-7.0#bind-arrays-and-string-values-from-headers-and-query-strings>`_ docs.
+
+**Warning!** Query string placeholders have naming restrictions due to ``DownstreamUrlCreatorMiddleware`` implementations.
+On the other hand, it gives you the flexibility to control whether the parameter is present in the final downstream URL.
+Here are two user scenarios.
+
+* User wants to save the parameter after replacing the placeholder (see issue `473 <https://github.com/ThreeMammals/Ocelot/issues/473>`_).
+  To do this you need to use the following template definition:
+
+  .. code-block:: json
+  
+    {
+      "UpstreamPathTemplate": "/path/{serverId}/{action}",
+      "DownstreamPathTemplate": "/path2/{action}?server={serverId}"
+    }
+
+  So, ``{serverId}`` placeholder and ``server`` parameter **names are different**!
+  Finally, the ``server`` parameter is kept.
+
+* User wants to remove old parameter after replacing placeholder (see issue `952 <https://github.com/ThreeMammals/Ocelot/issues/952>`_).
+  To do this you need to use the same names:
+
+  .. code-block:: json
+  
+    {
+      "UpstreamPathTemplate": "/users?userId={userId}",
+      "DownstreamPathTemplate": "/persons?personId={userId}"
+    }
+
+  So, both ``{userId}`` placeholder and ``userId`` parameter **names are the same**!
+  Finally, the ``userId`` parameter is removed.
 
 Security Options
 ----------------
