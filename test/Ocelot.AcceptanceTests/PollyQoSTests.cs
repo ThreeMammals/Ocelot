@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
@@ -14,18 +15,16 @@ public class PollyQoSTests : IDisposable
         _steps = new Steps();
     }
 
-    [Fact]
-    public void Should_not_timeout()
+    private static FileConfiguration FileConfigurationFactory(int port, string httpMethod, QoSOptions options)
     {
-        var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
+        return new FileConfiguration
         {
             Routes = new List<FileRoute>
             {
                 new()
                 {
                     DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
                         new()
@@ -34,17 +33,24 @@ public class PollyQoSTests : IDisposable
                             Port = port,
                         },
                     },
-                    DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
+                    UpstreamHttpMethod = new List<string> { httpMethod },
                     QoSOptions = new FileQoSOptions
                     {
-                        TimeoutValue = 1000,
-                        ExceptionsAllowedBeforeBreaking = 10,
+                        ExceptionsAllowedBeforeBreaking = options.ExceptionsAllowedBeforeBreaking,
+                        TimeoutValue = options.TimeoutValue,
+                        DurationOfBreak = options.DurationOfBreak,
                     },
                 },
             },
         };
+    }
+
+    [Fact]
+    public void Should_not_timeout()
+    {
+        var port = PortFinder.GetRandomPort();
+        var configuration = FileConfigurationFactory(port, "POST", new QoSOptions(10, 0, 1000, null));
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -59,32 +65,7 @@ public class PollyQoSTests : IDisposable
     public void Should_timeout()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
-                    QoSOptions = new FileQoSOptions
-                    {
-                        TimeoutValue = 10,
-                    },
-                },
-            },
-        };
+        var configuration = FileConfigurationFactory(port, "POST", new QoSOptions(0, 0, 10, null));
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -99,34 +80,7 @@ public class PollyQoSTests : IDisposable
     public void should_open_circuit_breaker_after_two_exceptions()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    QoSOptions = new FileQoSOptions
-                    {
-                        ExceptionsAllowedBeforeBreaking = 2,
-                        TimeoutValue = 5000,
-                        DurationOfBreak = 100000,
-                    },
-                },
-            },
-        };
+        var configuration = FileConfigurationFactory(port, "GET", new QoSOptions(2, 5000, 100000, null));
 
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -142,34 +96,7 @@ public class PollyQoSTests : IDisposable
     public void Should_open_circuit_breaker_then_close()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    QoSOptions = new FileQoSOptions
-                    {
-                        ExceptionsAllowedBeforeBreaking = 1,
-                        TimeoutValue = 500,
-                        DurationOfBreak = 1000,
-                    },
-                },
-            },
-        };
+        var configuration = FileConfigurationFactory(port, "GET", new QoSOptions(1, 500, 1000, null));
 
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
             .Given(x => _steps.GivenThereIsAConfiguration(configuration))

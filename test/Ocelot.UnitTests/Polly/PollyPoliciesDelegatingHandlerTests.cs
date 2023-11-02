@@ -10,13 +10,13 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Polly;
 
-public class PollyCircuitBreakingDelegatingHandlerTests
+public class PollyPoliciesDelegatingHandlerTests
 {
     private readonly Mock<IPollyQoSProvider<HttpResponseMessage>> _pollyQoSProviderMock;
     private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
     private readonly PollyPoliciesDelegatingHandler _sut;
 
-    public PollyCircuitBreakingDelegatingHandlerTests()
+    public PollyPoliciesDelegatingHandlerTests()
     {
         _pollyQoSProviderMock = new Mock<IPollyQoSProvider<HttpResponseMessage>>();
 
