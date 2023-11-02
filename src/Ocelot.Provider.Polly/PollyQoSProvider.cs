@@ -64,11 +64,10 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                 .Or<TimeoutRejectedException>()
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
-                    TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak), (ex, breakDelay) =>
-                        _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!",
-                            ex.Exception), () =>
-                        _logger.LogDebug(info + "Call OK! Closed the circuit again."), () =>
-                        _logger.LogDebug(info + "Half-open; Next call is a trial."));
+                    TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
+                    (ex, breakDelay) => _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex.Exception),
+                    () => _logger.LogDebug(info + "Call OK! Closed the circuit again."),
+                    () => _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
         var timeoutPolicy = Policy
