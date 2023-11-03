@@ -124,6 +124,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
