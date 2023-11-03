@@ -178,196 +178,78 @@ public class PollyPoliciesDelegatingHandlerTests
             return result;
         }
 
-        public new IAsyncPolicy WithPolicyKey(string policyKey)
-        {
-            throw new NotImplementedException();
-        }
+        public new IAsyncPolicy WithPolicyKey(string policyKey) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Task> action)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Task> action) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, Task> action, IDictionary<string, object> contextData)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, Task> action, IDictionary<string, object> contextData) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, Task> action, Context context)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, Task> action, Context context) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken, bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken, bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ExecuteAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Task<TResult1>> action)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Task<TResult1>> action) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, Task<TResult1>> action, Context context)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, Task<TResult1>> action, Context context) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, Task<TResult1>> action, IDictionary<string, object> contextData)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, Task<TResult1>> action, IDictionary<string, object> contextData) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken, bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<TResult1> ExecuteAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Task> action)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Task> action) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, Task> action, IDictionary<string, object> contextData)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, Task> action, IDictionary<string, object> contextData) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, Task> action, Context context)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, Task> action, Context context) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken, bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, IDictionary<string, object> contextData, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult> ExecuteAndCaptureAsync(Func<Context, CancellationToken, Task> action, Context context, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Task<TResult1>> action)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Task<TResult1>> action) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, Task<TResult1>> action, IDictionary<string, object> contextData)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, Task<TResult1>> action, IDictionary<string, object> contextData) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, Task<TResult1>> action, Context context)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, Task<TResult1>> action, Context context) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken, bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<CancellationToken, Task<TResult1>> action, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, IDictionary<string, object> contextData, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
 
-        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken,
-            bool continueOnCapturedContext)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<PolicyResult<TResult1>> ExecuteAndCaptureAsync<TResult1>(Func<Context, CancellationToken, Task<TResult1>> action, Context context, CancellationToken cancellationToken, bool continueOnCapturedContext) => throw new NotImplementedException();
     }
 }
