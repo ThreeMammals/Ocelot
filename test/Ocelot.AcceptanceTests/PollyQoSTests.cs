@@ -65,7 +65,7 @@ public class PollyQoSTests : IDisposable
     }
 
     [Fact]
-    public void should_open_circuit_breaker_after_two_exceptions()
+    public void Should_open_circuit_breaker_after_two_exceptions()
     {
         var port = PortFinder.GetRandomPort();
         var configuration = FileConfigurationFactory(port, new QoSOptions(2, 5000, 100000, null));

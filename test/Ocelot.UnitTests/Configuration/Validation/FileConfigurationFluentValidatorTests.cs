@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -12,9 +15,6 @@ using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
-using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
