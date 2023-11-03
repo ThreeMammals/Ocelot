@@ -9,6 +9,13 @@ namespace Ocelot.Configuration.File
             ExcludeAllowedFromBlocked = false;
         }
 
+        public FileSecurityOptions(FileSecurityOptions from)
+        {
+            IPAllowedList = new(from.IPAllowedList);
+            IPBlockedList = new(from.IPBlockedList);
+            ExcludeAllowedFromBlocked = from.ExcludeAllowedFromBlocked;
+        }
+
         public FileSecurityOptions(string allowedIPs = null, string blockedIPs = null, bool? excludeAllowedFromBlocked = null)
             : this()
         {
