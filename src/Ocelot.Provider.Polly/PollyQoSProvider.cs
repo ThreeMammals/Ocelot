@@ -32,11 +32,9 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
     }
 
     private static string GetRouteName(DownstreamRoute route)
-    {
-        return string.IsNullOrWhiteSpace(route.ServiceName)
+        => string.IsNullOrWhiteSpace(route.ServiceName)
             ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
             : route.ServiceName;
-    }
 
     public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
     {
