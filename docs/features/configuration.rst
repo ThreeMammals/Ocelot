@@ -241,6 +241,8 @@ Use ``HttpHandlerOptions`` in a Route configuration to set up ``HttpHandler`` be
 
 * **MaxConnectionsPerServer** This controls how many connections the internal ``HttpClient`` will open. This can be set at Route or global level.
 
+.. _ssl-errors:
+
 SSL Errors
 ----------
 
