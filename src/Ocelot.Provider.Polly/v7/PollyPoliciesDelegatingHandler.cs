@@ -45,10 +45,21 @@ public class PollyPoliciesDelegatingHandler : DelegatingHandler
         var qoSProvider = GetQoSProvider();
 
         // At least one policy (timeout) will be returned
-        // AsyncPollyPolicy can't be null
-        // AsyncPollyPolicy constructor will throw if no policy is provided
-        var policy = qoSProvider.GetPollyPolicyWrapper(_route).AsyncPollyPolicy;
+            // AsyncPollyPolicy can't be null
+            // AsyncPollyPolicy constructor will throw if no policy is provided
+            var policy = qoSProvider.GetPollyPolicyWrapper(_route).AsyncPollyPolicy;
 
-        return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
+            return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
+        }
+        catch (BrokenCircuitException ex)
+        {
+            _logger.LogError("Reached to allowed number of exceptions. Circuit is open", ex);
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError($"Error in {nameof(PollyPoliciesDelegatingHandler)}.{nameof(SendAsync)}", ex);
+            throw;
+        }
     }
 }
