@@ -255,3 +255,4 @@ _templates/
 
 # Test Results
 *.trx
+/Ocelot.sln.DotSettings

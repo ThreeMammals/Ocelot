@@ -3,52 +3,76 @@ using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
+using System.Net;
 
-namespace Ocelot.Provider.Polly
+namespace Ocelot.Provider.Polly;
+
+public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
 {
-    public class PollyQoSProvider : IPollyQoSProvider
+    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
+    private readonly object _lockObject = new();
+    private readonly IOcelotLogger _logger;
+
+    private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
     {
-        public PollyQoSProvider(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.NotImplemented,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.HttpVersionNotSupported,
+        HttpStatusCode.VariantAlsoNegotiates,
+        HttpStatusCode.InsufficientStorage,
+        HttpStatusCode.LoopDetected,
+    };
+
+    public PollyQoSProvider(IOcelotLoggerFactory loggerFactory)
+    {
+        _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
+    }
+
+    private static string GetRouteName(DownstreamRoute route)
+        => string.IsNullOrWhiteSpace(route.ServiceName)
+            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
+            : route.ServiceName;
+
+    public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
+    {
+        lock (_lockObject)
         {
-            AsyncCircuitBreakerPolicy circuitBreakerPolicy = null;
-            if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
+            var currentRouteName = GetRouteName(route);
+            if (!_policyWrappers.ContainsKey(currentRouteName))
             {
-                var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
-                var logger = loggerFactory.CreateLogger<PollyQoSProvider>();
-                circuitBreakerPolicy = Policy
-                    .Handle<HttpRequestException>()
-                    .Or<TimeoutRejectedException>()
-                    .Or<TimeoutException>()
-                    .CircuitBreakerAsync(
-                        exceptionsAllowedBeforeBreaking: route.QosOptions.ExceptionsAllowedBeforeBreaking,
-                        durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
-                        onBreak: (ex, breakDelay) =>
-                            logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex),
-                        onReset: () =>
-                            logger.LogDebug(info + "Call OK! Closed the circuit again."),
-                        onHalfOpen: () =>
-                            logger.LogDebug(info + "Half-open; Next call is a trial.")
-                    );
+                _policyWrappers.Add(currentRouteName, PollyPolicyWrapperFactory(route));
             }
 
-            _ = Enum.TryParse(route.QosOptions.TimeoutStrategy, out TimeoutStrategy strategy);
-            var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), strategy);
-            CircuitBreaker = new CircuitBreaker(circuitBreakerPolicy, timeoutPolicy);
+            return _policyWrappers[currentRouteName];
         }
+    }
 
-        private const string ObsoleteConstructorMessage = $"Use the constructor {nameof(PollyQoSProvider)}({nameof(DownstreamRoute)} route, {nameof(IOcelotLoggerFactory)} loggerFactory)!";
-
-        [Obsolete(ObsoleteConstructorMessage)]
-        public PollyQoSProvider(AsyncCircuitBreakerPolicy circuitBreakerPolicy, AsyncTimeoutPolicy timeoutPolicy, IOcelotLogger logger)
+    private PollyPolicyWrapper<HttpResponseMessage> PollyPolicyWrapperFactory(DownstreamRoute route)
+    {
+        AsyncCircuitBreakerPolicy<HttpResponseMessage> exceptionsAllowedBeforeBreakingPolicy = null;
+        if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
         {
-            throw new NotSupportedException(ObsoleteConstructorMessage);
+            var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
+
+            exceptionsAllowedBeforeBreakingPolicy = Policy
+                .HandleResult<HttpResponseMessage>(r => _serverErrorCodes.Contains(r.StatusCode))
+                .Or<TimeoutRejectedException>()
+                .Or<TimeoutException>()
+                .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
+                    durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
+                    onBreak: (ex, breakDelay) => _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex.Exception),
+                    onReset: () => _logger.LogDebug(info + "Call OK! Closed the circuit again."),
+                    onHalfOpen: () => _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
-        public CircuitBreaker CircuitBreaker { get; }
+        var timeoutPolicy = Policy
+            .TimeoutAsync<HttpResponseMessage>(
+                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
+                TimeoutStrategy.Pessimistic);
 
-        private static string GetRouteName(DownstreamRoute route)
-            => string.IsNullOrWhiteSpace(route.ServiceName)
-                ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
-                : route.ServiceName;
+        return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
     }
 }
