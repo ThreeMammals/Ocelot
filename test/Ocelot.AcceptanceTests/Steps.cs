@@ -26,11 +26,11 @@ using Ocelot.Requester;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
+using Serilog;
+using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
-using Serilog;
-using Serilog.Core;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
@@ -796,7 +796,7 @@ public class Steps : IDisposable
     {
         using var httpClient = new HttpClient();
         var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
-        var content = response.Content.ReadAsStringAsync().GetAwaiter();
+        response.Content.ReadAsStringAsync().GetAwaiter();
         response.EnsureSuccessStatusCode();
     }
 
@@ -804,9 +804,8 @@ public class Steps : IDisposable
     {
         _webHostBuilder = new WebHostBuilder()
             .UseKestrel()
-            .ConfigureAppConfiguration((hostingContext, config) =>
+            .ConfigureAppConfiguration((_, config) =>
             {
-                var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile(appsettingsFileName, false, false);
                 config.AddJsonFile(_ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
@@ -1199,11 +1198,11 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-        public void ThenWarningShouldBeLogged(int howMany)
-        {
-            var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
-            loggerFactory.Verify(Times.Exactly(howMany));
-        }
+    public void ThenWarningShouldBeLogged(int howMany)
+    {
+        var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+        loggerFactory.Verify(Times.Exactly(howMany));
+    }
 
     internal class MockLoggerFactory : IOcelotLoggerFactory
     {
@@ -1211,20 +1210,23 @@ public class Steps : IDisposable
 
         public IOcelotLogger CreateLogger<T>()
         {
-            if (_logger == null)
+            if (_logger != null)
             {
-                _logger = new Mock<IOcelotLogger>();
-                _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
+                return _logger.Object;
             }
+
+            _logger = new Mock<IOcelotLogger>();
+            _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
+            _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
 
             return _logger.Object;
         }
 
-            public void Verify(Times howMany)
-            {
-                _logger.Verify(x => x.LogWarning(It.IsAny<string>()), howMany);
-            }
+        public void Verify(Times howMany)
+        {
+            _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), howMany);
         }
+    }
 
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.
