@@ -78,7 +78,7 @@ public class OcelotLogger : IOcelotLogger
 
         if (messageFactory != null)
         {
-            message = messageFactory?.Invoke() ?? string.Empty;
+            message = messageFactory.Invoke() ?? string.Empty;
         }
 
         _logger.Log(logLevel, default, $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: '{message}'", exception, _func);

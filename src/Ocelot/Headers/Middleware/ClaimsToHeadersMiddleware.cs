@@ -32,7 +32,7 @@ namespace Ocelot.Headers.Middleware
 
                 if (response.IsError)
                 {
-                    Logger.LogWarning( "Error setting headers on context, setting pipeline error");
+                    Logger.LogWarning("Error setting headers on context, setting pipeline error");
 
                     httpContext.Items.UpsertErrors(response.Errors);
                     return;
