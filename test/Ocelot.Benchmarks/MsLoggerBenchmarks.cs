@@ -10,21 +10,19 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Serilog;
-using Serilog.Core;
 
 namespace Ocelot.Benchmarks;
 
-[Config(typeof(LoggingBenchmarks))]
+[Config(typeof(MsLoggerBenchmarks))]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class LoggingBenchmarks : ManualConfig
+[MaxIterationCount(16)]
+public class MsLoggerBenchmarks : ManualConfig
 {
     private IWebHost _service;
-    private Logger _logger;
     private IWebHost _webHost;
     private HttpClient _httpClient;
 
-    public LoggingBenchmarks()
+    public MsLoggerBenchmarks()
     {
         AddColumn(StatisticColumn.AllStatistics);
         AddDiagnoser(MemoryDiagnoser.Default);
@@ -41,64 +39,34 @@ public class LoggingBenchmarks : ManualConfig
     }
 
     [Benchmark(Baseline = true)]
-    public async Task LogLevelCritical()
-    {
-        await SendRequest();
-    }
+    public async Task LogLevelCritical() => await SendRequest();
 
     [GlobalSetup(Target = nameof(LogLevelCritical))]
-    public void SetUpCritical()
-    {
-        OcelotFactory(LogLevel.Critical);
-    }
+    public void SetUpCritical() => OcelotFactory(LogLevel.Critical);
 
     [Benchmark]
-    public async Task LogLevelError()
-    {
-        await SendRequest();
-    }
+    public async Task LogLevelError() => await SendRequest();
 
     [GlobalSetup(Target = nameof(LogLevelError))]
-    public void SetupError()
-    {
-        OcelotFactory(LogLevel.Error);
-    }
+    public void SetupError() => OcelotFactory(LogLevel.Error);
 
     [Benchmark]
-    public async Task LogLevelWarning()
-    {
-        await SendRequest();
-    }
+    public async Task LogLevelWarning() => await SendRequest();
 
     [GlobalSetup(Target = nameof(LogLevelWarning))]
-    public void SetUpWarning()
-    {
-        OcelotFactory(LogLevel.Warning);
-    }
+    public void SetUpWarning() => OcelotFactory(LogLevel.Warning);
 
     [Benchmark]
-    public async Task LogLevelInformation()
-    {
-        await SendRequest();
-    }
+    public async Task LogLevelInformation() => await SendRequest();
 
     [GlobalSetup(Target = nameof(LogLevelInformation))]
-    public void SetUpInformation()
-    {
-        OcelotFactory(LogLevel.Information);
-    }
+    public void SetUpInformation() => OcelotFactory(LogLevel.Information);
 
     [Benchmark]
-    public async Task LogLevelTrace()
-    {
-        await SendRequest();
-    }
+    public async Task LogLevelTrace() => await SendRequest();
 
     [GlobalSetup(Target = nameof(LogLevelTrace))]
-    public void SetUpTrace()
-    {
-        OcelotFactory(LogLevel.Trace);
-    }
+    public void SetUpTrace() => OcelotFactory(LogLevel.Trace);
 
     [GlobalCleanup(Targets = new[]
     {
@@ -119,35 +87,6 @@ public class LoggingBenchmarks : ManualConfig
 
     private void GivenOcelotIsRunning(string url, LogLevel minLogLevel)
     {
-        _logger = minLogLevel switch
-        {
-            LogLevel.Information => new LoggerConfiguration().MinimumLevel.Information()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            LogLevel.Warning => new LoggerConfiguration().MinimumLevel.Warning()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            LogLevel.Error => new LoggerConfiguration().MinimumLevel.Error()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            LogLevel.Critical => new LoggerConfiguration().MinimumLevel.Fatal()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            LogLevel.Trace => new LoggerConfiguration().MinimumLevel.Verbose()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            LogLevel.None => new LoggerConfiguration()
-                .WriteTo.File(
-                    $"{AppContext.BaseDirectory}/Logs/log_level_test_{minLogLevel}.log")
-                .CreateLogger(),
-            _ => throw new ArgumentOutOfRangeException(nameof(minLogLevel), minLogLevel, null),
-        };
-
         _webHost = new WebHostBuilder()
             .UseKestrel()
             .UseUrls(url)
@@ -164,14 +103,14 @@ public class LoggingBenchmarks : ManualConfig
             {
                 logging.ClearProviders();
                 logging.SetMinimumLevel(minLogLevel);
-                logging.AddSerilog(_logger);
+                logging.AddConsole();
             })
             .Configure(app =>
             {
                 app.Use(async (context, next) =>
                 {
                     var loggerFactory = context.RequestServices.GetService<IOcelotLoggerFactory>();
-                    var ocelotLogger = loggerFactory.CreateLogger<LoggingBenchmarks>();
+                    var ocelotLogger = loggerFactory.CreateLogger<MsLoggerBenchmarks>();
                     ocelotLogger.LogDebug(() => $"DEBUG: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
                     ocelotLogger.LogTrace(() => $"TRACE: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
                     ocelotLogger.LogInformation(() => $"INFORMATION: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
