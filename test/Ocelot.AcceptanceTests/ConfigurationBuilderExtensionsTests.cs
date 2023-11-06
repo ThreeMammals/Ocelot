@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ConfigurationMergeTests
+    public class ConfigurationBuilderExtensionsTests
     {        
         private IWebHostBuilder _webHostBuilder;
         private TestServer _ocelotServer;
