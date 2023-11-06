@@ -17,7 +17,11 @@ namespace Ocelot.AcceptanceTests
         public void Should_merge_routes_custom_properties()
         {
             this.Given(x => GivenOcelotIsRunningWithMultipleConfigs())
-                .And(x => ThenConfigContentShouldBeMergedWithRoutesCustomProperties())
+                .When(x => x.WhenICreateClient())
+                .Then(x => ThenConfigContentShouldHaveThreeRoutes())
+                .And(x => ShouldMergeWithCustomPropertyInXservices())
+                .And(x => ShouldMergeWithCustomGlobalProperty())
+                .And(x => ShouldMergeWithCustomPropertyInYservices())
                 .BDDfy();
         }
 
@@ -44,44 +48,58 @@ namespace Ocelot.AcceptanceTests
                 {
                     app.UseOcelot().Wait();
                 });
-
-            _ocelotServer = new TestServer(_webHostBuilder);
-
-            var ocelotClient = _ocelotServer.CreateClient();
         }
 
-        private static void ThenConfigContentShouldBeMergedWithRoutesCustomProperties()
+        private void WhenICreateClient()
+        {
+            _ocelotServer = new TestServer(_webHostBuilder);
+            _ = _ocelotServer.CreateClient();
+        }
+
+        private void ThenConfigContentShouldHaveThreeRoutes()
         {
             var mergedConfigFileName = "ocelot.json";
             File.Exists(mergedConfigFileName).ShouldBeTrue();
             var lines = File.ReadAllText(mergedConfigFileName);
-            var config = JObject.Parse(lines);
+            _config = JObject.Parse(lines);
 
-            config[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
-            config[nameof(FileConfiguration.Routes)].Children().Count().ShouldBe(3);
+            _config[nameof(FileConfiguration.Routes)].ShouldNotBeNull()
+                .Children().Count().ShouldBe(3);
+        }
 
-            var routeWithCustomPropertyX = config[nameof(FileConfiguration.Routes)].Children()
-                .SingleOrDefault(c => c["CustomStrategyProperty"] != null);
-            routeWithCustomPropertyX.ShouldNotBeNull();
-            var customPropertyX = routeWithCustomPropertyX["CustomStrategyProperty"];
+        private JObject _config;
+
+        private void ShouldMergeWithCustomPropertyInXservices()
+        {
+            var customPropertyX = PropertyShouldExist("CustomStrategyProperty");
             customPropertyX["GET"].ShouldNotBeNull();
             customPropertyX["GET"].Children().Count().ShouldBe(1);
             customPropertyX["GET"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodA");
             customPropertyX["POST"].ShouldNotBeNull();
             customPropertyX["POST"].Children().Count().ShouldBe(1);
             customPropertyX["POST"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodB");
+        }
 
-            var routeWithCustomPropertyGlobal = config[nameof(FileConfiguration.Routes)].Children()
-                .SingleOrDefault(c => c["somethingmore"] != null);
-            routeWithCustomPropertyGlobal.ShouldNotBeNull();
-            routeWithCustomPropertyGlobal["somethingmore"].ShouldBe("something");
+        private void ShouldMergeWithCustomGlobalProperty()
+        {
+            var customPropertyGlobal = PropertyShouldExist("SomethingMore");
+            customPropertyGlobal.ShouldBe("something");
+        }
 
-            var routeWithCustomPropertyY = config[nameof(FileConfiguration.Routes)].Children()
-                .SingleOrDefault(c => c["MyCustomProperty"] != null);
-            routeWithCustomPropertyY.ShouldNotBeNull();
-            routeWithCustomPropertyY["MyCustomProperty"].ShouldBeAssignableTo(typeof(JArray));
-            routeWithCustomPropertyY["MyCustomProperty"].Count().ShouldBe(1);
-            routeWithCustomPropertyY["MyCustomProperty"].First().ShouldBe("myValue");
+        private void ShouldMergeWithCustomPropertyInYservices()
+        {
+            var customPropertyY = PropertyShouldExist("MyCustomProperty");
+            customPropertyY.ShouldBeAssignableTo(typeof(JArray));
+            customPropertyY.Count().ShouldBe(1);
+            customPropertyY.First().ShouldBe("myValue");
+        }
+
+        private JToken PropertyShouldExist(string propertyName)
+        {
+            var routeWithProperty = _config[nameof(FileConfiguration.Routes)].Children()
+                .SingleOrDefault(route => route[propertyName] != null)
+                .ShouldNotBeNull();
+            return routeWithProperty[propertyName].ShouldNotBeNull();
         }
     }
 }

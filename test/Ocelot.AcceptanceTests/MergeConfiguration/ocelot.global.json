@@ -11,7 +11,7 @@
       ],
       "UpstreamPathTemplate": "/{global}",
       "UpstreamHttpMethod": [ "Get" ],
-      "somethingmore": "something"
+      "SomethingMore": "something"
     }
   ],
   "GlobalConfiguration": {
