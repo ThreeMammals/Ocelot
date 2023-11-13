@@ -22,7 +22,7 @@ namespace Ocelot.UnitTests.Consul
         private readonly Mock<IKVEndpoint> _kvEndpoint;
         private FileConfiguration _fileConfiguration;
         private Response _setResult;
-        private Response<FileConfiguration> _getResult;
+        private FileConfiguration _getResult;
 
         public ConsulFileConfigurationRepositoryTests()
         {
@@ -134,19 +134,19 @@ namespace Ocelot.UnitTests.Consul
 
         private void ThenTheConfigurationIsNull()
         {
-            _getResult.Data.ShouldBeNull();
+            _getResult.ShouldBeNull();
         }
 
         private void ThenTheConfigurationIs(FileConfiguration config)
         {
             var expected = JsonConvert.SerializeObject(config, Formatting.Indented);
-            var result = JsonConvert.SerializeObject(_getResult.Data, Formatting.Indented);
+            var result = JsonConvert.SerializeObject(_getResult, Formatting.Indented);
             result.ShouldBe(expected);
         }
 
         private async Task WhenIGetTheConfiguration()
         {
-            _getResult = await _repo.Get();
+            _getResult = await _repo.GetAsync();
         }
 
         private void GivenWritingToConsulSucceeds()

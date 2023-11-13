@@ -37,25 +37,25 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         _consul = factory.Get(config);
     }
 
-    public async Task<Response<FileConfiguration>> Get()
+    public async Task<FileConfiguration> GetAsync()
     {
         var config = _cache.Get(_configurationKey, _configurationKey);
         if (config != null)
         {
-            return new OkResponse<FileConfiguration>(config);
+            return config;
         }
 
         var queryResult = await _consul.KV.Get(_configurationKey);
         if (queryResult.Response == null)
         {
-            return new OkResponse<FileConfiguration>(null);
+            return null;
         }
 
         var bytes = queryResult.Response.Value;
         var json = Encoding.UTF8.GetString(bytes);
         var consulConfig = JsonConvert.DeserializeObject<FileConfiguration>(json);
 
-        return new OkResponse<FileConfiguration>(consulConfig);
+        return consulConfig;
     }
 
     public async Task<Response> Set(FileConfiguration ocelotConfiguration)

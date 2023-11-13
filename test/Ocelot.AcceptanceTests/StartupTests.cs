@@ -81,10 +81,7 @@ namespace Ocelot.AcceptanceTests
 
         private class FakeFileConfigurationRepository : IFileConfigurationRepository
         {
-            public Task<Response<FileConfiguration>> Get()
-            {
-                throw new NotImplementedException();
-            }
+            public Task<FileConfiguration> GetAsync() => throw new NotImplementedException();
 
             public Task<Response> Set(FileConfiguration fileConfiguration)
             {
