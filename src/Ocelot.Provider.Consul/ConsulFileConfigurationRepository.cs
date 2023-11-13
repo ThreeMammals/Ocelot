@@ -58,7 +58,7 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         return consulConfig;
     }
 
-    public async Task<Response> Set(FileConfiguration ocelotConfiguration)
+    public async Task Set(FileConfiguration ocelotConfiguration)
     {
         var json = JsonConvert.SerializeObject(ocelotConfiguration, Formatting.Indented);
         var bytes = Encoding.UTF8.GetBytes(json);
@@ -68,14 +68,12 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         };
 
         var result = await _consul.KV.Put(kvPair);
-        if (result.Response)
+        if (!result.Response)
         {
-            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
-
-            return new OkResponse();
+            throw new UnableToSetConfigInConsulException(
+                $"Unable to set {nameof(FileConfiguration)} in {nameof(Consul)}! Response status code from {nameof(Consul)} was {result.StatusCode} being returned in {result.RequestTime.TotalMilliseconds} ms.");
         }
 
-        return new ErrorResponse(new UnableToSetConfigInConsulError(
-            $"Unable to set {nameof(FileConfiguration)} in {nameof(Consul)}, response status code from {nameof(Consul)} was {result.StatusCode}"));
+        _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
     }
 }

@@ -1,6 +1,8 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.Errors;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Setter
@@ -23,21 +25,23 @@ namespace Ocelot.Configuration.Setter
 
         public async Task<Response> Set(FileConfiguration fileConfig)
         {
-            var response = await _repo.Set(fileConfig);
-
-            if (response.IsError)
+            try
             {
-                return new ErrorResponse(response.Errors);
+                await _repo.Set(fileConfig);
+
+                var config = await _configCreator.Create(fileConfig);
+
+                if (!config.IsError)
+                {
+                    _internalConfigRepo.AddOrReplace(config.Data);
+                }
+
+                return new ErrorResponse(config.Errors);
             }
-
-            var config = await _configCreator.Create(fileConfig);
-
-            if (!config.IsError)
+            catch (Exception ex)
             {
-                _internalConfigRepo.AddOrReplace(config.Data);
+                return new ErrorResponse(new OcelotError(ex.Message));
             }
-
-            return new ErrorResponse(config.Errors);
         }
     }
 }

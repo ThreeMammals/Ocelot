@@ -21,7 +21,6 @@ namespace Ocelot.UnitTests.Consul
         private readonly Mock<IConsulClient> _client;
         private readonly Mock<IKVEndpoint> _kvEndpoint;
         private FileConfiguration _fileConfiguration;
-        private Response _setResult;
         private FileConfiguration _getResult;
 
         public ConsulFileConfigurationRepositoryTests()
@@ -207,7 +206,7 @@ namespace Ocelot.UnitTests.Consul
 
         private async Task WhenISetTheConfiguration()
         {
-            _setResult = await _repo.Set(_fileConfiguration);
+            await _repo.Set(_fileConfiguration);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration config)

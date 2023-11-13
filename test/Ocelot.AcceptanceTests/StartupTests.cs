@@ -83,10 +83,7 @@ namespace Ocelot.AcceptanceTests
         {
             public Task<FileConfiguration> GetAsync() => throw new NotImplementedException();
 
-            public Task<Response> Set(FileConfiguration fileConfiguration)
-            {
-                throw new NotImplementedException();
-            }
+            public Task Set(FileConfiguration fileConfiguration) => throw new NotImplementedException();
         }
     }
 }

@@ -11,5 +11,10 @@ public interface IFileConfigurationRepository
     /// <returns>A <see cref="FileConfiguration"/> model.</returns>
     Task<FileConfiguration> GetAsync();
 
-    Task<Response> Set(FileConfiguration fileConfiguration);
+    /// <summary>
+    /// Sets file configuration rewriting ocelot.json content.
+    /// </summary>
+    /// <param name="fileConfiguration">Current model.</param>
+    /// <returns>A <see cref="Task"/> object.</returns>
+    Task Set(FileConfiguration fileConfiguration);
 }
