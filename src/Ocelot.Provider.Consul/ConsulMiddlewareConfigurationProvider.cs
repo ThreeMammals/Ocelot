@@ -77,7 +77,7 @@ public static class ConsulMiddlewareConfigurationProvider
         => throw NewException(string.Join(',', config.Errors.Select(x => x.ToString())));
 
     private static void ThrowToStopOcelotStarting(Exception ex)
-        => throw NewException(ex.AllMessages().ToString());
+        => throw NewException(ex.GetMessages());
 
     private static Exception NewException(string errors)
         => new($"Unable to start Ocelot! Errors are:{Environment.NewLine}{errors}");

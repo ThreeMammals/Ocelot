@@ -15,4 +15,12 @@ public static class ExceptionExtensions
                 ? AllMessages(ex.InnerException, builder)
                 : builder.AppendLine(ex.Message);
     }
+
+    /// <summary>
+    /// Gets all exception messages of this and inner exceptions as one string.
+    /// </summary>
+    /// <param name="ex">Current exception.</param>
+    /// <returns>A <see langword="string" /> with all messages inside.</returns>
+    public static string GetMessages(this Exception ex)
+        => AllMessages(ex).ToString();
 }

@@ -32,7 +32,7 @@ namespace Ocelot.Configuration
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.AllMessages().ToString());
+                return BadRequest(ex.GetMessages());
             }
         }
 
