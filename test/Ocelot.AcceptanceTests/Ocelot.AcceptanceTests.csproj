@@ -1,84 +1,84 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-    <AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <PackageId>Ocelot.AcceptanceTests</PackageId>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-	<RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Update="appsettings.product.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="mycert.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
-    <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
-    <ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="xunit" Version="2.6.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Moq" Version="4.20.69" />
-    <PackageReference Include="OpenTracing" Version="0.12.1" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Shouldly" Version="4.2.1" />
-    <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
-    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageReference Include="IdentityServer4" Version="4.1.2" />
-    <PackageReference Include="Consul" Version="1.7.14.1" />
-    <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
-    <PackageReference Include="CacheManager.Serialization.Json" Version="2.0.0-beta-1629" />
-    <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.5" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<VersionPrefix>0.0.0-dev</VersionPrefix>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
+		<OutputType>Exe</OutputType>
+		<PackageId>Ocelot.AcceptanceTests</PackageId>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Update="appsettings.product.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="mycert.pfx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
+		<ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
+		<ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+		<PackageReference Include="xunit" Version="2.6.1" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="coverlet.collector" Version="6.0.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Moq" Version="4.20.69" />
+		<PackageReference Include="OpenTracing" Version="0.12.1" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Shouldly" Version="4.2.1" />
+		<PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
+		<PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
+		<PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
+		<PackageReference Include="IdentityServer4" Version="4.1.2" />
+		<PackageReference Include="Consul" Version="1.7.14.1" />
+		<PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
+		<PackageReference Include="CacheManager.Serialization.Json" Version="2.0.0-beta-1629" />
+		<PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.5" />
+		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+	</ItemGroup>
 </Project>
