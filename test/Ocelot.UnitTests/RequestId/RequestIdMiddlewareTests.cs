@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.RequestId
             _loggerFactory.Setup(x => x.CreateLogger<RequestIdMiddleware>()).Returns(_logger.Object);
             _next = context =>
             {
-                _httpContext.Response.Headers.Add("LSRequestId", _httpContext.TraceIdentifier);
+                _httpContext.Response.Headers.Append("LSRequestId", _httpContext.TraceIdentifier);
                 return Task.CompletedTask;
             };
             _middleware = new RequestIdMiddleware(_next, _loggerFactory.Object, _repo.Object);

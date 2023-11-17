@@ -171,7 +171,7 @@ namespace Ocelot.AcceptanceTests
             _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
             {
                 context.Request.Headers.TryGetValue(_steps.RequestIdKey, out var requestId);
-                context.Response.Headers.Add(_steps.RequestIdKey, requestId.First());
+                context.Response.Headers[_steps.RequestIdKey] = requestId.First();
                 return Task.CompletedTask;
             });
         }
