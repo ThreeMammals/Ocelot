@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="ocelot.json;appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Ocelot" Version="20.0.0" />
-    <PackageReference Include="Ocelot.Provider.Eureka" Version="20.0.0" />
-    <PackageReference Include="Ocelot.Provider.Polly" Version="20.0.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<Folder Include="wwwroot\" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="ocelot.json;appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Ocelot" Version="20.0.0" />
+		<PackageReference Include="Ocelot.Provider.Eureka" Version="20.0.0" />
+		<PackageReference Include="Ocelot.Provider.Polly" Version="20.0.0" />
+	</ItemGroup>
 </Project>
