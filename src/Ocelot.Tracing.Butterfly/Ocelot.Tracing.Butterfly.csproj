@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -13,7 +12,7 @@
     <PackageTags>API Gateway;.NET core; Butterfly; ButterflyAPM</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
-    <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
+	<RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -24,7 +23,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
- <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
@@ -41,5 +40,4 @@
   <ItemGroup>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
   </ItemGroup>
-
 </Project>

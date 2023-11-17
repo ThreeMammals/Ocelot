@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -12,7 +12,7 @@
     <PackageTags>API Gateway;.NET core</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot.Cache.CacheManager</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
-    <RuntimeIdentifiers>win10-x64;osx.10.11-x64;osx.10.12-x64;win7-x64</RuntimeIdentifiers>
+	  <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

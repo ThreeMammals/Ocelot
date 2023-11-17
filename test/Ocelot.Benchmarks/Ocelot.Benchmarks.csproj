@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
@@ -10,7 +9,7 @@
     <AssemblyName>Ocelot.Benchmarks</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.Benchmarks</PackageId>
-    <RuntimeIdentifiers>osx.10.11-x64;osx.10.12-x64;win7-x64;win10-x64</RuntimeIdentifiers>
+	  <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -18,18 +17,15 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
   </ItemGroup>
