@@ -15,12 +15,15 @@ namespace Ocelot.Provider.Polly;
 
 public static class OcelotBuilderExtensions
 {
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler, IDictionary<Type, Func<Exception, Error>> errorMapping) where T : class, IPollyQoSProvider<HttpResponseMessage>
+    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
+        QosDelegatingHandlerDelegate delegatingHandler,
+        IDictionary<Type, Func<Exception, Error>> errorMapping) where T : class, IPollyQoSProvider<HttpResponseMessage>
     {
         builder.Services
             .AddSingleton(errorMapping)
             .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, T>()
             .AddSingleton(delegatingHandler);
+
         return builder;
     }
 

@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,22 +7,21 @@ using Ocelot.Provider.Polly.Interfaces;
 
 using Polly.CircuitBreaker;
 
+using System.Diagnostics;
+
 namespace Ocelot.Provider.Polly;
 
 public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {
     private readonly DownstreamRoute _route;
     private readonly IHttpContextAccessor _contextAccessor;
-    private readonly IOcelotLogger _logger;
 
     public PollyPoliciesDelegatingHandler(
         DownstreamRoute route,
-        IHttpContextAccessor contextAccessor,
-        IOcelotLoggerFactory loggerFactory)
+        IHttpContextAccessor contextAccessor)
     {
         _route = route;
         _contextAccessor = contextAccessor;
-        _logger = loggerFactory.CreateLogger<PollyPoliciesDelegatingHandler>();
     }
 
     private IPollyQoSProvider<HttpResponseMessage> GetQoSProvider()
@@ -36,7 +33,7 @@ public class PollyPoliciesDelegatingHandler : DelegatingHandler
     /// <summary>
     /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="request">Downstream request</param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="BrokenCircuitException"></exception>
     /// <exception cref="HttpRequestException"></exception>
