@@ -15,13 +15,16 @@ public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {
     private readonly DownstreamRoute _route;
     private readonly IHttpContextAccessor _contextAccessor;
+    private readonly IOcelotLogger _logger;
 
     public PollyPoliciesDelegatingHandler(
         DownstreamRoute route,
-        IHttpContextAccessor contextAccessor)
+        IHttpContextAccessor contextAccessor,
+        IOcelotLoggerFactory loggerFactory)
     {
         _route = route;
         _contextAccessor = contextAccessor;
+        _logger = loggerFactory.CreateLogger<PollyPoliciesDelegatingHandler>();
     }
 
     private IPollyQoSProvider<HttpResponseMessage> GetQoSProvider()
