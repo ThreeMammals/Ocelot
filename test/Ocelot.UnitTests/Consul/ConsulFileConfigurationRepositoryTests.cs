@@ -206,7 +206,7 @@ namespace Ocelot.UnitTests.Consul
 
         private async Task WhenISetTheConfiguration()
         {
-            await _repo.Set(_fileConfiguration);
+            await _repo.SetAsync(_fileConfiguration);
         }
 
         private void GivenIHaveAConfiguration(FileConfiguration config)

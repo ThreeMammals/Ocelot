@@ -84,13 +84,13 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheRepoSetsSuccessfully()
         {
-            _repo.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+            _repo.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>()))
                 .Verifiable();
         }
 
         private void GivenTheRepoThrows(Exception ex)
         {
-            _repo.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+            _repo.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>()))
                 .ThrowsAsync(ex);
         }
 

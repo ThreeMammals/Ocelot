@@ -53,7 +53,7 @@ namespace Ocelot.Configuration.Repository
             return Task.FromResult(fileConfiguration);
         }
 
-        public Task Set(FileConfiguration fileConfiguration)
+        public Task SetAsync(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 

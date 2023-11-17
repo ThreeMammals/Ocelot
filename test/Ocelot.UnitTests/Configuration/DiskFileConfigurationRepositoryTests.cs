@@ -130,6 +130,12 @@ namespace Ocelot.UnitTests.Configuration
             _result = response.Data;
         }
 
+        private void WhenISetTheConfiguration()
+        {
+            _repo.SetAsync(_fileConfiguration);
+            _result = _repo.GetAsync().Result;
+        }
+
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
         {
             _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);

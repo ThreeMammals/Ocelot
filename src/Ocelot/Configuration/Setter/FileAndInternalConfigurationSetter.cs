@@ -2,7 +2,6 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Errors;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Setter
@@ -27,7 +26,7 @@ namespace Ocelot.Configuration.Setter
         {
             try
             {
-                await _repo.Set(fileConfig);
+                await _repo.SetAsync(fileConfig);
 
                 var config = await _configCreator.Create(fileConfig);
 

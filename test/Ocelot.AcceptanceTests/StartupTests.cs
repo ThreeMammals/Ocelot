@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Responses;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -83,7 +82,7 @@ namespace Ocelot.AcceptanceTests
         {
             public Task<FileConfiguration> GetAsync() => throw new NotImplementedException();
 
-            public Task Set(FileConfiguration fileConfiguration) => throw new NotImplementedException();
+            public Task SetAsync(FileConfiguration fileConfiguration) => throw new NotImplementedException();
         }
     }
 }

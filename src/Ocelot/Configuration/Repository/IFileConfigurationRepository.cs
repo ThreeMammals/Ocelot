@@ -1,5 +1,4 @@
 using Ocelot.Configuration.File;
-using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository;
 
@@ -16,5 +15,5 @@ public interface IFileConfigurationRepository
     /// </summary>
     /// <param name="fileConfiguration">Current model.</param>
     /// <returns>A <see cref="Task"/> object.</returns>
-    Task Set(FileConfiguration fileConfiguration);
+    Task SetAsync(FileConfiguration fileConfiguration);
 }

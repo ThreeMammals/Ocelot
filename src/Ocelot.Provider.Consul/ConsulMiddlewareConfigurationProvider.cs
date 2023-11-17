@@ -41,7 +41,7 @@ public static class ConsulMiddlewareConfigurationProvider
             if (fileConfigFromConsul == null)
             {
                 // there was no config in Consul set the file in config in Consul
-                await fileConfigRepo.Set(fileConfig.CurrentValue);
+                await fileConfigRepo.SetAsync(fileConfig.CurrentValue);
             }
             else
             {

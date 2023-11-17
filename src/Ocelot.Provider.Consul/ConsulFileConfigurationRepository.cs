@@ -58,7 +58,7 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         return consulConfig;
     }
 
-    public async Task Set(FileConfiguration ocelotConfiguration)
+    public async Task SetAsync(FileConfiguration ocelotConfiguration)
     {
         var json = JsonConvert.SerializeObject(ocelotConfiguration, Formatting.Indented);
         var bytes = Encoding.UTF8.GetBytes(json);
