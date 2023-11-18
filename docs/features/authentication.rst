@@ -32,6 +32,39 @@ If there isn't then Ocelot will not start up. If there is then the Route will us
 If a Route is authenticated, Ocelot will invoke whatever scheme is associated with it while executing the authentication middleware.
 If the request fails authentication, Ocelot returns a HTTP status code `401 Unauthorized <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401>`_.
 
+Additionally, you can define multiple schemes (authentication provider keys) with each registration e.g.
+
+.. code-block:: csharp
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var authenticationProviderKeys = new[] { "ApiKey", "Bearer" };
+
+        foreach (var key in authenticationProviderKeys)
+        {
+            services
+                .AddAuthentication()
+                .AddJwtBearer(key,
+                    options => { /* custom auth-setup */ });
+        }
+    }
+
+In this example, the schemes "**ApiKey**" and "**Bearer**" represent the keys with which this provider has been registered. We then map these schemes to a Route in the configuration, as shown below
+
+.. code-block:: json
+
+  "Routes": [{
+    "AuthenticationOptions": {
+      "AuthenticationProviderKeys": [
+        "ApiKey",
+        "Bearer"
+      ]
+      "AllowedScopes": []
+    }
+  }]
+
+Afterward, Ocelot applies all steps that are specified for ``AuthenticationOptions.AuthenticationProviderKey``.
+
 JWT Tokens
 ----------
 
