@@ -49,7 +49,7 @@ Additionally, you can define multiple schemes (authentication provider keys) wit
         }
     }
 
-In this example, the schemes "**ApiKey**" and "**Bearer**" represent the keys with which this provider has been registered. We then map these schemes to a Route in the configuration, as shown below
+In this example, the schemes "**ApiKey**" and "**Bearer**" represent the keys with which these providers have been registered. We then map these schemes to a Route in the configuration, as shown below
 
 .. code-block:: json
 
