@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private ServiceDiscoveryProviderFactory _factory;
         private DownstreamRoute _route;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private Mock<IOcelotLogger> _logger;
+        private readonly Mock<IOcelotLogger> _logger;
         private IServiceProvider _provider;
         private readonly IServiceCollection _collection;
 
@@ -27,6 +27,9 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _collection = new ServiceCollection();
             _provider = _collection.BuildServiceProvider();
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+
+            _loggerFactory.Setup(x => x.CreateLogger<ServiceDiscoveryProviderFactory>())
+                .Returns(_logger.Object);
         }
 
         [Fact]
@@ -115,6 +118,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .Build();
 
             this.Given(x => x.GivenTheRoute(serviceConfig, route))
+                .And(x => GivenAFakeDelegate())
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
                 .BDDfy();
@@ -130,7 +134,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private class Fake : IServiceDiscoveryProvider
         {
-            public Task<List<Service>> Get()
+            public Task<List<Service>> GetAsync()
             {
                 return null;
             }
@@ -144,12 +148,23 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void ThenTheResultIsError()
         {
             _result.IsError.ShouldBeTrue();
+            _result.Errors.Count.ShouldBe(1);
+
+            _logInformationMessages.ShouldNotBeNull()
+                .Count.ShouldBe(2);
+            _logger.Verify(x => x.LogInformation(It.IsAny<string>()),
+                Times.Exactly(2));
+
+            _logWarningMessages.ShouldNotBeNull()
+                .Count.ShouldBe(1);
+            _logger.Verify(x => x.LogWarning(It.IsAny<string>()),
+                Times.Once());
         }
 
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result.Data;
-            var services = result.Get().Result;
+            var services = result.GetAsync().Result;
 
             for (var i = 0; i < services.Count; i++)
             {
@@ -167,8 +182,16 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _route = route;
         }
 
+        private List<string> _logInformationMessages = new();
+        private List<string> _logWarningMessages = new();
+
         private void WhenIGetTheServiceProvider()
         {
+            _logger.Setup(x => x.LogInformation(It.IsAny<string>()))
+                .Callback<string>(message => _logInformationMessages.Add(message));
+            _logger.Setup(x => x.LogWarning(It.IsAny<string>()))
+                .Callback<string>(message => _logWarningMessages.Add(message));
+
             _result = _factory.Get(_serviceConfig, _route);
         }
 

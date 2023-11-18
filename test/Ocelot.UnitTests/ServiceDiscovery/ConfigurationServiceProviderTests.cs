@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void WhenIGetTheService()
         {
             _serviceProvider = new ConfigurationServiceProvider(_expected);
-            _result = _serviceProvider.Get().Result;
+            _result = _serviceProvider.GetAsync().Result;
         }
 
         private void ThenTheFollowingIsReturned(List<Service> services)

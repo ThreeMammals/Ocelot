@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_add_content_type_or_content_length_headers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -58,7 +58,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_add_content_type_and_content_length_headers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_add_default_content_type_header()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

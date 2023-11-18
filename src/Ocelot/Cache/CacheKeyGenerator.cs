@@ -1,20 +1,43 @@
-﻿using Ocelot.Request.Middleware;
+﻿using Ocelot.Configuration;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.Cache
 {
     public class CacheKeyGenerator : ICacheKeyGenerator
     {
-        public string GenerateRequestCacheKey(DownstreamRequest downstreamRequest)
+        private const char Delimiter = '-';
+        
+        public async ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
         {
-            var downStreamUrlKeyBuilder = new StringBuilder($"{downstreamRequest.Method}-{downstreamRequest.OriginalString}");
-            if (downstreamRequest.Content != null)
+            var builder = new StringBuilder()
+                .Append(downstreamRequest.Method)
+                .Append(Delimiter)
+                .Append(downstreamRequest.OriginalString);
+
+            var cacheOptionsHeader = downstreamRoute?.CacheOptions?.Header;
+            if (!string.IsNullOrEmpty(cacheOptionsHeader))
             {
-                var requestContentString = Task.Run(async () => await downstreamRequest.Content.ReadAsStringAsync()).Result;
-                downStreamUrlKeyBuilder.Append(requestContentString);
+                var header = downstreamRequest.Headers
+                    .FirstOrDefault(r => r.Key.Equals(cacheOptionsHeader, StringComparison.OrdinalIgnoreCase))
+                    .Value?.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(header))
+                {
+                    builder.Append(Delimiter)
+                        .Append(header);
+                }
             }
 
-            var hashedContent = MD5Helper.GenerateMd5(downStreamUrlKeyBuilder.ToString());
-            return hashedContent;
+            if (!downstreamRequest.HasContent)
+            {
+                return MD5Helper.GenerateMd5(builder.ToString());
+            }
+
+            var requestContentString = await downstreamRequest.ReadContentAsync();
+            builder.Append(Delimiter)
+                .Append(requestContentString);
+
+            return MD5Helper.GenerateMd5(builder.ToString());
         }
     }
 }

@@ -95,145 +95,71 @@ namespace Ocelot.UnitTests.Consul
         [Fact]
         public void should_not_return_services_with_invalid_address()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "http://localhost",
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "http://localhost",
-                    Port = 50888,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(address: "http://localhost", port: 50881)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(address: "http://localhost", port: 50888)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForInvalidAddress())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
         [Fact]
         public void should_not_return_services_with_empty_address()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = string.Empty,
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = null,
-                    Port = 50888,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(port: 50881)
+                .WithAddress(string.Empty)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(port: 50888)
+                .WithAddress(null)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
         [Fact]
         public void should_not_return_services_with_invalid_port()
         {
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = -1,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = 0,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
+            var serviceEntryOne = GivenService(port: -1)
+                .ToServiceEntry();
+            var serviceEntryTwo = GivenService(port: 0)
+                .ToServiceEntry();
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
                 .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .When(x => WhenIGetTheServices())
                 .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyForInvalidPorts())
+                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
                 .BDDfy();
         }
 
-        private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidAddress()
+        private AgentService GivenService(string address = null, int? port = null, string id = null, string[] tags = null)
+            => new()
+            {
+                Service = _serviceName,
+                Address = address ?? "localhost",
+                Port = port ?? 123,
+                ID = id ?? Guid.NewGuid().ToString(),
+                Tags = tags ?? Array.Empty<string>(),
+            };
+
+        private void ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(params ServiceEntry[] serviceEntries)
         {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: http://localhost and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: http://localhost and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-        }
-
-        private void ThenTheLoggerHasBeenCalledCorrectlyForEmptyAddress()
-        {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address:  and Port: 50881 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address:  and Port: 50888 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-        }
-
-        private void ThenTheLoggerHasBeenCalledCorrectlyForInvalidPorts()
-        {
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: localhost and Port: -1 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
-
-            _logger.Verify(
-                x => x.LogWarning(
-                    "Unable to use service Address: localhost and Port: 0 as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0"),
-                Times.Once);
+            foreach (var entry in serviceEntries)
+            {
+                var service = entry.Service;
+                var expected = $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
+                _logger.Verify(x => x.LogWarning(expected), Times.Once);
+            }
         }
 
         private void ThenTheCountIs(int count)
@@ -243,7 +169,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void WhenIGetTheServices()
         {
-            _services = _provider.Get().GetAwaiter().GetResult();
+            _services = _provider.GetAsync().GetAwaiter().GetResult();
         }
 
         private void ThenTheTokenIs(string token)

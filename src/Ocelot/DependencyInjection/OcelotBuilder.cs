@@ -16,7 +16,7 @@ using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
@@ -37,6 +37,7 @@ using Ocelot.Security;
 using Ocelot.Security.IPSecurity;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.WebSockets;
 using System.Reflection;
 
 namespace Ocelot.DependencyInjection
@@ -102,7 +103,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IClaimsParser, ClaimsParser>();
             Services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
-            Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
+            Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamPathPlaceholderReplacer>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
@@ -138,6 +139,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
+            Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
 
             // Add security
             Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();

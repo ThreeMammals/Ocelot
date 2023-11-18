@@ -12,6 +12,12 @@ namespace Ocelot.Configuration.File
             AuthenticationProviderKeys = Array.Empty<string>();
         }
 
+        public FileAuthenticationOptions(FileAuthenticationOptions from)
+        {
+            AllowedScopes = new(from.AllowedScopes);
+            AuthenticationProviderKey = from.AuthenticationProviderKey;
+        }
+
         public List<string> AllowedScopes { get; set; }
 
         public string AuthenticationProviderKey { get; set; }

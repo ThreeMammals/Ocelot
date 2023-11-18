@@ -30,7 +30,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -75,7 +75,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -120,7 +120,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -165,7 +165,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -210,7 +210,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -255,7 +255,7 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {
@@ -288,6 +288,52 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        public void should_not_throw_when_pipeline_terminates_early()
+        {
+            var configuration = new OcelotPipelineConfiguration
+            {
+                PreQueryStringBuilderMiddleware = (context, next) =>
+                    Task.Run(() =>
+                    {
+                        _counter++;
+                        return; // do not invoke the rest of the pipeline
+                    }),
+            };
+
+            var port = PortFinder.GetRandomPort();
+
+            var fileConfiguration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                    {
+                        new()
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new()
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                },
+                            },
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        },
+                    },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+                .And(x => _steps.GivenOcelotIsRunning(configuration))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => x.ThenTheCounterIs(1))
+                .BDDfy();
+        }
+
         [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
         public void should_fix_issue_237()
         {
@@ -304,7 +350,7 @@ namespace Ocelot.AcceptanceTests
                 return Task.CompletedTask;
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var fileConfiguration = new FileConfiguration
             {

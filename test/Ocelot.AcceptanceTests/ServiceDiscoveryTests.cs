@@ -26,9 +26,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_consul_service_discovery_and_load_balance_request()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
-            var servicePort1 = RandomPortFinder.GetRandomPort();
-            var servicePort2 = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
+            var servicePort1 = PortFinder.GetRandomPort();
+            var servicePort2 = PortFinder.GetRandomPort();
             var serviceName = "product";
             var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
             var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
@@ -96,8 +96,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
-            var servicePort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
+            var servicePort = PortFinder.GetRandomPort();
             const string serviceName = "web";
             var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -152,9 +152,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             const string serviceName = "web";
-            var downstreamServicePort = RandomPortFinder.GetRandomPort();
+            var downstreamServicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry
@@ -203,10 +203,10 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             var serviceName = "product";
-            var serviceOnePort = RandomPortFinder.GetRandomPort();
-            var serviceTwoPort = RandomPortFinder.GetRandomPort();
+            var serviceOnePort = PortFinder.GetRandomPort();
+            var serviceTwoPort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{serviceOnePort}";
             var downstreamServiceTwoUrl = $"http://localhost:{serviceTwoPort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -264,9 +264,9 @@ namespace Ocelot.AcceptanceTests
         public void should_use_token_to_make_request_to_consul()
         {
             var token = "abctoken";
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             var serviceName = "web";
-            var servicePort = RandomPortFinder.GetRandomPort();
+            var servicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry
@@ -322,10 +322,10 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_send_request_to_service_after_it_becomes_available_in_consul()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             var serviceName = "product";
-            var servicePort1 = RandomPortFinder.GetRandomPort();
-            var servicePort2 = RandomPortFinder.GetRandomPort();
+            var servicePort1 = PortFinder.GetRandomPort();
+            var servicePort2 = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
             var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
@@ -401,9 +401,9 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             const string serviceName = "web";
-            var downstreamServicePort = RandomPortFinder.GetRandomPort();
+            var downstreamServicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry

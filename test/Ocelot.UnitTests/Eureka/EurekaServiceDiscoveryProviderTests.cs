@@ -79,7 +79,7 @@ namespace Ocelot.UnitTests.Eureka
 
         private async Task WhenIGet()
         {
-            _result = await _provider.Get();
+            _result = await _provider.GetAsync();
         }
 
         private void GivenThe(List<IServiceInstance> instances)

@@ -1243,10 +1243,10 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        public void ThenWarningShouldBeLogged()
+        public void ThenWarningShouldBeLogged(int howMany)
         {
             var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
-            loggerFactory.Verify();
+            loggerFactory.Verify(Times.Exactly(howMany));
         }
 
         internal class MockLoggerFactory : IOcelotLoggerFactory
@@ -1264,9 +1264,9 @@ namespace Ocelot.AcceptanceTests
                 return _logger.Object;
             }
 
-            public void Verify()
+            public void Verify(Times howMany)
             {
-                _logger.Verify(x => x.LogWarning(It.IsAny<string>()), Times.Once);
+                _logger.Verify(x => x.LogWarning(It.IsAny<string>()), howMany);
             }
         }
 

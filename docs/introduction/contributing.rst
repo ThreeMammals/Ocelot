@@ -1,4 +1,8 @@
 Contributing
 ============
 
-Pull requests, issues and commentary welcome! No special process just create a request and get in touch either via gitter or create an issue. 
+Pull requests, issues and commentary welcome!
+
+Ideas, questions could be posted to Ocelot `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space.
+
+We do follow development process which is described in :doc:`../building/releaseprocess`.

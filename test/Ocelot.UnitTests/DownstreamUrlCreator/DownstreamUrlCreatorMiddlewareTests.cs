@@ -3,8 +3,8 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private readonly RequestDelegate _next;
         private readonly HttpRequestMessage _request;
         private readonly HttpContext _httpContext;
-        private Mock<IRequestScopedDataRepository> _repo;
+        private readonly Mock<IRequestScopedDataRepository> _repo;
 
         public DownstreamUrlCreatorMiddlewareTests()
         {
@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_scheme_and_path()
+        public void Should_replace_scheme_and_path()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string()
+        public void Should_replace_query_string()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -99,7 +99,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_but_leave_non_placeholder_queries()
+        public void Should_replace_query_string_but_leave_non_placeholder_queries()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -131,7 +131,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_but_leave_non_placeholder_queries_2()
+        public void Should_replace_query_string_but_leave_non_placeholder_queries_2()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
@@ -163,7 +163,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_replace_query_string_exact_match()
+        public void Should_replace_query_string_exact_match()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates/{unitIdIty}")
@@ -196,7 +196,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_not_create_service_fabric_url()
+        public void Should_not_create_service_fabric_url()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -226,7 +226,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url()
+        public void Should_create_service_fabric_url()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -256,7 +256,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_query_string_for_stateless_service()
+        public void Should_create_service_fabric_url_with_query_string_for_stateless_service()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -286,7 +286,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_query_string_for_stateful_service()
+        public void Should_create_service_fabric_url_with_query_string_for_stateful_service()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme("http")
@@ -316,7 +316,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
-        public void should_create_service_fabric_url_with_version_from_upstream_path_template()
+        public void Should_create_service_fabric_url_with_version_from_upstream_path_template()
         {
             var downstreamRoute = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
@@ -343,14 +343,16 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
-        [Fact]
-        public void issue_473_should_not_remove_additional_query_string()
+        [Fact(DisplayName = "473: " + nameof(Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different))]
+        public void Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different()
         {
+            var methods = new List<string> { "Post", "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()
-                .WithDownstreamPathTemplate("/Authorized/{action}?server={server}")
-                .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
-                .WithDownstreamScheme("http")
-                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/uc/Authorized/{server}/{action}").Build())
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/uc/Authorized/{servak}/{action}").Build())
+                .WithDownstreamPathTemplate("/Authorized/{action}?server={servak}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
                 .Build();
 
             var config = new ServiceProviderConfigurationBuilder()
@@ -361,23 +363,22 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                         new List<PlaceholderNameAndValue>
                         {
                             new("{action}", "1"),
-                            new("{server}", "2"),
+                            new("{servak}", "2"),
                         },
-                        new RouteBuilder()
-                            .WithDownstreamRoute(downstreamRoute)
-                            .WithUpstreamHttpMethod(new List<string> { "Post", "Get" })
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
                             .Build())))
-                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d"))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=123456789"))
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/Authorized/1?server=2"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d&server=2"))
-                .And(x => ThenTheQueryStringIs("?refreshToken=2288356cfb1338fdc5ff4ca558ec785118dfe1ff2864340937da8226863ff66d&server=2"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?refreshToken=123456789&server=2"))
+                .And(x => ThenTheQueryStringIs("?refreshToken=123456789&server=2"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_not_replace_by_empty_scheme()
+        public void Should_not_replace_by_empty_scheme()
         {
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamScheme(string.Empty)
@@ -403,6 +404,100 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .And(x => x.GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp"))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamRequestUriIs("https://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1"))
+                .BDDfy();
+        }
+
+        [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names))]
+        public void Should_map_query_parameters_with_different_names()
+        {
+            var methods = new List<string> { "Post", "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/users?userId={userId}").Build())
+                .WithDownstreamPathTemplate("/persons?personId={userId}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+            var config = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new("{userId}", "webley"),
+                        },
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/persons?personId=webley"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley"))
+                .And(x => ThenTheQueryStringIs($"?personId=webley"))
+                .BDDfy();
+        }
+
+        [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ))]
+        public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
+        {
+            var methods = new List<string> { "Post", "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/users?userId={uid}").Build())
+                .WithDownstreamPathTemplate("/persons?personId={uid}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+            var config = new ServiceProviderConfigurationBuilder().Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new("{uid}", "webley"),
+                        },
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn("/persons?personId=webley"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley&userId=webley"))
+                .And(x => ThenTheQueryStringIs($"?personId=webley&userId=webley"))
+                .BDDfy();
+        }
+
+        [Theory(DisplayName = "1174: " + nameof(Should_forward_query_parameters_without_duplicates))]
+        [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "endDate=2019-12-12&projectNumber=45&startDate=2019-12-12")]
+        [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
+        public void Should_forward_query_parameters_without_duplicates(string everythingelse, string expectedOrdered)
+        {
+            var methods = new List<string> { "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue("/contracts?{everythingelse}").Build())
+                .WithDownstreamPathTemplate("/api/contracts?{everythingelse}")
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+            var config = new ServiceProviderConfigurationBuilder().Build();
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new("{everythingelse}", everythingelse),
+                        },
+                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(methods)
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000//contracts?{everythingelse}"))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}"))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/api/contracts?{expectedOrdered}"))
+                .And(x => ThenTheQueryStringIs($"?{expectedOrdered}"))
                 .BDDfy();
         }
 

@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.5.2" />
+    <PackageReference Include="IPAddressRange" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="7.0.5" />
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32">
       <NoWarn>NU1701</NoWarn>

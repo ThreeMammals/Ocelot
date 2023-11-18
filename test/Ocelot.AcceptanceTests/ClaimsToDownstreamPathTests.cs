@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
 
         public ClaimsToDownstreamPathTests()
         {
-            var identityServerPort = RandomPortFinder.GetRandomPort();
+            var identityServerPort = PortFinder.GetRandomPort();
             _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _steps = new Steps();
             _options = o =>
@@ -43,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                 SubjectId = "registered|1231231",
             };
 
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

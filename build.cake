@@ -5,6 +5,14 @@
 #tool "nuget:?package=ReportGenerator&version=5.1.19"
 #addin Cake.Coveralls&version=1.1.0
 
+#r "Spectre.Console"
+using Spectre.Console
+
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
 // compile
 var compileConfig = Argument("configuration", "Release");
 
@@ -34,7 +42,7 @@ var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
 // packaging
 var packagesDir = artifactsDir + Directory("Packages");
-var releaseNotesFile = packagesDir + File("releasenotes.md");
+var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
 
 // stable releases
@@ -55,6 +63,10 @@ var target = Argument("target", "Default");
 Information("target is " + target);
 Information("Build configuration is " + compileConfig);	
 
+TaskTeardown(context => {
+	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
+});
+
 Task("Default")
 	.IsDependentOn("Build");
 
@@ -71,9 +83,10 @@ Task("RunTests")
 
 Task("Release")
 	.IsDependentOn("Build")
+	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease")
-    .IsDependentOn("PublishToNuget");
+	.IsDependentOn("PublishGitHubRelease");
+    // .IsDependentOn("PublishToNuget");
 
 Task("Compile")
 	.IsDependentOn("Clean")
@@ -84,7 +97,7 @@ Task("Compile")
 		{
 			Configuration = compileConfig,
 		};
-		
+
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -101,61 +114,7 @@ Task("Clean")
         CreateDirectory(artifactsDir);
 	});
 
-Task("CreateReleaseNotes")
-	.Does(() =>
-	{	
-		Information("Generating release notes at " + releaseNotesFile);
-
-		IEnumerable<string> lastReleaseTag;
-
-		var lastReleaseTagExitCode = StartProcess(
-			"git", 
-			new ProcessSettings { 
-				Arguments = "describe --tags --abbrev=0",
-             	RedirectStandardOutput = true
-			},
-			out lastReleaseTag
-		);
-
-		if (lastReleaseTagExitCode != 0) 
-		{
-			throw new Exception("Failed to get latest release tag");
-		}
-
-		var lastRelease = lastReleaseTag.First();
-
-		Information("Last release tag is " + lastRelease);
-
-		IEnumerable<string> releaseNotes;
-
-		var releaseNotesExitCode = StartProcess(
-			"git", 
-			new ProcessSettings { 
-				Arguments = $"log --pretty=format:\"%h - %an - %s\" {lastRelease}..HEAD",
-             	RedirectStandardOutput = true
-			},
-			out releaseNotes
-		);
-
-		if (releaseNotesExitCode != 0) 
-		{
-			throw new Exception("Failed to generate release notes");
-		}
-
-		EnsureDirectoryExists(packagesDir);
-
-		System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
-
-		if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
-		{
-			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
-		}
-
-		Information("Release notes are\r\n" + System.IO.File.ReadAllText(releaseNotesFile));
-	});
-	
 Task("Version")
-	.IsDependentOn("CreateReleaseNotes")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
@@ -173,6 +132,191 @@ Task("Version")
 		}
 	});
 
+Task("CreateReleaseNotes")
+	.IsDependentOn("Version")
+	.Does(() =>
+	{	
+		Information($"Generating release notes at {releaseNotesFile}");
+
+		// local helper function
+		Func<string, IEnumerable<string>> GitHelper = (command) =>
+		{
+			IEnumerable<string> output;
+			var exitCode = StartProcess(
+				"git",
+				new ProcessSettings { Arguments = command, RedirectStandardOutput = true },
+				out output);
+			if (exitCode != 0)
+				throw new Exception("Failed to execute Git command: " + command);
+			return output;
+		};
+
+		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
+		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
+		Information("Last release tag is " + lastRelease);
+
+		var releaseVersion = versioning.NuGetVersion;
+		// Read main header from Git file, substitute version in header, and add content further...
+		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
+		var releaseNotes = new List<string> { releaseHeader };
+
+		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
+		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
+		var summary = shortlogSummary
+			.Where(x => re.IsMatch(x))
+			.Select(x => re.Match(x))
+			.Select(m => new
+			{
+				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
+				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+			})
+			.ToList();
+
+		// Starring aka Release Influencers
+		var starring = new List<string>();
+		foreach (var contributor in summary)
+		{
+			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
+			starring.Add($"{stars}  {contributor.author}");
+		}
+
+		// Honoring aka Top Contributors
+		const int top3 = 3; // going to create Top 3
+		var topContributors = new List<string>();
+		var commitsGrouping = summary
+			.GroupBy(x => x.commits)
+			.Select(g => new
+			{
+				commits = g.Key,
+				count = g.Count(),
+				authors = g.Select(x => x.author).ToList(),
+			})
+			.OrderByDescending(x => x.commits)
+			.ToList();
+
+		// local helpers
+		string[] places = new[] { "1st", "2nd", "3rd" };
+		static string Plural(int n) => n == 1 ? "" : "s";
+		static string Honor(string place, string author, int commits, string suffix = null)
+			=> $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
+		static string HonorForFiles(string place, string author, int commits, int files, string suffix = null)
+			=> Honor(place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
+		static string HonorForInsertions(string place, string author, int commits, int files, int insertions, string suffix = null)
+			=> HonorForFiles(place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
+		static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
+			=> HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
+
+		var statistics = new List<(string Contributor, int Files, int Insertions, int Deletions)>();
+		foreach (var group in commitsGrouping)
+		{
+			if (topContributors.Count >= top3) break;
+			if (group.count == 1)
+			{
+				var place = places[topContributors.Count];
+				var author = group.authors.First();
+				var honoring = Honor(place, author, group.commits);
+				topContributors.Add(honoring);
+			}
+			else // multiple candidates with the same number of commits, so, group by files changed
+			{
+				var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
+				// Collect statistics from git log & shortlog
+				foreach (var author in group.authors)
+				{
+					if (!statistics.Exists(s => s.Contributor == author))
+					{
+						var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
+						var data = shortstat
+							.Where(x => shortstatRegex.IsMatch(x))
+							.Select(x => shortstatRegex.Match(x))
+							.Select(m => new
+							{
+								files = int.Parse(m.Groups["files"]?.Value ?? "0"),
+								insertions = int.Parse(m.Groups["insertions"]?.Value ?? "0"),
+								deletions = int.Parse(m.Groups["deletions"]?.Value ?? "0"),
+							})
+							.ToList();
+						statistics.Add((author, data.Sum(x => x.files), data.Sum(x => x.insertions), data.Sum(x => x.deletions)));
+					}
+				}
+				var filesGrouping = statistics
+					.GroupBy(x => x.Files)
+					.Select(g => new
+					{
+						files = g.Key,
+						count = g.Count(),
+						contributors = g.SelectMany(x => statistics.Where(s => s.Contributor==x.Contributor && s.Files==g.Key)).ToList(),
+					})
+					.OrderByDescending(x => x.files)
+					.ToList();
+				foreach (var fGroup in filesGrouping)
+				{
+					if (topContributors.Count >= top3) break;
+					if (fGroup.count == 1)
+					{
+						var place = places[topContributors.Count];
+						var contributor = fGroup.contributors.First();
+						var honoring = HonorForFiles(place, contributor.Contributor, group.commits, contributor.Files);
+						topContributors.Add(honoring);
+					}
+					else // multiple candidates with the same number of commits, with the same number of changed files, so, group by additions (insertions)
+					{
+						var insertionsGrouping = fGroup.contributors
+							.GroupBy(x => x.Insertions)
+							.Select(g => new
+							{
+								insertions = g.Key,
+								count = g.Count(),
+								contributors = g.SelectMany(x => fGroup.contributors.Where(s => s.Contributor == x.Contributor && s.Insertions == g.Key)).ToList(),
+							})
+							.OrderByDescending(x => x.insertions)
+							.ToList();
+						foreach (var insGroup in insertionsGrouping)
+						{
+							if (topContributors.Count >= top3) break;
+							if (insGroup.count == 1)
+							{
+								var place = places[topContributors.Count];
+								var contributor = insGroup.contributors.First();
+								var honoring = HonorForInsertions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions);
+								topContributors.Add(honoring);
+							}
+							else // multiple candidates with the same number of commits, with the same number of changed files, with the same number of insertions, so, order desc by deletions
+							{
+								foreach (var contributor in insGroup.contributors.OrderByDescending(x => x.Deletions))
+								{
+									if (topContributors.Count >= top3) break;
+									var place = places[topContributors.Count];
+									var honoring = HonorForDeletions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions, contributor.Deletions);
+									topContributors.Add(honoring);
+								}
+							}
+						}
+					}
+				}
+			}
+		} // END of Top 3
+		//releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		//releaseNotes.AddRange(topContributors);
+		//releaseNotes.Add("");
+		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		releaseNotes.AddRange(starring);
+		releaseNotes.Add("");
+		releaseNotes.Add($"### Features in Release {releaseVersion}");
+		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
+		releaseNotes.AddRange(commitsHistory);
+
+		EnsureDirectoryExists(packagesDir);
+		System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
+
+		if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
+		{
+			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
+		}
+
+		Information("Release notes are >>>" + Environment.NewLine + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
+	});
+	
 Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
@@ -259,32 +403,37 @@ Task("RunIntegrationTests")
 	});
 
 Task("CreateArtifacts")
+	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("Compile")
 	.Does(() => 
 	{
 		EnsureDirectoryExists(packagesDir);
 
-		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
+		CopyFiles("./ReleaseNotes.md", packagesDir);
 
-		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+		// CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+		// var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+		// foreach(var projectFile in projectFiles)
+		// {
+		// 	System.IO.File.AppendAllLines(
+		// 		artifactsFile,
+		// 		new[] { projectFile.GetFilename().FullPath }
+		// 	);
+		// }
 
-		foreach(var projectFile in projectFiles)
-		{
-			System.IO.File.AppendAllLines(artifactsFile, new[]{
-				projectFile.GetFilename().FullPath,
-				"releasenotes.md"
-			});
-		}
-
-		var artifacts = System.IO.File
-			.ReadAllLines(artifactsFile)
+		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
 			.Distinct();
 		
 		foreach(var artifact in artifacts)
 		{
 			var codePackage = packagesDir + File(artifact);
-
-			Information("Created package " + codePackage);
+			if (FileExists(codePackage))
+			{
+				Information("Created package " + codePackage);
+			} else {
+				Information("Package does not exist: " + codePackage);
+			}
 		}
 	});
 
@@ -318,26 +467,23 @@ Task("EnsureStableReleaseRequirements")
 		}
 
 		Information("Release is stable...");
-    });
+	});
 
 Task("DownloadGitHubReleaseArtifacts")
-    .Does(() =>
+    .Does(async () =>
     {
-
 		try
 		{
 			// hack to let GitHub catch up, todo - refactor to poll
 			System.Threading.Thread.Sleep(5000);
-
 			EnsureDirectoryExists(packagesDir);
 
 			var releaseUrl = tagsUrl + versioning.NuGetVersion;
-
-        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(GetResource(releaseUrl))
+			var releaseInfo = await GetResourceAsync(releaseUrl);
+        	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(releaseInfo)
 				.Value<string>("assets_url");
 
-			var assets = GetResource(assets_url);
-
+			var assets = await GetResourceAsync(assets_url);
 			foreach(var asset in Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JArray>(assets))
 			{
 				var file = packagesDir + File(asset.Value<string>("name"));
@@ -349,7 +495,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			Information("There was an exception " + exception);
 			throw;
 		}
-    });
+	});
 
 Task("PublishToNuget")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
@@ -359,7 +505,7 @@ Task("PublishToNuget")
 		{
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 		}
-    });
+	});
 
 RunTarget(target);
 
@@ -419,7 +565,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		
 		foreach(var artifact in artifacts)
 		{
-			if (artifact == "releasenotes.md") 
+			if (artifact == "ReleaseNotes.md") 
 			{
 				continue;
 			}
@@ -445,14 +591,12 @@ private void CreateGitHubRelease()
 	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.PostAsync("https://api.github.com/repos/ThreeMammals/Ocelot/releases", content).Result;
@@ -477,14 +621,12 @@ private void UploadFileToGitHubRelease(FilePath file)
 	var content = new System.Net.Http.ByteArrayContent(data);
 	content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.PostAsync($"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={file.GetFilename()}", content).Result;
@@ -501,47 +643,38 @@ private void CompleteGitHubRelease()
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.SendAsync(request).Result;
-		if(result.StatusCode != System.Net.HttpStatusCode.OK) 
+		if (result.StatusCode != System.Net.HttpStatusCode.OK) 
 		{
 			throw new Exception("CompleteGitHubRelease result.StatusCode = " + result.StatusCode);
 		}
 	}
 }
 
-
 /// gets the resource from the specified url
-private string GetResource(string url)
+private async Task<string> GetResourceAsync(string url)
 {
 	try
 	{
 		Information("Getting resource from " + url);
 
-		var assetsRequest = System.Net.WebRequest.CreateHttp(url);
-		assetsRequest.Method = "GET";
-		assetsRequest.Accept = "application/vnd.github.v3+json";
-		assetsRequest.UserAgent = "BuildScript";
+		using var client = new System.Net.Http.HttpClient();
+		client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+		client.DefaultRequestHeaders.UserAgent.ParseAdd("BuildScript");
 
-		using (var assetsResponse = assetsRequest.GetResponse())
-		{
-			var assetsStream = assetsResponse.GetResponseStream();
-			var assetsReader = new StreamReader(assetsStream);
-			var response =  assetsReader.ReadToEnd();
-
-			Information("Response is " + response);
-			
-			return response;
-		}
+		using var response = await client.GetAsync(url);
+		response.EnsureSuccessStatusCode();
+		var content = await response.Content.ReadAsStringAsync();
+		Information("Response is >>>" + Environment.NewLine + content + Environment.NewLine + "<<<");
+		return content;
 	}
 	catch(Exception exception)
 	{
@@ -559,15 +692,5 @@ private bool IsMainOrDevelop()
 {
 	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
 
-	if(env == "main") 
-	{
-		return true;
-	}
-
-	if(env == "develop") 
-	{
-		return true;
-	}
-
-    return false;
+    return env == "main" || env == "develop";
 }

@@ -24,7 +24,7 @@ namespace Ocelot.UnitTests.Requester
 
         public DelegatingHandlerHandlerProviderFactoryTests()
         {
-            _qosDelegate = (a, b) => new FakeQoSHandler();
+            _qosDelegate = (a, b, c) => new FakeQoSHandler();
             _tracingFactory = new Mock<ITracingHandlerFactory>();
             _qosFactory = new Mock<IQoSFactory>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
