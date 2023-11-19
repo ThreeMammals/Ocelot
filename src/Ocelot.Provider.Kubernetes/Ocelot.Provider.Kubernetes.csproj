@@ -8,8 +8,7 @@
     <Description>Provides Ocelot extensions to use kubernetes</Description>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
-    <PackageReleaseNotes>
-    </PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
     <PackageId>Ocelot.Provider.Kubernetes</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>

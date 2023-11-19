@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-	<Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="ocelot.json;appsettings.json">
