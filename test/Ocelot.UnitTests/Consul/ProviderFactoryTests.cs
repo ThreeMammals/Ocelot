@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
+using Ocelot.Polling;
 using Ocelot.Provider.Consul;
 using Ocelot.ServiceDiscovery.Providers;
 
@@ -17,7 +18,8 @@ public class ProviderFactoryTests
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         var logger = new Mock<IOcelotLogger>();
         loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(logger.Object);
-        loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
+        loggerFactory.Setup(x => x.CreateLogger<ServicePollingHandler<Provider.Consul.Consul>>())
+            .Returns(logger.Object);
         var consulFactory = new Mock<IConsulClientFactory>();
         services.AddSingleton(consulFactory.Object);
         services.AddSingleton(loggerFactory.Object);
@@ -25,7 +27,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_consul_service_discovery_provider()
+    public void should_return_ConsulServiceDiscoveryProvider()
     {
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
@@ -38,25 +40,25 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_polling_consul_service_discovery_provider()
+    public void should_return_PollingConsulServiceDiscoveryProvider()
     {
         var provider = DummyPollingConsulServiceFactory(string.Empty);
-        var pollProvider = provider as PollConsul;
+        var pollProvider = provider as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider.ShouldNotBeNull();
     }
 
     [Fact]
-    public void should_return_same_provider_for_given_service_name()
+    public void should_return_SameProviderForGivenServiceName()
     {
         var provider = DummyPollingConsulServiceFactory("test");
         var provider2 = DummyPollingConsulServiceFactory("test");
 
         provider.ShouldBeEquivalentTo(provider2);
 
-        var pollProvider = provider as PollConsul;
+        var pollProvider = provider as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider.ShouldNotBeNull();
 
-        var pollProvider2 = provider2 as PollConsul;
+        var pollProvider2 = provider2 as ServicePollingHandler<Provider.Consul.Consul>;
         pollProvider2.ShouldNotBeNull();
 
         pollProvider.ServiceName.ShouldBeEquivalentTo(pollProvider2.ServiceName);
@@ -64,7 +66,7 @@ public class ProviderFactoryTests
 
     [Theory]
     [InlineData(new object[] { new[] { "service1", "service2", "service3", "service4" } })]
-    public void should_return_provider_according_to_service_name(string[] serviceNames)
+    public void should_return_ProviderAccordingToServiceName(string[] serviceNames)
     {
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
 
@@ -74,7 +76,8 @@ public class ProviderFactoryTests
             providersList.ShouldContain(currentProvider);
         }
 
-        var convertedProvidersList = providersList.Select(x => x as PollConsul).ToList();
+        var convertedProvidersList =
+            providersList.Select(x => x as ServicePollingHandler<Provider.Consul.Consul>).ToList();
 
         foreach (var convertedProvider in convertedProvidersList)
         {
@@ -84,18 +87,16 @@ public class ProviderFactoryTests
         foreach (var serviceName in serviceNames)
         {
             var cProvider = DummyPollingConsulServiceFactory(serviceName);
-            var convertedCProvider = cProvider as PollConsul;
+            var convertedCProvider = cProvider as ServicePollingHandler<Provider.Consul.Consul>;
 
             convertedCProvider.ShouldNotBeNull();
 
-            var matchingProviders = convertedProvidersList
-                .Where(x => x.ServiceName == convertedCProvider.ServiceName)
+            var matchingProviders = convertedProvidersList.Where(x => x.ServiceName == convertedCProvider.ServiceName)
                 .ToList();
             matchingProviders.ShouldHaveSingleItem();
 
-            matchingProviders.First()
-                .ShouldNotBeNull()
-                .ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
+            matchingProviders.First().ShouldNotBeNull();
+            matchingProviders.First().ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
         }
     }
 
@@ -107,9 +108,8 @@ public class ProviderFactoryTests
             .WithServiceName(serviceName)
             .Build();
 
-        return ConsulProviderFactory.Get?.Invoke(
-            _provider,
-            new ServiceProviderConfiguration(ConsulProviderFactory.PollConsul, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
-            route);
+        return ConsulProviderFactory.Get(_provider,
+            new ServiceProviderConfiguration("pollconsul", "http", string.Empty, 1, string.Empty, string.Empty,
+                stopsFromPolling), route);
     }
 }

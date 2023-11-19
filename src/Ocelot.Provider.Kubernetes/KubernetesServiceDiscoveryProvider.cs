@@ -10,6 +10,8 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
 
+    public KubernetesServiceDiscoveryProvider(){}
+
     public KubernetesServiceDiscoveryProvider(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
     {
         _kubeRegistryConfiguration = kubeRegistryConfiguration;
@@ -17,7 +19,7 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
         _kubeApi = kubeApi;
     }
 
-    public async Task<List<Service>> GetAsync()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))

@@ -12,6 +12,7 @@ public class Consul : IServiceDiscoveryProvider
     private readonly IConsulClient _consul;
     private readonly IOcelotLogger _logger;
 
+    public Consul() {}
     public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
     {
         _config = config;
@@ -19,7 +20,7 @@ public class Consul : IServiceDiscoveryProvider
         _logger = factory.CreateLogger<Consul>();
     }
 
-    public async Task<List<Service>> GetAsync()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 

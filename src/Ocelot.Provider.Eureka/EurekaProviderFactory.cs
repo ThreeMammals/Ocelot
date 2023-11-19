@@ -16,13 +16,11 @@ public static class EurekaProviderFactory
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
     {
         var client = provider.GetService<IDiscoveryClient>();
-        if (client == null)
-        {
-            throw new NullReferenceException($"Cannot get an {nameof(IDiscoveryClient)} service during {nameof(CreateProvider)} operation to instanciate the {nameof(Eureka)} provider!");
-        }
-
-        return Eureka.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
-            ? new Eureka(route.ServiceName, client)
-            : null;
+        return client == null
+            ? throw new NullReferenceException(
+                $"Cannot get an {nameof(IDiscoveryClient)} service during {nameof(CreateProvider)} operation to instantiate the {nameof(Eureka)} provider!")
+            : Eureka.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
+                ? new Eureka(route.ServiceName, client)
+                : null;
     }
 }
