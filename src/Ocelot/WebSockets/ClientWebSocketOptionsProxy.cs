@@ -12,9 +12,13 @@ public class ClientWebSocketOptionsProxy : IClientWebSocketOptions
     {
         _real = options;
     }
-
+#if NET7_0_OR_GREATER
     public Version HttpVersion { get => _real.HttpVersion; set => _real.HttpVersion = value; }
     public HttpVersionPolicy HttpVersionPolicy { get => _real.HttpVersionPolicy; set => _real.HttpVersionPolicy = value; }
+#else
+    public Version HttpVersion { get; set; }
+    public HttpVersionPolicy HttpVersionPolicy { get; set; }
+#endif
     public bool UseDefaultCredentials { get => _real.UseDefaultCredentials; set => _real.UseDefaultCredentials = value; }
     public ICredentials Credentials { get => _real.Credentials; set => _real.Credentials = value; }
     public IWebProxy Proxy { get => _real.Proxy; set => _real.Proxy = value; }
@@ -23,8 +27,11 @@ public class ClientWebSocketOptionsProxy : IClientWebSocketOptions
     public CookieContainer Cookies { get => _real.Cookies; set => _real.Cookies = value; }
     public TimeSpan KeepAliveInterval { get => _real.KeepAliveInterval; set => _real.KeepAliveInterval = value; }
     public WebSocketDeflateOptions DangerousDeflateOptions { get => _real.DangerousDeflateOptions; set => _real.DangerousDeflateOptions = value; }
+#if NET7_0_OR_GREATER
     public bool CollectHttpResponseDetails { get => _real.CollectHttpResponseDetails; set => _real.CollectHttpResponseDetails = value; }
-
+#else
+    public bool CollectHttpResponseDetails { get; set; }
+#endif
     public void AddSubProtocol(string subProtocol) => _real.AddSubProtocol(subProtocol);
 
     public void SetBuffer(int receiveBufferSize, int sendBufferSize) => _real.SetBuffer(receiveBufferSize, sendBufferSize);

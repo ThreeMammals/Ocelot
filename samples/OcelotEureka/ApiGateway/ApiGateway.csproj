@@ -1,20 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-	</PropertyGroup>
-	<ItemGroup>
-		<Folder Include="wwwroot\" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Update="ocelot.json;appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Ocelot" Version="20.0.0" />
-		<PackageReference Include="Ocelot.Provider.Eureka" Version="20.0.0" />
-		<PackageReference Include="Ocelot.Provider.Polly" Version="20.0.0" />
-	</ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="wwwroot\**" />
+    <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="wwwroot\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="ocelot.json;appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
+    <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
 </Project>

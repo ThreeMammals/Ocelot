@@ -1565,9 +1565,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private class TestHandler : AuthenticationHandler<TestOptions>
         {
+#if NET8_0_OR_GREATER
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
             {
             }
+#else
+            public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+            {
+            }
+#endif
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
