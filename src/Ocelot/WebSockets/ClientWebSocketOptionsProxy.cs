@@ -12,6 +12,11 @@ public class ClientWebSocketOptionsProxy : IClientWebSocketOptions
     {
         _real = options;
     }
+
+    // .NET 6 and lower doesn't support the properties below.
+    // Instead of throwing a NotSupportedException, we just implement the getter/setter.
+    // This way, we can use the same code for .NET 6 and .NET 7+.
+    // TODO The design should be reviewed since we are hiding the ClientWebSocketOptions properties.
 #if NET7_0_OR_GREATER
     public Version HttpVersion { get => _real.HttpVersion; set => _real.HttpVersion = value; }
     public HttpVersionPolicy HttpVersionPolicy { get => _real.HttpVersionPolicy; set => _real.HttpVersionPolicy = value; }
