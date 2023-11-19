@@ -1,45 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-		<NoPackageAnalysis>true</NoPackageAnalysis>
-		<Product>Ocelot</Product>
-		<Description>Provides Ocelot extensions to use kubernetes</Description>
-		<PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-		<PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
-		<PackageReleaseNotes>
-		</PackageReleaseNotes>
-		<AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
-		<PackageId>Ocelot.Provider.Kubernetes</PackageId>
-		<PackageTags>API Gateway;.NET core</PackageTags>
-		<RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
-		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-		<Version>0.0.0-dev</Version>
-		<Authors>geffzhang</Authors>
-		<Company />
-		<CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<NoWarn>1591</NoWarn>
-	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="IKubeApiClientFactory.cs" />
-		<Compile Remove="KubeApiClientFactory.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="KubeClient" Version="2.4.10" />
-		<PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.4.10" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Ocelot\Ocelot.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-	</ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <Product>Ocelot</Product>
+    <Description>Provides Ocelot extensions to use kubernetes</Description>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+    <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
+    <PackageId>Ocelot.Provider.Kubernetes</PackageId>
+    <PackageTags>API Gateway;.NET core</PackageTags>
+    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Version>0.0.0-dev</Version>
+    <Authors>geffzhang</Authors>
+    <Company />
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="IKubeApiClientFactory.cs" />
+    <Compile Remove="KubeApiClientFactory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="KubeClient" Version="2.4.10" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.4.10" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+  </ItemGroup>
 </Project>

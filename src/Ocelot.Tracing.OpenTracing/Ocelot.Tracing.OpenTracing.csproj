@@ -1,30 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-		<Version>0.0.0-dev</Version>
-		<Authors>Kjell-Åke Gafvelin</Authors>
-		<Description>This package provides OpenTracing support to Ocelot.</Description>
-		<PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-		<PackageIcon>ocelot_logo.png</PackageIcon>
-		<PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
-		<NoWarn>1591</NoWarn>
-	</PropertyGroup>
-	<ItemGroup>
-		<AdditionalFiles Include="stylecop.json" />
-		<None Include="..\..\images\ocelot_logo.png" Pack="true" Visible="true" PackagePath="\" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="OpenTracing" Version="0.12.1" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Ocelot\Ocelot.csproj" />
-	</ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Version>0.0.0-dev</Version>
+    <Authors>Kjell-Åke Gafvelin</Authors>
+    <Description>This package provides OpenTracing support to Ocelot.</Description>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+    <None Include="..\..\images\ocelot_logo.png" Pack="true" Visible="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTracing" Version="0.12.1" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
 </Project>
