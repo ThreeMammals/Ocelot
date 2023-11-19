@@ -80,16 +80,9 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenHttpRequestWithHeader(string headerKey, string headerValue)
         {
-            _context = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Headers =
-                    {
-                        { headerKey, headerValue },
-                    },
-                },
-            };
+            var context = new DefaultHttpContext();
+            context.Request.Headers.Append(headerKey, headerValue);
+            _context = context;
         }
 
         private void WhenAddingHeader(string headerKey, string headerValue)

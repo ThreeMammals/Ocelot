@@ -448,7 +448,7 @@ namespace Ocelot.AcceptanceTests
             {
                 context.Response.OnStarting(() =>
                 {
-                    context.Response.Headers.Add(headerKey, headerValue);
+                    context.Response.Headers.Append(headerKey, headerValue);
                     context.Response.StatusCode = statusCode;
                     return Task.CompletedTask;
                 });
