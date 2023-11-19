@@ -17,7 +17,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_get_converted_to_post()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -53,7 +53,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_get_converted_to_post_with_content()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -93,7 +93,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_get_converted_to_get_with_content()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

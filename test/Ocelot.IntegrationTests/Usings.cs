@@ -9,6 +9,7 @@ global using System.Threading.Tasks;
 
 // Project extra global namespaces
 global using Ocelot;
+global using Ocelot.Testing;
 global using Shouldly;
 global using TestStack.BDDfy;
 global using Xunit;

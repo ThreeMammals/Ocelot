@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_match_forward_slash_in_pattern_before_next_forward_slash()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -63,7 +63,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_forward_slash_and_placeholder_only()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -99,7 +99,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_favouring_forward_slash_with_path_route()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -150,7 +150,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_favouring_forward_slash()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
@@ -200,7 +200,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_favouring_forward_slash_route_because_it_is_first()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -251,7 +251,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_nothing_and_placeholder_only()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -287,7 +287,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -323,7 +323,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Bug()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -376,7 +376,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_path_missing_forward_slash_as_first_char()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -412,7 +412,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_when_host_has_trailing_slash()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -448,7 +448,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -484,7 +484,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_not_found_when_upstream_url_ends_with_forward_slash_but_template_does_not()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -519,7 +519,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_not_found()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -554,7 +554,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_complex_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -590,7 +590,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_complex_url_that_starts_with_placeholder()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -626,7 +626,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_add_trailing_slash_to_downstream_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -661,7 +661,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_simple_url()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -697,7 +697,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_complex_query_string()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -733,7 +733,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_placeholder_for_final_url_path()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -769,7 +769,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -805,7 +805,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_and_any_upstream_http_method()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -841,7 +841,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_404_when_calling_upstream_route_with_no_matching_downstream_re_route_github_issue_134()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -893,7 +893,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_set_trailing_slash_on_url_template()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -930,7 +930,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_priority()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -982,7 +982,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_match_multiple_paths_with_catch_all()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -1018,7 +1018,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_271()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

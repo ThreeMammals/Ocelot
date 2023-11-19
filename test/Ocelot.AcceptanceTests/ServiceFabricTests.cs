@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_fix_issue_555()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -94,7 +94,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -132,7 +132,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_support_placeholder_in_service_fabric_service_name()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

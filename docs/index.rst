@@ -1,7 +1,13 @@
-Welcome to Ocelot
-=================
+Welcome to Ocelot 20.0
+======================
 
-Thanks for taking a look at the Ocelot documentation. Please use the left hand nav to get around. I would suggest taking a look at introduction first.
+Thanks for taking a look at the Ocelot documentation! Please use the left hand navigation to get around.
+The team would suggest taking a look at the **Introduction** chapter first.
+
+All **Features** are arranged in alphabetical order.
+The main features are :doc:`../features/configuration` and :doc:`../features/routing`.
+
+We **do** follow development process which is described in :doc:`../building/releaseprocess`.
 
 .. toctree::
    :maxdepth: 2
@@ -19,31 +25,31 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    :hidden:
    :caption: Features
 
-   features/configuration
-   features/dependencyinjection
-   features/routing
-   features/requestaggregation
-   features/graphql
-   features/servicediscovery
-   features/servicefabric
-   features/kubernetes
+   features/administration
    features/authentication
    features/authorization
-   features/websockets
-   features/administration
-   features/ratelimiting
    features/caching
-   features/qualityofservice
-   features/headerstransformation 
-   features/methodtransformation
-   features/claimstransformation 
-   features/logging
-   features/tracing
-   features/requestid
-   features/middlewareinjection
-   features/loadbalancer
+   features/claimstransformation
+   features/configuration
    features/delegatinghandlers
+   features/dependencyinjection
    features/errorcodes
+   features/graphql
+   features/headerstransformation
+   features/kubernetes
+   features/loadbalancer
+   features/logging
+   features/methodtransformation
+   features/middlewareinjection
+   features/qualityofservice
+   features/ratelimiting
+   features/requestaggregation
+   features/requestid
+   features/routing
+   features/servicediscovery
+   features/servicefabric
+   features/tracing
+   features/websockets
 
 .. toctree::
    :maxdepth: 2
@@ -54,6 +60,3 @@ Thanks for taking a look at the Ocelot documentation. Please use the left hand n
    building/building
    building/tests
    building/releaseprocess
-
-
-

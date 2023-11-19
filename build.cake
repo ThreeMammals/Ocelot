@@ -85,8 +85,8 @@ Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease")
-    .IsDependentOn("PublishToNuget");
+	.IsDependentOn("PublishGitHubRelease");
+    // .IsDependentOn("PublishToNuget");
 
 Task("Compile")
 	.IsDependentOn("Clean")
@@ -138,11 +138,6 @@ Task("CreateReleaseNotes")
 	{	
 		Information($"Generating release notes at {releaseNotesFile}");
 
-		var releaseVersion = versioning.NuGetVersion;
-		// Read main header from Git file, substitute version in header, and add content further...
-		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion);
-		var releaseNotes = new List<string> { releaseHeader };
-
 		// local helper function
 		Func<string, IEnumerable<string>> GitHelper = (command) =>
 		{
@@ -159,6 +154,11 @@ Task("CreateReleaseNotes")
 		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
 		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
 		Information("Last release tag is " + lastRelease);
+
+		var releaseVersion = versioning.NuGetVersion;
+		// Read main header from Git file, substitute version in header, and add content further...
+		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
+		var releaseNotes = new List<string> { releaseHeader };
 
 		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
 		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
@@ -296,9 +296,9 @@ Task("CreateReleaseNotes")
 				}
 			}
 		} // END of Top 3
-		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		releaseNotes.AddRange(topContributors);
-		releaseNotes.Add("");
+		//releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		//releaseNotes.AddRange(topContributors);
+		//releaseNotes.Add("");
 		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
 		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
@@ -409,17 +409,18 @@ Task("CreateArtifacts")
 	{
 		EnsureDirectoryExists(packagesDir);
 
-		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
+		CopyFiles("./ReleaseNotes.md", packagesDir);
 
-		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
-
-		foreach(var projectFile in projectFiles)
-		{
-			System.IO.File.AppendAllLines(
-				artifactsFile,
-				new[] { projectFile.GetFilename().FullPath, "ReleaseNotes.md" }
-			);
-		}
+		// CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+		// var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+		// foreach(var projectFile in projectFiles)
+		// {
+		// 	System.IO.File.AppendAllLines(
+		// 		artifactsFile,
+		// 		new[] { projectFile.GetFilename().FullPath }
+		// 	);
+		// }
 
 		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
 			.Distinct();
@@ -427,8 +428,12 @@ Task("CreateArtifacts")
 		foreach(var artifact in artifacts)
 		{
 			var codePackage = packagesDir + File(artifact);
-
-			Information("Created package " + codePackage);
+			if (FileExists(codePackage))
+			{
+				Information("Created package " + codePackage);
+			} else {
+				Information("Package does not exist: " + codePackage);
+			}
 		}
 	});
 
@@ -586,14 +591,12 @@ private void CreateGitHubRelease()
 	
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.PostAsync("https://api.github.com/repos/ThreeMammals/Ocelot/releases", content).Result;
@@ -618,14 +621,12 @@ private void UploadFileToGitHubRelease(FilePath file)
 	var content = new System.Net.Http.ByteArrayContent(data);
 	content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.PostAsync($"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={file.GetFilename()}", content).Result;
@@ -642,24 +643,21 @@ private void CompleteGitHubRelease()
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-	using(var client = new System.Net.Http.HttpClient())
+	using (var client = new System.Net.Http.HttpClient())
 	{	
-			client.DefaultRequestHeaders.Authorization = 
-    new System.Net.Http.Headers.AuthenticationHeaderValue(
-        "Basic", Convert.ToBase64String(
-            System.Text.ASCIIEncoding.ASCII.GetBytes(
-               $"{gitHubUsername}:{gitHubPassword}")));
-
+		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        	"Basic",
+			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
+		);
 		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 
 		var result = client.SendAsync(request).Result;
-		if(result.StatusCode != System.Net.HttpStatusCode.OK) 
+		if (result.StatusCode != System.Net.HttpStatusCode.OK) 
 		{
 			throw new Exception("CompleteGitHubRelease result.StatusCode = " + result.StatusCode);
 		}
 	}
 }
-
 
 /// gets the resource from the specified url
 private async Task<string> GetResourceAsync(string url)

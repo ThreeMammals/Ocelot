@@ -33,7 +33,7 @@ public class CancelRequestTests : IDisposable
     [Fact]
     public void Should_abort_service_work_when_cancelling_the_request()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
 
         var configuration = new FileConfiguration
         {

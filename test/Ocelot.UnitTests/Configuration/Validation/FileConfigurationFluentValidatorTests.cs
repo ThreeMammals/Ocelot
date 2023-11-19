@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -1536,8 +1539,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private void GivenAQoSHandler()
         {
             var collection = new ServiceCollection();
-            QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
-            collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
+            DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
+            collection.AddSingleton((QosDelegatingHandlerDelegate)Del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }

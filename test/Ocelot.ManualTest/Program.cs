@@ -33,7 +33,7 @@ namespace Ocelot.ManualTest
                         x.Audience = "test";
                     });*/
 
-                    s.AddSingleton<QosDelegatingHandlerDelegate>((x, t) => new FakeHandler());
+                    s.AddSingleton<QosDelegatingHandlerDelegate>((x, t, z) => new FakeHandler());
                     s.AddOcelot()
                        .AddDelegatingHandler<FakeHandler>(true);
                     /*.AddCacheManager(x =>
