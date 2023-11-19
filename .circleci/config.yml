@@ -4,13 +4,13 @@ orbs:
 jobs:
   build:
     docker:
-      - image: ggnaegi/ocelot-build:0.0.11
+      - image: ocelot2/circleci-build:8.21.0
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: ggnaegi/ocelot-build:0.0.11
+      - image: ocelot2/circleci-build:8.21.0
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake --target=Release
