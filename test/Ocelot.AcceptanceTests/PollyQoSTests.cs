@@ -6,7 +6,6 @@ namespace Ocelot.AcceptanceTests
     public class PollyQoSTests : IDisposable
     {
         private readonly Steps _steps;
-        private int _requestCount;
         private readonly ServiceHandler _serviceHandler;
 
         public PollyQoSTests()
@@ -227,32 +226,17 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
         {
+            var requestCount = 0;
             _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
-                //circuit starts closed
-                if (_requestCount == 0)
+                if (requestCount == 1)
                 {
-                    _requestCount++;
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(responseBody);
-                    return;
-                }
-
-                //request one times out and polly throws exception, circuit opens
-                if (_requestCount == 1)
-                {
-                    _requestCount++;
                     await Task.Delay(1000);
-                    context.Response.StatusCode = 200;
-                    return;
                 }
 
-                //after break closes we return 200 OK
-                if (_requestCount == 2)
-                {
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(responseBody);
-                }
+                requestCount++;
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync(responseBody);
             });
         }
 
