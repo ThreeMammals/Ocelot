@@ -312,7 +312,7 @@ Task("CreateReleaseNotes")
 
 private void WriteReleaseNotes()
 {
-	Information($"RUNNING {nameof(WriteReleaseNotes)} ...");
+	Information($"RUN {nameof(WriteReleaseNotes)} ...");
 
 	EnsureDirectoryExists(packagesDir);
 	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
