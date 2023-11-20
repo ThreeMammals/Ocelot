@@ -2,7 +2,7 @@
 #tool "dotnet:?package=coveralls.net&version=4.0.1"
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator&version=5.1.19"
+#tool "nuget:?package=ReportGenerator&version=5.2.0"
 #addin Cake.Coveralls&version=1.1.0
 
 #r "Spectre.Console"
@@ -42,8 +42,9 @@ var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
 // packaging
 var packagesDir = artifactsDir + Directory("Packages");
-var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
 var artifactsFile = packagesDir + File("artifacts.txt");
+var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
+var releaseNotes = new List<string>();
 
 // stable releases
 var tagsUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/";
@@ -85,8 +86,8 @@ Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease");
-    // .IsDependentOn("PublishToNuget");
+	.IsDependentOn("PublishGitHubRelease")
+    .IsDependentOn("PublishToNuget");
 
 Task("Compile")
 	.IsDependentOn("Clean")
@@ -135,7 +136,7 @@ Task("Version")
 Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
 	.Does(() =>
-	{	
+	{
 		Information($"Generating release notes at {releaseNotesFile}");
 
 		// local helper function
@@ -158,7 +159,7 @@ Task("CreateReleaseNotes")
 		var releaseVersion = versioning.NuGetVersion;
 		// Read main header from Git file, substitute version in header, and add content further...
 		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
-		var releaseNotes = new List<string> { releaseHeader };
+		releaseNotes = new List<string> { releaseHeader };
 
 		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
 		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
@@ -296,9 +297,9 @@ Task("CreateReleaseNotes")
 				}
 			}
 		} // END of Top 3
-		//releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		//releaseNotes.AddRange(topContributors);
-		//releaseNotes.Add("");
+		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		releaseNotes.AddRange(topContributors);
+		releaseNotes.Add("");
 		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
 		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
@@ -306,17 +307,26 @@ Task("CreateReleaseNotes")
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
 		releaseNotes.AddRange(commitsHistory);
 
-		EnsureDirectoryExists(packagesDir);
-		System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
-
-		if (string.IsNullOrEmpty(System.IO.File.ReadAllText(releaseNotesFile)))
-		{
-			System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
-		}
-
-		Information("Release notes are >>>" + Environment.NewLine + System.IO.File.ReadAllText(releaseNotesFile) + "<<<");
+		WriteReleaseNotes();
 	});
-	
+
+private void WriteReleaseNotes()
+{
+	Information($"RUNNING {nameof(WriteReleaseNotes)} ...");
+
+	EnsureDirectoryExists(packagesDir);
+	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
+
+	var content = System.IO.File.ReadAllText(releaseNotesFile);
+	if (string.IsNullOrEmpty(content))
+	{
+		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
+	}
+
+	Information($"Release notes are >>>\n{content}<<<");
+	Information($"EXITED {nameof(WriteReleaseNotes)}");
+}
+
 Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
@@ -407,25 +417,24 @@ Task("CreateArtifacts")
 	.IsDependentOn("Compile")
 	.Does(() => 
 	{
-		EnsureDirectoryExists(packagesDir);
-
+		WriteReleaseNotes();
 		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
-		CopyFiles("./ReleaseNotes.md", packagesDir);
 
-		// CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
-		// var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
-		// foreach(var projectFile in projectFiles)
-		// {
-		// 	System.IO.File.AppendAllLines(
-		// 		artifactsFile,
-		// 		new[] { projectFile.GetFilename().FullPath }
-		// 	);
-		// }
+		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+		foreach(var projectFile in projectFiles)
+		{
+			System.IO.File.AppendAllLines(
+				artifactsFile,
+				new[] { projectFile.GetFilename().FullPath }
+			);
+		}
 
 		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
 			.Distinct();
-		
-		foreach(var artifact in artifacts)
+
+		Information($"Listing all {nameof(artifacts)}...");
+		foreach (var artifact in artifacts)
 		{
 			var codePackage = packagesDir + File(artifact);
 			if (FileExists(codePackage))
