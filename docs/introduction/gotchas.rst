@@ -4,7 +4,7 @@ Gotchas
 IIS
 -----
 
-    Microsoft Learn: `Host ASP.NET Core on Windows with IIS <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/?view=aspnetcore-7.0>`_
+    Microsoft Learn: `Host ASP.NET Core on Windows with IIS <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/>`_
 
 We do not recommend to deploy Ocelot app to IIS environments, but if you do, keep in mind the gotchas below.
 
