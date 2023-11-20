@@ -11,7 +11,7 @@ We do not recommend to deploy Ocelot app to IIS environments, but if you do, kee
 * When using ASP.NET Core 2.2+ and you want to use In-Process hosting, replace ``UseIISIntegration()`` with ``UseIIS()``, otherwise you will get startup errors.
 
 * Make sure you use Out-of-process hosting model instead of In-process one
-  (see `Out-of-process hosting with IIS and ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/out-of-process-hosting?view=aspnetcore-7.0>`_),
+  (see `Out-of-process hosting with IIS and ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/out-of-process-hosting>`_),
   otherwise you will get very slow responses (see `1657 <https://github.com/ThreeMammals/Ocelot/issues/1657>`_).
 
 * Ensure all DNS servers of all downstream hosts are online and they function perfectly, otherwise you will get slow responses (see `1630 <https://github.com/ThreeMammals/Ocelot/issues/1630>`_).
