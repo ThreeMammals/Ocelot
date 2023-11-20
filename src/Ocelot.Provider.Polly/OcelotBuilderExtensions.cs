@@ -17,7 +17,7 @@ public static class OcelotBuilderExtensions
 {
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
         QosDelegatingHandlerDelegate delegatingHandler,
-        IDictionary<Type, Func<Exception, Error>> errorMapping) where T : class, IPollyQoSProvider<HttpResponseMessage>
+        Dictionary<Type, Func<Exception, Error>> errorMapping) where T : class, IPollyQoSProvider<HttpResponseMessage>
     {
         builder.Services
             .AddSingleton(errorMapping)
