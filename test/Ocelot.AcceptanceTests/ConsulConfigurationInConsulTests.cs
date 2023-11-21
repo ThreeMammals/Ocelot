@@ -370,7 +370,7 @@ namespace Ocelot.AcceptanceTests
 
                                         var kvp = new FakeConsulGetResponse(base64);
                                         json = JsonConvert.SerializeObject(new[] { kvp });
-                                        context.Response.Headers.Add("Content-Type", "application/json");
+                                        context.Response.Headers.Append("Content-Type", "application/json");
                                         await context.Response.WriteAsync(json);
                                     }
                                     else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
@@ -398,7 +398,7 @@ namespace Ocelot.AcceptanceTests
                                     else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                                     {
                                         var json = JsonConvert.SerializeObject(_consulServices);
-                                        context.Response.Headers.Add("Content-Type", "application/json");
+                                        context.Response.Headers.Append("Content-Type", "application/json");
                                         await context.Response.WriteAsync(json);
                                     }
                                 });

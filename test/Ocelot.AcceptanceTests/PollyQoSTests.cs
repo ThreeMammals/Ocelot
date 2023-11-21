@@ -2,12 +2,12 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests;
-
-public class PollyQoSTests : IDisposable
+namespace Ocelot.AcceptanceTests
 {
-    private readonly Steps _steps;
-    private readonly ServiceHandler _serviceHandler;
+    public class PollyQoSTests : IDisposable
+    {
+        private readonly Steps _steps;
+        private readonly ServiceHandler _serviceHandler;
 
     public PollyQoSTests()
     {
@@ -153,21 +153,21 @@ public class PollyQoSTests : IDisposable
         });
     }
 
-    private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
-    {
-        var requestCount = 0;
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
         {
-            if (requestCount == 1)
+            var requestCount = 0;
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
-                await Task.Delay(1000);
-            }
+                if (requestCount == 1)
+                {
+                    await Task.Delay(1000);
+                }
 
-            requestCount++;
-            context.Response.StatusCode = 200;
-            await context.Response.WriteAsync(responseBody);
-        });
-    }
+                requestCount++;
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync(responseBody);
+            });
+        }
 
     private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
     {
@@ -179,10 +179,11 @@ public class PollyQoSTests : IDisposable
         });
     }
 
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+        public void Dispose()
+        {
+            _serviceHandler?.Dispose();
+            _steps.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

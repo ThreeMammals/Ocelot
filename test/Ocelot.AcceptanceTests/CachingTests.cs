@@ -211,7 +211,7 @@ namespace Ocelot.AcceptanceTests
             {
                 if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(key))
                 {
-                    context.Response.Headers.Add(key, value);
+                    context.Response.Headers.Append(key, value);
                 }
 
                 context.Response.StatusCode = statusCode;

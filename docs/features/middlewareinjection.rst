@@ -38,7 +38,7 @@ So, the next called middlewares **will not** affect Ocelot configuration.
 ASP.NET Core Middlewares and Ocelot Pipeline Builder
 ----------------------------------------------------
 
-Ocelot pipeline is a part of entire `ASP.NET Core Middlewares <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0>`_ conveyor aka app pipeline.
+Ocelot pipeline is a part of entire `ASP.NET Core Middlewares <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/>`_ conveyor aka app pipeline.
 The `BuildOcelotPipeline <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+BuildOcelotPipeline+path%3A%2F%5Esrc%5C%2FOcelot%5C%2FMiddleware%5C%2F%2F&type=code>`_ method encapsulates Ocelot pipeline.
 The last middleware in the ``BuildOcelotPipeline`` method is ``HttpRequesterMiddleware`` that calls the next middleware, if added to the pipeline.
 
