@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.Infrastructure
         {
             var upstreamHost = "UpstreamHostA";
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers.Add("Host", upstreamHost);
+            httpContext.Request.Headers.Append("Host", upstreamHost);
             _accessor.Setup(x => x.HttpContext).Returns(httpContext);
             var result = _placeholders.Get("{UpstreamHost}");
             result.Data.ShouldBe(upstreamHost);

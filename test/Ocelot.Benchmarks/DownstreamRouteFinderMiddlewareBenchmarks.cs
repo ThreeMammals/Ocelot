@@ -10,7 +10,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Benchmarks
 {
-    [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
+    [SimpleJob(launchCount: 1, warmupCount: 2, iterationCount: 5)]
     [Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]
     public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
     {
@@ -51,7 +51,7 @@ namespace Ocelot.Benchmarks
                     QueryString = new QueryString("?a=b"),
                 },
             };
-            httpContext.Request.Headers.Add("Host", "most");
+            httpContext.Request.Headers.Append("Host", "most");
             httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null));
 
             _httpContext = httpContext;

@@ -10,4 +10,4 @@ Building
 * There is a `Makefile <https://github.com/ThreeMammals/Ocelot/blob/main/docs/Makefile>`_ to make it easier to call the various targets in `build.cake <https://github.com/ThreeMammals/Ocelot/blob/main/build.cake>`_.
   The scripts are called with **.sh** but can be easily changed to **.ps1** if you are using Windows.
 
-* Alternatively you can build the project in VS2022 with the latest `.NET 7.0 <https://dotnet.microsoft.com/en-us/download/dotnet/7.0>`_ SDK.
+* Alternatively you can build the project in VS2022 with the latest `.NET 8.0 <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>`_ SDK.

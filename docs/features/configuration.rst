@@ -94,7 +94,7 @@ to you:
 Ocelot will now use the environment specific configuration and fall back to **ocelot.json** if there isn't one.
 
 You also need to set the corresponding environment variable which is ``ASPNETCORE_ENVIRONMENT``.
-More info on this can be found in the ASP.NET Core docs: `Use multiple environments in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-7.0>`_.
+More info on this can be found in the ASP.NET Core docs: `Use multiple environments in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
 
 Merging Configuration Files
 ---------------------------

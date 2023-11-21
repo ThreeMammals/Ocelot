@@ -1565,9 +1565,18 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private class TestHandler : AuthenticationHandler<TestOptions>
         {
+            // https://learn.microsoft.com/en-us/dotnet/core/compatibility/aspnet-core/8.0/isystemclock-obsolete
+            // .NET 8.0: TimeProvider is now a settable property on the Options classes for the authentication and identity components.
+            // It can be set directly or by registering a provider in the dependency injection container.
+#if NET8_0_OR_GREATER
+            public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
+            {
+            }
+#else
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
             {
             }
+#endif
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
