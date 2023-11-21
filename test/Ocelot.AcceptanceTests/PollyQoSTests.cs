@@ -15,25 +15,25 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get))
-            => new()
+        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options,
+            string httpMethod = nameof(HttpMethods.Get)) => new()
+        {
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = Uri.UriSchemeHttp,
+                    DownstreamHostAndPorts = new()
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = Uri.UriSchemeHttp,
-                        DownstreamHostAndPorts = new()
-                        {
-                            new("localhost", port),
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new() { httpMethod },
-                        QoSOptions = new FileQoSOptions(options),
+                        new("localhost", port),
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new() {httpMethod},
+                    QoSOptions = new FileQoSOptions(options),
                 },
-            };
+            },
+        };
 
         [Fact]
         public void Should_not_timeout()
@@ -87,7 +87,8 @@ namespace Ocelot.AcceptanceTests
             var port = PortFinder.GetRandomPort();
             var configuration = FileConfigurationFactory(port, new QoSOptions(1, 500, 1000, null));
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
+            this.Given(x =>
+                    x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
                 .Given(x => _steps.GivenOcelotIsRunningWithPolly())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -120,7 +121,8 @@ namespace Ocelot.AcceptanceTests
             route2.QoSOptions = new();
             configuration.Routes.Add(route2);
 
-            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
+            this.Given(x =>
+                    x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
