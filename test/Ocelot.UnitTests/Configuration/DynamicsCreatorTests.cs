@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = false,
                         },
                         DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.Downgradable,
+                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrLower,
                     },
                     new()
                     {
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = true,
                         },
                         DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.Upgradeable,
+                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrHigher,
                     },
                 },
             };
