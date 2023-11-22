@@ -88,7 +88,7 @@ namespace Ocelot.Configuration.Validator
 
             When(route => !string.IsNullOrEmpty(route.DownstreamVersionPolicy), () =>
             {
-                RuleFor(r => r.DownstreamVersionPolicy).Matches($@"^({VersionPolicies.Exact}|{VersionPolicies.Upgradeable}|{VersionPolicies.Downgradable})$");
+                RuleFor(r => r.DownstreamVersionPolicy).Matches($@"^({VersionPolicies.RequestVersionExact}|{VersionPolicies.RequestVersionOrHigher}|{VersionPolicies.RequestVersionOrLower})$");
             });
         }
 

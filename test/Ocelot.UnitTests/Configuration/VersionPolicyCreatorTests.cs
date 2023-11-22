@@ -18,9 +18,9 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Theory]
-        [InlineData(VersionPolicies.Downgradable)]
-        [InlineData(VersionPolicies.Exact)]
-        [InlineData(VersionPolicies.Upgradeable)]
+        [InlineData(VersionPolicies.RequestVersionOrLower)]
+        [InlineData(VersionPolicies.RequestVersionExact)]
+        [InlineData(VersionPolicies.RequestVersionOrHigher)]
         public void should_create_version_policy_based_on_input(string versionPolicy)
         {
             this.Given(_ => GivenTheInput(versionPolicy))
@@ -69,9 +69,9 @@ namespace Ocelot.UnitTests.Configuration
         {
             _result.ShouldBe(result switch
             {
-                VersionPolicies.Upgradeable => HttpVersionPolicy.RequestVersionOrHigher,
-                VersionPolicies.Exact => HttpVersionPolicy.RequestVersionExact,
-                VersionPolicies.Downgradable => HttpVersionPolicy.RequestVersionOrLower,
+                VersionPolicies.RequestVersionOrHigher => HttpVersionPolicy.RequestVersionOrHigher,
+                VersionPolicies.RequestVersionExact => HttpVersionPolicy.RequestVersionExact,
+                VersionPolicies.RequestVersionOrLower => HttpVersionPolicy.RequestVersionOrLower,
                 _ => HttpVersionPolicy.RequestVersionOrLower,
             });
         }
