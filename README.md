@@ -46,7 +46,8 @@ A quick list of Ocelot's capabilities, for more information see the [Documentati
 
 ## Install
 
-Ocelot is designed to work with ASP.NET Core and it targets `net7.0` framework.
+Ocelot is designed to work with ASP.NET Core and it targets `net6.0`, `net7.0` and `net8.0` frameworks. [^4]
+
 Install [Ocelot package](https://www.nuget.org/packages/Ocelot) and its dependencies using NuGet Package Manager:
 ```powershell
 Install-Package Ocelot
@@ -78,7 +79,7 @@ We can also give advice on the easiest way to do things :octocat:
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
 [![label: medium effort][~mediumeffort]](https://github.com/ThreeMammals/Ocelot/labels/medium%20effort)
-[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort) [^4].
+[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort). [^5]
 <br/>If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) 
 [![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) :octocat: 
@@ -93,4 +94,5 @@ Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](htt
 [^1]: Ocelot doesn’t directly support [GraphQL](https://graphql.org/). Developers can easily integrate the [GraphQL for .NET](/graphql-dotnet/graphql-dotnet) library.
 [^2]: Ocelot does support [Consul](https://www.consul.io/), [Netflix Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka), [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) service discovery providers, and special modes like [Dynamic Routing](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing) and [Custom Providers](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#custom-providers).
 [^3]: Retry policies only via [Polly](/App-vNext/Polly) library.
-[^4]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) of the repository.
+[^4]: Starting with [v21.0](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0), the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to move between (migrate to) .NET 6, 7 and 8 frameworks. Also, new features will be available for all .NET SDKs which we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
+[^5]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) of the repository.

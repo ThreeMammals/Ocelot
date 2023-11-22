@@ -10,7 +10,7 @@ Ocelot uses the following process to accept work into the NuGet packages.
 1. User creates an issue or picks up an `existing issue <https://github.com/ThreeMammals/Ocelot/issues>`_ in GitHub.
    An issue can be created by converting `discussion <https://github.com/ThreeMammals/Ocelot/discussions>`_ topics if necessary and agreed upon.
 
-2. User creates a fork and branches from this (unless a member of core team, they can just create a branch on the head repo) e.g. ``feature/xxx``, ``bug/xxx`` etc.
+2. User creates `a fork <https://docs.github.com/en/get-started/quickstart/fork-a-repo>`_ and branches from this (unless a member of core team, they can just create a branch on the head repo) e.g. ``feature/xxx``, ``bug/xxx`` etc.
    It doesn't really matter what the "xxx" is. It might make sense to use the issue number and maybe a short description. 
 
 3. When the contributor is happy with their work they can create a pull request against **develop** in GitHub with their changes.

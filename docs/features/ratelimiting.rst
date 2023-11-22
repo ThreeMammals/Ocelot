@@ -57,9 +57,9 @@ There is no decision at the moment, and the old version of the feature is includ
 
 See more about new feature being added into ASP.NET Core 7.0 release:
 
-* `RateLimiter Class <https://learn.microsoft.com/en-us/dotnet/api/system.threading.ratelimiting.ratelimiter?view=aspnetcore-7.0>`_, since ASP.NET Core	**7.0**
+* `RateLimiter Class <https://learn.microsoft.com/en-us/dotnet/api/system.threading.ratelimiting.ratelimiter>`_, since ASP.NET Core	**7.0**
 * `System.Threading.RateLimiting <https://www.nuget.org/packages/System.Threading.RateLimiting>`_ NuGet package
-* `Rate limiting middleware in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-7.0>`_ article by Arvin Kahbazi, Maarten Balliauw, and Rick Anderson
+* `Rate limiting middleware in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit>`_ article by Arvin Kahbazi, Maarten Balliauw, and Rick Anderson
 
 However, it makes sense to keep the old implementation as a Ocelot built-in native feature, but we are going to migrate to the new Rate Limiter from ``Microsoft.AspNetCore.RateLimiting`` namespace.
 

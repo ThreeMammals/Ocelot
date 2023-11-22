@@ -39,7 +39,7 @@ Links
 
 * WHATWG: `WebSockets Standard <https://websockets.spec.whatwg.org/>`_
 * Mozilla Developer Network: `The WebSocket API (WebSockets) <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_
-* Microsoft Learn: `WebSockets support in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/websockets?view=aspnetcore-7.0>`_
+* Microsoft Learn: `WebSockets support in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/websockets>`_
 * Microsoft Learn: `WebSockets support in .NET <https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets>`_
 
 SignalR
@@ -66,10 +66,10 @@ So, SignalR is `the part <https://github.com/dotnet/aspnetcore/tree/main/src/Sig
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
-More information on framework compatibility can be found in instrictions: `Use ASP.NET Core APIs in a class library <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/target-aspnetcore?view=aspnetcore-7.0&tabs=visual-studio>`_.
+More information on framework compatibility can be found in instrictions: `Use ASP.NET Core APIs in a class library <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/target-aspnetcore>`_.
 
 **Second**, you need to tell your application to use *SignalR*.
-Complete reference is here: `ASP.NET Core SignalR configuration <https://learn.microsoft.com/en-us/aspnet/core/signalr/configuration?view=aspnetcore-7.0&tabs=dotnet>`_
+Complete reference is here: `ASP.NET Core SignalR configuration <https://learn.microsoft.com/en-us/aspnet/core/signalr/configuration>`_
 
 .. code-block:: csharp
 
@@ -80,7 +80,7 @@ Complete reference is here: `ASP.NET Core SignalR configuration <https://learn.m
     }
 
 Pay attention to configuration of transport level of *WebSockets*,
-so `configure allowed transports <https://learn.microsoft.com/en-us/aspnet/core/signalr/configuration?view=aspnetcore-7.0&tabs=dotnet#configure-allowed-transports>`_ to allow *WebSockets* connections.
+so `configure allowed transports <https://learn.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-allowed-transports>`_ to allow *WebSockets* connections.
 
 **Then** in your **ocelot.json** add the following to proxy a Route using SignalR.
 Note normal Ocelot routing rules apply the main thing is the scheme which is set to ``ws``.

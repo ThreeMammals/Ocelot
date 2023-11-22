@@ -516,7 +516,7 @@ namespace Ocelot.AcceptanceTests
                     }
 
                     var json = JsonConvert.SerializeObject(_consulServices);
-                    context.Response.Headers.Add("Content-Type", "application/json");
+                    context.Response.Headers.Append("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }
             });
