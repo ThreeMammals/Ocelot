@@ -68,11 +68,11 @@ namespace Ocelot.Headers
                         continue;
                     }
 
-                    requestHeader.Add(header.Key, new StringValues(value.Data));
+                    requestHeader.Append(header.Key, new StringValues(value.Data));
                 }
                 else
                 {
-                    requestHeader.Add(header.Key, header.Value);
+                    requestHeader.Append(header.Key, header.Value);
                 }
             }
         }

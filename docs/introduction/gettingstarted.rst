@@ -1,16 +1,16 @@
 Getting Started
 ===============
 
-Ocelot is designed to work with ASP.NET and is currently on ``net7.0`` framework.
+Ocelot is designed to work with ASP.NET and is currently on ``net6.0``, ``net7.0`` and ``net8.0`` frameworks.
 
-.NET 7.0
+.NET 8.0
 --------
 
 Install NuGet package
 ^^^^^^^^^^^^^^^^^^^^^
 
 Install Ocelot and it's dependencies using `NuGet <https://www.nuget.org/>`_.
-You will need to create a `ASP.NET Core 7.0 project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio>`_ and bring the package into it.
+You will need to create a `ASP.NET Core minimal API project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api>`_ and bring the package into it.
 Then follow the startup below and :doc:`../features/configuration` sections to get up and running.
 
 .. code-block:: powershell
