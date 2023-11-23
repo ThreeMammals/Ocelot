@@ -77,8 +77,8 @@ public class OcelotLoggerTests
     /// Here mocking the original logger implementation to verify
     /// IsEnabled calls.
     /// </summary>
-    /// <param name="minimumLevel">chosen minimum log level</param>
-    /// <returns>a mocked ILogger object</returns>
+    /// <param name="minimumLevel">The chosen minimum log level.</param>
+    /// <returns>A mocked ILogger object.</returns>
     private Mock<ILogger<object>> MockLogger(LogLevel? minimumLevel)
     {
         var logger = LoggerFactory.Create(builder =>
