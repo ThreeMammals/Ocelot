@@ -1,8 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.RequestId.Middleware;
 
 namespace Ocelot.Logging;
 
+/// <summary>
+/// Default implementation of the <see cref="IOcelotLogger"/> interface.
+/// </summary>
 public class OcelotLogger : IOcelotLogger
 {
     private readonly ILogger _logger;
@@ -11,10 +15,11 @@ public class OcelotLogger : IOcelotLogger
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OcelotLogger"/> class.
+    /// <para>
     /// Please note:
     /// the log event message is designed to use placeholders ({RequestId}, {PreviousRequestId}, and {Message}).
-    /// If you're using a logger like Serilog, it will automatically capture these as structured data properties,
-    /// making it easier to query and analyze the logs later.
+    /// If you're using a logger like Serilog, it will automatically capture these as structured data properties, making it easier to query and analyze the logs later.
+    /// </para>
     /// </summary>
     /// <param name="logger">The main logger type, per default the Microsoft implementation.</param>
     /// <param name="scopedDataRepository">Repository, saving and getting data to/from HttpContext.Items.</param>
@@ -23,7 +28,7 @@ public class OcelotLogger : IOcelotLogger
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _scopedDataRepository = scopedDataRepository;
-        _func = (state, exception) => exception == null ? state : $"{state}, exception: {exception}";
+        _func = (state, exception) => exception == null ? state : $"{state}, {nameof(exception)}: {exception}";
     }
 
     public void LogTrace(string message) => WriteLog(LogLevel.Trace, message);
@@ -46,14 +51,14 @@ public class OcelotLogger : IOcelotLogger
 
     private string GetOcelotRequestId()
     {
-        var requestId = _scopedDataRepository.Get<string>("RequestId");
-        return requestId?.IsError ?? true ? "no request id" : requestId.Data;
+        var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.RequestIdName);
+        return requestId?.IsError ?? true ? $"No {RequestIdMiddleware.RequestIdName}" : requestId.Data;
     }
 
     private string GetOcelotPreviousRequestId()
     {
-        var requestId = _scopedDataRepository.Get<string>("PreviousRequestId");
-        return requestId?.IsError ?? true ? "no previous request id" : requestId.Data;
+        var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.PreviousRequestIdName);
+        return requestId?.IsError ?? true ? $"No {RequestIdMiddleware.PreviousRequestIdName}" : requestId.Data;
     }
 
     private void WriteLog(LogLevel logLevel, string message, Exception exception = null)
@@ -81,6 +86,10 @@ public class OcelotLogger : IOcelotLogger
             message = messageFactory.Invoke() ?? string.Empty;
         }
 
-        _logger.Log(logLevel, default, $"requestId: {requestId}, previousRequestId: {previousRequestId}, message: '{message}'", exception, _func);
+        _logger.Log(logLevel,
+            default,
+            $"{nameof(requestId)}: {requestId}, {nameof(previousRequestId)}: {previousRequestId}, {nameof(message)}: '{message}'",
+            exception,
+            _func);
     }
 }

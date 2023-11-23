@@ -1,7 +1,10 @@
+using Ocelot.Configuration;
+using Ocelot.Infrastructure.RequestData;
+
 namespace Ocelot.Logging;
 
 /// <summary>
-/// Thin wrapper around the DotNet core logging framework, used to allow the scopedDataRepository to be injected giving access to the Ocelot RequestId.
+/// Thin wrapper around the .NET Core logging framework, used to allow the <see cref="IRequestScopedDataRepository"/> object to be injected giving access to the Ocelot <see cref="IInternalConfiguration.RequestId"/>.
 /// </summary>
 public interface IOcelotLogger
 {
