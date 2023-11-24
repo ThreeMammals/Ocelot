@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
@@ -32,6 +33,13 @@ namespace Ocelot.Requester
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
             var httpClient = builder.Create(downstreamRoute);
+
+            IServiceCollection services;
+            services.AddHttpClient("ClientWithCustomHandler")
+                .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+                {
+                    return serviceProvider.GetRequiredService<MyCustomHttpMessageHandler>();
+                });
 
             try
             {

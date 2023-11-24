@@ -6,7 +6,7 @@ namespace Ocelot.Requester
     public class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly IDelegatingHandlerHandlerFactory _factory;
-        private readonly IHttpClientCache _cacheHandlers;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IOcelotLogger _logger;
         private DownstreamRoute _cacheKey;
         private HttpClient _httpClient;
@@ -15,11 +15,11 @@ namespace Ocelot.Requester
 
         public HttpClientBuilder(
             IDelegatingHandlerHandlerFactory factory,
-            IHttpClientCache cacheHandlers,
+            IHttpClientFactory httpClientFactory,
             IOcelotLogger logger)
         {
             _factory = factory;
-            _cacheHandlers = cacheHandlers;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
 
             // This is hardcoded at the moment but can easily be added to configuration
@@ -29,16 +29,6 @@ namespace Ocelot.Requester
 
         public IHttpClient Create(DownstreamRoute downstreamRoute)
         {
-            _cacheKey = downstreamRoute;
-
-            var httpClient = _cacheHandlers.Get(_cacheKey);
-
-            if (httpClient != null)
-            {
-                _client = httpClient;
-                return httpClient;
-            }
-
             var handler = CreateHandler(downstreamRoute);
 
             if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
