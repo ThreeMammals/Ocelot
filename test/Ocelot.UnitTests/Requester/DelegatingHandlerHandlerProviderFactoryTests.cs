@@ -375,7 +375,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning($"Route {_downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!"), Times.Once);
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Route {_downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")), Times.Once);
         }
 
         private void ThenHandlerAtPositionIs<T>(int pos)

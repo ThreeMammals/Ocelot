@@ -393,7 +393,7 @@ namespace Ocelot.AcceptanceTests
 
             _identityServerBuilder.Start();
 
-            _steps.VerifyIdentiryServerStarted(url);
+            Steps.VerifyIdentityServerStarted(url);
         }
 
         private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
@@ -464,7 +464,7 @@ namespace Ocelot.AcceptanceTests
 
             _identityServerBuilder.Start();
 
-            _steps.VerifyIdentiryServerStarted(url);
+            Steps.VerifyIdentityServerStarted(url);
         }
 
         public void Dispose()

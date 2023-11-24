@@ -145,7 +145,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(100);
+        await Task.Delay(200);
 
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
@@ -162,7 +162,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
                        await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(500);
+        await Task.Delay(600);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
@@ -178,7 +178,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(500);
+        await Task.Delay(600);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
@@ -196,7 +196,7 @@ public class PollyQoSProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(async () =>
             await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
 
-        await Task.Delay(500);
+        await Task.Delay(600);
 
         var response2 = new HttpResponseMessage(HttpStatusCode.OK);
         Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response2))).StatusCode);
@@ -221,7 +221,7 @@ public class PollyQoSProviderTests
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(5000)
             .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
-            .WithDurationOfBreak(200)
+            .WithDurationOfBreak(300)
             .Build();
 
         var upstreamPath = new UpstreamPathTemplateBuilder()

@@ -28,7 +28,7 @@ namespace Ocelot.RateLimit.Middleware
             // check if rate limiting is enabled
             if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
             {
-                Logger.LogInformation($"EndpointRateLimiting is not enabled for {downstreamRoute.DownstreamPathTemplate.Value}");
+                Logger.LogInformation(() => $"EndpointRateLimiting is not enabled for {downstreamRoute.DownstreamPathTemplate.Value}");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -39,7 +39,7 @@ namespace Ocelot.RateLimit.Middleware
             // check white list
             if (IsWhitelisted(identity, options))
             {
-                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
                 await _next.Invoke(httpContext);
                 return;
             }
@@ -110,7 +110,7 @@ namespace Ocelot.RateLimit.Middleware
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
         {
             Logger.LogInformation(
-                $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {downstreamRoute.UpstreamPathTemplate.OriginalValue}, TraceIdentifier {httpContext.TraceIdentifier}.");
+                () => $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {downstreamRoute.UpstreamPathTemplate.OriginalValue}, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
 
         public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
