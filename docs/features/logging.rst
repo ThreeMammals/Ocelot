@@ -129,4 +129,27 @@ Anyway, during the first time after a version release to production, we recommen
 If release engineer will ensure stability of the version in production then minimum level can be increased to ``Critical`` or ``None`` to gain top performance.
 Technically this will switch off the logging feature at all.
 
-Indicators? Screenshots?
+Run Benchmarks
+^^^^^^^^^^^^^^
+
+We have 2 types of benchmarks currently
+
+* ``SerilogBenchmarks`` with Serilog logging to a file. See ``ConfigureLogging`` method with ``logging.AddSerilog(_logger);``
+* ``MsLoggerBenchmarks`` with MS default logging to MS Console. See ``ConfigureLogging`` method with ``logging.AddConsole();``
+
+Benchmark results largely depend on the environment and hardware on which they run.
+We are pleased to invite you to run Logging benchmarks on your machine by the following instructions below.
+
+1. Open PowerShell or Command Prompt console
+2. Build Ocelot solution in Release mode: ``dotnet build --configuration Release``
+3. Go to ``test\Ocelot.Benchmarks\bin\Release\`` folder.
+4. Choose .NET version changing the folder, for example to ``net8.0``
+5. Run **Ocelot.Benchmarks.exe**: ``.\Ocelot.Benchmarks.exe``
+6. Run ``SerilogBenchmarks`` or ``MsLoggerBenchmarks`` by pressing appropriate number of a benchmark: ``5`` or ``6``, + Enter
+7. Wait for 3+ minutes to complete benchmark, and get final results.
+8. Read and analize your benchmark session results.
+
+Indicators
+^^^^^^^^^^
+
+``To be developed...``
