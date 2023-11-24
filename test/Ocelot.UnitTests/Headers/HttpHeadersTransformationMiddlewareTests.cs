@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenTheFollowingRequest()
         {
-            _httpContext.Request.Headers.Add("test", "test");
+            _httpContext.Request.Headers.Append("test", "test");
         }
     }
 }

@@ -8,7 +8,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.Benchmarks
 {
-    [SimpleJob(launchCount: 1, warmupCount: 2, targetCount: 5)]
+    [SimpleJob(launchCount: 1, warmupCount: 2, iterationCount: 5)]
     [Config(typeof(ExceptionHandlerMiddlewareBenchmarks))]
     public class ExceptionHandlerMiddlewareBenchmarks : ManualConfig
     {
