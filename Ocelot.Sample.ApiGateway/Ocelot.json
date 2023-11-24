@@ -4,11 +4,19 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
+<<<<<<< HEAD
           "Port": 5022
         },
         {
           "Host": "localhost",
           "Port": 5085
+=======
+          "Port": 7156
+        },
+        {
+          "Host": "localhost",
+          "Port": 7084
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
         }
       ],
       "ServiceName": "ConsulDemo",
@@ -17,16 +25,25 @@
       },
       "UpstreamPathTemplate": "/hostname",
       "UpstreamHttpMethod": [ "GET" ],
+<<<<<<< HEAD
       "DownstreamPathTemplate": "/DownStreamInstance/hostname",
       "DownstreamScheme": "http",
       "DangerousAcceptAnyServerCertificateValidator": true
+=======
+      "DownstreamPathTemplate": "/WeatherForecast/hostname",
+      "DownstreamScheme": "https"
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
 
 
     }
   ],
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": {
+<<<<<<< HEAD
       "Scheme": "http",
+=======
+      "Scheme": "https",
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
       "Host": "localhost",
       "Port": 8500,
       "Type": "Consul"

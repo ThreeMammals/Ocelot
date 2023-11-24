@@ -1,5 +1,9 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Builder;
+<<<<<<< HEAD
+=======
+using Microsoft.AspNetCore.Hosting;
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +23,10 @@ namespace Ocelot.Sample.LoadBalancer.Common
         public static IApplicationBuilder UseConsul(this IApplicationBuilder app, IConfiguration configuration)
         {
             var consulClient = app.ApplicationServices.GetRequiredService<IConsulClient>();
+<<<<<<< HEAD
+=======
+            var lifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
 
             var registration = new AgentServiceRegistration()
             {

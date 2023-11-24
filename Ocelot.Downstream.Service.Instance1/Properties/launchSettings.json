@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "profiles": {
     "http": {
@@ -39,6 +40,9 @@
       "useSSL": true
     }
   },
+=======
+﻿{
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
@@ -47,5 +51,40 @@
       "applicationUrl": "http://localhost:20441",
       "sslPort": 44308
     }
+<<<<<<< HEAD
   }
 }
+=======
+  },
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5022",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:7156;http://localhost:5022",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
+>>>>>>> 82a9a64d (Sample LoadBalancer application using consul)
