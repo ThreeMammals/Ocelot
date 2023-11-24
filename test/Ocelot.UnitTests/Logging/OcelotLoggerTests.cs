@@ -149,7 +149,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: no request id, previousRequestId: no previous request id, message: 'a message from tom to laura'";
+        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 
