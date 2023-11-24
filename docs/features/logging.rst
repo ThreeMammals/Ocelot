@@ -22,3 +22,18 @@ The team has had so many issues about performance issues with Ocelot and it is a
 * **Warning!** Make sure you are logging to something proper in production environment!
 * Use **Error** and **Critical** levels in production environment!
 * Use **Warning** level in testing environment!
+
+These and other recommendations are below in the **Best Practices** section.
+
+Best Practices
+--------------
+* https://github.com/ThreeMammals/Ocelot/pull/1745#issuecomment-1792210250 A link and quote for custom logging provider. And our OcelotLogger is the custom logger, right?
+* How to switch off logging at production to get top performance
+* We can pay attention to Warning sections. Seems this section remains the same, because I wrote it for v.20 release
+* A couple of samples as code block should be added to explain user how to configure MS Logger and Serilog logger for example
+
+Performance Review
+------------------
+In v22 PR 1745 performance of Logging was improved.
+
+Indicators? Screenshots?
