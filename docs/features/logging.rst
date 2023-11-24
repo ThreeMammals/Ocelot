@@ -111,6 +111,19 @@ otherwise a constant string is sufficient
 
 Performance Review
 ------------------
-In v22 PR 1745 performance of Logging was improved.
+
+Ocelot's logging performance has been improved in version `22.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0>`__ (see PR `1745 <https://github.com/ThreeMammals/Ocelot/pull/1745>`_).
+These changes were requested as part of issue `1744 <https://github.com/ThreeMammals/Ocelot/issues/1744>`_ after team's `discussion <https://github.com/ThreeMammals/Ocelot/discussions/1736>`_.
+
+Top Logging Performance?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here is a quick recipe for your Production environment!
+You need to ensure the minimal level is ``Critical`` or ``None``. Nothing more!
+For sure, having top logging performance means having less log records written by logging provider. So, logs should be pretty empty.
+
+Anyway, during the first time after a version release to production, we recommend to watch the system and current version app behavior by specifying ``Error`` minimum level.
+If release engineer will ensure stability of the version in production then minimum level can be increased to ``Critical`` or ``None`` to gain top performance.
+Technically this will switch off the logging feature at all.
 
 Indicators? Screenshots?
