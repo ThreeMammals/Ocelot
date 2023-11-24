@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Ocelot.Requester;
-
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
@@ -17,7 +15,8 @@ public static class OcelotBuilderExtensions
 {
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
         QosDelegatingHandlerDelegate delegatingHandler,
-        Dictionary<Type, Func<Exception, Error>> errorMapping) where T : class, IPollyQoSProvider<HttpResponseMessage>
+        Dictionary<Type, Func<Exception, Error>> errorMapping)
+        where T : class, IPollyQoSProvider<HttpResponseMessage>
     {
         builder.Services
             .AddSingleton(errorMapping)
