@@ -26,7 +26,7 @@
   ],
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": {
-      "Scheme": "https",
+      "Scheme": "http",
       "Host": "localhost",
       "Port": 8500,
       "Type": "Consul"
