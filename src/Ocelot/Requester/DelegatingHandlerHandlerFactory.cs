@@ -71,7 +71,7 @@ namespace Ocelot.Requester
                 }
                 else
                 {
-                    _logger.LogWarning($"Route {downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
+                    _logger.LogWarning(() => $"Route {downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
                     handlers.Add(() => new NoQosDelegatingHandler());
                 }
             }

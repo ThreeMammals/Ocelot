@@ -13,6 +13,19 @@ namespace Ocelot.Provider.Polly;
 
 public static class OcelotBuilderExtensions
 {
+    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
+        QosDelegatingHandlerDelegate delegatingHandler,
+        Dictionary<Type, Func<Exception, Error>> errorMapping)
+        where T : class, IPollyQoSProvider<HttpResponseMessage>
+    {
+        builder.Services
+            .AddSingleton(errorMapping)
+            .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, T>()
+            .AddSingleton(delegatingHandler);
+
+        return builder;
+    }
+
     public static IOcelotBuilder AddPolly(this IOcelotBuilder builder)
     {
         var errorMapping = new Dictionary<Type, Func<Exception, Error>>
@@ -22,14 +35,9 @@ public static class OcelotBuilderExtensions
             { typeof(BrokenCircuitException), e => new RequestTimedOutError(e) },
             { typeof(BrokenCircuitException<HttpResponseMessage>), e => new RequestTimedOutError(e) },
         };
-
-        builder.Services
-            .AddSingleton(errorMapping)
-            .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, PollyQoSProvider>()
-            .AddSingleton<QosDelegatingHandlerDelegate>(GetDelegatingHandler);
-        return builder;
+        return AddPolly<PollyQoSProvider>(builder, GetDelegatingHandler, errorMapping);
     }
 
-    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory) 
+    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
         => new PollyPoliciesDelegatingHandler(route, contextAccessor, loggerFactory);
 }

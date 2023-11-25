@@ -30,7 +30,7 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
         }
         else
         {
-            _logger.LogWarning($"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+            _logger.LogWarning(() => $"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
         }
 
         return services;

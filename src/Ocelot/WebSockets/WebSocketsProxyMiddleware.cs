@@ -110,7 +110,7 @@ namespace Ocelot.WebSockets
             if (route.DangerousAcceptAnyServerCertificateValidator)
             {
                 client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
-                Logger.LogWarning(string.Format(IgnoredSslWarningFormat, route.UpstreamPathTemplate, route.DownstreamPathTemplate));
+                Logger.LogWarning(() => string.Format(IgnoredSslWarningFormat, route.UpstreamPathTemplate, route.DownstreamPathTemplate));
             }
 
             foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
@@ -139,7 +139,7 @@ namespace Ocelot.WebSockets
             var scheme = request.Scheme;
             if (!scheme.StartsWith(Uri.UriSchemeWs))
             {
-                Logger.LogWarning(string.Format(InvalidSchemeWarningFormat, scheme, request.ToUri()));
+                Logger.LogWarning(() => string.Format(InvalidSchemeWarningFormat, scheme, request.ToUri()));
                 request.Scheme = scheme == Uri.UriSchemeHttp ? Uri.UriSchemeWs
                     : scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : scheme;
             }

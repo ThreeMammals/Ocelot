@@ -364,7 +364,7 @@ namespace Ocelot.AcceptanceTests
 
             _identityServerBuilder.Start();
 
-            _steps.VerifyIdentiryServerStarted(url);
+            Steps.VerifyIdentityServerStarted(url);
         }
 
         public void Dispose()

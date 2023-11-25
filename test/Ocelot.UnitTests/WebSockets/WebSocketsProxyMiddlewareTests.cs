@@ -68,8 +68,8 @@ public class WebSocketsProxyMiddlewareTests
         _client.SetupSet(x => x.Options.RemoteCertificateValidationCallback = It.IsAny<RemoteCertificateValidationCallback>())
             .Callback<RemoteCertificateValidationCallback>(actual.Add);
 
-        _logger.Setup(x => x.LogWarning(It.IsAny<string>()))
-            .Callback<string>(actual.Add);
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(y => actual.Add(y.Invoke()));
     }
 
     private void AndDoNotSetupProtocolsAndHeaders()
@@ -111,7 +111,7 @@ public class WebSocketsProxyMiddlewareTests
         var request = _context.Object.Items.DownstreamRequest();
         route.DangerousAcceptAnyServerCertificateValidator.ShouldBeTrue();
 
-        _logger.Verify(x => x.LogWarning(It.IsAny<string>()), Times.Once());
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
         var warning = actual.Last() as string;
         warning.ShouldNotBeNullOrEmpty();
         var expectedWarning = string.Format(WebSocketsProxyMiddleware.IgnoredSslWarningFormat, route.UpstreamPathTemplate, route.DownstreamPathTemplate);
@@ -153,8 +153,8 @@ public class WebSocketsProxyMiddlewareTests
         };
         _context.SetupGet(x => x.Items).Returns(items);
 
-        _logger.Setup(x => x.LogWarning(It.IsAny<string>()))
-            .Callback<string>(actual.Add);
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(myFunc => actual.Add(myFunc.Invoke()));
     }
 
     private void ThenNonWsSchemesAreReplaced(string scheme, string expectedScheme, List<object> actual)
@@ -163,7 +163,7 @@ public class WebSocketsProxyMiddlewareTests
         var request = _context.Object.Items.DownstreamRequest();
         route.DangerousAcceptAnyServerCertificateValidator.ShouldBeFalse();
 
-        _logger.Verify(x => x.LogWarning(It.IsAny<string>()), Times.Once());
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
         var warning = actual.First() as string;
         warning.ShouldNotBeNullOrEmpty();
         warning.ShouldContain($"'{scheme}'");
