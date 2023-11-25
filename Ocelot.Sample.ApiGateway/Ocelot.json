@@ -4,11 +4,11 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7156
+          "Port": 5022
         },
         {
           "Host": "localhost",
-          "Port": 7084
+          "Port": 5085
         }
       ],
       "ServiceName": "ConsulDemo",
@@ -18,7 +18,7 @@
       "UpstreamPathTemplate": "/hostname",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/WeatherForecast/hostname",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DangerousAcceptAnyServerCertificateValidator": true
 
 
