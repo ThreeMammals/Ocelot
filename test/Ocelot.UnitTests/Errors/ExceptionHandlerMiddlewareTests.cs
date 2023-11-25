@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Errors
 
         private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
         {
-            _httpContext.Request.Headers.Add(key, value);
+            _httpContext.Request.Headers.Append(key, value);
             /*
             _httpContext.Setup(x => x.Request.Headers).Returns(new HeaderDictionary() { { key, value } });
             */

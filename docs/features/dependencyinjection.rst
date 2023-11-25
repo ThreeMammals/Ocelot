@@ -108,7 +108,7 @@ It gives you full control on design and buiding of Ocelot pipeline, but be caref
 Warning! Most of services from minimal part of the pipeline should be reused, but only a few of services could be removed.
 
 Warning!! The method above is called after adding required services of ASP.NET MVC pipeline building by 
-`AddMvcCore <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoreservicecollectionextensions.addmvccore?view=aspnetcore-7.0>`_ method 
+`AddMvcCore <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoreservicecollectionextensions.addmvccore>`_ method 
 over the ``Services`` property in upper calling context. These services are absolute minimum core services for ASP.NET MVC pipeline.
 They must be added to DI container always, and they are added implicitly before calling of the method by caller in upper context.
 So, ``AddMvcCore`` creates an ``IMvcCoreBuilder`` object with its assignment to the ``MvcCoreBuilder`` property.
@@ -124,13 +124,13 @@ The Problem
 ^^^^^^^^^^^
 
 The default `AddOcelot <#the-addocelot-method>`_ method adds 
-`Newtonsoft JSON <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.newtonsoftjsonmvccorebuilderextensions.addnewtonsoftjson?view=aspnetcore-7.0>`_ services 
+`Newtonsoft JSON <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.newtonsoftjsonmvccorebuilderextensions.addnewtonsoftjson>`_ services 
 by the ``AddNewtonsoftJson`` extension method in default builder (the `AddDefaultAspNetServices <#the-adddefaultaspnetservices-method>`_ method). 
 The ``AddNewtonsoftJson`` method calling was introduced in old .NET and Ocelot releases which was necessary when Microsoft did not launch the ``System.Text.Json`` library, 
 but now it affects normal use, so we have an intention to solve the problem.
 
-Modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions?view=aspnetcore-7.0>`_ 
-out of `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions?view=aspnetcore-7.0>`_
+Modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions>`_ 
+out of `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions>`_
 will help to configure JSON settings by the ``JsonSerializerOptions`` property for JSON formatters during (de)serialization.
 
 Solution
