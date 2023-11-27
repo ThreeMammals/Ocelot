@@ -161,7 +161,8 @@ Task("CreateReleaseNotes")
 		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
 		releaseNotes = new List<string> { releaseHeader };
 
-		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD");
+		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
+			.ToList();
 		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
 		var summary = shortlogSummary
 			.Where(x => re.IsMatch(x))
@@ -207,7 +208,6 @@ Task("CreateReleaseNotes")
 		static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
 			=> HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
 
-		var statistics = new List<(string Contributor, int Files, int Insertions, int Deletions)>();
 		foreach (var group in commitsGrouping)
 		{
 			if (topContributors.Count >= top3) break;
@@ -220,6 +220,7 @@ Task("CreateReleaseNotes")
 			}
 			else // multiple candidates with the same number of commits, so, group by files changed
 			{
+				var statistics = new List<(string Contributor, int Files, int Insertions, int Deletions)>();
 				var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
 				// Collect statistics from git log & shortlog
 				foreach (var author in group.authors)
@@ -315,15 +316,15 @@ private void WriteReleaseNotes()
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
 
 	EnsureDirectoryExists(packagesDir);
-	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes);
+	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
 
-	var content = System.IO.File.ReadAllText(releaseNotesFile);
+	var content = System.IO.File.ReadAllText(releaseNotesFile, Encoding.UTF8);
 	if (string.IsNullOrEmpty(content))
 	{
 		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
 	}
 
-	Information($"Release notes are >>>\n{content}<<<");
+	Information("Release notes are >>>\n{0}<<<", content);
 	Information($"EXITED {nameof(WriteReleaseNotes)}");
 }
 

@@ -24,6 +24,8 @@ Every log record has these 2 properties:
 As an ``IOcelotLogger`` interface object being injected to constructors of service classes, current default Ocelot logger (``OcelotLogger`` class) reads these 2 properties from the ``IRequestScopedDataRepository`` interface object.
 Find out more about these properties and other details on the *Request ID* logging feature in the  :doc:`../features/requestid` chapter.
 
+.. _logging-warning:
+
 Warning
 -------
 
@@ -34,7 +36,9 @@ The team has had so many issues about performance issues with Ocelot and it is a
 * Use ``Error`` and ``Critical`` levels in production environment!
 * Use ``Warning`` level in testing & staging environments!
 
-These and other recommendations are below in the `Best Practices <#best-practices>`_ section.
+These and other recommendations are below in the :ref:`logging-best-practices` section.
+
+.. _logging-best-practices:
 
 Best Practices
 --------------
@@ -88,7 +92,7 @@ Second
 ^^^^^^
 
 Ensure proper usage of minimum logging level for each environment: development, testing, production, etc.
-So, once again, read important notes of the `Warning <#warning>`_ section! 
+So, once again, read important notes of the :ref:`logging-warning` section! 
 
 Third
 ^^^^^
