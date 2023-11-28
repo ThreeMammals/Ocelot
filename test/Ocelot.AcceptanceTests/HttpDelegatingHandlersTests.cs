@@ -18,7 +18,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_re_route_ordered_specific_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -49,7 +49,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithSpecficHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
+                .And(x => _steps.GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -60,7 +60,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -97,7 +97,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers_multiple_times()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -150,7 +150,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_call_global_di_handlers_with_dependency()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

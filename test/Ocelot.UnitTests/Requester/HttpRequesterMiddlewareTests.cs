@@ -104,7 +104,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _logger.Verify(
                 x => x.LogWarning(
-                    It.IsAny<string>()
+                    It.IsAny<Func<string>>()
                    ),
                 Times.Once);
         }
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _logger.Verify(
                 x => x.LogInformation(
-                    It.IsAny<string>()
+                    It.IsAny<Func<string>>()
                 ),
                 Times.Once);
         }

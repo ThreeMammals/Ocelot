@@ -46,13 +46,13 @@ namespace Ocelot.Requester.Middleware
         {
             if (response.Data?.StatusCode <= HttpStatusCode.BadRequest)
             {
-                Logger.LogInformation(
+                Logger.LogInformation(() =>
                     $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
             }
             else if (response.Data?.StatusCode >= HttpStatusCode.BadRequest)
             {
                 Logger.LogWarning(
-                    $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
+                    () => $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
             }
         }
     }

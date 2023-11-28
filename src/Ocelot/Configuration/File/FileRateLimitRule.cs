@@ -7,6 +7,15 @@
             ClientWhitelist = new List<string>();
         }
 
+        public FileRateLimitRule(FileRateLimitRule from)
+        {
+            ClientWhitelist = new(from.ClientWhitelist);
+            EnableRateLimiting = from.EnableRateLimiting;
+            Limit = from.Limit;
+            Period = from.Period;
+            PeriodTimespan = from.PeriodTimespan;
+        }
+
         /// <summary>
         /// The list of allowed clients.
         /// </summary>

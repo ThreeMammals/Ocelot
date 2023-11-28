@@ -17,7 +17,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_cached_response()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -62,7 +62,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_cached_response_with_expires_header()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -108,7 +108,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_cached_response_when_using_jsonserialized_cache()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -152,7 +152,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_not_return_cached_response_as_ttl_expires()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

@@ -82,7 +82,7 @@ namespace Ocelot.UnitTests.Logging
         private void ThenTheLogIs(string expected)
         {
             _logger.Verify(
-                x => x.LogTrace(expected));
+                x => x.LogTrace(It.Is<Func<string>>(c => c.Invoke() == expected)));
         }
     }
 }

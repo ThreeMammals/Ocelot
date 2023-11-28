@@ -1,7 +1,8 @@
 Websockets
 ==========
 
-    `WebSockets Standard <https://websockets.spec.whatwg.org/>`_ by WHATWG organization
+    * `WebSockets Standard <https://websockets.spec.whatwg.org/>`_ by WHATWG organization
+    * `The WebSocket Protocol <https://datatracker.ietf.org/doc/html/rfc6455>`_ by Internet Engineering Task Force (IETF) organization
 
 Ocelot supports proxying `WebSockets <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ with some extra bits.
 This functionality was requested in `issue 212 <https://github.com/ThreeMammals/Ocelot/issues/212>`_. 
@@ -90,11 +91,55 @@ Note normal Ocelot routing rules apply the main thing is the scheme which is set
     "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ],
     "UpstreamPathTemplate": "/gateway/{catchAll}",
     "DownstreamPathTemplate": "/{catchAll}",
-    "DownstreamScheme": "ws", 
+    "DownstreamScheme": "ws",
     "DownstreamHostAndPorts": [
       { "Host": "localhost", "Port": 5001 }
     ]
   }
+
+WebSocket Secure
+----------------
+
+If you define a route with Secured WebSocket protocol, use the ``wss`` scheme:
+
+.. code-block:: json
+
+  {
+    "DownstreamScheme": "wss",
+    // ...
+  }
+
+Keep in mind: you can use WebSocket SSL for both `SignalR <#signalr>`_ and `WebSockets <#websockets>`__.
+
+To understand ``wss`` scheme, browse to this:
+
+* Microsoft Learn: `Secure your connection with TLS/SSL <https://learn.microsoft.com/en-us/windows/uwp/networking/websockets#secure-your-connection-with-tlsssl>`_
+* IETF | The WebSocket Protocol: `WebSocket URIs <https://datatracker.ietf.org/doc/html/rfc6455#section-3>`_
+
+If you have questions, it may be helpful to search for documentation on MS Learn:
+
+* `Search for "secure websocket" <https://learn.microsoft.com/en-us/search/?terms=secure%20websocket>`_
+
+SSL Errors
+^^^^^^^^^^
+
+If you want to ignore SSL warnings (errors), set the following in your Route config:
+
+.. code-block:: json
+
+  {
+    "DownstreamScheme": "wss",
+    "DangerousAcceptAnyServerCertificateValidator": true,
+    // ...
+  }
+
+**But we don't recommend doing this!** Read the official notes regarding :ref:`ssl-errors` in the :doc:`../features/configuration` doc,
+where you will also find best practices for your environments.
+
+**Note**, the ``wss`` scheme fake validator was added by `PR 1377 <https://github.com/ThreeMammals/Ocelot/pull/1377>`_,
+as a part of issues `1375 <https://github.com/ThreeMammals/Ocelot/issues/1375>`_, `1237 <https://github.com/ThreeMammals/Ocelot/issues/1237>`_ and etc.
+This life hacking feature for self-signed SSL certificates is available in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_.
+It will be removed and/or reworked in future releases. See the :ref:`ssl-errors` section for details.
 
 Supported
 ---------

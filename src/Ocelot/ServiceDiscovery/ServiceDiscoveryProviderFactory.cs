@@ -26,7 +26,7 @@ namespace Ocelot.ServiceDiscovery
             if (route.UseServiceDiscovery)
             {
                 var routeName = route.UpstreamPathTemplate?.Template ?? route.ServiceName ?? string.Empty;
-                _logger.LogInformation($"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{routeName}' is enabled.");
+                _logger.LogInformation(() => $"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{routeName}' is enabled.");
                 return GetServiceDiscoveryProvider(serviceConfig, route);
             }
 
@@ -44,7 +44,7 @@ namespace Ocelot.ServiceDiscovery
 
         private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
         {
-            _logger.LogInformation($"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
+            _logger.LogInformation(() => $"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
 
             if (config.Type?.ToLower() == "servicefabric")
             {
@@ -63,7 +63,7 @@ namespace Ocelot.ServiceDiscovery
             }
 
             var message = $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!";
-            _logger.LogWarning(message);
+            _logger.LogWarning(() => $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!");
 
             return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError(message));
         }

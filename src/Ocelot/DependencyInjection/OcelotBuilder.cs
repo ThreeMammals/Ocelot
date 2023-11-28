@@ -16,7 +16,7 @@ using Ocelot.Configuration.Setter;
 using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
@@ -91,7 +91,7 @@ namespace Ocelot.DependencyInjection
             Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
             Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-            Services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            Services.TryAddSingleton<IOcelotLoggerFactory, OcelotLoggerFactory>();
             Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
@@ -103,7 +103,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IClaimsParser, ClaimsParser>();
             Services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
             Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
-            Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamTemplatePathPlaceholderReplacer>();
+            Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamPathPlaceholderReplacer>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();

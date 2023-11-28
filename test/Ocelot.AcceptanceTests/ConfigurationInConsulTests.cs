@@ -27,8 +27,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_return_response_200_with_simple_url_when_using_jsonserialized_cache()
         {
-            var consulPort = RandomPortFinder.GetRandomPort();
-            var servicePort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
+            var servicePort = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {

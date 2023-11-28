@@ -35,29 +35,29 @@ namespace Ocelot.Cache.Middleware
             var downstreamUrlKey = $"{downstreamRequest.Method}-{downstreamRequest.OriginalString}";
             var downStreamRequestCacheKey = _cacheGenerator.GenerateRequestCacheKey(downstreamRequest);
 
-            Logger.LogDebug($"Started checking cache for the '{downstreamUrlKey}' key.");
+            Logger.LogDebug(() => $"Started checking cache for the '{downstreamUrlKey}' key.");
 
             var cached = _outputCache.Get(downStreamRequestCacheKey, downstreamRoute.CacheOptions.Region);
 
             if (cached != null)
             {
-                Logger.LogDebug($"Cache entry exists for the '{downstreamUrlKey}' key.");
+                Logger.LogDebug(() => $"Cache entry exists for the '{downstreamUrlKey}' key.");
 
                 var response = CreateHttpResponseMessage(cached);
                 SetHttpResponseMessageThisRequest(httpContext, response);
 
-                Logger.LogDebug($"Finished returning of cached response for the '{downstreamUrlKey}' key.");
+                Logger.LogDebug(() => $"Finished returning of cached response for the '{downstreamUrlKey}' key.");
 
                 return;
             }
 
-            Logger.LogDebug($"No response cached for the '{downstreamUrlKey}' key.");
+            Logger.LogDebug(() => $"No response cached for the '{downstreamUrlKey}' key.");
 
             await _next.Invoke(httpContext);
 
             if (httpContext.Items.Errors().Count > 0)
             {
-                Logger.LogDebug($"There was a pipeline error for the '{downstreamUrlKey}' key.");
+                Logger.LogDebug(() => $"There was a pipeline error for the '{downstreamUrlKey}' key.");
 
                 return;
             }
@@ -68,7 +68,7 @@ namespace Ocelot.Cache.Middleware
 
             _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
 
-            Logger.LogDebug($"Finished response added to cache for the '{downstreamUrlKey}' key.");
+            Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
         }
 
         private static void SetHttpResponseMessageThisRequest(HttpContext context,

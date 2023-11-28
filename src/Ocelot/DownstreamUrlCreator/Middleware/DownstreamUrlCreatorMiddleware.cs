@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Web;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
@@ -15,10 +15,15 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
 
-        public DownstreamUrlCreatorMiddleware(RequestDelegate next,
+        private const char Ampersand = '&';
+        private const char QuestionMark = '?';
+        private const char OpeningBrace = '{';
+        private const char ClosingBrace = '}';
+
+        public DownstreamUrlCreatorMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer
-            )
+            IDownstreamPathPlaceholderReplacer replacer)
                 : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
@@ -28,17 +33,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-            var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
-
-            var response = _replacer
-                .Replace(downstreamRoute.DownstreamPathTemplate.Value, templatePlaceholderNameAndValues);
-
+            var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
+            var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
             var downstreamRequest = httpContext.Items.DownstreamRequest();
 
             if (response.IsError)
             {
-                Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
+                Logger.LogDebug($"{nameof(IDownstreamPathPlaceholderReplacer)} returned an error, setting pipeline error");
 
                 httpContext.Items.UpsertErrors(response.Errors);
                 return;
@@ -54,7 +55,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
             if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
             {
-                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, templatePlaceholderNameAndValues, response);
+                var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, placeholders, response);
 
                 //todo check this works again hope there is a test..
                 downstreamRequest.AbsolutePath = path;
@@ -63,38 +64,56 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             else
             {
                 var dsPath = response.Data;
-
-                if (ContainsQueryString(dsPath))
+                if (dsPath.Value.Contains(QuestionMark))
                 {
                     downstreamRequest.AbsolutePath = GetPath(dsPath);
-
-                    if (string.IsNullOrEmpty(downstreamRequest.Query))
-                    {
-                        downstreamRequest.Query = GetQueryString(dsPath);
-                    }
-                    else
-                    {
-                        downstreamRequest.Query += GetQueryString(dsPath).Replace('?', '&');
-                    }
+                    var newQuery = GetQueryString(dsPath);
+                    downstreamRequest.Query = string.IsNullOrEmpty(downstreamRequest.Query)
+                        ? newQuery
+                        : MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQuery, placeholders);
                 }
                 else
                 {
-                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, templatePlaceholderNameAndValues);
+                    RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
 
                     downstreamRequest.AbsolutePath = dsPath.Value;
                 }
             }
 
-            Logger.LogDebug($"Downstream url is {downstreamRequest}");
+            Logger.LogDebug(() => $"Downstream url is {downstreamRequest}");
 
             await _next.Invoke(httpContext);
+        }
+
+        private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
+        {
+            newQueryString = newQueryString.Replace(QuestionMark, Ampersand);
+            var queries = HttpUtility.ParseQueryString(queryString);
+            var newQueries = HttpUtility.ParseQueryString(newQueryString);
+
+            var parameters = newQueries.AllKeys
+                .Where(key => !string.IsNullOrEmpty(key))
+                .ToDictionary(key => key, key => newQueries[key]);
+
+            _ = queries.AllKeys
+                .Where(key => !string.IsNullOrEmpty(key) && !parameters.ContainsKey(key))
+                .All(key => parameters.TryAdd(key, queries[key]));
+
+            // Remove old replaced query parameters
+            foreach (var placeholder in placeholders)
+            {
+                parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
+            }
+
+            var orderedParams = parameters.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value}");
+            return QuestionMark + string.Join(Ampersand, orderedParams);
         }
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
-                var name = nAndV.Name.Replace("{", string.Empty).Replace("}", string.Empty);
+                var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
 
                 var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
 
@@ -106,27 +125,22 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                     if (!string.IsNullOrEmpty(downstreamRequest.Query))
                     {
-                        downstreamRequest.Query = string.Concat("?", downstreamRequest.Query.AsSpan(1));
+                        downstreamRequest.Query = QuestionMark + downstreamRequest.Query[1..];
                     }
                 }
-            }
+            } 
         }
 
         private static string GetPath(DownstreamPath dsPath)
         {
-            int length = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            int length = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
             return dsPath.Value[..length];
         }
 
         private static string GetQueryString(DownstreamPath dsPath)
         {
-            int startIndex = dsPath.Value.IndexOf('?', StringComparison.Ordinal);
+            int startIndex = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
             return dsPath.Value[startIndex..];
-        }
-
-        private static bool ContainsQueryString(DownstreamPath dsPath)
-        {
-            return dsPath.Value.Contains('?');
         }
 
         private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
@@ -14,37 +15,31 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
+        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options,
+            string httpMethod = nameof(HttpMethods.Get)) => new()
+        {
+            Routes = new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = Uri.UriSchemeHttp,
+                    DownstreamHostAndPorts = new()
+                    {
+                        new("localhost", port),
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new() {httpMethod},
+                    QoSOptions = new FileQoSOptions(options),
+                },
+            },
+        };
+
         [Fact]
         public void Should_not_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1000,
-                            ExceptionsAllowedBeforeBreaking = 10,
-                        },
-                    },
-                },
-            };
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(10, 0, 1000, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -58,33 +53,8 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Should_timeout()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 10,
-                        },
-                    },
-                },
-            };
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 10, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -96,37 +66,26 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void Should_open_circuit_breaker_after_two_exceptions()
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(2, 5000, 100000, null));
+
+            this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .BDDfy();
+        }
+
+        [Fact]
         public void Should_open_circuit_breaker_then_close()
         {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            ExceptionsAllowedBeforeBreaking = 1,
-                            TimeoutValue = 500,
-                            DurationOfBreak = 1000,
-                        },
-                    },
-                },
-            };
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(1, 500, 1000, null));
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -150,51 +109,16 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void Open_circuit_should_not_effect_different_route()
         {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var qos1 = new QoSOptions(1, 1000, 500, null);
 
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        QoSOptions = new FileQoSOptions
-                        {
-                            ExceptionsAllowedBeforeBreaking = 1,
-                            TimeoutValue = 500,
-                            DurationOfBreak = 1000,
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            },
-                        },
-                        UpstreamPathTemplate = "/working",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            };
+            var configuration = FileConfigurationFactory(port1, qos1);
+            var route2 = configuration.Routes[0].Clone() as FileRoute;
+            route2.DownstreamHostAndPorts[0].Port = port2;
+            route2.UpstreamPathTemplate = "/working";
+            route2.QoSOptions = new();
+            configuration.Routes.Add(route2);
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
@@ -219,9 +143,15 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private static void GivenIWaitMilliseconds(int ms)
+        private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
+
+        private void GivenThereIsABrokenServiceRunningOn(string url)
         {
-            Thread.Sleep(ms);
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                context.Response.StatusCode = 500;
+                await context.Response.WriteAsync("this is an exception");
+            });
         }
 
         private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)

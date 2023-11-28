@@ -47,7 +47,7 @@ namespace Ocelot.Requester
                 HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
                 _logger
-                    .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
+                    .LogWarning(() => $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
             }
 
             var timeout = downstreamRoute.QosOptions.TimeoutValue == 0

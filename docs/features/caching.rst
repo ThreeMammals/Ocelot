@@ -30,7 +30,7 @@ Finally, in order to use caching on a route in your Route configuration add this
 
 .. code-block:: json
 
-    "FileCacheOptions": { "TtlSeconds": 15, "Region": "somename" }
+    "FileCacheOptions": { "TtlSeconds": 15, "Region": "europe-central" }
 
 In this example **TtlSeconds** is set to 15 which means the cache will expire after 15 seconds.
 The **Region** represents a region of caching. 

@@ -14,7 +14,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_bad_gateway_error_if_downstream_service_doesnt_respond()
+        public void Should_return_bad_gateway_error_if_downstream_service_doesnt_respond()
         {
             var configuration = new FileConfiguration
             {
@@ -46,9 +46,9 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
+        public void Should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -81,9 +81,9 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_log_warning_if_downstream_service_returns_internal_server_error()
+        public void Should_log_warning_if_downstream_service_returns_internal_server_error()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithLogger())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenWarningShouldBeLogged())
+                .Then(x => _steps.ThenWarningShouldBeLogged(2))
                 .BDDfy();
         }
 
@@ -124,6 +124,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -16,9 +16,9 @@ namespace Ocelot.Requester
         {
             var type = exception.GetType();
 
-            if (_mappers != null && _mappers.ContainsKey(type))
+            if (_mappers != null && _mappers.TryGetValue(type, out var mapper))
             {
-                return _mappers[type](exception);
+                return mapper(exception);
             }
 
             if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
