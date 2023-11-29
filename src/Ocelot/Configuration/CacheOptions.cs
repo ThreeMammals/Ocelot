@@ -2,17 +2,14 @@
 {
     public class CacheOptions
     {
-        public CacheOptions(int ttlSeconds, string region, string header)
+        public CacheOptions(int ttlSeconds, string region)
         {
             TtlSeconds = ttlSeconds;
             Region = region;
-            Header = header;
         }
 
         public int TtlSeconds { get; }
 
         public string Region { get; }
-
-        public string Header { get; }
     }
 }
