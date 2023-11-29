@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Configuration
+﻿using Ocelot.Configuration.Creator;
+
+namespace Ocelot.Configuration
 {
     public class HttpHandlerOptionsBuilder
     {
@@ -7,6 +9,7 @@
         private bool _useTracing;
         private bool _useProxy;
         private int _maxConnectionPerServer;
+        private TimeSpan _pooledConnectionLifetime = TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
 
         public HttpHandlerOptionsBuilder WithAllowAutoRedirect(bool input)
         {
@@ -38,9 +41,15 @@
             return this;
         }
 
+        public HttpHandlerOptionsBuilder WithPooledConnectionLifetimeSeconds(TimeSpan pooledConnectionLifetime)
+        {
+            _pooledConnectionLifetime = pooledConnectionLifetime;
+            return this;
+        }
+
         public HttpHandlerOptions Build()
         {
-            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer);
+            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer, _pooledConnectionLifetime);
         }
     }
 }

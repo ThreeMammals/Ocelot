@@ -1,60 +1,38 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Requester
+namespace Ocelot.Requester;
+
+public class HttpClientHttpRequester : IHttpRequester
 {
-    public class HttpClientHttpRequester : IHttpRequester
+    private readonly IOcelotLogger _logger;
+    private readonly IExceptionToErrorMapper _mapper;
+    private readonly IMessageInvokerPool _messageHandlerPool;
+
+    public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
+        IMessageInvokerPool messageHandlerPool,
+        IExceptionToErrorMapper mapper)
     {
-        private readonly IHttpClientCache _cacheHandlers;
-        private readonly IOcelotLogger _logger;
-        private readonly IDelegatingHandlerHandlerFactory _factory;
-        private readonly IExceptionToErrorMapper _mapper;
+        _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
+        _messageHandlerPool = messageHandlerPool;
+        _mapper = mapper;
+    }
 
-        public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
-            IHttpClientCache cacheHandlers,
-            IDelegatingHandlerHandlerFactory factory,
-            IExceptionToErrorMapper mapper)
+    public async Task<Response<HttpResponseMessage>> GetResponse(HttpContext httpContext)
+    {
+        var downstreamRequest = httpContext.Items.DownstreamRequest();
+        var messageInvoker = _messageHandlerPool.Get(httpContext.Items.DownstreamRoute());
+        try
         {
-            _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
-            _cacheHandlers = cacheHandlers;
-            _factory = factory;
-            _mapper = mapper;
+            var response = await messageInvoker.SendAsync(downstreamRequest.ToHttpRequestMessage(), httpContext.RequestAborted);
+            return new OkResponse<HttpResponseMessage>(response);
         }
-
-        public async Task<Response<HttpResponseMessage>> GetResponse(HttpContext httpContext)
+        catch (Exception exception)
         {
-            var builder = new HttpClientBuilder(_factory, _cacheHandlers, _logger);
-
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-            var downstreamRequest = httpContext.Items.DownstreamRequest();
-
-            var httpClient = builder.Create(downstreamRoute);
-
-            IServiceCollection services;
-            services.AddHttpClient("ClientWithCustomHandler")
-                .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
-                {
-                    return serviceProvider.GetRequiredService<MyCustomHttpMessageHandler>();
-                });
-
-            try
-            {
-                var response = await httpClient.SendAsync(downstreamRequest.ToHttpRequestMessage(), httpContext.RequestAborted);
-                return new OkResponse<HttpResponseMessage>(response);
-            }
-            catch (Exception exception)
-            {
-                var error = _mapper.Map(exception);
-                return new ErrorResponse<HttpResponseMessage>(error);
-            }
-            finally
-            {
-                builder.Save();
-            }
+            var error = _mapper.Map(exception);
+            return new ErrorResponse<HttpResponseMessage>(error);
         }
     }
 }
