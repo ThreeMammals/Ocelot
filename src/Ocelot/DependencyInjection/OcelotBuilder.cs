@@ -107,7 +107,6 @@ namespace Ocelot.DependencyInjection
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
-            Services.TryAddSingleton<IHttpRequester, MessageInvokerHttpRequester>();
             Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
@@ -118,7 +117,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
-            Services.AddOcelotHttpClient();
+            Services.AddOcelotMessageInvokerPool();
 
             // See this for why we register this as singleton:
             // http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
