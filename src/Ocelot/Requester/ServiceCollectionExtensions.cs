@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration;
 
 namespace Ocelot.Requester;
 

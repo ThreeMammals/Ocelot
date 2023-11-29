@@ -107,7 +107,7 @@ namespace Ocelot.DependencyInjection
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
             Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
-            Services.TryAddSingleton<IHttpRequester, HttpClientHttpRequester>();
+            Services.TryAddSingleton<IHttpRequester, MessageInvokerHttpRequester>();
             Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
             Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();

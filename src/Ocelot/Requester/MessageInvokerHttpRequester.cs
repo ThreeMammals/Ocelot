@@ -5,17 +5,17 @@ using Ocelot.Responses;
 
 namespace Ocelot.Requester;
 
-public class HttpClientHttpRequester : IHttpRequester
+public class MessageInvokerHttpRequester : IHttpRequester
 {
     private readonly IOcelotLogger _logger;
     private readonly IExceptionToErrorMapper _mapper;
     private readonly IMessageInvokerPool _messageHandlerPool;
 
-    public HttpClientHttpRequester(IOcelotLoggerFactory loggerFactory,
+    public MessageInvokerHttpRequester(IOcelotLoggerFactory loggerFactory,
         IMessageInvokerPool messageHandlerPool,
         IExceptionToErrorMapper mapper)
     {
-        _logger = loggerFactory.CreateLogger<HttpClientHttpRequester>();
+        _logger = loggerFactory.CreateLogger<MessageInvokerHttpRequester>();
         _messageHandlerPool = messageHandlerPool;
         _mapper = mapper;
     }
