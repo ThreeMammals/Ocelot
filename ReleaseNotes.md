@@ -1,17 +1,33 @@
-## Upgrade to .NET 8 (version {0}) aka [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) release
-> Read article: [Announcing .NET 8](https://devblogs.microsoft.com/dotnet/announcing-dotnet-8/) by Gaurav Seth, on November 14th, 2023
+## October 2023 (version {0}) aka [Swiss Locomotive](https://en.wikipedia.org/wiki/SBB-CFF-FFS_Ae_6/6) release
+> Codenamed as **[Swiss Locomotive](https://www.google.com/search?q=swiss+locomotive)**
 
-### About
-We are pleased to announce to you that we can now offer the support of [.NET 8](https://dotnet.microsoft.com/en-us/download).
-But that is not all, in this release, we are adopting support of several versions of the .NET framework through [multitargeting](https://learn.microsoft.com/en-us/dotnet/standard/frameworks).
-The Ocelot distribution is now compatible with .NET **6**, **7** and **8**. :tada:
+### Focused On
+<details>
+  <summary><b>Logging feature</b>. Performance review, redesign and improvements with new best practices to log</summary>
 
-In the future, we will try to ensure the support of the [.NET SDKs](https://dotnet.microsoft.com/en-us/download/dotnet) that are still actively maintained by the .NET team and community.
-Current .NET versions in support are the following: [6, 7, 8](https://dotnet.microsoft.com/en-us/download/dotnet).
+  - Proposing a centralized `WriteLog` method for the `OcelotLogger`
+  - Factory methods for computed strings such as `string.Format` or interpolated strings
+  - Using `ILogger.IsEnabled` before calling the native `WriteLog` implementation and invoking string factory method
+</details>
+<details>
+  <summary><b>Quality of Service feature</b>. Redesign and stabilization, and it produces less log records now.</summary>
+ 
+  - Fixing issue with [Polly](https://www.thepollyproject.org/) Circuit Breaker not opening after max number of retries reached
+  - Removing useless log calls that could have an impact on performance
+  - Polly [lib](https://www.nuget.org/packages/Polly#versions-body-tab) reference updating to latest `8.2.0` with some code improvements
+</details>
+<details>
+  <summary>Documentation for <b>Logging</b>, <b>Request ID</b>, <b>Routing</b> and <b>Websockets</b></summary>
+ 
+  - [Logging](https://ocelot.readthedocs.io/en/latest/features/logging.html)
+  - [Request ID](https://ocelot.readthedocs.io/en/latest/features/requestid.html)
+  - [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html)
+  - [Websockets](https://ocelot.readthedocs.io/en/latest/features/websockets.html)
+</details>
+<details>
+  <summary>Testing improvements and stabilization aka <b>bug fixing</b></summary>
 
-### Technical info
-As an ASP.NET Core app, now Ocelot targets `net6.0`, `net7.0` and `net8.0` frameworks.
-
-Starting with **v{0}**, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects.
-It should be easier for teams to move between (migrate to) .NET 6, 7 and 8 frameworks. Also, new features will be available for all .NET SDKs which we support via multitargeting.
-Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
+  - [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html) bug fixing: query string placeholders including **CatchAll** one aka `{{everything}}` and query string duplicates removal
+  - [QoS](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) bug fixing: Polly circuit breaker exceptions
+  - Testing bug fixing: rare failed builds because of unstable Polly tests. Acceptance common logic for ports
+</details>

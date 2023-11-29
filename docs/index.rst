@@ -1,4 +1,4 @@
-Welcome to Ocelot 21.0
+Welcome to Ocelot 22.0
 ======================
 
 Thanks for taking a look at the Ocelot documentation! Please use the left hand navigation to get around.
