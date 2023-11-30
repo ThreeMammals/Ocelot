@@ -12,6 +12,8 @@ namespace Ocelot.Benchmarks
                     typeof(AllTheThingsBenchmarks),
                     typeof(ExceptionHandlerMiddlewareBenchmarks),
                     typeof(DownstreamRouteFinderMiddlewareBenchmarks),
+                    typeof(SerilogBenchmarks),
+                    typeof(MsLoggerBenchmarks),
                });
 
             switcher.Run(args);

@@ -117,28 +117,28 @@ namespace Ocelot.UnitTests.Middleware
 
     internal class FakeLogger : IOcelotLogger
     {
-        public void LogCritical(string message, Exception exception)
-        {
-        }
+        public void LogCritical(string message, Exception exception) { }
 
-        public void LogDebug(string message)
-        {
-        }
+        public void LogCritical(Func<string> messageFactory, Exception exception) { }
 
-        public void LogError(string message, Exception exception)
-        {
-        }
+        public void LogError(string message, Exception exception) { }
 
-        public void LogInformation(string message)
-        {
-        }
+        public void LogError(Func<string> messageFactory, Exception exception) { }
 
-        public void LogTrace(string message)
-        {
-        }
+        public void LogDebug(string message) { }
 
-        public void LogWarning(string message)
-        {
-        }
+        public void LogDebug(Func<string> messageFactory) { }
+
+        public void LogInformation(string message) { }
+
+        public void LogInformation(Func<string> messageFactory) { }
+
+        public void LogWarning(string message) { }
+
+        public void LogTrace(string message) { }
+
+        public void LogTrace(Func<string> messageFactory) { }
+
+        public void LogWarning(Func<string> messageFactory) { }
     }
 }

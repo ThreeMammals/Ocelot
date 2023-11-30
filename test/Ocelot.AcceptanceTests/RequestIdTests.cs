@@ -16,7 +16,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_default_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -52,7 +52,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -89,7 +89,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_global_request_id_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -130,7 +130,7 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void should_use_global_request_id_create_and_forward()
         {
-            var port = RandomPortFinder.GetRandomPort();
+            var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
@@ -171,7 +171,7 @@ namespace Ocelot.AcceptanceTests
             _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
             {
                 context.Request.Headers.TryGetValue(_steps.RequestIdKey, out var requestId);
-                context.Response.Headers.Add(_steps.RequestIdKey, requestId.First());
+                context.Response.Headers[_steps.RequestIdKey] = requestId.First();
                 return Task.CompletedTask;
             });
         }

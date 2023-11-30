@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Headers
 
         private void ThenAnErrorIsLogged(string key, string value)
         {
-            _logger.Verify(x => x.LogWarning($"Unable to add header to response {key}: {value}"), Times.Once);
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Unable to add header to response {key}: {value}")), Times.Once);
         }
 
         private void GivenHttpRequestWithoutHeaders()
@@ -80,16 +80,9 @@ namespace Ocelot.UnitTests.Headers
 
         private void GivenHttpRequestWithHeader(string headerKey, string headerValue)
         {
-            _context = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Headers =
-                    {
-                        { headerKey, headerValue },
-                    },
-                },
-            };
+            var context = new DefaultHttpContext();
+            context.Request.Headers.Append(headerKey, headerValue);
+            _context = context;
         }
 
         private void WhenAddingHeader(string headerKey, string headerValue)

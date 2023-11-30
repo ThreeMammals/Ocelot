@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -1536,8 +1539,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private void GivenAQoSHandler()
         {
             var collection = new ServiceCollection();
-            QosDelegatingHandlerDelegate del = (a, b) => new FakeDelegatingHandler();
-            collection.AddSingleton<QosDelegatingHandlerDelegate>(del);
+            DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
+            collection.AddSingleton((QosDelegatingHandlerDelegate)Del);
             var provider = collection.BuildServiceProvider();
             _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
         }
@@ -1565,9 +1568,18 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private class TestHandler : AuthenticationHandler<TestOptions>
         {
+            // https://learn.microsoft.com/en-us/dotnet/core/compatibility/aspnet-core/8.0/isystemclock-obsolete
+            // .NET 8.0: TimeProvider is now a settable property on the Options classes for the authentication and identity components.
+            // It can be set directly or by registering a provider in the dependency injection container.
+#if NET8_0_OR_GREATER
+            public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
+            {
+            }
+#else
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
             {
             }
+#endif
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {

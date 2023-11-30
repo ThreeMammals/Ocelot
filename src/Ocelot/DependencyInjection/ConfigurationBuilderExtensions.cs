@@ -14,8 +14,16 @@ namespace Ocelot.DependencyInjection
         public const string PrimaryConfigFile = "ocelot.json";
         public const string GlobalConfigFile = "ocelot.global.json";
 
-        [GeneratedRegex("^ocelot\\.(.*?)\\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+#if NET7_0_OR_GREATER
+        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
         private static partial Regex SubConfigRegex();
+#else
+        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+        private static Regex SubConfigRegex()
+        {
+            return SubConfigRegexVar;
+        }
+#endif
 
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)

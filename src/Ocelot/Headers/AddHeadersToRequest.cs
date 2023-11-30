@@ -64,15 +64,15 @@ namespace Ocelot.Headers
 
                     if (value.IsError)
                     {
-                        _logger.LogWarning($"Unable to add header to response {header.Key}: {header.Value}");
+                        _logger.LogWarning(() => $"Unable to add header to response {header.Key}: {header.Value}");
                         continue;
                     }
 
-                    requestHeader.Add(header.Key, new StringValues(value.Data));
+                    requestHeader.Append(header.Key, new StringValues(value.Data));
                 }
                 else
                 {
-                    requestHeader.Add(header.Key, header.Value);
+                    requestHeader.Append(header.Key, header.Value);
                 }
             }
         }

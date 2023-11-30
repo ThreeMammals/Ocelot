@@ -25,7 +25,7 @@ namespace Ocelot.DownstreamPathManipulation.Middleware
 
             if (downstreamRoute.ClaimsToPath.Any())
             {
-                Logger.LogInformation($"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
+                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
 
                 var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
 

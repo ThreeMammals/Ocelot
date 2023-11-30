@@ -7,6 +7,12 @@
             AllowedScopes = new List<string>();
         }
 
+        public FileAuthenticationOptions(FileAuthenticationOptions from)
+        {
+            AllowedScopes = new(from.AllowedScopes);
+            AuthenticationProviderKey = from.AuthenticationProviderKey;
+        }
+
         public string AuthenticationProviderKey { get; set; }
         public List<string> AllowedScopes { get; set; }
 

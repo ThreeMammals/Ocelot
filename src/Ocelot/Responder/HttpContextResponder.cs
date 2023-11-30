@@ -93,7 +93,7 @@ namespace Ocelot.Responder
         {
             if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
             {
-                context.Response.Headers.Add(httpResponseHeader.Key, new StringValues(httpResponseHeader.Values.ToArray()));
+                context.Response.Headers.Append(httpResponseHeader.Key, new StringValues(httpResponseHeader.Values.ToArray()));
             }
         }
     }

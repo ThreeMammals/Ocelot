@@ -28,14 +28,14 @@ namespace Ocelot.AcceptanceTests
         [Fact]
         public void ShouldProxyWebsocketInputToDownstreamServiceAndUseServiceDiscoveryAndLoadBalancer()
         {
-            var downstreamPort = RandomPortFinder.GetRandomPort();
+            var downstreamPort = PortFinder.GetRandomPort();
             var downstreamHost = "localhost";
 
-            var secondDownstreamPort = RandomPortFinder.GetRandomPort();
+            var secondDownstreamPort = PortFinder.GetRandomPort();
             var secondDownstreamHost = "localhost";
 
             var serviceName = "websockets";
-            var consulPort = RandomPortFinder.GetRandomPort();
+            var consulPort = PortFinder.GetRandomPort();
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
             var serviceEntryOne = new ServiceEntry
             {
@@ -126,7 +126,7 @@ namespace Ocelot.AcceptanceTests
                 if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                 {
                     var json = JsonConvert.SerializeObject(_serviceEntries);
-                    context.Response.Headers.Add("Content-Type", "application/json");
+                    context.Response.Headers.Append("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }
             });

@@ -274,7 +274,7 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private void GivenTheContentDispositionIs(string input)
         {
-            _inputRequest.Headers.Add("Content-Disposition", input);
+            _inputRequest.Headers.Append("Content-Disposition", input);
         }
 
         private void ThenTheMappedRequestHasContentMD5Header(byte[] expected)
@@ -285,7 +285,7 @@ namespace Ocelot.UnitTests.Request.Mapper
         private void GivenTheContentMD5Is(byte[] input)
         {
             var base64 = Convert.ToBase64String(input);
-            _inputRequest.Headers.Add("Content-MD5", base64);
+            _inputRequest.Headers.Append("Content-MD5", base64);
         }
 
         private void ThenTheMappedRequestHasContentRangeHeader()
@@ -296,7 +296,7 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private void GivenTheContentRangeIs(string input)
         {
-            _inputRequest.Headers.Add("Content-Range", input);
+            _inputRequest.Headers.Append("Content-Range", input);
         }
 
         private void ThenTheMappedRequestHasContentLocationHeader(string expected)
@@ -306,7 +306,7 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private void GivenTheContentLocationIs(string input)
         {
-            _inputRequest.Headers.Add("Content-Location", input);
+            _inputRequest.Headers.Append("Content-Location", input);
         }
 
         private void ThenTheMappedRequestHasContentLanguageHeader(string expected)
@@ -316,7 +316,7 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private void GivenTheContentLanguageIs(string input)
         {
-            _inputRequest.Headers.Add("Content-Language", input);
+            _inputRequest.Headers.Append("Content-Language", input);
         }
 
         private void ThenTheMappedRequestHasContentEncodingHeader(string expected, string expectedTwo)
@@ -327,7 +327,7 @@ namespace Ocelot.UnitTests.Request.Mapper
 
         private void GivenTheContentEncodingIs(string input)
         {
-            _inputRequest.Headers.Add("Content-Encoding", input);
+            _inputRequest.Headers.Append("Content-Encoding", input);
         }
 
         private void GivenTheContentTypeIs(string contentType)

@@ -9,239 +9,270 @@ In order to get anything working in Ocelot you need to set up a Route in the con
 
 .. code-block:: json
 
-    {
-        "Routes": [
-        ]
-    }
+  {
+    "Routes": []
+  }
 
-To configure a Route you need to add one to the Routes json array.
-
-.. code-block:: json
-
-    {
-        "DownstreamPathTemplate": "/api/posts/{postId}",
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 80,
-                }
-            ],
-        "UpstreamPathTemplate": "/posts/{postId}",
-        "UpstreamHttpMethod": [ "Put", "Delete" ]
-    }
-
-The DownstreamPathTemplate, DownstreamScheme and DownstreamHostAndPorts define the URL that a request will be forwarded to. 
-
-DownstreamHostAndPorts is a collection that defines the host and port of any downstream services that you wish to forward requests to. Usually this will just contain a single entry but sometimes you might want to load balance requests to your downstream services and Ocelot allows you add more than one entry and then select a load balancer.
-
-The UpstreamPathTemplate is the URL that Ocelot will use to identify which DownstreamPathTemplate to use for a given request. The UpstreamHttpMethod is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL. You can set a specific list of HTTP Methods or set an empty list to allow any of them. 
-
-In Ocelot you can add placeholders for variables to your Templates in the form of {something}. The placeholder variable needs to be present in both the DownstreamPathTemplate and UpstreamPathTemplate properties. When it is Ocelot will attempt to substitute the value in the UpstreamPathTemplate placeholder into the DownstreamPathTemplate for each request Ocelot processes.
-
-You can also do a catch all type of Route e.g. 
+To configure a Route you need to add one to the Routes JSON array.
 
 .. code-block:: json
 
-    {
-        "DownstreamPathTemplate": "/api/{everything}",
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 80,
-                }
-            ],
-        "UpstreamPathTemplate": "/{everything}",
-        "UpstreamHttpMethod": [ "Get", "Post" ]
-    }
+  {
+    "UpstreamHttpMethod": [ "Put", "Delete" ],
+    "UpstreamPathTemplate": "/posts/{postId}",
+    "DownstreamPathTemplate": "/api/posts/{postId}",
+    "DownstreamScheme": "https",
+    "DownstreamHostAndPorts": [
+      { "Host": "localhost", "Port": 80 }
+    ]
+  }
 
-This will forward any path + query string combinations to the downstream service after the path /api.
+The **DownstreamPathTemplate**, **DownstreamScheme** and **DownstreamHostAndPorts** define the URL that a request will be forwarded to. 
 
+The **DownstreamHostAndPorts** property is a collection that defines the host and port of any downstream services that you wish to forward requests to.
+Usually this will just contain a single entry, but sometimes you might want to load balance requests to your downstream services and Ocelot allows you add more than one entry and then select a load balancer.
 
-The default ReRouting configuration is case insensitive!
+The **UpstreamPathTemplate** property is the URL that Ocelot will use to identify which **DownstreamPathTemplate** to use for a given request.
+The **UpstreamHttpMethod** is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL.
+You can set a specific list of HTTP methods or set an empty list to allow any of them. 
 
-In order to change this you can specify on a per Route basis the following setting.
+Placeholders
+------------
+
+In Ocelot you can add placeholders for variables to your Templates in the form of ``{something}``.
+The placeholder variable needs to be present in both the **DownstreamPathTemplate** and **UpstreamPathTemplate** properties.
+When it is Ocelot will attempt to substitute the value in the **UpstreamPathTemplate** placeholder into the **DownstreamPathTemplate** for each request Ocelot processes.
+
+You can also do a `Catch All <#catch-all>`_ type of Route e.g. 
 
 .. code-block:: json
 
-    "RouteIsCaseSensitive": true
+  {
+    "UpstreamHttpMethod": [ "Get", "Post" ],
+    "UpstreamPathTemplate": "/{everything}",
+    "DownstreamPathTemplate": "/api/{everything}",
+    "DownstreamScheme": "https",
+    "DownstreamHostAndPorts": [
+      { "Host": "localhost", "Port": 80 }
+    ]
+  }
 
-This means that when Ocelot tries to match the incoming upstream url with an upstream template the
-evaluation will be case sensitive. 
+This will forward any path + query string combinations to the downstream service after the path ``/api``.
+
+**Note**, the default Routing configuration is case insensitive!
+
+In order to change this you can specify on a per Route basis the following setting:
+
+.. code-block:: json
+
+  "RouteIsCaseSensitive": true
+
+This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive. 
 
 Catch All
-^^^^^^^^^
+---------
 
-Ocelot's routing also supports a catch all style routing where the user can specify that they want to match all traffic.
+Ocelot's routing also supports a *Catch All* style routing where the user can specify that they want to match all traffic.
 
-If you set up your config like below, all requests will be proxied straight through. The placeholder {url} name is not significant, any name will work.
-
-.. code-block:: json
-
-    {
-        "DownstreamPathTemplate": "/{url}",
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 80,
-                }
-            ],
-        "UpstreamPathTemplate": "/{url}",
-        "UpstreamHttpMethod": [ "Get" ]
-    }
-
-The catch all has a lower priority than any other Route. If you also have the Route below in your config then Ocelot would match it before the catch all. 
+If you set up your config like below, all requests will be proxied straight through.
+The placeholder ``{url}`` name is not significant, any name will work.
 
 .. code-block:: json
 
-    {
-        "DownstreamPathTemplate": "/",
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-                {
-                    "Host": "10.0.10.1",
-                    "Port": 80,
-                }
-            ],
-        "UpstreamPathTemplate": "/",
-        "UpstreamHttpMethod": [ "Get" ]
-    }
+  {
+    "UpstreamHttpMethod": [ "Get" ],
+    "UpstreamPathTemplate": "/{url}",
+    "DownstreamPathTemplate": "/{url}",
+    "DownstreamScheme": "https",
+    "DownstreamHostAndPorts": [
+      { "Host": "localhost", "Port": 80 }
+    ]
+  }
+
+The *Catch All* has a lower priority than any other Route.
+If you also have the Route below in your config then Ocelot would match it before the *Catch All*. 
+
+.. code-block:: json
+
+  {
+    "UpstreamHttpMethod": [ "Get" ],
+    "UpstreamPathTemplate": "/",
+    "DownstreamPathTemplate": "/",
+    "DownstreamScheme": "https",
+    "DownstreamHostAndPorts": [
+      { "Host": "10.0.10.1", "Port": 80 }
+    ]
+  }
 
 Upstream Host 
-^^^^^^^^^^^^^
+-------------
 
-This feature allows you to have Routes based on the upstream host. This works by looking at the host header the client has used and then using this as part of the information we use to identify a Route.
+This feature allows you to have Routes based on the *upstream host*.
+This works by looking at the ``Host`` header the client has used and then using this as part of the information we use to identify a Route.
 
-In order to use this feature please add the following to your config.
+In order to use this feature please add the following to your config:
 
 .. code-block:: json
 
-    {
-        "DownstreamPathTemplate": "/",
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-                {
-                    "Host": "10.0.10.1",
-                    "Port": 80,
-                }
-            ],
-        "UpstreamPathTemplate": "/",
-        "UpstreamHttpMethod": [ "Get" ],
-        "UpstreamHost": "somedomain.com"
-    }
+  {
+    "UpstreamHost": "somedomain.com"
+  }
 
-The Route above will only be matched when the host header value is somedomain.com.
+The Route above will only be matched when the ``Host`` header value is ``somedomain.com``.
 
-If you do not set UpstreamHost on a Route then any host header will match it. This means that if you have two Routes that are the same, apart from the UpstreamHost, where one is null and the other set Ocelot will favour the one that has been set. 
+If you do not set **UpstreamHost** on a Route then any ``Host`` header will match it.
+This means that if you have two Routes that are the same, apart from the **UpstreamHost**, where one is null and the other set Ocelot will favour the one that has been set. 
 
-This feature was requested as part of `Issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_ .
+This feature was requested as part of `issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_.
 
 Priority
-^^^^^^^^
+--------
 
-You can define the order you want your Routes to match the Upstream HttpRequest by including a "Priority" property in ocelot.json
-See `Issue 270 <https://github.com/ThreeMammals/Ocelot/pull/270>`_ for reference
+You can define the order you want your Routes to match the Upstream ``HttpRequest`` by including a **Priority** property in **ocelot.json**.
+See `issue 270 <https://github.com/ThreeMammals/Ocelot/pull/270>`_ for reference.
 
 .. code-block:: json
 
-    {
-        "Priority": 0
-    }
+  {
+    "Priority": 0
+  }
 
-0 is the lowest priority, Ocelot will always use 0 for /{catchAll} Routes and this is still hardcoded. After that you are free to set any priority you wish.
+``0`` is the lowest priority, Ocelot will always use ``0`` for ``/{catchAll}`` Routes and this is still hardcoded.
+After that you are free to set any priority you wish.
 
 e.g. you could have
 
 .. code-block:: json
 
-    {
-        "UpstreamPathTemplate": "/goods/{catchAll}"
-        "Priority": 0
-    }
+  {
+    "UpstreamPathTemplate": "/goods/{catchAll}",
+    "Priority": 0
+  }
 
-and 
+and
 
 .. code-block:: json
 
-    {
-        "UpstreamPathTemplate": "/goods/delete"
-        "Priority": 1
-    }
+  {
+    "UpstreamPathTemplate": "/goods/delete",
+    "Priority": 1
+  }
 
-In the example above if you make a request into Ocelot on /goods/delete Ocelot will match /goods/delete Route. Previously it would have matched /goods/{catchAll} (because this is the first Route in the list!).
+In the example above if you make a request into Ocelot on ``/goods/delete``, Ocelot will match ``/goods/delete`` Route.
+Previously it would have matched ``/goods/{catchAll}``, because this is the first Route in the list!
 
 Dynamic Routing
-^^^^^^^^^^^^^^^
+---------------
 
 This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. 
 
-The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the Route config. See the docs :ref:`service-discovery` if 
-this sounds interesting to you.
+The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the Route config.
+See the docs :doc:`../features/servicediscovery` if this sounds interesting to you.
 
-Query Strings
-^^^^^^^^^^^^^
+Query String Placeholders
+-------------------------
 
-Ocelot allows you to specify a query string as part of the DownstreamPathTemplate like the example below.
+In addition to URL path `placeholders <#placeholders>`_ Ocelot is able to forward query string parameters with their processing in the form of ``{something}``.
+Also, the query parameter placeholder needs to be present in both the **DownstreamPathTemplate** and **UpstreamPathTemplate** properties.
+Placeholder replacement works bi-directionally between path and query strings, with some `restrictions <#restrictions-on-use>`_ on usage.
 
-.. code-block:: json
+Path to Query String direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    {
-        "Routes": [
-            {
-                "DownstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                "UpstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
-                "UpstreamHttpMethod": [
-                    "Get"
-                ],
-                "DownstreamScheme": "http",
-                "DownstreamHostAndPorts": [
-                    {
-                        "Host": "localhost",
-                        "Port": 50110
-                    }
-                ]
-            }
-        ],
-        "GlobalConfiguration": {
-        }
-    }
-
-In this example Ocelot will use the value from the {unitId} in the upstream path template and add it to the downstream request as a query string parameter called unitId!
-
-Ocelot will also allow you to put query string parameters in the UpstreamPathTemplate so you can match certain queries to certain services.
+Ocelot allows you to specify a query string as part of the **DownstreamPathTemplate** like the example below:
 
 .. code-block:: json
 
+  {
+    "UpstreamPathTemplate": "/api/units/{subscription}/{unit}/updates",
+    "DownstreamPathTemplate": "/api/subscriptions/{subscription}/updates?unitId={unit}",
+  }
+
+In this example Ocelot will use the value from the ``{unit}`` placeholder in the upstream path template and add it to the downstream request as a query string parameter called ``unitId``! Make sure you name the placeholder differently due to `restrictions <#restrictions-on-use>`_ on usage.
+
+
+Query String to Path direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ocelot will also allow you to put query string parameters in the **UpstreamPathTemplate** so you can match certain queries to certain services:
+
+.. code-block:: json
+
+  {
+    "UpstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={uid}",
+    "DownstreamPathTemplate": "/api/units/{subscriptionId}/{uid}/updates",
+  }
+
+In this example Ocelot will only match requests that have a matching URL path and the query string starts with ``unitId=something``.
+You can have other queries after this but you must start with the matching parameter.
+Also Ocelot will swap the ``{uid}`` parameter from the query string and use it in the downstream request path.
+Note, the best practice is giving different placeholder name than the name of query parameter due to `restrictions <#restrictions-on-use>`_ on usage.
+
+Catch All Query String
+^^^^^^^^^^^^^^^^^^^^^^
+
+Ocelot's routing also supports a *Catch All* style routing to forward all query string parameters.
+The placeholder ``{everything}`` name does not matter, any name will work.
+
+.. code-block:: json
+
+  {
+    "UpstreamPathTemplate": "/contracts?{everything}",
+    "DownstreamPathTemplate": "/apipath/contracts?{everything}",
+  }
+
+This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
+such as OData filters and etc (see issue `1174 <https://github.com/ThreeMammals/Ocelot/issues/1174>`_).
+
+Restrictions on use
+^^^^^^^^^^^^^^^^^^^
+
+The query string parameters are ordered and merged to produce the final downstream URL.
+This is necessary because the ``DownstreamUrlCreatorMiddleware`` needs to have some control when replacing placeholders and merging duplicate parameters.
+So, even if your parameter is presented as the first parameter in the upstream, then in the final downstream URL the said query parameter will have a different position.
+But this doesn't seem to break anything in the downstream API.
+
+Because of parameters merging, special ASP.NET API `model binding <https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-7.0#collections>`_
+for arrays is not supported if you use array items representation like ``selectedCourses=1050&selectedCourses=2000``.
+This query string will be merged as ``selectedCourses=1050`` in downstream URL. So, array data will be lost!
+Make sure upstream clients generate correct query string for array models like ``selectedCourses[0]=1050&selectedCourses[1]=2000``.
+To understand array model bidings, see `Bind arrays and string values from headers and query strings <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-7.0#bind-arrays-and-string-values-from-headers-and-query-strings>`_ docs.
+
+**Warning!** Query string placeholders have naming restrictions due to ``DownstreamUrlCreatorMiddleware`` implementations.
+On the other hand, it gives you the flexibility to control whether the parameter is present in the final downstream URL.
+Here are two user scenarios.
+
+* User wants to save the parameter after replacing the placeholder (see issue `473 <https://github.com/ThreeMammals/Ocelot/issues/473>`_).
+  To do this you need to use the following template definition:
+
+  .. code-block:: json
+  
     {
-        "Routes": [
-            {
-                "DownstreamPathTemplate": "/api/units/{subscriptionId}/{unitId}/updates",
-                "UpstreamPathTemplate": "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                "UpstreamHttpMethod": [
-                    "Get"
-                ],
-                "DownstreamScheme": "http",
-                "DownstreamHostAndPorts": [
-                    {
-                        "Host": "localhost",
-                        "Port": 50110
-                    }
-                ]
-            }
-        ],
-        "GlobalConfiguration": {
-        }
+      "UpstreamPathTemplate": "/path/{serverId}/{action}",
+      "DownstreamPathTemplate": "/path2/{action}?server={serverId}"
     }
 
-In this example Ocelot will only match requests that have a matching url path and the query string starts with unitId=something. You can have other queries after this
-but you must start with the matching parameter. Also Ocelot will swap the {unitId} parameter from the query string and use it in the downstream request path. 
+  So, ``{serverId}`` placeholder and ``server`` parameter **names are different**!
+  Finally, the ``server`` parameter is kept.
+
+* User wants to remove old parameter after replacing placeholder (see issue `952 <https://github.com/ThreeMammals/Ocelot/issues/952>`_).
+  To do this you need to use the same names:
+
+  .. code-block:: json
+  
+    {
+      "UpstreamPathTemplate": "/users?userId={userId}",
+      "DownstreamPathTemplate": "/persons?personId={userId}"
+    }
+
+  So, both ``{userId}`` placeholder and ``userId`` parameter **names are the same**!
+  Finally, the ``userId`` parameter is removed.
 
 Security Options
-^^^^^^^^^^^^^^^^
+----------------
 
-Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package with `MPL-2.0 License <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
+Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package
+with `MPL-2.0 License <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
 
 This feature is designed to allow greater IP management in order to include or exclude a wide IP range via CIDR notation or IP range.
 The current patterns managed are the following:
@@ -253,35 +284,18 @@ The current patterns managed are the following:
 * CIDR: :code:`192.168.1.0/24`
 * CIDR for IPv6: :code:`fe80::/10`
 * The allowed/blocked lists are evaluated during configuration loading
-* The *ExcludeAllowedFromBlocked* property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
+* The **ExcludeAllowedFromBlocked** property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
   Default value: :code:`false`
 * The absence of a property in **SecurityOptions** is allowed, it takes the default value.
 
 .. code-block:: json
 
-    {
-        "Routes": [
-            {
-                "DownstreamPathTemplate": "/api/service/{Id}",
-                "UpstreamPathTemplate": "/api/internal-service/{Id}/full",
-                "UpstreamHttpMethod": [
-                    "Get"
-                ],
-                "DownstreamScheme": "http",
-                "DownstreamHostAndPorts": [
-                    {
-                        "Host": "localhost",
-                        "Port": 50110
-                    }
-                ],
-                "SecurityOptions": { 
-                    "IPBlockedList": [ "192.168.0.0/23" ], 
-                    "IPAllowedList": ["192.168.0.15", "192.168.1.15"], 
-                    "ExcludeAllowedFromBlocked": true 
-                },
-            },
-        ],
-        "GlobalConfiguration": { }
+  {
+    "SecurityOptions": { 
+      "IPBlockedList": [ "192.168.0.0/23" ], 
+      "IPAllowedList": ["192.168.0.15", "192.168.1.15"], 
+      "ExcludeAllowedFromBlocked": true 
     }
+  }
 
-This feature was requested in the `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_.
+This feature was requested as part of `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_.

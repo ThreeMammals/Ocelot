@@ -1,11 +1,12 @@
 Caching
 =======
 
-Ocelot supports some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project. This is an amazing project that is solving a lot of caching problems. I would recommend using this package to cache with Ocelot. 
+Ocelot supports some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project.
+This is an amazing project that is solving a lot of caching problems. We would recommend using this package to cache with Ocelot. 
 
 The following example shows how to add **CacheManager** to Ocelot so that you can do output caching. 
 
-First of all add the following `NuGet package <https://www.nuget.org/packages/Ocelot.Cache.CacheManager>`_:
+First of all, add the following `NuGet package <https://www.nuget.org/packages/Ocelot.Cache.CacheManager>`_:
 
 .. code-block:: powershell
 
@@ -29,13 +30,10 @@ Finally, in order to use caching on a route in your Route configuration add this
 
 .. code-block:: json
 
-    "FileCacheOptions": { "TtlSeconds": 15, "Region": "europe-central", "Header": "Authorization" }
+    "FileCacheOptions": { "TtlSeconds": 15, "Region": "europe-central" }
 
 In this example **TtlSeconds** is set to 15 which means the cache will expire after 15 seconds.
 The **Region** represents a region of caching. 
-
-Additionally, if a header name is defined in the **Header** property, that header value is looked up by the key (header name) in the ``HttpRequest`` headers,
-and if the header is found, its value will be included in caching key. This causes the cache to become invalid due to the header value changing.
 
 If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager is setup and then passed into the Ocelot ``AddCacheManager`` configuration method.
 You can use any settings supported by the **CacheManager** package and just pass them in.
@@ -56,3 +54,4 @@ If you want to add your own caching method, implement the following interfaces a
 
 Please dig into the Ocelot source code to find more.
 We would really appreciate it if anyone wants to implement `Redis <https://redis.io/>`_, `Memcached <http://www.memcached.org/>`_ etc.
+Please, open a new `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell>`_ thread in `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository.

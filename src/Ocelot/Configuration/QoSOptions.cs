@@ -1,31 +1,41 @@
-﻿namespace Ocelot.Configuration
+﻿using Ocelot.Configuration.File;
+
+namespace Ocelot.Configuration
 {
     public class QoSOptions
     {
-        public QoSOptions(
-            int exceptionsAllowedBeforeBreaking,
-            int durationofBreak,
-            int timeoutValue,
-            string key,
-            string timeoutStrategy = "Pessimistic")
+        public QoSOptions(QoSOptions from)
         {
-            ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-            DurationOfBreak = durationofBreak;
-            TimeoutValue = timeoutValue;
-            TimeoutStrategy = timeoutStrategy;
-            Key = key;
+            DurationOfBreak = from.DurationOfBreak;
+            ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+            Key = from.Key;
+            TimeoutValue = from.TimeoutValue;
         }
 
-        public int ExceptionsAllowedBeforeBreaking { get; }
+        public QoSOptions(FileQoSOptions from)
+        {
+            DurationOfBreak = from.DurationOfBreak;
+            ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+            Key = string.Empty;
+            TimeoutValue = from.TimeoutValue;
+        }
+
+        public QoSOptions(
+            int exceptionsAllowedBeforeBreaking,
+            int durationOfBreak,
+            int timeoutValue, 
+            string key)
+        {
+            DurationOfBreak = durationOfBreak;
+            ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            Key = key;
+            TimeoutValue = timeoutValue;
+        }
 
         public int DurationOfBreak { get; }
-
-        public int TimeoutValue { get; }
-
-        public string TimeoutStrategy { get; }
-
-        public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
-
+        public int ExceptionsAllowedBeforeBreaking { get; }
         public string Key { get; }
+        public int TimeoutValue { get; }
+        public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
     }
 }
