@@ -106,7 +106,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
     /// <summary>
     /// When using route keys, the first route is the main route and the rest are additional routes.
-    /// Since we need to break if the main route response is null, we need to process the main route first.
+    /// Since we need to break if the main route response is null, we must process the main route first.
     /// </summary>
     /// <param name="context">The http context.</param>
     /// <param name="route">The first route, the main route.</param>
