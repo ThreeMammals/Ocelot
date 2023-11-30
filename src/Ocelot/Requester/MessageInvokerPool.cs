@@ -58,7 +58,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
             UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
             MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
-            PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+            PooledConnectionLifetime = downstreamRoute.HttpHandlerOptions.PooledConnectionLifeTime,
         };
 
         if (downstreamRoute.HttpHandlerOptions.UseCookieContainer)
