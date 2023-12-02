@@ -1,15 +1,11 @@
-﻿namespace Ocelot.Authentication.Middleware
-{
-    using Microsoft.AspNetCore.Authentication;
-    using Microsoft.AspNetCore.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-    using Ocelot.Middleware;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 
+namespace Ocelot.Authentication.Middleware
+{
     public sealed class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;

@@ -5,8 +5,7 @@ namespace Ocelot.Configuration.Builder
         private List<string> _allowedScopes = new();
         private string _authenticationProviderKey;
 
-        private string[] _authenticationProviderKeys = new();
-
+        private string[] _authenticationProviderKeys =[];
 
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
