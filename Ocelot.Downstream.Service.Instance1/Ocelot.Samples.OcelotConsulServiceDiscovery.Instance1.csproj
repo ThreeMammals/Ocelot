@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ocelot.Sample.LoadBalancer.Common\Ocelot.Sample.LoadBalancer.Common.csproj" />
+    <ProjectReference Include="..\Ocelot.Sample.LoadBalancer.Common\Ocelot.Samples.OcelotConsulServiceDiscovery.Common.csproj" />
   </ItemGroup>
 
 </Project>
