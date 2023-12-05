@@ -4,7 +4,7 @@ namespace Ocelot.Downstream.Service.Instance1.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class InstanceController : ControllerBase
     {
         [HttpGet("hostname")]
         public string GetHostName()
