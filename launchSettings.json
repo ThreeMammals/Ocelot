@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "ocelot.downstream.service.instance1": "StartDebugging",
+        "ocelot.sample.apigateway": "StartDebugging"
+      }
+    }
+  }
+}
