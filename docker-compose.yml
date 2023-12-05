@@ -3,12 +3,23 @@ version: '3.4'
 services:
   ocelot.downstream.service.instance1:
     image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
+    ports:
+      - "8080:443"
     build:
       context: .
       dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
-
+   
+  ocelot.downstream.service.instance2:
+    image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
+    ports:
+      - "8081:443"
+    build:
+      context: .
+      dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
   ocelot.sample.apigateway:
     image: ${DOCKER_REGISTRY-}ocelotsampleapigateway
+    ports:
+      - "8082:443"
     build:
       context: .
       dockerfile: Ocelot.Sample.ApiGateway/Dockerfile
