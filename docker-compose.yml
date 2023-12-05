@@ -13,6 +13,8 @@ services:
     image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
     ports:
       - "8081:443"
+    depends_on:
+     - ocelot.downstream.service.instance1
     build:
       context: .
       dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
