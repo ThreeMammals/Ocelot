@@ -17,7 +17,7 @@
       },
       "UpstreamPathTemplate": "/hostname",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/WeatherForecast/hostname",
+      "DownstreamPathTemplate": "/DownStreamInstance/hostname",
       "DownstreamScheme": "http",
       "DangerousAcceptAnyServerCertificateValidator": true
 
