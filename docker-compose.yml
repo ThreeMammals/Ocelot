@@ -18,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
+
   ocelot.sample.apigateway:
     image: ${DOCKER_REGISTRY-}ocelotsampleapigateway
     ports:
