@@ -1,6 +1,5 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +19,6 @@ namespace Ocelot.Sample.LoadBalancer.Common
         public static IApplicationBuilder UseConsul(this IApplicationBuilder app, IConfiguration configuration)
         {
             var consulClient = app.ApplicationServices.GetRequiredService<IConsulClient>();
-            var lifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
 
             var registration = new AgentServiceRegistration()
             {
