@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  ocelot.downstream.service.instance1:
+    image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
+    build:
+      context: .
+      dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
+
+  ocelot.sample.apigateway:
+    image: ${DOCKER_REGISTRY-}ocelotsampleapigateway
+    build:
+      context: .
+      dockerfile: Ocelot.Sample.ApiGateway/Dockerfile
+

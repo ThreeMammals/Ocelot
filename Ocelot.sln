@@ -98,9 +98,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LoadBalancerDemo", "LoadBal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Sample.ApiGateway", "Ocelot.Sample.ApiGateway\Ocelot.Sample.ApiGateway.csproj", "{3BC35E7B-91AC-4D0B-9830-598E6E465C90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Downstream.Service.Instance1", "Ocelot.Downstream.Service.Instance1\Ocelot.Downstream.Service.Instance1.csproj", "{3E81C8FA-1E46-44E8-864D-C8ABD21AA8A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Downstream.Service.Instance1", "Ocelot.Downstream.Service.Instance1\Ocelot.Downstream.Service.Instance1.csproj", "{3E81C8FA-1E46-44E8-864D-C8ABD21AA8A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Sample.LoadBalancer.Common", "Ocelot.Sample.LoadBalancer.Common\Ocelot.Sample.LoadBalancer.Common.csproj", "{6CE1027B-D742-4B5F-AC51-40BE82A7F182}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Sample.LoadBalancer.Common", "Ocelot.Sample.LoadBalancer.Common\Ocelot.Sample.LoadBalancer.Common.csproj", "{6CE1027B-D742-4B5F-AC51-40BE82A7F182}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{EFFFEE8D-E8EA-4CC0-A681-592BFC451C4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -228,6 +230,10 @@ Global
 		{6CE1027B-D742-4B5F-AC51-40BE82A7F182}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CE1027B-D742-4B5F-AC51-40BE82A7F182}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CE1027B-D742-4B5F-AC51-40BE82A7F182}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFFFEE8D-E8EA-4CC0-A681-592BFC451C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFFFEE8D-E8EA-4CC0-A681-592BFC451C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFFFEE8D-E8EA-4CC0-A681-592BFC451C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFFFEE8D-E8EA-4CC0-A681-592BFC451C4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
