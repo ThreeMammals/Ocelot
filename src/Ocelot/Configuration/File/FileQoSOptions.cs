@@ -6,7 +6,7 @@
         {
             DurationOfBreak = 1;
             ExceptionsAllowedBeforeBreaking = 0;
-            TimeoutValue = int.MaxValue;
+            TimeoutValue = 0;
         }
 
         public FileQoSOptions(FileQoSOptions from)
