@@ -25,6 +25,7 @@ namespace Ocelot.Configuration.File
             UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             UpstreamHttpMethod = new List<string>();
+            Metadata = new Dictionary<string, string>();
         }
 
         public FileRoute(FileRoute from)
@@ -76,6 +77,7 @@ namespace Ocelot.Configuration.File
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
+        public Dictionary<string, string> Metadata { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.
@@ -123,6 +125,7 @@ namespace Ocelot.Configuration.File
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
+            to.Metadata = new(from.Metadata);
         }
     }
 }

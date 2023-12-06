@@ -118,7 +118,7 @@ namespace Ocelot.IntegrationTests
                 .Then(x => ThenTheResultHaveMultiLineIndentedJson())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {

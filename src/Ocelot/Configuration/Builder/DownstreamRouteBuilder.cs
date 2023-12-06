@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration.Creator;
 using Ocelot.Values;
+using System.Collections.Generic;
 
 namespace Ocelot.Configuration.Builder;
 
@@ -42,6 +43,7 @@ public class DownstreamRouteBuilder
     private Version _downstreamHttpVersion;
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
+    private Dictionary<string, string> _metadata;
 
     public DownstreamRouteBuilder()
     {
@@ -49,6 +51,7 @@ public class DownstreamRouteBuilder
         _delegatingHandlers = new();
         _addHeadersToDownstream = new();
         _addHeadersToUpstream = new();
+        _metadata = new();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -275,6 +278,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithMetadata(Dictionary<string, string> metadata)
+    {
+        _metadata = new(metadata);
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -313,6 +322,7 @@ public class DownstreamRouteBuilder
             _downstreamHttpMethod,
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
-            _upstreamHeaders);
+            _upstreamHeaders,
+            _metadata);
     }
 }

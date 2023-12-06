@@ -27,6 +27,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<ISecurityOptionsCreator> _soCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
         private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
+        private readonly Mock<IMetadataCreator> _metadataCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -45,6 +46,7 @@ namespace Ocelot.UnitTests.Configuration
         private Version _expectedVersion;
         private HttpVersionPolicy _expectedVersionPolicy;
         private Dictionary<string, UpstreamHeaderTemplate> _uht;
+        private Dictionary<string, string> _expectedMetadata;
 
         public RoutesCreatorTests()
         {
@@ -65,6 +67,7 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator = new Mock<IVersionCreator>();
             _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
+            _metadataCreator = new Mock<IMetadataCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -83,7 +86,8 @@ namespace Ocelot.UnitTests.Configuration
                 _soCreator.Object,
                 _versionCreator.Object,
                 _versionPolicyCreator.Object,
-                _uhtpCreator.Object);
+                _uhtpCreator.Object,
+                _metadataCreator.Object);
         }
 
         [Fact]
@@ -121,6 +125,10 @@ namespace Ocelot.UnitTests.Configuration
                             { "e","f" },
                         },
                         UpstreamHttpMethod = new List<string> { "GET", "POST" },
+                        Metadata = new()
+                        {
+                            ["foo"] = "bar",
+                        },
                     },
                     new()
                     {
@@ -139,6 +147,10 @@ namespace Ocelot.UnitTests.Configuration
                             { "k","l" },
                         },
                         UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                        Metadata = new()
+                        {
+                            ["foo"] = "baz",
+                        },
                     },
                 },
             };
@@ -175,6 +187,10 @@ namespace Ocelot.UnitTests.Configuration
             _dhp = new List<DownstreamHostAndPort>();
             _lbo = new LoadBalancerOptionsBuilder().Build();
             _uht = new Dictionary<string, UpstreamHeaderTemplate>();
+            _expectedMetadata = new Dictionary<string, string>()
+            {
+                ["foo"] = "bar",
+            };
 
             _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
             _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
@@ -192,6 +208,7 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
             _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
             _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
+            _metadataCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(_expectedMetadata);
         }
 
         private void ThenTheRoutesAreCreated()
@@ -251,6 +268,7 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
             _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
             _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
+            _result[routeIndex].DownstreamRoute[0].Metadata.ShouldBe(_expectedMetadata);
             _result[routeIndex].UpstreamHttpMethod
                 .Select(x => x.Method)
                 .ToList()
@@ -283,6 +301,7 @@ namespace Ocelot.UnitTests.Configuration
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
             _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions), Times.Once);
+            _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
         }
     }
 }
