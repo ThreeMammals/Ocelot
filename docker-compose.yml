@@ -29,3 +29,10 @@ services:
       context: .
       dockerfile: Ocelot.Sample.ApiGateway/Dockerfile
 
+  consul-service:
+        image: "consul:1.15.4"
+        command: consul agent -dev -log-level=warn -ui -client=0.0.0.0
+        hostname: consul
+        ports:
+            - "8500:8500"
+            - "8600:8600"
