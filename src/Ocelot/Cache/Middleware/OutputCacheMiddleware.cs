@@ -72,16 +72,13 @@ namespace Ocelot.Cache.Middleware
             {
                 return null;
             }
-
-            var content = new MemoryStream(Convert.FromBase64String(cached.Body));
-            var streamContent = new StreamContent(content);
-
+            var content = Convert.FromBase64String(cached.Body);
+            var byteArrayContent = new ByteArrayContent(content);
             foreach (var header in cached.ContentHeaders)
             {
-                streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                byteArrayContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
-
-            return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList(), cached.ReasonPhrase);
+            return new DownstreamResponse(byteArrayContent, cached.StatusCode, cached.Headers.ToList(), cached.ReasonPhrase);
         }
 
         internal async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
