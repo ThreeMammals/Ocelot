@@ -2,17 +2,19 @@ version: '3.4'
 
 services:
   ocelot.downstream.service.instance1:
+    environment:
+    - ASPNETCORE_ENVIRONMENT=instance1
+    - ASPNETCORE_URLS=http://+:8020
     image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
-    ports:
-      - "8080:443"
     build:
       context: .
       dockerfile: Ocelot.Downstream.Service.Instance1/Dockerfile
    
   ocelot.downstream.service.instance2:
+    environment:
+    - ASPNETCORE_ENVIRONMENT=instance2
+    - ASPNETCORE_URLS=http://+:8030
     image: ${DOCKER_REGISTRY-}ocelotdownstreamserviceinstance1
-    ports:
-      - "8081:443"
     depends_on:
      - ocelot.downstream.service.instance1
     build:
