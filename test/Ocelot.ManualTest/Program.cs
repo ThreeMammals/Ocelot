@@ -55,7 +55,10 @@ namespace Ocelot.ManualTest
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    app.UseOcelot().Wait();
+                    app.UseOcelot(options =>
+                    {
+                        options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
+                    }).Wait();
                 })
                 .Build()
                 .Run();
