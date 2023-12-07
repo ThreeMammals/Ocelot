@@ -70,7 +70,8 @@ Here is an example Route configuration. You don't need to set all of these thing
       "IPAllowedList": [],
       "IPBlockedList": [],
       "ExcludeAllowedFromBlocked": false
-    }
+    },
+    "Metadata": {}
   }
 
 The actual Route schema for properties can be found in the C# `FileRoute <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileRoute.cs>`_ class.
@@ -484,6 +485,64 @@ You can utilize these methods in the ``ConfigureAppConfiguration`` method (locat
     }
 
 You can find additional details in the dedicated :ref:`di-configuration-overview` section and in subsequent sections related to the :doc:`../features/dependencyinjection` chapter.
+
+Route Metadata
+--------------
+
+Ocelot provides various features such as routing, authentication, caching, load balancing, and more. However, some users may encounter situations where Ocelot does not meet their specific needs or they want to customize its behavior. In such cases, Ocelot allows users to add metadata to the route configuration. This property can store any arbitrary data that users can access in middlewares or delegating handlers. By using the metadata, users can implement their own logic and extend the functionality of Ocelot.
+
+Here is an example:
+
+.. code-block:: json
+
+    {
+      "Routes": [
+          {
+              "UpstreamHttpMethod": [ "GET" ],
+              "UpstreamPathTemplate": "/posts/{postId}",
+              "DownstreamPathTemplate": "/api/posts/{postId}",
+              "DownstreamHostAndPorts": [
+                  { "Host": "localhost", "Port": 80 }
+              ],
+              "Metadata": {
+                  "api-id": "FindPost",
+                  "my-extension/param1": "overwritten-value",
+                  "other-extension/param1": "value1",
+                  "other-extension/param2": "value2",
+                  "tags": "tag1, tag2, area1, area2, func1",
+                  "json": "[1, 2, 3, 4, 5]"
+              }
+          }
+      ],
+      "GlobalConfiguration": {
+          "Metadata": {
+              "instance_name": "dc-1-54abcz",
+              "my-extension/param1": "default-value"
+          }
+      }
+    }
+
+Now, the route metadata can be accessed through the `DownstreamRoute` object:
+
+.. code-block:: csharp
+
+    public static class OcelotMiddlewares
+    {
+        public static Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
+        {
+            var downstreamRoute = context.Items.DownstreamRoute();
+
+            if(downstreamRoute?.Metadata is {} metadata)
+            {
+                var param1 = metadata.GetValueOrDefault("my-extension/param1") ?? throw new MyExtensionException("Param 1 is null");
+                var param2 = metadata.GetValueOrDefault("my-extension/param2", "custom-value");
+
+                // working with metadata
+            }
+
+            return next();
+        }
+    }
 
 """"
 
