@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.ComponentModel.DataAnnotations;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -445,10 +446,14 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not()
+        [Theory]
+        [InlineData("/products")]
+        [InlineData("/products/")]
+        [Trait("Issue","Should fix issue 649")]
+        public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not(string url)
         {
             var port = PortFinder.GetRandomPort();
+            var downstreamBasePath = "/products";
 
             var configuration = new FileConfiguration
             {
@@ -456,7 +461,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new()
                         {
-                            DownstreamPathTemplate = "/products",
+                            DownstreamPathTemplate = downstreamBasePath,
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
@@ -466,16 +471,16 @@ namespace Ocelot.AcceptanceTests
                                     Port = port,
                                 },
                             },
-                            UpstreamPathTemplate = "/products/",
+                            UpstreamPathTemplate = downstreamBasePath+"/",
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamBasePath, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
