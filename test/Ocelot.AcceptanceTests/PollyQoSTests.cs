@@ -15,24 +15,24 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options,
-            string httpMethod = nameof(HttpMethods.Get)) => new()
+        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get))
+            => new()
             {
                 Routes = new List<FileRoute>
-            {
-                new()
                 {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = Uri.UriSchemeHttp,
-                    DownstreamHostAndPorts = new()
+                    new()
                     {
-                        new("localhost", port),
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = Uri.UriSchemeHttp,
+                        DownstreamHostAndPorts = new()
+                        {
+                            new("localhost", port),
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new() {httpMethod},
+                        QoSOptions = new FileQoSOptions(options),
                     },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() {httpMethod},
-                    QoSOptions = new FileQoSOptions(options),
                 },
-            },
             };
 
         [Fact]
