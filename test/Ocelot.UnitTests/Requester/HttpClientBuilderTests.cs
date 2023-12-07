@@ -256,7 +256,7 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
-        [Theory]
+        [Theory(DisplayName = "1833: " + nameof(Create_TimeoutValueInQosOptions_HttpClientTimeout))]
         [InlineData(0, 90)] // default timeout is 90 seconds
         [InlineData(20, 20)] // QoS timeout
         public void Create_TimeoutValueInQosOptions_HttpClientTimeout(int qosTimeout, int expectedSeconds)
