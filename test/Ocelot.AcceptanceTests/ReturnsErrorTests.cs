@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithLogger())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenWarningShouldBeLogged(2))
+                .Then(x => _steps.ThenWarningShouldBeLogged(1))
                 .BDDfy();
         }
 
