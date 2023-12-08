@@ -8,10 +8,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Load settings from appsettings.instance1.json
-builder.Configuration.AddJsonFile("appsettings.instance1.json", optional: true, reloadOnChange: true);
+//builder.Configuration.AddJsonFile("appsettings.instance1.json", optional: true, reloadOnChange: true);
 
-// Load settings from appsettings.instance2.json
-builder.Configuration.AddJsonFile("appsettings.instance2.json", optional: true, reloadOnChange: true);
+//// Load settings from appsettings.instance2.json
+//builder.Configuration.AddJsonFile("appsettings.instance2.json", optional: true, reloadOnChange: true);
 builder.Services.AddConsulConfig(builder.Configuration);
 
 var app = builder.Build();
