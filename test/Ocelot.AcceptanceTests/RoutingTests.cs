@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using System.ComponentModel.DataAnnotations;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -449,7 +448,6 @@ namespace Ocelot.AcceptanceTests
         [Theory]
         [InlineData("/products")]
         [InlineData("/products/")]
-        [Trait("Issue","Should fix issue 649")]
         public void should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not(string url)
         {
             var port = PortFinder.GetRandomPort();
@@ -478,6 +476,45 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamBasePath, 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData("/account/authenticate")]
+        [InlineData("/account/authenticate/")]
+        [Trait("Issue", "649")]
+        public void should_fix_issue_649(string url)
+        {
+            var port = PortFinder.GetRandomPort();
+            var baseUrl = $"http://localhost:{port}";
+            var configuration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        UpstreamPathTemplate = "/account/authenticate/",
+
+                        DownstreamPathTemplate = "/authenticate",
+                        DownstreamScheme = Uri.UriSchemeHttp,
+                        DownstreamHostAndPorts = new()
+                        {
+                            new("localhost", port),
+                        },
+                    },
+                },
+                GlobalConfiguration =
+                {
+                    BaseUrl = baseUrl,
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn(baseUrl, "/authenticate", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
