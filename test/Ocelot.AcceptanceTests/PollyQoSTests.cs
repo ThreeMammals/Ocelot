@@ -15,25 +15,25 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
-        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options,
-            string httpMethod = nameof(HttpMethods.Get)) => new()
-        {
-            Routes = new List<FileRoute>
+        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get))
+            => new()
             {
-                new()
+                Routes = new List<FileRoute>
                 {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = Uri.UriSchemeHttp,
-                    DownstreamHostAndPorts = new()
+                    new()
                     {
-                        new("localhost", port),
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = Uri.UriSchemeHttp,
+                        DownstreamHostAndPorts = new()
+                        {
+                            new("localhost", port),
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new() {httpMethod},
+                        QoSOptions = new FileQoSOptions(options),
                     },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() {httpMethod},
-                    QoSOptions = new FileQoSOptions(options),
                 },
-            },
-        };
+            };
 
         [Fact]
         public void Should_not_timeout()
@@ -140,6 +140,20 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact(DisplayName = "1833: " + nameof(Should_timeout_per_default_after_90_seconds))]
+        public void Should_timeout_per_default_after_90_seconds()
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .BDDfy();
         }
 
