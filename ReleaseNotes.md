@@ -1,33 +1,20 @@
-## October 2023 (version {0}) aka [Swiss Locomotive](https://en.wikipedia.org/wiki/SBB-CFF-FFS_Ae_6/6) release
-> Codenamed as **[Swiss Locomotive](https://www.google.com/search?q=swiss+locomotive)**
+## Hotfix release (version {0})
+> Default timeout vs the [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) feature
 
-### Focused On
-<details>
-  <summary><b>Logging feature</b>. Performance review, redesign and improvements with new best practices to log</summary>
+Special thanks to **Alvin Huang**, @huanguolin!
 
-  - Proposing a centralized `WriteLog` method for the `OcelotLogger`
-  - Factory methods for computed strings such as `string.Format` or interpolated strings
-  - Using `ILogger.IsEnabled` before calling the native `WriteLog` implementation and invoking string factory method
-</details>
-<details>
-  <summary><b>Quality of Service feature</b>. Redesign and stabilization, and it produces less log records now.</summary>
- 
-  - Fixing issue with [Polly](https://www.thepollyproject.org/) Circuit Breaker not opening after max number of retries reached
-  - Removing useless log calls that could have an impact on performance
-  - Polly [lib](https://www.nuget.org/packages/Polly#versions-body-tab) reference updating to latest `8.2.0` with some code improvements
-</details>
-<details>
-  <summary>Documentation for <b>Logging</b>, <b>Request ID</b>, <b>Routing</b> and <b>Websockets</b></summary>
- 
-  - [Logging](https://ocelot.readthedocs.io/en/latest/features/logging.html)
-  - [Request ID](https://ocelot.readthedocs.io/en/latest/features/requestid.html)
-  - [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html)
-  - [Websockets](https://ocelot.readthedocs.io/en/latest/features/websockets.html)
-</details>
-<details>
-  <summary>Testing improvements and stabilization aka <b>bug fixing</b></summary>
+### About
+The bug is related to the **Quality of Service** feature (aka **QoS**) and the [HttpClient.Timeout](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout) property.
+- If JSON `QoSOptions` section is defined in the route config, then the bug is masked rather than active, and the timeout value is assigned from the [QoS TimeoutValue](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=%22TimeoutValue%22%3A%205000) property.
+- If the `QoSOptions` section **is not** defined in the route config or the [TimeoutValue](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=%22TimeoutValue%22%3A%205000) property is missing, then the bug is **active** and affects downstream requests that **never time out**.
 
-  - [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html) bug fixing: query string placeholders including **CatchAll** one aka `{{everything}}` and query string duplicates removal
-  - [QoS](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) bug fixing: Polly circuit breaker exceptions
-  - Testing bug fixing: rare failed builds because of unstable Polly tests. Acceptance common logic for ports
-</details>
+### Technical info
+In version [22.0](https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0), the bug was found in the explicit default constructor of the [FileQoSOptions](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileQoSOptions.cs) class with a maximum [TimeoutValue](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileQoSOptions.cs#L9). Previously, the default constructor was implicit with the default assignment of zero `0` to all `int` properties.
+
+The new explicit default constructor breaks the old implementation of [QoS TimeoutValue](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Requester/HttpClientBuilder.cs#L53-L55) logic, as our [QoS documentation](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=If%20you%20do%20not%20add%20a%20QoS%20section%2C%20QoS%20will%20not%20be%20used%2C%20however%20Ocelot%20will%20default%20to%20a%2090%20seconds%20timeout%20on%20all%20downstream%20requests.) states:
+![image](https://github.com/ThreeMammals/Ocelot/assets/12430413/2c6b2cd3-e1c6-4510-9e46-883468c140ec) <br/>
+**Finally**, the "default 90 second" logic for `HttpClient` breaks down when there are no **QoS** options and all requests on those routes are infinite, if, for example, downstream services are down or stuck.
+
+#### The Bug Artifacts
+- Reported bug issue: [1833](https://github.com/ThreeMammals/Ocelot/issues/1833) by @huanguolin
+- Hotfix PR: [1834](https://github.com/ThreeMammals/Ocelot/pull/1834) by @huanguolin
