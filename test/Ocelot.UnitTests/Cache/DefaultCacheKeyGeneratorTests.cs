@@ -8,19 +8,19 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class CacheKeyGeneratorTests
+    public class DefaultCacheKeyGeneratorTests
     {
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
         private readonly Mock<DownstreamRequest> _downstreamRequest;
 
         private const string verb = "GET";
         private const string url = "https://some.url/blah?abcd=123";
-        private const string header = nameof(CacheKeyGeneratorTests);
+        private const string header = nameof(DefaultCacheKeyGeneratorTests);
         private const string headerName = "auth";
 
-        public CacheKeyGeneratorTests()
+        public DefaultCacheKeyGeneratorTests()
         {
-            _cacheKeyGenerator = new CacheKeyGenerator();
+            _cacheKeyGenerator = new DefaultCacheKeyGenerator();
 
             _downstreamRequest = new Mock<DownstreamRequest>();
             _downstreamRequest.SetupGet(x => x.Method).Returns(verb);

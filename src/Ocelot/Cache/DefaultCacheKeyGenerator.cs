@@ -3,7 +3,7 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.Cache
 {
-    public class CacheKeyGenerator : ICacheKeyGenerator
+    public class DefaultCacheKeyGenerator : ICacheKeyGenerator
     {
         private const char Delimiter = '-';
         
