@@ -9,10 +9,20 @@
             Header = header;
         }
 
+        public CacheOptions(int ttlSeconds, string region, string header, bool enableContentHashing)
+        {
+            TtlSeconds = ttlSeconds;
+            Region = region;
+            Header = header;
+            EnableRequestBodyHashing = enableContentHashing;
+        }
+
         public int TtlSeconds { get; }
 
         public string Region { get; }
 
         public string Header { get; }
+
+        public bool EnableRequestBodyHashing { get; }
     }
 }

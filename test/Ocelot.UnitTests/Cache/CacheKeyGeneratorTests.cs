@@ -36,14 +36,16 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_generate_cache_key_with_request_content()
         {
+            const string noHeader = null;
             const string content = nameof(should_generate_cache_key_with_request_content);
             var httpRequest = new HttpRequestMessageStub(content);
             _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
             _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
 
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{content}");
+            CacheOptions options = new CacheOptions(100, "region", noHeader, true);
 
-            this.Given(x => x.GivenDownstreamRoute(null))
+            this.Given(x => x.GivenDownstreamRoute(options))
                 .When(x => x.WhenGenerateRequestCacheKey())
                 .Then(x => x.ThenGeneratedCacheKeyIs(cachekey))
                 .BDDfy();
@@ -86,7 +88,7 @@ namespace Ocelot.UnitTests.Cache
             _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
             _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
 
-            CacheOptions options = new CacheOptions(100, "region", headerName);
+            CacheOptions options = new CacheOptions(100, "region", headerName, true);
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}-{content}");
 
             this.Given(x => x.GivenDownstreamRoute(options))

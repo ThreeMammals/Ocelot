@@ -14,7 +14,8 @@ namespace Ocelot.Cache
                 .Append(Delimiter)
                 .Append(downstreamRequest.OriginalString);
 
-            var cacheOptionsHeader = downstreamRoute?.CacheOptions?.Header;
+            var options = downstreamRoute?.CacheOptions;
+            var cacheOptionsHeader = options?.Header ?? string.Empty;
             if (!string.IsNullOrEmpty(cacheOptionsHeader))
             {
                 var header = downstreamRequest.Headers
@@ -28,7 +29,7 @@ namespace Ocelot.Cache
                 }
             }
 
-            if (!downstreamRequest.HasContent)
+            if (!downstreamRequest.HasContent || !options.EnableRequestBodyHashing)
             {
                 return MD5Helper.GenerateMd5(builder.ToString());
             }
