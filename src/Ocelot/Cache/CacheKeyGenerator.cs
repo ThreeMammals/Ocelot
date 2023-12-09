@@ -33,11 +33,15 @@ namespace Ocelot.Cache
                 return MD5Helper.GenerateMd5(builder.ToString());
             }
 
-            var requestContentString = await downstreamRequest.ReadContentAsync();
+            var requestContentString = await ReadContentAsync(downstreamRequest);
             builder.Append(Delimiter)
                 .Append(requestContentString);
 
             return MD5Helper.GenerateMd5(builder.ToString());
         }
+
+        private static Task<string> ReadContentAsync(DownstreamRequest downstream) => downstream.HasContent
+            ? downstream?.Request?.Content?.ReadAsStringAsync() ?? Task.FromResult(string.Empty)
+            : Task.FromResult(string.Empty);
     }
 }

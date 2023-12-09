@@ -3,6 +3,8 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Middleware;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
 
 namespace Ocelot.UnitTests.Cache
 {
@@ -35,9 +37,9 @@ namespace Ocelot.UnitTests.Cache
         public void should_generate_cache_key_with_request_content()
         {
             const string content = nameof(should_generate_cache_key_with_request_content);
-
+            var httpRequest = new HttpRequestMessageStub(content);
             _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
-            _downstreamRequest.Setup(x => x.ReadContentAsync()).ReturnsAsync(content);
+            _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
 
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{content}");
 
@@ -80,8 +82,9 @@ namespace Ocelot.UnitTests.Cache
         {
             const string content = nameof(should_generate_cache_key_happy_path);
 
+            var httpRequest = new HttpRequestMessageStub(content);
             _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
-            _downstreamRequest.Setup(x => x.ReadContentAsync()).ReturnsAsync(content);
+            _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
 
             CacheOptions options = new CacheOptions(100, "region", headerName);
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}-{content}");
@@ -118,5 +121,38 @@ namespace Ocelot.UnitTests.Cache
     internal class HttpHeadersStub : HttpHeaders
     {
         public HttpHeadersStub() : base() { }
+    }
+
+    internal class HttpRequestMessageStub : HttpRequestMessage
+    {
+        private readonly string _content;
+        private readonly HttpContent _httpContent;
+
+        public HttpRequestMessageStub(string content)
+        {
+            _content = content;
+            _httpContent = new HttpContentStub(content);
+
+            var field = typeof(HttpRequestMessage).GetField(nameof(_content), BindingFlags.NonPublic | BindingFlags.Instance);
+            field.SetValue(this, _httpContent);
+        }
+    }
+
+    internal class HttpContentStub : HttpContent
+    {
+        private readonly string _content;
+        private readonly MemoryStream _stream;
+
+        public HttpContentStub(string content)
+        {
+            _content = content;
+            _stream = new MemoryStream(Encoding.ASCII.GetBytes(content));
+
+            var field = typeof(HttpContent).GetField("_bufferedContent", BindingFlags.NonPublic | BindingFlags.Instance);
+            field.SetValue(this, _stream);
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context) => throw new NotImplementedException();
+        protected override bool TryComputeLength(out long length) => throw new NotImplementedException();
     }
 }

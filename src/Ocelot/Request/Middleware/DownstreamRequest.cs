@@ -39,9 +39,7 @@ namespace Ocelot.Request.Middleware
 
         public virtual bool HasContent { get => _request?.Content != null; }
 
-        public virtual Task<string> ReadContentAsync() => HasContent
-            ? _request.Content.ReadAsStringAsync()
-            : Task.FromResult(string.Empty);
+        public virtual HttpRequestMessage Request { get => _request; }
 
         public HttpRequestMessage ToHttpRequestMessage()
         {
