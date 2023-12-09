@@ -2,38 +2,34 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
-using Ocelot.Responses;
 
 namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
     private readonly HashSet<string> _unsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host" };
+    private readonly string[] _contentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
 
-    public Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
+    public HttpRequestMessage Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
-        try
+        var requestMessage = new HttpRequestMessage
         {
-            var requestMessage = new HttpRequestMessage
-            {
-                Content = MapContent(request),
-                Method = MapMethod(request, downstreamRoute),
-                RequestUri = MapUri(request),
-                Version = downstreamRoute.DownstreamHttpVersion,
-            };
+            Content = MapContent(request),
+            Method = MapMethod(request, downstreamRoute),
+            RequestUri = MapUri(request),
+            Version = downstreamRoute.DownstreamHttpVersion,
+        };
 
-            MapHeaders(request, requestMessage);
+        MapHeaders(request, requestMessage);
 
-            return Task.FromResult<Response<HttpRequestMessage>>(new OkResponse<HttpRequestMessage>(requestMessage));
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult<Response<HttpRequestMessage>>(new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex)));
-        }
+        return requestMessage;
     }
 
-    private static HttpContent MapContent(HttpRequest request)
+    private HttpContent MapContent(HttpRequest request)
     {
+        // todo: We should check if we really need to call HttpRequest.Body.Length
+        // but we assume that if CanSeek is true, the length is calculated without
+        // an important overhead
         if (request.Body is null or { CanSeek: true, Length: <= 0 })
         {
             return null;
@@ -41,40 +37,40 @@ public class RequestMapper : IRequestMapper
 
         var content = new StreamHttpContent(request.HttpContext);
 
+        AddContentHeaders(request, content);
+
+        return content;
+    }
+
+    private void AddContentHeaders(HttpRequest request, HttpContent content)
+    {
         if (!string.IsNullOrEmpty(request.ContentType))
         {
             content.Headers
                 .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
         }
 
-        AddHeaderIfExistsOnRequest("Content-Language", content, request);
-        AddHeaderIfExistsOnRequest("Content-Location", content, request);
-        AddHeaderIfExistsOnRequest("Content-Range", content, request);
-        AddHeaderIfExistsOnRequest("Content-MD5", content, request);
-        AddHeaderIfExistsOnRequest("Content-Disposition", content, request);
-        AddHeaderIfExistsOnRequest("Content-Encoding", content, request);
+        // The performance might be improved by retrieving the matching headers from the request
+        // instead of calling request.Headers.TryGetValue for each used content header
+        var matchingHeaders = _contentHeaders.Where(header => request.Headers.ContainsKey(header));
 
-        return content;
-    }
-
-    private static void AddHeaderIfExistsOnRequest(string key, HttpContent content, HttpRequest request)
-    {
-        if (request.Headers.ContainsKey(key))
+        foreach (var key in matchingHeaders)
         {
-            content.Headers
-                .TryAddWithoutValidation(key, request.Headers[key].ToArray());
+            if (!request.Headers.TryGetValue(key, out var value))
+            {
+                continue;
+            }
+
+            content.Headers.TryAddWithoutValidation(key, value.ToArray());
         }
     }
 
-    private static HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute)
-    {
-        return !string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod) ? new HttpMethod(downstreamRoute.DownstreamHttpMethod) : new HttpMethod(request.Method);
-    }
+    private static HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute) => 
+        !string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod) ? 
+            new HttpMethod(downstreamRoute.DownstreamHttpMethod) : new HttpMethod(request.Method);
 
-    private static Uri MapUri(HttpRequest request)
-    {
-        return new Uri(request.GetEncodedUrl());
-    }
+    // todo: review this method, request.GetEncodedUrl() could throw a NullReferenceException
+    private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
 
     private void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
     {
@@ -87,8 +83,6 @@ public class RequestMapper : IRequestMapper
         }
     }
 
-    private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
-    {
-        return !_unsupportedHeaders.Contains(header.Key);
-    }
+    private bool IsSupportedHeader(KeyValuePair<string, StringValues> header) =>
+        !_unsupportedHeaders.Contains(header.Key);
 }
