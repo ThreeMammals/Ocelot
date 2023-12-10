@@ -5,6 +5,9 @@ namespace Ocelot.Requester;
 
 public class MessageInvokerPool : IMessageInvokerPool
 {
+    //todo: this should be configurable and available as global config parameter in ocelot.json
+    public const int DefaultRequestTimeoutSeconds = 90;
+
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
 
@@ -17,7 +20,7 @@ public class MessageInvokerPool : IMessageInvokerPool
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
     {
         var timeout = downstreamRoute.QosOptions.TimeoutValue == 0
-            ? TimeSpan.FromSeconds(90)
+            ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
             : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue);
 
         return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(timeout, downstreamRoute),
