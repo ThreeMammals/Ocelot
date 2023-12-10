@@ -77,7 +77,7 @@ public class StreamHttpContent : HttpContent
                 // Normally this is enforced by the server, but it could get out of sync if something in the proxy modified the body.
                 if (announcedContentLength != UnknownLength && contentLength > announcedContentLength)
                 {
-                    throw new InvalidOperationException("More bytes received than the specified Content-Length.");
+                    throw new InvalidOperationException($"More data ({contentLength} bytes) received than the specified Content-Length of {announcedContentLength} bytes.");
                 }
 
                 // end of the source stream.
