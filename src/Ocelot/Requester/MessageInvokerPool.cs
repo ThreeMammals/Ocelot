@@ -91,10 +91,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             DownstreamRoute = downstreamRoute;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is MessageInvokerCacheKey key && Equals(key);
-        }
+        public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 
         public bool Equals(MessageInvokerCacheKey other)
         {
@@ -103,10 +100,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             return equality;
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Timeout, DownstreamRoute);
-        }
+        public override int GetHashCode() => HashCode.Combine(Timeout, DownstreamRoute);
 
         public static bool operator ==(MessageInvokerCacheKey left, MessageInvokerCacheKey right)
         {
