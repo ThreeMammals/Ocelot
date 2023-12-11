@@ -61,7 +61,7 @@
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
-        public Dictionary<string, string> Metadata { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.
@@ -107,7 +107,7 @@
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
-            to.Metadata = new(from.Metadata);
+            to.Metadata = new Dictionary<string, string>(from.Metadata);
         }
     }
 }

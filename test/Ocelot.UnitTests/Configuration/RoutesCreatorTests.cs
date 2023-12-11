@@ -118,7 +118,7 @@ namespace Ocelot.UnitTests.Configuration
                             { "e","f" },
                         },
                         UpstreamHttpMethod = new List<string> { "GET", "POST" },
-                        Metadata = new()
+                        Metadata = new Dictionary<string, string>()
                         {
                             ["foo"] = "bar",
                         },
@@ -140,7 +140,7 @@ namespace Ocelot.UnitTests.Configuration
                             { "k","l" },
                         },
                         UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
-                        Metadata = new()
+                        Metadata = new Dictionary<string, string>()
                         {
                             ["foo"] = "baz",
                         },
