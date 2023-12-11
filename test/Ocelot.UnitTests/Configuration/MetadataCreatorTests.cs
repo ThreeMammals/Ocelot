@@ -7,7 +7,7 @@ public class MetadataCreatorTests
 {
     private FileGlobalConfiguration _globalConfiguration;
     private Dictionary<string, string> _metadataInRoute;
-    private Dictionary<string, string> _result;
+    private IDictionary<string, string> _result;
     private readonly MetadataCreator _sut = new();
 
     [Fact]

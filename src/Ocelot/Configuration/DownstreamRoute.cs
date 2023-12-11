@@ -42,7 +42,7 @@ namespace Ocelot.Configuration
             Version downstreamHttpVersion,
             HttpVersionPolicy downstreamHttpVersionPolicy,
             Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
-            Dictionary<string, string> metadata)
+            IDictionary<string, string> metadata)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -130,6 +130,6 @@ namespace Ocelot.Configuration
         /// </remarks>
         public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
-        public Dictionary<string, string> Metadata { get; }
+        public IDictionary<string, string> Metadata { get; }
     }
 }
