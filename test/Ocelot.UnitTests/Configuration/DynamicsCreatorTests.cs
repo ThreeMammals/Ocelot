@@ -57,8 +57,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = false,
                         },
                         DownstreamHttpVersion = "1.1",
-                        DownstreamHttpVersionPolicy = VersionPolicies.RequestVersionOrLower,
-                        Metadata = new()
+                        Metadata = new Dictionary<string, string>
                         {
                             ["foo"] = "bar",
                         },
@@ -71,8 +70,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = true,
                         },
                         DownstreamHttpVersion = "2.0",
-                        DownstreamHttpVersionPolicy = VersionPolicies.RequestVersionOrHigher,
-                        Metadata = new()
+                        Metadata = new Dictionary<string, string>
                         {
                             ["foo"] = "baz",
                         },
