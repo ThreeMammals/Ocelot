@@ -4,7 +4,7 @@ namespace Ocelot.Configuration.Creator;
 
 public class MetadataCreator : IMetadataCreator
 {
-    public IDictionary<string, string> Create(Dictionary<string, string> routeMetadata, FileGlobalConfiguration fileGlobalConfiguration)
+    public IDictionary<string, string> Create(IDictionary<string, string> routeMetadata, FileGlobalConfiguration fileGlobalConfiguration)
     {
         var metadata = fileGlobalConfiguration?.Metadata != null
             ? new Dictionary<string, string>(fileGlobalConfiguration.Metadata)
