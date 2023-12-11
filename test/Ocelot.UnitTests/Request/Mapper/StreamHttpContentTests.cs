@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Text;
 using Ocelot.Request.Mapper;
 using System.Reflection;
+using System.Text;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
@@ -18,7 +18,7 @@ public class StreamHttpContentTests
     }
 
     [Fact]
-    public async Task copy_body_to_stream_and_stream_content_should_match_payload()
+    public async Task Copy_body_to_stream_and_stream_content_should_match_payload()
     {
         var sut = StreamHttpContentFactory();
         using var stream = new MemoryStream();
@@ -30,12 +30,13 @@ public class StreamHttpContentTests
     }
 
     [Fact]
-    public async Task copy_body_to_stream_with_unknown_length_and_stream_content_should_match_payload()
+    public async Task Copy_body_to_stream_with_unknown_length_and_stream_content_should_match_payload()
     {
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
-        await CopyAsyncTest(new StreamHttpContent(_httpContext), new object[] {inputStream, outputStream, StreamHttpContent.UnknownLength, false, CancellationToken.None });
+        await CopyAsyncTest(new StreamHttpContent(_httpContext),
+            [inputStream, outputStream, StreamHttpContent.UnknownLength, false, CancellationToken.None]);
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -43,12 +44,13 @@ public class StreamHttpContentTests
     }
 
     [Fact]
-    public async Task copy_body_to_stream_with_body_length_and_stream_content_should_match_payload()
+    public async Task Copy_body_to_stream_with_body_length_and_stream_content_should_match_payload()
     {
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
-        await CopyAsyncTest(new StreamHttpContent(_httpContext), new object[] { inputStream, outputStream, bytes.Length, false, CancellationToken.None });
+        await CopyAsyncTest(new StreamHttpContent(_httpContext),
+            [inputStream, outputStream, bytes.Length, false, CancellationToken.None]);
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -56,14 +58,14 @@ public class StreamHttpContentTests
     }
 
     [Fact]
-    public async Task should_throw_if_passed_body_length_does_not_match_real_body_length()
+    public async Task Should_throw_if_passed_body_length_does_not_match_real_body_length()
     {
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await CopyAsyncTest(new StreamHttpContent(_httpContext),
-                new object[] { inputStream, outputStream, 10, false, CancellationToken.None }));
+                [inputStream, outputStream, 10, false, CancellationToken.None]));
     }
 
     private StreamHttpContent StreamHttpContentFactory()
@@ -73,7 +75,7 @@ public class StreamHttpContentTests
         return new StreamHttpContent(_httpContext);
     }
 
-    private async Task CopyAsyncTest(StreamHttpContent streamHttpContent, object[] parameters)
+    private static async Task CopyAsyncTest(StreamHttpContent streamHttpContent, object[] parameters)
     {
         var bindingAttr = BindingFlags.NonPublic | BindingFlags.Static;
         var method = typeof(StreamHttpContent).GetMethod("CopyAsync", bindingAttr) ??

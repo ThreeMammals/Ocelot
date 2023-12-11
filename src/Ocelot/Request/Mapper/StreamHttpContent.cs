@@ -29,7 +29,7 @@ public class StreamHttpContent : HttpContent
         return false;
     }
 
-    // this is used internally by HttpContent.ReadAsStreamAsync(...)
+    // This is used internally by HttpContent.ReadAsStreamAsync(...)
     protected override Task<Stream> CreateContentReadStreamAsync()
     {
         // Nobody should be calling this...
@@ -39,7 +39,7 @@ public class StreamHttpContent : HttpContent
     private static async Task CopyAsync(Stream input, Stream output, long announcedContentLength,
         bool autoFlush, CancellationToken cancellation)
     {
-        // for smaller payloads, avoid allocating a buffer that is larger than the announced content length
+        // For smaller payloads, avoid allocating a buffer that is larger than the announced content length
         var minBufferSize = announcedContentLength != UnknownLength && announcedContentLength < DefaultBufferSize
             ? (int)announcedContentLength
             : DefaultBufferSize;
@@ -80,7 +80,7 @@ public class StreamHttpContent : HttpContent
                     throw new InvalidOperationException($"More data ({contentLength} bytes) received than the specified Content-Length of {announcedContentLength} bytes.");
                 }
 
-                // end of the source stream.
+                // End of the source stream.
                 if (read == 0)
                 {
                     if (announcedContentLength == UnknownLength || contentLength == announcedContentLength)
@@ -89,8 +89,7 @@ public class StreamHttpContent : HttpContent
                     }
                     else
                     {
-                        throw new InvalidOperationException(
-                            $"Sent {contentLength} request content bytes, but Content-Length promised {announcedContentLength}.");
+                        throw new InvalidOperationException($"Sent {contentLength} request content bytes, but Content-Length promised {announcedContentLength}.");
                     }
                 }
 

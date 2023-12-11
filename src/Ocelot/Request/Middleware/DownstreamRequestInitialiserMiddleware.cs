@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Creator;
-using Ocelot.Errors;
 using Ocelot.Request.Mapper;
-using Ocelot.Responses;
 
 namespace Ocelot.Request.Middleware;
 
@@ -36,9 +35,8 @@ public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
         }
         catch (Exception ex)
         {
-            // todo: review the error handling, we should throw an exception here
-            // and use the global error handler middleware to catch it
-            httpContext.Items.UpsertErrors(new List<Error> { new UnmappableRequestError(ex) });
+            // TODO Review the error handling, we should throw an exception here and use the global error handler middleware to catch it
+            httpContext.Items.UpsertErrors([new UnmappableRequestError(ex)]);
             return;
         }
 

@@ -27,9 +27,8 @@ public class RequestMapper : IRequestMapper
 
     private static HttpContent MapContent(HttpRequest request)
     {
-        // todo: We should check if we really need to call HttpRequest.Body.Length
-        // but we assume that if CanSeek is true, the length is calculated without
-        // an important overhead
+        // TODO We should check if we really need to call HttpRequest.Body.Length
+        // But we assume that if CanSeek is true, the length is calculated without an important overhead
         if (request.Body is null or { CanSeek: true, Length: <= 0 })
         {
             return null;
@@ -69,7 +68,7 @@ public class RequestMapper : IRequestMapper
         !string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod) ? 
             new HttpMethod(downstreamRoute.DownstreamHttpMethod) : new HttpMethod(request.Method);
 
-    // todo: review this method, request.GetEncodedUrl() could throw a NullReferenceException
+    // TODO Review this method, request.GetEncodedUrl() could throw a NullReferenceException
     private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
 
     private static void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
