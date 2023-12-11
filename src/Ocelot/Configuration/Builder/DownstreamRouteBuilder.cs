@@ -40,7 +40,7 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
-    private Dictionary<string, string> _metadata;
+    private IDictionary<string, string> _metadata;
 
     public DownstreamRouteBuilder()
     {
@@ -261,9 +261,9 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithMetadata(Dictionary<string, string> metadata)
+    public DownstreamRouteBuilder WithMetadata(IDictionary<string, string> metadata)
     {
-        _metadata = new(metadata);
+        _metadata = new Dictionary<string, string>(metadata);
         return this;
     }
 

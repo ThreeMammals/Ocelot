@@ -40,7 +40,7 @@ namespace Ocelot.Configuration
             SecurityOptions securityOptions,
             string downstreamHttpMethod,
             Version downstreamHttpVersion,
-            Dictionary<string, string> metadata)
+            IDictionary<string, string> metadata)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -113,6 +113,6 @@ namespace Ocelot.Configuration
         public SecurityOptions SecurityOptions { get; }
         public string DownstreamHttpMethod { get; }
         public Version DownstreamHttpVersion { get; }
-        public Dictionary<string, string> Metadata { get; }
+        public IDictionary<string, string> Metadata { get; }
     }
 }
