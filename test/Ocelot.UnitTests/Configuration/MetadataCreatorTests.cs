@@ -60,7 +60,7 @@ public class MetadataCreatorTests
     {
         _globalConfiguration = new FileGlobalConfiguration()
         {
-            Metadata = new()
+            Metadata = new Dictionary<string, string>
             {
                 ["foo"] = "bar",
             },
@@ -69,12 +69,12 @@ public class MetadataCreatorTests
 
     private void GivenEmptyMetadataInRoute()
     {
-        _metadataInRoute = new();
+        _metadataInRoute = new Dictionary<string, string>();
     }
 
     private void GivenSomeMetadataInRoute()
     {
-        _metadataInRoute = new()
+        _metadataInRoute = new Dictionary<string, string>
         {
             ["foo"] = "baz",
         };
