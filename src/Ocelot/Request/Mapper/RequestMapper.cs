@@ -7,8 +7,8 @@ namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
-    private readonly HashSet<string> _unsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host" };
-    private readonly string[] _contentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
+    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host" };
+    private static readonly string[] ContentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
 
     public HttpRequestMessage Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
@@ -25,7 +25,7 @@ public class RequestMapper : IRequestMapper
         return requestMessage;
     }
 
-    private HttpContent MapContent(HttpRequest request)
+    private static HttpContent MapContent(HttpRequest request)
     {
         // todo: We should check if we really need to call HttpRequest.Body.Length
         // but we assume that if CanSeek is true, the length is calculated without
@@ -42,7 +42,7 @@ public class RequestMapper : IRequestMapper
         return content;
     }
 
-    private void AddContentHeaders(HttpRequest request, HttpContent content)
+    private static void AddContentHeaders(HttpRequest request, HttpContent content)
     {
         if (!string.IsNullOrEmpty(request.ContentType))
         {
@@ -52,7 +52,7 @@ public class RequestMapper : IRequestMapper
 
         // The performance might be improved by retrieving the matching headers from the request
         // instead of calling request.Headers.TryGetValue for each used content header
-        var matchingHeaders = _contentHeaders.Where(header => request.Headers.ContainsKey(header));
+        var matchingHeaders = ContentHeaders.Where(header => request.Headers.ContainsKey(header));
 
         foreach (var key in matchingHeaders)
         {
@@ -72,7 +72,7 @@ public class RequestMapper : IRequestMapper
     // todo: review this method, request.GetEncodedUrl() could throw a NullReferenceException
     private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
 
-    private void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
+    private static void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
     {
         foreach (var header in request.Headers)
         {
@@ -83,6 +83,6 @@ public class RequestMapper : IRequestMapper
         }
     }
 
-    private bool IsSupportedHeader(KeyValuePair<string, StringValues> header) =>
-        !_unsupportedHeaders.Contains(header.Key);
+    private static bool IsSupportedHeader(KeyValuePair<string, StringValues> header) =>
+        !UnsupportedHeaders.Contains(header.Key);
 }
