@@ -2,16 +2,15 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Middleware;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class DefaultCacheKeyGeneratorTests
+    public sealed class DefaultCacheKeyGeneratorTests : IDisposable
     {
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
-        private readonly Mock<DownstreamRequest> _downstreamRequest;
+        private readonly HttpRequestMessage _request;
 
         private const string verb = "GET";
         private const string url = "https://some.url/blah?abcd=123";
@@ -22,15 +21,12 @@ namespace Ocelot.UnitTests.Cache
         {
             _cacheKeyGenerator = new DefaultCacheKeyGenerator();
 
-            _downstreamRequest = new Mock<DownstreamRequest>();
-            _downstreamRequest.SetupGet(x => x.Method).Returns(verb);
-            _downstreamRequest.SetupGet(x => x.OriginalString).Returns(url);
-
-            var headers = new HttpHeadersStub
+            _request = new HttpRequestMessage
             {
-                { headerName, header },
+                Method = new HttpMethod(verb),
+                RequestUri = new Uri(url),
             };
-            _downstreamRequest.SetupGet(x => x.Headers).Returns(headers);
+            _request.Headers.Add(headerName, header);
         }
 
         [Fact]
@@ -38,14 +34,11 @@ namespace Ocelot.UnitTests.Cache
         {
             const string noHeader = null;
             const string content = nameof(should_generate_cache_key_with_request_content);
-            var httpRequest = new HttpRequestMessageStub(content);
-            _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
-            _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
-
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{content}");
             CacheOptions options = new CacheOptions(100, "region", noHeader, true);
 
             this.Given(x => x.GivenDownstreamRoute(options))
+                .And(x => GivenHasContent(content))
                 .When(x => x.WhenGenerateRequestCacheKey())
                 .Then(x => x.ThenGeneratedCacheKeyIs(cachekey))
                 .BDDfy();
@@ -54,8 +47,6 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_generate_cache_key_without_request_content()
         {
-            _downstreamRequest.SetupGet(x => x.HasContent).Returns(false);
-
             CacheOptions options = null;
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}");
 
@@ -68,8 +59,6 @@ namespace Ocelot.UnitTests.Cache
         [Fact]
         public void should_generate_cache_key_with_cache_options_header()
         {
-            _downstreamRequest.SetupGet(x => x.HasContent).Returns(false);
-
             CacheOptions options = new CacheOptions(100, "region", headerName);
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}");
 
@@ -83,15 +72,11 @@ namespace Ocelot.UnitTests.Cache
         public void should_generate_cache_key_happy_path()
         {
             const string content = nameof(should_generate_cache_key_happy_path);
-
-            var httpRequest = new HttpRequestMessageStub(content);
-            _downstreamRequest.SetupGet(x => x.HasContent).Returns(true);
-            _downstreamRequest.SetupGet(x => x.Request).Returns(httpRequest);
-
             CacheOptions options = new CacheOptions(100, "region", headerName, true);
             var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}-{content}");
 
             this.Given(x => x.GivenDownstreamRoute(options))
+                .And(x => GivenHasContent(content))
                 .When(x => x.WhenGenerateRequestCacheKey())
                 .Then(x => x.ThenGeneratedCacheKeyIs(cachekey))
                 .BDDfy();
@@ -107,36 +92,26 @@ namespace Ocelot.UnitTests.Cache
                 .Build();
         }
 
+        private void GivenHasContent(string content)
+        {
+            _request.Content = new StringContent(content);
+        }
+
         private string _generatedCacheKey;
 
         private async Task WhenGenerateRequestCacheKey()
         {
-            _generatedCacheKey = await _cacheKeyGenerator.GenerateRequestCacheKey(_downstreamRequest.Object, _downstreamRoute);
+            _generatedCacheKey = await _cacheKeyGenerator.GenerateRequestCacheKey(new DownstreamRequest(_request), _downstreamRoute);
         }
 
         private void ThenGeneratedCacheKeyIs(string expected)
         {
             _generatedCacheKey.ShouldBe(expected);
         }
-    }
 
-    internal class HttpHeadersStub : HttpHeaders
-    {
-        public HttpHeadersStub() : base() { }
-    }
-
-    internal class HttpRequestMessageStub : HttpRequestMessage
-    {
-        private readonly string _content;
-        private readonly HttpContent _httpContent;
-
-        public HttpRequestMessageStub(string content)
+        public void Dispose()
         {
-            _content = content;
-            _httpContent = new HttpContentStub(content);
-
-            var field = typeof(HttpRequestMessage).GetField(nameof(_content), BindingFlags.NonPublic | BindingFlags.Instance);
-            field.SetValue(this, _httpContent);
+            _request.Dispose();
         }
     }
 
