@@ -29,7 +29,7 @@ namespace Ocelot.Cache
                 }
             }
 
-            if (!downstreamRequest.HasContent || !options.EnableRequestBodyHashing)
+            if (!options.EnableContentHashing || !downstreamRequest.HasContent)
             {
                 return MD5Helper.GenerateMd5(builder.ToString());
             }
