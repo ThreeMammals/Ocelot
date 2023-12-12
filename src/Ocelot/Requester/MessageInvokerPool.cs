@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration;
 using System.Net.Security;
+using Ocelot.Logging;
 
 namespace Ocelot.Requester;
 
@@ -10,11 +11,13 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
+    private readonly IOcelotLogger _logger;
 
-    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory)
+    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLogger logger)
     {
-        _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker>();
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker>();
     }
 
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
@@ -23,7 +26,10 @@ public class MessageInvokerPool : IMessageInvokerPool
             ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
             : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue);
 
-        return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(timeout, downstreamRoute),
+        // Since the comparison is based on the downstream route object reference,
+        // and the QoS Options properties can't be changed after the route is created,
+        // we don't need to use the timeout value as part of the cache key.
+        return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(downstreamRoute),
             CreateMessageInvoker(downstreamRoute, timeout));
     }
 
@@ -53,7 +59,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         return new HttpMessageInvoker(timeoutHandler, true);
     }
 
-    private static HttpMessageHandler CreateHandler(DownstreamRoute downstreamRoute)
+    private HttpMessageHandler CreateHandler(DownstreamRoute downstreamRoute)
     {
         var handler = new SocketsHttpHandler
         {
@@ -69,38 +75,37 @@ public class MessageInvokerPool : IMessageInvokerPool
             handler.CookieContainer = new CookieContainer();
         }
 
-        if (downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
+        if (!downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
         {
-            handler.SslOptions = new SslClientAuthenticationOptions
-            {
-                RemoteCertificateValidationCallback = delegate { return true; },
-            };
+            return handler;
         }
+
+        handler.SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = delegate { return true; },
+        };
+
+        _logger.LogWarning(() =>
+            $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
 
         return handler;
     }
 
     private readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
     {
-        private TimeSpan Timeout { get; }
         private DownstreamRoute DownstreamRoute { get; }
 
-        public MessageInvokerCacheKey(TimeSpan timeout, DownstreamRoute downstreamRoute)
+        public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
         {
-            Timeout = timeout;
             DownstreamRoute = downstreamRoute;
         }
 
         public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 
-        public bool Equals(MessageInvokerCacheKey other)
-        {
-            var equality = Timeout.Equals(other.Timeout)
-                   && EqualityComparer<DownstreamRoute>.Default.Equals(DownstreamRoute, other.DownstreamRoute);
-            return equality;
-        }
+        public bool Equals(MessageInvokerCacheKey other) =>
+            EqualityComparer<DownstreamRoute>.Default.Equals(DownstreamRoute, other.DownstreamRoute);
 
-        public override int GetHashCode() => HashCode.Combine(Timeout, DownstreamRoute);
+        public override int GetHashCode() => DownstreamRoute.GetHashCode();
 
         public static bool operator ==(MessageInvokerCacheKey left, MessageInvokerCacheKey right)
         {
