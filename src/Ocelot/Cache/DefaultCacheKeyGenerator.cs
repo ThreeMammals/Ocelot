@@ -14,12 +14,11 @@ namespace Ocelot.Cache
                 .Append(Delimiter)
                 .Append(downstreamRequest.OriginalString);
 
-            var options = downstreamRoute?.CacheOptions;
-            var cacheOptionsHeader = options?.Header ?? string.Empty;
-            if (!string.IsNullOrEmpty(cacheOptionsHeader))
+            var options = downstreamRoute?.CacheOptions ?? new();
+            if (!string.IsNullOrEmpty(options.Header))
             {
                 var header = downstreamRequest.Headers
-                    .FirstOrDefault(r => r.Key.Equals(cacheOptionsHeader, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault(r => r.Key.Equals(options.Header, StringComparison.OrdinalIgnoreCase))
                     .Value?.FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(header))

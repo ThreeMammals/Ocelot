@@ -4,6 +4,8 @@ namespace Ocelot.Configuration
 {
     public class CacheOptions
     {
+        internal CacheOptions() { }
+
         public CacheOptions(int ttlSeconds, string region, string header)
         {
             TtlSeconds = ttlSeconds;
