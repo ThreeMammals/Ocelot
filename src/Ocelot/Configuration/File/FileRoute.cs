@@ -17,6 +17,7 @@ namespace Ocelot.Configuration.File
             FileCacheOptions = new FileCacheOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             LoadBalancerOptions = new FileLoadBalancerOptions();
+            Metadata = new Dictionary<string, string>();
             Priority = 1;
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
@@ -25,7 +26,6 @@ namespace Ocelot.Configuration.File
             UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             UpstreamHttpMethod = new List<string>();
-            Metadata = new Dictionary<string, string>();
         }
 
         public FileRoute(FileRoute from)
@@ -62,6 +62,7 @@ namespace Ocelot.Configuration.File
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public string Key { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
         public int Priority { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public FileRateLimitRule RateLimitOptions { get; set; }
@@ -110,6 +111,7 @@ namespace Ocelot.Configuration.File
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;
             to.LoadBalancerOptions = new(from.LoadBalancerOptions);
+            to.Metadata = new Dictionary<string, string>(from.Metadata);
             to.Priority = from.Priority;
             to.QoSOptions = new(from.QoSOptions);
             to.RateLimitOptions = new(from.RateLimitOptions);
@@ -125,7 +127,6 @@ namespace Ocelot.Configuration.File
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
-            to.Metadata = new Dictionary<string, string>(from.Metadata);
         }
     }
 }
