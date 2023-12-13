@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Requester;
 using System.Collections.Concurrent;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Caching
 {
     public class HttpClientCachingTests : IDisposable
     {
