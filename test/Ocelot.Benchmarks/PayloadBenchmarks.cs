@@ -9,7 +9,6 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Diagnostics;
-
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
@@ -25,7 +24,7 @@ public class PayloadBenchmarks : ManualConfig
     private HttpClient _httpClient;
 
     private const string BasePayload =
-        "{\"_id\":\"65789c1611a3b1feb49f9e65\",\"index\":0,\"guid\":\"6622d724-c17d-4939-9c68-158bf2dc5c57\",\"isActive\":false,\"balance\":\"$1,398.26\",\"picture\":\"http://placehold.it/32x32\",\"age\":33,\"eyeColor\":\"blue\",\"name\":\"WilkersonPayne\",\"gender\":\"male\",\"company\":\"NEOCENT\",\"email\":\"wilkersonpayne@neocent.com\",\"phone\":\"+1(837)588-3248\",\"address\":\"932BatchelderStreet,Campo,Texas,1310\",\"about\":\"Dolorsuntminimnullatemporlaboretempornostrudnon.Irureconsectetursintenimestadduissunttemporquisnisi.Laboreoccaecatculpaaliquaipsumreprehenderitadofficia.Sunteuutinpariaturanimofficia.CommodosintLoremametincididuntvelitesse.Nonaliquasintdoeiusmodexercitation.Suntcommododolorcupidatatculpareprehenderitfugiatexquisamet.\\r\\n\",\"registered\":\"2021-09-06T11:54:41-02:00\",\"latitude\":-45.256336,\"longitude\":164.343713,\"tags\":[\"cillum\",\"cupidatat\",\"aliquip\",\"culpa\",\"non\",\"laboris\",\"non\"],\"friends\":[{\"id\":0,\"name\":\"MistyMorton\"},{\"id\":1,\"name\":\"AraceliAcosta\"},{\"id\":2,\"name\":\"WalterDelaney\"}],\"greeting\":\"Hello,WilkersonPayne!Youhave1unreadmessages.\",\"favoriteFruit\":\"strawberry\"}";
+        "{'_id':'65789c1611a3b1feb49f9e65','index':0,'guid':'6622d724-c17d-4939-9c68-158bf2dc5c57','isActive':false,'balance':'$1,398.26','picture':'http://placehold.it/32x32','age':33,'eyeColor':'blue','name':'WilkersonPayne','gender':'male','company':'NEOCENT','email':'wilkersonpayne@neocent.com','phone':'+1(837)588-3248','address':'932BatchelderStreet,Campo,Texas,1310','about':'Dolorsuntminimnullatemporlaboretempornostrudnon.Irureconsectetursintenimestadduissunttemporquisnisi.Laboreoccaecatculpaaliquaipsumreprehenderitadofficia.Sunteuutinpariaturanimofficia.CommodosintLoremametincididuntvelitesse.Nonaliquasintdoeiusmodexercitation.Suntcommododolorcupidatatculpareprehenderitfugiatexquisamet.\\r\\n','registered':'2021-09-06T11:54:41-02:00','latitude':-45.256336,'longitude':164.343713,'tags':['cillum','cupidatat','aliquip','culpa','non','laboris','non'],'friends':[{'id':0,'name':'MistyMorton'},{'id':1,'name':'AraceliAcosta'},{'id':2,'name':'WalterDelaney'}],'greeting':'Hello,WilkersonPayne!Youhave1unreadmessages.','favoriteFruit':'strawberry'}";
 
     public PayloadBenchmarks()
     {
@@ -50,7 +49,7 @@ public class PayloadBenchmarks : ManualConfig
                     ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Post"],
+                    UpstreamHttpMethod =["Post"],
                 },
             ],
         };
@@ -198,7 +197,7 @@ public class PayloadBenchmarks : ManualConfig
                     .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                     .AddJsonFile("appsettings.json", true, true)
                     .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                    .AddJsonFile("ocelot.json", false, false)
+                    .AddJsonFile(ConfigurationBuilderExtensions.PrimaryConfigFile, false, false)
                     .AddEnvironmentVariables();
             })
             .ConfigureKestrel((_, hostingOptions) => { hostingOptions.Limits.MaxRequestBodySize = 2684354561; })
@@ -215,8 +214,7 @@ public class PayloadBenchmarks : ManualConfig
 
     public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
     {
-        var configurationPath =
-            Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        var configurationPath = Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
         var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
 
         if (File.Exists(configurationPath))
