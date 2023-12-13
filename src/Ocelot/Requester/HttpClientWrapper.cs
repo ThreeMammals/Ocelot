@@ -12,9 +12,13 @@ namespace Ocelot.Requester
             Client = client;
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken = default)
         {
-            return Client.SendAsync(request, cancellationToken);
+            // https://www.stevejgordon.co.uk/using-httpcompletionoption-responseheadersread-to-improve-httpclient-performance-dotnet
+            // When using this option, we avoid the intermediate MemoryStream buffer, instead of getting the content directly from the stream exposed on the Socket.
+            // This avoids unnecessary allocations which is a goal in highly optimised situations.
+            return Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
     }
 }
