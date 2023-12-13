@@ -8,6 +8,9 @@ namespace Ocelot.AcceptanceTests.Caching
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
 
+        private const string HelloTomContent = "Hello from Tom";
+        private const string HelloLauraContent = "Hello from Laura";
+
         public CachingTests()
         {
             _serviceHandler = new ServiceHandler();
@@ -24,17 +27,17 @@ namespace Ocelot.AcceptanceTests.Caching
             };
             var configuration = GivenFileConfiguration(port, options);
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", 200, "Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.ThenTheContentLengthIs(16))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
                 .BDDfy();
         }
 
@@ -47,19 +50,19 @@ namespace Ocelot.AcceptanceTests.Caching
                 TtlSeconds = 100,
             };
             var configuration = GivenFileConfiguration(port, options);
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", "Expires", "-1"))
+            var headerExpires = "Expires";
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", 200, "Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.ThenTheContentLengthIs(16))
-                .And(x => _steps.ThenTheResponseBodyHeaderIs("Expires", "-1"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
+                .And(x => _steps.ThenTheResponseBodyHeaderIs(headerExpires, "-1"))
                 .BDDfy();
         }
 
@@ -73,16 +76,16 @@ namespace Ocelot.AcceptanceTests.Caching
             };
             var configuration = GivenFileConfiguration(port, options);
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingJsonSerializedCache())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", 200, "Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
                 .BDDfy();
         }
 
@@ -96,17 +99,56 @@ namespace Ocelot.AcceptanceTests.Caching
             };
             var configuration = GivenFileConfiguration(port, options);
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", 200, "Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
                 .And(x => GivenTheCacheExpires())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloTomContent))
+                .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Issue", "1172")]
+        public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
+        {
+            var port = PortFinder.GetRandomPort();
+            var options = new FileCacheOptions
+            {
+                TtlSeconds = 100,
+                Region = "europe-central",
+                Header = "Authorization",
+            };
+            var configuration = GivenFileConfiguration(port, options);
+            var headerExpires = "Expires";
+
+            // Add to cache
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+
+                // Read from cache
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+                .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
+
+                // Clean cache by the header and cache new content
+                .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
+                .And(x => _steps.GivenIAddAHeader(options.Header, "123"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(HelloTomContent))
+                .And(x => _steps.ThenTheContentLengthIs(HelloTomContent.Length))
                 .BDDfy();
         }
 
@@ -123,7 +165,7 @@ namespace Ocelot.AcceptanceTests.Caching
                     ],
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
+                    UpstreamHttpMethod =["Get"],
                     FileCacheOptions = cacheOptions,
                 },
             ],
@@ -134,22 +176,22 @@ namespace Ocelot.AcceptanceTests.Caching
             Thread.Sleep(1000);
         }
 
-        private void GivenTheServiceNowReturns(string url, int statusCode, string responseBody)
+        private void GivenTheServiceNowReturns(string url, HttpStatusCode statusCode, string responseBody, string key, object value)
         {
             _serviceHandler.Dispose();
-            GivenThereIsAServiceRunningOn(url, statusCode, responseBody, null, null);
+            GivenThereIsAServiceRunningOn(url, statusCode, responseBody, key, value);
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, string key, string value)
+        private void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string responseBody, string key, object value)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
-                if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(key))
+                if (!string.IsNullOrEmpty(key) && value != null)
                 {
-                    context.Response.Headers.Append(key, value);
+                    context.Response.Headers.Append(key, value.ToString());
                 }
 
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(responseBody);
             });
         }
