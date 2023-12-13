@@ -82,6 +82,11 @@ public class PayloadBenchmarks : ManualConfig
         var baseDirectory = GetBaseDirectory();
         var payloadsDirectory = Path.Combine(baseDirectory, "Payloads");
 
+        if (!Directory.Exists(payloadsDirectory))
+        {
+            Directory.CreateDirectory(payloadsDirectory);
+        }
+
         // Array of sizes in kilobytes for JSON files
         var jsonSizes = new[] { 1, 16, 32, 64, 128, 256, 512, 2 * 1024, 8 * 1024, 15 * 1024, 30 * 1024 };
         foreach (var size in jsonSizes)
