@@ -80,7 +80,7 @@ public class PayloadBenchmarks : ManualConfig
     public static IEnumerable<object[]> Payloads()
     {
         var baseDirectory = GetBaseDirectory();
-        var payloadsDirectory = Path.Combine(baseDirectory, "Payloads");
+        var payloadsDirectory = Path.Combine(baseDirectory, nameof(Payloads));
 
         if (!Directory.Exists(payloadsDirectory))
         {
