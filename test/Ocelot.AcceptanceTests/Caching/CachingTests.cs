@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Caching
 {
-    public class CachingTests : IDisposable
+    public sealed class CachingTests : IDisposable
     {
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
@@ -15,34 +15,34 @@ namespace Ocelot.AcceptanceTests.Caching
         }
 
         [Fact]
-        public void should_return_cached_response()
+        public void Should_return_cached_response()
         {
             var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts =
+                        [
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        ],
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        FileCacheOptions = new FileCacheOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            FileCacheOptions = new FileCacheOptions
-                            {
-                                TtlSeconds = 100,
-                            },
+                            TtlSeconds = 100,
                         },
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
@@ -60,34 +60,34 @@ namespace Ocelot.AcceptanceTests.Caching
         }
 
         [Fact]
-        public void should_return_cached_response_with_expires_header()
+        public void Should_return_cached_response_with_expires_header()
         {
             var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts =
+                        [
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        ],
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        FileCacheOptions = new FileCacheOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            FileCacheOptions = new FileCacheOptions
-                            {
-                                TtlSeconds = 100,
-                            },
+                            TtlSeconds = 100,
                         },
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", "Expires", "-1"))
@@ -106,34 +106,34 @@ namespace Ocelot.AcceptanceTests.Caching
         }
 
         [Fact]
-        public void should_return_cached_response_when_using_jsonserialized_cache()
+        public void Should_return_cached_response_when_using_jsonserialized_cache()
         {
             var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts =
+                        [
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        ],
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        FileCacheOptions = new FileCacheOptions
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            FileCacheOptions = new FileCacheOptions
-                            {
-                                TtlSeconds = 100,
-                            },
+                            TtlSeconds = 100,
                         },
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
@@ -150,34 +150,34 @@ namespace Ocelot.AcceptanceTests.Caching
         }
 
         [Fact]
-        public void should_not_return_cached_response_as_ttl_expires()
+        public void Should_not_return_cached_response_as_ttl_expires()
         {
             var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            FileCacheOptions = new FileCacheOptions
-                            {
-                                TtlSeconds = 1,
+                                Host = "localhost",
+                                Port = port,
                             },
                         },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        FileCacheOptions = new FileCacheOptions
+                        {
+                            TtlSeconds = 1,
+                        },
                     },
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura", null, null))
