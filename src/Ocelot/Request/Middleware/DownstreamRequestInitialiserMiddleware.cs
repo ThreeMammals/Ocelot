@@ -2,43 +2,46 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Creator;
+using Ocelot.Request.Mapper;
 
-namespace Ocelot.Request.Middleware
+namespace Ocelot.Request.Middleware;
+
+public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
 {
-    public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IRequestMapper _requestMapper;
+    private readonly IDownstreamRequestCreator _creator;
+
+    public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
+        IOcelotLoggerFactory loggerFactory,
+        IRequestMapper requestMapper,
+        IDownstreamRequestCreator creator)
+        : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
     {
-        private readonly RequestDelegate _next;
-        private readonly Mapper.IRequestMapper _requestMapper;
-        private readonly IDownstreamRequestCreator _creator;
+        _next = next;
+        _requestMapper = requestMapper;
+        _creator = creator;
+    }
 
-        public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            Mapper.IRequestMapper requestMapper,
-            IDownstreamRequestCreator creator)
-                : base(loggerFactory.CreateLogger<DownstreamRequestInitialiserMiddleware>())
+    public async Task Invoke(HttpContext httpContext)
+    {
+        var downstreamRoute = httpContext.Items.DownstreamRoute();
+        HttpRequestMessage httpRequestMessage;
+
+        try
         {
-            _next = next;
-            _requestMapper = requestMapper;
-            _creator = creator;
+            httpRequestMessage = _requestMapper.Map(httpContext.Request, downstreamRoute);
+        }
+        catch (Exception ex)
+        {
+            // TODO Review the error handling, we should throw an exception here and use the global error handler middleware to catch it
+            httpContext.Items.UpsertErrors([new UnmappableRequestError(ex)]);
+            return;
         }
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
+        var downstreamRequest = _creator.Create(httpRequestMessage);
+        httpContext.Items.UpsertDownstreamRequest(downstreamRequest);
 
-            var httpRequestMessage = await _requestMapper.Map(httpContext.Request, downstreamRoute);
-
-            if (httpRequestMessage.IsError)
-            {
-                httpContext.Items.UpsertErrors(httpRequestMessage.Errors);
-                return;
-            }
-
-            var downstreamRequest = _creator.Create(httpRequestMessage.Data);
-
-            httpContext.Items.UpsertDownstreamRequest(downstreamRequest);
-
-            await _next.Invoke(httpContext);
-        }
+        await _next.Invoke(httpContext);
     }
 }
