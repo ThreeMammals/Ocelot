@@ -1,6 +1,5 @@
 ﻿using Ocelot.Configuration;
 using System.Net.Security;
-using Ocelot.Logging;
 
 namespace Ocelot.Requester;
 
@@ -11,12 +10,10 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
-    private readonly IOcelotLogger _logger;
 
-    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLogger logger)
+    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, HttpMessageInvoker>();
     }
 
@@ -29,8 +26,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         // Since the comparison is based on the downstream route object reference,
         // and the QoS Options properties can't be changed after the route is created,
         // we don't need to use the timeout value as part of the cache key.
-        return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(downstreamRoute),
-            CreateMessageInvoker(downstreamRoute, timeout));
+        return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(downstreamRoute), _ => CreateMessageInvoker(downstreamRoute, timeout));
     }
 
     public void Clear() => _handlersPool.Clear();
@@ -85,8 +81,8 @@ public class MessageInvokerPool : IMessageInvokerPool
             RemoteCertificateValidationCallback = delegate { return true; },
         };
 
-        _logger.LogWarning(() =>
-            $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
+        /*_logger.LogWarning(() =>
+            $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");*/
 
         return handler;
     }
