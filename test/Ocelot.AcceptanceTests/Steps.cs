@@ -247,7 +247,8 @@ public class Steps : IDisposable
         public void GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(long customBodyMaxSize)
         {
             _realServer = Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(
+                    webBuilder =>
                 {
                     webBuilder.UseKestrel().ConfigureKestrel((_, options) =>
                         {

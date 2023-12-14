@@ -26,24 +26,24 @@ public class PayloadTooLargeTests : IDisposable
 
         var configuration = new FileConfiguration
         {
-            Routes = new List<FileRoute>
-            {
-                new()
+            Routes =
+            [
+                new FileRoute
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
+                    DownstreamHostAndPorts =
+                    [
+                        new FileHostAndPort
                         {
                             Host = "localhost",
                             Port = port,
                         },
-                    },
+                    ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "POST" },
+                    UpstreamHttpMethod =["POST"],
                 },
-            },
+            ],
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
@@ -63,24 +63,24 @@ public class PayloadTooLargeTests : IDisposable
 
         var configuration = new FileConfiguration
         {
-            Routes = new List<FileRoute>
-            {
-                new()
+            Routes =
+            [
+                new FileRoute
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
+                    DownstreamHostAndPorts =
+                    [
+                        new FileHostAndPort
                         {
                             Host = "localhost",
                             Port = port,
                         },
-                    },
+                    ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "POST" },
+                    UpstreamHttpMethod =["POST"],
                 },
-            },
+            ],
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))

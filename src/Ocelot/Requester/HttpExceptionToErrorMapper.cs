@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Errors.QoS;
+using Ocelot.Request.Mapper;
 
 namespace Ocelot.Requester
 {
@@ -39,6 +41,14 @@ namespace Ocelot.Requester
 
             if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
             {
+                // the inner exception is a BadHttpRequestException, and only this exception exposes
+                // the StatusCode property. We check if the inner exception is a BadHttpRequestException
+                // and if the StatusCode is 413, we return a PayloadTooLargeError
+                if (exception.InnerException is BadHttpRequestException { StatusCode: 413 })
+                {
+                    return new PayloadTooLargeError(exception);
+                }
+
                 return new ConnectionToDownstreamServiceError(exception);
             }
 
