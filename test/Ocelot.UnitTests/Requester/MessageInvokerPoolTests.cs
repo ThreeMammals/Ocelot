@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -21,14 +20,16 @@ public class MessageInvokerPoolTests
     private HttpMessageInvoker _firstInvoker;
     private HttpMessageInvoker _secondInvoker;
     private Mock<IDelegatingHandlerHandlerFactory> _handlerFactory;
-    private readonly Mock<IOcelotLogger> _ocelotLogger;
+    private readonly Mock<IOcelotLoggerFactory> _ocelotLoggerFactory;
     private HttpContext _context;
     private HttpResponseMessage _response;
     private IWebHost _host;
 
     public MessageInvokerPoolTests()
     {
-        _ocelotLogger = new Mock<IOcelotLogger>();
+        _ocelotLoggerFactory = new Mock<IOcelotLoggerFactory>();
+        var ocelotLogger = new Mock<IOcelotLogger>();
+        _ocelotLoggerFactory.Setup(x => x.CreateLogger<MessageInvokerPool>()).Returns(ocelotLogger.Object);
     }
 
     [Fact]
@@ -50,27 +51,6 @@ public class MessageInvokerPoolTests
             .And(x => x.GivenAMessageInvokerPool())
             .When(x => x.WhenGettingMessageInvokerForBothRoutes())
             .Then(x => x.ThenTheInvokersShouldNotBeTheSame())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_get_from_cache_with_different_query_string()
-    {
-
-        this.Given(x => x.GivenADownstreamRoute("/super-test"))
-            .And(x => GivenTheFactoryReturns())
-            .And(x => GivenARequest("http://wwww.someawesomewebsite.com/woot?badman=1"))
-
-        this.Given(x => GivenARealCache())
-            .And(x => GivenTheFactoryReturns())
-            .And(x => GivenARequest(route, "http://wwww.someawesomewebsite.com/woot?badman=1"))
-            .And(x => WhenIBuildTheFirstTime())
-            .And(x => WhenISave())
-            .And(x => WhenIBuildAgain())
-            .And(x => GivenARequest(route, "http://wwww.someawesomewebsite.com/woot?badman=2"))
-            .And(x => WhenISave())
-            .When(x => WhenIBuildAgain())
-            .Then(x => ThenTheHttpClientIsFromTheCache())
             .BDDfy();
     }
 
@@ -106,14 +86,14 @@ public class MessageInvokerPoolTests
             .UseIISIntegration()
             .Configure(app =>
             {
-                app.Run(async context =>
+                app.Run(context =>
                 {
                     if (count == 0)
                     {
                         context.Response.Cookies.Append("test", "0");
                         context.Response.StatusCode = 200;
                         count++;
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     if (count == 1)
@@ -122,13 +102,13 @@ public class MessageInvokerPoolTests
                             context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
                         {
                             context.Response.StatusCode = 200;
-                            return;
+                            return Task.CompletedTask;
                         }
 
                         context.Response.StatusCode = 500;
                     }
 
-                    return;
+                    return Task.CompletedTask;
                 });
             })
             .Build();
@@ -147,7 +127,7 @@ public class MessageInvokerPoolTests
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
 
     private void GivenAMessageInvokerPool() =>
-        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLogger.Object);
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
 
     private void WhenGettingMessageInvokerTwice()
     {

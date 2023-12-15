@@ -13,6 +13,9 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
+    //todo: this should be configurable and available as global config parameter in ocelot.json
+    public const int DefaultRequestTimeoutSeconds = 90;
+
     private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
     {
         HttpStatusCode.InternalServerError,
@@ -63,14 +66,21 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
                     durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
-                    onBreak: (ex, breakDelay) => _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex.Exception),
+                    onBreak: (ex, breakDelay) =>
+                        _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!",
+                            ex.Exception),
                     onReset: () => _logger.LogDebug(info + "Call OK! Closed the circuit again."),
                     onHalfOpen: () => _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
+        // Per default, Polly's TimeoutPolicy throws a TimeoutRejectedException after 90 seconds.
+        var timeout = route.QosOptions.TimeoutValue == 0
+            ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
+            : TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue);
+
         var timeoutPolicy = Policy
             .TimeoutAsync<HttpResponseMessage>(
-                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
+                timeout,
                 TimeoutStrategy.Pessimistic);
 
         return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);

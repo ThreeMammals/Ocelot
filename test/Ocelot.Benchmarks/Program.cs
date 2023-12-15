@@ -9,7 +9,6 @@ public class Program
         var switcher = new BenchmarkSwitcher(
             new[]
             {
-                typeof(DictionaryBenchmarks),
                 typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
                 typeof(AllTheThingsBenchmarks),
                 typeof(ExceptionHandlerMiddlewareBenchmarks),
