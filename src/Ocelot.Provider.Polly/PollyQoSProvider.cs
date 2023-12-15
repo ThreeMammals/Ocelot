@@ -73,14 +73,13 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                     onHalfOpen: () => _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
-        // Per default, Polly's TimeoutPolicy throws a TimeoutRejectedException after 90 seconds.
-        var timeout = route.QosOptions.TimeoutValue == 0
-            ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
-            : TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue);
-
+        // No default set for polly timeout at the minute.
+        // Since a user could potentially set timeout value = 0, we need to handle this case.
+        // TODO throw an exception if the user sets timeout value = 0 or at least return a warning
+        // TODO the design in DelegatingHandlerHandlerFactory should be reviewed
         var timeoutPolicy = Policy
             .TimeoutAsync<HttpResponseMessage>(
-                timeout,
+                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue),
                 TimeoutStrategy.Pessimistic);
 
         return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
