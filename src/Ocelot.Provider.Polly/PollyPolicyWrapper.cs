@@ -11,12 +11,10 @@ public class PollyPolicyWrapper<TResult>
     public PollyPolicyWrapper(params IAsyncPolicy<TResult>[] policies)
     {
         var allPolicies = policies.Where(p => p != null).ToArray();
-        AsyncPollyPolicy = allPolicies.First();
 
-        if (allPolicies.Length > 1)
-        {
-            AsyncPollyPolicy = Policy.WrapAsync(allPolicies);
-        }
+        AsyncPollyPolicy = allPolicies.Length > 1 ? 
+            Policy.WrapAsync(allPolicies) : 
+            allPolicies[0];
     }
 
     public IAsyncPolicy<TResult> AsyncPollyPolicy { get; }

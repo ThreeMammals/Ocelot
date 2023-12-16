@@ -11,7 +11,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class HttpClientBuilderTests : IDisposable
+    public sealed class HttpClientBuilderTests : IDisposable
     {
         private HttpClientBuilder _builder;
         private readonly Mock<IDelegatingHandlerHandlerFactory> _factory;
@@ -256,6 +256,33 @@ namespace Ocelot.UnitTests.Requester
                 .BDDfy();
         }
 
+        [Theory(DisplayName = "1833: " + nameof(Create_TimeoutValueInQosOptions_HttpClientTimeout))]
+        [InlineData(0, 90)] // default timeout is 90 seconds
+        [InlineData(20, 20)] // QoS timeout
+        public void Create_TimeoutValueInQosOptions_HttpClientTimeout(int qosTimeout, int expectedSeconds)
+        {
+            // Arrange
+            var qosOptions = new QoSOptionsBuilder()
+                .WithTimeoutValue(qosTimeout * 1000)
+                .Build();
+            var handlerOptions = new HttpHandlerOptionsBuilder()
+                .WithUseMaxConnectionPerServer(int.MaxValue)
+                .Build();
+            var route = new DownstreamRouteBuilder()
+                .WithQosOptions(qosOptions)
+                .WithHttpHandlerOptions(handlerOptions)
+                .Build();
+            GivenTheFactoryReturnsNothing();
+
+            // Act
+            var actualClient = _builder.Create(route);
+
+            // Assert
+            var actual = actualClient?.Client?.Timeout;
+            Assert.NotNull(actual);
+            Assert.Equal(expectedSeconds, actual.Value.TotalSeconds);
+        }
+
         private void GivenARealCache()
         {
             _realCache = new MemoryHttpClientCache();
@@ -284,7 +311,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}"), Times.Once);
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")), Times.Once);
         }
 
         private void GivenTheClientIsCached()

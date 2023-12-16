@@ -1,17 +1,20 @@
-## Upgrade to .NET 8 (version {0}) aka [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) release
-> Read article: [Announcing .NET 8](https://devblogs.microsoft.com/dotnet/announcing-dotnet-8/) by Gaurav Seth, on November 14th, 2023
+## Hotfix release (version {0})
+> Default timeout vs the [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html) feature
+
+Special thanks to **Alvin Huang**, @huanguolin!
 
 ### About
-We are pleased to announce to you that we can now offer the support of [.NET 8](https://dotnet.microsoft.com/en-us/download).
-But that is not all, in this release, we are adopting support of several versions of the .NET framework through [multitargeting](https://learn.microsoft.com/en-us/dotnet/standard/frameworks).
-The Ocelot distribution is now compatible with .NET **6**, **7** and **8**. :tada:
-
-In the future, we will try to ensure the support of the [.NET SDKs](https://dotnet.microsoft.com/en-us/download/dotnet) that are still actively maintained by the .NET team and community.
-Current .NET versions in support are the following: [6, 7, 8](https://dotnet.microsoft.com/en-us/download/dotnet).
+The bug is related to the **Quality of Service** feature (aka **QoS**) and the [HttpClient.Timeout](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout) property.
+- If JSON `QoSOptions` section is defined in the route config, then the bug is masked rather than active, and the timeout value is assigned from the [QoS TimeoutValue](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=%22TimeoutValue%22%3A%205000) property.
+- If the `QoSOptions` section **is not** defined in the route config or the [TimeoutValue](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=%22TimeoutValue%22%3A%205000) property is missing, then the bug is **active** and affects downstream requests that **never time out**.
 
 ### Technical info
-As an ASP.NET Core app, now Ocelot targets `net6.0`, `net7.0` and `net8.0` frameworks.
+In version [22.0](https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0), the bug was found in the explicit default constructor of the [FileQoSOptions](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileQoSOptions.cs) class with a maximum [TimeoutValue](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileQoSOptions.cs#L9). Previously, the default constructor was implicit with the default assignment of zero `0` to all `int` properties.
 
-Starting with **v{0}**, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects.
-It should be easier for teams to move between (migrate to) .NET 6, 7 and 8 frameworks. Also, new features will be available for all .NET SDKs which we support via multitargeting.
-Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
+The new explicit default constructor breaks the old implementation of [QoS TimeoutValue](https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Requester/HttpClientBuilder.cs#L53-L55) logic, as our [QoS documentation](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html#quality-of-service:~:text=If%20you%20do%20not%20add%20a%20QoS%20section%2C%20QoS%20will%20not%20be%20used%2C%20however%20Ocelot%20will%20default%20to%20a%2090%20seconds%20timeout%20on%20all%20downstream%20requests.) states:
+![image](https://github.com/ThreeMammals/Ocelot/assets/12430413/2c6b2cd3-e1c6-4510-9e46-883468c140ec) <br/>
+**Finally**, the "default 90 second" logic for `HttpClient` breaks down when there are no **QoS** options and all requests on those routes are infinite, if, for example, downstream services are down or stuck.
+
+#### The Bug Artifacts
+- Reported bug issue: [1833](https://github.com/ThreeMammals/Ocelot/issues/1833) by @huanguolin
+- Hotfix PR: [1834](https://github.com/ThreeMammals/Ocelot/pull/1834) by @huanguolin

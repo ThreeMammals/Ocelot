@@ -80,7 +80,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 }
             }
 
-            Logger.LogDebug($"Downstream url is {downstreamRequest}");
+            Logger.LogDebug(() => $"Downstream url is {downstreamRequest}");
 
             await _next.Invoke(httpContext);
         }

@@ -48,10 +48,7 @@ namespace Ocelot.Errors.Middleware
             catch (Exception e)
             {
                 Logger.LogDebug("error calling middleware");
-
-                var message = CreateMessage(httpContext, e);
-
-                Logger.LogError(message, e);
+                Logger.LogError(() => CreateMessage(httpContext, e), e);
 
                 SetInternalServerErrorOnResponse(httpContext);
             }

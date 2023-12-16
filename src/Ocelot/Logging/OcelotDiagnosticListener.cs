@@ -18,20 +18,20 @@ namespace Ocelot.Logging
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]
         public virtual void OnMiddlewareStarting(HttpContext httpContext, string name)
         {
-            _logger.LogTrace($"MiddlewareStarting: {name}; {httpContext.Request.Path}");
+            _logger.LogTrace(() => $"MiddlewareStarting: {name}; {httpContext.Request.Path}");
             Event(httpContext, $"MiddlewareStarting: {name}; {httpContext.Request.Path}");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException")]
         public virtual void OnMiddlewareException(Exception exception, string name)
         {
-            _logger.LogTrace($"MiddlewareException: {name}; {exception.Message};");
+            _logger.LogTrace(() => $"MiddlewareException: {name}; {exception.Message};");
         }
 
         [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished")]
         public virtual void OnMiddlewareFinished(HttpContext httpContext, string name)
         {
-            _logger.LogTrace($"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
+            _logger.LogTrace(() => $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
             Event(httpContext, $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
         }
 

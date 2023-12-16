@@ -29,7 +29,7 @@ namespace Ocelot.AcceptanceTests
                             new("localhost", port),
                         },
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new() { httpMethod },
+                        UpstreamHttpMethod = new() {httpMethod},
                         QoSOptions = new FileQoSOptions(options),
                     },
                 },
@@ -140,6 +140,20 @@ namespace Ocelot.AcceptanceTests
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact(DisplayName = "1833: " + nameof(Should_timeout_per_default_after_90_seconds))]
+        public void Should_timeout_per_default_after_90_seconds()
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .BDDfy();
         }
 

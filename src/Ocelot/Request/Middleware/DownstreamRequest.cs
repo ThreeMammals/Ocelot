@@ -16,16 +16,15 @@ namespace Ocelot.Request.Middleware
             Scheme = _request.RequestUri.Scheme;
             Host = _request.RequestUri.Host;
             Port = _request.RequestUri.Port;
-            Headers = _request.Headers;
             AbsolutePath = _request.RequestUri.AbsolutePath;
             Query = _request.RequestUri.Query;
         }
 
-        public virtual HttpHeaders Headers { get; }
+        public HttpHeaders Headers { get => _request.Headers; }
 
-        public virtual string Method { get; }
+        public string Method { get; }
 
-        public virtual string OriginalString { get; }
+        public string OriginalString { get; }
 
         public string Scheme { get; set; }
 
@@ -37,11 +36,9 @@ namespace Ocelot.Request.Middleware
 
         public string Query { get; set; }
 
-        public virtual bool HasContent { get => _request?.Content != null; }
+        public bool HasContent { get => _request?.Content != null; }
 
-        public virtual Task<string> ReadContentAsync() => HasContent
-            ? _request.Content.ReadAsStringAsync()
-            : Task.FromResult(string.Empty);
+        public HttpRequestMessage Request { get => _request; }
 
         public HttpRequestMessage ToHttpRequestMessage()
         {

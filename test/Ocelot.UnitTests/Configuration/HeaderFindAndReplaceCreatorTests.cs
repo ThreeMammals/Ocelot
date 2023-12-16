@@ -136,7 +136,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheLoggerIsCalledCorrectly(string message)
         {
-            _logger.Verify(x => x.LogWarning(message), Times.Once);
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == message)), Times.Once);
         }
 
         [Fact]

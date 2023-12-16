@@ -376,7 +376,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "/test"))
                 .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunningWithMiddleareBeforePipeline<FakeMiddleware>(callback))
+                .And(x => _steps.GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
