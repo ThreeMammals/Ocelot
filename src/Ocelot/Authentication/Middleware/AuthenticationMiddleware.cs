@@ -60,21 +60,23 @@ namespace Ocelot.Authentication.Middleware
 
             var result = AuthenticateResult.NoResult();
 
-            if (route.AuthenticationOptions.AuthenticationProviderKeys.Length > 0)
+            if (route.AuthenticationOptions.AuthenticationProviderKeys.Length == 0)
             {
-                var authenticationProviderKeys =
-                    route
-                    .AuthenticationOptions
-                    .AuthenticationProviderKeys
-                    .Where(apk => !string.IsNullOrWhiteSpace(apk));
+                return result;
+            }
+            
+            var authenticationProviderKeys =
+                route
+                .AuthenticationOptions
+                .AuthenticationProviderKeys
+                .Where(apk => !string.IsNullOrWhiteSpace(apk));
 
-                foreach (var authenticationProviderKey in authenticationProviderKeys)
+            foreach (var authenticationProviderKey in authenticationProviderKeys)
+            {
+                result = await httpContext.AuthenticateAsync(authenticationProviderKey);
+                if (result.Succeeded)
                 {
-                    result = await httpContext.AuthenticateAsync(authenticationProviderKey);
-                    if (result.Succeeded)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
             }
 
