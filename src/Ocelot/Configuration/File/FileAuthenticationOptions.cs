@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ocelot.Configuration.File
+﻿namespace Ocelot.Configuration.File
 {
     public sealed class FileAuthenticationOptions
     {
@@ -16,6 +12,7 @@ namespace Ocelot.Configuration.File
         {
             AllowedScopes = new(from.AllowedScopes);
             AuthenticationProviderKey = from.AuthenticationProviderKey;
+            AuthenticationProviderKeys = from.AuthenticationProviderKeys;
         }
 
         public List<string> AllowedScopes { get; set; }

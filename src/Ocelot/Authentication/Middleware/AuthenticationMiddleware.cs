@@ -5,7 +5,6 @@
     using Ocelot.Configuration;
     using Ocelot.Logging;
     using Ocelot.Middleware;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -57,34 +56,32 @@
 
         private async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
         {
-            AuthenticateResult result = null;
-
             if (!string.IsNullOrWhiteSpace(route.AuthenticationOptions.AuthenticationProviderKey))
             {
-                result = await httpContext.AuthenticateAsync(route.AuthenticationOptions.AuthenticationProviderKey);
-                if (result.Succeeded)
-                {
-                    return result;
-                }
+                return await httpContext.AuthenticateAsync(route.AuthenticationOptions.AuthenticationProviderKey);
             }
 
-            IEnumerable<string> authenticationProviderKeys =
-                route
-                .AuthenticationOptions
-                .AuthenticationProviderKeys
-                ?.Where(apk => !string.IsNullOrWhiteSpace(apk))
-                ?? Array.Empty<string>();
+            AuthenticateResult result = null;
 
-            foreach (var authenticationProviderKey in authenticationProviderKeys)
+            if (route.AuthenticationOptions.AuthenticationProviderKeys is not null)
             {
-                result = await httpContext.AuthenticateAsync(authenticationProviderKey);
-                if (result.Succeeded)
+                IEnumerable<string> authenticationProviderKeys =
+                    route
+                    .AuthenticationOptions
+                    .AuthenticationProviderKeys
+                    .Where(apk => !string.IsNullOrWhiteSpace(apk));
+
+                foreach (var authenticationProviderKey in authenticationProviderKeys)
                 {
-                    break;
+                    result = await httpContext.AuthenticateAsync(authenticationProviderKey);
+                    if (result.Succeeded)
+                    {
+                        return result;
+                    }
                 }
             }
 
-            return result;
+            return result ?? AuthenticateResult.NoResult();
         }
 
         private static bool IsAuthenticatedRoute(DownstreamRoute route)
