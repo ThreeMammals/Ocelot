@@ -358,7 +358,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(_ => GivenThe(fileRoute))
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("'Downstream Http Version' is not in the correct format."))
+                .And(_ => ThenTheErrorsContains("'Downstream Http Version'")) // this error message changes depending on the OS language
                 .BDDfy();
         }
 
@@ -396,7 +396,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private void ThenTheErrorsContains(string expected)
         {
-            _result.Errors.ShouldContain(x => x.ErrorMessage == expected);
+            _result.Errors.ShouldContain(x => x.ErrorMessage.Contains(expected));
         }
 
         private class FakeAutheHandler : IAuthenticationHandler

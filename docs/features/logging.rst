@@ -2,23 +2,158 @@ Logging
 =======
 
 Ocelot uses the standard logging interfaces ``ILoggerFactory`` and ``ILogger<T>`` at the moment.
-This is encapsulated in ``IOcelotLogger`` and ``IOcelotLoggerFactory`` with an implementation for the standard `ASP.NET Core logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_ stuff at the moment.
-This is because Ocelot adds some extra info to the logs such as **request ID** if it is configured.
+This is encapsulated in ``IOcelotLogger`` and ``IOcelotLoggerFactory`` with the implementation for the standard `ASP.NET Core logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_ stuff at the moment.
+This is because Ocelot adds some extra info to the logs such as **RequestId** if it is configured.
 
 There is a global `error handler middleware <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20ExceptionHandlerMiddleware&type=code>`_ that should catch any exceptions thrown and log them as errors.
 
-Finally, if logging is set to **Trace** level, Ocelot will log starting, finishing and any middlewares that throw an exception which can be quite useful.
+Finally, if logging is set to ``Trace`` level, Ocelot will log starting, finishing and any middlewares that throw an exception which can be quite useful.
+
+Request ID
+----------
 
 The reason for not just using `bog standard <https://notoneoffbritishisms.com/2015/03/27/bog-standard/>`_ framework logging is that
-we could not work out how to override the request id that get's logged when setting **IncludeScopes** to ``true`` for logging settings.
+we could not work out how to override the **RequestId** that get's logged when setting **IncludeScopes** to ``true`` for logging settings.
 Nicely onto the next feature.
+
+Every log record has these 2 properties:
+
+* **RequestId** represents ID of the current request as plain string, for example ``0HMVD33IIJRFR:00000001``
+* **PreviousRequestId** represents ID of the previous request
+
+As an ``IOcelotLogger`` interface object being injected to constructors of service classes, current default Ocelot logger (``OcelotLogger`` class) reads these 2 properties from the ``IRequestScopedDataRepository`` interface object.
+Find out more about these properties and other details on the *Request ID* logging feature in the  :doc:`../features/requestid` chapter.
+
+.. _logging-warning:
 
 Warning
 -------
 
-If you are logging to `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_, you will get terrible performance.
-The team has had so many issues about performance issues with Ocelot and it is always logging level **Debug**, logging to `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_.
+If you are logging to MS `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_, you will get terrible performance.
+The team has had so many issues about performance issues with Ocelot and it is always logging level ``Debug``, logging to `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_.
 
 * **Warning!** Make sure you are logging to something proper in production environment!
-* Use **Error** and **Critical** levels in production environment!
-* Use **Warning** level in testing environment!
+* Use ``Error`` and ``Critical`` levels in production environment!
+* Use ``Warning`` level in testing & staging environments!
+
+These and other recommendations are below in the :ref:`logging-best-practices` section.
+
+.. _logging-best-practices:
+
+Best Practices
+--------------
+
+    | Microsoft Learn сomplete reference: `Logging in .NET Core and ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_
+
+Our recommendations to gain Ocelot best logging are the following.
+
+First
+^^^^^
+
+Ensure minimum level while `Configure logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/#configure-logging>`_.
+The minimum log level is set in the application's ``appsettings.json`` file. This level is defined in the **Logging** section, for example:
+
+.. code-block:: json
+
+  {
+    "Logging": {
+      "LogLevel": {
+        "Default": "Information",
+        "Microsoft.AspNetCore": "Warning"
+      }
+    }
+  }
+
+Whether using `Serilog <https://serilog.net/>`_ or the standard Microsoft providers, the logging configuration will be retrieved from this section.
+
+.. code-block:: csharp
+
+    .ConfigureAppConfiguration((_, config) =>
+    {
+        config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", false, false);
+        // ...
+    })
+
+However, there is one thing to be aware of. It is possible to use the ``SetMinimumLevel()`` method to define the minimum logging level.
+Be careful and make sure you set the log level in one place only, like:
+
+.. code-block:: csharp
+
+    ConfigureLogging(logging =>
+    {
+        logging.ClearProviders();
+        logging.SetMinimumLevel(minLogLevel);
+        logging.AddConsole(); // MS Console for Development and/or Testing environments only
+    })
+
+Please also use the ``ClearProviders()`` method, so that only the providers you wish to use are taken into account, as in the example above, the console.
+
+Second
+^^^^^^
+
+Ensure proper usage of minimum logging level for each environment: development, testing, production, etc.
+So, once again, read important notes of the :ref:`logging-warning` section! 
+
+Third
+^^^^^
+
+Ocelot's logging has been improved in `22.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0>`_ version:
+it is now possible to use a factory method for message strings that will only be executed if the minimum log level allows it.
+
+For example, let's take a message containing information about several variables that should only be generated if the minimum log level is ``Debug``.
+If the minimum log level is ``Warning`` then the string is never generated.
+
+Therefore, when the string contains dynamic information aka ``string.Format``, or string value is generated by `string interpolation <https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/string-interpolation>`_ expression,
+it is recommended to call the log method using anonymous delegate via an ``=>`` expression function:
+
+.. code-block:: csharp
+
+    Logger.LogDebug(() => $"downstream templates are {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
+
+otherwise a constant string is sufficient
+
+.. code-block:: csharp
+
+    Logger.LogDebug("My const string");
+
+Performance Review
+------------------
+
+Ocelot's logging performance has been improved in version `22.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0>`__ (see PR `1745 <https://github.com/ThreeMammals/Ocelot/pull/1745>`_).
+These changes were requested as part of issue `1744 <https://github.com/ThreeMammals/Ocelot/issues/1744>`_ after team's `discussion <https://github.com/ThreeMammals/Ocelot/discussions/1736>`_.
+
+Top Logging Performance?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here is a quick recipe for your Production environment!
+You need to ensure the minimal level is ``Critical`` or ``None``. Nothing more!
+For sure, having top logging performance means having less log records written by logging provider. So, logs should be pretty empty.
+
+Anyway, during the first time after a version release to production, we recommend to watch the system and current version app behavior by specifying ``Error`` minimum level.
+If release engineer will ensure stability of the version in production then minimum level can be increased to ``Critical`` or ``None`` to gain top performance.
+Technically this will switch off the logging feature at all.
+
+Run Benchmarks
+^^^^^^^^^^^^^^
+
+We have 2 types of benchmarks currently
+
+* ``SerilogBenchmarks`` with Serilog logging to a file. See ``ConfigureLogging`` method with ``logging.AddSerilog(_logger);``
+* ``MsLoggerBenchmarks`` with MS default logging to MS Console. See ``ConfigureLogging`` method with ``logging.AddConsole();``
+
+Benchmark results largely depend on the environment and hardware on which they run.
+We are pleased to invite you to run Logging benchmarks on your machine by the following instructions below.
+
+1. Open PowerShell or Command Prompt console
+2. Build Ocelot solution in Release mode: ``dotnet build --configuration Release``
+3. Go to ``test\Ocelot.Benchmarks\bin\Release\`` folder.
+4. Choose .NET version changing the folder, for example to ``net8.0``
+5. Run **Ocelot.Benchmarks.exe**: ``.\Ocelot.Benchmarks.exe``
+6. Run ``SerilogBenchmarks`` or ``MsLoggerBenchmarks`` by pressing appropriate number of a benchmark: ``5`` or ``6``, + Enter
+7. Wait for 3+ minutes to complete benchmark, and get final results.
+8. Read and analize your benchmark session results.
+
+Indicators
+^^^^^^^^^^
+
+``To be developed...``

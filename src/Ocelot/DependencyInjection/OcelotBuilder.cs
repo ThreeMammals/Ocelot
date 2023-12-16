@@ -91,7 +91,7 @@ namespace Ocelot.DependencyInjection
             Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
             Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
             Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-            Services.TryAddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            Services.TryAddSingleton<IOcelotLoggerFactory, OcelotLoggerFactory>();
             Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
             Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
             Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
@@ -116,7 +116,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-            Services.TryAddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
+            Services.TryAddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 

@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Cache
             _cache = new Mock<IOcelotCache<CachedResponse>>();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
-            _cacheKeyGenerator = new CacheKeyGenerator();
+            _cacheKeyGenerator = new DefaultCacheKeyGenerator();
             _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
             _next = context => Task.CompletedTask;
             _httpContext.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));

@@ -1,13 +1,13 @@
 Request ID
 ==========
 
-     aka **Correlation ID**
+     aka **Correlation ID** or `HttpContext.TraceIdentifier <https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpcontext.traceidentifier>`_
 
 Ocelot supports a client sending a *request ID* in the form of a header.
-If set, Ocelot will use the **requestId** for logging as soon as it becomes available in the middleware pipeline. 
-Ocelot will also forward the *request ID* with the specified header to the downstream service.
+If set, Ocelot will use the **RequestId** for logging as soon as it becomes available in the middleware pipeline. 
+Ocelot will also forward the *RequestId* with the specified header to the downstream service.
 
-You can still get the ASP.NET Core *request ID* in the logs if you set **IncludeScopes** ``true`` in your logging config.
+You can still get the ASP.NET Core *Request ID* in the logs if you set **IncludeScopes** ``true`` in your logging config.
 
 In order to use the *Request ID* feature you have two options.
 
@@ -67,3 +67,24 @@ Below is an example of the logging when set at ``Debug`` level for a normal requ
           requestId: 1234, previousRequestId: asdf, message: no pipeline errors, setting and returning completed response,
     dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
           requestId: 1234, previousRequestId: asdf, message: ocelot pipeline finished,
+
+And more practical example from secret production environment in Switzerland:
+
+.. code-block:: text
+
+    warn: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+          requestId: 0HMVD33IIJRFR:00000001, previousRequestId: no previous request id, message: DownstreamRouteFinderMiddleware setting pipeline errors. IDownstreamRouteFinder returned Error Code: UnableToFindDownstreamRouteError Message: Failed to match Route configuration for upstream path: /, verb: GET.
+    warn: Ocelot.Responder.Middleware.ResponderMiddleware[0]
+          requestId: 0HMVD33IIJRFR:00000001, previousRequestId: no previous request id, message: Error Code: UnableToFindDownstreamRouteError Message: Failed to match Route configuration for upstream path: /, verb: GET. errors found in ResponderMiddleware. Setting error response for request path:/, request method: GET
+
+Curious?
+--------
+
+*Request ID* is a part of big :doc:`../features/logging` feature.
+
+Every log record has these 2 properties:
+
+* **RequestId** represents ID of the current request as plain string, for example ``0HMVD33IIJRFR:00000001``
+* **PreviousRequestId** represents ID of the previous request
+
+As an ``IOcelotLogger`` interface object being injected to constructors of service classes, current default Ocelot logger (the ``OcelotLogger`` class) reads these 2 properties from the ``IRequestScopedDataRepository`` interface object.

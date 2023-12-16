@@ -30,27 +30,23 @@ public class PollyPoliciesDelegatingHandler : DelegatingHandler
         return _contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSProvider<HttpResponseMessage>>();
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
+    /// </summary>
+    /// <param name="request">Downstream request.</param>
+    /// <param name="cancellationToken">Token to cancel the task.</param>
+    /// <returns>A <see cref="Task{HttpResponseMessage}"/> object of a <see cref="HttpResponseMessage"/> result.</returns>
+    /// <exception cref="BrokenCircuitException">Exception thrown when a circuit is broken.</exception>
+    /// <exception cref="HttpRequestException">Exception thrown by <see cref="HttpClient"/> and <see cref="HttpMessageHandler"/> classes.</exception>
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var qoSProvider = GetQoSProvider();
-        try
-        {
-            // at least one policy (timeout) will be returned
-            // AsyncPollyPolicy can't be null
-            // AsyncPollyPolicy constructor will throw if no policy is provided
-            var policy = qoSProvider.GetPollyPolicyWrapper(_route).AsyncPollyPolicy;
-            return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
-        }
-        catch (BrokenCircuitException ex)
-        {
-            _logger.LogError("Reached to allowed number of exceptions. Circuit is open", ex);
-            throw;
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError($"Error in {nameof(PollyPoliciesDelegatingHandler)}.{nameof(SendAsync)}", ex);
-            throw;
-        }
+
+        // At least one policy (timeout) will be returned
+        // AsyncPollyPolicy can't be null
+        // AsyncPollyPolicy constructor will throw if no policy is provided
+        var policy = qoSProvider.GetPollyPolicyWrapper(_route).AsyncPollyPolicy;
+
+        return await policy.ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
     }
 }

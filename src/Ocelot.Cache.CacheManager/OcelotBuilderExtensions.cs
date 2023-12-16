@@ -34,7 +34,7 @@ namespace Ocelot.Cache.CacheManager
             builder.Services.AddSingleton<IOcelotCache<FileConfiguration>>(fileConfigCacheManager);
 
             builder.Services.RemoveAll(typeof(ICacheKeyGenerator));
-            builder.Services.AddSingleton<ICacheKeyGenerator, CacheKeyGenerator>();
+            builder.Services.AddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
 
             return builder;
         }
