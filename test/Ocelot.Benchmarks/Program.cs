@@ -16,6 +16,7 @@ public class Program
                 typeof(SerilogBenchmarks),
                 typeof(MsLoggerBenchmarks),
                 typeof(PayloadBenchmarks),
+                typeof(ResponseBenchmarks),
             });
         switcher.Run(args);
     }
