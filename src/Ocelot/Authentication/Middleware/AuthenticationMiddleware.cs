@@ -58,11 +58,9 @@ namespace Ocelot.Authentication.Middleware
                 return await httpContext.AuthenticateAsync(route.AuthenticationOptions.AuthenticationProviderKey);
             }
 
-            var result = AuthenticateResult.NoResult();
-
             if (route.AuthenticationOptions.AuthenticationProviderKeys.Length == 0)
             {
-                return result;
+                return AuthenticateResult.NoResult();
             }
             
             var authenticationProviderKeys =
@@ -70,6 +68,7 @@ namespace Ocelot.Authentication.Middleware
                 .AuthenticationOptions
                 .AuthenticationProviderKeys
                 .Where(apk => !string.IsNullOrWhiteSpace(apk));
+            AuthenticateResult result = null;
 
             foreach (var authenticationProviderKey in authenticationProviderKeys)
             {
@@ -80,7 +79,7 @@ namespace Ocelot.Authentication.Middleware
                 }
             }
 
-            return result;
+            return result ?? AuthenticateResult.NoResult();
         }
 
         private static bool IsAuthenticatedRoute(DownstreamRoute route)
