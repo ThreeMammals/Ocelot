@@ -1,0 +1,35 @@
+{
+  "Routes": [
+    {
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5062
+        },
+        {
+          "Host": "localhost",
+          "Port": 5016
+        }
+      ],
+      "ServiceName": "ConsulDemo",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamPathTemplate": "/hostname",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/WeatherForecast/hostname",
+      "DownstreamScheme": "http",
+      "DangerousAcceptAnyServerCertificateValidator": true
+
+
+    }
+  ],
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "localhost",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  }
+}
