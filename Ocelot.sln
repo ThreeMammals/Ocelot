@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
@@ -93,7 +92,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDisco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "samples\OcelotServiceDiscovery\DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{E2AC741A-4120-4D59-B5E4-16382ED45E8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Testing", "test\Ocelot.Testing\Ocelot.Testing.csproj", "{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Testing", "test\Ocelot.Testing\Ocelot.Testing.csproj", "{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.samples.LB.DownstreamAPI", "samples\LoadBalancer\Ocelot.samples.LB.DownstreamAPI\Ocelot.samples.LB.DownstreamAPI.csproj", "{F6C09D61-78B1-40E6-82EF-D1A807818CFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.samples.LB.APIGateway", "samples\LoadBalancer\Ocelot.samples.LB.APIGateway\Ocelot.samples.LB.APIGateway.csproj", "{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.samples.LB.Common", "samples\LoadBalancer\Ocelot.samples.LB.Common\Ocelot.samples.LB.Common.csproj", "{8895407D-ED1E-408A-9A25-150F848B3A6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LoadBalancer-Sample", "LoadBalancer-Sample", "{1E905BAD-C19B-4190-A64C-2A9C52F6094F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -209,6 +216,18 @@ Global
 		{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6C09D61-78B1-40E6-82EF-D1A807818CFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6C09D61-78B1-40E6-82EF-D1A807818CFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6C09D61-78B1-40E6-82EF-D1A807818CFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6C09D61-78B1-40E6-82EF-D1A807818CFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -249,6 +268,10 @@ Global
 		{D37209EA-C13E-42AE-B851-A8604F1FCD0E} = {25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}
 		{E2AC741A-4120-4D59-B5E4-16382ED45E8D} = {25C30AAA-12DD-4BA5-A53F-9271E54EBAB7}
 		{AE6BCCBD-0687-4C58-B30F-4ABBC6422087} = {5B401523-36DA-4491-B73A-7590A26E420B}
+		{F6C09D61-78B1-40E6-82EF-D1A807818CFC} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
+		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
+		{8895407D-ED1E-408A-9A25-150F848B3A6C} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
+		{1E905BAD-C19B-4190-A64C-2A9C52F6094F} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}
