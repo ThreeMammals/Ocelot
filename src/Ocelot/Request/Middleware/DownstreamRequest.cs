@@ -6,6 +6,8 @@ namespace Ocelot.Request.Middleware
     {
         private readonly HttpRequestMessage _request;
 
+        public DownstreamRequest() { }
+
         public DownstreamRequest(HttpRequestMessage request)
         {
             _request = request;
@@ -14,13 +16,11 @@ namespace Ocelot.Request.Middleware
             Scheme = _request.RequestUri.Scheme;
             Host = _request.RequestUri.Host;
             Port = _request.RequestUri.Port;
-            Headers = _request.Headers;
             AbsolutePath = _request.RequestUri.AbsolutePath;
             Query = _request.RequestUri.Query;
-            Content = _request.Content;
         }
 
-        public HttpRequestHeaders Headers { get; }
+        public HttpHeaders Headers { get => _request.Headers; }
 
         public string Method { get; }
 
@@ -36,7 +36,9 @@ namespace Ocelot.Request.Middleware
 
         public string Query { get; set; }
 
-        public HttpContent Content { get; set; }
+        public bool HasContent { get => _request?.Content != null; }
+
+        public HttpRequestMessage Request { get => _request; }
 
         public HttpRequestMessage ToHttpRequestMessage()
         {
