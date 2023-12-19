@@ -102,6 +102,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.samples.LB.Common", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LoadBalancer-Sample", "LoadBalancer-Sample", "{1E905BAD-C19B-4190-A64C-2A9C52F6094F}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{46846594-4466-4672-AB11-08DED865C3DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -228,6 +230,10 @@ Global
 		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8895407D-ED1E-408A-9A25-150F848B3A6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46846594-4466-4672-AB11-08DED865C3DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46846594-4466-4672-AB11-08DED865C3DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46846594-4466-4672-AB11-08DED865C3DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46846594-4466-4672-AB11-08DED865C3DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,6 +278,7 @@ Global
 		{92C4D8A4-65EF-4C4A-95BB-76898DFB40AF} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
 		{8895407D-ED1E-408A-9A25-150F848B3A6C} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
 		{1E905BAD-C19B-4190-A64C-2A9C52F6094F} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
+		{46846594-4466-4672-AB11-08DED865C3DD} = {1E905BAD-C19B-4190-A64C-2A9C52F6094F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}

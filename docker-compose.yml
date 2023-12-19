@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  ocelot.samples.lb.apigateway:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbapigateway
+    build:
+      context: .
+      dockerfile: samples/LoadBalancer/Ocelot.samples.LB.APIGateway/Dockerfile
+
+  ocelot.samples.lb.downstreamapi:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbdownstreamapi
+    build:
+      context: .
+      dockerfile: samples/LoadBalancer/Ocelot.samples.LB.DownstreamAPI/Dockerfile
+
