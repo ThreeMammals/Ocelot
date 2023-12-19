@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-
 namespace Ocelot.Configuration.Builder
 {
     public class AuthenticationOptionsBuilder
     {
         private List<string> _allowedScopes = new();
         private string _authenticationProviderKey;
-
         private string[] _authenticationProviderKeys =[];
 
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)

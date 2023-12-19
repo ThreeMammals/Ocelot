@@ -20,7 +20,7 @@ namespace Ocelot.Authentication.Middleware
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && IsAuthenticatedRoute(downstreamRoute))
+            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && downstreamRoute.IsAuthenticated)
             {
                 Logger.LogInformation(() => $"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
@@ -38,7 +38,7 @@ namespace Ocelot.Authentication.Middleware
                     var error = new UnauthenticatedError(
                         $"Request for authenticated route {httpContext.Request.Path} by {httpContext.User.Identity.Name} was unauthenticated");
 
-                    Logger.LogWarning(() =>$"Client has NOT been authenticated for {httpContext.Request.Path} and pipeline error set. {error}");
+                    Logger.LogWarning(() => $"Client has NOT been authenticated for {httpContext.Request.Path} and pipeline error set. {error}");
 
                     httpContext.Items.SetError(error);
                 }
@@ -51,40 +51,32 @@ namespace Ocelot.Authentication.Middleware
             }
         }
 
-        private async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
+        private static async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
         {
-            if (!string.IsNullOrWhiteSpace(route.AuthenticationOptions.AuthenticationProviderKey))
+            var options = route.AuthenticationOptions;
+            if (!string.IsNullOrWhiteSpace(options.AuthenticationProviderKey))
             {
-                return await httpContext.AuthenticateAsync(route.AuthenticationOptions.AuthenticationProviderKey);
+                return await httpContext.AuthenticateAsync(options.AuthenticationProviderKey);
             }
 
-            if (route.AuthenticationOptions.AuthenticationProviderKeys.Length == 0)
+            if (options.AuthenticationProviderKeys.Length == 0)
             {
                 return AuthenticateResult.NoResult();
             }
-            
-            var authenticationProviderKeys =
-                route
-                .AuthenticationOptions
-                .AuthenticationProviderKeys
-                .Where(apk => !string.IsNullOrWhiteSpace(apk));
-            AuthenticateResult result = null;
 
-            foreach (var authenticationProviderKey in authenticationProviderKeys)
+            var keys = options.AuthenticationProviderKeys
+                .Where(apk => !string.IsNullOrWhiteSpace(apk));
+
+            foreach (var authenticationProviderKey in keys)
             {
-                result = await httpContext.AuthenticateAsync(authenticationProviderKey);
+                var result = await httpContext.AuthenticateAsync(authenticationProviderKey);
                 if (result.Succeeded)
                 {
                     return result;
                 }
             }
 
-            return result ?? AuthenticateResult.NoResult();
-        }
-
-        private static bool IsAuthenticatedRoute(DownstreamRoute route)
-        {
-            return route.IsAuthenticated;
+            return AuthenticateResult.NoResult();
         }
     }
 }

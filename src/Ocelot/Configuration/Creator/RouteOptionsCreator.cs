@@ -28,16 +28,10 @@ namespace Ocelot.Configuration.Creator
 
         private bool IsAuthenticated(FileRoute fileRoute)
         {
-            FileAuthenticationOptions authenticationOptions = fileRoute.AuthenticationOptions;
-
-            if (authenticationOptions is null)
-            {
-                return false;
-            }
-
-            return
-                !string.IsNullOrEmpty(authenticationOptions.AuthenticationProviderKey)
-                || authenticationOptions.AuthenticationProviderKeys?.Any(apk => !string.IsNullOrWhiteSpace(apk)) == true;
+            var options = fileRoute?.AuthenticationOptions;
+            return options != null &&
+                (!string.IsNullOrEmpty(options.AuthenticationProviderKey)
+                || options.AuthenticationProviderKeys?.Any(apk => !string.IsNullOrWhiteSpace(apk)) == true);
         }
 
         private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;

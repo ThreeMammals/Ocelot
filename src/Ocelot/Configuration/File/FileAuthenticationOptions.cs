@@ -16,9 +16,7 @@
         }
 
         public List<string> AllowedScopes { get; set; }
-
         public string AuthenticationProviderKey { get; set; }
-
         public string[] AuthenticationProviderKeys { get; set; }
 
         public override string ToString()

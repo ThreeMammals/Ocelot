@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Configuration
+﻿using Ocelot.Configuration.File;
+
+namespace Ocelot.Configuration
 {
     public sealed class AuthenticationOptions
     {
@@ -6,18 +8,25 @@
         {
             AllowedScopes = allowedScopes;
             AuthenticationProviderKey = authenticationProviderKey;
+            AuthenticationProviderKeys = Array.Empty<string>();
+        }
+
+        public AuthenticationOptions(FileAuthenticationOptions from)
+        {
+            AllowedScopes = from.AllowedScopes ?? new();
+            AuthenticationProviderKey = from.AuthenticationProviderKey ?? string.Empty;
+            AuthenticationProviderKeys = from.AuthenticationProviderKeys ?? Array.Empty<string>();
         }
 
         public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, string[] authenticationProviderKeys)
-            : this(allowedScopes, authenticationProviderKey)
         {
-            AuthenticationProviderKeys = authenticationProviderKeys;
+            AllowedScopes = allowedScopes ?? new();
+            AuthenticationProviderKey = authenticationProviderKey ?? string.Empty;
+            AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
         }
 
         public List<string> AllowedScopes { get; }
-
         public string AuthenticationProviderKey { get; }
-
         public string[] AuthenticationProviderKeys { get; }
     }
 }
