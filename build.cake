@@ -512,10 +512,10 @@ Task("PublishToNuget")
     .Does(() =>
     {
 		Information("Skipping of publishing to NuGet...");
-		// if (IsRunningOnCircleCI())
-		// {
-		// 	PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
-		// }
+		if (IsRunningOnCircleCI())
+		{
+			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+		}
 	});
 
 RunTarget(target);
