@@ -8,6 +8,7 @@ using Polly.Wrap;
 
 namespace Ocelot.UnitTests.Polly;
 
+[CollectionDefinition(nameof(PollyQoSProviderTests), DisableParallelization = true)]
 public class PollyQoSProviderTests
 {
     [Fact]
