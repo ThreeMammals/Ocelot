@@ -38,10 +38,11 @@ namespace Ocelot.UnitTests.Authentication
         }
 
         [Fact]
-        public void should_call_next_middleware_if_route_is_not_authenticated()
+        public void Should_call_next_middleware_if_route_is_not_authenticated()
         {
+            var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                    .WithUpstreamHttpMethod(new() { "Get" })
+                    .WithUpstreamHttpMethod(methods)
                     .Build()
                 ))
                 .When(x => WhenICallTheMiddleware())
@@ -50,11 +51,12 @@ namespace Ocelot.UnitTests.Authentication
         }
 
         [Fact]
-        public void should_call_next_middleware_if_route_is_using_options_method()
+        public void Should_call_next_middleware_if_route_is_using_options_method()
         {
             const string OPTIONS = "OPTIONS";
+            var methods = new List<string> { OPTIONS };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                    .WithUpstreamHttpMethod(new() { OPTIONS })
+                    .WithUpstreamHttpMethod(methods)
                     .WithIsAuthenticated(true)
                     .Build()
                 ))
@@ -67,17 +69,19 @@ namespace Ocelot.UnitTests.Authentication
         [InlineData(false)]
         [InlineData(true)]
         [Theory]
-        public void should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isAuthenticationProviderKeys)
+        public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isAuthenticationProviderKeys)
         {
+            var keys = new string[] { string.Empty, "Test" };
             var options = new AuthenticationOptions(
                 null,
                 !isAuthenticationProviderKeys ? "Test" : null,
-                isAuthenticationProviderKeys ? new[] { string.Empty, "Test" } : null
+                isAuthenticationProviderKeys ? keys : null
             );
+            var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
                     .WithAuthenticationOptions(options)
                     .WithIsAuthenticated(true)
-                    .WithUpstreamHttpMethod(new() { "Get" })
+                    .WithUpstreamHttpMethod(methods)
                     .Build()
                 ))
                 .And(x => GivenTheRequestIsUsingGetMethod())
@@ -90,17 +94,18 @@ namespace Ocelot.UnitTests.Authentication
         }
 
         [Fact]
-        public void should_not_call_next_middleware_if_route_is_using_several_options_authentication_providers()
+        public void Should_not_call_next_middleware_if_route_is_using_several_options_authentication_providers()
         {
             var options = new AuthenticationOptions(
                 null,
                 "Test",
                 ["Test #1", string.Empty]
             );
+            var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
                     .WithAuthenticationOptions(options)
                     .WithIsAuthenticated(true)
-                    .WithUpstreamHttpMethod(new() { "Get" })
+                    .WithUpstreamHttpMethod(methods)
                     .Build()
                 ))
                 .And(x => GivenTheRequestIsUsingGetMethod())
@@ -203,11 +208,9 @@ namespace Ocelot.UnitTests.Authentication
     {
         public static string AsString(this Stream stream)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                var text = reader.ReadToEnd();
-                return text;
-            }
+            using var reader = new StreamReader(stream);
+            var text = reader.ReadToEnd();
+            return text;
         }
     }
 }
