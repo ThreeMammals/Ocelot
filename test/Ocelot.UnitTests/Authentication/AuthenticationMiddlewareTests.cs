@@ -10,8 +10,6 @@ using System.Text;
 using AuthenticationMiddleware = Ocelot.Authentication.Middleware.AuthenticationMiddleware;
 using AuthenticationOptions = Ocelot.Configuration.AuthenticationOptions;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Ocelot.UnitTests.Authentication
 {
     public class AuthenticationMiddlewareTests
