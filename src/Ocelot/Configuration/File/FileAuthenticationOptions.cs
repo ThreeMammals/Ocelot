@@ -19,17 +19,13 @@
         public string AuthenticationProviderKey { get; set; }
         public string[] AuthenticationProviderKeys { get; set; }
 
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-
-            sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AuthenticationProviderKeys)}:[");
-            sb.AppendJoin(',', AuthenticationProviderKeys);
-            sb.Append("],");
-            sb.Append($"{nameof(AllowedScopes)}:[");
-            sb.AppendJoin(',', AllowedScopes);
-            sb.Append(']');
-            return sb.ToString();
-        }
+        public override string ToString() => new StringBuilder()
+            .Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AuthenticationProviderKeys)}:[")
+            .AppendJoin(',', AuthenticationProviderKeys)
+            .Append("],")
+            .Append($"{nameof(AllowedScopes)}:[")
+            .AppendJoin(',', AllowedScopes)
+            .Append(']')
+            .ToString();
     }
 }
