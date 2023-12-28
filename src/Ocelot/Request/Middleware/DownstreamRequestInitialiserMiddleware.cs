@@ -12,7 +12,8 @@ public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
     private readonly IRequestMapper _requestMapper;
     private readonly IDownstreamRequestCreator _creator;
 
-    public DownstreamRequestInitialiserMiddleware(RequestDelegate next,
+    public DownstreamRequestInitialiserMiddleware(
+        RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
         IRequestMapper requestMapper,
         IDownstreamRequestCreator creator)
@@ -22,6 +23,8 @@ public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
         _requestMapper = requestMapper;
         _creator = creator;
     }
+
+    protected override string MiddlewareName => nameof(DownstreamRequestInitialiserMiddleware);
 
     public async Task Invoke(HttpContext httpContext)
     {

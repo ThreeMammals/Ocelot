@@ -10,14 +10,17 @@ namespace Ocelot.Requester.Middleware
         private readonly RequestDelegate _next;
         private readonly IHttpRequester _requester;
 
-        public HttpRequesterMiddleware(RequestDelegate next,
+        public HttpRequesterMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpRequester requester)
-                : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>())
+            : base(loggerFactory.CreateLogger<HttpRequesterMiddleware>())
         {
             _next = next;
             _requester = requester;
         }
+
+        protected override string MiddlewareName => nameof(HttpRequesterMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

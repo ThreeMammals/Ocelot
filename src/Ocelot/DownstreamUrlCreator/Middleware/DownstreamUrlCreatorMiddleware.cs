@@ -24,11 +24,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IDownstreamPathPlaceholderReplacer replacer)
-                : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
+            : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
             _replacer = replacer;
         }
+
+        protected override string MiddlewareName => nameof(DownstreamUrlCreatorMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

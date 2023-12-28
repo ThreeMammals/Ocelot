@@ -10,11 +10,15 @@ namespace Ocelot.Authentication.Middleware
     {
         private readonly RequestDelegate _next;
 
-        public AuthenticationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
+        public AuthenticationMiddleware(
+            RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory)
             : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
         }
+
+        protected override string MiddlewareName => nameof(AuthenticationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -25,7 +29,6 @@ namespace Ocelot.Authentication.Middleware
                 Logger.LogInformation(() => $"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
 
                 var result = await AuthenticateAsync(httpContext, downstreamRoute);
-
                 httpContext.User = result.Principal;
 
                 if (httpContext.User.Identity.IsAuthenticated)
@@ -64,9 +67,9 @@ namespace Ocelot.Authentication.Middleware
                 return AuthenticateResult.NoResult();
             }
 
+            AuthenticateResult result = null;
             var keys = options.AuthenticationProviderKeys
                 .Where(apk => !string.IsNullOrWhiteSpace(apk));
-            AuthenticateResult result = null;
             foreach (var authenticationProviderKey in keys)
             {
                 result = await httpContext.AuthenticateAsync(authenticationProviderKey);

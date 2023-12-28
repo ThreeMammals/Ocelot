@@ -9,15 +9,17 @@ namespace Ocelot.Security.Middleware
         private readonly RequestDelegate _next;
         private readonly IEnumerable<ISecurityPolicy> _securityPolicies;
 
-        public SecurityMiddleware(RequestDelegate next,
+        public SecurityMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IEnumerable<ISecurityPolicy> securityPolicies
-            )
+            IEnumerable<ISecurityPolicy> securityPolicies)
             : base(loggerFactory.CreateLogger<SecurityMiddleware>())
         {
             _securityPolicies = securityPolicies;
             _next = next;
         }
+
+        protected override string MiddlewareName => nameof(SecurityMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

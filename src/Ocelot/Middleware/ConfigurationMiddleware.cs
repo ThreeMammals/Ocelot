@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Repository;
-using Ocelot.Errors.Middleware;
 using Ocelot.Logging;
 
 namespace Ocelot.Middleware
@@ -10,12 +9,17 @@ namespace Ocelot.Middleware
         private readonly RequestDelegate _next;
         private readonly IInternalConfigurationRepository _configRepo;
 
-        public ConfigurationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IInternalConfigurationRepository configRepo)
-            : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
+        public ConfigurationMiddleware(
+            RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
+            IInternalConfigurationRepository configRepo)
+            : base(loggerFactory.CreateLogger<ConfigurationMiddleware>())
         {
             _next = next;
             _configRepo = configRepo;
         }
+
+        protected override string MiddlewareName => nameof(ConfigurationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

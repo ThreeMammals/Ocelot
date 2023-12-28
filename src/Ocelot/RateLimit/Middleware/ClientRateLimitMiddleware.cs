@@ -10,14 +10,17 @@ namespace Ocelot.RateLimit.Middleware
         private readonly RequestDelegate _next;
         private readonly ClientRateLimitProcessor _processor;
 
-        public ClientRateLimitMiddleware(RequestDelegate next,
+        public ClientRateLimitMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRateLimitCounterHandler counterHandler)
-                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
+            : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
             _processor = new ClientRateLimitProcessor(counterHandler);
         }
+
+        protected override string MiddlewareName => nameof(ClientRateLimitMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

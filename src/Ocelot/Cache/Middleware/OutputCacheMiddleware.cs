@@ -10,7 +10,8 @@ namespace Ocelot.Cache.Middleware
         private readonly IOcelotCache<CachedResponse> _outputCache;
         private readonly ICacheKeyGenerator _cacheGenerator;
 
-        public OutputCacheMiddleware(RequestDelegate next,
+        public OutputCacheMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IOcelotCache<CachedResponse> outputCache,
             ICacheKeyGenerator cacheGenerator)
@@ -20,6 +21,8 @@ namespace Ocelot.Cache.Middleware
             _outputCache = outputCache;
             _cacheGenerator = cacheGenerator;
         }
+
+        protected override string MiddlewareName => nameof(OutputCacheMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
