@@ -134,12 +134,7 @@ public class PollyQoSProviderTests
         Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
 
-#if NET8_0_OR_GREATER
     private async Task should_throw_and_before_delay_should_not_allow_requests()
-#else
-    [Fact]
-    public async Task should_throw_and_before_delay_should_not_allow_requests()
-#endif
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
