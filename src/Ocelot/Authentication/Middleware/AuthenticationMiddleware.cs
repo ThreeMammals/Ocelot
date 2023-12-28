@@ -22,39 +22,38 @@ namespace Ocelot.Authentication.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
+            var request = httpContext.Request;
+            var path = httpContext.Request.Path;
             var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-            if (httpContext.Request.Method.ToUpper() != "OPTIONS" && downstreamRoute.IsAuthenticated)
+            if (!request.Method.Equals("OPTIONS", StringComparison.InvariantCultureIgnoreCase) && downstreamRoute.IsAuthenticated)
             {
-                Logger.LogInformation(() => $"{httpContext.Request.Path} is an authenticated route. {MiddlewareName} checking if client is authenticated");
+                Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
 
                 var result = await AuthenticateAsync(httpContext, downstreamRoute);
                 httpContext.User = result.Principal;
+                var identity = httpContext.User.Identity;
 
-                if (httpContext.User.Identity.IsAuthenticated)
+                if (identity.IsAuthenticated)
                 {
-                    Logger.LogInformation(() => $"Client has been authenticated for {httpContext.Request.Path}");
+                    Logger.LogInformation(() => $"Client has been authenticated for path '{path}'.");
                     await _next.Invoke(httpContext);
                 }
                 else
                 {
-                    var error = new UnauthenticatedError(
-                        $"Request for authenticated route {httpContext.Request.Path} by {httpContext.User.Identity.Name} was unauthenticated");
-
-                    Logger.LogWarning(() => $"Client has NOT been authenticated for {httpContext.Request.Path} and pipeline error set. {error}");
-
+                    var error = new UnauthenticatedError($"Request for authenticated route '{path}' by {identity.Name} was unauthenticated!");
+                    Logger.LogWarning(() => $"Client has NOT been authenticated for {path} and pipeline error set. {error};");
                     httpContext.Items.SetError(error);
                 }
             }
             else
             {
-                Logger.LogInformation(() => $"No authentication needed for {httpContext.Request.Path}");
-
+                Logger.LogInformation(() => $"No authentication needed for path '{path}'.");
                 await _next.Invoke(httpContext);
             }
         }
 
-        private static async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
+        private async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
         {
             var options = route.AuthenticationOptions;
             if (!string.IsNullOrWhiteSpace(options.AuthenticationProviderKey))
@@ -62,15 +61,15 @@ namespace Ocelot.Authentication.Middleware
                 return await httpContext.AuthenticateAsync(options.AuthenticationProviderKey);
             }
 
-            if (options.AuthenticationProviderKeys.Length == 0)
+            var providerKeys = options.AuthenticationProviderKeys;
+            if (providerKeys.Length == 0 || providerKeys.All(string.IsNullOrWhiteSpace))
             {
+                Logger.LogWarning(() => $"Impossible to authenticate client for path '{route.DownstreamPathTemplate}': both {nameof(options.AuthenticationProviderKey)} and {nameof(options.AuthenticationProviderKeys)} are empty but the {nameof(Configuration.AuthenticationOptions)} have defined.");
                 return AuthenticateResult.NoResult();
             }
 
             AuthenticateResult result = null;
-            var keys = options.AuthenticationProviderKeys
-                .Where(apk => !string.IsNullOrWhiteSpace(apk));
-            foreach (var authenticationProviderKey in keys)
+            foreach (var authenticationProviderKey in providerKeys.Where(apk => !string.IsNullOrWhiteSpace(apk)))
             {
                 result = await httpContext.AuthenticateAsync(authenticationProviderKey);
                 if (result.Succeeded)
