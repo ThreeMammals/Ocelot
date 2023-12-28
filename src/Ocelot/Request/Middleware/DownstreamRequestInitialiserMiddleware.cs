@@ -24,7 +24,7 @@ public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
         _creator = creator;
     }
 
-    protected override string MiddlewareName => nameof(DownstreamRequestInitialiserMiddleware);
+    public override string MiddlewareName => nameof(DownstreamRequestInitialiserMiddleware);
 
     public async Task Invoke(HttpContext httpContext)
     {

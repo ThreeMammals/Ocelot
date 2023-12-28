@@ -18,7 +18,7 @@ namespace Ocelot.Authentication.Middleware
             _next = next;
         }
 
-        protected override string MiddlewareName => nameof(AuthenticationMiddleware);
+        public override string MiddlewareName => nameof(AuthenticationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

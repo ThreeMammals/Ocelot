@@ -10,5 +10,5 @@ public abstract class OcelotMiddleware
     }
 
     public IOcelotLogger Logger { get; }
-    protected abstract string MiddlewareName { get; }
+    public abstract string MiddlewareName { get; }
 }

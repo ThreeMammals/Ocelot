@@ -20,7 +20,7 @@ namespace Ocelot.DownstreamPathManipulation.Middleware
             _changeDownstreamPathTemplate = changeDownstreamPathTemplate;
         }
 
-        protected override string MiddlewareName => nameof(ClaimsToDownstreamPathMiddleware);
+        public override string MiddlewareName => nameof(ClaimsToDownstreamPathMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

@@ -20,7 +20,7 @@ namespace Ocelot.Requester.Middleware
             _requester = requester;
         }
 
-        protected override string MiddlewareName => nameof(HttpRequesterMiddleware);
+        public override string MiddlewareName => nameof(HttpRequesterMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

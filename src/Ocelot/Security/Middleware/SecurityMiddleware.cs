@@ -19,7 +19,7 @@ namespace Ocelot.Security.Middleware
             _next = next;
         }
 
-        protected override string MiddlewareName => nameof(SecurityMiddleware);
+        public override string MiddlewareName => nameof(SecurityMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

@@ -22,7 +22,7 @@ namespace Ocelot.Cache.Middleware
             _cacheGenerator = cacheGenerator;
         }
 
-        protected override string MiddlewareName => nameof(OutputCacheMiddleware);
+        public override string MiddlewareName => nameof(OutputCacheMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

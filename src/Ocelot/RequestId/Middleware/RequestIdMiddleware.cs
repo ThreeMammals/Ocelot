@@ -26,7 +26,7 @@ namespace Ocelot.RequestId.Middleware
             _requestScopedDataRepository = requestScopedDataRepository;
         }
 
-        protected override string MiddlewareName => nameof(RequestIdMiddleware);
+        public override string MiddlewareName => nameof(RequestIdMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

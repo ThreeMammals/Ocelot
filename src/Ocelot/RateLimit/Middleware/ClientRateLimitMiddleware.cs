@@ -20,7 +20,7 @@ namespace Ocelot.RateLimit.Middleware
             _processor = new ClientRateLimitProcessor(counterHandler);
         }
 
-        protected override string MiddlewareName => nameof(ClientRateLimitMiddleware);
+        public override string MiddlewareName => nameof(ClientRateLimitMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

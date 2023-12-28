@@ -21,7 +21,7 @@ namespace Ocelot.Multiplexer
             _next = next;
         }
 
-        protected override string MiddlewareName => nameof(MultiplexingMiddleware);
+        public override string MiddlewareName => nameof(MultiplexingMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

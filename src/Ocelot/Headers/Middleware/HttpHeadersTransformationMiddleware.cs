@@ -28,7 +28,7 @@ namespace Ocelot.Headers.Middleware
             _preReplacer = preReplacer;
         }
 
-        protected override string MiddlewareName => nameof(HttpHeadersTransformationMiddleware);
+        public override string MiddlewareName => nameof(HttpHeadersTransformationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

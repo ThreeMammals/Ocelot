@@ -20,7 +20,7 @@ namespace Ocelot.LoadBalancer.Middleware
             _loadBalancerHouse = loadBalancerHouse;
         }
 
-        protected override string MiddlewareName => nameof(LoadBalancingMiddleware);
+        public override string MiddlewareName => nameof(LoadBalancingMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
