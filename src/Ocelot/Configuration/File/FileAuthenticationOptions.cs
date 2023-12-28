@@ -20,12 +20,9 @@
         public string[] AuthenticationProviderKeys { get; set; }
 
         public override string ToString() => new StringBuilder()
-            .Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AuthenticationProviderKeys)}:[")
-            .AppendJoin(',', AuthenticationProviderKeys)
-            .Append("],")
-            .Append($"{nameof(AllowedScopes)}:[")
-            .AppendJoin(',', AllowedScopes)
-            .Append(']')
-            .ToString();
+             .Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},")
+             .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys)}],")
+             .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes)}]")
+             .ToString();
     }
 }
