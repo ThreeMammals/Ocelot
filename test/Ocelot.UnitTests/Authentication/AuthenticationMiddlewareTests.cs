@@ -35,6 +35,30 @@ namespace Ocelot.UnitTests.Authentication
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<AuthenticationMiddleware>()).Returns(_logger.Object);
+            _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+                .Callback<Func<string>>(f => _logWarningMessages.Add(f.Invoke()));
+        }
+
+        [Fact]
+        public void MiddlewareName_Cstor_ReturnsTypeName()
+        {
+            // Arrange
+            var isNextCalled = false;
+            _next = (context) =>
+            {
+                isNextCalled = true;
+                return Task.CompletedTask;
+            };
+            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
+            var expected = _middleware.GetType().Name;
+
+            // Act
+            var actual = _middleware.MiddlewareName;
+
+            // Assert
+            Assert.False(isNextCalled);
+            Assert.NotNull(actual);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -66,16 +90,15 @@ namespace Ocelot.UnitTests.Authentication
                 .BDDfy();
         }
 
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        [Theory]
-        public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isAuthenticationProviderKeys)
+        public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isMultipleKeys)
         {
-            var keys = new string[] { string.Empty, "Test" };
-            var options = new AuthenticationOptions(
-                null,
-                !isAuthenticationProviderKeys ? "Test" : null,
-                isAuthenticationProviderKeys ? keys : null
+            var multipleKeys = new string[] { string.Empty, "Fail", "Test" };
+            var options = new AuthenticationOptions(null,
+                !isMultipleKeys ? "Test" : null,
+                isMultipleKeys ? multipleKeys : null
             );
             var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
@@ -84,7 +107,7 @@ namespace Ocelot.UnitTests.Authentication
                     .WithUpstreamHttpMethod(methods)
                     .Build()
                 ))
-                .And(x => GivenTheRequestIsUsingGetMethod())
+                .And(x => GivenTheRequestIsUsingMethod(methods.First()))
                 .And(x => GivenTheAuthenticationIsFail())
                 .And(x => GivenTheAuthenticationIsSuccess())
                 .And(x => GivenTheAuthenticationThrowsException())
@@ -94,12 +117,11 @@ namespace Ocelot.UnitTests.Authentication
         }
 
         [Fact]
-        public void Should_not_call_next_middleware_if_route_is_using_several_options_authentication_providers()
+        public void Should_provide_backward_compatibility_if_route_has_several_options_authentication_providers()
         {
-            var options = new AuthenticationOptions(
-                null,
+            var options = new AuthenticationOptions(null,
                 "Test",
-                ["Test #1", string.Empty]
+                [string.Empty, "Fail", "Test"]
             );
             var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
@@ -108,18 +130,78 @@ namespace Ocelot.UnitTests.Authentication
                     .WithUpstreamHttpMethod(methods)
                     .Build()
                 ))
-                .And(x => GivenTheRequestIsUsingGetMethod())
+                .And(x => GivenTheRequestIsUsingMethod(methods.First()))
                 .And(x => GivenTheAuthenticationIsFail())
+                .And(x => GivenTheAuthenticationIsSuccess())
                 .And(x => GivenTheAuthenticationThrowsException())
+                .When(x => WhenICallTheMiddleware())
+                .Then(x => ThenTheUserIsAuthenticated())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
+        {
+            var options = new AuthenticationOptions(null, null,
+                [string.Empty, "Fail", "Fail", "UnknownScheme"]
+            );
+            var methods = new List<string> { "Get" };
+
+            this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+                    .WithAuthenticationOptions(options)
+                    .WithIsAuthenticated(true)
+                    .WithUpstreamHttpMethod(methods)
+                    .Build()
+                ))
+                .And(x => GivenTheRequestIsUsingMethod(methods.First()))
+                .And(x => GivenTheAuthenticationIsFail())
+                .And(x => GivenTheAuthenticationIsSuccess())
                 .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheUserIsNotAuthenticated())
                 .BDDfy();
+            _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
+            _logWarningMessages.Count.ShouldBe(1);
+            _logWarningMessages.First().ShouldStartWith("Client has NOT been authenticated for path");
+            _httpContext.Items.Errors().First().ShouldBeOfType(typeof(UnauthenticatedError));
         }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        public void Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty(int keysCount)
+        {
+            var emptyKeys = new string[keysCount];
+            for (int i = 0; i < emptyKeys.Length; i++)
+            {
+                emptyKeys[i] = i % 2 == 0 ? null : string.Empty;
+            }
+
+            var optionsWithEmptyKeys = new AuthenticationOptions(null, string.Empty, emptyKeys);
+            var methods = new List<string> { "Get" };
+            var route = new DownstreamRouteBuilder()
+                .WithAuthenticationOptions(optionsWithEmptyKeys)
+                .WithIsAuthenticated(true)
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamPathTemplate("/" + nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty))
+                .Build();
+            this.Given(x => GivenTheDownStreamRouteIs(route))
+                .And(x => GivenTheRequestIsUsingMethod(methods.First()))
+                .When(x => WhenICallTheMiddleware())
+                .Then(x => ThenTheUserIsNotAuthenticated())
+                .BDDfy();
+            _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
+            _logWarningMessages.Count.ShouldBe(2);
+            _logWarningMessages[0].ShouldStartWith($"Impossible to authenticate client for path '/{nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty)}':");
+            _logWarningMessages[1].ShouldStartWith("Client has NOT been authenticated for path");
+            _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(1);
+        }
+
+        private List<string> _logWarningMessages = new();
 
         private void GivenTheAuthenticationIsFail()
         {
             _authentication
-                .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.Is<string>(s => s.Equals("Fail"))))
                 .Returns(Task.FromResult(AuthenticateResult.Fail("The user is not authenticated.")));
         }
 
@@ -135,37 +217,16 @@ namespace Ocelot.UnitTests.Authentication
                 .Returns(Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal.Object, "Test"))));
         }
 
-        private async void GivenTheAuthenticationThrowsException()
+        private void GivenTheAuthenticationThrowsException()
         {
             _authentication
                 .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.Is<string>(s => string.Empty.Equals(s))))
                 .Throws(new InvalidOperationException("Authentication provider key is empty."));
-            _next = (context) =>
-            {
-                var byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
-                var stream = new MemoryStream(byteArray);
-                _httpContext.Response.Body = stream;
-                return Task.CompletedTask;
-            };
-            _middleware = new AuthenticationMiddleware(_next, _factory.Object);
-            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)
         {
             _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
-        }
-
-        private void GivenTheRequestIsUsingGetMethod()
-        {
-            _httpContext.Request.Method = "GET";
-            _next = (context) =>
-            {
-                var byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
-                var stream = new MemoryStream(byteArray);
-                _httpContext.Response.Body = stream;
-                return Task.CompletedTask;
-            };
         }
 
         private void GivenTheRequestIsUsingMethod(string method)
@@ -176,7 +237,6 @@ namespace Ocelot.UnitTests.Authentication
         private void ThenTheUserIsAuthenticated()
         {
             var content = _httpContext.Response.Body.AsString();
-
             content.ShouldBe("The user is authenticated");
         }
 

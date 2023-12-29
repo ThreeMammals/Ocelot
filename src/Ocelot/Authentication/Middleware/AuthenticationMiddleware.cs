@@ -36,13 +36,13 @@ namespace Ocelot.Authentication.Middleware
 
                 if (identity.IsAuthenticated)
                 {
-                    Logger.LogInformation(() => $"Client has been authenticated for path '{path}'.");
+                    Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{identity.AuthenticationType}' scheme.");
                     await _next.Invoke(httpContext);
                 }
                 else
                 {
-                    var error = new UnauthenticatedError($"Request for authenticated route '{path}' by {identity.Name} was unauthenticated!");
-                    Logger.LogWarning(() => $"Client has NOT been authenticated for {path} and pipeline error set. {error};");
+                    var error = new UnauthenticatedError($"Request for authenticated route '{path}' by '{identity.Name}' was unauthenticated!");
+                    Logger.LogWarning(() => $"Client has NOT been authenticated for path '{path}' and pipeline error set. {error};");
                     httpContext.Items.SetError(error);
                 }
             }
@@ -72,7 +72,7 @@ namespace Ocelot.Authentication.Middleware
             foreach (var authenticationProviderKey in providerKeys.Where(apk => !string.IsNullOrWhiteSpace(apk)))
             {
                 result = await httpContext.AuthenticateAsync(authenticationProviderKey);
-                if (result.Succeeded)
+                if (result?.Succeeded == true)
                 {
                     return result;
                 }
