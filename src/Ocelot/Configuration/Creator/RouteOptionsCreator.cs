@@ -7,7 +7,12 @@ namespace Ocelot.Configuration.Creator
     {
         public RouteOptions Create(FileRoute fileRoute)
         {
-            var authOpts = fileRoute?.AuthenticationOptions;
+            if (fileRoute == null)
+            {
+                return new RouteOptionsBuilder().Build();
+            }
+
+            var authOpts = fileRoute.AuthenticationOptions;
             var isAuthenticated = authOpts != null
                 && (!string.IsNullOrEmpty(authOpts.AuthenticationProviderKey)
                     || authOpts.AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true);
