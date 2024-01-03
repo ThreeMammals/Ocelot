@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Authentication
 {
     public class AuthenticationTests : IDisposable
     {
