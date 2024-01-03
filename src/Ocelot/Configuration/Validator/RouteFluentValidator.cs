@@ -107,7 +107,7 @@ namespace Ocelot.Configuration.Validator
                 return false;
             }
 
-            var period = rateLimitOptions.Period;
+            var period = rateLimitOptions.Period.Trim();
 
             var secondsRegEx = new Regex("^[0-9]+s");
             var minutesRegEx = new Regex("^[0-9]+m");
@@ -115,9 +115,9 @@ namespace Ocelot.Configuration.Validator
             var daysRegEx = new Regex("^[0-9]+d");
 
             return secondsRegEx.Match(period).Success
-                   || minutesRegEx.Match(period).Success
-                   || hoursRegEx.Match(period).Success
-                   || daysRegEx.Match(period).Success;
+                || minutesRegEx.Match(period).Success
+                || hoursRegEx.Match(period).Success
+                || daysRegEx.Match(period).Success;
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
@@ -190,6 +191,31 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .Then(_ => ThenTheResultIsInvalid())
                 .And(_ => ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
                 .BDDfy();
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("1s", true)]
+        [InlineData("2m", true)]
+        [InlineData("3h", true)]
+        [InlineData("4d", true)]
+        [InlineData("123", false)]
+        [InlineData("-123", false)]
+        [InlineData("bad", false)]
+        [InlineData(" 3s ", true)]
+        [InlineData(" -3s ", false)]
+        public void IsValidPeriod_ReflectionLifeHack_BranchesAreCovered(string period, bool expected)
+        {
+            // Arrange
+            var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
+            var argument = new FileRateLimitRule { Period = period };
+
+            // Act
+            bool actual = (bool)method.Invoke(_validator, new object[] { argument });
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
