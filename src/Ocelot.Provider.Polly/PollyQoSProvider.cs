@@ -1,19 +1,23 @@
+﻿using System.Net;
+
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
+
 using Polly.CircuitBreaker;
 using Polly.Timeout;
-using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
+[Obsolete("Due to new v8 policy definition in Polloy 8 (use PollyQoSResiliencePipelineProvider)")]
 public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
 {
     private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
+
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
-    private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
+    private static readonly HashSet<HttpStatusCode> ServerErrorCodes = new()
     {
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
@@ -36,6 +40,8 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
             ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
             : route.ServiceName;
 
+
+    [Obsolete("Due to new v8 policy definition in Polloy 8 (use GetResiliencePipeline in PollyQoSResiliencePipelineProvider)")]
     public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
     {
         lock (_lockObject)
@@ -58,7 +64,7 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
             var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
 
             exceptionsAllowedBeforeBreakingPolicy = Policy
-                .HandleResult<HttpResponseMessage>(r => _serverErrorCodes.Contains(r.StatusCode))
+                .HandleResult<HttpResponseMessage>(r => ServerErrorCodes.Contains(r.StatusCode))
                 .Or<TimeoutRejectedException>()
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
@@ -70,7 +76,7 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
 
         var timeoutPolicy = Policy
             .TimeoutAsync<HttpResponseMessage>(
-                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
+                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue),
                 TimeoutStrategy.Pessimistic);
 
         return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);
