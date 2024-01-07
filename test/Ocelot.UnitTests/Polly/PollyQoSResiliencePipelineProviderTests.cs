@@ -24,33 +24,33 @@ namespace Ocelot.UnitTests.Polly
                 .WithQosOptions(options)
                 .Build();
 
-            var factory = new Mock<IOcelotLoggerFactory>();
-            var pollyQoSProvider = new PollyQoSResiliencePipelineProvider(factory.Object);
-            var policy = pollyQoSProvider.GetResiliencePipeline(route).ShouldNotBeNull();
-            policy.ShouldNotBeNull();
+            var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
+            resiliencePipeline.ShouldNotBeNull();
         }
 
         [Fact]
         public void should_return_same_circuit_breaker_for_given_route()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
             var route1 = DownstreamRouteFactory("/");
             var route2 = DownstreamRouteFactory("/");
 
-            var pollyPolicy1 = pollyQosProvider.GetResiliencePipeline(route1);
-            var pollyPolicy2 = pollyQosProvider.GetResiliencePipeline(route2);
-            pollyPolicy1.ShouldBe(pollyPolicy2);
+            var resiliencePipeline1 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route1);
+            var resiliencePipeline2 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route2);
+            resiliencePipeline1.ShouldBe(resiliencePipeline2);
         }
 
         [Fact]
         public void should_return_different_circuit_breaker_for_two_different_routes()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
             var route1 = DownstreamRouteFactory("/");
             var route2 = DownstreamRouteFactory("/test");
 
-            var resiliencePipeline1 = pollyQosProvider.GetResiliencePipeline(route1);
-            var resiliencePipeline2 = pollyQosProvider.GetResiliencePipeline(route2);
+            var resiliencePipeline1 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route1);
+            var resiliencePipeline2 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route2);
 
             resiliencePipeline1.ShouldNotBe(resiliencePipeline2);
         }
@@ -58,10 +58,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public void should_build_and_wrap_contains_two_policies()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
             resiliencePipeline.ShouldNotBeNull();
 
             var resiliencePipelineDescriptor = resiliencePipeline.GetPipelineDescriptor();
@@ -74,10 +74,11 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public void should_build_and_contains_one_policy_when_with_exceptions_allowed_before_breaking_is_zero()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
+
             // get route with 0 exceptions allowed before breaking
             var route = DownstreamRouteFactory("/", true);
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
             resiliencePipeline.ShouldNotBeNull();
 
             var resiliencePipelineDescriptor = resiliencePipeline.GetPipelineDescriptor();
@@ -98,10 +99,10 @@ namespace Ocelot.UnitTests.Polly
         [InlineData(HttpStatusCode.LoopDetected)]
         public async Task should_throw_broken_circuit_exception_after_two_exceptions(HttpStatusCode errorCode)
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(errorCode);
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
@@ -113,10 +114,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public async Task should_not_throw_broken_circuit_exception_if_status_code_ok()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
             Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
@@ -127,10 +128,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public async Task should_throw_and_before_delay_should_not_allow_requests()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
@@ -147,10 +148,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
@@ -166,10 +167,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error_and_throw()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
@@ -187,10 +188,10 @@ namespace Ocelot.UnitTests.Polly
         [Fact]
         public async Task should_throw_but_after_delay_should_allow_one_more_ok_request_and_put_counter_back_to_zero()
         {
-            var pollyQosProvider = PollyQoSResiliencePipelineProviderFactory();
+            var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
 
             var route = DownstreamRouteFactory("/");
-            var resiliencePipeline = pollyQosProvider.GetResiliencePipeline(route);
+            var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
             var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
@@ -210,12 +211,12 @@ namespace Ocelot.UnitTests.Polly
 
         private static PollyQoSResiliencePipelineProvider PollyQoSResiliencePipelineProviderFactory()
         {
-            var factory = new Mock<IOcelotLoggerFactory>();
-            factory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
+            var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+            loggerFactoryMock.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
                 .Returns(new Mock<IOcelotLogger>().Object);
 
-            var pollyQoSProvider = new PollyQoSResiliencePipelineProvider(factory.Object);
-            return pollyQoSProvider;
+            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object);
+            return pollyQoSResiliencePipelineProvider;
         }
 
         private static DownstreamRoute DownstreamRouteFactory(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false)
@@ -230,11 +231,13 @@ namespace Ocelot.UnitTests.Polly
                 .WithTemplate(routeTemplate)
                 .WithContainsQueryString(false)
                 .WithPriority(1)
-                .WithOriginalValue(routeTemplate).Build();
+                .WithOriginalValue(routeTemplate)
+                .Build();
 
             var route = new DownstreamRouteBuilder()
                 .WithQosOptions(options)
-                .WithUpstreamPathTemplate(upstreamPath).Build();
+                .WithUpstreamPathTemplate(upstreamPath)
+                .Build();
 
             return route;
         }
