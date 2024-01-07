@@ -12,13 +12,13 @@ namespace Ocelot.UnitTests.Polly;
 
 public class PollyPoliciesDelegatingHandlerTests
 {
-    private readonly Mock<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>> _pollyQoSResiliencePipelineProviderMock;
+    private readonly Mock<IPollyQoSProvider<HttpResponseMessage>> _pollyQoSProviderMock;
     private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
     private readonly PollyPoliciesDelegatingHandler _sut;
 
     public PollyPoliciesDelegatingHandlerTests()
     {
-        this._pollyQoSResiliencePipelineProviderMock = new Mock<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>>();
+        _pollyQoSProviderMock = new Mock<IPollyQoSProvider<HttpResponseMessage>>();
 
         var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
         var loggerMock = new Mock<IOcelotLogger>();
@@ -39,21 +39,17 @@ public class PollyPoliciesDelegatingHandlerTests
         fakeResponse.Headers.Add("X-Xunit", nameof(SendAsync_OnePolicy_NoWrapping));
 
         MethodInfo method = null;
-        var resiliencePipeline = new Mock<ResiliencePipeline<HttpResponseMessage>>();
-        resiliencePipeline.Setup(x => x.ExecuteAsync(It.IsAny<Func<CancellationToken, ValueTask<HttpResponseMessage>>>(),CancellationToken.None))
-            .Callback((Func<Context, CancellationToken, Task<HttpResponseMessage>> action) =>
-            {
-                method = action.Method;
-            })
+        var onePolicy = new Mock<IAsyncPolicy<HttpResponseMessage>>();
+        onePolicy.Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<HttpResponseMessage>>>()))
+            .Callback((IInvocation x) => method = x.Method)
             .ReturnsAsync(fakeResponse);
 
-        this._pollyQoSResiliencePipelineProviderMock.Setup(x => x.GetResiliencePipeline(It.IsAny<DownstreamRoute>()))
-            .Returns(resiliencePipeline.Object);
+        _pollyQoSProviderMock.Setup(x => x.GetPollyPolicyWrapper(It.IsAny<DownstreamRoute>()))
+            .Returns(new PollyPolicyWrapper<HttpResponseMessage>(onePolicy.Object));
 
-     
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider<HttpResponseMessage>)))
-            .Returns(this._pollyQoSResiliencePipelineProviderMock.Object);
+            .Returns(_pollyQoSProviderMock.Object);
 
         _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
 
@@ -66,38 +62,36 @@ public class PollyPoliciesDelegatingHandlerTests
         method.DeclaringType.ShouldNotBeOfType<AsyncPolicyWrap>();
     }
 
+    [Fact]
+    public async void SendAsync_TwoPolicies_HaveWrapped()
+    {
+        // Arrange
+        var fakeResponse = new HttpResponseMessage(HttpStatusCode.NoContent);
+        fakeResponse.Headers.Add("X-Xunit", nameof(SendAsync_TwoPolicies_HaveWrapped));
 
-    // deprecated because there is no more wrapping policies in polly 8
-    //[Fact]
-    //public async void SendAsync_TwoPolicies_HaveWrapped()
-    //{
-    //    // Arrange
-    //    var fakeResponse = new HttpResponseMessage(HttpStatusCode.NoContent);
-    //    fakeResponse.Headers.Add("X-Xunit", nameof(SendAsync_TwoPolicies_HaveWrapped));
+        var policy1 = new FakeAsyncPolicy<HttpResponseMessage>("Policy1", fakeResponse);
+        var policy2 = new FakeAsyncPolicy<HttpResponseMessage>("Policy2", fakeResponse)
+        {
+            IsLast = true,
+        };
 
-    //    var policy1 = new FakeAsyncPolicy<HttpResponseMessage>("Policy1", fakeResponse);
-    //    var policy2 = new FakeAsyncPolicy<HttpResponseMessage>("Policy2", fakeResponse)
-    //    {
-    //        IsLast = true,
-    //    };
+        _pollyQoSProviderMock.Setup(x => x.GetPollyPolicyWrapper(It.IsAny<DownstreamRoute>()))
+            .Returns(new PollyPolicyWrapper<HttpResponseMessage>(policy1, policy2));
 
-    //    _pollyQoSProviderMock.Setup(x => x.GetPollyPolicyWrapper(It.IsAny<DownstreamRoute>()))
-    //        .Returns(new PollyPolicyWrapper<HttpResponseMessage>(policy1, policy2));
+        var httpContext = new Mock<HttpContext>();
+        httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider<HttpResponseMessage>)))
+            .Returns(_pollyQoSProviderMock.Object);
 
-    //    var httpContext = new Mock<HttpContext>();
-    //    httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSProvider<HttpResponseMessage>)))
-    //        .Returns(_pollyQoSProviderMock.Object);
+        _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
 
-    //    _contextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext.Object);
+        // Act
+        var actual = await InvokeAsync("SendAsync");
 
-    //    // Act
-    //    var actual = await InvokeAsync("SendAsync");
-
-    //    // Assert
-    //    ShouldHaveXunitHeaderWithNoContent(actual, nameof(SendAsync_TwoPolicies_HaveWrapped));
-    //    ShouldBeWrappedBy(policy1, typeof(AsyncPolicyWrap).FullName);
-    //    ShouldBeWrappedBy(policy2, typeof(AsyncPolicy).FullName);
-    //}
+        // Assert
+        ShouldHaveXunitHeaderWithNoContent(actual, nameof(SendAsync_TwoPolicies_HaveWrapped));
+        ShouldBeWrappedBy(policy1, typeof(AsyncPolicyWrap).FullName);
+        ShouldBeWrappedBy(policy2, typeof(AsyncPolicy).FullName);
+    }
 
     private static DownstreamRoute DownstreamRouteFactory()
     {
