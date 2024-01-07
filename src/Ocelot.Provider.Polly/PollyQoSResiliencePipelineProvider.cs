@@ -31,7 +31,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
+        _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
     }
 
     private static string GetRouteName(DownstreamRoute route)
@@ -85,7 +85,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
                     _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
                         args.Outcome.Exception);
                     return ValueTask.CompletedTask;
-                }
+                },
             };
 
             pipeline = pipeline.AddCircuitBreaker(circuitBreakerStrategyOptions);
