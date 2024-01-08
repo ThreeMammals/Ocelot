@@ -30,7 +30,7 @@ namespace Ocelot.Configuration.Creator
                     //hack to handle /{url} case
                     if (ForwardSlashAndOnePlaceHolder(upstreamTemplate, placeholders, postitionOfPlaceHolderClosingBracket))
                     {
-                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, route.Priority, false, route.UpstreamPathTemplate);
+                        return new UpstreamPathTemplate(RegExForwardSlashAndOnePlaceHolder, route.Priority + int.MinValue, false, route.UpstreamPathTemplate);
                     }
                 }
             }
