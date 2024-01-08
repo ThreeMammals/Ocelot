@@ -9,9 +9,8 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authentication
 {
-    public sealed class AuthenticationTests : IDisposable
+    public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
     {
-        private readonly Steps _steps;
         private IWebHost _identityServerBuilder;
         private readonly string _identityServerRootUrl;
         private readonly Action<IdentityServerAuthenticationOptions> _options;
@@ -20,7 +19,6 @@ namespace Ocelot.AcceptanceTests.Authentication
         public AuthenticationTests()
         {
             _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
             var identityServerPort = PortFinder.GetRandomPort();
             _identityServerRootUrl = $"http://localhost:{identityServerPort}";
             _options = o =>
@@ -41,11 +39,11 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
-               .And(x => _steps.GivenThereIsAConfiguration(configuration))
-               .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-               .And(x => _steps.GivenThePostHasContent("postContent"))
-               .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-               .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+               .And(x => GivenThereIsAConfiguration(configuration))
+               .And(x => GivenOcelotIsRunning(_options, "Test"))
+               .And(x => GivenThePostHasContent("postContent"))
+               .When(x => WhenIPostUrlOnTheApiGateway("/"))
+               .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
                .BDDfy();
         }
 
@@ -57,13 +55,13 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => GivenIHaveAToken(_identityServerRootUrl))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "Test"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -75,12 +73,12 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 200, "Hello from Laura"))
-                .And(x => _steps.GivenIHaveATokenForApi2(_identityServerRootUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+                .And(x => GivenIHaveATokenForApi2(_identityServerRootUrl))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "Test"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
                 .BDDfy();
         }
 
@@ -92,13 +90,13 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
-                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+                .And(x => GivenIHaveAToken(_identityServerRootUrl))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "Test"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .And(x => GivenThePostHasContent("postContent"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
 
@@ -110,13 +108,13 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
-                .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-                .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+                .And(x => GivenIHaveAToken(_identityServerRootUrl))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "Test"))
+                .And(x => GivenIHaveAddedATokenToMyRequest())
+                .And(x => GivenThePostHasContent("postContent"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
 
@@ -141,7 +139,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 {
                     services.AddLogging();
                     services.AddIdentityServer()
-                    .AddDeveloperSigningCredential()
+                        .AddDeveloperSigningCredential()
                         .AddInMemoryApiScopes(new List<ApiScope>
                         {
                             new(apiName, "test"),
@@ -164,10 +162,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                                 },
                                 ApiSecrets = new List<Secret>
                                 {
-                                    new()
-                                    {
-                                        Value = "secret".Sha256(),
-                                    },
+                                    new("secret".Sha256()),
                                 },
                                 UserClaims = new List<string>
                                 {
@@ -187,10 +182,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                                 },
                                 ApiSecrets = new List<Secret>
                                 {
-                                    new()
-                                    {
-                                        Value = "secret".Sha256(),
-                                    },
+                                    new("secret".Sha256()),
                                 },
                                 UserClaims = new List<string>
                                 {
@@ -204,7 +196,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                             {
                                 ClientId = "client",
                                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                                ClientSecrets = new List<Secret> {new("secret".Sha256())},
+                                ClientSecrets = new List<Secret> { new("secret".Sha256()) },
                                 AllowedScopes = new List<string> { apiName, api2Name, "api.readOnly", "openid", "offline_access" },
                                 AccessTokenType = tokenType,
                                 Enabled = true,
@@ -234,7 +226,7 @@ namespace Ocelot.AcceptanceTests.Authentication
 
             _identityServerBuilder.Start();
 
-            Steps.VerifyIdentityServerStarted(url);
+            VerifyIdentityServerStarted(url);
         }
 
         private static FileRoute GivenDefaultRoute(int port, string upstreamHttpMethod = null) => new()
@@ -262,11 +254,11 @@ namespace Ocelot.AcceptanceTests.Authentication
 
         private static string DownstreamServiceUrl(int port) => string.Concat("http://localhost:", port);
 
-        public void Dispose()
+        public override void Dispose()
         {
             _serviceHandler.Dispose();
-            _steps.Dispose();
             _identityServerBuilder?.Dispose();
+            base.Dispose();
         }
     }
 }

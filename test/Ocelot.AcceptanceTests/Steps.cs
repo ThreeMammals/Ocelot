@@ -1231,7 +1231,7 @@ public class Steps : IDisposable
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.
     /// </summary>
-    public void Dispose()
+    public virtual void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
