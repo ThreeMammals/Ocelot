@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^(?i)/orders/.+$"))
-                .And(x => ThenThePriorityIs(0))
+                .And(x => ThenThePriorityIs(0 + int.MinValue))
                 .BDDfy();
         }
 
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
-                .And(x => ThenThePriorityIs(0))
+                .And(x => ThenThePriorityIs(0 + int.MinValue))
                 .BDDfy();
         }
 
@@ -185,7 +185,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
                 .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
-                .And(x => ThenThePriorityIs(0))
+                .And(x => ThenThePriorityIs(0 + int.MinValue))
                 .BDDfy();
         }
 
