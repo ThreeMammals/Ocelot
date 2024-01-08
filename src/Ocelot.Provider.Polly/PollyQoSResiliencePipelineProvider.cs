@@ -41,6 +41,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
+        // TODO: use ResiliencePipelineRegistry<TKey>.GetOrAddPipeline, it is thread-safe
+        // do the check if we need pipeline at all before calling GetOrAddPipeline
         lock (_lockObject)
         {
             var currentRouteName = GetRouteName(route);
@@ -74,7 +76,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             {
                 FailureRatio = 0.8,
                 SamplingDuration = TimeSpan.FromSeconds(10),
-                MinimumThroughput = 2, //route.QosOptions.ExceptionsAllowedBeforeBreaking,
+                MinimumThroughput = route.QosOptions.ExceptionsAllowedBeforeBreaking, 
                 BreakDuration = TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
