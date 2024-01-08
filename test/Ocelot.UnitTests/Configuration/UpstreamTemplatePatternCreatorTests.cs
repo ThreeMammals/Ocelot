@@ -179,6 +179,7 @@ namespace Ocelot.UnitTests.Configuration
             var fileRoute = new FileRoute
             {
                 UpstreamPathTemplate = "/{url}",
+                Priority = 0,
             };
 
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
