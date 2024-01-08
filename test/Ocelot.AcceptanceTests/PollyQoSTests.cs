@@ -39,7 +39,7 @@ namespace Ocelot.AcceptanceTests
         public void Should_not_timeout()
         {
             var port = PortFinder.GetRandomPort();
-            var configuration = FileConfigurationFactory(port, new QoSOptions(10, 0, 1000, null), HttpMethods.Post);
+            var configuration = FileConfigurationFactory(port, new QoSOptions(10, 500, 1000, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -54,7 +54,7 @@ namespace Ocelot.AcceptanceTests
         public void Should_timeout()
         {
             var port = PortFinder.GetRandomPort();
-            var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 10, null), HttpMethods.Post);
+            var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -85,12 +85,15 @@ namespace Ocelot.AcceptanceTests
         public void Should_open_circuit_breaker_then_close()
         {
             var port = PortFinder.GetRandomPort();
-            var configuration = FileConfigurationFactory(port, new QoSOptions(1, 500, 1000, null));
+            var configuration = FileConfigurationFactory(port, new QoSOptions(2, 500, 1000, null));
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
                 .Given(x => _steps.GivenThereIsAConfiguration(configuration))
                 .Given(x => _steps.GivenOcelotIsRunningWithPolly())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -111,7 +114,7 @@ namespace Ocelot.AcceptanceTests
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var qos1 = new QoSOptions(1, 1000, 500, null);
+            var qos1 = new QoSOptions(2, 500, 1000, null);
 
             var configuration = FileConfigurationFactory(port1, qos1);
             var route2 = configuration.Routes[0].Clone() as FileRoute;
@@ -125,6 +128,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -173,9 +179,16 @@ namespace Ocelot.AcceptanceTests
             var requestCount = 0;
             _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
-                if (requestCount == 1)
+                if (requestCount == 2)
                 {
-                    await Task.Delay(1000);
+                    // in Polly v8 
+                    // MinimumThroughput (ExceptionsAllowedBeforeBreaking) must be 2 or more
+                    // BreakDuration (DurationOfBreak) must be 500 or more
+                    // Timeout (TimeoutValue) must be 1000 or more
+                    // so we wait for 2.1 seconds to make sure the circuit is open
+                    // DurationOfBreak * ExceptionsAllowedBeforeBreaking + Timeout
+                    // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum
+                    await Task.Delay(2100);
                 }
 
                 requestCount++;
