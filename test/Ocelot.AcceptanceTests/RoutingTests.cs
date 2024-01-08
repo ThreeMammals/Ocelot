@@ -809,6 +809,41 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        public void should_return_correct_downstream_when_omitting_ending_placeholder()
+        {
+            var port = PortFinder.GetRandomPort();
+
+            var configuration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                    {
+                        new()
+                        {
+                            DownstreamPathTemplate = "/downstream/test/{testId}",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new()
+                                {
+                                    Host = "localhost",
+                                    Port = port,
+                                },
+                            },
+                            UpstreamPathTemplate = "/upstream/test/{testId}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                        },
+                    },
+            };
+
+            this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Test Body"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/upstream/test/"))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe("/downstream/test/"))
+                .BDDfy();
+        }
+
+        [Fact]
         public void should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
         {
             var port = PortFinder.GetRandomPort();
