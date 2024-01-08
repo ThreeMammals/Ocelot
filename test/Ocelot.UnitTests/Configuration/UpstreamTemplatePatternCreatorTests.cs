@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.Configuration
             var fileRoute = new FileRoute
             {
                 UpstreamPathTemplate = "/{catchAll}",
-                Priority = 1,
+                Priority = 0,
             };
 
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
