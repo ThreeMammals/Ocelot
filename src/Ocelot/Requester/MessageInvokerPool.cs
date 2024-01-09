@@ -6,7 +6,7 @@ namespace Ocelot.Requester;
 
 public class MessageInvokerPool : IMessageInvokerPool
 {
-    //todo: this should be configurable and available as global config parameter in ocelot.json
+    // TODO This should be configurable and available as global config parameter in ocelot.json
     public const int DefaultRequestTimeoutSeconds = 90;
 
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;
@@ -19,7 +19,6 @@ public class MessageInvokerPool : IMessageInvokerPool
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
 
         ArgumentNullException.ThrowIfNull(loggerFactory);
-
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
     }
 
@@ -28,8 +27,9 @@ public class MessageInvokerPool : IMessageInvokerPool
         // Since the comparison is based on the downstream route object reference,
         // and the QoS Options properties can't be changed after the route is created,
         // we don't need to use the timeout value as part of the cache key.
-        return _handlersPool.GetOrAdd(new MessageInvokerCacheKey(downstreamRoute), cacheKey =>
-            new Lazy<HttpMessageInvoker>(() => CreateMessageInvoker(cacheKey.DownstreamRoute))
+        return _handlersPool.GetOrAdd(
+            new MessageInvokerCacheKey(downstreamRoute),
+            cacheKey => new Lazy<HttpMessageInvoker>(() => CreateMessageInvoker(cacheKey.DownstreamRoute))
         ).Value;
     }
 
@@ -47,9 +47,8 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
-        // Adding timeout handler to the top of the chain
-        // it's standard behavior to throw TimeoutException
-        // after the defined timeout (90 seconds by default)
+        // Adding timeout handler to the top of the chain.
+        // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
         var timeoutHandler = new TimeoutDelegatingHandler(downstreamRoute.QosOptions.TimeoutValue == 0
             ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
             : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue))
@@ -92,14 +91,9 @@ public class MessageInvokerPool : IMessageInvokerPool
         return handler;
     }
 
-    private readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
+    private readonly struct MessageInvokerCacheKey(DownstreamRoute downstreamRoute) : IEquatable<MessageInvokerCacheKey>
     {
-        public DownstreamRoute DownstreamRoute { get; }
-
-        public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
-        {
-            DownstreamRoute = downstreamRoute;
-        }
+        public DownstreamRoute DownstreamRoute { get; } = downstreamRoute;
 
         public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 
@@ -108,14 +102,7 @@ public class MessageInvokerPool : IMessageInvokerPool
 
         public override int GetHashCode() => DownstreamRoute.GetHashCode();
 
-        public static bool operator ==(MessageInvokerCacheKey left, MessageInvokerCacheKey right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(MessageInvokerCacheKey left, MessageInvokerCacheKey right)
-        {
-            return !(left == right);
-        }
+        public static bool operator ==(MessageInvokerCacheKey left, MessageInvokerCacheKey right) => left.Equals(right);
+        public static bool operator !=(MessageInvokerCacheKey left, MessageInvokerCacheKey right) => !(left == right);
     }
 }

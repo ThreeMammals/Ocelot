@@ -2,46 +2,47 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Errors.QoS;
 
-namespace Ocelot.Requester;
-
-public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
+namespace Ocelot.Requester
 {
-    // This is a dictionary of custom mappers for exceptions
-    private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
-
-    public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
+    public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
     {
-        _mappers = serviceProvider.GetService<Dictionary<Type, Func<Exception, Error>>>();
-    }
+        // This is a dictionary of custom mappers for exceptions
+        private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
 
-    public Error Map(Exception exception)
-    {
-        var type = exception.GetType();
-
-        // If there is a custom mapper for this exception type, use it
-        // The idea is the following: When implementing features or providers,
-        // you can provide a custom mapper
-        if (_mappers != null && _mappers.TryGetValue(type, out var mapper))
+        public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
         {
-            return mapper(exception);
+            _mappers = serviceProvider.GetService<Dictionary<Type, Func<Exception, Error>>>();
         }
 
-        // here are mapped the exceptions thrown from Ocelot core application
-        if (type == typeof(TimeoutException))
+        public Error Map(Exception exception)
         {
-            return new RequestTimedOutError(exception);
-        }
+            var type = exception.GetType();
 
-        if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
-        {
-            return new RequestCanceledError(exception.Message);
-        }
+            // If there is a custom mapper for this exception type, use it
+            // The idea is the following: When implementing features or providers,
+            // you can provide a custom mapper
+            if (_mappers != null && _mappers.TryGetValue(type, out var mapper))
+            {
+                return mapper(exception);
+            }
 
-        if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
-        {
-            return new ConnectionToDownstreamServiceError(exception);
-        }
+            // here are mapped the exceptions thrown from Ocelot core application
+            if (type == typeof(TimeoutException))
+            {
+                return new RequestTimedOutError(exception);
+            }
 
-        return new UnableToCompleteRequestError(exception);
+            if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
+            {
+                return new RequestCanceledError(exception.Message);
+            }
+
+            if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
+            {
+                return new ConnectionToDownstreamServiceError(exception);
+            }
+
+            return new UnableToCompleteRequestError(exception);
+        }
     }
 }
