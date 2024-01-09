@@ -60,7 +60,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         // add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 0
         if (route.QosOptions.ExceptionsAllowedBeforeBreaking <= 0)
         {
-            return;
+            return null; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
         }
 
         var info = $"Circuit Breaker for Route: {GetRouteName(route)}:";

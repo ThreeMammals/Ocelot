@@ -58,6 +58,7 @@ public static class OcelotBuilderExtensions
         => new PollyResiliencePipelineDelegatingHandler(route, contextAccessor, loggerFactory);
 
     #region Obsolete (to remove in a future verison)
+    [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder,
              QosDelegatingHandlerDelegate delegatingHandler,
              Dictionary<Type, Func<Exception, Error>> errorMapping)
@@ -71,18 +72,22 @@ public static class OcelotBuilderExtensions
         return builder;
     }
 
+    [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, Dictionary<Type, Func<Exception, Error>> errorMapping)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPollyV7<T>(builder, GetDelegatingHandlerV7, errorMapping);
 
+    [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPollyV7<T>(builder, delegatingHandler, ErrorMapping);
 
+    [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPollyV7<T>(builder, GetDelegatingHandlerV7, ErrorMapping);
 
+    [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7(this IOcelotBuilder builder)
     {
         return AddPollyV7<PollyQoSProvider>(builder, GetDelegatingHandlerV7, ErrorMapping);

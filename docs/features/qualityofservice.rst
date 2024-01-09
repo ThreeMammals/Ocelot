@@ -29,9 +29,17 @@ Then add the following section to a Route configuration:
     "TimeoutValue": 5000
   }
 
-- You must set a number greater than ``0`` against **ExceptionsAllowedBeforeBreaking** for this rule to be implemented. [#f2]_
+- You must set a number equal or greater than ``2`` against **ExceptionsAllowedBeforeBreaking** for this rule to be implemented. [#f2]_
 - **DurationOfBreak** means the circuit breaker will stay open for 1 second after it is tripped.
 - **TimeoutValue** means if a request takes more than 5 seconds, it will automatically be timed out. 
+
+**Important change:** with polly version 8, ExceptionsAllowedBeforeBreaking must be equal to or greater than 2.
+If you don't want to change your settings, you must use Polly v7 like this:
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddPollyV7();
+
 
 You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBreaking** and **DurationOfBreak** options:
 
@@ -45,6 +53,45 @@ There is no point setting the other two in isolation as they affect each other!
 
 If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests.
 If someone needs this to be configurable, open an issue. [#f2]_
+
+
+Extensibility
+-------------
+If you want to use your ResiliencePipeline Provider, you can use the following syntax:
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddPolly< MyProvider >();
+   // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
+   // note: you can use standard provider PollyQoSResiliencePipelineProvider
+
+If, in addition, you want to use your own DelegatingHandler, you can use the following syntax:
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddPolly< MyProvider >(MyQosDelegatingHandlerDelegate);
+   // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
+   // note: you can use standard provider PollyQoSResiliencePipelineProvider
+   // MyQosDelegatingHandlerDelegate is a delegate use to get a DelegatingHandler
+
+And finally, if you want to define your own set of exceptions to map, you can use the following syntax:
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddPolly< MyProvider >(MyErrorMapping);
+   // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
+   // note: you can use standard provider PollyQoSResiliencePipelineProvider
+   // MyErrorMapping is a Dictionary<Type, Func<Exception, Error>>
+   //    eg:
+    private static readonly Dictionary<Type, Func<Exception, Error>> MyErrorMapping = new()
+   {
+      {typeof(TaskCanceledException), e => new RequestTimedOutError(e)},
+      {typeof(TimeoutRejectedException), e => new RequestTimedOutError(e)},
+      {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)},
+      {typeof(BrokenCircuitException< HttpResponseMessage >), e => new RequestTimedOutError(e)},
+   };
+
+
 
 """"
 

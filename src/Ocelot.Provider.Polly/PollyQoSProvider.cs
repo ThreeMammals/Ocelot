@@ -9,7 +9,7 @@ using Polly.Timeout;
 
 namespace Ocelot.Provider.Polly;
 
-[Obsolete("Due to new v8 policy definition in Polloy 8 (use PollyQoSResiliencePipelineProvider)")]
+[Obsolete("Due to new v8 policy definition in Polly 8 (use PollyQoSResiliencePipelineProvider)")]
 public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
 {
     private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
