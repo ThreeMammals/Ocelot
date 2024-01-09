@@ -52,7 +52,7 @@ public class ResponseBenchmarks : ManualConfig
                     ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["GET"],
+                    UpstreamHttpMethod =["GET"],
                 },
             ],
         };

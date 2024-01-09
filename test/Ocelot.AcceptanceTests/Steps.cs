@@ -22,7 +22,6 @@ using Ocelot.Multiplexer;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
-using Ocelot.Requester;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
@@ -445,10 +444,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-        internal void GivenIWait(int wait)
-        {
-            Thread.Sleep(wait);
-        }
+    internal void GivenIWait(int wait) => Thread.Sleep(wait);
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {

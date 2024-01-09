@@ -1,6 +1,6 @@
 ﻿using Ocelot.Configuration;
-using System.Net.Security;
 using Ocelot.Logging;
+using System.Net.Security;
 
 namespace Ocelot.Requester;
 
@@ -83,7 +83,7 @@ public class MessageInvokerPool : IMessageInvokerPool
 
         handler.SslOptions = new SslClientAuthenticationOptions
         {
-            RemoteCertificateValidationCallback = delegate { return true; },
+            RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
         };
 
         _logger.LogWarning(() =>
