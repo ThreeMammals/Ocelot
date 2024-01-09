@@ -559,7 +559,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_not_found()
+        public void should_return_200_found()
         {
             var port = PortFinder.GetRandomPort();
 
@@ -589,7 +589,8 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe("/products"))
                 .BDDfy();
         }
 

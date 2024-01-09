@@ -50,11 +50,11 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                     return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
                 }
-                else if (IsCatchAll(path, counterForPath, pathTemplate) || (NoMoreForwardSlash(pathTemplate, counterForTemplate) && NotPassedQueryString(pathTemplate, pathTemplate.Length) && (pathTemplate[counterForPath] == '{')))
+                else if (IsCatchAll(path, counterForPath, pathTemplate) || (pathTemplate[counterForTemplate] == '{') && NoMoreForwardSlash(pathTemplate, counterForTemplate) && NotPassedQueryString(pathTemplate, pathTemplate.Length))
                 {
                     var endOfPlaceholder = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
 
-                    if (pathTemplate[counterForPath] == '/')
+                    if (pathTemplate[counterForTemplate] == '/')
                     {
                         counterForTemplate++;
                     }
