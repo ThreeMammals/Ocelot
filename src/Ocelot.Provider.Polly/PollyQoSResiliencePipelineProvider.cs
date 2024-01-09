@@ -65,7 +65,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         }
         else if (route.QosOptions.ExceptionsAllowedBeforeBreaking == 0)
         {
-            return null; // shortcut > no qos
+            return null; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
         }
 
         if (route.QosOptions.ExceptionsAllowedBeforeBreaking > 0)
