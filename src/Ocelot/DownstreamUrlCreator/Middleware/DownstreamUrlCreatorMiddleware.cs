@@ -33,6 +33,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
+            var upstreamPath = httpContext.Request.Path.ToString();
             var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
             var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
             var downstreamRequest = httpContext.Items.DownstreamRequest();
@@ -43,6 +44,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
                 httpContext.Items.UpsertErrors(response.Errors);
                 return;
+            }
+
+            if (response.Data.Value.EndsWith("/") && !upstreamPath.EndsWith("/"))
+            {
+                response = new OkResponse<DownstreamPath>(new DownstreamPath(response.Data.Value.TrimEnd('/')));
             }
 
             if (!string.IsNullOrEmpty(downstreamRoute.DownstreamScheme))

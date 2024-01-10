@@ -50,16 +50,11 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
                     return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
                 }
-                else if (IsCatchAll(path, counterForPath, pathTemplate) || (pathTemplate[counterForTemplate] == '{') && NoMoreForwardSlash(pathTemplate, counterForTemplate) && NotPassedQueryString(pathTemplate, pathTemplate.Length))
+                else if (IsCatchAll(path, counterForPath, pathTemplate) || IsCatchAllAfterOtherPlaceholders(pathTemplate, counterForTemplate))
                 {
                     var endOfPlaceholder = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
 
-                    if (pathTemplate[counterForTemplate] == '/')
-                    {
-                        counterForTemplate++;
-                    }
-
-                    var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate);
+                    var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate + 1);
 
                     if (NothingAfterFirstForwardSlash(path))
                     {
@@ -102,6 +97,15 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                      && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
         }
 
+        private static bool IsCatchAllAfterOtherPlaceholders(string pathTemplate, int counterForTemplate)
+        {
+            return (pathTemplate[counterForTemplate] == '/')
+                && (counterForTemplate < pathTemplate.Length - 1)
+                && (pathTemplate[counterForTemplate + 1] == '{')
+                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1) 
+                && NotPassedQueryString(pathTemplate, pathTemplate.Length);
+        }
+
         private static bool NothingAfterFirstForwardSlash(string path)
         {
             return path.Length == 1 || path.Length == 0;
@@ -109,7 +113,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
         private static string GetPlaceholderValue(string urlPathTemplate, string query, string variableName, string urlPath, int counterForUrl, char delimiter)
         {
-            if(counterForUrl > urlPath.Length)
+            if (counterForUrl > urlPath.Length)
             {
                 return "";
             }

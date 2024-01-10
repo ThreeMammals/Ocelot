@@ -558,8 +558,9 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_200_found()
+        [Theory]
+        [InlineDataAttribute("/products", "/products/{productId}", "/products/")]
+        public void should_return_200_found(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL)
         {
             var port = PortFinder.GetRandomPort();
 
@@ -569,7 +570,7 @@ namespace Ocelot.AcceptanceTests
                 {
                     new()
                     {
-                        DownstreamPathTemplate = "/products",
+                        DownstreamPathTemplate = downstreamPathTemplate,
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
@@ -579,18 +580,18 @@ namespace Ocelot.AcceptanceTests
                                 Port = port,
                             },
                         },
-                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamPathTemplate = upstreamPathTemplate,
                         UpstreamHttpMethod = new List<string> { "Get" },
                     },
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamPathTemplate, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .Then(x => ThenTheDownstreamUrlPathShouldBe("/products"))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPathTemplate))
                 .BDDfy();
         }
 
@@ -809,8 +810,12 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_correct_downstream_when_omitting_ending_placeholder()
+        [Theory]
+        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test/1", "/downstream/test/1")]
+        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test/", "/downstream/test/")]
+        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test", "/downstream/test")]
+        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test123", null)]
+        public void should_return_correct_downstream_when_omitting_ending_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamURL)
         {
             var port = PortFinder.GetRandomPort();
 
@@ -820,7 +825,7 @@ namespace Ocelot.AcceptanceTests
                     {
                         new()
                         {
-                            DownstreamPathTemplate = "/downstream/test/{testId}",
+                            DownstreamPathTemplate = downstreamPathTemplate,
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
@@ -830,7 +835,7 @@ namespace Ocelot.AcceptanceTests
                                     Port = port,
                                 },
                             },
-                            UpstreamPathTemplate = "/upstream/test/{testId}",
+                            UpstreamPathTemplate = upstreamPathTemplate,
                             UpstreamHttpMethod = new List<string> { "Get" },
                         },
                     },
@@ -839,8 +844,8 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Test Body"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/upstream/test/"))
-                .Then(x => ThenTheDownstreamUrlPathShouldBe("/downstream/test/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamURL))
                 .BDDfy();
         }
 
