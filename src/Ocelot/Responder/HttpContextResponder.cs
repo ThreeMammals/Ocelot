@@ -42,20 +42,16 @@ public class HttpContextResponder : IHttpResponder
             AddHeaderIfDoesntExist(context, new Header(httpResponseHeader.Key, httpResponseHeader.Value));
         }
 
-        var content = await response.Content.ReadAsStreamAsync();
-
         if (response.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
                 new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
         }
 
-        await using (content)
+        if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
         {
-            if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
-            {
-                await content.CopyToAsync(context.Response.Body, context.RequestAborted);
-            }
+            await using var content = await response.Content.ReadAsStreamAsync();
+            await content.CopyToAsync(context.Response.Body, context.RequestAborted);
         }
     }
 
@@ -66,20 +62,16 @@ public class HttpContextResponder : IHttpResponder
 
     public async Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response)
     {
-        var content = await response.Content.ReadAsStreamAsync();
-
         if (response.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
                 new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
         }
 
-        await using (content)
+        if (context.Response.ContentLength != 0)
         {
-            if (context.Response.ContentLength != 0)
-            {
-                await content.CopyToAsync(context.Response.Body, context.RequestAborted);
-            }
+            await using var content = await response.Content.ReadAsStreamAsync();
+            await content.CopyToAsync(context.Response.Body, context.RequestAborted);
         }
     }
 
