@@ -2,7 +2,9 @@ Not Supported
 =============
 
 Ocelot does not support...
-	
+
+.. _chunked-encoding:
+
 Chunked Encoding
 ----------------
 
