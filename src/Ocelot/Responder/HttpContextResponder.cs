@@ -32,6 +32,9 @@ public class HttpContextResponder : IHttpResponder
 
         context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = response.ReasonPhrase;
 
+        // As of 5.0 HttpResponse.Content never returns null.
+        // https://github.com/dotnet/runtime/blame/8fc68f626a11d646109a758cb0fc70a0aa7826f1/src/libraries/System.Net.Http/src/System/Net/Http/HttpResponseMessage.cs#L46
+        // TODO: Check if it applies to ocelot custom implementation
         if (response.Content is null)
         {
             return;
