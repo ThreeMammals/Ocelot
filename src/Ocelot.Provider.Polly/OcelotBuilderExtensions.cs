@@ -9,6 +9,7 @@ using Ocelot.Provider.Polly.Interfaces;
 using Ocelot.Requester;
 
 using Polly.CircuitBreaker;
+using Polly.Registry;
 using Polly.Timeout;
 
 namespace Ocelot.Provider.Polly;
@@ -29,6 +30,7 @@ public static class OcelotBuilderExtensions
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
     {
         builder.Services
+            .AddSingleton<ResiliencePipelineRegistry<OcelotResiliencePipelineKey>>()
             .AddSingleton(errorMapping)
             .AddSingleton<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>, T>()
             .AddSingleton(delegatingHandler);
