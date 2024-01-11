@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
             var port = PortFinder.GetRandomPort();
             var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 1000))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 2100))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
