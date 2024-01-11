@@ -1,11 +1,8 @@
 using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
-using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authentication
 {
@@ -37,7 +34,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
                .And(x => GivenThereIsAConfiguration(configuration))
                .And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -53,7 +50,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultRoute(port);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 200, "Hello from Laura"))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -71,7 +68,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultRoute(port);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 200, "Hello from Laura"))
                 .And(x => GivenIHaveATokenWithScope(_identityServerRootUrl, "api2"))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -88,7 +85,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -106,7 +103,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Reference))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 201, string.Empty))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -127,105 +124,11 @@ namespace Ocelot.AcceptanceTests.Authentication
             });
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, string api2Name, AccessTokenType tokenType)
+        private void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
-            _identityServerBuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .ConfigureServices(services =>
-                {
-                    services.AddLogging();
-                    services.AddIdentityServer()
-                        .AddDeveloperSigningCredential()
-                        .AddInMemoryApiScopes(new List<ApiScope>
-                        {
-                            new(apiName, "test"),
-                            new(api2Name, "test"),
-                        })
-                        .AddInMemoryApiResources(new List<ApiResource>
-                        {
-                            new()
-                            {
-                                Name = apiName,
-                                Description = "My API",
-                                Enabled = true,
-                                DisplayName = "test",
-                                Scopes = new List<string>
-                                {
-                                    "api",
-                                    "api.readOnly",
-                                    "openid",
-                                    "offline_access",
-                                },
-                                ApiSecrets = new List<Secret>
-                                {
-                                    new("secret".Sha256()),
-                                },
-                                UserClaims = new List<string>
-                                {
-                                    "CustomerId", "LocationId",
-                                },
-                            },
-                            new()
-                            {
-                                Name = api2Name,
-                                Description = "My second API",
-                                Enabled = true,
-                                DisplayName = "second test",
-                                Scopes = new List<string>
-                                {
-                                    "api2",
-                                    "api2.readOnly",
-                                },
-                                ApiSecrets = new List<Secret>
-                                {
-                                    new("secret".Sha256()),
-                                },
-                                UserClaims = new List<string>
-                                {
-                                    "CustomerId", "LocationId",
-                                },
-                            },
-                        })
-                        .AddInMemoryClients(new List<Client>
-                        {
-                            new()
-                            {
-                                ClientId = "client",
-                                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                                ClientSecrets = new List<Secret> { new("secret".Sha256()) },
-                                AllowedScopes = new List<string> { apiName, api2Name, "api.readOnly", "openid", "offline_access" },
-                                AccessTokenType = tokenType,
-                                Enabled = true,
-                                RequireClientSecret = false,
-                            },
-                        })
-                        .AddTestUsers(
-                        [
-                            new()
-                            {
-                                Username = "test",
-                                Password = "test",
-                                SubjectId = "registered|1231231",
-                                Claims = new List<Claim>
-                                {
-                                   new("CustomerId", "123"),
-                                   new("LocationId", "321"),
-                                },
-                            },
-                        ]);
-                })
-                .Configure(app =>
-                {
-                    app.UseIdentityServer();
-                })
+            _identityServerBuilder = CreateIdentityServer(url, tokenType, "api", "api2")
                 .Build();
-
             _identityServerBuilder.Start();
-
             VerifyIdentityServerStarted(url);
         }
 
