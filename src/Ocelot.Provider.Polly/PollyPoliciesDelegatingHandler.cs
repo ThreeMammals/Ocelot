@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 namespace Ocelot.Provider.Polly;
 
+[Obsolete("Due to new v8 policy definition in Polly 8 (use PollyResiliencePipelineDelegatingHandler)")]
 public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {
     private readonly DownstreamRoute _route;

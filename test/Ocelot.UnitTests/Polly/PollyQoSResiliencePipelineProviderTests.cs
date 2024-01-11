@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.Polly
         {
             var options = new QoSOptionsBuilder()
                 .WithTimeoutValue(1000) // 1s, minimum required by Polly
-                .WithExceptionsAllowedBeforeBreaking(2)
+                .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
                 .WithDurationOfBreak(500) // 0.5s, minimum required by Polly
                 .Build();
 

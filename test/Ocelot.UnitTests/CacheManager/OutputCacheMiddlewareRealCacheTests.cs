@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.CacheManager
                 x.WithDictionaryHandle();
             });
             _cacheManager = new OcelotCacheManagerCache<CachedResponse>(cacheManagerOutputCache);
-            _cacheKeyGenerator = new CacheKeyGenerator();
+            _cacheKeyGenerator = new DefaultCacheKeyGenerator();
             _httpContext.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
             _next = context => Task.CompletedTask;
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cacheManager, _cacheKeyGenerator);
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.CacheManager
         {
             var route = new DownstreamRouteBuilder()
                 .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100, "kanken"))
+                .WithCacheOptions(new CacheOptions(100, "kanken", null))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 
