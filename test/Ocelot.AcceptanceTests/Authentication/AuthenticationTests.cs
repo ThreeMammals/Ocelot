@@ -73,7 +73,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", "api2", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), 200, "Hello from Laura"))
-                .And(x => GivenIHaveATokenForApi2(_identityServerRootUrl))
+                .And(x => GivenIHaveATokenWithScope(_identityServerRootUrl, "api2"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())

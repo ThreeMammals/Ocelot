@@ -729,65 +729,31 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
     }
 
-    public void GivenIHaveAToken(string url)
+    public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
     {
-        var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
-        var content = new FormUrlEncodedContent(formData);
+        new ("client_id", "client"),
+        new ("client_secret", "secret"),
+        new ("scope", "api"),
+        new ("username", "test"),
+        new ("password", "test"),
+        new ("grant_type", "password"),
+    };
 
-        using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
-        response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+    public async Task GivenIHaveAToken(string url)
+    {
+        var form = GivenDefaultAuthTokenForm();
+        await GivenIHaveATokenWithForm(url, form);
     }
 
-    public void GivenIHaveATokenForApiReadOnlyScope(string url)
+    public async Task GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
     {
         var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api.readOnly"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
+        var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
         var content = new FormUrlEncodedContent(formData);
 
         using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
-        response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-    }
-
-    public void GivenIHaveATokenForApi2(string url)
-    {
-        var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api2"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
-        var content = new FormUrlEncodedContent(formData);
-
-        using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
+        var response = await httpClient.PostAsync(tokenUrl, content);
+        var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
         _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
     }
