@@ -58,7 +58,7 @@ namespace Ocelot.Configuration.Creator
             }
 
             var indexOfLastForwardSlash = upstreamTemplate.LastIndexOf('/');
-            if (indexOfLastForwardSlash < (upstreamTemplate.Length - 1) && upstreamTemplate.ElementAt(indexOfLastForwardSlash + 1) == '.')
+            if (indexOfLastForwardSlash < (upstreamTemplate.Length - 1) && upstreamTemplate[indexOfLastForwardSlash + 1] == '.')
             {
                 upstreamTemplate = upstreamTemplate.Substring(0, indexOfLastForwardSlash) + "(?:|/" + upstreamTemplate.Substring(indexOfLastForwardSlash + 1) + ")";
             }
