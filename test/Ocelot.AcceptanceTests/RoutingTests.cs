@@ -559,7 +559,8 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Theory]
-        [InlineDataAttribute("/products", "/products/{productId}", "/products/")]
+        [InlineData("/products", "/products/{productId}", "/products/")]
+
         public void should_return_200_found(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL)
         {
             var port = PortFinder.GetRandomPort();
