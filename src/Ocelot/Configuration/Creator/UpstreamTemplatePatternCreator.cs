@@ -57,10 +57,10 @@ namespace Ocelot.Configuration.Creator
                 }
             }
 
-            var indexOfLastForwardSlash = upstreamTemplate.LastIndexOf('/');
-            if (indexOfLastForwardSlash < (upstreamTemplate.Length - 1) && upstreamTemplate[indexOfLastForwardSlash + 1] == '.')
+            var index = upstreamTemplate.LastIndexOf('/'); // index of last forward slash
+            if (index < (upstreamTemplate.Length - 1) && upstreamTemplate[index + 1] == '.')
             {
-                upstreamTemplate = upstreamTemplate.Substring(0, indexOfLastForwardSlash) + "(?:|/" + upstreamTemplate.Substring(indexOfLastForwardSlash + 1) + ")";
+                upstreamTemplate = upstreamTemplate.Substring(0, index) + "(?:|/" + upstreamTemplate.Substring(index + 1) + ")";
             }
 
             if (upstreamTemplate == "/")
