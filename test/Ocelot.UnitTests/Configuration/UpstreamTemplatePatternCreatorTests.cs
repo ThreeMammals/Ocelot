@@ -42,7 +42,8 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
                 .When(x => x.WhenICreateTheTemplatePattern())
-                .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/orders(?:|/{UpstreamTemplatePatternCreator.RegExMatchZeroOrMoreOfEverything})$"))
+                private const string MatchEverything = UpstreamTemplatePatternCreator.RegExMatchZeroOrMoreOfEverything;
+                .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/orders(?:|/{MatchEverything})$"))
                 .And(x => ThenThePriorityIs(0))
                 .BDDfy();
         }
