@@ -115,7 +115,7 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
         {
             if (counterForUrl > urlPath.Length)
             {
-                return "";
+                return string.Empty;
             }
 
             var positionOfNextSlash = urlPath.IndexOf(delimiter, counterForUrl);
