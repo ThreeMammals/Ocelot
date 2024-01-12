@@ -19,6 +19,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private const char QuestionMark = '?';
         private const char OpeningBrace = '{';
         private const char ClosingBrace = '}';
+        protected const char Slash = '/';
 
         public DownstreamUrlCreatorMiddleware(
             RequestDelegate next,
@@ -46,9 +47,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            if (response.Data.Value.EndsWith("/") && !upstreamPath.EndsWith("/"))
+            if (response.Data.Value.EndsWith(Slash) && !upstreamPath.EndsWith(Slash))
             {
-                response = new OkResponse<DownstreamPath>(new DownstreamPath(response.Data.Value.TrimEnd('/')));
+                response = new OkResponse<DownstreamPath>(new DownstreamPath(response.Data.Value.TrimEnd(Slash)));
             }
 
             if (!string.IsNullOrEmpty(downstreamRoute.DownstreamScheme))
