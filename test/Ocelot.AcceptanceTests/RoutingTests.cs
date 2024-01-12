@@ -830,11 +830,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                new("localhost", port),
                             },
                             UpstreamPathTemplate = upstreamPathTemplate,
                             UpstreamHttpMethod = new List<string> { "Get" },
