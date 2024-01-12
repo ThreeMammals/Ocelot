@@ -452,7 +452,6 @@ namespace Ocelot.AcceptanceTests
         {
             var port = PortFinder.GetRandomPort();
             var downstreamBasePath = "/products";
-
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
