@@ -349,6 +349,20 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                  .BDDfy();
         }
 
+        [Fact]
+        public void check_for_placeholder_at_end_of_template() 
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new("{testId}", string.Empty),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath("/upstream/test/"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/upstream/test/{testId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
         private void ThenTheTemplatesVariablesAre(List<PlaceholderNameAndValue> expectedResults)
         {
             foreach (var expectedResult in expectedResults)
