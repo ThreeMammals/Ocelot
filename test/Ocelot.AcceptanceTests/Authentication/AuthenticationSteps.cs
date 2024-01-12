@@ -1,14 +1,29 @@
 ﻿using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authentication;
 
-public class AuthenticationSteps : Steps
+public class AuthenticationSteps : Steps, IDisposable
 {
-    protected static ApiResource CreateApiResource(
+    private readonly ServiceHandler _serviceHandler;
+
+    public AuthenticationSteps() : base()
+    {
+        _serviceHandler = new ServiceHandler();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler.Dispose();
+        base.Dispose();
+    }
+
+    public static ApiResource CreateApiResource(
         string apiName,
         IEnumerable<string> extraScopes = null) => new()
     {
@@ -31,7 +46,7 @@ public class AuthenticationSteps : Steps
         },
     };
 
-    protected static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, params string[] apiScopes)
+    public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, params string[] apiScopes)
     {
         apiScopes ??= Array.Empty<string>();
         var builder = new WebHostBuilder()
@@ -89,12 +104,52 @@ public class AuthenticationSteps : Steps
         return builder;
     }
 
-    public async Task GivenIHaveATokenWithScope(string url, string apiScope = "api")
+    protected Task GivenIHaveATokenWithScope(string url, string apiScope = "api")
     {
         var form = GivenDefaultAuthTokenForm();
-        form.RemoveAt(form.FindIndex(x => x.Key == "scope"));
+        form.RemoveAll(x => x.Key == "scope");
         form.Add(new("scope", apiScope));
 
-        await GivenIHaveATokenWithForm(url, form);
+        return GivenIHaveATokenWithForm(url, form);
     }
+
+    public static FileRoute GivenDefaultRoute(int port, string upstreamHttpMethod = null) => new()
+    {
+        DownstreamPathTemplate = "/",
+        DownstreamHostAndPorts =
+            [
+                new("localhost", port),
+            ],
+        DownstreamScheme = Uri.UriSchemeHttp,
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod =[upstreamHttpMethod ?? HttpMethods.Get],
+        AuthenticationOptions = new FileAuthenticationOptions
+        {
+            AuthenticationProviderKey = "Test",
+        },
+    };
+
+    public static FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    {
+        var configuration = new FileConfiguration();
+        configuration.Routes.AddRange(routes);
+        return configuration;
+    }
+
+    protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody)
+    {
+        var url = DownstreamServiceUrl(port);
+        GivenThereIsAServiceRunningOn(url, statusCode, responseBody);
+    }
+
+    protected void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string responseBody)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        {
+            context.Response.StatusCode = (int)statusCode;
+            await context.Response.WriteAsync(responseBody);
+        });
+    }
+
+    protected static string DownstreamServiceUrl(int port) => string.Concat("http://localhost:", port);
 }
