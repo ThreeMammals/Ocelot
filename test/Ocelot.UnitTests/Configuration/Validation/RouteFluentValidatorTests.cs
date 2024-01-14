@@ -10,17 +10,19 @@ namespace Ocelot.UnitTests.Configuration.Validation
     {
         private readonly RouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
-        private Mock<IServiceProvider> _serviceProvider;
+        private readonly FileAuthenticationOptionsValidator _fileAuthenticationOptionsValidator;
+        private readonly Mock<IServiceProvider> _serviceProvider;
         private FileRoute _route;
         private ValidationResult _result;
 
         public RouteFluentValidatorTests()
         {
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
+            _fileAuthenticationOptionsValidator = new FileAuthenticationOptionsValidator(_authProvider.Object);
             _serviceProvider = new Mock<IServiceProvider>();
 
             // Todo - replace with mocks
-            _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+            _validator = new RouteFluentValidator(new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object), _fileAuthenticationOptionsValidator);
         }
 
         [Fact]
@@ -208,7 +210,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(_ => GivenThe(fileRoute))
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:JwtLads,AllowedScopes:[] is unsupported authentication provider"))
+                .And(_ => ThenTheErrorsContains($"Authentication Provider Key: JwtLads is unsupported authentication provider"))
                 .BDDfy();
         }
 
