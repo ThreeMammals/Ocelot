@@ -38,6 +38,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
             var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
             var downstreamRequest = httpContext.Items.DownstreamRequest();
+            var upstreamPath = downstreamRequest.AbsolutePath;
 
             if (response.IsError)
             {
