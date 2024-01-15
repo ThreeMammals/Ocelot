@@ -4,6 +4,7 @@ using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 
 using Polly.CircuitBreaker;
+using Polly.Registry;
 using Polly.Testing;
 using Polly.Timeout;
 
@@ -25,7 +26,8 @@ namespace Ocelot.UnitTests.Polly
                 .Build();
 
             var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object);
+            var resiliencePipelineRegistry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
+            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, resiliencePipelineRegistry);
             var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
             resiliencePipeline.ShouldNotBeNull();
         }
@@ -40,6 +42,10 @@ namespace Ocelot.UnitTests.Polly
             var resiliencePipeline1 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route1);
             var resiliencePipeline2 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route2);
             resiliencePipeline1.ShouldBe(resiliencePipeline2);
+
+            var resiliencePipeline3 = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route1);
+            resiliencePipeline3.ShouldBe(resiliencePipeline1);
+            resiliencePipeline3.ShouldBe(resiliencePipeline2);
         }
 
         [Fact]
@@ -212,10 +218,12 @@ namespace Ocelot.UnitTests.Polly
         private static PollyQoSResiliencePipelineProvider PollyQoSResiliencePipelineProviderFactory()
         {
             var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-            loggerFactoryMock.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
+            loggerFactoryMock
+                .Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
                 .Returns(new Mock<IOcelotLogger>().Object);
+            var resiliencePipelineRegistry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
 
-            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object);
+            var pollyQoSResiliencePipelineProvider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, resiliencePipelineRegistry);
             return pollyQoSResiliencePipelineProvider;
         }
 
