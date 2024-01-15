@@ -501,6 +501,44 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123", "{url}", "123", "/api/v1/test/123")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/", "{url}", "", "/api/v1/test/")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1", "{url}", "", "/api/v1/test")]
+        public void should_fix_748_issue(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI)
+        {
+            var methods = new List<string> { "Get" };
+            var downstreamRoute = new DownstreamRouteBuilder()
+                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                    .WithOriginalValue(upstreamTemplate).Build())
+                .WithDownstreamPathTemplate(downstreamTemplate)
+                .WithUpstreamHttpMethod(methods)
+                .WithDownstreamScheme(Uri.UriSchemeHttp)
+                .Build();
+
+            var config = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheDownStreamRouteIs(
+                    new DownstreamRouteHolder(
+                        new List<PlaceholderNameAndValue>
+                        {
+                            new(placeholderName, placeholderValue),
+                            new("{version}", "v1"),
+                        },
+                        new RouteBuilder()
+                            .WithDownstreamRoute(downstreamRoute)
+                            .WithUpstreamHttpMethod(new List<string> { "Get" })
+                            .Build())))
+                .And(x => x.GivenTheDownstreamRequestUriIs("http://localhost:5000" + requestURL))
+                .And(x => GivenTheServiceProviderConfigIs(config))
+                .And(x => x.GivenTheUrlReplacerWillReturn(downstreamURI))
+                .When(x => x.WhenICallTheMiddleware())
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000" + downstreamURI))
+                .And(x => ThenTheQueryStringIs(string.Empty))
+                .BDDfy();
+        }
+
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
         {
             var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null);

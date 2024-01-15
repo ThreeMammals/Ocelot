@@ -363,6 +363,24 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData("/api/invoices/{url}", "/api/invoices/123", "{url}", "123")]
+        [InlineData("/api/invoices/{url}", "/api/invoices/", "{url}", "")]
+        [InlineData("/api/invoices/{url}", "/api/invoices", "{url}", "")]
+        [InlineData("/api/{version}/invoices/", "/api/v1/invoices/", "{version}", "v1")]
+        public void should_fix_748_issue(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue)
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new(placeholderName, placeholderValue),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath(requestURL))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate(upstreamTemplate))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
         private void ThenTheTemplatesVariablesAre(List<PlaceholderNameAndValue> expectedResults)
         {
             foreach (var expectedResult in expectedResults)
