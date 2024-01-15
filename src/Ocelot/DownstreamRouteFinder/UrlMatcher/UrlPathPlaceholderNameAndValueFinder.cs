@@ -98,13 +98,11 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
         }
 
         private static bool IsCatchAllAfterOtherPlaceholders(string pathTemplate, int counterForTemplate)
-        {
-            return (pathTemplate[counterForTemplate] == '/')
+            => (pathTemplate[counterForTemplate] == '/')
                 && (counterForTemplate < pathTemplate.Length - 1)
                 && (pathTemplate[counterForTemplate + 1] == '{')
-                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1) 
+                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1)
                 && NotPassedQueryString(pathTemplate, pathTemplate.Length);
-        }
 
         private static bool NothingAfterFirstForwardSlash(string path)
         {
