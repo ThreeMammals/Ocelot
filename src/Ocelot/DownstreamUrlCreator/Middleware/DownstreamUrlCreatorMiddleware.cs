@@ -34,7 +34,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
-            var upstreamPath = httpContext.Request.Path.ToString();
             var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
             var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
             var downstreamRequest = httpContext.Items.DownstreamRequest();
