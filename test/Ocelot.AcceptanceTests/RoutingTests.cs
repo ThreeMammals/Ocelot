@@ -815,6 +815,7 @@ namespace Ocelot.AcceptanceTests
         [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test/", "/downstream/test/")]
         [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test", "/downstream/test")]
         [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test123", null)]
+        [InlineData("/downstream/{version}/test/{url}", "/upstream/{version}/test/{url}", "/upstream/v1/test/123", "/downstream/v1/test/123")]
         [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/v1/test", "/downstream/v1/test")]
         [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/test", null)]
         public void should_return_correct_downstream_when_omitting_ending_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamURL) //should_fix_748_issue
