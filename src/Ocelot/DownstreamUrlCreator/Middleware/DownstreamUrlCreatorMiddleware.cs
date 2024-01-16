@@ -47,14 +47,15 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 return;
             }
 
-            if (response.Data.Value.EndsWith(Slash) && !upstreamPath.EndsWith(Slash))
+            var dsPath = response.Data.Value;
+            if (dsPath.EndsWith(Slash) && !upstreamPath.EndsWith(Slash))
             {
-                response = new OkResponse<DownstreamPath>(new DownstreamPath(response.Data.Value.TrimEnd(Slash)));
+                response = new OkResponse<DownstreamPath>(new DownstreamPath(dsPath.TrimEnd(Slash)));
             }
 
             if (!string.IsNullOrEmpty(downstreamRoute.DownstreamScheme))
             {
-                //todo make sure this works, hopefully there is a test ;E
+                // TODO Make sure this works, hopefully there is a test ;E
                 httpContext.Items.DownstreamRequest().Scheme = downstreamRoute.DownstreamScheme;
             }
 
@@ -64,14 +65,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, placeholders, response);
 
-                //todo check this works again hope there is a test..
+                // TODO Check this works again hope there is a test..
                 downstreamRequest.AbsolutePath = path;
                 downstreamRequest.Query = query;
             }
             else
             {
-                var dsPath = response.Data;
-                if (dsPath.Value.Contains(QuestionMark))
+                if (dsPath.Contains(QuestionMark))
                 {
                     downstreamRequest.AbsolutePath = GetPath(dsPath);
                     var newQuery = GetQueryString(dsPath);
@@ -83,7 +83,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 {
                     RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
 
-                    downstreamRequest.AbsolutePath = dsPath.Value;
+                    downstreamRequest.AbsolutePath = dsPath;
                 }
             }
 
@@ -138,16 +138,16 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             } 
         }
 
-        private static string GetPath(DownstreamPath dsPath)
+        private static string GetPath(string downstreamPath)
         {
-            int length = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
-            return dsPath.Value[..length];
+            int length = downstreamPath.IndexOf(QuestionMark, StringComparison.Ordinal);
+            return downstreamPath[..length];
         }
 
-        private static string GetQueryString(DownstreamPath dsPath)
+        private static string GetQueryString(string downstreamPath)
         {
-            int startIndex = dsPath.Value.IndexOf(QuestionMark, StringComparison.Ordinal);
-            return dsPath.Value[startIndex..];
+            int startIndex = downstreamPath.IndexOf(QuestionMark, StringComparison.Ordinal);
+            return downstreamPath[startIndex..];
         }
 
         private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, Response<DownstreamPath> dsPath)
