@@ -50,7 +50,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var dsPath = response.Data.Value;
             if (dsPath.EndsWith(Slash) && !upstreamPath.EndsWith(Slash))
             {
-                response = new OkResponse<DownstreamPath>(new DownstreamPath(dsPath.TrimEnd(Slash)));
+                dsPath = dsPath.TrimEnd(Slash);
+                response = new OkResponse<DownstreamPath>(new DownstreamPath(dsPath));
             }
 
             if (!string.IsNullOrEmpty(downstreamRoute.DownstreamScheme))
