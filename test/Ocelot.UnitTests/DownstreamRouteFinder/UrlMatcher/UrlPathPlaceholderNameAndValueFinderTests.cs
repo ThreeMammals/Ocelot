@@ -381,6 +381,25 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/123", "{version}", "v1", "{url}", "123")]
+        [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/", "{version}", "v1", "{url}", "")]
+        [InlineData("/api/invoices/{url}?query={query}", "/api/invoices/test?query=1", "{url}", "test", "{query}", "1")]
+        [InlineData("/api/invoices/{url}?query={query}", "/api/invoices/?query=1", "{url}", "", "{query}", "1")]
+        public void should_resolve_catchall_at_end_with_middle_placeholder(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string catchallName, string catchallValue)
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new(placeholderName, placeholderValue),
+                new(catchallName, catchallValue),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath(requestURL))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate(upstreamTemplate))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
         private void ThenTheTemplatesVariablesAre(List<PlaceholderNameAndValue> expectedResults)
         {
             foreach (var expectedResult in expectedResults)
