@@ -6,8 +6,9 @@ namespace Ocelot.AcceptanceTests
     public class RoutingTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _downstreamPath;
         private readonly ServiceHandler _serviceHandler;
+        private string _downstreamPath;
+        private string _downstreamQuery;
 
         public RoutingTests()
         {
@@ -811,40 +812,48 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Theory]
-        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test/1", "/downstream/test/1")]
-        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test/", "/downstream/test/")]
-        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test", "/downstream/test")]
-        [InlineData("/downstream/test/{testId}", "/upstream/test/{testId}", "/upstream/test123", null)]
-        [InlineData("/downstream/{version}/test/{url}", "/upstream/{version}/test/{url}", "/upstream/v1/test/123", "/downstream/v1/test/123")]
+        [Trait("Issue", "748")]
+        [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/1", "/downstream/test/1")]
+        [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/", "/downstream/test/")]
+        [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test", "/downstream/test")]
+        [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test123", null)]
+        [InlineData("/downstream/{version}/test/{everything}", "/upstream/{version}/test/{everything}", "/upstream/v1/test/123", "/downstream/v1/test/123")]
         [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/v1/test", "/downstream/v1/test")]
         [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/test", null)]
-        public void should_return_correct_downstream_when_omitting_ending_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamURL) //should_fix_748_issue
+        public void should_return_correct_downstream_when_omitting_ending_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamURL)
         {
             var port = PortFinder.GetRandomPort();
 
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = downstreamPathTemplate,
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = downstreamPathTemplate,
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new("localhost", port),
-                            },
-                            UpstreamPathTemplate = upstreamPathTemplate,
-                            UpstreamHttpMethod = new List<string> { "Get" },
+                            new("localhost", port),
                         },
+                        UpstreamPathTemplate = upstreamPathTemplate,
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                },
             };
-
+            const string extraQueryString = "?p1=v1&p2=v2&something-else";
             this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Test Body"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamURL))
+
+                // Now check the same URL but with query string
+                // Catch-All placeholder should forward any path + query string combinations to the downstream service
+                // More: https://ocelot.readthedocs.io/en/latest/features/routing.html#placeholders:~:text=This%20will%20forward%20any%20path%20%2B%20query%20string%20combinations%20to%20the%20downstream%20service%20after%20the%20path%20%2Fapi.
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL + extraQueryString))
+                .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamURL))
+                .And(x => x.ThenTheDownstreamUrlQueryStringShouldBe(extraQueryString))
                 .BDDfy();
         }
 
@@ -1153,6 +1162,7 @@ namespace Ocelot.AcceptanceTests
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
                 _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                _downstreamQuery = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty;
 
                 if (_downstreamPath != basePath)
                 {
@@ -1170,6 +1180,11 @@ namespace Ocelot.AcceptanceTests
         internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
         {
             _downstreamPath.ShouldBe(expectedDownstreamPath);
+        }
+
+        internal void ThenTheDownstreamUrlQueryStringShouldBe(string expectedQueryString)
+        {
+            _downstreamQuery.ShouldBe(expectedQueryString);
         }
 
         public void Dispose()

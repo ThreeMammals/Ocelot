@@ -364,6 +364,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Theory]
+        [Trait("Issue", "748")]
         [InlineData("/api/invoices/{url}", "/api/invoices/123", "{url}", "123")]
         [InlineData("/api/invoices/{url}", "/api/invoices/", "{url}", "")]
         [InlineData("/api/invoices/{url}", "/api/invoices", "{url}", "")]
@@ -382,10 +383,11 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Theory]
+        [Trait("Issue", "748")]
         [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/123", "{version}", "v1", "{url}", "123")]
         [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/", "{version}", "v1", "{url}", "")]
-        [InlineData("/api/invoices/{url}?query={query}", "/api/invoices/test?query=1", "{url}", "test", "{query}", "1")]
-        [InlineData("/api/invoices/{url}?query={query}", "/api/invoices/?query=1", "{url}", "", "{query}", "1")]
+        [InlineData("/api/invoices/{url}?{query}", "/api/invoices/test?query=1", "{url}", "test", "{query}", "query=1")]
+        [InlineData("/api/invoices/{url}?{query}", "/api/invoices/?query=1", "{url}", "", "{query}", "query=1")]
         public void should_resolve_catchall_at_end_with_middle_placeholder(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string catchallName, string catchallValue)
         {
             var expectedTemplates = new List<PlaceholderNameAndValue>
