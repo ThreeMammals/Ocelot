@@ -502,10 +502,12 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Theory]
-        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123", "{url}", "123", "/api/v1/test/123")]
-        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/", "{url}", "", "/api/v1/test/")]
-        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1", "{url}", "", "/api/v1/test")]
-        public void should_fix_748_issue(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI)
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123", "{url}", "123", "/api/v1/test/123", "")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123?query=1", "{url}", "123", "/api/v1/test/123?query=1", "?query=1")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/?query=1", "{url}", "", "/api/v1/test/?query=1", "?query=1")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/", "{url}", "", "/api/v1/test/", "")]
+        [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1", "{url}", "", "/api/v1/test", "")]
+        public void should_fix_748_issue(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI, string queryString)
         {
             var methods = new List<string> { "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()
@@ -535,7 +537,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .And(x => x.GivenTheUrlReplacerWillReturn(downstreamURI))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000" + downstreamURI))
-                .And(x => ThenTheQueryStringIs(string.Empty))
+                .And(x => ThenTheQueryStringIs(queryString))
                 .BDDfy();
         }
 
