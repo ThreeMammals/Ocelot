@@ -17,7 +17,9 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
             for (var counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
             {
-                if (IsPlaceholder(pathTemplate[counterForTemplate]) && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath]) && ContinueScanningUrl(counterForPath, path.Length))
+                if (IsPlaceholder(pathTemplate[counterForTemplate])
+                    && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath])
+                    && ContinueScanningUrl(counterForPath, path.Length))
                 {
                     //should_find_multiple_query_string make test pass
                     if (PassedQueryString(pathTemplate, counterForTemplate))
