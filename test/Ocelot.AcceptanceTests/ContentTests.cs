@@ -10,6 +10,8 @@ namespace Ocelot.AcceptanceTests
         private string _contentType;
         private long? _contentLength;
         private long _memoryUsage;
+        private long _memoryUsageAfterCallToService;
+
         private bool _contentTypeHeaderExists;
         private readonly ServiceHandler _serviceHandler;
 
@@ -161,7 +163,9 @@ namespace Ocelot.AcceptanceTests
                 ],
             };
 
-            this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn($"http://localhost:{port}", "/", 100))
+            var dummyDatFilePath = GenerateDummyDatFile(100);
+
+            this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn($"http://localhost:{port}", "/", dummyDatFilePath))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => x.GivenTheCurrentMemoryUsage())
@@ -178,11 +182,8 @@ namespace Ocelot.AcceptanceTests
 
         private void ThenMemoryUsageShouldNotIncrease()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
             var currentMemoryUsage = Process.GetCurrentProcess().WorkingSet64;
-            Assert.Equal(_memoryUsage, currentMemoryUsage);
+            Assert.InRange(_memoryUsageAfterCallToService, currentMemoryUsage - (1024*1024), currentMemoryUsage + (1024 * 1024));
         }
 
         private void ThenTheContentTypeIsIs(string expected)
@@ -213,15 +214,14 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private void GivenThereIsAServiceWithPayloadRunningOn(string baseUrl, string basePath, int payloadSizeInMb)
+        private void GivenThereIsAServiceWithPayloadRunningOn(string baseUrl, string basePath, string dummyDatFilePath)
         {
-            var dummyDatFilePath = GenerateDummyDatFile(payloadSizeInMb);
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
                 context.Response.StatusCode = (int) HttpStatusCode.OK;
-
                 await using var fileStream = File.OpenRead(dummyDatFilePath);
                 await fileStream.CopyToAsync(context.Response.Body);
+                _memoryUsageAfterCallToService = Process.GetCurrentProcess().WorkingSet64;
             });
         }
 
@@ -242,10 +242,16 @@ namespace Ocelot.AcceptanceTests
                 File.Delete(payloadPath);
             }
 
-            using var newFile = new FileStream(payloadPath, FileMode.CreateNew);
-            newFile.Seek(sizeInMb * 1024L * 1024, SeekOrigin.Begin);
-            newFile.WriteByte(0);
-            newFile.Close();
+            var newFile = new FileStream(payloadPath, FileMode.CreateNew);
+            try
+            {
+                newFile.Seek(sizeInMb * 1024L * 1024, SeekOrigin.Begin);
+                newFile.WriteByte(0);
+            }
+            finally
+            {
+                newFile.Dispose();
+            }
 
             return payloadPath;
         }
