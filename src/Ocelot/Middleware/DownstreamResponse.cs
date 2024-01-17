@@ -11,7 +11,7 @@ namespace Ocelot.Middleware
         {
             Content = content;
             StatusCode = statusCode;
-            Headers = headers ??[];
+            Headers = headers ?? new();
             ReasonPhrase = reasonPhrase;
         }
 
@@ -41,8 +41,7 @@ namespace Ocelot.Middleware
         }
 
         /// <summary>
-        /// We should make sure we dispose the content and response message
-        /// to close the connection to the downstream service.
+        /// We should make sure we dispose the content and response message to close the connection to the downstream service.
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {

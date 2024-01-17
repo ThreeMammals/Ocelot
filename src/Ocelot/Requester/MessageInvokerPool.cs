@@ -6,7 +6,9 @@ namespace Ocelot.Requester;
 
 public class MessageInvokerPool : IMessageInvokerPool
 {
-    // TODO This should be configurable and available as global config parameter in ocelot.json
+    /// <summary>
+    /// TODO This should be configurable and available as global config parameter in ocelot.json.
+    /// </summary>
     public const int DefaultRequestTimeoutSeconds = 90;
 
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;

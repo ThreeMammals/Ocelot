@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -9,10 +10,10 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Builder;
 
 namespace Ocelot.UnitTests.Requester;
 
+[Trait("PR", "1824")]
 public class MessageInvokerPoolTests
 {
     private DownstreamRoute _downstreamRoute1;
@@ -126,7 +127,8 @@ public class MessageInvokerPoolTests
             .BDDfy();
     }
 
-    [Theory(DisplayName = "1833: " + nameof(Create_TimeoutValueInQosOptions_MessageInvokerTimeout))]
+    [Theory]
+    [Trait("Issue", "1833")]
     [InlineData(5, 5)]
     [InlineData(10, 10)]
     public void Create_TimeoutValueInQosOptions_MessageInvokerTimeout(int qosTimeout, int expectedSeconds)
@@ -153,7 +155,9 @@ public class MessageInvokerPoolTests
 
     private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
     {
-        _ocelotLogger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")), Times.Once);
+        _ocelotLogger.Verify(x => x.LogWarning(
+            It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
+            Times.Once);
     }
 
     private void ThenTheCookieIsSet()

@@ -22,7 +22,7 @@ namespace Ocelot.Configuration.Creator
 
             //be sure that maxConnectionPerServer is in correct range of values
             var maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? options.MaxConnectionsPerServer : int.MaxValue;
-            var pooledConnectionLifetime = (options.PooledConnectionLifetimeSeconds != null) ? TimeSpan.FromSeconds(options.PooledConnectionLifetimeSeconds.Value) : TimeSpan.FromSeconds(DefaultPooledConnectionLifetimeSeconds);
+            var pooledConnectionLifetime = TimeSpan.FromSeconds(options.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
 
             return new HttpHandlerOptions(options.AllowAutoRedirect,
                 options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer, pooledConnectionLifetime);
