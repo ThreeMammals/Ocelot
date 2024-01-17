@@ -11,7 +11,7 @@ namespace Ocelot.Middleware
         {
             Content = content;
             StatusCode = statusCode;
-            Headers = headers ??[];
+            Headers = headers ?? new();
             ReasonPhrase = reasonPhrase;
         }
 
