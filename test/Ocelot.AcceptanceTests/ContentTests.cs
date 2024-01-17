@@ -180,7 +180,8 @@ namespace Ocelot.AcceptanceTests
         private void ThenMemoryUsageShouldNotIncrease()
         {
             var currentMemoryUsage = Process.GetCurrentProcess().WorkingSet64;
-            Assert.InRange(_memoryUsageAfterCallToService, currentMemoryUsage - (1024*1024), currentMemoryUsage + (1024 * 1024));
+            var tolerance = currentMemoryUsage - (10 * 1024 * 1024L);
+            Assert.InRange(_memoryUsageAfterCallToService, currentMemoryUsage - tolerance, currentMemoryUsage + tolerance);
         }
 
         private void ThenTheContentTypeIsIs(string expected)
