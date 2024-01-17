@@ -9,7 +9,6 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
         private string _contentType;
         private long? _contentLength;
-        private long _memoryUsage;
         private long _memoryUsageAfterCallToService;
 
         private bool _contentTypeHeaderExists;
@@ -28,24 +27,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                Routes =
+                [
+                    new FileRoute
                     {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts =
+                        [
+                            new FileHostAndPort
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
+
+                        ],
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod =["Get"],
+                    }
+
+                ],
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
@@ -66,24 +67,26 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                Routes =
+                [
+                    new FileRoute
                     {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts =
+                        [
+                            new FileHostAndPort
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Post" },
-                        },
-                    },
+                                Host = "localhost",
+                                Port = port,
+                            }
+
+                        ],
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod =["Post"],
+                    }
+
+                ],
             };
 
             var contentType = "application/json";
@@ -106,24 +109,24 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                Routes =
+                [
+                    new FileRoute
                     {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts =
+                        [
+                            new FileHostAndPort
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Post" },
-                        },
+                        ],
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod =["Post"],
                     },
+                ],
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
@@ -168,16 +171,10 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn($"http://localhost:{port}", "/", dummyDatFilePath))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => x.GivenTheCurrentMemoryUsage())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .Then(x => x.ThenMemoryUsageShouldNotIncrease())
                 .BDDfy();
-        }
-
-        private void GivenTheCurrentMemoryUsage()
-        {
-            _memoryUsage = Process.GetCurrentProcess().WorkingSet64;
         }
 
         private void ThenMemoryUsageShouldNotIncrease()
