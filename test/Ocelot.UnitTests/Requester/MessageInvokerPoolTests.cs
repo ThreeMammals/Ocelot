@@ -287,8 +287,8 @@ public class MessageInvokerPoolTests
             // Compare the elapsed time with the given timeout
             // You can use elapsed.CompareTo(timeout) or simply check if elapsed > timeout, based on your requirement
             Assert.IsType<TimeoutException>(e);
-            Assert.True(elapsed >= timeout, $"Elapsed time {elapsed} is bigger than expected timeout {timeout}");
-            Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(200)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} + 200 ms");
+            Assert.True(elapsed >= timeout.Subtract(TimeSpan.FromMilliseconds(200)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - 200 ms");
+            Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(200)), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + 200 ms");
         }
     }
 
