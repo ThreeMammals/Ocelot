@@ -7,8 +7,7 @@ using Ocelot.Middleware;
 namespace Ocelot.Responder;
 
 /// <summary>
-/// Cannot unit test things in this class due to methods not being implemented
-/// on .net concretes used for testing.
+/// Cannot unit test things in this class due to methods not being implemented on .NET concretes used for testing.
 /// </summary>
 public class HttpContextResponder : IHttpResponder
 {
