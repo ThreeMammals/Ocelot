@@ -6,7 +6,7 @@ namespace Ocelot.Requester
 {
     public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
     {
-        // This is a dictionary of custom mappers for exceptions
+        /// <summary>This is a dictionary of custom mappers for exceptions.</summary>
         private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
 
         public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
