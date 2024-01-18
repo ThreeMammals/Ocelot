@@ -502,14 +502,14 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Theory]
-        [Trait("Issue", "748")]
+        [Trait("Bug", "748")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123", "{url}", "123", "/api/v1/test/123", "")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123?query=1", "{url}", "123", "/api/v1/test/123?query=1", "?query=1")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/?query=1", "{url}", "", "/api/v1/test/?query=1", "?query=1")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1?query=1", "{url}", "", "/api/v1/test?query=1", "?query=1")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/", "{url}", "", "/api/v1/test/", "")]
         [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1", "{url}", "", "/api/v1/test", "")]
-        public void should_fix_748_issue(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI, string queryString)
+        public void should_fix_issue_748(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI, string queryString)
         {
             var methods = new List<string> { "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()

@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class RoutingTests : IDisposable
+    public sealed class RoutingTests : IDisposable
     {
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
@@ -328,7 +328,8 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void Bug()
+        [Trait("Bug", "134")]
+        public void should_fix_issue_134()
         {
             var port = PortFinder.GetRandomPort();
 
@@ -491,9 +492,9 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Theory]
+        [Trait("Bug", "649")]
         [InlineData("/account/authenticate")]
         [InlineData("/account/authenticate/")]
-        [Trait("Issue", "649")]
         public void should_fix_issue_649(string url)
         {
             var port = PortFinder.GetRandomPort();
@@ -818,7 +819,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Theory]
-        [Trait("Issue", "748")]
+        [Trait("Bug", "748")]
         [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/1", "/downstream/test/1", "?p1=v1&p2=v2&something-else")]
         [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/", "/downstream/test/", "?p1=v1&p2=v2&something-else")]
         [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test", "/downstream/test", "?p1=v1&p2=v2&something-else")]
@@ -845,8 +846,9 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Theory(DisplayName = "Catch All Query String should be forwarded with all query string parameters with(out) last slash")]
+        [Trait("PR", "1911")]
         [Trait("Link", "https://ocelot.readthedocs.io/en/latest/features/routing.html#catch-all-query-string")]
+        [Theory(DisplayName = "Catch All Query String should be forwarded with all query string parameters with(out) last slash")]
         [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?", "/apipath/contracts", "")]
         [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?p1=v1&p2=v2", "/apipath/contracts", "?p1=v1&p2=v2")]
         [InlineData("/apipath/contracts/?{everything}", "/contracts/?{everything}", "/contracts/?", "/apipath/contracts/", "")]
@@ -1206,11 +1208,11 @@ namespace Ocelot.AcceptanceTests
                     DownstreamPathTemplate = downstream,
                     DownstreamScheme = Uri.UriSchemeHttp,
                     DownstreamHostAndPorts =
-                    [
+                    {
                         new("localhost", port),
-                    ],
+                    },
                     UpstreamPathTemplate = upstream,
-                    UpstreamHttpMethod =[HttpMethods.Get],
+                    UpstreamHttpMethod = [HttpMethods.Get],
                 },
             },
         };

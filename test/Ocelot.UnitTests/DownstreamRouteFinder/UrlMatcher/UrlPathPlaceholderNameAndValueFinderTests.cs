@@ -350,6 +350,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Fact]
+        [Trait("Bug", "748")]
         public void check_for_placeholder_at_end_of_template() 
         {
             var expectedTemplates = new List<PlaceholderNameAndValue>
@@ -364,12 +365,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Theory]
-        [Trait("Issue", "748")]
+        [Trait("Bug", "748")]
         [InlineData("/api/invoices/{url}", "/api/invoices/123", "{url}", "123")]
         [InlineData("/api/invoices/{url}", "/api/invoices/", "{url}", "")]
         [InlineData("/api/invoices/{url}", "/api/invoices", "{url}", "")]
         [InlineData("/api/{version}/invoices/", "/api/v1/invoices/", "{version}", "v1")]
-        public void should_fix_748_issue(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue)
+        public void should_fix_issue_748(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue)
         {
             var expectedTemplates = new List<PlaceholderNameAndValue>
             {
@@ -383,7 +384,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
         }
 
         [Theory]
-        [Trait("Issue", "748")]
+        [Trait("Bug", "748")]
         [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/123", "{version}", "v1", "{url}", "123")]
         [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/", "{version}", "v1", "{url}", "")]
         [InlineData("/api/invoices/{url}?{query}", "/api/invoices/test?query=1", "{url}", "test", "{query}", "query=1")]
