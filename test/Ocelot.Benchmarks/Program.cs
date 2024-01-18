@@ -9,7 +9,6 @@ public class Program
         var switcher = new BenchmarkSwitcher(
             new[]
             {
-                typeof(DictionaryBenchmarks),
                 typeof(UrlPathToUrlPathTemplateMatcherBenchmarks),
                 typeof(AllTheThingsBenchmarks),
                 typeof(ExceptionHandlerMiddlewareBenchmarks),
@@ -17,6 +16,7 @@ public class Program
                 typeof(SerilogBenchmarks),
                 typeof(MsLoggerBenchmarks),
                 typeof(PayloadBenchmarks),
+                typeof(ResponseBenchmarks),
             });
         switcher.Run(args);
     }
