@@ -36,6 +36,8 @@ The **UpstreamPathTemplate** property is the URL that Ocelot will use to identif
 The **UpstreamHttpMethod** is used so Ocelot can distinguish between requests with different HTTP verbs to the same URL.
 You can set a specific list of HTTP methods or set an empty list to allow any of them. 
 
+.. _routing-placeholders:
+
 Placeholders
 ------------
 
@@ -43,7 +45,7 @@ In Ocelot you can add placeholders for variables to your Templates in the form o
 The placeholder variable needs to be present in both the **DownstreamPathTemplate** and **UpstreamPathTemplate** properties.
 When it is Ocelot will attempt to substitute the value in the **UpstreamPathTemplate** placeholder into the **DownstreamPathTemplate** for each request Ocelot processes.
 
-You can also do a `Catch All <#catch-all>`_ type of Route e.g. 
+You can also do a :ref:`routing-catch-all` type of Route e.g. 
 
 .. code-block:: json
 
@@ -68,6 +70,36 @@ In order to change this you can specify on a per Route basis the following setti
   "RouteIsCaseSensitive": true
 
 This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive. 
+
+.. _routing-empty-placeholders:
+
+Empty Placeholders
+^^^^^^^^^^^^^^^^^^
+
+This is a special edge case of :ref:`routing-placeholders`, where the value of the placeholder is simply an empty string ``""``.
+
+For example, **Given a route**: 
+
+.. code-block:: json
+
+  {
+    "UpstreamPathTemplate": "/invoices/{url}",
+    "DownstreamPathTemplate": "/api/invoices/{url}",
+  }
+
+.. role::  htm(raw)
+    :format: html
+
+| **Then**, it works correctly when ``{url}`` is specified: ``/invoices/123`` :htm:`&rarr;` ``/api/invoices/123``.
+| **And then**, there are two edge cases with empty placeholder value:
+
+* Also, it works when ``{url}`` is empty. We would expect upstream path ``/invoices/`` to route to downstream path ``/api/invoices/``
+* Moreover, it should work when omitting last slash. We also expect upstream ``/invoices`` to be routed to downstream ``/api/invoices``, which is intuitive to humans
+
+This feature is available starting from Ocelot version `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_,
+see more in issue `748 <https://github.com/ThreeMammals/Ocelot/issues/748>`_ and release `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ notes.
+
+.. _routing-catch-all:
 
 Catch All
 ---------
@@ -211,7 +243,7 @@ Note, the best practice is giving different placeholder name than the name of qu
 Catch All Query String
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Ocelot's routing also supports a *Catch All* style routing to forward all query string parameters.
+Ocelot's routing also supports a :ref:`routing-catch-all` style routing to forward all query string parameters.
 The placeholder ``{everything}`` name does not matter, any name will work.
 
 .. code-block:: json
@@ -223,6 +255,9 @@ The placeholder ``{everything}`` name does not matter, any name will work.
 
 This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
 such as OData filters and etc (see issue `1174 <https://github.com/ThreeMammals/Ocelot/issues/1174>`_).
+
+**Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature!
+Thus, upstream paths ``/contracts?`` and ``/contracts`` are routed to downstream path ``/apipath/contracts``, which has no query string at all.
 
 Restrictions on use
 ^^^^^^^^^^^^^^^^^^^

@@ -22,7 +22,6 @@ using Ocelot.Multiplexer;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
-using Ocelot.Requester;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
@@ -445,36 +444,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithFakeHttpClientCache(IHttpClientCache cache)
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(cache);
-                s.AddOcelot();
-            })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    internal void GivenIWait(int wait)
-    {
-        Thread.Sleep(wait);
-    }
+    internal void GivenIWait(int wait) => Thread.Sleep(wait);
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {

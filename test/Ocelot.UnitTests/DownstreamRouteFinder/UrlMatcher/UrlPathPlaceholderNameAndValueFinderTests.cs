@@ -349,6 +349,60 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                  .BDDfy();
         }
 
+        [Fact]
+        [Trait("Bug", "748")]
+        public void check_for_placeholder_at_end_of_template() 
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new("{testId}", string.Empty),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath("/upstream/test/"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("/upstream/test/{testId}"))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Theory]
+        [Trait("Bug", "748")]
+        [InlineData("/api/invoices/{url}", "/api/invoices/123", "{url}", "123")]
+        [InlineData("/api/invoices/{url}", "/api/invoices/", "{url}", "")]
+        [InlineData("/api/invoices/{url}", "/api/invoices", "{url}", "")]
+        [InlineData("/api/{version}/invoices/", "/api/v1/invoices/", "{version}", "v1")]
+        public void should_fix_issue_748(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue)
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new(placeholderName, placeholderValue),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath(requestURL))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate(upstreamTemplate))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
+        [Theory]
+        [Trait("Bug", "748")]
+        [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/123", "{version}", "v1", "{url}", "123")]
+        [InlineData("/api/{version}/invoices/{url}", "/api/v1/invoices/", "{version}", "v1", "{url}", "")]
+        [InlineData("/api/invoices/{url}?{query}", "/api/invoices/test?query=1", "{url}", "test", "{query}", "query=1")]
+        [InlineData("/api/invoices/{url}?{query}", "/api/invoices/?query=1", "{url}", "", "{query}", "query=1")]
+        public void should_resolve_catchall_at_end_with_middle_placeholder(string upstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string catchallName, string catchallValue)
+        {
+            var expectedTemplates = new List<PlaceholderNameAndValue>
+            {
+                new(placeholderName, placeholderValue),
+                new(catchallName, catchallValue),
+            };
+            this.Given(x => x.GivenIHaveAUpstreamPath(requestURL))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate(upstreamTemplate))
+                .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
+                .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
+                .BDDfy();
+        }
+
         private void ThenTheTemplatesVariablesAre(List<PlaceholderNameAndValue> expectedResults)
         {
             foreach (var expectedResult in expectedResults)
