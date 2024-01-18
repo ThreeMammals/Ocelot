@@ -17,9 +17,9 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
 
             for (var counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
             {
-                if (IsPlaceholder(pathTemplate[counterForTemplate])
+                if (ContinueScanningUrl(counterForPath, path.Length)
                     && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath])
-                    && ContinueScanningUrl(counterForPath, path.Length))
+                    && IsPlaceholder(pathTemplate[counterForTemplate]))
                 {
                     //should_find_multiple_query_string make test pass
                     if (PassedQueryString(pathTemplate, counterForTemplate))
@@ -64,6 +64,8 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
                     }
 
                     counterForTemplate = endOfPlaceholder;
+                    counterForPath = GetNextCounterPosition(path, counterForPath, '?');
+                    continue;
                 }
 
                 counterForPath++;
@@ -95,11 +97,10 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher
         }
 
         private static bool IsCatchAllAfterOtherPlaceholders(string pathTemplate, int counterForTemplate)
-            => (pathTemplate[counterForTemplate] == '/')
+            => (pathTemplate[counterForTemplate] == '/' || pathTemplate[counterForTemplate] == '?')
                 && (counterForTemplate < pathTemplate.Length - 1)
                 && (pathTemplate[counterForTemplate + 1] == '{')
-                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1)
-                && NotPassedQueryString(pathTemplate, pathTemplate.Length);
+                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1);
 
         private static bool NothingAfterFirstForwardSlash(string path)
         {

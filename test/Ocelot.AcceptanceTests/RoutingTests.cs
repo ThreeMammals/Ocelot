@@ -847,11 +847,11 @@ namespace Ocelot.AcceptanceTests
 
         [Theory(DisplayName = "Catch All Query String should be forwarded with all query string parameters with(out) last slash")]
         [Trait("Link", "https://ocelot.readthedocs.io/en/latest/features/routing.html#catch-all-query-string")]
-        [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?", "/apipath/contracts", "?")]
+        [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?", "/apipath/contracts", "")]
         [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?p1=v1&p2=v2", "/apipath/contracts", "?p1=v1&p2=v2")]
-        [InlineData("/apipath/contracts/?{everything}", "/contracts/?{everything}", "/contracts/?", "/apipath/contracts/", "?")]
+        [InlineData("/apipath/contracts/?{everything}", "/contracts/?{everything}", "/contracts/?", "/apipath/contracts/", "")]
         [InlineData("/apipath/contracts/?{everything}", "/contracts/?{everything}", "/contracts/?p3=v3&p4=v4", "/apipath/contracts/", "?p3=v3&p4=v4")]
-        [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?filter=(-something+123+else)", "/apipath/contracts", "?filter=(-something+123+else)")]
+        [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?filter=(-something+123+else)", "/apipath/contracts", "?filter=(-something%20123%20else)")]
         public void Should_forward_Catch_All_query_string_when_last_slash(string downstream, string upstream, string requestURL, string downstreamPath, string queryString)
         {
             var port = PortFinder.GetRandomPort();
@@ -1171,7 +1171,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value + context.Request.Path.Value : context.Request.Path.Value;
                 _downstreamQuery = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty;
 
                 if (_downstreamPath != basePath)
