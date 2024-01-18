@@ -4,15 +4,15 @@ using System.Diagnostics;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ContentTests : IDisposable
+    public sealed class ContentTests : IDisposable
     {
-        private readonly Steps _steps;
         private string _contentType;
         private long? _contentLength;
         private long _memoryUsageAfterCallToService;
-
         private bool _contentTypeHeaderExists;
+
         private readonly ServiceHandler _serviceHandler;
+        private readonly Steps _steps;
 
         public ContentTests()
         {
@@ -20,36 +20,18 @@ namespace Ocelot.AcceptanceTests
             _steps = new Steps();
         }
 
+        public void Dispose()
+        {
+            _serviceHandler.Dispose();
+            _steps.Dispose();
+        }
+
         [Fact]
-        public void should_not_add_content_type_or_content_length_headers()
+        public void Should_Not_add_content_type_or_content_length_headers()
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes =
-                [
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-
-                        ],
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod =["Get"],
-                    }
-
-                ],
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            var configuration = GivenConfiguration(port);
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -61,37 +43,12 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_add_content_type_and_content_length_headers()
+        public void Should_add_content_type_and_content_length_headers()
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes =
-                [
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts =
-                        [
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            }
-
-                        ],
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod =["Post"],
-                    }
-
-                ],
-            };
-
+            var configuration = GivenConfiguration(port, HttpMethods.Post);
             var contentType = "application/json";
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.Created, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -103,33 +60,11 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_add_default_content_type_header()
+        public void Should_add_default_content_type_header()
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes =
-                [
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts =
-                        [
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        ],
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod =["Post"],
-                    },
-                ],
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 201, string.Empty))
+            var configuration = GivenConfiguration(port, HttpMethods.Post);
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.Created, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
@@ -140,34 +75,13 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void When_Downloading_File_Memory_Usage_Should_Not_Increase()
+        [Trait("PR", "1824")]
+        [Trait("Issues", "356 695 1924")]
+        public void Should_Not_increase_memory_usage_When_downloading_large_file()
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes =
-                [
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts =
-                        [
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        ],
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod =["Get"],
-                    },
-                ],
-            };
-
+            var configuration = GivenConfiguration(port);
             var dummyDatFilePath = GenerateDummyDatFile(100);
-
             this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn($"http://localhost:{port}", "/", dummyDatFilePath))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
@@ -200,14 +114,14 @@ namespace Ocelot.AcceptanceTests
             _contentTypeHeaderExists.ShouldBe(false);
         }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
                 _contentType = context.Request.ContentType;
                 _contentLength = context.Request.ContentLength;
                 _contentTypeHeaderExists = context.Request.Headers.TryGetValue("Content-Type", out var value);
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(responseBody);
             });
         }
@@ -216,7 +130,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                context.Response.StatusCode = (int) HttpStatusCode.OK;
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
                 await using var fileStream = File.OpenRead(dummyDatFilePath);
                 await fileStream.CopyToAsync(context.Response.Body);
                 _memoryUsageAfterCallToService = Process.GetCurrentProcess().WorkingSet64;
@@ -254,10 +168,22 @@ namespace Ocelot.AcceptanceTests
             return payloadPath;
         }
 
-        public void Dispose()
+        private static FileConfiguration GivenConfiguration(int port, string method = null) => new()
         {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+            Routes =
+            [
+                new FileRoute
+                {
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = Uri.UriSchemeHttp,
+                    DownstreamHostAndPorts =
+                    [
+                        new FileHostAndPort("localhost", port),
+                    ],
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = [method ?? HttpMethods.Get],
+                },
+            ],
+        };
     }
 }
