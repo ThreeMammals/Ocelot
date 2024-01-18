@@ -849,6 +849,7 @@ namespace Ocelot.AcceptanceTests
         [Trait("PR", "1911")]
         [Trait("Link", "https://ocelot.readthedocs.io/en/latest/features/routing.html#catch-all-query-string")]
         [Theory(DisplayName = "Catch All Query String should be forwarded with all query string parameters with(out) last slash")]
+        [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts", "/apipath/contracts", "")]
         [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?", "/apipath/contracts", "")]
         [InlineData("/apipath/contracts?{everything}", "/contracts?{everything}", "/contracts?p1=v1&p2=v2", "/apipath/contracts", "?p1=v1&p2=v2")]
         [InlineData("/apipath/contracts/?{everything}", "/contracts/?{everything}", "/contracts/?", "/apipath/contracts/", "")]
