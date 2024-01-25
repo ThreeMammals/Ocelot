@@ -20,7 +20,7 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
     //todo: this should be configurable and available as global config parameter in ocelot.json
     public const int DefaultRequestTimeoutSeconds = 90;
 
-    private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
+    private static readonly HashSet<HttpStatusCode> ServerErrorCodes = new()
     {
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
