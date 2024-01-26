@@ -36,6 +36,10 @@ namespace Ocelot.Configuration.Validator
                 .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.UpstreamPathTemplate))
                 .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} has duplicated placeholder");
 
+            RuleForEach(configuration => configuration.Routes)
+                .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.DownstreamPathTemplate))
+                .WithMessage((_, route) => $"{nameof(route)} {route.DownstreamPathTemplate} has duplicated placeholder");
+
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
                 .Must(HaveServiceDiscoveryProviderRegistered)
                 .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
