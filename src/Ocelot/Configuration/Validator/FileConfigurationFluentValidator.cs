@@ -40,6 +40,10 @@ namespace Ocelot.Configuration.Validator
                 .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.DownstreamPathTemplate))
                 .WithMessage((_, route) => $"{nameof(route)} {route.DownstreamPathTemplate} has duplicated placeholder");
 
+            RuleForEach(configuration => configuration.Routes)
+                .Must((_, route) => SameNamePlaceholdersInUpstreamandDownstream(route))
+                .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} {route.DownstreamPathTemplate} doesn't contain the same placeholders");
+
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
                 .Must(HaveServiceDiscoveryProviderRegistered)
                 .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
@@ -104,6 +108,24 @@ namespace Ocelot.Configuration.Validator
             var matches = regExPlaceholder.Matches(upstreamPathTemplate);
             var upstreamPathPlaceholders = matches.Select(m => m.Value);
             return upstreamPathPlaceholders.Count() == upstreamPathPlaceholders.Distinct().Count();
+        }
+
+        private static bool SameNamePlaceholdersInUpstreamandDownstream(FileRoute route)
+        {
+            var regExPlaceholder = new Regex("{[^}]+}");
+            var upstreamMatches = regExPlaceholder.Matches(route.UpstreamPathTemplate);
+            var upstreamPathPlaceholders = upstreamMatches.Select(m => m.Value);
+            var downstreamMatches = regExPlaceholder.Matches(route.DownstreamPathTemplate);
+            var downstreamPathPlaceholders = downstreamMatches.Select(m => m.Value);
+            foreach(var upstreamPlaceholder in upstreamPathPlaceholders)
+            {
+                if(!downstreamPathPlaceholders.Contains(upstreamPlaceholder))
+                {
+                    return false;
+                }
+            }
+
+            return upstreamPathPlaceholders.Count() == downstreamPathPlaceholders.Count();
         }
 
         private static bool DoesNotContainRoutesWithSpecificRequestIdKeys(FileAggregateRoute fileAggregateRoute,

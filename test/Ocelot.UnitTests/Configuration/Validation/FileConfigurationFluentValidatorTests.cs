@@ -781,6 +781,33 @@ namespace Ocelot.UnitTests.Configuration.Validation
             ServiceName = "test",
         };
 
+        [Fact]
+        [Trait("Bug", "683")]
+        public void configuration_is_invalid_when_placeholder_is_used_twice_in_both_streams_path_template()
+        {
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/bar/{everything}/{everything}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new() { Host = "a.b.cd" },
+                        },
+                        UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder"))
+                .BDDfy();
+        }
+
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
             _fileConfiguration = fileConfiguration;
