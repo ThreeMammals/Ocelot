@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product|my-service-name"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product||my-service-name"))
                 .BDDfy();
         }
 
