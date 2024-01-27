@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}"))
+                .Then(_ => ThenTheResultIs("CookieStickySessions:testy"))
                 .BDDfy();
         }
 
@@ -39,9 +39,9 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                DownstreamHostAndPorts =
+                [
                     new()
                     {
                         Host = "localhost",
@@ -52,12 +52,12 @@ namespace Ocelot.UnitTests.Configuration
                         Host = "localhost",
                         Port = 4430,
                     },
-                },
+                ],
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|localhost:8080|localhost:4430"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||||"))
                 .BDDfy();
         }
 
@@ -68,9 +68,9 @@ namespace Ocelot.UnitTests.Configuration
             {
                 UpstreamHost = "my-upstream-host",
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                DownstreamHostAndPorts =
+                [
                     new()
                     {
                         Host = "localhost",
@@ -81,12 +81,12 @@ namespace Ocelot.UnitTests.Configuration
                         Host = "localhost",
                         Port = 4430,
                     },
-                },
+                ],
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|my-upstream-host|/api/product|localhost:8080|localhost:4430"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-upstream-host||||"))
                 .BDDfy();
         }
 
@@ -96,13 +96,34 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
                 ServiceName = "my-service-name",
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-service-name"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||my-service-name||"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_re_route_key_with_load_balancer_options()
+        {
+            var route = new FileRoute
+            {
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                ServiceName = "my-service-name",
+                LoadBalancerOptions = new FileLoadBalancerOptions
+                {
+                    Type = nameof(LeastConnection),
+                    Key = "testy",
+                },
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||my-service-name|LeastConnection|testy"))
                 .BDDfy();
         }
 

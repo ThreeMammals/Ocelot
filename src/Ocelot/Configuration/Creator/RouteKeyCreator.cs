@@ -24,33 +24,18 @@ namespace Ocelot.Configuration.Creator
                 Append(upstreamHttpMethod, ',');
             }
 
-            Append(fileRoute.UpstreamHost);
             Append(fileRoute.UpstreamPathTemplate);
-
-            if (!string.IsNullOrEmpty(fileRoute.ServiceName))
-            {
-                Append(fileRoute.ServiceNamespace);
-                Append(fileRoute.ServiceName);
-            }
-            else
-            {
-                foreach (var downstreamHostAndPorts in fileRoute.DownstreamHostAndPorts)
-                {
-                    Append(downstreamHostAndPorts.Host);
-                    Append(downstreamHostAndPorts.Port.ToString(), ':');
-                }
-            }
+            Append(fileRoute.UpstreamHost);
+            Append(fileRoute.ServiceNamespace);
+            Append(fileRoute.ServiceName);
+            Append(fileRoute.LoadBalancerOptions.Type);
+            Append(fileRoute.LoadBalancerOptions.Key);
 
             return keyBuilder.ToString();
 
             // Helper function for appending a part to the key, automatically inserts a separator as needed
             void Append(string next, char separator = '|')
             {
-                if (string.IsNullOrEmpty(next))
-                {
-                    return;
-                }
-
                 if (keyBuilder.Length > 0)
                 {
                     keyBuilder.Append(separator);
