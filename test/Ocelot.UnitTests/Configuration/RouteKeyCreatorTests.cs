@@ -57,7 +57,52 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(',', route.UpstreamHttpMethod)}|{string.Join(',', route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product|localhost:123|localhost:123"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_re_route_key_with_upstream_host()
+        {
+            var route = new FileRoute
+            {
+                UpstreamHost = "my-upstream-host",
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
+                DownstreamHostAndPorts = new List<FileHostAndPort>
+                {
+                    new()
+                    {
+                        Host = "localhost",
+                        Port = 123,
+                    },
+                    new()
+                    {
+                        Host = "localhost",
+                        Port = 123,
+                    },
+                },
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|my-upstream-host|/api/product|localhost:123|localhost:123"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_re_route_key_with_service_name()
+        {
+            var route = new FileRoute
+            {
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
+                ServiceName = "my-service-name",
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product|my-service-name"))
                 .BDDfy();
         }
 
