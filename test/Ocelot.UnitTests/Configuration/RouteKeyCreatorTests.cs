@@ -45,19 +45,19 @@ namespace Ocelot.UnitTests.Configuration
                     new()
                     {
                         Host = "localhost",
-                        Port = 123,
+                        Port = 8080,
                     },
                     new()
                     {
                         Host = "localhost",
-                        Port = 123,
+                        Port = 4430,
                     },
                 },
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product|localhost:123|localhost:123"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|localhost:8080|localhost:4430"))
                 .BDDfy();
         }
 
@@ -74,19 +74,19 @@ namespace Ocelot.UnitTests.Configuration
                     new()
                     {
                         Host = "localhost",
-                        Port = 123,
+                        Port = 8080,
                     },
                     new()
                     {
                         Host = "localhost",
-                        Port = 123,
+                        Port = 4430,
                     },
                 },
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|my-upstream-host|/api/product|localhost:123|localhost:123"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|my-upstream-host|/api/product|localhost:8080|localhost:4430"))
                 .BDDfy();
         }
 
@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT||/api/product||my-service-name"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-service-name"))
                 .BDDfy();
         }
 

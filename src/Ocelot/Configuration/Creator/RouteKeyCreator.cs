@@ -43,13 +43,14 @@ namespace Ocelot.Configuration.Creator
 
             return keyBuilder.ToString();
 
-            // Helper method for appending a part to the key, automatically inserts a separator as needed
+            // Helper function for appending a part to the key, automatically inserts a separator as needed
             void Append(string next, char separator = '|')
             {
                 if (string.IsNullOrEmpty(next))
                 {
                     return;
                 }
+
                 if (keyBuilder.Length > 0)
                 {
                     keyBuilder.Append(separator);
