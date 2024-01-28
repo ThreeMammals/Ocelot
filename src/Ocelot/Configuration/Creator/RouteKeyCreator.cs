@@ -18,18 +18,24 @@ namespace Ocelot.Configuration.Creator
                 return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
             }
 
+            // Build the key from the route's properties using the format:
+            // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
             var keyBuilder = new StringBuilder();
+
+            // UpstreamHttpMethod and UpstreamPathTemplate are required
             foreach (var upstreamHttpMethod in fileRoute.UpstreamHttpMethod)
             {
                 Append(upstreamHttpMethod, ',');
             }
 
             Append(fileRoute.UpstreamPathTemplate);
-            Append(fileRoute.UpstreamHost);
-            Append(fileRoute.ServiceNamespace);
-            Append(fileRoute.ServiceName);
-            Append(fileRoute.LoadBalancerOptions.Type);
-            Append(fileRoute.LoadBalancerOptions.Key);
+
+            // Other properties are optional, use constants for missing values to aid debugging
+            Append(CoalesceNullOrWhiteSpace(fileRoute.UpstreamHost, "no-host"));
+            Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceNamespace, "no-svc-ns"));
+            Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceName, "no-svc-name"));
+            Append(CoalesceNullOrWhiteSpace(fileRoute.LoadBalancerOptions.Type, "no-lb-type"));
+            Append(CoalesceNullOrWhiteSpace(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
 
             return keyBuilder.ToString();
 
@@ -43,6 +49,8 @@ namespace Ocelot.Configuration.Creator
 
                 keyBuilder.Append(next);
             }
+
+            string CoalesceNullOrWhiteSpace(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||||"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var route = new FileRoute
             {
-                UpstreamHost = "my-upstream-host",
+                UpstreamHost = "my-host",
                 UpstreamPathTemplate = "/api/product",
                 UpstreamHttpMethod = ["GET", "POST", "PUT"],
                 DownstreamHostAndPorts =
@@ -86,23 +86,23 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-upstream-host||||"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-host|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_return_re_route_key_with_service_name()
+        public void should_return_re_route_key_with_svc_name()
         {
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
                 UpstreamHttpMethod = ["GET", "POST", "PUT"],
-                ServiceName = "my-service-name",
+                ServiceName = "products-service",
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||my-service-name||"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|products-service|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Configuration
             {
                 UpstreamPathTemplate = "/api/product",
                 UpstreamHttpMethod = ["GET", "POST", "PUT"],
-                ServiceName = "my-service-name",
+                ServiceName = "products-service",
                 LoadBalancerOptions = new FileLoadBalancerOptions
                 {
                     Type = nameof(LeastConnection),
@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|||my-service-name|LeastConnection|testy"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|products-service|LeastConnection|testy"))
                 .BDDfy();
         }
 
