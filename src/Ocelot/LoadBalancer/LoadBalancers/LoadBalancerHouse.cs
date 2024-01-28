@@ -18,12 +18,27 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         {
             try
             {
+                Response<ILoadBalancer> result;
+
                 if (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer))
                 {
+                    if (route.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
+                    {
+                        result = _factory.Get(route, config);
+                        if (result.IsError)
+                        {
+                            return new ErrorResponse<ILoadBalancer>(result.Errors);
+                        }
+
+                        loadBalancer = result.Data;
+                        AddLoadBalancer(route.LoadBalancerKey, loadBalancer);
+                    }
+
                     return new OkResponse<ILoadBalancer>(loadBalancer);
                 }
 
-                var result = _factory.Get(route, config);
+                result = _factory.Get(route, config);
+
                 if (result.IsError)
                 {
                     return new ErrorResponse<ILoadBalancer>(result.Errors);
