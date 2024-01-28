@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-host|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
@@ -102,7 +102,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|products-service|no-lb-type|no-lb-key"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key"))
                 .BDDfy();
         }
 
@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-svc-ns|products-service|LeastConnection|testy"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy"))
                 .BDDfy();
         }
 

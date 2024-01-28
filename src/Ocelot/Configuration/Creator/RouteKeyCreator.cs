@@ -23,15 +23,15 @@ namespace Ocelot.Configuration.Creator
             var keyBuilder = new StringBuilder();
 
             // UpstreamHttpMethod and UpstreamPathTemplate are required
-            foreach (var upstreamHttpMethod in fileRoute.UpstreamHttpMethod)
-            {
-                Append(upstreamHttpMethod, ',');
-            }
-
+            var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
+            Append(upstreamHttpMethods);
             Append(fileRoute.UpstreamPathTemplate);
 
-            // Other properties are optional, use constants for missing values to aid debugging
+            // Other properties are optional, replace undefined values with defaults to aid debugging
             Append(CoalesceNullOrWhiteSpace(fileRoute.UpstreamHost, "no-host"));
+
+            var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
+            Append(CoalesceNullOrWhiteSpace(downstreamHostAndPorts, "no-host-and-port"));
             Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceNamespace, "no-svc-ns"));
             Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceName, "no-svc-name"));
             Append(CoalesceNullOrWhiteSpace(fileRoute.LoadBalancerOptions.Type, "no-lb-type"));
@@ -39,17 +39,21 @@ namespace Ocelot.Configuration.Creator
 
             return keyBuilder.ToString();
 
-            // Helper function for appending a part to the key, automatically inserts a separator as needed
-            void Append(string next, char separator = '|')
+            // Helper function to append a string to the keyBuilder, separated by a pipe
+            void Append(string next)
             {
                 if (keyBuilder.Length > 0)
                 {
-                    keyBuilder.Append(separator);
+                    keyBuilder.Append('|');
                 }
 
                 keyBuilder.Append(next);
             }
 
+            // Helper function to convert multiple strings into a comma-separated string
+            string Csv(IEnumerable<string> values) => string.Join(',', values);
+
+            // Helper function to return the first non-null-or-whitespace string
             string CoalesceNullOrWhiteSpace(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
         }
     }
