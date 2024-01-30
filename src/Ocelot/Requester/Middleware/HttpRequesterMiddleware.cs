@@ -39,15 +39,14 @@ namespace Ocelot.Requester.Middleware
 
         private void CreateLogBasedOnResponse(Response<HttpResponseMessage> response)
         {
-            if (response.Data?.StatusCode <= HttpStatusCode.BadRequest)
+            var message= () =>$"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}";
+            if (response.Data?.StatusCode < HttpStatusCode.BadRequest)
             {
-                Logger.LogInformation(() =>
-                    $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
+                Logger.LogInformation(message);
             }
             else if (response.Data?.StatusCode >= HttpStatusCode.BadRequest)
             {
-                Logger.LogWarning(
-                    () => $"{(int)response.Data.StatusCode} ({response.Data.ReasonPhrase}) status code, request uri: {response.Data.RequestMessage?.RequestUri}");
+                Logger.LogWarning(message);
             }
         }
     }
