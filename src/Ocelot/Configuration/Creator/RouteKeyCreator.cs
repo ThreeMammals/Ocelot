@@ -19,7 +19,7 @@ namespace Ocelot.Configuration.Creator
             }
 
             // Build the key from the route's properties using the format:
-            // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
+            // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
             var keyBuilder = new StringBuilder();
 
             // UpstreamHttpMethod and UpstreamPathTemplate are required
