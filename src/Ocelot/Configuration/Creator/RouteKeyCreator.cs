@@ -24,23 +24,23 @@ namespace Ocelot.Configuration.Creator
 
             // UpstreamHttpMethod and UpstreamPathTemplate are required
             var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
-            Append(upstreamHttpMethods);
-            Append(fileRoute.UpstreamPathTemplate);
+            Append(keyBuilder, upstreamHttpMethods);
+            Append(keyBuilder, fileRoute.UpstreamPathTemplate);
 
             // Other properties are optional, replace undefined values with defaults to aid debugging
-            Append(CoalesceNullOrWhiteSpace(fileRoute.UpstreamHost, "no-host"));
+            Append(keyBuilder, Coalesce(fileRoute.UpstreamHost, "no-host"));
 
             var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
-            Append(CoalesceNullOrWhiteSpace(downstreamHostAndPorts, "no-host-and-port"));
-            Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceNamespace, "no-svc-ns"));
-            Append(CoalesceNullOrWhiteSpace(fileRoute.ServiceName, "no-svc-name"));
-            Append(CoalesceNullOrWhiteSpace(fileRoute.LoadBalancerOptions.Type, "no-lb-type"));
-            Append(CoalesceNullOrWhiteSpace(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
+            Append(keyBuilder, Coalesce(downstreamHostAndPorts, "no-host-and-port"));
+            Append(keyBuilder, Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"));
+            Append(keyBuilder, Coalesce(fileRoute.ServiceName, "no-svc-name"));
+            Append(keyBuilder, Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"));
+            Append(keyBuilder, Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
 
             return keyBuilder.ToString();
 
             // Helper function to append a string to the keyBuilder, separated by a pipe
-            void Append(string next)
+            static void Append(StringBuilder keyBuilder, string next)
             {
                 if (keyBuilder.Length > 0)
                 {
@@ -51,10 +51,10 @@ namespace Ocelot.Configuration.Creator
             }
 
             // Helper function to convert multiple strings into a comma-separated string
-            string Csv(IEnumerable<string> values) => string.Join(',', values);
+            static string Csv(IEnumerable<string> values) => string.Join(',', values);
 
             // Helper function to return the first non-null-or-whitespace string
-            string CoalesceNullOrWhiteSpace(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
+            static string Coalesce(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
         }
     }
 }
