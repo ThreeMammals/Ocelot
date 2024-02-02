@@ -64,7 +64,7 @@ The example here shows a typical configuration:
         "Port": 443,
         "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
         "Namespace": "dev",
-        "Type": "kube"
+        "Type": "KubernetesServiceDiscoveryProvider"
       }
     }
   }
