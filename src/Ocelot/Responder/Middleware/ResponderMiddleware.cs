@@ -18,8 +18,7 @@ namespace Ocelot.Responder.Middleware
         public ResponderMiddleware(RequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
-            IErrorsToHttpStatusCodeMapper codeMapper
-           )
+            IErrorsToHttpStatusCodeMapper codeMapper)
             : base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;

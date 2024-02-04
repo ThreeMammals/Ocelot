@@ -143,18 +143,20 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        ////[Fact(DisplayName = "1833: " + nameof(Should_timeout_per_default_after_90_seconds))]
-        //private void Should_timeout_per_default_after_90_seconds()
-        //{
-        //    var port = PortFinder.GetRandomPort();
-        //    var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-        //    this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
-        //        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        //        .And(x => _steps.GivenOcelotIsRunningWithPolly())
-        //        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-        //        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-        //        .BDDfy();
-        //}
+        [Fact]
+        [Trait("Bug", "1833")]
+        public void Should_timeout_per_default_after_90_seconds()
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithPolly())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .BDDfy();
+        }
+
         private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 
         private void GivenThereIsABrokenServiceRunningOn(string url)

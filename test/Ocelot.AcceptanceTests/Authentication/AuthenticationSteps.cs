@@ -93,7 +93,7 @@ public class AuthenticationSteps : Steps, IDisposable
                         .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
                     .AddInMemoryApiResources(apiScopes
                         .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
-                        .Select(x => CreateApiResource(x.scope, /*x.i % 2 == 0 ?*/ ["openid", "offline_access"] /*: []*/)))
+                        .Select(x => CreateApiResource(x.scope, ["openid", "offline_access"])))
                     .AddInMemoryClients(clients)
                     .AddTestUsers(
                     [
