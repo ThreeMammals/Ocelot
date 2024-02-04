@@ -16,7 +16,10 @@
         }
 
         public List<string> AllowedScopes { get; set; }
+
+        [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
         public string AuthenticationProviderKey { get; set; }
+
         public string[] AuthenticationProviderKeys { get; set; }
 
         public override string ToString() => new StringBuilder()

@@ -26,7 +26,25 @@ namespace Ocelot.Configuration
         }
 
         public List<string> AllowedScopes { get; }
+
+        /// <summary>
+        /// Authentication scheme registered in DI services with appropriate authentication provider.
+        /// </summary>
+        /// <value>
+        /// A <see langword="string"/> value of the scheme name.
+        /// </value>
+        [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
         public string AuthenticationProviderKey { get; }
+
+        /// <summary>
+        /// Multiple authentication schemes registered in DI services with appropriate authentication providers.
+        /// </summary>
+        /// <remarks>
+        /// The order in the collection matters: first successful authentication result wins.
+        /// </remarks>
+        /// <value>
+        /// An array of <see langword="string"/> values of the scheme names.
+        /// </value>
         public string[] AuthenticationProviderKeys { get; }
     }
 }

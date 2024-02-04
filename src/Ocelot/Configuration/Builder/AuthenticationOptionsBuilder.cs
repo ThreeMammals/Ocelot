@@ -12,6 +12,7 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        [Obsolete("Use the " + nameof(WithAuthenticationProviderKeys) + " property!")]
         public AuthenticationOptionsBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
         {
             _authenticationProviderKey = authenticationProviderKey;
