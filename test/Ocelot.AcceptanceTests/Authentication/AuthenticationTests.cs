@@ -29,7 +29,7 @@ namespace Ocelot.AcceptanceTests.Authentication
         public void Should_return_401_using_identity_server_access_token()
         {
             var port = PortFinder.GetRandomPort();
-            var route = GivenDefaultRoute(port, HttpMethods.Post);
+            var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
@@ -45,7 +45,7 @@ namespace Ocelot.AcceptanceTests.Authentication
         public void Should_return_response_200_using_identity_server()
         {
             var port = PortFinder.GetRandomPort();
-            var route = GivenDefaultRoute(port);
+            var route = GivenDefaultAuthRoute(port);
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
@@ -63,11 +63,11 @@ namespace Ocelot.AcceptanceTests.Authentication
         public void Should_return_response_401_using_identity_server_with_token_requested_for_other_api()
         {
             var port = PortFinder.GetRandomPort();
-            var route = GivenDefaultRoute(port);
+            var route = GivenDefaultAuthRoute(port);
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
-                .And(x => GivenIHaveATokenWithScope(_identityServerRootUrl, "api2"))
+                .And(x => GivenAuthToken(_identityServerRootUrl, "api2"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
@@ -80,7 +80,7 @@ namespace Ocelot.AcceptanceTests.Authentication
         public void Should_return_201_using_identity_server_access_token()
         {
             var port = PortFinder.GetRandomPort();
-            var route = GivenDefaultRoute(port, HttpMethods.Post);
+            var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
@@ -98,7 +98,7 @@ namespace Ocelot.AcceptanceTests.Authentication
         public void Should_return_201_using_identity_server_reference_token()
         {
             var port = PortFinder.GetRandomPort();
-            var route = GivenDefaultRoute(port, HttpMethods.Post);
+            var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
             this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
@@ -114,7 +114,8 @@ namespace Ocelot.AcceptanceTests.Authentication
 
         private void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
-            _identityServerBuilder = CreateIdentityServer(url, tokenType, "api", "api2")
+            var scopes = new string[] { "api", "api2" };
+            _identityServerBuilder = CreateIdentityServer(url, tokenType, scopes, null)
                 .Build();
             _identityServerBuilder.Start();
             VerifyIdentityServerStarted(url);

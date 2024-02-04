@@ -88,7 +88,6 @@ namespace Ocelot.Configuration.Validator
 
         private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions options, CancellationToken cancellationToken)
         {
-
             if (string.IsNullOrEmpty(options.AuthenticationProviderKey)
                 && options.AuthenticationProviderKeys.Length == 0)
             {

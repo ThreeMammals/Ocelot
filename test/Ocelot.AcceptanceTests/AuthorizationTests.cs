@@ -467,7 +467,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         private async Task GivenIHaveATokenForApiReadOnlyScope(string url)
-            => await GivenIHaveATokenWithScope(url, "api.readOnly");
+            => await GivenAuthToken(url, "api.readOnly");
 
         public override void Dispose()
         {

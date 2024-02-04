@@ -21,6 +21,7 @@ public class AuthenticationSteps : Steps, IDisposable
     {
         _serviceHandler.Dispose();
         base.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public static ApiResource CreateApiResource(
@@ -46,9 +47,37 @@ public class AuthenticationSteps : Steps, IDisposable
         },
     };
 
-    public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, params string[] apiScopes)
+    protected static Client CreateClientWithSecret(string clientId, Secret secret, AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
     {
-        apiScopes ??= Array.Empty<string>();
+        var client = DefaultClient(tokenType, apiScopes);
+        client.ClientId = clientId ?? "client";
+        client.ClientSecrets = new Secret[] { secret };
+        return client;
+    }
+
+    protected static Client DefaultClient(AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
+    {
+        apiScopes ??= ["api"];
+        return new()
+        {
+            ClientId = "client",
+            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+            ClientSecrets = new List<Secret> { new("secret".Sha256()) },
+            AllowedScopes = apiScopes
+                .Union(apiScopes.Select(x => $"{x}.readOnly"))
+                .Union(["openid", "offline_access"])
+                .ToList(),
+            AccessTokenType = tokenType,
+            Enabled = true,
+            RequireClientSecret = false,
+            RefreshTokenExpiration = TokenExpiration.Absolute,
+        };
+    }
+
+    public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, string[] apiScopes, Client[] clients)
+    {
+        apiScopes ??= ["api"];
+        clients ??= [DefaultClient(tokenType, apiScopes)];
         var builder = new WebHostBuilder()
             .UseUrls(url)
             .UseKestrel()
@@ -61,27 +90,11 @@ public class AuthenticationSteps : Steps, IDisposable
                 services.AddIdentityServer()
                     .AddDeveloperSigningCredential()
                     .AddInMemoryApiScopes(apiScopes
-                        .Select(apiname => new ApiScope(apiname, "test")))
+                        .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
                     .AddInMemoryApiResources(apiScopes
                         .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
-                        .Select(x => CreateApiResource(x.scope,
-                            x.i % 2 == 0 ?["openid", "offline_access"] :[])))
-                    .AddInMemoryClients(new List<Client>
-                    {
-                        new()
-                        {
-                            ClientId = "client",
-                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                            ClientSecrets = new List<Secret> { new("secret".Sha256()) },
-                            AllowedScopes = apiScopes
-                                .Union(apiScopes.Select(x => $"{x}.readOnly"))
-                                .Union(["openid", "offline_access"])
-                                .ToList(),
-                            AccessTokenType = tokenType,
-                            Enabled = true,
-                            RequireClientSecret = false,
-                        },
-                    })
+                        .Select(x => CreateApiResource(x.scope, /*x.i % 2 == 0 ?*/ ["openid", "offline_access"] /*: []*/)))
+                    .AddInMemoryClients(clients)
                     .AddTestUsers(
                     [
                         new()
@@ -104,16 +117,28 @@ public class AuthenticationSteps : Steps, IDisposable
         return builder;
     }
 
-    protected Task GivenIHaveATokenWithScope(string url, string apiScope = "api")
+    internal Task<BearerToken> GivenAuthToken(string url, string apiScope)
     {
         var form = GivenDefaultAuthTokenForm();
         form.RemoveAll(x => x.Key == "scope");
         form.Add(new("scope", apiScope));
+        return GivenIHaveATokenWithForm(url, form);
+    }
+
+    internal Task<BearerToken> GivenAuthToken(string url, string apiScope, string client)
+    {
+        var form = GivenDefaultAuthTokenForm();
+
+        form.RemoveAll(x => x.Key == "scope");
+        form.Add(new("scope", apiScope));
+
+        form.RemoveAll(x => x.Key == "client_id");
+        form.Add(new("client_id", client));
 
         return GivenIHaveATokenWithForm(url, form);
     }
 
-    public static FileRoute GivenDefaultRoute(int port, string upstreamHttpMethod = null) => new()
+    public static FileRoute GivenDefaultAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null) => new()
     {
         DownstreamPathTemplate = "/",
         DownstreamHostAndPorts =
@@ -122,10 +147,10 @@ public class AuthenticationSteps : Steps, IDisposable
             ],
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod =[upstreamHttpMethod ?? HttpMethods.Get],
+        UpstreamHttpMethod = [upstreamHttpMethod ?? HttpMethods.Get],
         AuthenticationOptions = new FileAuthenticationOptions
         {
-            AuthenticationProviderKey = "Test",
+            AuthenticationProviderKey = authProviderKey ?? "Test",
         },
     };
 

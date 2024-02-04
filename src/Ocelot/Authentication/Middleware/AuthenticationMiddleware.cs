@@ -53,12 +53,12 @@ namespace Ocelot.Authentication.Middleware
             }
         }
 
-        private async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, DownstreamRoute route)
+        private async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)
         {
             var options = route.AuthenticationOptions;
             if (!string.IsNullOrWhiteSpace(options.AuthenticationProviderKey))
             {
-                return await httpContext.AuthenticateAsync(options.AuthenticationProviderKey);
+                return await context.AuthenticateAsync(options.AuthenticationProviderKey);
             }
 
             var providerKeys = options.AuthenticationProviderKeys;
@@ -69,12 +69,19 @@ namespace Ocelot.Authentication.Middleware
             }
 
             AuthenticateResult result = null;
-            foreach (var authenticationProviderKey in providerKeys.Where(apk => !string.IsNullOrWhiteSpace(apk)))
+            foreach (var scheme in providerKeys.Where(apk => !string.IsNullOrWhiteSpace(apk)))
             {
-                result = await httpContext.AuthenticateAsync(authenticationProviderKey);
-                if (result?.Succeeded == true)
+                try
                 {
-                    return result;
+                    result = await context.AuthenticateAsync(scheme);
+                    if (result?.Succeeded == true)
+                    {
+                        return result;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogWarning(() => $"Impossible to authenticate client for path '{route.DownstreamPathTemplate}' and {nameof(options.AuthenticationProviderKey)}:{scheme}. Error: {e.Message}.");
                 }
             }
 

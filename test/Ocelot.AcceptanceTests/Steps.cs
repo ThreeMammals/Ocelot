@@ -39,15 +39,15 @@ namespace Ocelot.AcceptanceTests;
 
 public class Steps : IDisposable
 {
-    private TestServer _ocelotServer;
-    private HttpClient _ocelotClient;
+    protected TestServer _ocelotServer;
+    protected HttpClient _ocelotClient;
     private HttpResponseMessage _response;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
     private readonly Random _random;
-    private readonly string _ocelotConfigFileName;
-    private IWebHostBuilder _webHostBuilder;
+    protected readonly string _ocelotConfigFileName;
+    protected IWebHostBuilder _webHostBuilder;
     private WebHostBuilder _ocelotBuilder;
     private IWebHost _ocelotHost;
     private IOcelotConfigurationChangeTokenSource _changeToken;
@@ -666,6 +666,29 @@ public class Steps : IDisposable
         _response.ReasonPhrase.ShouldBe(expected);
     }
 
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
+    {
+        _webHostBuilder = new WebHostBuilder()
+            .ConfigureAppConfiguration(WithBasicConfiguration)
+            .ConfigureServices(configureServices ?? WithAddOcelot)
+            .Configure(WithUseOcelot);
+        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotClient = _ocelotServer.CreateClient();
+    }
+
+    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config)
+    {
+        var env = hosting.HostingEnvironment;
+        config.SetBasePath(env.ContentRootPath);
+        config.AddJsonFile("appsettings.json", true, false)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+        config.AddJsonFile(_ocelotConfigFileName, true, false);
+        config.AddEnvironmentVariables();
+    }
+
+    public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
+    public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
+
     /// <summary>
     /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
     /// </summary>
@@ -709,13 +732,13 @@ public class Steps : IDisposable
         new ("grant_type", "password"),
     };
 
-    public async Task GivenIHaveAToken(string url)
+    internal Task<BearerToken> GivenIHaveAToken(string url)
     {
         var form = GivenDefaultAuthTokenForm();
-        await GivenIHaveATokenWithForm(url, form);
+        return GivenIHaveATokenWithForm(url, form);
     }
 
-    public async Task GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
+    internal async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
     {
         var tokenUrl = $"{url}/connect/token";
         var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
@@ -726,6 +749,7 @@ public class Steps : IDisposable
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
         _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+        return _token;
     }
 
     public static void VerifyIdentityServerStarted(string url)
