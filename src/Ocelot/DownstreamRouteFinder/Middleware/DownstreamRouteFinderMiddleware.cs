@@ -21,7 +21,7 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
             _factory = downstreamRouteFinder;
         }
 
-        public override string MiddlewareName => nameof(DownstreamRouteFinderMiddleware);
+        protected override string MiddlewareName => nameof(DownstreamRouteFinderMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

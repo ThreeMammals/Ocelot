@@ -19,7 +19,7 @@ namespace Ocelot.QueryStrings.Middleware
             _addQueriesToRequest = addQueriesToRequest;
         }
 
-        public override string MiddlewareName => nameof(ClaimsToQueryStringMiddleware);
+        protected override string MiddlewareName => nameof(ClaimsToQueryStringMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

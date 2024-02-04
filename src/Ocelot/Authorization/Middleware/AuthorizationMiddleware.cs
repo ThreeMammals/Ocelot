@@ -23,7 +23,7 @@ namespace Ocelot.Authorization.Middleware
             _scopesAuthorizer = scopesAuthorizer;
         }
 
-        public override string MiddlewareName => nameof(AuthorizationMiddleware);
+        protected override string MiddlewareName => nameof(AuthorizationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

@@ -36,7 +36,7 @@ namespace Ocelot.WebSockets
             _factory = factory;
         }
 
-        public override string MiddlewareName => nameof(WebSocketsProxyMiddleware);
+        protected override string MiddlewareName => nameof(WebSocketsProxyMiddleware);
 
         private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
         {

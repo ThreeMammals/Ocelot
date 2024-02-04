@@ -19,7 +19,7 @@ namespace Ocelot.Claims.Middleware
             _addClaimsToRequest = addClaimsToRequest;
         }
 
-        public override string MiddlewareName => nameof(ClaimsToClaimsMiddleware);
+        protected override string MiddlewareName => nameof(ClaimsToClaimsMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

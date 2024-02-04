@@ -31,7 +31,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             _replacer = replacer;
         }
 
-        public override string MiddlewareName => nameof(DownstreamUrlCreatorMiddleware);
+        protected override string MiddlewareName => nameof(DownstreamUrlCreatorMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

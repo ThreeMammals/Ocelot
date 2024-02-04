@@ -27,7 +27,7 @@ namespace Ocelot.Responder.Middleware
             _codeMapper = codeMapper;
         }
 
-        public override string MiddlewareName => nameof(ResponderMiddleware);
+        protected override string MiddlewareName => nameof(ResponderMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

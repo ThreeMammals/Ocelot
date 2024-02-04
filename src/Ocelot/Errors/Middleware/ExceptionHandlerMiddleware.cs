@@ -24,7 +24,7 @@ namespace Ocelot.Errors.Middleware
             _repo = repo;
         }
 
-        public override string MiddlewareName => nameof(ExceptionHandlerMiddleware);
+        protected override string MiddlewareName => nameof(ExceptionHandlerMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

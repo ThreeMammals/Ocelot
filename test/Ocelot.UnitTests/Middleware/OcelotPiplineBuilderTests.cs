@@ -108,7 +108,7 @@ namespace Ocelot.UnitTests.Middleware
                 _next = next;
             }
 
-            public override string MiddlewareName => nameof(MultiParametersInvokeMiddleware);
+            protected override string MiddlewareName => nameof(MultiParametersInvokeMiddleware);
 
             public Task Invoke(HttpContext context, IServiceProvider serviceProvider)
             {

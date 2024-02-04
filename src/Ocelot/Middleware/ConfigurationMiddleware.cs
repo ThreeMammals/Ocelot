@@ -19,7 +19,7 @@ namespace Ocelot.Middleware
             _configRepo = configRepo;
         }
 
-        public override string MiddlewareName => nameof(ConfigurationMiddleware);
+        protected override string MiddlewareName => nameof(ConfigurationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

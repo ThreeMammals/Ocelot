@@ -19,7 +19,7 @@ namespace Ocelot.Headers.Middleware
             _addHeadersToRequest = addHeadersToRequest;
         }
 
-        public override string MiddlewareName => nameof(ClaimsToHeadersMiddleware);
+        protected override string MiddlewareName => nameof(ClaimsToHeadersMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
