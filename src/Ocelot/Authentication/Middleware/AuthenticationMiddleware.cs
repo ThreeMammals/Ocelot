@@ -10,15 +10,11 @@ namespace Ocelot.Authentication.Middleware
     {
         private readonly RequestDelegate _next;
 
-        public AuthenticationMiddleware(
-            RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory)
+        public AuthenticationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
             : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
         }
-
-        protected override string MiddlewareName => nameof(AuthenticationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -31,6 +27,7 @@ namespace Ocelot.Authentication.Middleware
                 Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
 
                 var result = await AuthenticateAsync(httpContext, downstreamRoute);
+
                 httpContext.User = result.Principal;
                 var identity = httpContext.User.Identity;
 

@@ -10,17 +10,14 @@ namespace Ocelot.LoadBalancer.Middleware
         private readonly RequestDelegate _next;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
 
-        public LoadBalancingMiddleware(
-            RequestDelegate next,
+        public LoadBalancingMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             ILoadBalancerHouse loadBalancerHouse)
-            : base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
+                : base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
         {
             _next = next;
             _loadBalancerHouse = loadBalancerHouse;
         }
-
-        protected override string MiddlewareName => nameof(LoadBalancingMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

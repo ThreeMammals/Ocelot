@@ -16,17 +16,14 @@ namespace Ocelot.RequestId.Middleware
         private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
 
-        public RequestIdMiddleware(
-            RequestDelegate next,
+        public RequestIdMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository)
-            : base(loggerFactory.CreateLogger<RequestIdMiddleware>())
+                : base(loggerFactory.CreateLogger<RequestIdMiddleware>())
         {
             _next = next;
             _requestScopedDataRepository = requestScopedDataRepository;
         }
-
-        protected override string MiddlewareName => nameof(RequestIdMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

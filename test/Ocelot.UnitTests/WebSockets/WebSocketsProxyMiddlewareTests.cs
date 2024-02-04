@@ -34,7 +34,7 @@ public class WebSocketsProxyMiddlewareTests
         _loggerFactory.Setup(x => x.CreateLogger<WebSocketsProxyMiddleware>())
             .Returns(_logger.Object);
 
-        _middleware = new WebSocketsProxyMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
+        _middleware = new WebSocketsProxyMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
 
         _client = new Mock<IClientWebSocket>();
         _factory.Setup(x => x.CreateClient()).Returns(_client.Object);

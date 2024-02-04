@@ -15,19 +15,17 @@ namespace Ocelot.Responder.Middleware
         private readonly IHttpResponder _responder;
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
 
-        public ResponderMiddleware(
-            RequestDelegate next,
+        public ResponderMiddleware(RequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
-            IErrorsToHttpStatusCodeMapper codeMapper)
+            IErrorsToHttpStatusCodeMapper codeMapper
+           )
             : base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
             _responder = responder;
             _codeMapper = codeMapper;
         }
-
-        protected override string MiddlewareName => nameof(ResponderMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

@@ -10,17 +10,14 @@ namespace Ocelot.DownstreamPathManipulation.Middleware
         private readonly RequestDelegate _next;
         private readonly IChangeDownstreamPathTemplate _changeDownstreamPathTemplate;
 
-        public ClaimsToDownstreamPathMiddleware(
-            RequestDelegate next,
+        public ClaimsToDownstreamPathMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IChangeDownstreamPathTemplate changeDownstreamPathTemplate)
-            : base(loggerFactory.CreateLogger<ClaimsToDownstreamPathMiddleware>())
+                : base(loggerFactory.CreateLogger<ClaimsToDownstreamPathMiddleware>())
         {
             _next = next;
             _changeDownstreamPathTemplate = changeDownstreamPathTemplate;
         }
-
-        protected override string MiddlewareName => nameof(ClaimsToDownstreamPathMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

@@ -12,14 +12,14 @@ namespace Ocelot.Headers.Middleware
         private readonly IAddHeadersToResponse _addHeadersToResponse;
         private readonly IAddHeadersToRequest _addHeadersToRequest;
 
-        public HttpHeadersTransformationMiddleware(
-            RequestDelegate next,
+        public HttpHeadersTransformationMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IHttpContextRequestHeaderReplacer preReplacer,
             IHttpResponseHeaderReplacer postReplacer,
             IAddHeadersToResponse addHeadersToResponse,
-            IAddHeadersToRequest addHeadersToRequest)
-            : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
+            IAddHeadersToRequest addHeadersToRequest
+            )
+                : base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
             _addHeadersToResponse = addHeadersToResponse;
             _addHeadersToRequest = addHeadersToRequest;
@@ -27,8 +27,6 @@ namespace Ocelot.Headers.Middleware
             _postReplacer = postReplacer;
             _preReplacer = preReplacer;
         }
-
-        protected override string MiddlewareName => nameof(HttpHeadersTransformationMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

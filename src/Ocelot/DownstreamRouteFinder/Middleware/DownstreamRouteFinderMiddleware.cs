@@ -11,17 +11,15 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         private readonly RequestDelegate _next;
         private readonly IDownstreamRouteProviderFactory _factory;
 
-        public DownstreamRouteFinderMiddleware(
-            RequestDelegate next,
+        public DownstreamRouteFinderMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamRouteProviderFactory downstreamRouteFinder)
-            : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
+            IDownstreamRouteProviderFactory downstreamRouteFinder
+            )
+                : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
         {
             _next = next;
             _factory = downstreamRouteFinder;
         }
-
-        protected override string MiddlewareName => nameof(DownstreamRouteFinderMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

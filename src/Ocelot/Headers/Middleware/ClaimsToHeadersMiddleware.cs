@@ -9,17 +9,14 @@ namespace Ocelot.Headers.Middleware
         private readonly RequestDelegate _next;
         private readonly IAddHeadersToRequest _addHeadersToRequest;
 
-        public ClaimsToHeadersMiddleware(
-            RequestDelegate next,
+        public ClaimsToHeadersMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IAddHeadersToRequest addHeadersToRequest)
-            : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
+                : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
         {
             _next = next;
             _addHeadersToRequest = addHeadersToRequest;
         }
-
-        protected override string MiddlewareName => nameof(ClaimsToHeadersMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

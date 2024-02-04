@@ -9,17 +9,14 @@ namespace Ocelot.Claims.Middleware
         private readonly RequestDelegate _next;
         private readonly IAddClaimsToRequest _addClaimsToRequest;
 
-        public ClaimsToClaimsMiddleware(
-            RequestDelegate next,
+        public ClaimsToClaimsMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IAddClaimsToRequest addClaimsToRequest)
-            : base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
+                : base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
         {
             _next = next;
             _addClaimsToRequest = addClaimsToRequest;
         }
-
-        protected override string MiddlewareName => nameof(ClaimsToClaimsMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

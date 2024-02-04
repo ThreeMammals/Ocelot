@@ -11,17 +11,15 @@ namespace Ocelot.Multiplexer
         private readonly RequestDelegate _next;
         private readonly IResponseAggregatorFactory _factory;
 
-        public MultiplexingMiddleware(
-            RequestDelegate next,
+        public MultiplexingMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IResponseAggregatorFactory factory)
-            : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
+            IResponseAggregatorFactory factory
+            )
+                : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
         {
             _factory = factory;
             _next = next;
         }
-
-        protected override string MiddlewareName => nameof(MultiplexingMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

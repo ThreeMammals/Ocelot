@@ -1,14 +1,16 @@
 ﻿using Ocelot.Logging;
 
-namespace Ocelot.Middleware;
-
-public abstract class OcelotMiddleware
+namespace Ocelot.Middleware
 {
-    protected OcelotMiddleware(IOcelotLogger logger)
+    public abstract class OcelotMiddleware
     {
-        Logger = logger;
-    }
+        protected OcelotMiddleware(IOcelotLogger logger)
+        {
+            Logger = logger;
+            MiddlewareName = GetType().Name;
+        }
 
-    public IOcelotLogger Logger { get; }
-    protected abstract string MiddlewareName { get; }
+        public IOcelotLogger Logger { get; }
+        public string MiddlewareName { get; }
+    }
 }

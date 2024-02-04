@@ -14,17 +14,14 @@ namespace Ocelot.Errors.Middleware
         private readonly RequestDelegate _next;
         private readonly IRequestScopedDataRepository _repo;
 
-        public ExceptionHandlerMiddleware(
-            RequestDelegate next,
+        public ExceptionHandlerMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository repo)
-            : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
+                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
             _next = next;
             _repo = repo;
         }
-
-        protected override string MiddlewareName => nameof(ExceptionHandlerMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {

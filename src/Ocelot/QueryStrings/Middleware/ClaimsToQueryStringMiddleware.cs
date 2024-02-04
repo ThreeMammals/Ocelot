@@ -9,17 +9,14 @@ namespace Ocelot.QueryStrings.Middleware
         private readonly RequestDelegate _next;
         private readonly IAddQueriesToRequest _addQueriesToRequest;
 
-        public ClaimsToQueryStringMiddleware(
-            RequestDelegate next,
+        public ClaimsToQueryStringMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IAddQueriesToRequest addQueriesToRequest)
-            : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
+                : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
         {
             _next = next;
             _addQueriesToRequest = addQueriesToRequest;
         }
-
-        protected override string MiddlewareName => nameof(ClaimsToQueryStringMiddleware);
 
         public async Task Invoke(HttpContext httpContext)
         {
