@@ -1,76 +1,159 @@
-using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class RouteOptionsCreatorTests
 {
-    public class RouteOptionsCreatorTests
+    private readonly RouteOptionsCreator _creator;
+
+    public RouteOptionsCreatorTests()
     {
-        private readonly RouteOptionsCreator _creator;
-        private FileRoute _route;
-        private RouteOptions _result;
+        _creator = new RouteOptionsCreator();
+    }
 
-        public RouteOptionsCreatorTests()
-        {
-            _creator = new RouteOptionsCreator();
-        }
+    [Fact]
+    public void Create_ArgumentIsNull_OptionsObjIsCreated()
+    {
+        // Arrange, Act
+        var actual = _creator.Create(null);
 
-        [Fact]
-        public void should_create_re_route_options()
+        // Assert
+        Assert.NotNull(actual);
+    }
+
+    [Fact]
+    public void Create_AuthenticationOptionsObjIsNull_IsAuthenticatedIsFalse()
+    {
+        // Arrange
+        var route = new FileRoute { AuthenticationOptions = null };
+
+        // Act
+        var actual = _creator.Create(route);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.False(actual.IsAuthenticated);
+    }
+
+    [Fact]
+    public void Create_AuthenticationOptionsWithNoProviderKeys_IsAuthenticatedIsFalse()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            var route = new FileRoute
+            AuthenticationOptions = new(),
+        };
+
+        // Act
+        var actual = _creator.Create(route);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.False(actual.IsAuthenticated);
+    }
+
+    [Fact]
+    public void Create_AuthenticationOptionsWithAuthenticationProviderKeysObjIsNull_IsAuthenticatedIsFalse()
+    {
+        // Arrange
+        var route = new FileRoute
+        {
+            AuthenticationOptions = new()
             {
-                RateLimitOptions = new FileRateLimitRule
-                {
-                    EnableRateLimiting = true,
-                },
-                AuthenticationOptions = new FileAuthenticationOptions
-                {
-                    AuthenticationProviderKey = "Test",
-                },
-                RouteClaimsRequirement = new Dictionary<string, string>
-                {
-                    {string.Empty,string.Empty},
-                },
-                FileCacheOptions = new FileCacheOptions
-                {
-                    TtlSeconds = 1,
-                },
-                ServiceName = "west",
-            };
+                AuthenticationProviderKeys = null,
+            },
+        };
 
-            var expected = new RouteOptionsBuilder()
-                .WithIsAuthenticated(true)
-                .WithIsAuthorized(true)
-                .WithIsCached(true)
-                .WithRateLimiting(true)
-                .WithUseServiceDiscovery(true)
-                .Build();
+        // Act
+        var actual = _creator.Create(route);
 
-            this.Given(x => x.GivenTheFollowing(route))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheFollowingIsReturned(expected))
-                .BDDfy();
-        }
+        // Assert
+        Assert.NotNull(actual);
+        Assert.False(actual.IsAuthenticated);
+    }
 
-        private void GivenTheFollowing(FileRoute route)
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Create_RouteClaimsRequirementObjIsEmpty_IsAuthorizedIsFalse(bool isEmpty)
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _route = route;
-        }
+            RouteClaimsRequirement = isEmpty ? new(0) : null,
+        };
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_route);
-        }
+        // Act
+        var actual = _creator.Create(route);
 
-        private void ThenTheFollowingIsReturned(RouteOptions expected)
+        // Assert
+        Assert.NotNull(actual);
+        Assert.False(actual.IsAuthorized);
+    }
+
+    [Fact]
+    public void Create_RateLimitOptionsObjIsNull_EnableRateLimitingIsFalse()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _result.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
-            _result.IsAuthorized.ShouldBe(expected.IsAuthorized);
-            _result.IsCached.ShouldBe(expected.IsCached);
-            _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
-            _result.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
-        }
+            RateLimitOptions = null,
+        };
+
+        // Act
+        var actual = _creator.Create(route);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.False(actual.EnableRateLimiting);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Create_RouteOptions_HappyPath(bool isAuthenticationProviderKeys)
+    {
+        // Arrange
+        var route = new FileRoute
+        {
+            RateLimitOptions = new FileRateLimitRule
+            {
+                EnableRateLimiting = true,
+            },
+            AuthenticationOptions = new FileAuthenticationOptions
+            {
+                AuthenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null,
+                AuthenticationProviderKeys = isAuthenticationProviderKeys ?
+                    [string.Empty, "Test #1"] : null,
+            },
+            RouteClaimsRequirement = new Dictionary<string, string>
+            {
+                {string.Empty, string.Empty},
+            },
+            FileCacheOptions = new FileCacheOptions
+            {
+                TtlSeconds = 1,
+            },
+            ServiceName = "west",
+        };
+        var expected = new RouteOptionsBuilder()
+            .WithIsAuthenticated(true)
+            .WithIsAuthorized(true)
+            .WithIsCached(true)
+            .WithRateLimiting(true)
+            .WithUseServiceDiscovery(true)
+            .Build();
+
+        // Act
+        var actual = _creator.Create(route);
+
+        // Assert
+        actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
+        actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
+        actual.IsCached.ShouldBe(expected.IsCached);
+        actual.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+        actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 }
