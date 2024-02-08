@@ -13,7 +13,7 @@ namespace Ocelot.UnitTests.Kubernetes
     public class KubeServiceDiscoveryProviderTests : IDisposable
     {
         private IWebHost _fakeKubeBuilder;
-        private readonly KubernetesServiceDiscoveryProvider _provider;
+        private readonly Kube _provider;
         private EndpointsV1 _endpointEntries;
         private readonly string _serviceName;
         private readonly string _namespaces;
@@ -46,13 +46,13 @@ namespace Ocelot.UnitTests.Kubernetes
 
             _clientFactory = KubeApiClient.Create(option);
             _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<KubernetesServiceDiscoveryProvider>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
             var config = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = _serviceName,
                 KubeNamespace = _namespaces,
             };
-            _provider = new KubernetesServiceDiscoveryProvider(config, _factory.Object, _clientFactory);
+            _provider = new Kube(config, _factory.Object, _clientFactory);
         }
 
         [Fact]

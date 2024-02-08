@@ -1,7 +1,9 @@
+using KubeClient;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
+using Ocelot.Provider.Kubernetes;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -124,10 +126,58 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .BDDfy();
         }
 
+        [Theory]
+        [Trait("Bug", "1954")]
+        [InlineData("Kube", true)]
+        [InlineData("kube", true)]
+        [InlineData("PollKube", true)]
+        [InlineData("pollkube", true)]
+        [InlineData("unknown", false)]
+        public void should_return_Kubernetes_provider_with_type_names_from_docs(string typeName, bool success)
+        {
+            var route = new DownstreamRouteBuilder()
+                .WithServiceName(nameof(should_return_Kubernetes_provider_with_type_names_from_docs))
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType(typeName)
+                .Build();
+
+            this.Given(x => x.GivenTheRoute(serviceConfig, route))
+                .And(x => GivenKubernetesProvider())
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => EnsureResponse(success))
+                .BDDfy();
+        }
+
+        private void EnsureResponse(bool success)
+        {
+            if (success)
+            {
+                _result.ShouldBeOfType<OkResponse<IServiceDiscoveryProvider>>();
+            }
+            else
+            {
+                _result.ShouldBeOfType<ErrorResponse<IServiceDiscoveryProvider>>();
+            }
+        }
+
         private void GivenAFakeDelegate()
         {
             ServiceDiscoveryFinderDelegate fake = (provider, config, name) => new Fake();
             _collection.AddSingleton(fake);
+            _provider = _collection.BuildServiceProvider();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+        }
+
+        private void GivenKubernetesProvider()
+        {
+            var k8sClient = new Mock<IKubeApiClient>();
+            _collection
+                .AddSingleton(KubernetesProviderFactory.Get)
+                .AddSingleton(k8sClient.Object)
+                .AddSingleton(_loggerFactory.Object);
             _provider = _collection.BuildServiceProvider();
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }

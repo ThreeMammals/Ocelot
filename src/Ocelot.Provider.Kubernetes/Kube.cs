@@ -4,16 +4,19 @@ using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
 
-public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
+/// <summary>
+/// Default Kubernetes service discovery provider.
+/// </summary>
+public class Kube : IServiceDiscoveryProvider
 {
     private readonly KubeRegistryConfiguration _kubeRegistryConfiguration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
 
-    public KubernetesServiceDiscoveryProvider(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
+    public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
     {
         _kubeRegistryConfiguration = kubeRegistryConfiguration;
-        _logger = factory.CreateLogger<KubernetesServiceDiscoveryProvider>();
+        _logger = factory.CreateLogger<Kube>();
         _kubeApi = kubeApi;
     }
 
