@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
@@ -192,6 +193,31 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("1s", true)]
+        [InlineData("2m", true)]
+        [InlineData("3h", true)]
+        [InlineData("4d", true)]
+        [InlineData("123", false)]
+        [InlineData("-123", false)]
+        [InlineData("bad", false)]
+        [InlineData(" 3s ", true)]
+        [InlineData(" -3s ", false)]
+        public void IsValidPeriod_ReflectionLifeHack_BranchesAreCovered(string period, bool expected)
+        {
+            // Arrange
+            var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
+            var argument = new FileRateLimitRule { Period = period };
+
+            // Act
+            bool actual = (bool)method.Invoke(_validator, new object[] { argument });
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         [Fact]
         public void should_not_be_valid_if_specified_authentication_provider_isnt_registered()
         {
@@ -208,7 +234,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(_ => GivenThe(fileRoute))
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:JwtLads,AllowedScopes:[] is unsupported authentication provider"))
+                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 

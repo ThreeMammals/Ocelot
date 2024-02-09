@@ -8,5 +8,7 @@
         }
 
         public string Value { get; }
+
+        public override string ToString() => Value ?? string.Empty;
     }
 }

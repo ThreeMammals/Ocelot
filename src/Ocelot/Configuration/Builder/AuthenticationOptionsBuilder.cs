@@ -4,6 +4,7 @@ namespace Ocelot.Configuration.Builder
     {
         private List<string> _allowedScopes = new();
         private string _authenticationProviderKey;
+        private string[] _authenticationProviderKeys =[];
 
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
@@ -11,15 +12,22 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        [Obsolete("Use the " + nameof(WithAuthenticationProviderKeys) + " property!")]
         public AuthenticationOptionsBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
         {
             _authenticationProviderKey = authenticationProviderKey;
             return this;
         }
 
+        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(string[] authenticationProviderKeys)
+        {
+            _authenticationProviderKeys = authenticationProviderKeys;
+            return this;
+        }
+
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_allowedScopes, _authenticationProviderKey);
+            return new AuthenticationOptions(_allowedScopes, _authenticationProviderKey, _authenticationProviderKeys);
         }
     }
 }
