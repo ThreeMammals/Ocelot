@@ -1,4 +1,5 @@
 using KubeClient;
+using KubeClient.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -173,7 +174,15 @@ namespace Ocelot.UnitTests.ServiceDiscovery
 
         private void GivenKubernetesProvider()
         {
+            var endpointClient = new Mock<IEndPointClient>();
+            //var endpoints = new EndpointsV1();
+            //endpoints.Subsets.Add(new());
+            endpointClient.Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new EndpointsV1());
+
             var k8sClient = new Mock<IKubeApiClient>();
+            k8sClient.Setup(x => x.ResourceClient(It.IsAny<Func<IKubeApiClient, IEndPointClient>>()))
+                .Returns(endpointClient.Object);
             _collection
                 .AddSingleton(KubernetesProviderFactory.Get)
                 .AddSingleton(k8sClient.Object)

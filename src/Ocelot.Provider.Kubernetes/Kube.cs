@@ -24,7 +24,7 @@ public class Kube : IServiceDiscoveryProvider
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))
-            .Get(_kubeRegistryConfiguration.KeyOfServiceInK8s, _kubeRegistryConfiguration.KubeNamespace);
+            .GetAsync(_kubeRegistryConfiguration.KeyOfServiceInK8s, _kubeRegistryConfiguration.KubeNamespace);
 
         var services = new List<Service>();
         if (endpoint != null && endpoint.Subsets.Any())
