@@ -1,5 +1,4 @@
 using KubeClient;
-using KubeClient.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -36,7 +35,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_return_no_service_provider()
+        public void Should_return_no_service_provider()
         {
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
@@ -50,7 +49,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_return_list_of_configuration_services()
+        public void Should_return_list_of_configuration_services()
         {
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
@@ -71,7 +70,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_return_provider_because_type_matches_reflected_type_from_delegate()
+        public void Should_return_provider_because_type_matches_reflected_type_from_delegate()
         {
             var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
@@ -90,7 +89,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_not_return_provider_because_type_doesnt_match_reflected_type_from_delegate()
+        public void Should_not_return_provider_because_type_doesnt_match_reflected_type_from_delegate()
         {
             var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
@@ -109,7 +108,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         }
 
         [Fact]
-        public void should_return_service_fabric_provider()
+        public void Should_return_service_fabric_provider()
         {
             var route = new DownstreamRouteBuilder()
                 .WithServiceName("product")
@@ -134,10 +133,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         [InlineData("PollKube", true)]
         [InlineData("pollkube", true)]
         [InlineData("unknown", false)]
-        public void should_return_Kubernetes_provider_with_type_names_from_docs(string typeName, bool success)
+        public void Should_return_Kubernetes_provider_with_type_names_from_docs(string typeName, bool success)
         {
             var route = new DownstreamRouteBuilder()
-                .WithServiceName(nameof(should_return_Kubernetes_provider_with_type_names_from_docs))
+                .WithServiceName(nameof(Should_return_Kubernetes_provider_with_type_names_from_docs))
                 .WithUseServiceDiscovery(true)
                 .Build();
 

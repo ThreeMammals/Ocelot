@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Kubernetes
         }
 
         [Fact]
-        public void should_return_service_from_k8s()
+        public void Should_return_service_from_k8s()
         {
             var token = "Bearer txpc696iUhbVoudg164r93CxDTrKRVWG";
             var endPointEntryOne = new EndpointsV1
