@@ -5,10 +5,7 @@
 |K8s Logo| Kubernetes [#f1]_ aka K8s
 ====================================
 
-    A part of feature: :doc:`../features/servicediscovery`
-
-About [#f2]_
-------------
+    A part of feature: :doc:`../features/servicediscovery` [#f2]_
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s <https://kubernetes.io/>`__ service but this was changed in `PR 1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
@@ -75,10 +72,10 @@ The example here shows a typical configuration:
       }
     }
 
-Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`kubernetes-pollkube-provider` type.
+Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` type.
 Note: **Host**, **Port** and **Token** are no longer in use.
 
-.. kubernetes-pollkube-provider:
+.. _k8s-pollkube-provider:
 
 PollKube provider
 ^^^^^^^^^^^^^^^^^
