@@ -4,7 +4,7 @@ using KubeClient.ResourceClients;
 
 namespace Ocelot.Provider.Kubernetes
 {
-    public class EndPointClientV1 : KubeResourceClient
+    public class EndPointClientV1 : KubeResourceClient, IEndPointClient
     {
         private readonly HttpRequest _collection;
 
@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Kubernetes
             _collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
         }
 
-        public async Task<EndpointsV1> Get(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
+        public async Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(serviceName))
             {
