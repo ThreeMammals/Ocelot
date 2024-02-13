@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Ocelot'
-copyright = ' 2023 ThreeMammals Ocelot team'
+copyright = ' 2016-2024 ThreeMammals Ocelot team'
 author = 'Tom Pallister, Ocelot Core team at ThreeMammals'
-release = '22.0'
+release = '23.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

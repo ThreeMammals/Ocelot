@@ -21,10 +21,7 @@ namespace Ocelot.Requester.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
-
             var response = await _requester.GetResponse(httpContext);
-
             CreateLogBasedOnResponse(response);
 
             if (response.IsError)
@@ -36,9 +33,7 @@ namespace Ocelot.Requester.Middleware
             }
 
             Logger.LogDebug("setting http response message");
-
             httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(response.Data));
-
             await _next.Invoke(httpContext);
         }
 

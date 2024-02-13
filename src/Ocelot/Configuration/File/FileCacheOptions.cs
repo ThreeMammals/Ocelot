@@ -14,7 +14,8 @@
             TtlSeconds = from.TtlSeconds;
         }
 
-        public string Region { get; set; }
         public int TtlSeconds { get; set; }
+        public string Region { get; set; }
+        public string Header { get; set; }
     }
 }

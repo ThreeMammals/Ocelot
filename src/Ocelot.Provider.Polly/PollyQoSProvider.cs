@@ -13,6 +13,9 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
+    //todo: this should be configurable and available as global config parameter in ocelot.json
+    public const int DefaultRequestTimeoutSeconds = 90;
+
     private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
     {
         HttpStatusCode.InternalServerError,
@@ -63,14 +66,20 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
                     durationOfBreak: TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
-                    onBreak: (ex, breakDelay) => _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!", ex.Exception),
+                    onBreak: (ex, breakDelay) =>
+                        _logger.LogError(info + $"Breaking the circuit for {breakDelay.TotalMilliseconds} ms!",
+                            ex.Exception),
                     onReset: () => _logger.LogDebug(info + "Call OK! Closed the circuit again."),
                     onHalfOpen: () => _logger.LogDebug(info + "Half-open; Next call is a trial."));
         }
 
+        // No default set for polly timeout at the minute.
+        // Since a user could potentially set timeout value = 0, we need to handle this case.
+        // TODO throw an exception if the user sets timeout value = 0 or at least return a warning
+        // TODO the design in DelegatingHandlerHandlerFactory should be reviewed
         var timeoutPolicy = Policy
             .TimeoutAsync<HttpResponseMessage>(
-                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue), 
+                TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue),
                 TimeoutStrategy.Pessimistic);
 
         return new PollyPolicyWrapper<HttpResponseMessage>(exceptionsAllowedBeforeBreakingPolicy, timeoutPolicy);

@@ -67,8 +67,8 @@ namespace Ocelot.Configuration.Validator
         private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             return serviceDiscoveryProvider == null ||
-                   serviceDiscoveryProvider?.Type?.ToLower() == Servicefabric ||
-                   string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
+                Servicefabric.Equals(serviceDiscoveryProvider.Type, StringComparison.InvariantCultureIgnoreCase) ||
+                string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
         }
 
         public async Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration)
@@ -150,13 +150,10 @@ namespace Ocelot.Configuration.Validator
             return !duplicate;
         }
 
-        private static bool IsNotDuplicateIn(FileAggregateRoute route,
-            IEnumerable<FileAggregateRoute> aggregateRoutes)
+        private static bool IsNotDuplicateIn(FileAggregateRoute route, IEnumerable<FileAggregateRoute> aggregateRoutes)
         {
             var matchingRoutes = aggregateRoutes
-                .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
-                            && r.UpstreamHost == route.UpstreamHost);
-
+                .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate & r.UpstreamHost == route.UpstreamHost);
             return matchingRoutes.Count() <= 1;
         }
     }

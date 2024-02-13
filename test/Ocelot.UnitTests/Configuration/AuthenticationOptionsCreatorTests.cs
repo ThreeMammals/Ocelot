@@ -1,58 +1,73 @@
-using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class AuthenticationOptionsCreatorTests
 {
-    public class AuthenticationOptionsCreatorTests
+    private readonly AuthenticationOptionsCreator _authOptionsCreator;
+
+    public AuthenticationOptionsCreatorTests()
     {
-        private readonly AuthenticationOptionsCreator _authOptionsCreator;
-        private FileRoute _fileRoute;
-        private AuthenticationOptions _result;
+        _authOptionsCreator = new AuthenticationOptionsCreator();
+    }
 
-        public AuthenticationOptionsCreatorTests()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Create_OptionsObjIsNull_CreatedSuccessfullyWithEmptyCollections(bool createRoute)
+    {
+        // Arrange
+        FileRoute route = createRoute ? new() : null;
+        FileAuthenticationOptions options = null;
+        if (createRoute && route != null)
         {
-            _authOptionsCreator = new AuthenticationOptionsCreator();
+            route.AuthenticationOptions = options;
         }
 
-        [Fact]
-        public void should_return_auth_options()
+        // Act
+        var actual = _authOptionsCreator.Create(route);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.NotNull(actual.AllowedScopes);
+        Assert.Empty(actual.AllowedScopes);
+        Assert.NotNull(actual.AuthenticationProviderKey);
+        Assert.NotNull(actual.AuthenticationProviderKeys);
+        Assert.Empty(actual.AuthenticationProviderKeys);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Create_OptionsObjIsNotNull_CreatedSuccessfully(bool isAuthenticationProviderKeys)
+    {
+        // Arrange
+        string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
+        string[] authenticationProviderKeys = isAuthenticationProviderKeys ?
+            ["Test #1", "Test #2"] : null;
+        var fileRoute = new FileRoute()
         {
-            var fileRoute = new FileRoute
+            AuthenticationOptions = new FileAuthenticationOptions
             {
-                AuthenticationOptions = new FileAuthenticationOptions
-                {
-                    AuthenticationProviderKey = "Test",
-                    AllowedScopes = new List<string> { "cheese" },
-                },
-            };
+                AllowedScopes = new() { "cheese" },
+                AuthenticationProviderKey = authenticationProviderKey,
+                AuthenticationProviderKeys = authenticationProviderKeys,
+            },
+        };
+        var expected = new AuthenticationOptionsBuilder()
+            .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
+            .WithAuthenticationProviderKey(authenticationProviderKey)
+            .WithAuthenticationProviderKeys(authenticationProviderKeys)
+            .Build();
 
-            var expected = new AuthenticationOptionsBuilder()
-                    .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
-                    .WithAuthenticationProviderKey("Test")
-                    .Build();
+        // Act
+        var actual = _authOptionsCreator.Create(fileRoute);
 
-            this.Given(x => x.GivenTheFollowing(fileRoute))
-                .When(x => x.WhenICreateTheAuthenticationOptions())
-                .Then(x => x.ThenTheFollowingConfigIsReturned(expected))
-                .BDDfy();
-        }
-
-        private void GivenTheFollowing(FileRoute fileRoute)
-        {
-            _fileRoute = fileRoute;
-        }
-
-        private void WhenICreateTheAuthenticationOptions()
-        {
-            _result = _authOptionsCreator.Create(_fileRoute);
-        }
-
-        private void ThenTheFollowingConfigIsReturned(AuthenticationOptions expected)
-        {
-            _result.AllowedScopes.ShouldBe(expected.AllowedScopes);
-            _result.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
-        }
+        // Assert
+        actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
+        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
+        actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
 }

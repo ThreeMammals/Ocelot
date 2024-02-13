@@ -23,46 +23,26 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
+        private IServiceProvider _provider;
+        private readonly ServiceCollection _services;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
 
         public FileConfigurationFluentValidatorTests()
         {
+            _services = new ServiceCollection();
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
-            var provider = new ServiceCollection()
-                .BuildServiceProvider();
+            _provider = _services.BuildServiceProvider();
 
             // Todo - replace with mocks
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 
         [Fact]
         public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
         {
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "ServiceFabric",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var route = GivenServiceDiscoveryRoute();
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -72,31 +52,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_discovery_handler()
         {
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var route = GivenServiceDiscoveryRoute();
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAServiceDiscoveryHandler())
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -107,20 +66,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_if_service_discovery_options_specified_dynamically_and_has_service_discovery_handler()
         {
-            var configuration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var configuration = new FileConfiguration();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAServiceDiscoveryHandler())
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -131,31 +79,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler()
         {
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var route = GivenServiceDiscoveryRoute();
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -167,20 +94,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_service_discovery_options_specified_dynamically_but_service_discovery_handler()
         {
-            var configuration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "FakeServiceDiscoveryProvider",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var configuration = new FileConfiguration();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -192,31 +108,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler_with_matching_name()
         {
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        ServiceName = "test",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Type = "consul",
-                        Port = 8500,
-                    },
-                },
-            };
-
+            var route = GivenServiceDiscoveryRoute();
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "consul";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .And(x => x.GivenAServiceDiscoveryHandler())
@@ -229,35 +124,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            route.QoSOptions = new FileQoSOptions
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            },
-                        },
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1,
-                        },
-                    },
-                },
+                TimeoutValue = 1,
+                ExceptionsAllowedBeforeBreaking = 1,
             };
-
-            this.Given(x => x.GivenAConfiguration(configuration))
+            this.Given(x => x.GivenAConfiguration(route))
                 .And(x => x.GivenAQoSHandler())
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -267,37 +141,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_if_qos_options_specified_globally_and_has_qos_handler()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            },
-                        },
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    QoSOptions = new FileQoSOptions
-                    {
-                        TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1,
-                    },
-                },
+                TimeoutValue = 1,
+                ExceptionsAllowedBeforeBreaking = 1,
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAQoSHandler())
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -308,35 +159,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            route.QoSOptions = new FileQoSOptions
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            },
-                        },
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
-                        QoSOptions = new FileQoSOptions
-                        {
-                            TimeoutValue = 1,
-                            ExceptionsAllowedBeforeBreaking = 1,
-                        },
-                    },
-                },
+                TimeoutValue = 1,
+                ExceptionsAllowedBeforeBreaking = 1,
             };
-
-            this.Given(x => x.GivenAConfiguration(configuration))
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
@@ -347,37 +177,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var configuration = GivenAConfiguration(route);
+            configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 51878,
-                            },
-                        },
-                        UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        Key = "Laura",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    QoSOptions = new FileQoSOptions
-                    {
-                        TimeoutValue = 1,
-                        ExceptionsAllowedBeforeBreaking = 1,
-                    },
-                },
+                TimeoutValue = 1,
+                ExceptionsAllowedBeforeBreaking = 1,
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -389,58 +196,24 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_if_aggregates_are_valid()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var route2 = GivenDefaultRoute("/tom", "/");
+            route2.Key = "Tom";
+            var configuration = GivenAConfiguration(route, route2);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -448,61 +221,27 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_aggregates_are_duplicate_of_re_routes()
+        public void configuration_is_invalid_if_aggregates_are_duplicate_of_routes()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var route2 = GivenDefaultRoute("/tom", "/");
+            route2.Key = "Tom";
+            route2.UpstreamHost = "localhost";
+            var configuration = GivenAConfiguration(route, route2);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
-                            UpstreamHost = "localhost",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/tom",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -511,61 +250,27 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_aggregates_are_not_duplicate_of_re_routes()
+        public void configuration_is_valid_if_aggregates_are_not_duplicate_of_routes()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var route2 = GivenDefaultRoute("/tom", "/");
+            route2.Key = "Tom";
+            route2.UpstreamHttpMethod = new List<string> { "Post" };
+            var configuration = GivenAConfiguration(route, route2);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Post" },
-                            Key = "Tom",
-                            UpstreamHost = "localhost",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/tom",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -575,68 +280,34 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_aggregates_are_duplicate_of_aggregates()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var route2 = GivenDefaultRoute("/lol", "/");
+            route2.Key = "Tom";
+            var configuration = GivenAConfiguration(route, route2);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                },
-                            },
-                            UpstreamPathTemplate = "/lol",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                        new()
-                        {
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/tom",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
+                new()
+                {
+                    UpstreamPathTemplate = "/tom",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -645,44 +316,24 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_re_routes_dont_exist_for_aggregate()
+        public void configuration_is_invalid_if_routes_dont_exist_for_aggregate()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var configuration = GivenAConfiguration(route);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -691,61 +342,27 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_aggregate_has_re_routes_with_specific_request_id_keys()
+        public void configuration_is_invalid_if_aggregate_has_routes_with_specific_request_id_keys()
         {
-            var configuration = new FileConfiguration
+            var route = GivenDefaultRoute("/laura", "/");
+            route.Key = "Laura";
+            var route2 = GivenDefaultRoute("/tom", "/");
+            route2.Key = "Tom";
+            route2.RequestIdKey = "should_fail";
+            var configuration = GivenAConfiguration(route, route2);
+            configuration.Aggregates = new List<FileAggregateRoute>
             {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51878,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = 51880,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            RequestIdKey = "should_fail",
-                            Key = "Tom",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Tom",
-                                "Laura",
-                            },
-                        },
-                    },
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys =
+                    [
+                        "Tom",
+                        "Laura",
+                    ],
+                },
             };
-
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -756,17 +373,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "http://www.bbc.co.uk/api/products/{productId}",
-                        UpstreamPathTemplate = "http://asdf.com",
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("http://asdf.com", "http://www.bbc.co.uk/api/products/{productId}")))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
@@ -783,24 +390,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_one_route()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute()))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -809,17 +399,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_without_slash_prefix_downstream_path_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/asdf/", "api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template api/products/ doesnt start with forward slash"))
@@ -829,17 +409,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_without_slash_prefix_upstream_path_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "api/prod/",
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("api/prod/", "/api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template api/prod/ doesnt start with forward slash"))
@@ -849,25 +419,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_upstream_url_contains_forward_slash_then_another_forward_slash()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "//api/prod/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                                Port = 80,
-                            },
-                        },
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("//api/prod/", "/api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template //api/prod/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
@@ -877,25 +429,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_if_downstream_url_contains_forward_slash_then_another_forward_slash()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "//api/products/",
-                        UpstreamPathTemplate = "/api/prod/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                                Port = 80,
-                            },
-                        },
-                    },
-                },
-            }))
+            this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/api/prod/", "//api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template //api/products/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
@@ -905,28 +439,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_valid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        AuthenticationOptions = new FileAuthenticationOptions()
-                        {
-                            AuthenticationProviderKey = "Test",
-                        },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.AuthenticationOptions.AuthenticationProviderKey = "Test";
+            this.Given(x => x.GivenAConfiguration(route))
                 .And(x => x.GivenTheAuthSchemeExists("Test"))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -936,101 +451,40 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_with_invalid_authentication_provider()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.AuthenticationOptions = new FileAuthenticationOptions()
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        AuthenticationOptions = new FileAuthenticationOptions()
-                        {
-                            AuthenticationProviderKey = "Test",
-                        },
-                    },
-                },
-            }))
+                AuthenticationProviderKey = "Test",
+                AuthenticationProviderKeys = new[] { "Test #1", "Test #2" },
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:Test,AllowedScopes:[] is unsupported authentication provider"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 
         [Fact]
         public void configuration_is_not_valid_with_duplicate_routes_all_verbs()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bb.co.uk",
-                            },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bb.co.uk",
-                            },
-                        },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            var duplicate = GivenDefaultRoute();
+            duplicate.DownstreamPathTemplate = "/www/test/";
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
                 .BDDfy();
         }
 
         [Fact]
         public void configuration_is_valid_with_duplicate_routes_all_verbs_but_different_hosts()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/products/",
-                            UpstreamPathTemplate = "/asdf/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "bb.co.uk",
-                                },
-                            },
-                            UpstreamHost = "host1",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/www/test/",
-                            UpstreamPathTemplate = "/asdf/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "bb.co.uk",
-                                },
-                            },
-                            UpstreamHost = "host2",
-                        },
-                    },
-            }))
+            var route = GivenDefaultRoute();
+            route.UpstreamHost = "host1";
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHost = "host2";
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1039,38 +493,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_not_valid_with_duplicate_routes_specific_verbs()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHttpMethod = new List<string> { "Get" };
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
@@ -1080,38 +506,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_duplicate_routes_different_verbs()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Post"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute(); // "Get" verb is inside
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHttpMethod = new List<string> { "Post" };
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1120,40 +518,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_not_valid_with_duplicate_routes_with_duplicated_upstreamhosts()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost",
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost",
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.UpstreamHttpMethod = new();
+            route.UpstreamHost = "upstreamhost";
+
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHttpMethod = new();
+            duplicate.UpstreamHost = "upstreamhost";
+
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
@@ -1163,40 +536,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_duplicate_routes_but_different_upstreamhosts()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost111",
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost222",
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.UpstreamHttpMethod = new();
+            route.UpstreamHost = "upstreamhost111";
+
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHttpMethod = new();
+            duplicate.UpstreamHost = "upstreamhost222";
+
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1205,39 +553,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                        UpstreamHost = "upstreamhost",
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string>(),
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.UpstreamHttpMethod = new();
+            route.UpstreamHost = "upstreamhost";
+
+            var duplicate = GivenDefaultRoute(null, "/www/test/");
+            duplicate.UpstreamHttpMethod = new();
+
+            this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1246,30 +569,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_invalid_with_invalid_rate_limit_configuration()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.RateLimitOptions = new FileRateLimitRule
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        RateLimitOptions = new FileRateLimitRule
-                        {
-                            Period = "1x",
-                            EnableRateLimiting = true,
-                        },
-                    },
-                },
-            }))
+                Period = "1x",
+                EnableRateLimiting = true,
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
@@ -1279,30 +585,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_valid_rate_limit_configuration()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.RateLimitOptions = new FileRateLimitRule
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        RateLimitOptions = new FileRateLimitRule
-                        {
-                            Period = "1d",
-                            EnableRateLimiting = true,
-                        },
-                    },
-                },
-            }))
+                Period = "1d",
+                EnableRateLimiting = true,
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1311,86 +600,108 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_with_using_service_discovery_and_service_name()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        ServiceName = "Test",
-                    },
-                },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                    {
-                        Scheme = "https",
-                        Type = "servicefabric",
-                        Host = "localhost",
-                        Port = 1234,
-                    },
-                },
-            }))
+            var route = GivenServiceDiscoveryRoute();
+            var config = GivenAConfiguration(route);
+            config.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+            this.Given(x => x.GivenAConfiguration(config))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
 
+        private const string Empty = "";
+
         [Theory]
         [InlineData(null)]
-        [InlineData("")]
+        [InlineData(Empty)]
         public void configuration_is_invalid_when_not_using_service_discovery_and_host(string downstreamHost)
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = downstreamHost,
-                            },
-                        },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.DownstreamHostAndPorts[0].Host = downstreamHost;
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData(Empty, true)]
+        [InlineData("Test", false)]
+        public void HaveServiceDiscoveryProviderRegistered_RouteServiceName_Validated(string serviceName, bool valid)
+        {
+            // Arrange
+            var route = GivenDefaultRoute();
+            route.ServiceName = serviceName;
+            var config = GivenAConfiguration(route);
+            config.GlobalConfiguration.ServiceDiscoveryProvider = null;
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            _result.Data.IsError.ShouldNotBe(valid);
+            _result.Data.Errors.Count.ShouldBe(valid ? 0 : 1);
+        }
+
+        [Theory]
+        [InlineData(false, null, false)]
+        [InlineData(true, null, false)]
+        [InlineData(true, "type", false)]
+        [InlineData(true, "servicefabric", true)]
+        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
+        {
+            // Arrange
+            var route = GivenServiceDiscoveryRoute();
+            var config = GivenAConfiguration(route);
+            var provider = create ? GivenDefaultServiceDiscoveryProvider() : null;
+            config.GlobalConfiguration.ServiceDiscoveryProvider = provider;
+            if (create && provider != null)
+            {
+                provider.Type = type;
+            }
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            _result.Data.IsError.ShouldNotBe(valid);
+            _result.Data.Errors.Count.ShouldBeGreaterThanOrEqualTo(valid ? 0 : 1);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryFinderDelegates_Validated(bool hasDelegate)
+        {
+            // Arrange
+            var valid = hasDelegate;
+            var route = GivenServiceDiscoveryRoute();
+            var config = GivenAConfiguration(route);
+            config.GlobalConfiguration.ServiceDiscoveryProvider = null;
+            if (hasDelegate)
+            {
+                GivenAServiceDiscoveryHandler();
+            }
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            _result.Data.IsError.ShouldNotBe(valid);
+            _result.Data.Errors.Count.ShouldBe(valid ? 0 : 1);
+        }
+
         [Fact]
         public void configuration_is_valid_when_not_using_service_discovery_and_host_is_set()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                    },
-                },
-            }))
+                new("bbc.co.uk", 123),
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1399,25 +710,12 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_valid_when_no_downstream_but_has_host_and_port()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "test",
-                            },
-                        },
-                    },
-                },
-            }))
+                new("test", 123),
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
@@ -1426,82 +724,83 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         public void configuration_is_not_valid_when_no_host_and_port()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                        },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute();
+            route.DownstreamHostAndPorts = new();
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
         [Fact]
         public void configuration_is_not_valid_when_host_and_port_is_empty()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
+            var route = GivenDefaultRoute();
+            route.DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new(),
-                        },
-                    },
-                },
-            }))
+                new(),
+            };
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
 
         [Fact]
         public void configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/bar/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new() { Host = "a.b.cd" },
-                        },
-                        UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            }))
+            var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}");
+            this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder"))
                 .BDDfy();
         }
 
+        private FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null);
+
+        private FileRoute GivenDefaultRoute(string upstreamPathTemplate, string downstreamPathTemplate) => new()
+        {
+            DownstreamPathTemplate = downstreamPathTemplate ?? "/api/products/",
+            UpstreamPathTemplate = upstreamPathTemplate ?? "/asdf/",
+            UpstreamHttpMethod = new List<string> { "Get" },
+            DownstreamHostAndPorts = new List<FileHostAndPort>
+            {
+                new("bbc.co.uk", 12345),
+            },
+        };
+
+        private FileRoute GivenServiceDiscoveryRoute() => new()
+        {
+            DownstreamPathTemplate = "/",
+            DownstreamScheme = "http",
+            UpstreamPathTemplate = "/laura",
+            UpstreamHttpMethod = new List<string> { "Get" },
+            ServiceName = "test",
+        };
+
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
             _fileConfiguration = fileConfiguration;
         }
+
+        private FileConfiguration GivenAConfiguration(params FileRoute[] routes)
+        {
+            var config = new FileConfiguration();
+            config.Routes.AddRange(routes);
+            _fileConfiguration = config;
+            return config;
+        }
+
+        private FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new FileServiceDiscoveryProvider
+        {
+            Scheme = "https",
+            Host = "localhost",
+            Type = "ServiceFabric",
+            Port = 8500,
+        };
 
         private void WhenIValidateTheConfiguration()
         {
@@ -1538,33 +837,26 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private void GivenAQoSHandler()
         {
-            var collection = new ServiceCollection();
             DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
-            collection.AddSingleton((QosDelegatingHandlerDelegate)Del);
-            var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _services.AddSingleton((QosDelegatingHandlerDelegate)Del);
+            _provider = _services.BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 
         private void GivenAServiceDiscoveryHandler()
         {
-            var collection = new ServiceCollection();
             ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
-            collection.AddSingleton<ServiceDiscoveryFinderDelegate>(del);
-            var provider = collection.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(provider)));
+            _services.AddSingleton(del);
+            _provider = _services.BuildServiceProvider();
+            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
         {
-            public Task<List<Service>> GetAsync()
-            {
-                throw new System.NotImplementedException();
-            }
+            public Task<List<Service>> GetAsync() => Task.FromResult<List<Service>>(new());
         }
 
-        private class TestOptions : AuthenticationSchemeOptions
-        {
-        }
+        private class TestOptions : AuthenticationSchemeOptions { }
 
         private class TestHandler : AuthenticationHandler<TestOptions>
         {

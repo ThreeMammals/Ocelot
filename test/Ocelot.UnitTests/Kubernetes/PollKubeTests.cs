@@ -6,7 +6,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
-    public class PollingKubeServiceDiscoveryProviderTests
+    public class PollKubeTests
     {
         private readonly int _delay;
         private PollKube _provider;
@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Kubernetes
         private readonly Mock<IServiceDiscoveryProvider> _kubeServiceDiscoveryProvider;
         private List<Service> _result;
 
-        public PollingKubeServiceDiscoveryProviderTests()
+        public PollKubeTests()
         {
             _services = new List<Service>();
             _delay = 1;

@@ -63,14 +63,14 @@ namespace Ocelot.RequestId.Middleware
             }
         }
 
-        private static bool ShouldAddRequestId(RequestId requestId, HttpRequestHeaders headers)
+        private static bool ShouldAddRequestId(RequestId requestId, HttpHeaders headers)
         {
             return !string.IsNullOrEmpty(requestId?.RequestIdKey)
                    && !string.IsNullOrEmpty(requestId.RequestIdValue)
                    && !RequestIdInHeaders(requestId, headers);
         }
 
-        private static bool RequestIdInHeaders(RequestId requestId, HttpRequestHeaders headers)
+        private static bool RequestIdInHeaders(RequestId requestId, HttpHeaders headers)
         {
             return headers.TryGetValues(requestId.RequestIdKey, out var value);
         }

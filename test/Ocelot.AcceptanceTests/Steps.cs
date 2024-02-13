@@ -22,7 +22,6 @@ using Ocelot.Multiplexer;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
-using Ocelot.Requester;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
@@ -40,15 +39,15 @@ namespace Ocelot.AcceptanceTests;
 
 public class Steps : IDisposable
 {
-    private TestServer _ocelotServer;
-    private HttpClient _ocelotClient;
+    protected TestServer _ocelotServer;
+    protected HttpClient _ocelotClient;
     private HttpResponseMessage _response;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
     private readonly Random _random;
-    private readonly string _ocelotConfigFileName;
-    private IWebHostBuilder _webHostBuilder;
+    protected readonly string _ocelotConfigFileName;
+    protected IWebHostBuilder _webHostBuilder;
     private WebHostBuilder _ocelotBuilder;
     private IWebHost _ocelotHost;
     private IOcelotConfigurationChangeTokenSource _changeToken;
@@ -445,36 +444,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithFakeHttpClientCache(IHttpClientCache cache)
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(cache);
-                s.AddOcelot();
-            })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    internal void GivenIWait(int wait)
-    {
-        Thread.Sleep(wait);
-    }
+    internal void GivenIWait(int wait) => Thread.Sleep(wait);
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {
@@ -696,6 +666,29 @@ public class Steps : IDisposable
         _response.ReasonPhrase.ShouldBe(expected);
     }
 
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
+    {
+        _webHostBuilder = new WebHostBuilder()
+            .ConfigureAppConfiguration(WithBasicConfiguration)
+            .ConfigureServices(configureServices ?? WithAddOcelot)
+            .Configure(WithUseOcelot);
+        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotClient = _ocelotServer.CreateClient();
+    }
+
+    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config)
+    {
+        var env = hosting.HostingEnvironment;
+        config.SetBasePath(env.ContentRootPath);
+        config.AddJsonFile("appsettings.json", true, false)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+        config.AddJsonFile(_ocelotConfigFileName, true, false);
+        config.AddEnvironmentVariables();
+    }
+
+    public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
+    public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
+
     /// <summary>
     /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
     /// </summary>
@@ -729,67 +722,34 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
     }
 
-    public void GivenIHaveAToken(string url)
+    public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
     {
-        var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
-        var content = new FormUrlEncodedContent(formData);
+        new ("client_id", "client"),
+        new ("client_secret", "secret"),
+        new ("scope", "api"),
+        new ("username", "test"),
+        new ("password", "test"),
+        new ("grant_type", "password"),
+    };
 
-        using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
-        response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+    internal Task<BearerToken> GivenIHaveAToken(string url)
+    {
+        var form = GivenDefaultAuthTokenForm();
+        return GivenIHaveATokenWithForm(url, form);
     }
 
-    public void GivenIHaveATokenForApiReadOnlyScope(string url)
+    internal async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
     {
         var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api.readOnly"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
+        var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
         var content = new FormUrlEncodedContent(formData);
 
         using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
+        var response = await httpClient.PostAsync(tokenUrl, content);
+        var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
         _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-    }
-
-    public void GivenIHaveATokenForApi2(string url)
-    {
-        var tokenUrl = $"{url}/connect/token";
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "client"),
-            new("client_secret", "secret"),
-            new("scope", "api2"),
-            new("username", "test"),
-            new("password", "test"),
-            new("grant_type", "password"),
-        };
-        var content = new FormUrlEncodedContent(formData);
-
-        using var httpClient = new HttpClient();
-        var response = httpClient.PostAsync(tokenUrl, content).Result;
-        var responseContent = response.Content.ReadAsStringAsync().Result;
-        response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+        return _token;
     }
 
     public static void VerifyIdentityServerStarted(string url)
@@ -1231,7 +1191,7 @@ public class Steps : IDisposable
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.
     /// </summary>
-    public void Dispose()
+    public virtual void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);

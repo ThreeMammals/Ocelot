@@ -7,29 +7,27 @@ namespace Ocelot.Configuration.Creator
     {
         public RouteOptions Create(FileRoute fileRoute)
         {
-            var isAuthenticated = IsAuthenticated(fileRoute);
-            var isAuthorized = IsAuthorized(fileRoute);
-            var isCached = IsCached(fileRoute);
-            var enableRateLimiting = IsEnableRateLimiting(fileRoute);
+            if (fileRoute == null)
+            {
+                return new RouteOptionsBuilder().Build();
+            }
+
+            var authOpts = fileRoute.AuthenticationOptions;
+            var isAuthenticated = authOpts != null
+                && (!string.IsNullOrEmpty(authOpts.AuthenticationProviderKey)
+                    || authOpts.AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true);
+            var isAuthorized = fileRoute.RouteClaimsRequirement?.Any() == true;
+            var isCached = fileRoute.FileCacheOptions.TtlSeconds > 0;
+            var enableRateLimiting = fileRoute.RateLimitOptions?.EnableRateLimiting == true;
             var useServiceDiscovery = !string.IsNullOrEmpty(fileRoute.ServiceName);
 
-            var options = new RouteOptionsBuilder()
+            return new RouteOptionsBuilder()
                 .WithIsAuthenticated(isAuthenticated)
                 .WithIsAuthorized(isAuthorized)
                 .WithIsCached(isCached)
                 .WithRateLimiting(enableRateLimiting)
                 .WithUseServiceDiscovery(useServiceDiscovery)
                 .Build();
-
-            return options;
         }
-
-        private static bool IsEnableRateLimiting(FileRoute fileRoute) => fileRoute.RateLimitOptions?.EnableRateLimiting == true;
-
-        private static bool IsAuthenticated(FileRoute fileRoute) => !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
-
-        private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;
-
-        private static bool IsCached(FileRoute fileRoute) => fileRoute.FileCacheOptions.TtlSeconds > 0;
     }
 }

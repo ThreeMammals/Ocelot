@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.Creator
 {
     public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
     {
-        private const string RegExMatchOneOrMoreOfEverything = ".+";
+        public const string RegExMatchZeroOrMoreOfEverything = ".*";
         private const string RegExMatchOneOrMoreOfEverythingUntilNextForwardSlash = "[^/]+";
         private const string RegExMatchEndString = "$";
         private const string RegExIgnoreCase = "(?i)";
@@ -40,7 +40,7 @@ namespace Ocelot.Configuration.Creator
             if (upstreamTemplate.Contains('?'))
             {
                 containsQueryString = true;
-                upstreamTemplate = upstreamTemplate.Replace("?", "\\?");
+                upstreamTemplate = upstreamTemplate.Replace("?", "(|\\?)");
             }
 
             for (var i = 0; i < placeholders.Count; i++)
@@ -49,7 +49,7 @@ namespace Ocelot.Configuration.Creator
                 var indexOfNextForwardSlash = upstreamTemplate.IndexOf("/", indexOfPlaceholder, StringComparison.Ordinal);
                 if (indexOfNextForwardSlash < indexOfPlaceholder || (containsQueryString && upstreamTemplate.IndexOf('?', StringComparison.Ordinal) < upstreamTemplate.IndexOf(placeholders[i], StringComparison.Ordinal)))
                 {
-                    upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchOneOrMoreOfEverything);
+                    upstreamTemplate = upstreamTemplate.Replace(placeholders[i], RegExMatchZeroOrMoreOfEverything);
                 }
                 else
                 {
@@ -60,6 +60,12 @@ namespace Ocelot.Configuration.Creator
             if (upstreamTemplate == "/")
             {
                 return new UpstreamPathTemplate(RegExForwardSlashOnly, route.Priority, containsQueryString, route.UpstreamPathTemplate);
+            }
+
+            var index = upstreamTemplate.LastIndexOf('/'); // index of last forward slash
+            if (index < (upstreamTemplate.Length - 1) && upstreamTemplate[index + 1] == '.')
+            {
+                upstreamTemplate = upstreamTemplate[..index] + "(?:|/" + upstreamTemplate[++index..] + ")";
             }
 
             if (upstreamTemplate.EndsWith("/"))
