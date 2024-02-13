@@ -21,13 +21,13 @@ users must register authentication services in their **Startup.cs** as usual but
 In this example ``MyKey`` is `the scheme <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/#authentication-scheme>`_ that this provider has been registered with.
 We then map this to a Route in the configuration using the following `AuthenticationOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationOptions&type=code>`_ properties:
 
-* ``AuthenticationProviderKey`` is a string object, obsolete. [#f1]_ This is legacy definition when you define :ref:`authentication-single` (scheme).
+* ``AuthenticationProviderKey`` is a string object, obsolete [#f1]_. This is legacy definition when you define :ref:`authentication-single`.
 * ``AuthenticationProviderKeys`` is an array of strings, the recommended definition of :ref:`authentication-multiple` feature.
 
-.. authentication-single:
+.. _authentication-single:
 
-Single Key [#f1]_
------------------
+Single Key aka Authentication Scheme [#f1]_
+-------------------------------------------
 
     | Property: ``AuthenticationOptions.AuthenticationProviderKey``
 
@@ -46,7 +46,7 @@ If there isn't then Ocelot will not start up. If there is then the Route will us
 If a Route is authenticated, Ocelot will invoke whatever scheme is associated with it while executing the authentication middleware.
 If the request fails authentication, Ocelot returns a HTTP status code `401 Unauthorized <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401>`_.
 
-.. authentication-multiple:
+.. _authentication-multiple:
 
 Multiple Authentication Schemes [#f2]_
 --------------------------------------
@@ -55,7 +55,7 @@ Multiple Authentication Schemes [#f2]_
 
 In real world of ASP.NET, apps may need to support multiple types of authentication by single Ocelot app instance.
 To register `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`_
-(authentication provider keys) for each appropriate authentication provider, use and develop this abstract configuration of two or more schemes:
+(`authentication provider keys <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationProviderKey&type=code>`_) for each appropriate authentication provider, use and develop this abstract configuration of two or more schemes:
 
 .. code-block:: csharp
 
@@ -68,8 +68,8 @@ To register `multiple authentication schemes <https://learn.microsoft.com/en-us/
             .AddMyProvider("MyKey", options => { /* Custom auth setup */ });
     }
 
-In this example, the schemes ``MyKey`` and ``Bearer`` represent the keys which these providers have been registered with.
-We then map these schemes to a Route in the configuration, as shown below
+In this example, the ``MyKey`` and ``Bearer`` schemes represent the keys with which these providers were registered.
+We then map these schemes to a Route in the configuration as shown below.
 
 .. code-block:: json
 
@@ -83,9 +83,8 @@ Afterward, Ocelot applies all steps that are specified for ``AuthenticationProvi
 **Note** that the order of the keys in an array definition does matter! We use a "First One Wins" authentication strategy.
 
 Finally, we would say that registering providers, initializing options, forwarding authentication artifacts can be a "real" coding challenge.
-If you're stuck or don't know what to do, just find inspiration in our `acceptance tests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20MultipleAuthSchemesFeatureTests&type=code>`_ 
-(currently for `Identity Server 4 <https://identityserver4.readthedocs.io/>`_ only).
-We would appreciate any new PRs to add extra acceptance tests for your custom scenarios with `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__. [#f2]_
+If you're stuck or don't know what to do, just find inspiration in our `acceptance tests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+MultipleAuthSchemesFeatureTests+language%3AC%23&type=code&l=C%23>`_
+(currently for `Identity Server 4 <https://identityserver4.readthedocs.io/>`_ only) [#f3]_.
 
 JWT Tokens
 ----------
@@ -210,5 +209,6 @@ Please, open `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/
 
 """"
 
-.. [#f1] Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We supports this obsolete property because of backward compatibility and allowing migrations. In future releases the property can be removed as a breaking change.
-.. [#f2] `Multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__ feature was requested in issues `740 <https://github.com/ThreeMammals/Ocelot/issues/740>`_, `1580 <https://github.com/ThreeMammals/Ocelot/issues/1580>`_ and delivered as a part of `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_ release.
+.. [#f1] Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We support this ``[Obsolete]`` property for backward compatibility and migration reasons. In future releases, the property may be removed as a breaking change.
+.. [#f2] "`Multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__" feature was requested in issues `740 <https://github.com/ThreeMammals/Ocelot/issues/740>`_, `1580 <https://github.com/ThreeMammals/Ocelot/issues/1580>`_ and delivered as a part of `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_ release.
+.. [#f3] We would appreciate any new PRs to add extra acceptance tests for your custom scenarios with `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__.
