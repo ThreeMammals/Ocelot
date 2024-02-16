@@ -1,4 +1,5 @@
-﻿using Consul;
+﻿using System.Text.RegularExpressions;
+using Consul;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -83,7 +84,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -139,7 +140,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -190,7 +191,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -250,7 +251,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -308,7 +309,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(_ => GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-                .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
                 .And(_ => _steps.GivenThereIsAConfiguration(configuration))
                 .And(_ => _steps.GivenOcelotIsRunningWithConsul())
@@ -379,7 +380,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -447,7 +448,7 @@ namespace Ocelot.AcceptanceTests
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningWithConsul())
@@ -455,6 +456,100 @@ namespace Ocelot.AcceptanceTests
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_consul_service_discovery_based_on_upstream_host()
+        {
+            // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
+            // with different ServiceNames (e.g. product-us and product-eu),
+            // UpstreamHost is used to determine which ServiceName to use when making a request to Consul.
+            var consulPort = PortFinder.GetRandomPort();
+            var servicePortUS = PortFinder.GetRandomPort();
+            var servicePortEU = PortFinder.GetRandomPort();
+            var serviceNameUS = "product-us";
+            var serviceNameEU = "product-eu";
+            var downstreamServiceUrlUS = $"http://localhost:{servicePortUS}";
+            var downstreamServiceUrlEU = $"http://localhost:{servicePortEU}";
+            var upstreamHostUS = "us-shop";
+            var upstreamHostEU = "eu-shop";
+            var publicUrlUS = $"http://{upstreamHostUS}";
+            var publicUrlEU = $"http://{upstreamHostEU}";
+            var responseBodyUS = "Phone chargers with US plug";
+            var responseBodyEU = "Phone chargers with EU plug";
+            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var serviceEntryUS = new ServiceEntry
+            {
+                Service = new AgentService
+                {
+                    Service = serviceNameUS,
+                    Address = "localhost",
+                    Port = servicePortUS,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = ["US"],
+                },
+            };
+            var serviceEntryEU = new ServiceEntry
+            {
+                Service = new AgentService
+                {
+                    Service = serviceNameEU,
+                    Address = "localhost",
+                    Port = servicePortEU,
+                    ID = Guid.NewGuid().ToString(),
+                    Tags = ["EU"],
+                },
+            };
+
+            var configuration = new FileConfiguration
+            {
+                Routes =
+                    [
+                        new()
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = ["Get"],
+                            UpstreamHost = upstreamHostUS,
+                            ServiceName = serviceNameUS,
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                        },
+                        new()
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = ["Get"],
+                            UpstreamHost = upstreamHostEU,
+                            ServiceName = serviceNameEU,
+                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                        },
+                    ],
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    {
+                        Scheme = "http",
+                        Host = "localhost",
+                        Port = consulPort,
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/", 200, responseBodyUS))
+                .And(x => x.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/", 200, responseBodyEU))
+                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+                .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyUS))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
+                .BDDfy();
         }
 
         private void ThenTheTokenIs(string token)
@@ -504,18 +599,23 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
-                if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+                if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
                 {
-                    if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
-                    {
-                        _receivedToken = values.First();
-                    }
+                    _receivedToken = values.First();
+                }
 
-                    var json = JsonConvert.SerializeObject(_consulServices);
+                // Parse the request path to get the service name
+                var pathMatch = Regex.Match(context.Request.Path.Value, "/v1/health/service/(?<serviceName>[^/]+)");
+                if (pathMatch.Success)
+                {
+                    // Use the parsed service name to filter the registered Consul services
+                    var serviceName = pathMatch.Groups["serviceName"].Value;
+                    var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
+                    var json = JsonConvert.SerializeObject(services);
                     context.Response.Headers.Append("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }
