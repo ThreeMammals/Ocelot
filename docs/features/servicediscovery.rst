@@ -188,6 +188,8 @@ When Ocelot asks for a given service it is retrieved from memory so performance 
 
 Ocelot will use the scheme (``http``, ``https``) set in Eureka if these values are not provided in **ocelot.json**
 
+.. _sd-dynamic-routing:
+
 Dynamic Routing
 ---------------
 

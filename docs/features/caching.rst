@@ -6,6 +6,9 @@ This is an amazing project that is solving a lot of caching problems. We would r
 
 The following example shows how to add **CacheManager** to Ocelot so that you can do output caching. 
 
+Install
+-------
+
 First of all, add the following `NuGet package <https://www.nuget.org/packages/Ocelot.Cache.CacheManager>`_:
 
 .. code-block:: powershell
@@ -26,11 +29,18 @@ The second thing you need to do something like the following to your ``Configure
             .AddCacheManager(x => x.WithDictionaryHandle());
     });
 
+Configuration
+-------------
+
 Finally, in order to use caching on a route in your Route configuration add this setting:
 
 .. code-block:: json
 
-    "FileCacheOptions": { "TtlSeconds": 15, "Region": "europe-central", "Header": "Authorization" }
+    "FileCacheOptions": {
+      "TtlSeconds": 15,
+      "Region": "europe-central",
+      "Header": "Authorization"
+    }
 
 In this example **TtlSeconds** is set to 15 which means the cache will expire after 15 seconds.
 The **Region** represents a region of caching. 
