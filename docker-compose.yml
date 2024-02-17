@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  ocelot.samples.lb.apigateway:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbapigateway
+    build:
+      context: .
+      dockerfile: samples/LoadBalancer/Ocelot.samples.LB.APIGateway/Dockerfile
+  
+  ocelot.samples.lb.instance1:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbdownstreamapi
+    build:
+      context: .
+      dockerfile: samples/LoadBalancer/Ocelot.samples.LB.DownstreamAPI/Dockerfile 
+  
+  ocelot.samples.lb.instance2:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbdownstreamapi
+    build:
+        context: .
+        dockerfile: samples/LoadBalancer/Ocelot.samples.LB.DownstreamAPI/Dockerfile 
+
+  ocelot.samples.lb.downstreamapi:
+    image: ${DOCKER_REGISTRY-}ocelotsampleslbdownstreamapi
+    build:
+      context: .
+      dockerfile: samples/LoadBalancer/Ocelot.samples.LB.DownstreamAPI/Dockerfile
+  
+  consul-service:
+    image: "consul:1.15.4"
+    command: consul agent -dev -log-level=warn -ui -client=0.0.0.0
+    hostname: consul
+    ports:
+        - "8500:8500"
+        - "8600:8600"
+
