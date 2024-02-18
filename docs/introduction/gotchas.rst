@@ -35,13 +35,13 @@ Kestrel
 We **do** recommend to deploy Ocelot app to self-hosting environments, aka Kestrel vs Docker.
 We try to optimize Ocelot web app for Kestrel & Docker hosting scenarios, but keep in mind the following gotchas.
 
-* **Upload and download large files**, proxying the content through the gateway. It is strange when you pump large (static) files using the gateway.
+* **Upload and download large files** [#f1]_, proxying the content through the gateway. It is strange when you pump large (static) files using the gateway.
   We believe that your client apps should have direct integration to (static) files persistent storages and services: remote & destributed file systems, CDNs, static files & blob storages, etc.
   We **do not** recommend to pump large files (100Mb+ or even larger 1GB+) using gateway because of performance reasons: consuming memory and CPU, long delay times, producing network errors for downstream streaming, impact on other routes.
 
-  | The community constanly reports issues related to `large files <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22large+file%22&type=issues>`_ (``application/octet-stream`` content type, :ref:`chunked-encoding`, etc.), see issues `749 <https://github.com/ThreeMammals/Ocelot/issues/749>`_, `1472 <https://github.com/ThreeMammals/Ocelot/issues/1472>`_.
-  If you still want to pump large files through an Ocelot gateway instance, we believe our PRs (`1724 <https://github.com/ThreeMammals/Ocelot/pull/1724>`_, `1769 <https://github.com/ThreeMammals/Ocelot/pull/1769>`_) will help resolve the issues and stabilize large content proxying.
-  In case of some errors, see the next point.
+  | The community constanly reports issues related to `large files <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22large+file%22&type=issues>`_, ``application/octet-stream`` content type, :ref:`chunked-encoding`, etc., see issues `749 <https://github.com/ThreeMammals/Ocelot/issues/749>`_, `1472 <https://github.com/ThreeMammals/Ocelot/issues/1472>`_.
+  | If you still want to pump large files through an Ocelot gateway instance, use `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_ version and higher [#f1]_.
+  | In case of some errors, see the next point.
 
 * **Maximum request body size**. ASP.NET ``HttpRequest`` behaves erroneously for application instances that do not have their Kestrel `MaxRequestBodySize <https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits.maxrequestbodysize>`_ option configured correctly and having pumped large files of unpredictable size which exceeds the limit.
 
@@ -59,3 +59,8 @@ We try to optimize Ocelot web app for Kestrel & Docker hosting scenarios, but ke
       });
 
   Hope it helps.
+
+
+""""
+
+.. [#f1] Large files pumping is stabilized and available as complete solution starting in `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ release. We believe our PRs `1724 <https://github.com/ThreeMammals/Ocelot/pull/1724>`_, `1769 <https://github.com/ThreeMammals/Ocelot/pull/1769>`_ helped to resolve the issues and stabilize large content proxying problems of `22.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.1>`_ version and lower.

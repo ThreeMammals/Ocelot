@@ -18,8 +18,7 @@ namespace Ocelot.Responder.Middleware
         public ResponderMiddleware(RequestDelegate next,
             IHttpResponder responder,
             IOcelotLoggerFactory loggerFactory,
-            IErrorsToHttpStatusCodeMapper codeMapper
-           )
+            IErrorsToHttpStatusCodeMapper codeMapper)
             : base(loggerFactory.CreateLogger<ResponderMiddleware>())
         {
             _next = next;
@@ -32,38 +31,43 @@ namespace Ocelot.Responder.Middleware
             await _next.Invoke(httpContext);
 
             var errors = httpContext.Items.Errors();
-            var downstreamResponse = httpContext.Items.DownstreamResponse();
 
-            // todo check errors is ok
+            // We are going to dispose the http request message and content in
+            // this middleware (no further use). That's why we are using the 'using' statement.
+            using var downstreamResponse = httpContext.Items.DownstreamResponse();
+
             if (errors.Count > 0)
             {
-                Logger.LogWarning(() => $"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+                Logger.LogWarning(() =>
+                    $"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+                await SetErrorResponse(httpContext, errors);
 
-                SetErrorResponse(httpContext, errors);
+                return;
             }
-            else if (downstreamResponse == null)
+
+            if (downstreamResponse == null)
             {
                 Logger.LogDebug(() => $"Pipeline was terminated early in {MiddlewareName}");
+                return;
             }
-            else
-            {
-                Logger.LogDebug("no pipeline errors, setting and returning completed response");
 
-                await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
-            }
+            Logger.LogDebug("no pipeline errors, setting and returning completed response");
+            await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
         }
 
-        private void SetErrorResponse(HttpContext context, List<Error> errors)
+        private async Task SetErrorResponse(HttpContext context, List<Error> errors)
         {
-            //todo - refactor this all teh way down because its shit
+            // TODO The exception/error handling should be reviewed and refactored.
             var statusCode = _codeMapper.Map(errors);
             _responder.SetErrorResponseOnContext(context, statusCode);
 
-            if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
+            if (errors.All(e => e.Code != OcelotErrorCode.QuotaExceededError))
             {
-                var downstreamResponse = context.Items.DownstreamResponse();
-                _responder.SetErrorResponseOnContext(context, downstreamResponse);
+                return;
             }
+
+            var downstreamResponse = context.Items.DownstreamResponse();
+            await _responder.SetErrorResponseOnContext(context, downstreamResponse);
         }
     }
 }

@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var qos1 = new QoSOptions(1, 1000, 500, null);
+            var qos1 = new QoSOptions(1, 1000, 1000, null);
 
             var configuration = FileConfigurationFactory(port1, qos1);
             var route2 = configuration.Routes[0].Clone() as FileRoute;
@@ -121,7 +121,7 @@ namespace Ocelot.AcceptanceTests
             configuration.Routes.Add(route2);
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}/", 200, "Hello from Tom", 0))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}", 200, "Hello from Tom", 0))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
                 .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -143,12 +143,12 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact(DisplayName = "1833: " + nameof(Should_timeout_per_default_after_90_seconds))]
+        [Fact]
+        [Trait("Bug", "1833")]
         public void Should_timeout_per_default_after_90_seconds()
         {
             var port = PortFinder.GetRandomPort();
             var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithPolly())
