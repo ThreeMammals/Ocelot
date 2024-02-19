@@ -16,14 +16,15 @@ namespace Ocelot.Provider.Polly;
 
 public static class OcelotBuilderExtensions
 {
-    private static readonly Dictionary<Type, Func<Exception, Error>> ErrorMapping = new Dictionary<Type, Func<Exception, Error>>
+    public static readonly Dictionary<Type, Func<Exception, Error>> DefaultErrorMapping = new Dictionary<Type, Func<Exception, Error>>
     {
-        {typeof(TaskCanceledException), e => new RequestTimedOutError(e)},
-        {typeof(TimeoutRejectedException), e => new RequestTimedOutError(e)},
-        {typeof(BrokenCircuitException), e => new RequestTimedOutError(e)},
-        {typeof(BrokenCircuitException<HttpResponseMessage>), e => new RequestTimedOutError(e)}
+        {typeof(TaskCanceledException), CreateRequestTimedOutError},
+        {typeof(TimeoutRejectedException), CreateRequestTimedOutError},
+        {typeof(BrokenCircuitException), CreateRequestTimedOutError},
+        {typeof(BrokenCircuitException<HttpResponseMessage>), CreateRequestTimedOutError},
     };
 
+    private static Error CreateRequestTimedOutError(Exception e) => new RequestTimedOutError(e);
 
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
             QosDelegatingHandlerDelegate delegatingHandler,
