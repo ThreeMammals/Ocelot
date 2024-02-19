@@ -11,11 +11,11 @@ namespace Ocelot.Multiplexer
         private readonly RequestDelegate _next;
         private readonly IResponseAggregatorFactory _factory;
 
-        public MultiplexingMiddleware(RequestDelegate next,
+        public MultiplexingMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IResponseAggregatorFactory factory
-            )
-                : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
+            IResponseAggregatorFactory factory)
+            : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
         {
             _factory = factory;
             _next = next;
@@ -23,31 +23,29 @@ namespace Ocelot.Multiplexer
 
         public async Task Invoke(HttpContext httpContext)
         {
+            var route = httpContext.Items.DownstreamRouteHolder().Route;
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
-                //todo this is obviously stupid
-                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
+                // TODO: This is obviously stupid
+                httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
                 await _next.Invoke(httpContext);
                 return;
             }
 
-            // don't do anything extra if downstream route is single
-            if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
+            // Don't do anything extra if downstream route is single
+            if (route.DownstreamRoute.Count == 1)
             {
-                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
                 var singleResponse = await Fire(httpContext, _next);
                 MapNotAggregate(httpContext, singleResponse);
                 return;
             }
 
-            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRouteConfig;
-            if (routeKeysConfigs == null || !routeKeysConfigs.Any())
+            if (route.DownstreamRouteConfig?.Any() != true)
             {
-                var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
+                var tasks = new Task<HttpContext>[route.DownstreamRoute.Count];
 
-                var tasks = new Task<HttpContext>[downstreamRouteHolder.Route.DownstreamRoute.Count];
-
-                for (var i = 0; i < downstreamRouteHolder.Route.DownstreamRoute.Count; i++)
+                for (var i = 0; i < route.DownstreamRoute.Count; i++)
                 {
                     var newHttpContext = Copy(httpContext);
 
@@ -58,7 +56,7 @@ namespace Ocelot.Multiplexer
                     newHttpContext.Items
                         .UpsertTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
                     newHttpContext.Items
-                        .UpsertDownstreamRoute(downstreamRouteHolder.Route.DownstreamRoute[i]);
+                        .UpsertDownstreamRoute(route.DownstreamRoute[i]);
 
                     tasks[i] = Fire(newHttpContext, _next);
                 }
@@ -73,11 +71,11 @@ namespace Ocelot.Multiplexer
                     contexts.Add(finished);
                 }
 
-                await Map(httpContext, downstreamRouteHolder.Route, contexts);
+                await Map(httpContext, route, contexts);
             }
             else
             {
-                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
+                httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
                 var mainResponse = await Fire(httpContext, _next);
 
                 var tasks = new List<Task<HttpContext>>();
@@ -91,13 +89,13 @@ namespace Ocelot.Multiplexer
 
                 var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
 
-                for (var i = 1; i < httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count; i++)
+                for (var i = 1; i < route.DownstreamRoute.Count; i++)
                 {
                     var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
 
-                    var downstreamRoute = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[i];
+                    var downstreamRoute = route.DownstreamRoute[i];
 
-                    var matchAdvancedAgg = routeKeysConfigs
+                    var matchAdvancedAgg = route.DownstreamRouteConfig
                         .FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
 
                     if (matchAdvancedAgg != null)
@@ -156,7 +154,7 @@ namespace Ocelot.Multiplexer
                     contexts.Add(finished);
                 }
 
-                await Map(httpContext, httpContext.Items.DownstreamRouteHolder().Route, contexts);
+                await Map(httpContext, route, contexts);
             }
         }
 
@@ -198,7 +196,7 @@ namespace Ocelot.Multiplexer
             }
             else
             {
-                //assume at least one..if this errors then it will be caught by global exception handler
+                // Assume at least one... if this errors then it will be caught by global exception handler
                 MapNotAggregate(httpContext, contexts.First());
             }
         }
