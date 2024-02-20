@@ -1,0 +1,17 @@
+# call from ocelot repo root with
+# docker build --platform linux/arm64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
+# docker build --platform linux/amd64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
+
+FROM ocelot2/circleci-build:8.21.0
+
+ARG OCELOT_COVERALLS_TOKEN
+
+ENV OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN
+
+WORKDIR /build
+
+COPY ./. .
+
+RUN dotnet tool restore
+
+RUN	dotnet cake
