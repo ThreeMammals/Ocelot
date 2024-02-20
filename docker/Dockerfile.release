@@ -2,7 +2,7 @@
 # docker build --platform linux/arm64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN --build-arg OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
 # docker build --platform linux/amd64 --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN --build-arg OCELOT_GITHUB_API_KEY=$OCELOT_GITHUB_API_KEY --build-arg OCELOT_COVERALLS_TOKEN=$OCELOT_COVERALLS_TOKEN -f ./docker/Dockerfile.build .
 
-FROM ocelot2/circleci-build:8.21.0
+FROM ocelot2/circleci-build:8.23.0
 
 ARG OCELOT_COVERALLS_TOKEN
 ARG OCELOT_NUTGET_API_KEY
