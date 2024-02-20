@@ -52,7 +52,7 @@ namespace Ocelot.Benchmarks
                 },
             };
             httpContext.Request.Headers.Append("Host", "most");
-            httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null));
+            httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null, null));
 
             _httpContext = httpContext;
         }

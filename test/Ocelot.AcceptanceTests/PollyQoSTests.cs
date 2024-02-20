@@ -9,11 +9,11 @@ namespace Ocelot.AcceptanceTests
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
 
-    public PollyQoSTests()
-    {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
-    }
+        public PollyQoSTests()
+        {
+            _serviceHandler = new ServiceHandler();
+            _steps = new Steps();
+        }
 
         private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get))
             => new()
@@ -87,24 +87,24 @@ namespace Ocelot.AcceptanceTests
             var port = PortFinder.GetRandomPort();
             var configuration = FileConfigurationFactory(port, new QoSOptions(1, 500, 1000, null));
 
-        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
-            .Given(x => _steps.GivenThereIsAConfiguration(configuration))
-            .Given(x => _steps.GivenOcelotIsRunningWithPolly())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => GivenIWaitMilliseconds(3000))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
-    }
+            this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
+                .Given(x => _steps.GivenThereIsAConfiguration(configuration))
+                .Given(x => _steps.GivenOcelotIsRunningWithPolly())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => GivenIWaitMilliseconds(3000))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
 
         [Fact]
         public void Open_circuit_should_not_effect_different_route()
@@ -184,20 +184,21 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
         {
-            Thread.Sleep(timeout);
-            context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsync(responseBody);
-        });
-    }
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                Thread.Sleep(timeout);
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            });
+        }
 
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+        public void Dispose()
+        {
+            _serviceHandler?.Dispose();
+            _steps.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }
