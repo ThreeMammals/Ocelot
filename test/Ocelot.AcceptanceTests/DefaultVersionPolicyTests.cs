@@ -5,348 +5,168 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public sealed class DefaultVersionPolicyTests : Steps
 {
-    public class DefaultVersionPolicyTests : IDisposable
+    private const string Body = "supercalifragilistic";
+
+    public DefaultVersionPolicyTests()
     {
-        private readonly Steps _steps;
-        private const string Body = "supercalifragilistic";
+    }
 
-        public DefaultVersionPolicyTests()
-        {
-            _steps = new Steps();
-        }
+    [Fact]
+    public void Should_return_bad_gateway_when_request_higher_receive_lower()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrHigher);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+            .BDDfy();
+    }
 
-        [Fact]
-        public async Task should_return_bad_gateway_when_request_higher_receive_lower()
-        {
-            var port = PortFinder.GetRandomPort();
+    [Fact]
+    public void Should_return_bad_gateway_when_request_lower_receive_higher()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrLower);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+            .BDDfy();
+    }
 
-            var configuration = new FileConfiguration
+    [Fact]
+    public void Should_return_bad_gateway_when_request_exact_receive_different()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionExact);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_ok_when_request_version_exact_receive_exact()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionExact);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_ok_when_request_version_lower_receive_lower()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_ok_when_request_version_lower_receive_exact()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_ok_when_request_version_higher_receive_higher()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_ok_when_request_version_higher_receive_exact()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    private static void GivenThereIsAServiceRunningOn(int port, HttpProtocols protocols)
+    {
+        var url = $"{Uri.UriSchemeHttps}://localhost:{port}";
+        var builder = new WebHostBuilder()
+            .UseUrls(url)
+            .UseKestrel()
+            .ConfigureKestrel(serverOptions =>
             {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrHigher,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http1))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_bad_gateway_when_request_lower_receive_higher()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+                serverOptions.ConfigureEndpointDefaults(listenOptions => { listenOptions.Protocols = protocols; });
+            })
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .Configure(app =>
             {
-                Routes = new List<FileRoute>
+                app.Run(async context =>
                 {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrLower,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    await context.Response.WriteAsync(Body);
+                });
+            })
+            .Build();
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http2))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-                .BDDfy();
-        }
+        builder.Start();
+    }
 
-        [Fact]
-        public async Task should_return_bad_gateway_when_request_exact_receive_different()
-        {
-            var port = PortFinder.GetRandomPort();
+    private static FileRoute GivenHttpsRoute(int port, string httpVersion, string versionPolicy) => new()
+    {
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod = [HttpMethods.Get],
+        DownstreamPathTemplate = "/",
+        DownstreamHostAndPorts = [new FileHostAndPort("localhost", port)],
+        DownstreamScheme = Uri.UriSchemeHttps, // !!!
+        DownstreamHttpVersion = httpVersion,
+        DownstreamVersionPolicy = versionPolicy,
+        DangerousAcceptAnyServerCertificateValidator = true,
+    };
 
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionExact,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http2))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_ok_when_request_version_exact_receive_exact()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionExact,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http2))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_ok_when_request_version_lower_receive_lower()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrLower,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http1))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_ok_when_request_version_lower_receive_exact()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrLower,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http2))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_ok_when_request_version_higher_receive_higher()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrHigher,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http2))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        [Fact]
-        public async Task should_return_ok_when_request_version_higher_receive_exact()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "https",
-                        DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrHigher,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "GET" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", HttpProtocols.Http1))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        private void GivenThereIsAServiceRunningOn(string url, HttpProtocols protocols)
-        {
-            var builder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .ConfigureKestrel(serverOptions =>
-                {
-                    serverOptions.ConfigureEndpointDefaults(listenOptions => { listenOptions.Protocols = protocols; });
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        await context.Response.WriteAsync(Body);
-                    });
-                })
-                .Build();
-
-            builder.Start();
-        }
-
-        public void Dispose()
-        {
-            _steps?.Dispose();
-        }
+    private static FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    {
+        var configuration = new FileConfiguration();
+        configuration.Routes.AddRange(routes);
+        return configuration;
     }
 }
