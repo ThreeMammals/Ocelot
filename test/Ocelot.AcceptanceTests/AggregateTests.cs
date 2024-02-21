@@ -313,7 +313,9 @@ namespace Ocelot.AcceptanceTests
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var configuration = GivenDefaultConfiguration(port1, port2);
+            var route1 = GivenRoute(port1, "/laura", "Laura");
+            var route2 = GivenRoute(port2, "/tom", "Tom");
+            var configuration = GivenConfiguration(route1, route2);
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
@@ -538,9 +540,11 @@ namespace Ocelot.AcceptanceTests
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var identityServerPort = PortFinder.GetRandomPort();
-            var configuration = GivenDefaultConfiguration(port1, port2);
-            var identityServerUrl = $"http://localhost:{identityServerPort}";
+            var port3 = PortFinder.GetRandomPort();
+            var route1 = GivenRoute(port1, "/laura", "Laura");
+            var route2 = GivenRoute(port2, "/tom", "Tom");
+            var configuration = GivenConfiguration(route1, route2);
+            var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
             Action<IdentityServerAuthenticationOptions> options = o =>
             {
                 o.Authority = identityServerUrl;
@@ -658,20 +662,16 @@ namespace Ocelot.AcceptanceTests
             Key = key,
         };
 
-        private FileConfiguration GivenDefaultConfiguration(params int[] ports) => new FileConfiguration
+        private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
         {
-            Routes =
-            [
-                GivenRoute(ports[0], "/laura", "Laura"),
-                GivenRoute(ports[1], "/tom", "Tom"),
-            ],
+            Routes = new(routes),
             Aggregates =
             [
                 new()
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = [ "Laura", "Tom" ],
+                    RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
                 },
             ],
         };
