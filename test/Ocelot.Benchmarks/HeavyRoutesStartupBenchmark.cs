@@ -13,6 +13,11 @@ namespace Ocelot.Benchmarks
     {
         private IWebHost _ocelot;
 
+        //7 files with 80+ routes
+        int startFileCount = 0;
+
+        //7 files with 80+ routes
+        int endFileCount = 90;
         public HeavyRoutesStartupBenchmark()
         {
             AddColumn(StatisticColumn.AllStatistics);
@@ -23,14 +28,27 @@ namespace Ocelot.Benchmarks
         [GlobalSetup]
         public void SetUp()
         {
-            //Setting up for more than 600 routes in different files
-            CreateOcelotConfigFile(0, 100, "ocelot.json");
-            CreateOcelotConfigFile(101, 500, "ocelot.second.json");
+            for (int i = 1; i <= 7; i++)
+            {
+                CreateOcelotConfigFile(startFileCount, endFileCount, $"ocelot{i}.json");
+                startFileCount = endFileCount + 1;
+                endFileCount += 90;
+            }
         }
-        
+
         [Benchmark]
         public void StartOcelotWithLargeConfigurations()
         {
+            //Adding new file
+            CreateOcelotConfigFile(startFileCount, endFileCount, $"ocelot{8}.json");
+            OcelotStartup($"http://localhost:{TcpPortFinder.FindAvailablePort()}");
+        }
+
+        [Benchmark]
+        public void StartOcelotWithOverrideFile()
+        {   
+            //Overriding with old file
+            CreateOcelotConfigFile(0, 90, $"ocelot{8}.json");
             OcelotStartup($"http://localhost:{TcpPortFinder.FindAvailablePort()}");
         }
 
@@ -82,12 +100,15 @@ namespace Ocelot.Benchmarks
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
+                    for (int i = 1; i <= 8; i++)
+                    {
+                        config.AddJsonFile($"ocelot{i}.json", false, false);
+                    }
+
                     config
                         .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
                         .AddJsonFile("appsettings.json", true, true)
                         .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("ocelot.json", false, false)
-                        .AddJsonFile("ocelot.second.json", false, false)
                         .AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
