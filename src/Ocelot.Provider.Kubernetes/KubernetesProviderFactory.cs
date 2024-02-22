@@ -18,17 +18,17 @@ namespace Ocelot.Provider.Kubernetes
             var factory = provider.GetService<IOcelotLoggerFactory>();
             var kubeClient = provider.GetService<IKubeApiClient>();
 
-            var k8SRegistryConfiguration = new KubeRegistryConfiguration
+            var configuration = new KubeRegistryConfiguration
             {
                 KeyOfServiceInK8s = route.ServiceName,
                 KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
             };
 
-            var k8SServiceDiscoveryProvider = new KubernetesServiceDiscoveryProvider(k8SRegistryConfiguration, factory, kubeClient);
+            var defaultK8sProvider = new Kube(configuration, factory, kubeClient);
  
             return PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
-                ? new PollKube(config.PollingInterval, factory, k8SServiceDiscoveryProvider)
-                : k8SServiceDiscoveryProvider;
+                ? new PollKube(config.PollingInterval, factory, defaultK8sProvider)
+                : defaultK8sProvider;
         }
     }
 }

@@ -4,16 +4,19 @@ using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
 
-public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
+/// <summary>
+/// Default Kubernetes service discovery provider.
+/// </summary>
+public class Kube : IServiceDiscoveryProvider
 {
     private readonly KubeRegistryConfiguration _kubeRegistryConfiguration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
 
-    public KubernetesServiceDiscoveryProvider(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
+    public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
     {
         _kubeRegistryConfiguration = kubeRegistryConfiguration;
-        _logger = factory.CreateLogger<KubernetesServiceDiscoveryProvider>();
+        _logger = factory.CreateLogger<Kube>();
         _kubeApi = kubeApi;
     }
 
@@ -21,7 +24,7 @@ public class KubernetesServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))
-            .Get(_kubeRegistryConfiguration.KeyOfServiceInK8s, _kubeRegistryConfiguration.KubeNamespace);
+            .GetAsync(_kubeRegistryConfiguration.KeyOfServiceInK8s, _kubeRegistryConfiguration.KubeNamespace);
 
         var services = new List<Service>();
         if (endpoint != null && endpoint.Subsets.Any())
