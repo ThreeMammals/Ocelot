@@ -37,7 +37,7 @@ namespace Ocelot.Benchmarks
         }
 
         [Benchmark]
-        public void StartOcelotWithLargeConfigurations()
+        public void StartOcelotWithAddingNewConfigFile()
         {
             //Adding new file
             CreateOcelotConfigFile(startFileCount, endFileCount, $"ocelot{8}.json");
@@ -45,7 +45,7 @@ namespace Ocelot.Benchmarks
         }
 
         [Benchmark]
-        public void StartOcelotWithOverrideFile()
+        public void StartOcelotWithOverridingExistingFile()
         {   
             //Overriding with old file
             CreateOcelotConfigFile(0, 90, $"ocelot{8}.json");
