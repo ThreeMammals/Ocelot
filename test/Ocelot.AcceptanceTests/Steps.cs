@@ -667,11 +667,14 @@ public class Steps : IDisposable
     }
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
+        => GivenOcelotIsRunningWithServices(configureServices, null);
+
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp)
     {
         _webHostBuilder = new WebHostBuilder()
             .ConfigureAppConfiguration(WithBasicConfiguration)
             .ConfigureServices(configureServices ?? WithAddOcelot)
-            .Configure(WithUseOcelot);
+            .Configure(configureApp ?? WithUseOcelot);
         _ocelotServer = new TestServer(_webHostBuilder);
         _ocelotClient = _ocelotServer.CreateClient();
     }

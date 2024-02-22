@@ -1,5 +1,15 @@
+using IdentityServer4.AccessTokenValidation;
+using IdentityServer4.Extensions;
+using IdentityServer4.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 
@@ -8,17 +18,18 @@ namespace Ocelot.AcceptanceTests
     public class AggregateTests : IDisposable
     {
         private readonly Steps _steps;
-        private string _downstreamPathOne;
-        private string _downstreamPathTwo;
         private readonly ServiceHandler _serviceHandler;
+        private readonly string[] _downstreamPaths;
 
         public AggregateTests()
         {
             _serviceHandler = new ServiceHandler();
             _steps = new Steps();
+            _downstreamPaths = new string[3];
         }
 
         [Fact]
+        [Trait("Issue", "597")]
         public void should_fix_issue_597()
         {
             var port = PortFinder.GetRandomPort();
@@ -215,9 +226,9 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
 
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, commentsResponseContent))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/users/1", 200, userDetailsResponseContent))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port3}", "/posts/2", 200, postDetailsResponseContent))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
+                .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -286,8 +297,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "Bye from Laura, Bye from Tom";
 
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDepdendency>())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -302,67 +313,17 @@ namespace Ocelot.AcceptanceTests
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/laura",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Laura",
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/tom",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            Key = "Tom",
-                        },
-                    },
-                Aggregates = new List<FileAggregateRoute>
-                    {
-                        new()
-                        {
-                            UpstreamPathTemplate = "/",
-                            UpstreamHost = "localhost",
-                            RouteKeys = new List<string>
-                            {
-                                "Laura",
-                                "Tom",
-                            },
-                        },
-                    },
-            };
+            var route1 = GivenRoute(port1, "/laura", "Laura");
+            var route2 = GivenRoute(port2, "/tom", "Tom");
+            var configuration = GivenConfiguration(route1, route2);
 
-            var expected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
-
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -426,8 +387,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
 
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 404, ""))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -496,8 +457,8 @@ namespace Ocelot.AcceptanceTests
 
             var expected = "{\"Laura\":,\"Tom\":}";
 
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 404, ""))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 404, ""))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -564,13 +525,96 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenServiceOneIsRunning($"http://localhost:{port1}", "/", 200, "{Hello from Laura}"))
-                .Given(x => x.GivenServiceTwoIsRunning($"http://localhost:{port2}", "/", 200, "{Hello from Tom}"))
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Bug", "1396")]
+        public void should_return_response_200_with_user_forwarding()
+        {
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var port3 = PortFinder.GetRandomPort();
+            var route1 = GivenRoute(port1, "/laura", "Laura");
+            var route2 = GivenRoute(port2, "/tom", "Tom");
+            var configuration = GivenConfiguration(route1, route2);
+            var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
+            Action<IdentityServerAuthenticationOptions> options = o =>
+            {
+                o.Authority = identityServerUrl;
+                o.ApiName = "api";
+                o.RequireHttpsMetadata = false;
+                o.SupportedTokens = SupportedTokens.Both;
+                o.ApiSecret = "secret";
+                o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+            };
+            Action<IServiceCollection> configureServices = s =>
+            {
+                s.AddOcelot();
+                s.AddMvcCore(options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .RequireClaim("scope", "api")
+                        .Build();
+                    options.Filters.Add(new AuthorizeFilter(policy));
+                });
+                s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                    .AddIdentityServerAuthentication(options);
+            };
+            var count = 0;
+            var actualContexts = new HttpContext[2];
+            Action<IApplicationBuilder> configureApp = async (app) =>
+            {
+                var configuration = new OcelotPipelineConfiguration
+                {
+                    PreErrorResponderMiddleware = async (context, next) =>
+                    {
+                        var auth = await context.AuthenticateAsync();
+                        context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
+                            ? auth.Principal : null;
+                        await next.Invoke();
+                    },
+                    AuthorizationMiddleware = (context, next) =>
+                    {
+                        actualContexts[count++] = context;
+                        return next.Invoke();
+                    },
+                };
+                await app.UseOcelot(configuration);
+            };
+            using (var auth = new AuthenticationTests())
+            {
+                this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
+                    .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+                    .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+                    .And(x => auth.GivenIHaveAToken(identityServerUrl))
+                    .And(x => auth.GivenThereIsAConfiguration(configuration))
+                    .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
+                    .And(x => auth.GivenIHaveAddedATokenToMyRequest())
+                    .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
+                    .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                    .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+                    .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
+                    .BDDfy();
+            }
+
+            // Assert
+            for (int i = 0; i < actualContexts.Length; i++)
+            {
+                var ctx = actualContexts[i].ShouldNotBeNull();
+                ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
+                var user = ctx.User.ShouldNotBeNull();
+                user.IsAuthenticated().ShouldBeTrue();
+                user.Claims.Count().ShouldBeGreaterThan(1);
+                user.Claims.FirstOrDefault(c => c.Type == "scope" && c.Value == "api").ShouldNotBeNull();
+            }
         }
 
         private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
@@ -582,32 +626,14 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, string responseBody)
         {
+            var baseUrl = $"{Uri.UriSchemeHttp}://localhost:{port}";
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
-                if (_downstreamPathOne != basePath)
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
-
-        private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPathTwo != basePath)
+                if (_downstreamPaths[index] != basePath)
                 {
                     context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync("downstream path didnt match base path");
@@ -622,9 +648,33 @@ namespace Ocelot.AcceptanceTests
 
         internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
         {
-            _downstreamPathOne.ShouldBe(expectedDownstreamPathOne);
-            _downstreamPathTwo.ShouldBe(expectedDownstreamPath);
+            _downstreamPaths[0].ShouldBe(expectedDownstreamPathOne);
+            _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
         }
+
+        private static FileRoute GivenRoute(int port, string upstream, string key) => new()
+        {
+            DownstreamPathTemplate = "/",
+            DownstreamScheme = Uri.UriSchemeHttp,
+            DownstreamHostAndPorts = [new("localhost", port)],
+            UpstreamPathTemplate = upstream,
+            UpstreamHttpMethod = [HttpMethods.Get],
+            Key = key,
+        };
+
+        private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+        {
+            Routes = new(routes),
+            Aggregates =
+            [
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+                },
+            ],
+        };
 
         public void Dispose()
         {
