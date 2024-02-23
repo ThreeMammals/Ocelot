@@ -17,7 +17,7 @@ namespace Ocelot.Provider.Polly;
 
 public static class OcelotBuilderExtensions
 {
-    private static readonly Dictionary<Type, Func<Exception, Error>> ErrorMapping = new()
+    public static readonly Dictionary<Type, Func<Exception, Error>> DefaultErrorMapping = new()
     {
         {typeof(TaskCanceledException), e => new RequestTimedOutError(e)},
         {typeof(TimeoutRejectedException), e => new RequestTimedOutError(e)},
@@ -45,14 +45,14 @@ public static class OcelotBuilderExtensions
 
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
-        => AddPolly<T>(builder, delegatingHandler, ErrorMapping);
+        => AddPolly<T>(builder, delegatingHandler, DefaultErrorMapping);
 
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
-        => AddPolly<T>(builder, GetDelegatingHandler, ErrorMapping);
+        => AddPolly<T>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
     public static IOcelotBuilder AddPolly(this IOcelotBuilder builder) 
-        => AddPolly<PollyQoSResiliencePipelineProvider>(builder, GetDelegatingHandler, ErrorMapping);
+        => AddPolly<PollyQoSResiliencePipelineProvider>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
     private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
         => new PollyResiliencePipelineDelegatingHandler(route, contextAccessor, loggerFactory);
@@ -80,17 +80,17 @@ public static class OcelotBuilderExtensions
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
-        AddPollyV7<T>(builder, delegatingHandler, ErrorMapping);
+        AddPollyV7<T>(builder, delegatingHandler, DefaultErrorMapping);
 
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
-        AddPollyV7<T>(builder, GetDelegatingHandlerV7, ErrorMapping);
+        AddPollyV7<T>(builder, GetDelegatingHandlerV7, DefaultErrorMapping);
 
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7(this IOcelotBuilder builder)
     {
-        return AddPollyV7<PollyQoSProvider>(builder, GetDelegatingHandlerV7, ErrorMapping);
+        return AddPollyV7<PollyQoSProvider>(builder, GetDelegatingHandlerV7, DefaultErrorMapping);
     }
 
     private static DelegatingHandler GetDelegatingHandlerV7(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
