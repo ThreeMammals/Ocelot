@@ -45,15 +45,15 @@ public static class OcelotBuilderExtensions
 
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
-        AddPolly<T>(builder, delegatingHandler, ErrorMapping);
+        AddPolly<T>(builder, delegatingHandler, DefaultErrorMapping);
 
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
-        AddPolly<T>(builder, GetDelegatingHandler, ErrorMapping);
+        AddPolly<T>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
     public static IOcelotBuilder AddPolly(this IOcelotBuilder builder)
     {
-        return AddPolly<PollyQoSProvider>(builder, GetDelegatingHandler, ErrorMapping);
+        return AddPolly<PollyQoSProvider>(builder, GetDelegatingHandler, DefaultErrorMapping);
     }
 
     private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
