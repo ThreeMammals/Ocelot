@@ -25,15 +25,14 @@ namespace Ocelot.Configuration.Creator
             var applicableRoutes = new List<DownstreamRoute>();
             var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
 
-            foreach (var routeKey in aggregateRoute.RouteKeys)
+            foreach (var downstreamRoute in aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey)))
             {
-                var selec = allRoutes.FirstOrDefault(q => q.Key == routeKey);
-                if (selec == null)
+                if (downstreamRoute == null)
                 {
                     return null;
                 }
 
-                applicableRoutes.Add(selec);
+                applicableRoutes.Add(downstreamRoute);
             }
 
             var upstreamTemplatePattern = _creator.Create(aggregateRoute);
