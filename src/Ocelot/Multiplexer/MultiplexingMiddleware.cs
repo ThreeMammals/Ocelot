@@ -237,7 +237,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         // Caution: Directly copying RequestServices might not be safe
         target.RequestServices = source.RequestServices;
         target.RequestAborted = source.RequestAborted;
-
+        target.User = source.User;
         return target;
     }
 
