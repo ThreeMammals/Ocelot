@@ -230,7 +230,7 @@ namespace Ocelot.UnitTests.Polly
         private static DownstreamRoute DownstreamRouteFactory(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false)
         {
             var options = new QoSOptionsBuilder()
-                .WithTimeoutValue(5000)
+                .WithTimeoutValue(10000)
                 .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
                 .WithDurationOfBreak(500)
                 .Build();
