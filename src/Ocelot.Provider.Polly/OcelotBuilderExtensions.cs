@@ -26,9 +26,17 @@ public static class OcelotBuilderExtensions
 
     private static Error CreateRequestTimedOutError(Exception e) => new RequestTimedOutError(e);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <param name="delegatingHandler">Your customized delegating handler (to manage QOS behavior by yourself)</param>
+    /// <param name="errorMapping">Unused</param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
             QosDelegatingHandlerDelegate delegatingHandler,
-            Dictionary<Type, Func<Exception, Error>> errorMapping)
+            IDictionary<Type, Func<Exception, Error>> errorMapping)
             where T : class, IPollyQoSProvider<HttpResponseMessage>
     {
         builder.Services
@@ -38,19 +46,44 @@ public static class OcelotBuilderExtensions
 
         return builder;
     }
-    
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, Dictionary<Type, Func<Exception, Error>> errorMapping)
+
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <param name="errorMapping">Unused</param>
+    /// <returns></returns>
+    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, IDictionary<Type, Func<Exception, Error>> errorMapping)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPolly<T>(builder, GetDelegatingHandler, errorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot with default error mapping
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <param name="delegatingHandler">Your customized delegating handler (to manage QOS behavior by yourself)</param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPolly<T>(builder, delegatingHandler, DefaultErrorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot default QOS Delegating Handler
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use with default QOS Provider</typeparam>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSProvider<HttpResponseMessage> =>
         AddPolly<T>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot with default QOS Provider and default QOS Delegating Handler
+    /// </summary>
+   /// <param name="builder"></param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly(this IOcelotBuilder builder)
     {
         return AddPolly<PollyQoSProvider>(builder, GetDelegatingHandler, DefaultErrorMapping);
