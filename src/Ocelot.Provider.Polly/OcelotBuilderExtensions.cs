@@ -39,18 +39,43 @@ public static class OcelotBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSResiliencePipelineProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <param name="errorMapping">Unused</param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, Dictionary<Type, Func<Exception, Error>> errorMapping)
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
         => AddPolly<T>(builder, GetDelegatingHandler, errorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSResiliencePipelineProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <param name="delegatingHandler">Your customized delegating handler (to manage QOS behavior by yourself)</param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
         => AddPolly<T>(builder, delegatingHandler, DefaultErrorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <typeparam name="T">QOS Provider to use (by default use PollyQoSResiliencePipelineProvider)</typeparam>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder)
         where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
         => AddPolly<T>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
+    /// <summary>
+    /// Add Polly QoS provider to Ocelot
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IOcelotBuilder AddPolly(this IOcelotBuilder builder) 
         => AddPolly<PollyQoSResiliencePipelineProvider>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
@@ -58,6 +83,7 @@ public static class OcelotBuilderExtensions
         => new PollyResiliencePipelineDelegatingHandler(route, contextAccessor, loggerFactory);
 
     #region Obsolete (to remove in a future verison)
+
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
     public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder,
              QosDelegatingHandlerDelegate delegatingHandler,
