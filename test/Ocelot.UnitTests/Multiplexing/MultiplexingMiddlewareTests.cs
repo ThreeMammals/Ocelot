@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Multiplexing
             GivenUser("test", "Copy", nameof(Copy_User_ToTarget));
 
             // Act
-            var method = _middleware.GetType().GetMethod("Copy", BindingFlags.NonPublic | BindingFlags.Static);
+            var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
             HttpContext actual = (HttpContext)method.Invoke(_middleware, [_httpContext]);
 
             // Assert
