@@ -8,6 +8,8 @@ using Ocelot.Multiplexer;
 using System.Reflection;
 using System.Security.Claims;
 using Moq.Protected;
+using Ocelot.Configuration.File;
+using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
@@ -124,7 +126,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("PR", "1826")]
         public async Task Should_Call_ProcessSingleRoute_Once_If_One_Downstream_Route()
         {
-            var mock = MockMiddlewareFactory(null);
+            var mock = MockMiddlewareFactory(null, null);
 
             _middleware = mock.Object;
 
@@ -152,7 +154,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("PR", "1826")]
         public async Task Should_Not_Call_ProcessSingleRoute_If_More_Than_One_Downstream_Route(int routesCount)
         {
-            var mock = MockMiddlewareFactory(null);
+            var mock = MockMiddlewareFactory(null, null);
 
             // Arrange
             GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
@@ -178,7 +180,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("PR", "1826")]
         public async Task Should_Create_As_Many_Contexts_As_Routes_And_Map_Is_Called_Once(int routesCount)
         {
-            var mock = MockMiddlewareFactory(routesCount);
+            var mock = MockMiddlewareFactory(routesCount, null);
 
             // Arrange
             GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
@@ -201,7 +203,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("PR", "1826")]
         public async Task Should_Not_Call_ProcessSingleRoute_Or_Map_If_No_Route()
         {
-            var mock = MockMiddlewareFactory(null);
+            var mock = MockMiddlewareFactory(null, null);
 
             // Arrange
             GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
@@ -226,11 +228,58 @@ namespace Ocelot.UnitTests.Multiplexing
                 ItExpr.IsAny<List<HttpContext>>());
         }
 
-        private Mock<MultiplexingMiddleware> MockMiddlewareFactory(int? downstreamRoutesCount)
+        [Fact]
+        [Trait("PR", "1826")]
+        public async Task If_Using_3_Routes_WithAggregator_ProcessSingleRoute_Is_Never_Called_Map_Once_And_Pipeline_3_Times()
         {
-            static Task MockRequestDelegate(HttpContext context) => Task.CompletedTask;
+            var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
 
-            var mock = new Mock<MultiplexingMiddleware>((RequestDelegate)MockRequestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenRoutesWithAggregator());
+
+            // Act
+            await WhenIMultiplex();
+
+            mock.Protected().Verify<Task>(
+                "ProcessSingleRoute",
+                Times.Never(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<DownstreamRoute>()
+            );
+
+            mock.Protected().Verify<Task>(
+                "Map",
+                Times.Once(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<Route>(),
+                ItExpr.IsAny<List<HttpContext>>());
+
+            ThePipelineIsCalled(3);
+        }
+
+        private RequestDelegate AggregateRequestDelegateFactory()
+        {
+            return context =>
+            {
+                var responseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
+                context.Items.Add("DownstreamResponse", new DownstreamResponse(new StringContent(responseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<Header>(), "test"));
+
+                if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
+                {
+                    context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
+                }
+
+                _count++;
+                return Task.CompletedTask;
+            };
+        }
+
+        private Mock<MultiplexingMiddleware> MockMiddlewareFactory(int? downstreamRoutesCount, RequestDelegate requestDelegate)
+        {
+            requestDelegate ??= Next;
+
+            var mock = new Mock<MultiplexingMiddleware>(requestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
 
             mock.Protected().Setup<Task>(
                 "Map",
@@ -275,6 +324,30 @@ namespace Ocelot.UnitTests.Multiplexing
             {
                 b.WithDownstreamRoute(new DownstreamRouteBuilder().Build());
             }
+
+            return b.Build();
+        }
+
+        private static Route GivenRoutesWithAggregator()
+        {
+            var route1 = new DownstreamRouteBuilder().WithKey("Comments").Build();
+            var route2 = new DownstreamRouteBuilder().WithKey("UserDetails").Build();
+            var route3 = new DownstreamRouteBuilder().WithKey("PostDetails").Build();
+
+            var b = new RouteBuilder();
+            b.WithDownstreamRoute(route1);
+            b.WithDownstreamRoute(route2);
+            b.WithDownstreamRoute(route3);
+
+            b.WithAggregateRouteConfig(
+            [
+                new AggregateRouteConfig
+                    { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
+                new AggregateRouteConfig
+                    { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" }
+            ]);
+
+            b.WithAggregator("TestAggregator");
 
             return b.Build();
         }

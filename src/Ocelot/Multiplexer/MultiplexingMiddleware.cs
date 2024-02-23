@@ -126,7 +126,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="routeKeysConfigs">The route keys config.</param>
     /// <param name="mainResponse">The response from the main route.</param>
     /// <returns>A list of the tasks' http contexts.</returns>
-    private async Task<HttpContext[]> ProcessRoutesWithRouteKeys(HttpContext context,
+    protected virtual async Task<HttpContext[]> ProcessRoutesWithRouteKeys(HttpContext context,
         IEnumerable<DownstreamRoute> routes, IReadOnlyCollection<AggregateRouteConfig> routeKeysConfigs,
         HttpContext mainResponse)
     {
