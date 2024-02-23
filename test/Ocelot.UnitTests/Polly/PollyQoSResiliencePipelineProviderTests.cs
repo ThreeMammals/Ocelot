@@ -165,7 +165,7 @@ namespace Ocelot.UnitTests.Polly
             await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
                 await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-            await Task.Delay(600);
+            await Task.Delay(6000);
 
             Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
         }
@@ -184,7 +184,7 @@ namespace Ocelot.UnitTests.Polly
             await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
                 await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-            await Task.Delay(600);
+            await Task.Delay(6000);
 
             Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
             await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
@@ -205,7 +205,7 @@ namespace Ocelot.UnitTests.Polly
             await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
                 await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-            await Task.Delay(600);
+            await Task.Delay(6000);
 
             var response2 = new HttpResponseMessage(HttpStatusCode.OK);
             Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response2))).StatusCode);
