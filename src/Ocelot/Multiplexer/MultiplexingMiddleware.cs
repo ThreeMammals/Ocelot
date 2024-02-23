@@ -36,7 +36,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         // case 1: if websocket request or single downstream route
         if (ShouldProcessSingleRoute(httpContext, downstreamRoutes))
         {
-            await ProcessSingleRoute(httpContext, downstreamRoutes.First());
+            await ProcessSingleRoute(httpContext, downstreamRoutes[0]);
             return;
         }
 
@@ -48,14 +48,14 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
         // case 3: if multiple downstream routes
         var routeKeysConfigs = route.DownstreamRouteConfig;
-        if (routeKeysConfigs == null || !routeKeysConfigs.Any())
+        if (routeKeysConfigs == null || routeKeysConfigs.Count == 0)
         {
             await ProcessRoutes(httpContext, route);
             return;
         }
 
         // case 4: if multiple downstream routes with route keys
-        var mainResponse = await ProcessMainRoute(httpContext, downstreamRoutes.First());
+        var mainResponse = await ProcessMainRoute(httpContext, downstreamRoutes[0]);
         if (mainResponse == null)
         {
             return;
@@ -211,34 +211,38 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <returns>The cloned context.</returns>
     private static HttpContext CreateThreadContext(HttpContext source)
     {
-        var target = new DefaultHttpContext();
+        var target = new DefaultHttpContext
+        {
+            Request =
+            {
+                Body = source.Request.Body,// Consider stream cloning for multiple reads
+                ContentLength = source.Request.ContentLength,
+                ContentType = source.Request.ContentType,
+                Host = source.Request.Host,
+                Method = source.Request.Method,
+                Path = source.Request.Path,
+                PathBase = source.Request.PathBase,
+                Protocol = source.Request.Protocol,
+                QueryString = source.Request.QueryString,
+                Scheme = source.Request.Scheme,
+                IsHttps = source.Request.IsHttps,
+                Query = new QueryCollection(new Dictionary<string, StringValues>(source.Request.Query)),
+                RouteValues = new RouteValueDictionary(source.Request.RouteValues),
+            },
+            Connection =
+            {
+                RemoteIpAddress = source.Connection.RemoteIpAddress,
+            },
+            RequestServices = source.RequestServices,
+            RequestAborted = source.RequestAborted,
+            User = source.User,
+        };
 
         foreach (var header in source.Request.Headers)
         {
             target.Request.Headers[header.Key] = header.Value.ToArray();
         }
 
-        target.Request.Body = source.Request.Body; // Consider stream cloning for multiple reads
-        target.Request.ContentLength = source.Request.ContentLength;
-        target.Request.ContentType = source.Request.ContentType;
-        target.Request.Host = source.Request.Host;
-        target.Request.Method = source.Request.Method;
-        target.Request.Path = source.Request.Path;
-        target.Request.PathBase = source.Request.PathBase;
-        target.Request.Protocol = source.Request.Protocol;
-        target.Request.QueryString = source.Request.QueryString;
-        target.Request.Scheme = source.Request.Scheme;
-        target.Request.IsHttps = source.Request.IsHttps;
-
-        target.Request.Query = new QueryCollection(new Dictionary<string, StringValues>(source.Request.Query));
-        target.Request.RouteValues = new RouteValueDictionary(source.Request.RouteValues);
-
-        target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
-
-        // Caution: Directly copying RequestServices might not be safe
-        target.RequestServices = source.RequestServices;
-        target.RequestAborted = source.RequestAborted;
-        target.User = source.User;
         return target;
     }
 
