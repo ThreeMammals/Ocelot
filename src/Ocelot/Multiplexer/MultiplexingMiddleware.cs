@@ -85,10 +85,11 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// </summary>
     /// <param name="context">The http context.</param>
     /// <param name="route">The downstream route.</param>
-    private async Task ProcessSingleRoute(HttpContext context, DownstreamRoute route)
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    protected virtual Task ProcessSingleRoute(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
-        await _next.Invoke(context);
+        return _next.Invoke(context);
     }
 
     /// <summary>
@@ -101,7 +102,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         var tasks = route.DownstreamRoute.Select(downstreamRoute => ProcessRouteAsync(context, downstreamRoute, _next))
             .ToArray();
         var contexts = await Task.WhenAll(tasks);
-        await Map(context, route, contexts.ToList());
+        await Map(context, route, [.. contexts]);
     }
 
     /// <summary>
@@ -241,15 +242,15 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return target;
     }
 
-    private async Task Map(HttpContext httpContext, Route route, List<HttpContext> contexts)
+    protected virtual Task Map(HttpContext httpContext, Route route, List<HttpContext> contexts)
     {
         if (route.DownstreamRoute.Count == 1)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var aggregator = _factory.Get(route);
-        await aggregator.Aggregate(route, httpContext, contexts);
+        return aggregator.Aggregate(route, httpContext, contexts);
     }
 
     private static async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)

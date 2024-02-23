@@ -7,6 +7,7 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using System.Reflection;
 using System.Security.Claims;
+using Moq.Protected;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
@@ -65,7 +66,7 @@ namespace Ocelot.UnitTests.Multiplexing
 
             // Act
             var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
-            HttpContext actual = (HttpContext)method.Invoke(_middleware, [_httpContext]);
+            var actual = (HttpContext)method.Invoke(_middleware, [_httpContext]);
 
             // Assert
             AssertUsers(actual);
@@ -96,6 +97,158 @@ namespace Ocelot.UnitTests.Multiplexing
             AssertUsers(actualContext);
         }
 
+        [Fact]
+        [Trait("PR", "1826")]
+        public async Task Should_Not_Copy_Context_If_One_Downstream_Route()
+        {
+            _middleware = new MultiplexingMiddleware(NextMe, loggerFactory.Object, factory.Object);
+            Task NextMe(HttpContext context)
+            {
+                Assert.Equal(_httpContext, context);
+                return Next(context);
+            }
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenDefaultRoute(1));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            ThePipelineIsCalled(1);
+            
+        }
+
+        [Fact]
+        [Trait("PR", "1826")]
+        public async Task Should_Call_ProcessSingleRoute_Once_If_One_Downstream_Route()
+        {
+            var mock = MockMiddlewareFactory(null);
+
+            _middleware = mock.Object;
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenDefaultRoute(1));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task>(
+                "ProcessSingleRoute",
+                Times.Once(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<DownstreamRoute>()
+            );
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [Trait("PR", "1826")]
+        public async Task Should_Not_Call_ProcessSingleRoute_If_More_Than_One_Downstream_Route(int routesCount)
+        {
+            var mock = MockMiddlewareFactory(null);
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenDefaultRoute(routesCount));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task>(
+                "ProcessSingleRoute",
+                Times.Never(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<DownstreamRoute>()
+            );
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [Trait("PR", "1826")]
+        public async Task Should_Create_As_Many_Contexts_As_Routes_And_Map_Is_Called_Once(int routesCount)
+        {
+            var mock = MockMiddlewareFactory(routesCount);
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenDefaultRoute(routesCount));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task>(
+                "Map",
+                Times.Once(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<Route>(),
+                ItExpr.Is<List<HttpContext>>(list => list.Count == routesCount)
+            );
+        }
+
+        [Fact]
+        [Trait("PR", "1826")]
+        public async Task Should_Not_Call_ProcessSingleRoute_Or_Map_If_No_Route()
+        {
+            var mock = MockMiddlewareFactory(null);
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenTheFollowing(GivenDefaultRoute(0));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task>(
+                "ProcessSingleRoute",
+                Times.Never(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<DownstreamRoute>()
+            );
+
+            mock.Protected().Verify<Task>(
+                "Map",
+                Times.Never(),
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<Route>(),
+                ItExpr.IsAny<List<HttpContext>>());
+        }
+
+        private Mock<MultiplexingMiddleware> MockMiddlewareFactory(int? downstreamRoutesCount)
+        {
+            static Task MockRequestDelegate(HttpContext context) => Task.CompletedTask;
+
+            var mock = new Mock<MultiplexingMiddleware>((RequestDelegate)MockRequestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
+
+            mock.Protected().Setup<Task>(
+                "Map",
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<Route>(),
+                downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount)
+            ).Returns(Task.CompletedTask).Verifiable();
+
+            mock.Protected().Setup<Task>(
+                "ProcessSingleRoute",
+                ItExpr.IsAny<HttpContext>(),
+                ItExpr.IsAny<DownstreamRoute>()
+            ).Returns(Task.CompletedTask).Verifiable();
+
+            _middleware = mock.Object;
+            return mock;
+        }
+
         private void GivenUser(string authentication, string name, string role)
         {
             var user = new ClaimsPrincipal();
@@ -118,7 +271,7 @@ namespace Ocelot.UnitTests.Multiplexing
         private static Route GivenDefaultRoute(int count)
         {
             var b = new RouteBuilder();
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 b.WithDownstreamRoute(new DownstreamRouteBuilder().Build());
             }
