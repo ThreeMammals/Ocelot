@@ -232,7 +232,7 @@ namespace Ocelot.UnitTests.Polly
             var options = new QoSOptionsBuilder()
                 .WithTimeoutValue(10000)
                 .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
-                .WithDurationOfBreak(500)
+                .WithDurationOfBreak(5000)
                 .Build();
 
             var upstreamPath = new UpstreamPathTemplateBuilder()
