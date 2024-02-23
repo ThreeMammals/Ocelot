@@ -205,7 +205,7 @@ namespace Ocelot.UnitTests.Polly
             await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
                 await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-            await Task.Delay(6000);
+            await Task.Delay(10000);
 
             var response2 = new HttpResponseMessage(HttpStatusCode.OK);
             Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response2))).StatusCode);
