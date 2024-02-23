@@ -62,7 +62,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         }
 
         var tasksList = await ProcessRoutesWithRouteKeys(httpContext, downstreamRoutes, routeKeysConfigs, mainResponse);
-        if (!tasksList.Any())
+        if (tasksList.Length == 0)
         {
             return;
         }
@@ -112,10 +112,10 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="context">The http context.</param>
     /// <param name="route">The first route, the main route.</param>
     /// <returns>The updated http context.</returns>
-    private async Task<HttpContext> ProcessMainRoute(HttpContext context, DownstreamRoute route)
+    private Task<HttpContext> ProcessMainRoute(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
-        return await Fire(context, _next);
+        return Fire(context, _next);
     }
 
     /// <summary>
@@ -152,12 +152,12 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <summary>
     /// Mapping responses.
     /// </summary>
-    private async Task MapResponses(HttpContext context, Route route, HttpContext mainResponse,
+    private Task MapResponses(HttpContext context, Route route, HttpContext mainResponse,
         IEnumerable<HttpContext> additionalResponses)
     {
         var contexts = new List<HttpContext> { mainResponse };
         contexts.AddRange(additionalResponses);
-        await Map(context, route, contexts);
+        return Map(context, route, contexts);
     }
 
     /// <summary>
@@ -182,14 +182,14 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// Process a downstream route asynchronously.
     /// </summary>
     /// <returns>The cloned Http context.</returns>
-    private static async Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route,
+    private static Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route,
         RequestDelegate next, List<PlaceholderNameAndValue> placeholders = null)
     {
         var newHttpContext = CreateThreadContext(sourceContext);
         CopyItemsToNewContext(newHttpContext, sourceContext, placeholders);
         newHttpContext.Items.UpsertDownstreamRoute(route);
 
-        return await Fire(newHttpContext, next);
+        return Fire(newHttpContext, next);
     }
 
     /// <summary>
