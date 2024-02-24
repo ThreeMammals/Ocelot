@@ -393,6 +393,7 @@ public class RequestMapperTests
 
     private void GivenTheInputRequestHasContent(string content)
     {
+        _inputRequest.ContentLength = content.Length;
         _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(content));
     }
 
