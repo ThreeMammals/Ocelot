@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Eureka
         {
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton(configRepo.Object);
             var sp = services.BuildServiceProvider();
@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Eureka
             var client = new Mock<IDiscoveryClient>();
             var configRepo = new Mock<IInternalConfigurationRepository>();
             configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null)));
+                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton(configRepo.Object);
             services.AddSingleton(client.Object);

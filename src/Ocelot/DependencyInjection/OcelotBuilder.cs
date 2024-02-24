@@ -125,6 +125,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
+            Services.TryAddSingleton<IVersionPolicyCreator, VersionPolicyCreator>();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
             Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();

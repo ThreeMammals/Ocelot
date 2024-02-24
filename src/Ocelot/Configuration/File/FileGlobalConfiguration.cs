@@ -28,5 +28,7 @@
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
 
         public string DownstreamHttpVersion { get; set; }
+
+        public string DownstreamVersionPolicy { get; set; }
     }
 }
