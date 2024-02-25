@@ -5,6 +5,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
@@ -113,11 +114,51 @@ public class RequestMapperTests
     public void Should_map_content()
     {
         this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
+            .And(_ => GivenTheInputRequestHasMethod("POST"))
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
             .And(_ => ThenTheMappedRequestHasContent("This is my content"))
+            .And(_ => ThenTheMappedRequestHasContentLength("This is my content".Length))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_map_chucked_content()
+    {
+        this.Given(_ => GivenTheInputRequestHasChunkedContent("This", " is my content"))
+            .And(_ => GivenTheInputRequestHasMethod("POST"))
+            .And(_ => GivenTheInputRequestHasAValidUri())
+            .And(_ => GivenTheDownstreamRoute())
+            .When(_ => WhenMapped())
+            .And(_ => ThenTheMappedRequestHasContent("This is my content"))
+            .And(_ => ThenTheMappedRequestHasNoContentLength())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_map_empty_content()
+    {
+        this.Given(_ => GivenTheInputRequestHasContent(""))
+            .And(_ => GivenTheInputRequestHasMethod("POST"))
+            .And(_ => GivenTheInputRequestHasAValidUri())
+            .And(_ => GivenTheDownstreamRoute())
+            .When(_ => WhenMapped())
+            .And(_ => ThenTheMappedRequestHasContent(""))
+            .And(_ => ThenTheMappedRequestHasContentLength(0))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_map_empty_chucked_content()
+    {
+        this.Given(_ => GivenTheInputRequestHasChunkedContent())
+            .And(_ => GivenTheInputRequestHasMethod("POST"))
+            .And(_ => GivenTheInputRequestHasAValidUri())
+            .And(_ => GivenTheDownstreamRoute())
+            .When(_ => WhenMapped())
+            .And(_ => ThenTheMappedRequestHasContent(""))
+            .And(_ => ThenTheMappedRequestHasNoContentLength())
             .BDDfy();
     }
 
@@ -397,6 +438,14 @@ public class RequestMapperTests
         _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(content));
     }
 
+    private void GivenTheInputRequestHasChunkedContent(params string[] chunks)
+    {
+        // ASP.Net Core decodes chucked streams, so that the input request just sees the decoded data
+        // Because of that, we just give a stream with the concatenated chunks to the test
+        _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Join("", chunks)));
+        _inputRequest.Headers.TransferEncoding = "chunked";
+    }
+
     private void GivenTheInputRequestHasNullContent()
     {
         _inputRequest.Body = null!;
@@ -447,6 +496,17 @@ public class RequestMapperTests
     {
         Assert.NotNull(_mappedRequest.Content);
         _mappedRequest.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedContent);
+    }
+
+    private void ThenTheMappedRequestHasContentLength(long expectedLength)
+    {
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.ContentLength.ShouldBe(expectedLength);
+    }
+
+    private void ThenTheMappedRequestHasNoContentLength()
+    {
+        _mappedRequest.Headers.TryGetValues(HeaderNames.ContentLength, out _).ShouldBeFalse();
     }
 
     private void ThenTheMappedRequestHasNoContent()
