@@ -27,14 +27,22 @@ public class RequestMapper : IRequestMapper
 
     private static HttpContent MapContent(HttpRequest request)
     {
+        HttpContent content;
+
         // no content if we have no body or if the request has no content according to RFC 2616 section 4.3
         if (request.Body == null
-            || (!request.ContentLength.HasValue && !request.Headers.TransferEncoding.Equals("chunked")))
+            || (!request.ContentLength.HasValue && StringValues.IsNullOrEmpty(request.Headers.TransferEncoding)))
         {
             return null;
         }
-
-        var content = new StreamHttpContent(request.HttpContext);
+        else if (request.ContentLength.HasValue && request.ContentLength == 0)
+        {
+            content = new EmptyHttpContent();
+        }
+        else
+        {
+            content = new StreamHttpContent(request.HttpContext);
+        }
 
         AddContentHeaders(request, content);
 
