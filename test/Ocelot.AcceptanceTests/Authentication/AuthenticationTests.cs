@@ -112,7 +112,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .BDDfy();
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
+        public void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
             var scopes = new string[] { "api", "api2" };
             _identityServerBuilder = CreateIdentityServer(url, tokenType, scopes, null)
