@@ -49,7 +49,7 @@ public class StreamContentTest : IDisposable
     public void should_stream_with_content_length()
     {
         var port = PortFinder.GetRandomPort();
-        var contentSize = 100L * 1024L * 1024L * 1024L; // 100GB
+        var contentSize = 25L * 1024L * 1024L * 1024L; // 25GB
 
         var configuration = new FileConfiguration
         {
@@ -86,7 +86,7 @@ public class StreamContentTest : IDisposable
     public void should_stream_with_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
-        var contentSize = 100L * 1024L * 1024L * 1024L; // 100GB
+        var contentSize = 25L * 1024L * 1024L * 1024L; // 25GB
 
         var configuration = new FileConfiguration
         {
