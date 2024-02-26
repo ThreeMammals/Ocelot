@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
@@ -8,7 +7,6 @@ using Ocelot.Errors.QoS;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Ocelot.Requester;
-
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
