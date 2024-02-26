@@ -35,14 +35,10 @@ public class RequestMapper : IRequestMapper
         {
             return null;
         }
-        else if (request.ContentLength.HasValue && request.ContentLength == 0)
-        {
-            content = new EmptyHttpContent();
-        }
-        else
-        {
-            content = new StreamHttpContent(request.HttpContext);
-        }
+
+        content = request.ContentLength is 0
+            ? new EmptyHttpContent() 
+            : new StreamHttpContent(request.HttpContext);
 
         AddContentHeaders(request, content);
 

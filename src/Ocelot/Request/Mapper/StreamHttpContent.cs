@@ -13,7 +13,7 @@ public class StreamHttpContent : HttpContent
     public StreamHttpContent(HttpContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _contentLength = context.Request.ContentLength ?? -1;
+        _contentLength = context.Request.ContentLength ?? UnknownLength;
     }
 
     protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context, CancellationToken cancellationToken)
