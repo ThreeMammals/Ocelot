@@ -37,7 +37,7 @@ public class RequestMapper : IRequestMapper
         }
 
         content = request.ContentLength is 0
-            ? new EmptyHttpContent() 
+            ? new ByteArrayContent(Array.Empty<byte>()) 
             : new StreamHttpContent(request.HttpContext);
 
         AddContentHeaders(request, content);
