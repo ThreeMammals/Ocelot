@@ -46,6 +46,27 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
+        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, long maxBodySize, RequestDelegate del)
+        {
+            _builder = new WebHostBuilder()
+                .UseUrls(baseUrl)
+                .UseKestrel()
+                .ConfigureKestrel(options =>
+                {
+                    options.Limits.MaxRequestBodySize = maxBodySize;
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UsePathBase(basePath);
+                    app.Run(del);
+                })
+                .Build();
+
+            _builder.Start();
+        }
+
         public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate del, int port, HttpProtocols protocols)
         {
             _builder = new WebHostBuilder()
