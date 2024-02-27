@@ -49,7 +49,7 @@ namespace Ocelot.Requester.Middleware
             {
                 Logger.LogInformation(message);
             }
-            else if (status >= HttpStatusCode.BadRequest)
+            else
             {
                 Logger.LogWarning(message);
             }
