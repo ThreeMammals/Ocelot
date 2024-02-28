@@ -16,10 +16,14 @@ namespace Ocelot.AcceptanceTests
         private string _downstreamPath;
         private string _receivedToken;
         private readonly ServiceHandler _serviceHandler;
+        private readonly ServiceHandler _serviceHandler2;
+        private readonly ServiceHandler _consulHandler;
 
         public ServiceDiscoveryTests()
         {
             _serviceHandler = new ServiceHandler();
+            _serviceHandler2 = new ServiceHandler();
+            _consulHandler = new ServiceHandler();
             _steps = new Steps();
             _consulServices = new List<ServiceEntry>();
         }
@@ -469,7 +473,7 @@ namespace Ocelot.AcceptanceTests
         {
             // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
             // with different ServiceNames (e.g. product-us and product-eu),
-            // UpstreamHost is used to determine which ServiceName to use when making a request to Consul.
+            // UpstreamHost (e.g. Host: us-shop or eu-shop) is used to determine which ServiceName to use when making a request to Consul.
             var consulPort = PortFinder.GetRandomPort();
             var servicePortUS = PortFinder.GetRandomPort();
             var servicePortEU = PortFinder.GetRandomPort();
@@ -543,8 +547,10 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/", 200, responseBodyUS))
-                .And(x => x.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/", 200, responseBodyEU))
+            // Scenario 1: GET request for http://us-shop/ (Host: us-shop) to Ocelot should look up 'product-us' in Consul, call its /products and return "Phone chargers with US plug"
+            // Scenario 2: GET request for http://eu-shop/ (Host: eu-shop) to Ocelot should look up 'product-eu' in Consul, call its /products and return "Phone chargers with EU plug"
+            this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", OkResponse(responseBodyUS)))
+                .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", OkResponse(responseBodyEU)))
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -607,7 +613,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            _consulHandler.GivenThereIsAServiceRunningOn(url, async context =>
             {
                 if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
                 {
@@ -653,7 +659,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenProductServiceTwoIsRunning(string url, int statusCode)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            _serviceHandler2.GivenThereIsAServiceRunningOn(url, async context =>
             {
                 try
                 {
@@ -693,9 +699,13 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
+        private RequestDelegate OkResponse(string responseBody) => async context => await context.Response.WriteAsync(responseBody);
+
         public void Dispose()
         {
             _serviceHandler?.Dispose();
+            _serviceHandler2?.Dispose();
+            _consulHandler?.Dispose();
             _steps.Dispose();
         }
     }
