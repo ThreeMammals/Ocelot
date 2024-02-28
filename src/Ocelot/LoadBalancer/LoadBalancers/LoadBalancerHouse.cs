@@ -22,6 +22,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
 
                 if (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer))
                 {
+                    // TODO Fix ugly reflection issue of dymanic detection in favor of static type property
                     if (route.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
                     {
                         result = _factory.Get(route, config);
