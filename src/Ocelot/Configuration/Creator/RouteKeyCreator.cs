@@ -5,6 +5,17 @@ namespace Ocelot.Configuration.Creator;
 
 public class RouteKeyCreator : IRouteKeyCreator
 {
+    /// <summary>
+    /// Creates the unique <see langword="string"/> key based on the route properties for load balancing etc.
+    /// </summary>
+    /// <remarks>
+    /// Key template:
+    /// <list type="bullet">
+    /// <item>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</item>
+    /// </list>
+    /// </remarks>
+    /// <param name="fileRoute">The route object.</param>
+    /// <returns>A <see langword="string"/> object containing the key.</returns>
     public string Create(FileRoute fileRoute)
     {
         var isStickySession = fileRoute.LoadBalancerOptions is
@@ -21,8 +32,6 @@ public class RouteKeyCreator : IRouteKeyCreator
         var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
         var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
 
-        // Build the key from the route's properties using the format:
-        // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
         var keyBuilder = new StringBuilder()
 
             // UpstreamHttpMethod and UpstreamPathTemplate are required
