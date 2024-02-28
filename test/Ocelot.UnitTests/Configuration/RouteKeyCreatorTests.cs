@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_sticky_session_key()
+        public void Should_return_sticky_session_key()
         {
             var route = new FileRoute
             {
@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_route_key()
+        public void Should_return_route_key()
         {
             var route = new FileRoute
             {
@@ -42,16 +42,8 @@ namespace Ocelot.UnitTests.Configuration
                 UpstreamHttpMethod = ["GET", "POST", "PUT"],
                 DownstreamHostAndPorts =
                 [
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 8080,
-                    },
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 4430,
-                    },
+                    new("localhost", 8080),
+                    new("localhost", 4430),
                 ],
             };
 
@@ -62,7 +54,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_route_key_with_upstream_host()
+        public void Should_return_route_key_with_upstream_host()
         {
             var route = new FileRoute
             {
@@ -71,16 +63,8 @@ namespace Ocelot.UnitTests.Configuration
                 UpstreamHttpMethod = ["GET", "POST", "PUT"],
                 DownstreamHostAndPorts =
                 [
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 8080,
-                    },
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 4430,
-                    },
+                    new("localhost", 8080),
+                    new("localhost", 4430),
                 ],
             };
 
@@ -91,7 +75,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_route_key_with_svc_name()
+        public void Should_return_route_key_with_svc_name()
         {
             var route = new FileRoute
             {
@@ -107,7 +91,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_route_key_with_load_balancer_options()
+        public void Should_return_route_key_with_load_balancer_options()
         {
             var route = new FileRoute
             {

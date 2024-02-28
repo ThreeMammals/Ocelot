@@ -45,7 +45,7 @@ public class RouteKeyCreator : IRouteKeyCreator
             .AppendNext(Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"))
             .AppendNext(Coalesce(fileRoute.ServiceName, "no-svc-name"))
             .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"))
-            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-ke"));
+            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
 
         return keyBuilder.ToString();
     }
