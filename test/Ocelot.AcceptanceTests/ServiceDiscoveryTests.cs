@@ -1,8 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using Consul;
+﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -458,8 +458,14 @@ namespace Ocelot.AcceptanceTests
             .BDDfy();
         }
 
-        [Fact]
-        public void should_use_consul_service_discovery_based_on_upstream_host()
+        [Theory]
+        [Trait("PR", "1944")]
+        [Trait("Issues", "849 1496")]
+        [InlineData("LeastConnection")]
+        [InlineData("RoundRobin")]
+        [InlineData("NoLoadBalancer")]
+        [InlineData("CookieStickySessions")]
+        public void Should_use_consul_service_discovery_based_on_upstream_host(string loadBalancerType)
         {
             // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
             // with different ServiceNames (e.g. product-us and product-eu),
@@ -504,31 +510,31 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 Routes =
-                    [
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = ["Get"],
-                            UpstreamHost = upstreamHostUS,
-                            ServiceName = serviceNameUS,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = ["Get"],
-                            UpstreamHost = upstreamHostEU,
-                            ServiceName = serviceNameEU,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    ],
-                GlobalConfiguration = new FileGlobalConfiguration
+                [
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHost = upstreamHostUS,
+                        ServiceName = serviceNameUS,
+                        LoadBalancerOptions = new() { Type = loadBalancerType },
+                    },
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHost = upstreamHostEU,
+                        ServiceName = serviceNameEU,
+                        LoadBalancerOptions = new() { Type = loadBalancerType },
+                    },
+                ],
+                GlobalConfiguration = new()
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    ServiceDiscoveryProvider = new()
                     {
                         Scheme = "http",
                         Host = "localhost",
