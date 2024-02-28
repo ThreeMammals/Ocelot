@@ -1,60 +1,77 @@
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class RouteKeyCreator : IRouteKeyCreator
 {
-    public class RouteKeyCreator : IRouteKeyCreator
+    public string Create(FileRoute fileRoute)
     {
-        public string Create(FileRoute fileRoute)
+        var isStickySession = fileRoute.LoadBalancerOptions is
         {
-            var isStickySession = fileRoute.LoadBalancerOptions is
-            {
-                Type: nameof(CookieStickySessions),
-                Key.Length: > 0
-            };
+            Type: nameof(CookieStickySessions),
+            Key.Length: > 0
+        };
 
-            if (isStickySession)
-            {
-                return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
-            }
+        if (isStickySession)
+        {
+            return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
+        }
 
-            // Build the key from the route's properties using the format:
-            // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
-            var keyBuilder = new StringBuilder();
+        var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
+        var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
+
+        // Build the key from the route's properties using the format:
+        // UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey
+        var keyBuilder = new StringBuilder()
 
             // UpstreamHttpMethod and UpstreamPathTemplate are required
-            var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
-            Append(keyBuilder, upstreamHttpMethods);
-            Append(keyBuilder, fileRoute.UpstreamPathTemplate);
+            .AppendNext(upstreamHttpMethods)
+            .AppendNext(fileRoute.UpstreamPathTemplate)
 
             // Other properties are optional, replace undefined values with defaults to aid debugging
-            Append(keyBuilder, Coalesce(fileRoute.UpstreamHost, "no-host"));
+            .AppendNext(Coalesce(fileRoute.UpstreamHost, "no-host"))
 
-            var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
-            Append(keyBuilder, Coalesce(downstreamHostAndPorts, "no-host-and-port"));
-            Append(keyBuilder, Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"));
-            Append(keyBuilder, Coalesce(fileRoute.ServiceName, "no-svc-name"));
-            Append(keyBuilder, Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"));
-            Append(keyBuilder, Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
+            .AppendNext(Coalesce(downstreamHostAndPorts, "no-host-and-port"))
+            .AppendNext(Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"))
+            .AppendNext(Coalesce(fileRoute.ServiceName, "no-svc-name"))
+            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"))
+            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-ke"));
 
-            return keyBuilder.ToString();
+        return keyBuilder.ToString();
+    }
 
-            // Helper function to append a string to the keyBuilder, separated by a pipe
-            static void Append(StringBuilder keyBuilder, string next)
-            {
-                if (keyBuilder.Length > 0)
-                {
-                    keyBuilder.Append('|');
-                }
+    /// <summary>
+    /// Helper function to convert multiple strings into a comma-separated string.
+    /// </summary>
+    /// <param name="values">The collection of strings to join by comma separator.</param>
+    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
+    private static string Csv(IEnumerable<string> values) => string.Join(',', values);
 
-                keyBuilder.Append(next);
-            }
+    /// <summary>
+    /// Helper function to return the first non-null-or-whitespace string.
+    /// </summary>
+    /// <param name="first">The 1st string to check.</param>
+    /// <param name="second">The 2nd string to check.</param>
+    /// <returns>A <see langword="string"/> which is not empty.</returns>
+    private static string Coalesce(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
+}
 
-            // Helper function to convert multiple strings into a comma-separated string
-            static string Csv(IEnumerable<string> values) => string.Join(',', values);
-
-            // Helper function to return the first non-null-or-whitespace string
-            static string Coalesce(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
+internal static class RouteKeyCreatorHelpers
+{
+    /// <summary>
+    /// Helper function to append a string to the key builder, separated by a pipe.
+    /// </summary>
+    /// <param name="builder">The builder of the key.</param>
+    /// <param name="next">The next word to add.</param>
+    /// <returns>The reference to the builder.</returns>
+    public static StringBuilder AppendNext(this StringBuilder builder, string next)
+    {
+        if (builder.Length > 0)
+        {
+            builder.Append('|');
         }
+
+        return builder.Append(next);
     }
 }
