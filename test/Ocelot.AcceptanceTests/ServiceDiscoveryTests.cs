@@ -548,8 +548,8 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            // Scenario 1: GET request for http://us-shop/ (Host: us-shop) to Ocelot should look up 'product-us' in Consul, call its /products and return "Phone chargers with US plug"
-            // Scenario 2: GET request for http://eu-shop/ (Host: eu-shop) to Ocelot should look up 'product-eu' in Consul, call its /products and return "Phone chargers with EU plug"
+            // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
+            // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
             this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", OkResponse("/products", responseBodyUS)))
                 .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", OkResponse("/products", responseBodyEU)))
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
