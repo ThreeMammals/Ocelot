@@ -39,7 +39,13 @@ public class MapRequestTests : IDisposable
         _serviceHandler = new ServiceHandler();
         _steps = new Steps();
     }
-    
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps?.Dispose();
+    }
+
     [Fact]
     public void should_map_request_without_content()
     {
@@ -230,11 +236,5 @@ public class MapRequestTests : IDisposable
             await response.WriteAsync(request.ContentLength + ";" + request.Headers.TransferEncoding + ";");
             await request.Body.CopyToAsync(response.Body);
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps?.Dispose();
     }
 }
