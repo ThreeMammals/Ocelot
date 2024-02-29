@@ -58,6 +58,13 @@ public class Steps : IDisposable
         _ocelotConfigFileName = $"{Guid.NewGuid():N}-ocelot.json";
     }
 
+    protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
+
+    protected static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+    {
+        Routes = new(routes),
+    };
+
     public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {
         var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
