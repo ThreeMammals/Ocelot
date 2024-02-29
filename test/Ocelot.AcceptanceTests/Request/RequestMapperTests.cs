@@ -27,7 +27,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -43,7 +43,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
@@ -59,7 +59,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
@@ -75,7 +75,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
@@ -91,7 +91,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
@@ -100,12 +100,13 @@ public sealed class RequestMapperTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode status)
     {
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
             var request = context.Request;
             var response = context.Response;
+            response.StatusCode = (int)status;
 
             await response.WriteAsync(request.ContentLength + ";" + request.Headers.TransferEncoding + ";");
             await request.Body.CopyToAsync(response.Body);
@@ -122,11 +123,6 @@ public sealed class RequestMapperTests : Steps, IDisposable
         ],
         UpstreamPathTemplate = "/",
         UpstreamHttpMethod = [method ?? HttpMethods.Get],
-    };
-
-    private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
-    {
-        Routes = new(routes),
     };
 }
 

@@ -29,7 +29,7 @@ public sealed class StreamContentTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, false)))
@@ -46,7 +46,7 @@ public sealed class StreamContentTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, true)))
@@ -92,11 +92,6 @@ public sealed class StreamContentTests : Steps, IDisposable
         ],
         UpstreamPathTemplate = "/",
         UpstreamHttpMethod = [method ?? HttpMethods.Get],
-    };
-
-    private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
-    {
-        Routes = new(routes),
     };
 }
 
