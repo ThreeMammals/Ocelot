@@ -1,4 +1,4 @@
-using Consul;
+﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -12,6 +12,7 @@ namespace Ocelot.AcceptanceTests
         private readonly List<ServiceEntry> _consulServices;
         private int _counterOne;
         private int _counterTwo;
+        private int _counterConsul;
         private static readonly object SyncLock = new();
         private string _downstreamPath;
         private string _receivedToken;
@@ -555,11 +556,21 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop for the first time")
+                .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyUS))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop for the first time")
+                .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop again")
+                .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(3))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyUS))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop again")
+                .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(4))
+                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
                 .BDDfy();
         }
@@ -589,6 +600,7 @@ namespace Ocelot.AcceptanceTests
         {
             _counterOne = 0;
             _counterTwo = 0;
+            _counterConsul = 0;
         }
 
         private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
@@ -624,6 +636,8 @@ namespace Ocelot.AcceptanceTests
                 var pathMatch = Regex.Match(context.Request.Path.Value, "/v1/health/service/(?<serviceName>[^/]+)");
                 if (pathMatch.Success)
                 {
+                    _counterConsul++;
+
                     // Use the parsed service name to filter the registered Consul services
                     var serviceName = pathMatch.Groups["serviceName"].Value;
                     var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
@@ -632,6 +646,11 @@ namespace Ocelot.AcceptanceTests
                     await context.Response.WriteAsync(json);
                 }
             });
+        }
+
+        private void ThenConsulShouldHaveBeenCalledTimes(int expected)
+        {
+            _counterConsul.ShouldBe(expected);
         }
 
         private void GivenProductServiceOneIsRunning(string url, int statusCode)
