@@ -269,9 +269,14 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithConsul()
+    public void GivenOcelotIsRunningWithConsul(params string[] urlsToListenOn)
     {
         _webHostBuilder = new WebHostBuilder();
+
+        if (urlsToListenOn?.Length > 0)
+        {
+            _webHostBuilder.UseUrls(urlsToListenOn);
+        }
 
         _webHostBuilder
             .ConfigureAppConfiguration((hostingContext, config) =>
