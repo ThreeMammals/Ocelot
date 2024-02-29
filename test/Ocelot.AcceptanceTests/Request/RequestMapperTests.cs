@@ -2,23 +2,22 @@
 using Ocelot.Configuration.File;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.Request;
 
-public class MapRequestTests : IDisposable
+[Trait("PR", "1972")]
+public sealed class RequestMapperTests : Steps, IDisposable
 {
     private readonly ServiceHandler _serviceHandler;
-    private readonly Steps _steps;
 
-    public MapRequestTests()
+    public RequestMapperTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+        _serviceHandler = new();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        _serviceHandler?.Dispose();
-        _steps?.Dispose();
+        _serviceHandler.Dispose();
+        base.Dispose();
     }
 
     [Fact]
@@ -29,11 +28,11 @@ public class MapRequestTests : IDisposable
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(";;"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(";;"))
             .BDDfy();
     }
 
@@ -45,11 +44,11 @@ public class MapRequestTests : IDisposable
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("20;;This is some content"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("20;;This is some content"))
             .BDDfy();
     }
 
@@ -61,11 +60,11 @@ public class MapRequestTests : IDisposable
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("0;;"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("0;;"))
             .BDDfy();
     }
 
@@ -77,11 +76,11 @@ public class MapRequestTests : IDisposable
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(";chunked;This is some content"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(";chunked;This is some content"))
             .BDDfy();
     }
 
@@ -93,11 +92,11 @@ public class MapRequestTests : IDisposable
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(";chunked;"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(";chunked;"))
             .BDDfy();
     }
 

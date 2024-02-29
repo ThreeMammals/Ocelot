@@ -110,11 +110,14 @@ public class RequestMapperTests
             .BDDfy();
     }
 
-    [Fact]
-    public void Should_map_content()
+    [Theory]
+    [Trait("PR", "1972")]
+    [InlineData("GET")]
+    [InlineData("POST")]
+    public void Should_map_content(string method)
     {
         this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
-            .And(_ => GivenTheInputRequestHasMethod("POST"))
+            .And(_ => GivenTheInputRequestHasMethod(method))
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
@@ -124,6 +127,7 @@ public class RequestMapperTests
     }
 
     [Fact]
+    [Trait("PR", "1972")]
     public void Should_map_chucked_content()
     {
         this.Given(_ => GivenTheInputRequestHasChunkedContent("This", " is my content"))
@@ -137,6 +141,7 @@ public class RequestMapperTests
     }
 
     [Fact]
+    [Trait("PR", "1972")]
     public void Should_map_empty_content()
     {
         this.Given(_ => GivenTheInputRequestHasContent(""))
@@ -150,6 +155,7 @@ public class RequestMapperTests
     }
 
     [Fact]
+    [Trait("PR", "1972")]
     public void Should_map_empty_chucked_content()
     {
         this.Given(_ => GivenTheInputRequestHasChunkedContent())

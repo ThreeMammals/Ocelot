@@ -29,7 +29,7 @@ public class RequestMapper : IRequestMapper
     {
         HttpContent content;
 
-        // no content if we have no body or if the request has no content according to RFC 2616 section 4.3
+        // No content if we have no body or if the request has no content according to RFC 2616 section 4.3
         if (request.Body == null
             || (!request.ContentLength.HasValue && StringValues.IsNullOrEmpty(request.Headers.TransferEncoding)))
         {

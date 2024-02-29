@@ -16,11 +16,11 @@ public class StreamHttpContent : HttpContent
         _contentLength = context.Request.ContentLength ?? UnknownLength;
     }
 
-    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context, CancellationToken cancellationToken)
-        => await CopyAsync(_context.Request.Body, stream, _contentLength, false, cancellationToken);
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext context, CancellationToken cancellationToken)
+        => CopyAsync(_context.Request.Body, stream, _contentLength, false, cancellationToken);
 
-    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
-        => await CopyAsync(_context.Request.Body, stream, _contentLength, false, CancellationToken.None);
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        => CopyAsync(_context.Request.Body, stream, _contentLength, false, CancellationToken.None);
 
     protected override bool TryComputeLength(out long length)
     {
