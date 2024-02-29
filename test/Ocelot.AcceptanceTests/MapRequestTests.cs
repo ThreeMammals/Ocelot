@@ -9,31 +9,6 @@ public class MapRequestTests : IDisposable
     private readonly ServiceHandler _serviceHandler;
     private readonly Steps _steps;
 
-    private class ChunkedContent : HttpContent
-    {
-        private readonly string[] _chunks;
-
-        public ChunkedContent(params string[] chunks)
-        {
-            _chunks = chunks;
-        }
-
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
-        {
-            foreach (var chunk in _chunks)
-            {
-                var bytes = Encoding.Default.GetBytes(chunk);
-                await stream.WriteAsync(bytes, 0, bytes.Length);
-            }
-        }
-
-        protected override bool TryComputeLength(out long length)
-        {
-            length = -1;
-            return false;
-        }
-    }
-
     public MapRequestTests()
     {
         _serviceHandler = new ServiceHandler();
@@ -236,5 +211,30 @@ public class MapRequestTests : IDisposable
             await response.WriteAsync(request.ContentLength + ";" + request.Headers.TransferEncoding + ";");
             await request.Body.CopyToAsync(response.Body);
         });
+    }
+}
+
+internal class ChunkedContent : HttpContent
+{
+    private readonly string[] _chunks;
+
+    public ChunkedContent(params string[] chunks)
+    {
+        _chunks = chunks;
+    }
+
+    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+    {
+        foreach (var chunk in _chunks)
+        {
+            var bytes = Encoding.Default.GetBytes(chunk);
+            await stream.WriteAsync(bytes, 0, bytes.Length);
+        }
+    }
+
+    protected override bool TryComputeLength(out long length)
+    {
+        length = -1;
+        return false;
     }
 }
