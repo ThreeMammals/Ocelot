@@ -22,7 +22,7 @@ public class MapRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_map_request_without_content()
+    public void Should_map_request_without_content()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -58,7 +58,7 @@ public class MapRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_map_request_with_content_length()
+    public void Should_map_request_with_content_length()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -94,7 +94,7 @@ public class MapRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_map_request_with_empty_content()
+    public void Should_map_request_with_empty_content()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -130,7 +130,7 @@ public class MapRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_map_request_with_chunked_content()
+    public void Should_map_request_with_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -166,7 +166,7 @@ public class MapRequestTests : IDisposable
     }
 
     [Fact]
-    public void should_map_request_with_empty_chunked_content()
+    public void Should_map_request_with_empty_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
 
