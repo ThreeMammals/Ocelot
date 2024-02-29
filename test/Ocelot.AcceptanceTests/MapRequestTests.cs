@@ -25,28 +25,8 @@ public class MapRequestTests : IDisposable
     public void Should_map_request_without_content()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -61,28 +41,8 @@ public class MapRequestTests : IDisposable
     public void Should_map_request_with_content_length()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
-                },
-            },
-        };
+        var route = GivenRoute(port, HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -97,28 +57,8 @@ public class MapRequestTests : IDisposable
     public void Should_map_request_with_empty_content()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
-                },
-            },
-        };
+        var route = GivenRoute(port, HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -133,28 +73,8 @@ public class MapRequestTests : IDisposable
     public void Should_map_request_with_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
-                },
-            },
-        };
+        var route = GivenRoute(port, HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -169,28 +89,8 @@ public class MapRequestTests : IDisposable
     public void Should_map_request_with_empty_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Post" },
-                },
-            },
-        };
+        var route = GivenRoute(port, HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -212,6 +112,23 @@ public class MapRequestTests : IDisposable
             await request.Body.CopyToAsync(response.Body);
         });
     }
+
+    private static FileRoute GivenRoute(int port, string method = null) => new()
+    {
+        DownstreamPathTemplate = "/",
+        DownstreamScheme = Uri.UriSchemeHttp,
+        DownstreamHostAndPorts =
+        [
+            new("localhost", port),
+        ],
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
+    };
+
+    private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+    {
+        Routes = new(routes),
+    };
 }
 
 internal class ChunkedContent : HttpContent
