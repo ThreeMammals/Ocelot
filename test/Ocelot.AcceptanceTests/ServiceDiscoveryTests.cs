@@ -550,8 +550,8 @@ namespace Ocelot.AcceptanceTests
 
             // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
             // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
-            this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", OkResponse("/products", responseBodyUS)))
-                .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", OkResponse("/products", responseBodyEU)))
+            this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", MapGet("/products", responseBodyUS)))
+                .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", MapGet("/products", responseBodyEU)))
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -718,7 +718,7 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private RequestDelegate OkResponse(string path, string responseBody) => async context =>
+        private RequestDelegate MapGet(string path, string responseBody) => async context =>
         {
             var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
             if (downstreamPath == path)
