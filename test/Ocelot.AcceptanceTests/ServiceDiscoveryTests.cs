@@ -1,4 +1,4 @@
-﻿using Consul;
+using Consul;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
@@ -473,7 +473,7 @@ namespace Ocelot.AcceptanceTests
         {
             // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
             // with different ServiceNames (e.g. product-us and product-eu),
-            // UpstreamHost (e.g. Host: us-shop or eu-shop) is used to determine which ServiceName to use when making a request to Consul.
+            // UpstreamHost is used to determine which ServiceName to use when making a request to Consul (e.g. Host: us-shop goes to product-us) 
             var consulPort = PortFinder.GetRandomPort();
             var servicePortUS = PortFinder.GetRandomPort();
             var servicePortEU = PortFinder.GetRandomPort();
@@ -517,7 +517,7 @@ namespace Ocelot.AcceptanceTests
                 [
                     new()
                     {
-                        DownstreamPathTemplate = "/",
+                        DownstreamPathTemplate = "/products",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = ["Get"],
@@ -527,7 +527,7 @@ namespace Ocelot.AcceptanceTests
                     },
                     new()
                     {
-                        DownstreamPathTemplate = "/",
+                        DownstreamPathTemplate = "/products",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = ["Get"],
@@ -549,8 +549,8 @@ namespace Ocelot.AcceptanceTests
 
             // Scenario 1: GET request for http://us-shop/ (Host: us-shop) to Ocelot should look up 'product-us' in Consul, call its /products and return "Phone chargers with US plug"
             // Scenario 2: GET request for http://eu-shop/ (Host: eu-shop) to Ocelot should look up 'product-eu' in Consul, call its /products and return "Phone chargers with EU plug"
-            this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", OkResponse(responseBodyUS)))
-                .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", OkResponse(responseBodyEU)))
+            this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", OkResponse("/products", responseBodyUS)))
+                .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", OkResponse("/products", responseBodyEU)))
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
@@ -699,7 +699,20 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private RequestDelegate OkResponse(string responseBody) => async context => await context.Response.WriteAsync(responseBody);
+        private RequestDelegate OkResponse(string path, string responseBody) => async context =>
+        {
+            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+            if (downstreamPath == path)
+            {
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync(responseBody);
+            }
+            else
+            {
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync("Not Found");
+            }
+        };
 
         public void Dispose()
         {
