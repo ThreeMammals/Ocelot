@@ -15,9 +15,9 @@ namespace Ocelot.Multiplexer
 
         public Response<IDefinedAggregator> Get(Route route)
         {
-            if (_aggregators.ContainsKey(route.Aggregator))
+            if (_aggregators.TryGetValue(route.Aggregator, out var aggregator))
             {
-                return new OkResponse<IDefinedAggregator>(_aggregators[route.Aggregator]);
+                return new OkResponse<IDefinedAggregator>(aggregator);
             }
 
             return new ErrorResponse<IDefinedAggregator>(new CouldNotFindAggregatorError(route.Aggregator));

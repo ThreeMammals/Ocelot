@@ -19,7 +19,6 @@ using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Multiplexer;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
@@ -503,36 +502,6 @@ public class Steps : IDisposable
                 s.AddOcelot()
                     .AddDelegatingHandler<TOne>()
                     .AddDelegatingHandler<TWo>();
-            })
-            .Configure(a => { a.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<TAggregator, TDependency>()
-        where TAggregator : class, IDefinedAggregator
-        where TDependency : class
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddSingleton<TDependency>();
-                s.AddOcelot()
-                    .AddSingletonDefinedAggregator<TAggregator>();
             })
             .Configure(a => { a.UseOcelot().Wait(); });
 
