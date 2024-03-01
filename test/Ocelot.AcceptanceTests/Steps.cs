@@ -41,6 +41,7 @@ namespace Ocelot.AcceptanceTests;
 public class Steps : IDisposable
 {
     protected TestServer _ocelotServer;
+    private IHost _realServer;
     protected HttpClient _ocelotClient;
     private HttpResponseMessage _response;
     private HttpContent _postContent;
@@ -1298,16 +1299,15 @@ public class Steps : IDisposable
             return;
         }
 
-            if (disposing)
-            {
-                _ocelotClient?.Dispose();
-                _ocelotServer?.Dispose();
-                _ocelotHost?.Dispose();
-                _realServer?.Dispose();
-                DeleteOcelotConfig();
-            }
-
-            _disposedValue = true;
+        if (disposing)
+        {
+            _ocelotClient?.Dispose();
+            _ocelotServer?.Dispose();
+            _ocelotHost?.Dispose();
+            _realServer?.Dispose();
+            DeleteOcelotConfig();
         }
+
+        _disposedValue = true;
     }
 }
