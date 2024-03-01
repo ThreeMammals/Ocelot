@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
@@ -57,6 +58,13 @@ public class Steps : IDisposable
         _random = new Random();
         _ocelotConfigFileName = $"{Guid.NewGuid():N}-ocelot.json";
     }
+
+    protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
+
+    protected static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+    {
+        Routes = new(routes),
+    };
 
     public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {
@@ -241,13 +249,10 @@ public class Steps : IDisposable
     /// </summary>
     /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
     /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
-    public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(
-        Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+    public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
         where T : ILoadBalancer
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = new WebHostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -265,13 +270,17 @@ public class Steps : IDisposable
             .Configure(app => { app.UseOcelot().Wait(); });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithConsul()
+    public void GivenOcelotIsRunningWithConsul(params string[] urlsToListenOn)
     {
         _webHostBuilder = new WebHostBuilder();
+
+        if (urlsToListenOn?.Length > 0)
+        {
+            _webHostBuilder.UseUrls(urlsToListenOn);
+        }
 
         _webHostBuilder
             .ConfigureAppConfiguration((hostingContext, config) =>

@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_sticky_session_key()
+        public void Should_return_sticky_session_key()
         {
             var route = new FileRoute
             {
@@ -29,35 +29,85 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}"))
+                .Then(_ => ThenTheResultIs("CookieStickySessions:testy"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_return_re_route_key()
+        public void Should_return_route_key()
         {
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                DownstreamHostAndPorts =
+                [
+                    new("localhost", 8080),
+                    new("localhost", 4430),
+                ],
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_return_route_key_with_upstream_host()
+        {
+            var route = new FileRoute
+            {
+                UpstreamHost = "my-host",
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                DownstreamHostAndPorts =
+                [
+                    new("localhost", 8080),
+                    new("localhost", 4430),
+                ],
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_return_route_key_with_svc_name()
+        {
+            var route = new FileRoute
+            {
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                ServiceName = "products-service",
+            };
+
+            this.Given(_ => GivenThe(route))
+                .When(_ => WhenICreate())
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_return_route_key_with_load_balancer_options()
+        {
+            var route = new FileRoute
+            {
+                UpstreamPathTemplate = "/api/product",
+                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                ServiceName = "products-service",
+                LoadBalancerOptions = new FileLoadBalancerOptions
                 {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
+                    Type = nameof(LeastConnection),
+                    Key = "testy",
                 },
             };
 
             this.Given(_ => GivenThe(route))
                 .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(',', route.UpstreamHttpMethod)}|{string.Join(',', route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
+                .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy"))
                 .BDDfy();
         }
 

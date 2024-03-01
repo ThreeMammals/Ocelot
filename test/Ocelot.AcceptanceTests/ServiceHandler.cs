@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Security.Authentication;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -46,18 +45,12 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate del, int port, HttpProtocols protocols)
+        public void GivenThereIsAServiceRunningOnWithKestrelOptions(string baseUrl, string basePath, Action<KestrelServerOptions> options, RequestDelegate del)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
                 .UseKestrel()
-                .ConfigureKestrel(serverOptions =>
-                {
-                    serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
-                        {
-                            listenOptions.Protocols = protocols;
-                        });
-                })
+                .ConfigureKestrel(options ?? WithDefaultKestrelServerOptions) // !
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .Configure(app =>
@@ -70,32 +63,8 @@ namespace Ocelot.AcceptanceTests
             _builder.Start();
         }
 
-        public void GivenThereIsAServiceRunningOnUsingHttps(string baseUrl, string basePath, RequestDelegate del, int port, HttpProtocols protocols)
+        internal void WithDefaultKestrelServerOptions(KestrelServerOptions options)
         {
-            _builder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .ConfigureKestrel(serverOptions =>
-                {
-                    serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
-                        {
-                            listenOptions.UseHttps("mycert.pfx", "password", options =>
-                            {
-                                options.SslProtocols = SslProtocols.Tls12;
-                            });
-                            listenOptions.Protocols = protocols;
-                        });
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(del);
-                })
-                .Build();
-
-            _builder.Start();
         }
 
         public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string fileName, string password, int port, RequestDelegate del)
