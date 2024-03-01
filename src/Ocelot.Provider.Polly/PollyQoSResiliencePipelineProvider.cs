@@ -37,8 +37,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
+        var options = route.QosOptions;
         // do the check if we need pipeline at all before calling GetOrAddPipeline
-        if (route.QosOptions is null || (route.QosOptions.ExceptionsAllowedBeforeBreaking == 0 && route.QosOptions.TimeoutValue is int.MaxValue))
+        if (options is null ||
+            (options.ExceptionsAllowedBeforeBreaking == 0 && options.TimeoutValue is int.MaxValue))
         {
             return null; // shortcut > no qos
         }

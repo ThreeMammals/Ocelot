@@ -25,6 +25,14 @@ public static class OcelotBuilderExtensions
         {typeof(BrokenCircuitException<HttpResponseMessage>), e => new RequestTimedOutError(e)},
     };
 
+    /// <summary>
+    /// Adds Polly QoS provider to Ocelot by custom delegate and with custom error mapping.
+    /// </summary>
+    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <param name="builder">Ocelot builder to extend.</param>
+    /// <param name="delegatingHandler">Your customized delegating handler (to manage QoS behavior by yourself).</param>
+    /// <param name="errorMapping">Your customized error mapping.</param>
+    /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder,
         QosDelegatingHandlerDelegate delegatingHandler,
         IDictionary<Type, Func<Exception, Error>> errorMapping)
