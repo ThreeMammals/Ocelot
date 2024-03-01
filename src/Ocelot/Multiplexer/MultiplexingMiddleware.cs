@@ -1,6 +1,4 @@
-using System.Collections;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
@@ -8,6 +6,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Collections;
 using Route = Ocelot.Configuration.Route;
 
 namespace Ocelot.Multiplexer;
@@ -34,41 +33,41 @@ public class MultiplexingMiddleware : OcelotMiddleware
         var route = downstreamRouteHolder.Route;
         var downstreamRoutes = route.DownstreamRoute;
 
-        // case 1: if websocket request or single downstream route
+        // Case 1: if websocket request or single downstream route
         if (ShouldProcessSingleRoute(httpContext, downstreamRoutes))
         {
-            await ProcessSingleRoute(httpContext, downstreamRoutes[0]);
+            await ProcessSingleRouteAsync(httpContext, downstreamRoutes[0]);
             return;
         }
 
-        // case 2: if no downstream routes
+        // Case 2: if no downstream routes
         if (downstreamRoutes.Count == 0)
         {
             return;
         }
 
-        // case 3: if multiple downstream routes
+        // Case 3: if multiple downstream routes
         var routeKeysConfigs = route.DownstreamRouteConfig;
         if (routeKeysConfigs == null || routeKeysConfigs.Count == 0)
         {
-            await ProcessRoutes(httpContext, route);
+            await ProcessRoutesAsync(httpContext, route);
             return;
         }
 
-        // case 4: if multiple downstream routes with route keys
-        var mainResponseContext = await ProcessMainRoute(httpContext, downstreamRoutes[0]);
+        // Case 4: if multiple downstream routes with route keys
+        var mainResponseContext = await ProcessMainRouteAsync(httpContext, downstreamRoutes[0]);
         if (mainResponseContext == null)
         {
             return;
         }
 
-        var responsesContexts = await ProcessRoutesWithRouteKeys(httpContext, downstreamRoutes, routeKeysConfigs, mainResponseContext);
+        var responsesContexts = await ProcessRoutesWithRouteKeysAsync(httpContext, downstreamRoutes, routeKeysConfigs, mainResponseContext);
         if (responsesContexts.Length == 0)
         {
             return;
         }
 
-        await MapResponses(httpContext, route, mainResponseContext, responsesContexts);
+        await MapResponsesAsync(httpContext, route, mainResponseContext, responsesContexts);
     }
 
     /// <summary>
@@ -78,7 +77,8 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="context">The http context.</param>
     /// <param name="routes">The downstream routes.</param>
     /// <returns>True if only the first downstream route should be processed.</returns>
-    private static bool ShouldProcessSingleRoute(HttpContext context, ICollection routes) => context.WebSockets.IsWebSocketRequest || routes.Count == 1;
+    private static bool ShouldProcessSingleRoute(HttpContext context, ICollection routes)
+        => context.WebSockets.IsWebSocketRequest || routes.Count == 1;
 
     /// <summary>
     /// Processing a single downstream route (no route keys).
@@ -87,7 +87,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="context">The http context.</param>
     /// <param name="route">The downstream route.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    protected virtual Task ProcessSingleRoute(HttpContext context, DownstreamRoute route)
+    protected virtual Task ProcessSingleRouteAsync(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
         return _next.Invoke(context);
@@ -98,12 +98,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// </summary>
     /// <param name="context">The main http context.</param>
     /// <param name="route">The route.</param>
-    private async Task ProcessRoutes(HttpContext context, Route route)
+    private async Task ProcessRoutesAsync(HttpContext context, Route route)
     {
-        var tasks = route.DownstreamRoute.Select(downstreamRoute => ProcessRouteAsync(context, downstreamRoute))
+        var tasks = route.DownstreamRoute
+            .Select(downstreamRoute => ProcessRouteAsync(context, downstreamRoute))
             .ToArray();
         var contexts = await Task.WhenAll(tasks);
-        await Map(context, route, [.. contexts]);
+        await MapAsync(context, route, [.. contexts]);
     }
 
     /// <summary>
@@ -113,7 +114,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="context">The http context.</param>
     /// <param name="route">The first route, the main route.</param>
     /// <returns>The updated http context.</returns>
-    private async Task<HttpContext> ProcessMainRoute(HttpContext context, DownstreamRoute route)
+    private async Task<HttpContext> ProcessMainRouteAsync(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
         await _next.Invoke(context);
@@ -128,9 +129,9 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="routeKeysConfigs">The route keys config.</param>
     /// <param name="mainResponse">The response from the main route.</param>
     /// <returns>A list of the tasks' http contexts.</returns>
-    protected virtual async Task<HttpContext[]> ProcessRoutesWithRouteKeys(HttpContext context, IEnumerable<DownstreamRoute> routes, IReadOnlyCollection<AggregateRouteConfig> routeKeysConfigs, HttpContext mainResponse)
+    protected virtual async Task<HttpContext[]> ProcessRoutesWithRouteKeysAsync(HttpContext context, IEnumerable<DownstreamRoute> routes, IReadOnlyCollection<AggregateRouteConfig> routeKeysConfigs, HttpContext mainResponse)
     {
-        var routesProcessingList = new List<Task<HttpContext>>();
+        var processing = new List<Task<HttpContext>>();
         var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
         var jObject = JToken.Parse(content);
 
@@ -139,25 +140,24 @@ public class MultiplexingMiddleware : OcelotMiddleware
             var matchAdvancedAgg = routeKeysConfigs.FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
             if (matchAdvancedAgg != null)
             {
-                routesProcessingList.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jObject, context, downstreamRoute));
+                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jObject, context, downstreamRoute));
                 continue;
             }
 
-            routesProcessingList.Add(ProcessRouteAsync(context, downstreamRoute));
+            processing.Add(ProcessRouteAsync(context, downstreamRoute));
         }
 
-        return await Task.WhenAll(routesProcessingList);
+        return await Task.WhenAll(processing);
     }
 
     /// <summary>
     /// Mapping responses.
     /// </summary>
-    private Task MapResponses(HttpContext context, Route route, HttpContext mainResponseContext,
-        IEnumerable<HttpContext> responsesContexts)
+    private Task MapResponsesAsync(HttpContext context, Route route, HttpContext mainResponseContext, IEnumerable<HttpContext> responsesContexts)
     {
         var contexts = new List<HttpContext> { mainResponseContext };
         contexts.AddRange(responsesContexts);
-        return Map(context, route, contexts);
+        return MapAsync(context, route, contexts);
     }
 
     /// <summary>
@@ -166,16 +166,16 @@ public class MultiplexingMiddleware : OcelotMiddleware
     private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
         JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
-        var routesProcessingList = new List<Task<HttpContext>>();
+        var processing = new List<Task<HttpContext>>();
         var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
         foreach (var value in values)
         {
             var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
             tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
-            routesProcessingList.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
+            processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
         }
 
-        return routesProcessingList;
+        return processing;
     }
 
     /// <summary>
@@ -210,23 +210,24 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <returns>The cloned context.</returns>
     private static HttpContext CreateThreadContext(HttpContext source)
     {
+        var from = source.Request;
         var target = new DefaultHttpContext
         {
             Request =
             {
-                Body = source.Request.Body,// TODO Consider stream cloning for multiple reads
-                ContentLength = source.Request.ContentLength,
-                ContentType = source.Request.ContentType,
-                Host = source.Request.Host,
-                Method = source.Request.Method,
-                Path = source.Request.Path,
-                PathBase = source.Request.PathBase,
-                Protocol = source.Request.Protocol,
-                QueryString = source.Request.QueryString,
-                Scheme = source.Request.Scheme,
-                IsHttps = source.Request.IsHttps,
-                Query = new QueryCollection(new Dictionary<string, StringValues>(source.Request.Query)),
-                RouteValues = new RouteValueDictionary(source.Request.RouteValues),
+                Body = from.Body, // TODO Consider stream cloning for multiple reads
+                ContentLength = from.ContentLength,
+                ContentType = from.ContentType,
+                Host = from.Host,
+                Method = from.Method,
+                Path = from.Path,
+                PathBase = from.PathBase,
+                Protocol = from.Protocol,
+                QueryString = from.QueryString,
+                Scheme = from.Scheme,
+                IsHttps = from.IsHttps,
+                Query = new QueryCollection(new Dictionary<string, StringValues>(from.Query)),
+                RouteValues = new(from.RouteValues),
             },
             Connection =
             {
@@ -237,7 +238,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
             User = source.User,
         };
 
-        foreach (var header in source.Request.Headers)
+        foreach (var header in from.Headers)
         {
             target.Request.Headers[header.Key] = header.Value.ToArray();
         }
@@ -245,7 +246,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return target;
     }
 
-    protected virtual Task Map(HttpContext httpContext, Route route, List<HttpContext> contexts)
+    protected virtual Task MapAsync(HttpContext httpContext, Route route, List<HttpContext> contexts)
     {
         if (route.DownstreamRoute.Count == 1)
         {

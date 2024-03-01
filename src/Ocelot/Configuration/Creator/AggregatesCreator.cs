@@ -24,8 +24,8 @@ namespace Ocelot.Configuration.Creator
         {
             var applicableRoutes = new List<DownstreamRoute>();
             var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
-
-            foreach (var downstreamRoute in aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey)))
+            var downstreamRoutes = aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey));
+            foreach (var downstreamRoute in downstreamRoutes)
             {
                 if (downstreamRoute == null)
                 {

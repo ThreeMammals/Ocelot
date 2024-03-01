@@ -70,8 +70,7 @@ namespace Ocelot.Middleware
         public static DownstreamRequest DownstreamRequest(this IDictionary<object, object> input) =>
             input.Get<DownstreamRequest>("DownstreamRequest");
 
-        public static DownstreamResponse 
-            DownstreamResponse(this IDictionary<object, object> input) =>
+        public static DownstreamResponse DownstreamResponse(this IDictionary<object, object> input) =>
             input.Get<DownstreamResponse>("DownstreamResponse");
 
         public static DownstreamRoute DownstreamRoute(this IDictionary<object, object> input) =>

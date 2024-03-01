@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using System.Reflection;
 using System.Security.Claims;
-using Moq.Protected;
-using Ocelot.Configuration.File;
 using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
@@ -61,10 +61,10 @@ namespace Ocelot.UnitTests.Multiplexing
 
         [Fact]
         [Trait("Bug", "1396")]
-        public void Copy_User_ToTarget()
+        public void CreateThreadContext_CopyUser_ToTarget()
         {
             // Arrange
-            GivenUser("test", "Copy", nameof(Copy_User_ToTarget));
+            GivenUser("test", "Copy", nameof(CreateThreadContext_CopyUser_ToTarget));
 
             // Act
             var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Multiplexing
             }
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(Should_Not_Copy_Context_If_One_Downstream_Route));
             GivenTheFollowing(GivenDefaultRoute(1));
 
             // Act
@@ -131,19 +131,16 @@ namespace Ocelot.UnitTests.Multiplexing
             _middleware = mock.Object;
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(Should_Call_ProcessSingleRoute_Once_If_One_Downstream_Route));
             GivenTheFollowing(GivenDefaultRoute(1));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task>(
-                "ProcessSingleRoute",
-                Times.Once(),
+            mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Once(),
                 ItExpr.IsAny<HttpContext>(),
-                ItExpr.IsAny<DownstreamRoute>()
-            );
+                ItExpr.IsAny<DownstreamRoute>());
         }
 
         [Theory]
@@ -157,19 +154,16 @@ namespace Ocelot.UnitTests.Multiplexing
             var mock = MockMiddlewareFactory(null, null);
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_If_More_Than_One_Downstream_Route));
             GivenTheFollowing(GivenDefaultRoute(routesCount));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task>(
-                "ProcessSingleRoute",
-                Times.Never(),
+            mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
                 ItExpr.IsAny<HttpContext>(),
-                ItExpr.IsAny<DownstreamRoute>()
-            );
+                ItExpr.IsAny<DownstreamRoute>());
         }
 
         [Theory]
@@ -183,16 +177,14 @@ namespace Ocelot.UnitTests.Multiplexing
             var mock = MockMiddlewareFactory(routesCount, null);
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(Should_Create_As_Many_Contexts_As_Routes_And_Map_Is_Called_Once));
             GivenTheFollowing(GivenDefaultRoute(routesCount));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task>(
-                "Map",
-                Times.Once(),
+            mock.Protected().Verify<Task>("MapAsync", Times.Once(),
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 ItExpr.Is<List<HttpContext>>(list => list.Count == routesCount)
@@ -206,23 +198,18 @@ namespace Ocelot.UnitTests.Multiplexing
             var mock = MockMiddlewareFactory(null, null);
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_Or_Map_If_No_Route));
             GivenTheFollowing(GivenDefaultRoute(0));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task>(
-                "ProcessSingleRoute",
-                Times.Never(),
+            mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
                 ItExpr.IsAny<HttpContext>(),
-                ItExpr.IsAny<DownstreamRoute>()
-            );
+                ItExpr.IsAny<DownstreamRoute>());
 
-            mock.Protected().Verify<Task>(
-                "Map",
-                Times.Never(),
+            mock.Protected().Verify<Task>("MapAsync", Times.Never(),
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 ItExpr.IsAny<List<HttpContext>>());
@@ -235,22 +222,17 @@ namespace Ocelot.UnitTests.Multiplexing
             var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+            GivenUser("test", "Invoke", nameof(If_Using_3_Routes_WithAggregator_ProcessSingleRoute_Is_Never_Called_Map_Once_And_Pipeline_3_Times));
             GivenTheFollowing(GivenRoutesWithAggregator());
 
             // Act
             await WhenIMultiplex();
 
-            mock.Protected().Verify<Task>(
-                "ProcessSingleRoute",
-                Times.Never(),
+            mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
                 ItExpr.IsAny<HttpContext>(),
-                ItExpr.IsAny<DownstreamRoute>()
-            );
+                ItExpr.IsAny<DownstreamRoute>());
 
-            mock.Protected().Verify<Task>(
-                "Map",
-                Times.Once(),
+            mock.Protected().Verify<Task>("MapAsync", Times.Once(),
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 ItExpr.IsAny<List<HttpContext>>());
@@ -281,15 +263,13 @@ namespace Ocelot.UnitTests.Multiplexing
 
             var mock = new Mock<MultiplexingMiddleware>(requestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
 
-            mock.Protected().Setup<Task>(
-                "Map",
+            mock.Protected().Setup<Task>("MapAsync",
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount)
             ).Returns(Task.CompletedTask).Verifiable();
 
-            mock.Protected().Setup<Task>(
-                "ProcessSingleRoute",
+            mock.Protected().Setup<Task>("ProcessSingleRouteAsync",
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<DownstreamRoute>()
             ).Returns(Task.CompletedTask).Verifiable();

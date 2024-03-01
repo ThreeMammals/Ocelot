@@ -14,8 +14,6 @@ namespace Ocelot.Multiplexer
         }
 
         public IResponseAggregator Get(Route route)
-        {
-            return !string.IsNullOrEmpty(route.Aggregator) ? _userDefined : _simple;
-        }
+            => !string.IsNullOrEmpty(route.Aggregator) ? _userDefined : _simple;
     }
 }
