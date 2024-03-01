@@ -4,8 +4,11 @@ using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
@@ -15,17 +18,21 @@ using Ocelot.Multiplexer;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class AggregateTests : IDisposable
+    public sealed class AggregateTests : Steps, IDisposable
     {
-        private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
         private readonly string[] _downstreamPaths;
 
         public AggregateTests()
         {
             _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
             _downstreamPaths = new string[3];
+        }
+
+        public override void Dispose()
+        {
+            _serviceHandler.Dispose();
+            base.Dispose();
         }
 
         [Fact]
@@ -134,11 +141,11 @@ namespace Ocelot.AcceptanceTests
             var expected = "{\"key1\":some_data,\"key2\":some_data}";
 
             this.Given(x => x.GivenServiceIsRunning($"http://localhost:{port}", 200, "some_data"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 
@@ -233,11 +240,11 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
                 .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 
@@ -304,11 +311,11 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -324,11 +331,11 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -394,11 +401,11 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -464,11 +471,11 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe(expected))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -532,16 +539,16 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
 
         [Fact]
         [Trait("Bug", "1396")]
-        public void should_return_response_200_with_user_forwarding()
+        public void Should_return_response_200_with_user_forwarding()
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
@@ -651,7 +658,36 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
+        private void GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<TAggregator, TDependency>()
+            where TAggregator : class, IDefinedAggregator
+            where TDependency : class
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", true, false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                    config.AddJsonFile(_ocelotConfigFileName, true, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton(_webHostBuilder);
+                    s.AddSingleton<TDependency>();
+                    s.AddOcelot()
+                        .AddSingletonDefinedAggregator<TAggregator>();
+                })
+                .Configure(a => { a.UseOcelot().Wait(); });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
         {
             _downstreamPaths[0].ShouldBe(expectedDownstreamPathOne);
             _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
@@ -667,24 +703,18 @@ namespace Ocelot.AcceptanceTests
             Key = key,
         };
 
-        private static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+        private static new FileConfiguration GivenConfiguration(params FileRoute[] routes)
         {
-            Routes = [..routes],
-            Aggregates =
-            [
-                new FileAggregateRoute
+            var obj = Steps.GivenConfiguration(routes);
+            obj.Aggregates.Add(
+                new()
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
                     RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
-                },
-            ],
-        };
-
-        public void Dispose()
-        {
-            _serviceHandler.Dispose();
-            _steps.Dispose();
+                }
+            );
+            return obj;
         }
     }
 
