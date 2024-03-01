@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
@@ -30,7 +31,6 @@ using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.Extensions.Hosting;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
@@ -41,7 +41,6 @@ namespace Ocelot.AcceptanceTests;
 public class Steps : IDisposable
 {
     protected TestServer _ocelotServer;
-    private IHost _realServer;
     protected HttpClient _ocelotClient;
     private HttpResponseMessage _response;
     private HttpContent _postContent;
@@ -245,90 +244,15 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-        public void GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(long customBodyMaxSize)
-        {
-            _realServer = Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(
-                    webBuilder =>
-                {
-                    webBuilder.UseKestrel().ConfigureKestrel((_, options) =>
-                        {
-                            options.Limits.MaxRequestBodySize = customBodyMaxSize;
-                        })
-                        .ConfigureAppConfiguration((hostingContext, config) =>
-                        {
-                            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                            var env = hostingContext.HostingEnvironment;
-                            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                            config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
-                            config.AddEnvironmentVariables();
-                        })
-                        .ConfigureServices(s =>
-                        {
-                            s.AddOcelot();
-                        })
-                        .Configure(app =>
-                        {
-                            app.UseOcelot().Wait();
-                        })
-                        .UseUrls("http://localhost:5001");
-                }).Build();
-            _realServer.Start();
-
-            _ocelotClient = new HttpClient
-            {
-                BaseAddress = new Uri("http://localhost:5001"),
-            };
-        }
-
-        public void GivenOcelotIsRunningOnHttpSysWithCustomBodyMaxSize(long customBodyMaxSize)
-        {
-            _realServer = Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseHttpSys(options =>
-                        {
-                            options.MaxRequestBodySize = customBodyMaxSize;
-                        })
-                        .ConfigureAppConfiguration((hostingContext, config) =>
-                        {
-                            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                            var env = hostingContext.HostingEnvironment;
-                            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                            config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
-                            config.AddEnvironmentVariables();
-                        })
-                        .ConfigureServices(s =>
-                        {
-                            s.AddOcelot();
-                        })
-                        .Configure(app =>
-                        {
-                            app.UseOcelot().Wait();
-                        })
-                        .UseUrls("http://localhost:5001");
-                }).Build();
-            _realServer.Start();
-
-            _ocelotClient = new HttpClient
-            {
-                BaseAddress = new Uri("http://localhost:5001"),
-            };
-        }
-
-        /// <summary>
-        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-        /// </summary>
-        /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
-        /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
-        public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
-            where T : ILoadBalancer
-        {
-            _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+    /// <summary>
+    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
+    /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
+    public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
+        where T : ILoadBalancer
+    {
+        _webHostBuilder = new WebHostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -346,7 +270,6 @@ public class Steps : IDisposable
             .Configure(app => { app.UseOcelot().Wait(); });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -1304,7 +1227,6 @@ public class Steps : IDisposable
             _ocelotClient?.Dispose();
             _ocelotServer?.Dispose();
             _ocelotHost?.Dispose();
-            _realServer?.Dispose();
             DeleteOcelotConfig();
         }
 

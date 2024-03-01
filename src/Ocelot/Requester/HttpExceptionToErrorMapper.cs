@@ -11,6 +11,9 @@ namespace Ocelot.Requester
         /// <summary>This is a dictionary of custom mappers for exceptions.</summary>
         private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
 
+        /// <summary>413 status.</summary>
+        private const int RequestEntityTooLarge = (int)HttpStatusCode.RequestEntityTooLarge;
+
         public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
         {
             _mappers = serviceProvider.GetService<Dictionary<Type, Func<Exception, Error>>>();
@@ -41,10 +44,9 @@ namespace Ocelot.Requester
 
             if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
             {
-                // the inner exception is a BadHttpRequestException, and only this exception exposes
-                // the StatusCode property. We check if the inner exception is a BadHttpRequestException
-                // and if the StatusCode is 413, we return a PayloadTooLargeError
-                if (exception.InnerException is BadHttpRequestException { StatusCode: 413 })
+                // Inner exception is a BadHttpRequestException, and only this exception exposes the StatusCode property.
+                // We check if the inner exception is a BadHttpRequestException and if the StatusCode is 413, we return a PayloadTooLargeError
+                if (exception.InnerException is BadHttpRequestException { StatusCode: RequestEntityTooLarge })
                 {
                     return new PayloadTooLargeError(exception);
                 }
