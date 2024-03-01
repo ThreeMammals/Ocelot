@@ -55,6 +55,11 @@ namespace Ocelot.Responder
                 return 500;
             }
 
+            if (errors.Any(e => e.Code == OcelotErrorCode.PayloadTooLargeError))
+            {
+                return 413;
+            }
+
             return 404;
         }
     }
