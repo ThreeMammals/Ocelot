@@ -13,12 +13,90 @@ We then specify an Aggregate that composes the two Routes using their keys in th
 Obviously you cannot have duplicate **UpstreamPathTemplates** between **Routes** and **Aggregates**.
 You can use all of Ocelot's normal Route options apart from **RequestIdKey** (explained in `gotchas <#gotchas>`_ below).
 
-Advanced Register Your Own Aggregators
---------------------------------------
+Basic Expecting JSON from Downstream Services
+---------------------------------------------
+
+.. code-block:: json
+  {
+    "Routes": [
+      {
+        "UpstreamHttpMethod": [ "Get" ],
+        "UpstreamPathTemplate": "/laura",
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          { "Host": "localhost", "Port": 51881 }
+        ],
+        "Key": "Laura"
+      },
+      {
+        "UpstreamHttpMethod": [ "Get" ],
+        "UpstreamPathTemplate": "/tom",
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          { "Host": "localhost", "Port": 51882 }
+        ],
+        "Key": "Tom"
+      }
+    ],
+    "Aggregates": [
+      {
+        "UpstreamPathTemplate": "/",
+        "RouteKeys": [
+          "Tom",
+          "Laura"
+        ]
+      }
+    ]
+  }
+
+You can also set **UpstreamHost** and **RouteIsCaseSensitive** in the Aggregate configuration. These behave the same as any other Routes.
+
+If the Route ``/tom`` returned a body of ``{"Age": 19}`` and ``/laura`` returned ``{"Age": 25}``, the the response after aggregation would be as follows:
+
+.. code-block:: json
+
+    {"Tom":{"Age": 19},"Laura":{"Age": 25}}
+
+At the moment the aggregation is very simple. Ocelot just gets the response from your downstream service and sticks it into a JSON dictionary as above.
+With the Route key being the key of the dictionary and the value the response body from your downstream service.
+You can see that the object is just JSON without any pretty spaces etc.
+
+Note, all headers will be lost from the downstream services response.
+
+Ocelot will always return content type ``application/json`` with an aggregate request.
+
+If you downstream services return a `404 Not Found <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404>`_, the aggregate will just return nothing for that downstream service. 
+It will not change the aggregate response into a ``404`` even if all the downstreams return a ``404``.
+
+Use Complex Aggregation
+-----------------------
+
+Imagine you'd like to use aggregated queries, but you don't know all the parameters of your queries. You first need to call an endpoint to obtain the necessary data, for example a user's id, and then return the user's details.
+
+Let's say we have an endpoint that returns a series of comments with references to various users or threads. The author of the comments is referenced by his Id, but you'd like to return all the details about the author.
+
+Here, you could use aggregation to get 1) all the comments, 2) attach the author details. In fact there are 2 endpoints that are called, but for the 2nd, you dynamically replace the user's Id in the route to obtain the details.
+
+In concrete terms:
+
+1) "/Comments" -> contains the authorId property
+2) "/users/{userId}" with {userId} replaced by authorId to obtain the user's details.
+
+This functionality is still in its early stages, but it does allow you to search for data based on an initial request. To perform the mapping, you need to use **AggregateRouteConfig**.
+
+.. code-block:: csharp
+
+    new AggregateRouteConfig{ RouteKey = "UserDetails", JsonPath = "$[*].authorId", Parameter = "userId" };
+
+**RouteKey** is used as a reference for the route, **JsonPath** indicates where the parameter you are interested in is located in the first request response body and **Parameter** tells us that the value for authorId should be used for the request parameter userId.
+
+Register Your Own Aggregators
+-----------------------------
 
 Ocelot started with just the basic request aggregation and since then we have added a more advanced method that let's the user take in the responses from the 
 downstream services and then aggregate them into a response object.
-
 The **ocelot.json** setup is pretty much the same as the basic aggregation approach apart from you need to add an **Aggregator** property like below:
 
 .. code-block:: json
@@ -98,66 +176,38 @@ In order to make an Aggregator you must implement this interface:
     }
 
 With this feature you can pretty much do whatever you want because the ``HttpContext`` objects contain the results of all the aggregate requests.
-Please note, if the ``HttpClient`` throws an exception when making a request to a Route in the aggregate then you will not get a ``HttpContext`` for it, but you would for any that succeed.
-If it does throw an exception, this will be logged.
 
-Basic Expecting JSON from Downstream Services
----------------------------------------------
+Please note, if the ``HttpClient`` throws an exception when making a request to a Route in the aggregate then you will not get a ``HttpContext`` for it, but you would for any that succeed. If it does throw an exception, this will be logged. 
 
-.. code-block:: json
+Below is an example of an aggregator that you could implement for your solution:
 
+.. code-block:: csharp
+
+  public class FakeDefinedAggregator : IDefinedAggregator
   {
-    "Routes": [
+      public async Task<DownstreamResponse> Aggregate(List<HttpContext> responseHttpContexts)
       {
-        "UpstreamHttpMethod": [ "Get" ],
-        "UpstreamPathTemplate": "/laura",
-        "DownstreamPathTemplate": "/",
-        "DownstreamScheme": "http",
-        "DownstreamHostAndPorts": [
-          { "Host": "localhost", "Port": 51881 }
-        ],
-        "Key": "Laura"
-      },
-      {
-        "UpstreamHttpMethod": [ "Get" ],
-        "UpstreamPathTemplate": "/tom",
-        "DownstreamPathTemplate": "/",
-        "DownstreamScheme": "http",
-        "DownstreamHostAndPorts": [
-          { "Host": "localhost", "Port": 51882 }
-        ],
-        "Key": "Tom"
+          // The aggregator gets a list of downstream responses as parameter.
+          // You can now implement your own logic to aggregate the responses (including bodies and headers) from the downstream services
+          var responses = responseHttpContexts.Select(x => x.Items.DownstreamResponse()).ToArray();
+  
+          // In this example we are concatenating the results,
+          // but you could create a more complex construct, up to you.
+          var contentList = new List<string>();
+          foreach (var response in responses)
+          {
+              var content = await response.Content.ReadAsStringAsync();
+              contentList.Add(content);
+          }
+  
+          // The only constraint here: You must return a DownstreamResponse object.
+          return new DownstreamResponse(
+              new StringContent(JsonConvert.SerializeObject(contentList)),
+              HttpStatusCode.OK,
+              responses.SelectMany(x => x.Headers).ToList(),
+              "reason");
       }
-    ],
-    "Aggregates": [
-      {
-        "UpstreamPathTemplate": "/",
-        "RouteKeys": [
-          "Tom",
-          "Laura"
-        ]
-      }
-    ]
   }
-
-You can also set **UpstreamHost** and **RouteIsCaseSensitive** in the Aggregate configuration. These behave the same as any other Routes.
-
-If the Route ``/tom`` returned a body of ``{"Age": 19}`` and ``/laura`` returned ``{"Age": 25}``, the the response after aggregation would be as follows:
-
-.. code-block:: json
-
-    {"Tom":{"Age": 19},"Laura":{"Age": 25}}
-
-At the moment the aggregation is very simple. Ocelot just gets the response from your downstream service and sticks it into a JSON dictionary as above.
-With the Route key being the key of the dictionary and the value the response body from your downstream service.
-You can see that the object is just JSON without any pretty spaces etc.
-
-Note, all headers will be lost from the downstream services response.
-
-Ocelot will always return content type ``application/json`` with an aggregate request.
-
-If you downstream services return a `404 Not Found <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404>`_, the aggregate will just return nothing for that downstream service. 
-It will not change the aggregate response into a ``404`` even if all the downstreams return a ``404``.
 
 Gotchas
 -------
