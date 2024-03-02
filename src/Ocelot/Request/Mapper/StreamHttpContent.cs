@@ -8,25 +8,24 @@ public class StreamHttpContent : HttpContent
     private const int DefaultBufferSize = 65536;
     public const long UnknownLength = -1;
     private readonly HttpContext _context;
+    private readonly long _contentLength;
 
     public StreamHttpContent(HttpContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _contentLength = context.Request.ContentLength ?? UnknownLength;
     }
 
-    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context,
-        CancellationToken cancellationToken)
-        => await CopyAsync(_context.Request.Body, stream, Headers.ContentLength ?? UnknownLength, false,
-            cancellationToken);
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext context, CancellationToken cancellationToken)
+        => CopyAsync(_context.Request.Body, stream, _contentLength, false, cancellationToken);
 
-    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
-        => await CopyAsync(_context.Request.Body, stream, Headers.ContentLength ?? UnknownLength, false,
-            CancellationToken.None);
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        => CopyAsync(_context.Request.Body, stream, _contentLength, false, CancellationToken.None);
 
     protected override bool TryComputeLength(out long length)
     {
-        length = -1;
-        return false;
+        length = _contentLength;
+        return length >= 0;
     }
 
     // This is used internally by HttpContent.ReadAsStreamAsync(...)

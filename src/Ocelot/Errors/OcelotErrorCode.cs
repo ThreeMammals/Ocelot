@@ -43,5 +43,6 @@
         ConnectionToDownstreamServiceError = 38,
         CouldNotFindLoadBalancerCreator = 39,
         ErrorInvokingLoadBalancerCreator = 40,
+        PayloadTooLargeError = 41,
     }
 }
