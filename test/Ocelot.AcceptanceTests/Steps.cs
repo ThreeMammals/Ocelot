@@ -191,6 +191,11 @@ public class Steps : IDisposable
         }
     }
 
+    public void TheOcelotJsonFileExists(bool expected)
+    {
+        File.Exists(_ocelotConfigFileName).ShouldBe(expected);
+    }
+
     public void ThenTheResponseBodyHeaderIs(string key, string value)
     {
         var header = _response.Content.Headers.GetValues(key);

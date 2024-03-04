@@ -3,7 +3,7 @@ using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ConfigurationMergeTests : IDisposable
+public sealed class ConfigurationMergeTests : IDisposable
 {
     private readonly FileConfiguration _globalConfig;
     private readonly Steps _steps;
@@ -12,17 +12,17 @@ public class ConfigurationMergeTests : IDisposable
     {
         _steps = new Steps();
 
-        if (File.Exists(TestConfiguration.PrimaryConfigurationPath))
-        {
-            try
-            {
-                File.Delete(TestConfiguration.PrimaryConfigurationPath);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
+        //if (File.Exists(TestConfiguration.PrimaryConfigurationPath))
+        //{
+        //    try
+        //    {
+        //        File.Delete(TestConfiguration.PrimaryConfigurationPath);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e);
+        //    }
+        //}
 
         _globalConfig = new FileConfiguration
         {
@@ -38,7 +38,7 @@ public class ConfigurationMergeTests : IDisposable
     {
         this.Given(x => _steps.GivenThereIsAConfiguration(_globalConfig, TestConfiguration.ConfigurationPartPath("global")))
             .When(x => _steps.WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToMemory))
-            .Then(x => TheOcelotJsonFileExists(false))
+            .Then(x => _steps.TheOcelotJsonFileExists(false))
             .BDDfy();
     }
 
@@ -47,19 +47,17 @@ public class ConfigurationMergeTests : IDisposable
     {
         this.Given(x => _steps.GivenThereIsAConfiguration(_globalConfig))
             .When(x => _steps.WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToFile))
-            .Then(x => TheOcelotJsonFileExists(true))
+            .Then(x => _steps.TheOcelotJsonFileExists(true))
             .BDDfy();
     }
 
     public void Dispose()
     {
         _steps.Dispose();
-        GC.SuppressFinalize(this);
     }
 
-    private static void TheOcelotJsonFileExists(bool expected)
-    {
-        var primaryConfigFile = Path.Combine(string.Empty, "ocelot.json");
-        File.Exists(primaryConfigFile).ShouldBe(expected);
-    }
+    //private static void TheOcelotJsonFileExists(bool expected)
+    //{
+    //    File.Exists(_ocelotConfigFileName).ShouldBe(expected);
+    //}
 }
