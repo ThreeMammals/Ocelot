@@ -27,7 +27,6 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
-using System;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
@@ -1178,26 +1177,26 @@ public class Steps : IDisposable
         GC.SuppressFinalize(this);
     }
 
-        private bool _disposedValue;
+    private bool _disposedValue;
 
-        /// <summary>
-        /// Protected implementation of Dispose pattern.
-        /// </summary>
-        /// <param name="disposing">Flag to trigger actual disposing operation.</param>
-        protected virtual void Dispose(bool disposing)
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">Flag to trigger actual disposing operation.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposedValue)
         {
-            if (_disposedValue)
-            {
-                return;
-            }
+            return;
+        }
 
-            if (disposing)
-            {
-                _ocelotClient?.Dispose();
-                _ocelotServer?.Dispose();
-                _ocelotHost?.Dispose();
-                DeleteOcelotConfig();
-            }
+        if (disposing)
+        {
+            _ocelotClient?.Dispose();
+            _ocelotServer?.Dispose();
+            _ocelotHost?.Dispose();
+            DeleteOcelotConfig();
+        }
 
         _disposedValue = true;
     }
