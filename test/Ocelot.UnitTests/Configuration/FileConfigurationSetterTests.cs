@@ -28,14 +28,14 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_set_configuration()
+        public void Should_set_configuration()
         {
             var fileConfig = new FileConfiguration();
             var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
             var config = new InternalConfiguration(new List<Route>(), string.Empty, serviceProviderConfig, "asdf", new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-                .And(x => GivenTheRepoReturns(new OkResponse()))
+                .And(x => GivenTheRepoSetsSuccessfully())
                 .And(x => GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config)))
                 .When(x => WhenISetTheConfiguration())
                 .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
@@ -43,35 +43,45 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_error_if_unable_to_set_file_configuration()
+        public void Should_catch_exception_if_unable_to_set_file_configuration()
         {
             var fileConfig = new FileConfiguration();
-
+            var exception = new InvalidOperationException("bla-bla");
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-                .And(x => GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>())))
+                .And(x => GivenTheRepoThrows(exception))
                 .When(x => WhenISetTheConfiguration())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
+
+            var response = _result as ErrorResponse;
+            response.ShouldNotBeNull();
+            var error = response.Errors.First();
+            error.ShouldNotBeNull().Message.ShouldBe("bla-bla");
         }
 
         [Fact]
-        public void should_return_error_if_unable_to_set_ocelot_configuration()
+        public void Should_return_error_if_unable_to_set_ocelot_configuration()
         {
             var fileConfig = new FileConfiguration();
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-                .And(x => GivenTheRepoReturns(new OkResponse()))
+                .And(x => GivenTheRepoSetsSuccessfully())
                 .And(x => GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>())))
                 .When(x => WhenISetTheConfiguration())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
         }
 
-        private void GivenTheRepoReturns(Response response)
+        private void GivenTheRepoSetsSuccessfully()
         {
-            _repo
-                .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-                .ReturnsAsync(response);
+            _repo.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>()))
+                .Verifiable();
+        }
+
+        private void GivenTheRepoThrows(Exception ex)
+        {
+            _repo.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>()))
+                .ThrowsAsync(ex);
         }
 
         private void ThenAnErrorResponseIsReturned()

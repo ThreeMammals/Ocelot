@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration
 {
@@ -22,16 +23,17 @@ namespace Ocelot.Configuration
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<ActionResult> Get()
         {
-            var response = await _repo.Get();
-
-            if (response.IsError)
+            try
             {
-                return new BadRequestObjectResult(response.Errors);
+                var fileConfiguration = await _repo.GetAsync();
+                return Ok(fileConfiguration);
             }
-
-            return new OkObjectResult(response.Data);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.GetMessages());
+            }
         }
 
         [HttpPost]

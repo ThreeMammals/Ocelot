@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_get_file_configuration()
         {
-            var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
+            var expected = new FileConfiguration();
 
             this.Given(x => x.GivenTheGetConfigurationReturns(expected))
                 .When(x => x.WhenIGetTheFileConfiguration())
@@ -39,9 +39,9 @@ namespace Ocelot.UnitTests.Controllers
         [Fact]
         public void should_return_error_when_cannot_get_config()
         {
-            var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+            var exception = new FileNotFoundException(nameof(should_return_error_when_cannot_get_config));
 
-            this.Given(x => x.GivenTheGetConfigurationReturns(expected))
+            this.Given(x => x.GivenTheGetConfigurationThrowsException(exception))
                .When(x => x.WhenIGetTheFileConfiguration())
                .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
                .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
@@ -75,15 +75,13 @@ namespace Ocelot.UnitTests.Controllers
 
         private void GivenTheConfigSetterReturns(Response response)
         {
-            _setter
-                .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+            _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
                 .ReturnsAsync(response);
         }
 
         private void ThenTheConfigrationSetterIsCalledCorrectly()
         {
-            _setter
-                .Verify(x => x.Set(_fileConfiguration), Times.Once);
+            _setter.Verify(x => x.Set(_fileConfiguration), Times.Once);
         }
 
         private void WhenIPostTheFileConfiguration()
@@ -101,11 +99,16 @@ namespace Ocelot.UnitTests.Controllers
             _result.ShouldBeOfType<T>();
         }
 
-        private void GivenTheGetConfigurationReturns(Response<FileConfiguration> fileConfiguration)
+        private void GivenTheGetConfigurationReturns(FileConfiguration fileConfiguration)
         {
-            _repo
-                .Setup(x => x.Get())
+            _repo.Setup(x => x.GetAsync())
                 .ReturnsAsync(fileConfiguration);
+        }
+
+        private void GivenTheGetConfigurationThrowsException(Exception ex)
+        {
+            _repo.Setup(x => x.GetAsync())
+                .ThrowsAsync(ex);
         }
 
         private void WhenIGetTheFileConfiguration()
@@ -115,15 +118,12 @@ namespace Ocelot.UnitTests.Controllers
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()
         {
-            _repo
-             .Verify(x => x.Get(), Times.Once);
+            _repo.Verify(x => x.GetAsync(), Times.Once);
         }
 
         private class FakeError : Error
         {
-            public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404)
-            {
-            }
+            public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404) { }
         }
     }
 }

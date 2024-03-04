@@ -12,17 +12,21 @@ namespace Ocelot.Configuration.Repository
         private readonly string _environmentFilePath;
         private readonly string _ocelotFilePath;
         private static readonly object _lock = new();
-        private const string ConfigurationFileName = "ocelot";
+        
+        /// <summary>
+        /// Main prefix for Ocelot configuration JSON-files.
+        /// </summary>
+        public const string ConfigurationFileName = "ocelot";
 
-        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
+        public DiskFileConfigurationRepository(IWebHostEnvironment hosting, IOcelotConfigurationChangeTokenSource changeTokenSource)
         {
             _changeTokenSource = changeTokenSource;
-            _environmentFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
+            _environmentFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}{(string.IsNullOrEmpty(hosting.EnvironmentName) ? string.Empty : ".")}{hosting.EnvironmentName}.json";
 
             _ocelotFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}.json";
         }
 
-        public Task<Response<FileConfiguration>> Get()
+        public Task<FileConfiguration> GetAsync()
         {
             string jsonConfiguration;
 
@@ -32,11 +36,10 @@ namespace Ocelot.Configuration.Repository
             }
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
-
-            return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
+            return Task.FromResult(fileConfiguration);
         }
 
-        public Task<Response> Set(FileConfiguration fileConfiguration)
+        public Task SetAsync(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
@@ -58,7 +61,7 @@ namespace Ocelot.Configuration.Repository
             }
 
             _changeTokenSource.Activate();
-            return Task.FromResult<Response>(new OkResponse());
+            return Task.CompletedTask;
         }
     }
 }

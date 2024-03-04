@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Responses;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -81,15 +80,9 @@ namespace Ocelot.AcceptanceTests
 
         private class FakeFileConfigurationRepository : IFileConfigurationRepository
         {
-            public Task<Response<FileConfiguration>> Get()
-            {
-                throw new NotImplementedException();
-            }
+            public Task<FileConfiguration> GetAsync() => throw new NotImplementedException();
 
-            public Task<Response> Set(FileConfiguration fileConfiguration)
-            {
-                throw new NotImplementedException();
-            }
+            public Task SetAsync(FileConfiguration fileConfiguration) => throw new NotImplementedException();
         }
     }
 }

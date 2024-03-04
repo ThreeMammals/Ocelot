@@ -3,10 +3,11 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Repository
 {
-    public class FileConfigurationPoller : IHostedService, IDisposable
+    public sealed class FileConfigurationPoller : IHostedService, IDisposable
     {
         private readonly IOcelotLogger _logger;
         private readonly IFileConfigurationRepository _repo;
@@ -62,47 +63,42 @@ namespace Ocelot.Configuration.Repository
 
         private async Task Poll()
         {
-            _logger.LogInformation("Started polling");
-
-            var fileConfig = await _repo.Get();
-
-            if (fileConfig.IsError)
+            _logger.LogInformation($"Started {nameof(Poll)}");
+            try
             {
-                _logger.LogWarning(() =>$"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+                var fileConfig = await _repo.GetAsync();
+                var asJson = ToJson(fileConfig);
+                if (asJson != _previousAsJson)
+                {
+                    var config = await _internalConfigCreator.Create(fileConfig);
+                    if (!config.IsError)
+                    {
+                        _internalConfigRepo.AddOrReplace(config.Data);
+                    }
+
+                    _previousAsJson = asJson;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(() => $"Error getting file config! Errors are:{Environment.NewLine}{ex.AllMessages}");
                 return;
             }
-
-            var asJson = ToJson(fileConfig.Data);
-
-            if (!fileConfig.IsError && asJson != _previousAsJson)
+            finally
             {
-                var config = await _internalConfigCreator.Create(fileConfig.Data);
-
-                if (!config.IsError)
-                {
-                    _internalConfigRepo.AddOrReplace(config.Data);
-                }
-
-                _previousAsJson = asJson;
+                _logger.LogInformation($"Finished {nameof(Poll)}");
             }
-
-            _logger.LogInformation("Finished polling");
         }
 
         /// <summary>
-        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
+        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day.
         /// </summary>
-        /// <returns>hash of the config.</returns>
-        private static string ToJson(FileConfiguration config)
-        {
-            var currentHash = JsonConvert.SerializeObject(config);
-            return currentHash;
-        }
+        /// <returns>A <see langword="string"/> with current hash of the config.</returns>
+        private static string ToJson(FileConfiguration config) => JsonConvert.SerializeObject(config);
 
         public void Dispose()
         {
             _timer?.Dispose();
-            _timer = null;
         }
     }
 }

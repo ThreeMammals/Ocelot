@@ -19,31 +19,56 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="appsettings.product.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="mycert.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Remove="MergeConfiguration\ocelot.global.json" />
+    <None Remove="MergeConfiguration\ocelot.xservices.json" />
+    <None Remove="MergeConfiguration\ocelot.yservices.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
-    <ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
-    <ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
+    <Content Include="MergeConfiguration\ocelot.global.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MergeConfiguration\ocelot.xservices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MergeConfiguration\ocelot.yservices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-  <ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.product.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="mycert.pfx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+    <None Update="MergeConfiguration\ocelot.global.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MergeConfiguration\ocelot.xservices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MergeConfiguration\ocelot.yservices.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+		<ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
+		<ProjectReference Include="..\Ocelot.ManualTest\Ocelot.ManualTest.csproj" />
+		<ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+	<ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Serilog" Version="3.1.1" />
     <PackageReference Include="xunit" Version="2.6.1" />
