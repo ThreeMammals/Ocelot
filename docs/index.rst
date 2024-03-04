@@ -1,4 +1,4 @@
-Welcome to Ocelot `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_
+Welcome to Ocelot `23.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0>`_
 ======================================================================================
 
 Thanks for taking a look at the Ocelot documentation! Please use the left hand navigation to get around.
