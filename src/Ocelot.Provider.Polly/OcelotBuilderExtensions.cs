@@ -33,18 +33,18 @@ public static class OcelotBuilderExtensions
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by custom delegate and with custom error mapping.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="delegatingHandler">Your customized delegating handler (to manage QoS behavior by yourself).</param>
     /// <param name="errorMapping">Your customized error mapping.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler, IDictionary<Type, Func<Exception, Error>> errorMapping)
-        where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+    public static IOcelotBuilder AddPolly<TProvider>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler, IDictionary<Type, Func<Exception, Error>> errorMapping)
+        where TProvider : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
     {
         builder.Services
             .AddSingleton<ResiliencePipelineRegistry<OcelotResiliencePipelineKey>>()
             .AddSingleton(errorMapping) // Dictionary<TKey, TValue> injection used in HttpExceptionToErrorMapper
-            .AddSingleton<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>, T>()
+            .AddSingleton<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>, TProvider>()
             .AddSingleton(delegatingHandler);
         return builder;
     }
@@ -52,24 +52,24 @@ public static class OcelotBuilderExtensions
     /// <summary>
     /// Adds Polly QoS provider to Ocelot with custom error mapping, but default <see cref="DelegatingHandler"/> is used.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="errorMapping">Your customized error mapping.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, IDictionary<Type, Func<Exception, Error>> errorMapping)
-        where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
-        => AddPolly<T>(builder, GetDelegatingHandler, errorMapping);
+    public static IOcelotBuilder AddPolly<TProvider>(this IOcelotBuilder builder, IDictionary<Type, Func<Exception, Error>> errorMapping)
+        where TProvider : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+        => AddPolly<TProvider>(builder, GetDelegatingHandler, errorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot with custom <see cref="DelegatingHandler"/> delegate, but default error mapping is used.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="delegatingHandler">Your customized delegating handler (to manage QoS behavior by yourself).</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
-        where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
-        => AddPolly<T>(builder, delegatingHandler, DefaultErrorMapping);
+    public static IOcelotBuilder AddPolly<TProvider>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
+        where TProvider : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+        => AddPolly<TProvider>(builder, delegatingHandler, DefaultErrorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by defaults.
@@ -81,12 +81,12 @@ public static class OcelotBuilderExtensions
     ///   <item><see cref="DefaultErrorMapping"/></item>
     /// </list>
     /// </remarks>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSResiliencePipelineProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
-    public static IOcelotBuilder AddPolly<T>(this IOcelotBuilder builder)
-        where T : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
-        => AddPolly<T>(builder, GetDelegatingHandler, DefaultErrorMapping);
+    public static IOcelotBuilder AddPolly<TProvider>(this IOcelotBuilder builder)
+        where TProvider : class, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+        => AddPolly<TProvider>(builder, GetDelegatingHandler, DefaultErrorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by defaults with default QoS provider.
@@ -119,18 +119,18 @@ public static class OcelotBuilderExtensions
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by custom delegate and with custom error mapping.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="delegatingHandler">Your customized delegating handler (to manage QoS behavior by yourself).</param>
     /// <param name="errorMapping">Your customized error mapping.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
-    public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler, IDictionary<Type, Func<Exception, Error>> errorMapping)
-        where T : class, IPollyQoSProvider<HttpResponseMessage>
+    public static IOcelotBuilder AddPollyV7<TProvider>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler, IDictionary<Type, Func<Exception, Error>> errorMapping)
+        where TProvider : class, IPollyQoSProvider<HttpResponseMessage>
     {
         builder.Services
             .AddSingleton(errorMapping)
-            .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, T>()
+            .AddSingleton<IPollyQoSProvider<HttpResponseMessage>, TProvider>()
             .AddSingleton(delegatingHandler);
         return builder;
     }
@@ -138,26 +138,26 @@ public static class OcelotBuilderExtensions
     /// <summary>
     /// Adds Polly QoS provider to Ocelot with custom error mapping, but default <see cref="DelegatingHandler"/> is used.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="errorMapping">Your customized error mapping.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
-    public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, IDictionary<Type, Func<Exception, Error>> errorMapping)
-        where T : class, IPollyQoSProvider<HttpResponseMessage>
-        => AddPollyV7<T>(builder, GetDelegatingHandlerV7, errorMapping);
+    public static IOcelotBuilder AddPollyV7<TProvider>(this IOcelotBuilder builder, IDictionary<Type, Func<Exception, Error>> errorMapping)
+        where TProvider : class, IPollyQoSProvider<HttpResponseMessage>
+        => AddPollyV7<TProvider>(builder, GetDelegatingHandlerV7, errorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot with custom <see cref="DelegatingHandler"/> delegate, but default error mapping is used.
     /// </summary>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <param name="delegatingHandler">Your customized delegating handler (to manage QoS behavior by yourself).</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
-    public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
-        where T : class, IPollyQoSProvider<HttpResponseMessage>
-        => AddPollyV7<T>(builder, delegatingHandler, DefaultErrorMapping);
+    public static IOcelotBuilder AddPollyV7<TProvider>(this IOcelotBuilder builder, QosDelegatingHandlerDelegate delegatingHandler)
+        where TProvider : class, IPollyQoSProvider<HttpResponseMessage>
+        => AddPollyV7<TProvider>(builder, delegatingHandler, DefaultErrorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by defaults.
@@ -169,13 +169,13 @@ public static class OcelotBuilderExtensions
     ///   <item><see cref="DefaultErrorMapping"/></item>
     /// </list>
     /// </remarks>
-    /// <typeparam name="T">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
+    /// <typeparam name="TProvider">QoS provider to use (by default use <see cref="PollyQoSProvider"/>).</typeparam>
     /// <param name="builder">Ocelot builder to extend.</param>
     /// <returns>The reference to the same extended <see cref="IOcelotBuilder"/> object.</returns>
     [Obsolete("Use AddPolly instead, it will be remove in future version")]
-    public static IOcelotBuilder AddPollyV7<T>(this IOcelotBuilder builder)
-        where T : class, IPollyQoSProvider<HttpResponseMessage>
-        => AddPollyV7<T>(builder, GetDelegatingHandlerV7, DefaultErrorMapping);
+    public static IOcelotBuilder AddPollyV7<TProvider>(this IOcelotBuilder builder)
+        where TProvider : class, IPollyQoSProvider<HttpResponseMessage>
+        => AddPollyV7<TProvider>(builder, GetDelegatingHandlerV7, DefaultErrorMapping);
 
     /// <summary>
     /// Adds Polly QoS provider to Ocelot by defaults with default QoS provider.

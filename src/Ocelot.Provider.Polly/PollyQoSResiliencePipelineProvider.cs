@@ -4,27 +4,13 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
-using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
-public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _resiliencePipelineRegistry;
     private readonly IOcelotLogger _logger;
-
-    private static readonly HashSet<HttpStatusCode> ServerErrorCodes = new()
-    {
-        HttpStatusCode.InternalServerError,
-        HttpStatusCode.NotImplemented,
-        HttpStatusCode.BadGateway,
-        HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.GatewayTimeout,
-        HttpStatusCode.HttpVersionNotSupported,
-        HttpStatusCode.VariantAlsoNegotiates,
-        HttpStatusCode.InsufficientStorage,
-        HttpStatusCode.LoopDetected,
-    };
 
     public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory, 
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> resiliencePipelineRegistry)
@@ -66,7 +52,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
         }
 
-        var info = $"Circuit Breaker for Route: {GetRouteName(route)}:";
+        var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
 
         var circuitBreakerStrategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
@@ -80,17 +66,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
                 .Handle<TimeoutException>(),
             OnOpened = args =>
             {
-                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
-                    args.Outcome.Exception);
+                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms", args.Outcome.Exception);
                 return ValueTask.CompletedTask;
             },
         };
 
         builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
     }
-
-    private static string GetRouteName(DownstreamRoute route)
-        => string.IsNullOrWhiteSpace(route.ServiceName)
-            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
-            : route.ServiceName;
 }

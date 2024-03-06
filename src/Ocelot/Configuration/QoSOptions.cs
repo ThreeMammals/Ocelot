@@ -39,7 +39,7 @@ namespace Ocelot.Configuration
         /// If using Polly version 8 or above, this value must be 500 (0.5 sec) or greater.
         /// </remarks>
         /// <value>
-        /// How long the circuit should stay open before resetting in milliseconds
+        /// An <see cref="int"/> value (milliseconds).
         /// </value>
         public int DurationOfBreak { get; }
 
@@ -50,7 +50,7 @@ namespace Ocelot.Configuration
         /// If using Polly version 8 or above, this value must be 2 or greater.
         /// </remarks>
         /// <value>
-        /// How many times a circuit can fail before being set to open
+        /// An <see cref="int"/> value (no of exceptions).
         /// </value>
         public int ExceptionsAllowedBeforeBreaking { get; }
 
@@ -63,7 +63,7 @@ namespace Ocelot.Configuration
         /// If using Polly version 8 or above, this value must be 1000 (1 sec) or greater.
         /// </remarks>
         /// <value>
-        /// Value for TimeoutStrategy in milliseconds
+        /// An <see cref="int"/> value (milliseconds).
         /// </value>
         public int TimeoutValue { get; }
 

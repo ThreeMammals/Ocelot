@@ -1,50 +1,30 @@
-﻿using System.Net;
-
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
-
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
 namespace Ocelot.Provider.Polly;
 
+/// <summary>Legacy QoS provider based on Polly v7.</summary>
+/// <remarks>Use the <see cref="PollyQoSResiliencePipelineProvider"/> as a new QoS provider based on Polly v8.</remarks>
 [Obsolete("Due to new v8 policy definition in Polly 8 (use PollyQoSResiliencePipelineProvider)")]
-public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
+public class PollyQoSProvider : PollyQoSProviderBase, IPollyQoSProvider<HttpResponseMessage>
 {
     private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
 
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
-    //todo: this should be configurable and available as global config parameter in ocelot.json
+    // TODO: This should be configurable and available as global config parameter in ocelot.json
     public const int DefaultRequestTimeoutSeconds = 90;
-
-    private static readonly HashSet<HttpStatusCode> ServerErrorCodes = new()
-    {
-        HttpStatusCode.InternalServerError,
-        HttpStatusCode.NotImplemented,
-        HttpStatusCode.BadGateway,
-        HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.GatewayTimeout,
-        HttpStatusCode.HttpVersionNotSupported,
-        HttpStatusCode.VariantAlsoNegotiates,
-        HttpStatusCode.InsufficientStorage,
-        HttpStatusCode.LoopDetected,
-    };
 
     public PollyQoSProvider(IOcelotLoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
     }
 
-    private static string GetRouteName(DownstreamRoute route)
-        => string.IsNullOrWhiteSpace(route.ServiceName)
-            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
-            : route.ServiceName;
-
-
-    [Obsolete("Due to new v8 policy definition in Polloy 8 (use GetResiliencePipeline in PollyQoSResiliencePipelineProvider)")]
+    [Obsolete("Due to new v8 policy definition in Polly 8 (use GetResiliencePipeline in PollyQoSResiliencePipelineProvider)")]
     public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
     {
         lock (_lockObject)

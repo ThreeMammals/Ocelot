@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
+using System.Diagnostics;
 
 namespace Ocelot.Provider.Polly;
 
@@ -27,6 +27,8 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
     private IPollyQoSResiliencePipelineProvider<HttpResponseMessage> GetQoSProvider()
     {
         Debug.Assert(this._contextAccessor.HttpContext != null, "_contextAccessor.HttpContext != null");
+
+        // TODO: Move IPollyQoSResiliencePipelineProvider<HttpResponseMessage> object injection to DI container by a DI helper
         return this._contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>>();
     }
 
@@ -41,7 +43,7 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var qoSProvider = this.GetQoSProvider();
-        var pipeline = qoSProvider.GetResiliencePipeline(this._route);
+        var pipeline = qoSProvider.GetResiliencePipeline(_route);
 
         if (pipeline == null)
         {
