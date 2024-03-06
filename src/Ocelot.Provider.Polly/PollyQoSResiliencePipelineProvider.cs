@@ -1,12 +1,10 @@
-using System.Net;
-
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
-
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
@@ -38,7 +36,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
         var options = route.QosOptions;
-        // do the check if we need pipeline at all before calling GetOrAddPipeline
+
+        // Check if we need pipeline at all before calling GetOrAddPipeline
         if (options is null ||
             (options.ExceptionsAllowedBeforeBreaking == 0 && options.TimeoutValue is int.MaxValue))
         {
@@ -53,14 +52,16 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     private void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
-        // add TimeoutStrategy if TimeoutValue is not int.MaxValue and greater than 0
-        if (route.QosOptions.TimeoutValue != int.MaxValue && route.QosOptions.TimeoutValue > 0)
+        var options = route.QosOptions;
+
+        // Add TimeoutStrategy if TimeoutValue is not int.MaxValue and greater than 0
+        if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
         {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(route.QosOptions.TimeoutValue));
+            builder.AddTimeout(TimeSpan.FromMilliseconds(options.TimeoutValue));
         }
 
-        // add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 0
-        if (route.QosOptions.ExceptionsAllowedBeforeBreaking <= 0)
+        // Add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 0
+        if (options.ExceptionsAllowedBeforeBreaking <= 0)
         {
             return; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
         }
@@ -71,8 +72,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         {
             FailureRatio = 0.8,
             SamplingDuration = TimeSpan.FromSeconds(10),
-            MinimumThroughput = route.QosOptions.ExceptionsAllowedBeforeBreaking, 
-            BreakDuration = TimeSpan.FromMilliseconds(route.QosOptions.DurationOfBreak),
+            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking, 
+            BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                 .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
                 .Handle<TimeoutRejectedException>()
