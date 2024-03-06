@@ -1,22 +1,21 @@
-Request Aggregation
-===================
+Request Aggregation [#f1]_
+==========================
 
 Ocelot allows you to specify Aggregate Routes that compose multiple normal Routes and map their responses into one object.
 This is usually where you have a client that is making multiple requests to a server where it could just be one.
-This feature allows you to start implementing back-end for a front-end (BFF) type architecture with Ocelot.
-
-This feature was requested as part of `issue 79 <https://github.com/ThreeMammals/Ocelot/issues/79>`_ and further improvements were made as part of `issue 298 <https://github.com/ThreeMammals/Ocelot/issues/298>`_.
+This feature allows you to start implementing back-end for a front-end (BFF) type architecture with Ocelot. [#f1]_
 
 In order to set this up you must do something like the following in your **ocelot.json**.
 Here we have specified two normal Routes and each one has a **Key** property. 
 We then specify an Aggregate that composes the two Routes using their keys in the **RouteKeys** list and says then we have the **UpstreamPathTemplate** which works like a normal Route.
 Obviously you cannot have duplicate **UpstreamPathTemplates** between **Routes** and **Aggregates**.
-You can use all of Ocelot's normal Route options apart from **RequestIdKey** (explained in `gotchas <#gotchas>`_ below).
+You can use all of Ocelot's normal Route options apart from **RequestIdKey** (explained in :ref:`agg-gotchas` below).
 
 Basic Expecting JSON from Downstream Services
 ---------------------------------------------
 
 .. code-block:: json
+
   {
     "Routes": [
       {
@@ -43,10 +42,7 @@ Basic Expecting JSON from Downstream Services
     "Aggregates": [
       {
         "UpstreamPathTemplate": "/",
-        "RouteKeys": [
-          "Tom",
-          "Laura"
-        ]
+        "RouteKeys": [ "Tom", "Laura" ]
       }
     ]
   }
@@ -81,16 +77,23 @@ Here, you could use aggregation to get 1) all the comments, 2) attach the author
 
 In concrete terms:
 
-1) "/Comments" -> contains the authorId property
-2) "/users/{userId}" with {userId} replaced by authorId to obtain the user's details.
+1) ``/Comments`` contains the authorId property
+2) ``/users/{userId}`` with ``{userId}`` replaced by **authorId** to obtain the user's details.
 
-This functionality is still in its early stages, but it does allow you to search for data based on an initial request. To perform the mapping, you need to use **AggregateRouteConfig**.
+This functionality is still in its early stages, but it does allow you to search for data based on an initial request.
+
+To perform the mapping, you need to use **AggregateRouteConfig**:
 
 .. code-block:: csharp
 
-    new AggregateRouteConfig{ RouteKey = "UserDetails", JsonPath = "$[*].authorId", Parameter = "userId" };
+    new AggregateRouteConfig
+    {
+        RouteKey = "UserDetails",
+        JsonPath = "$[*].authorId",
+        Parameter = "userId"
+    };
 
-**RouteKey** is used as a reference for the route, **JsonPath** indicates where the parameter you are interested in is located in the first request response body and **Parameter** tells us that the value for authorId should be used for the request parameter userId.
+**RouteKey** is used as a reference for the route, **JsonPath** indicates where the parameter you are interested in is located in the first request response body and **Parameter** tells us that the value for ``authorId`` should be used for the request parameter ``userId``.
 
 Register Your Own Aggregators
 -----------------------------
@@ -138,7 +141,7 @@ The **ocelot.json** setup is pretty much the same as the basic aggregation appro
 
 Here we have added an aggregator called ``FakeDefinedAggregator``. Ocelot is going to look for this aggregator when it tries to aggregate this Route.
 
-In order to make the aggregator available we must add the ``FakeDefinedAggregator`` to the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
+In order to make the aggregator available we must add the ``FakeDefinedAggregator`` to the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f2]_ like below:
 
 .. code-block:: csharp
 
@@ -209,6 +212,8 @@ Below is an example of an aggregator that you could implement for your solution:
       }
   }
 
+.. _agg-gotchas:
+
 Gotchas
 -------
 
@@ -218,4 +223,5 @@ Aggregation only supports the ``GET`` HTTP verb.
 
 """"
 
-.. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
+.. [#f1] This feature was requested as part of `issue 79 <https://github.com/ThreeMammals/Ocelot/issues/79>`_ and further improvements were made as part of `issue 298 <https://github.com/ThreeMammals/Ocelot/issues/298>`_. A significant refactoring and revision of the `Multiplexer <https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot/Multiplexer>`_ design was carried out on March 4, 2024 in version `23.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0>`_, see PRs `1826 <https://github.com/ThreeMammals/Ocelot/pull/1826>`_ and `1462 <https://github.com/ThreeMammals/Ocelot/pull/1462>`_.
+.. [#f2] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
