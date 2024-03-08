@@ -144,12 +144,17 @@ Ocelot needs the ``HostingEnvironment`` so it knows to exclude anything environm
 Merging configuration files to memory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default Ocelot writes the merged configuration back to disk as ``ocelot.json`` and add that file to config.
-If your server don't have write permissions to your configuration folder, you can instruct Ocelot to use the merged configuration directly from memory instead.
+By default Ocelot writes the merged configuration back to disk as ``ocelot.json`` (primary configuration file) with adding the file to config.
+
+If your server don't have write permissions to your configuration folder, you can instruct Ocelot to use the merged configuration directly from memory instead, like this:
 
 .. code-block:: csharp
 
-    config.AddOcelot(hostingContext.HostingEnvironment, MergeOcelotJson.ToMemory)
+    // It implicitly calls ASP.NET AddJsonStream extension method for IConfigurationBuilder
+    // config.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
+    config.AddOcelot(hostingContext.HostingEnvironment, MergeOcelotJson.ToMemory);
+
+See more details on implementations in the `ConfigurationBuilderExtensions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ class.
 
 Store Configuration in Consul
 -----------------------------
