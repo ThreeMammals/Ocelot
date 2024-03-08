@@ -40,6 +40,7 @@ If you don't want to change your settings, you must use Polly v7 like this:
     services.AddOcelot()
         .AddPollyV7();
 
+**Please note: support for Polly V7 will be removed in a future version, so we advise you not to use this method (tagged as Obsolete) unless you really have to.**
 
 You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBreaking** and **DurationOfBreak** options:
 
