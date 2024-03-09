@@ -8,6 +8,8 @@ using System.Diagnostics;
 
 namespace Ocelot.Provider.Polly;
 
+/// <summary>Delegates <see cref="HttpRequest"/> sending to downstream.</summary>
+/// <remarks>Outdated V7 design! Use the <see cref="PollyResiliencePipelineDelegatingHandler"/> class.</remarks>
 [Obsolete("Due to new v8 policy definition in Polly 8 (use PollyResiliencePipelineDelegatingHandler)")]
 public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {

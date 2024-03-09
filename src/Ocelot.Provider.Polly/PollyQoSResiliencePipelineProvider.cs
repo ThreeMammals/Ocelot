@@ -7,6 +7,9 @@ using Polly.Timeout;
 
 namespace Ocelot.Provider.Polly;
 
+/// <summary>
+/// Default provider for Polly V8 pipelines.
+/// </summary>
 public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _resiliencePipelineRegistry;
@@ -19,6 +22,11 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
     }
 
+    /// <summary>
+    /// Gets Polly V8 resilience pipeline (applies QoS feature) for the route.
+    /// </summary>
+    /// <param name="route">The downstream route to apply the pipeline for.</param>
+    /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <see cref="HttpResponseMessage"/>.</returns>
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
         var options = route.QosOptions;
