@@ -315,36 +315,30 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void WhenIAddOcelotConfiguration()
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder();
-
-            builder.AddOcelot(_hostingEnvironment.Object);
-
-            _configRoot = builder.Build();
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(_hostingEnvironment.Object)
+                .Build();
         }
 
         private void WhenIAddOcelotConfigurationWithCombinedFileConfiguration()
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder();
-
-            builder.AddOcelot(_combinedFileConfiguration);
-
-            _configRoot = builder.Build();
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(_combinedFileConfiguration)
+                .Build();
         }
 
         private void WhenIAddOcelotConfigurationWithSpecificFolder(string folder)
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.AddOcelot(folder, _hostingEnvironment.Object);
-            _configRoot = builder.Build();
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(folder, _hostingEnvironment.Object)
+                .Build();
         }
 
         private void WhenIAddOcelotConfigurationWithSpesificMergeTarget(MergeOcelotJson mergeOcelotJson)
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder();
-
-            builder.AddOcelot(_hostingEnvironment.Object, mergeOcelotJson);
-
-            _configRoot = builder.Build();
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(_hostingEnvironment.Object, mergeOcelotJson)
+                .Build();
         }
 
         private void ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(bool useCombinedConfig)
@@ -411,7 +405,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             _result.ShouldBe(expected);
         }
 
-        private void TheOcelotJsonFileExists(string folder, bool expected)
+        private static void TheOcelotJsonFileExists(string folder, bool expected)
         {
             var primaryConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
             File.Exists(primaryConfigFile).ShouldBe(expected);
