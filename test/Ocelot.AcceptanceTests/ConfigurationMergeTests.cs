@@ -1,8 +1,13 @@
-﻿using Ocelot.Configuration.File;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
+[Trait("PR", "1227")]
+[Trait("Issue", "1216")]
 public sealed class ConfigurationMergeTests : Steps
 {
     private readonly FileConfiguration _globalConfig;
@@ -10,44 +15,54 @@ public sealed class ConfigurationMergeTests : Steps
 
     public ConfigurationMergeTests() : base()
     {
-        var testID = _ocelotConfigFileName.Split('-')[0];
-        _globalConfigFileName = $"{testID}-{ConfigurationBuilderExtensions.GlobalConfigFile}";
-
-        _globalConfig = new FileConfiguration
-        {
-            GlobalConfiguration = new()
-            {
-                RequestIdKey = "initialKey",
-            },
-        };
+        _globalConfig = new();
+        _globalConfigFileName = $"{TestID}-{ConfigurationBuilderExtensions.GlobalConfigFile}";
     }
 
-    protected override void DeleteOcelotConfig(params string[] files)
-    {
-        base.DeleteOcelotConfig(_globalConfigFileName);
-    }
+    protected override void DeleteOcelotConfig(params string[] files) => base.DeleteOcelotConfig(_globalConfigFileName);
 
     [Fact]
     public void Should_run_with_global_config_merged_to_memory()
     {
-        this.Given(x => GivenThereIsAConfiguration(_globalConfig, _globalConfigFileName, false, false))
-            .When(x => WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToMemory))
-            .Then(x => TheOcelotPrimaryConfigFileExists(false))
-            .BDDfy();
+        Arrange();
+
+        // Act
+        GivenOcelotIsRunningMergedConfig(MergeOcelotJson.ToMemory);
+
+        // Assert
+        TheOcelotPrimaryConfigFileExists(false);
+        Assert();
     }
 
     [Fact]
     public void Should_run_with_global_config_merged_to_file()
     {
-        this.Given(x => GivenThereIsAConfiguration(_globalConfig))
-            .When(x => WhenOcelotIsRunningMergedConfig(MergeOcelotJson.ToFile))
-            .Then(x => TheOcelotPrimaryConfigFileExists(true))
-            .BDDfy();
+        Arrange();
+
+        // Act
+        GivenOcelotIsRunningMergedConfig(MergeOcelotJson.ToFile);
+
+        // Assert
+        TheOcelotPrimaryConfigFileExists(true);
+        Assert();
     }
 
-    private void WhenOcelotIsRunningMergedConfig(MergeOcelotJson mergeTo)
-        => StartOcelot((context, config) => config.AddOcelot(context.HostingEnvironment, mergeTo));
+    private void GivenOcelotIsRunningMergedConfig(MergeOcelotJson mergeTo)
+        => StartOcelot((context, config) => config.AddOcelot(_globalConfig, context.HostingEnvironment, mergeTo, _ocelotConfigFileName, false, false));
 
     private void TheOcelotPrimaryConfigFileExists(bool expected)
         => File.Exists(_ocelotConfigFileName).ShouldBe(expected);
+
+    private void Arrange([CallerMemberName] string testName = null)
+    {
+        _globalConfig.GlobalConfiguration.RequestIdKey = testName;
+    }
+
+    private void Assert([CallerMemberName] string testName = null)
+    {
+        var config = _ocelotServer.Services.GetService<IConfiguration>();
+        config.ShouldNotBeNull();
+        var actual = config["GlobalConfiguration:RequestIdKey"];
+        actual.ShouldNotBeNull().ShouldBe(testName);
+    }
 }

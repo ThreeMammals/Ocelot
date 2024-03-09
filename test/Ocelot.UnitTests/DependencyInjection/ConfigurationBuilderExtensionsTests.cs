@@ -42,6 +42,8 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        [Trait("PR", "1227")]
+        [Trait("Issue", "1216")]
         public void should_merge_files_to_file()
         {
             this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
@@ -84,6 +86,8 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        [Trait("PR", "1227")]
+        [Trait("Issue", "1216")]
         public void should_merge_files_to_memory()
         {
             this.Given(_ => GivenMultipleConfigurationFiles(string.Empty, false))
@@ -409,7 +413,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void TheOcelotJsonFileExists(string folder, bool expected)
         {
-            var primaryConfigFile = Path.Combine(folder, "ocelot.json");
+            var primaryConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
             File.Exists(primaryConfigFile).ShouldBe(expected);
         }
     }

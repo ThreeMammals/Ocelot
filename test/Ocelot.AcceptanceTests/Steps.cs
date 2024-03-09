@@ -46,6 +46,7 @@ public class Steps : IDisposable
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
     private readonly Random _random;
+    protected readonly Guid _testId;
     protected readonly string _ocelotConfigFileName;
     protected IWebHostBuilder _webHostBuilder;
     private WebHostBuilder _ocelotBuilder;
@@ -55,8 +56,11 @@ public class Steps : IDisposable
     public Steps()
     {
         _random = new Random();
-        _ocelotConfigFileName = $"{Guid.NewGuid():N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
+        _testId = Guid.NewGuid();
+        _ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
     }
+
+    protected string TestID { get => _testId.ToString("N"); }
 
     protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
 
@@ -168,11 +172,6 @@ public class Steps : IDisposable
         File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
     }
 
-    public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration, string pathToPrimaryConfigFile, bool optional, bool reloadOnChange)
-    {
-        ConfigurationBuilderExtensions.AddOcelot(null, fileConfiguration, pathToPrimaryConfigFile, optional, reloadOnChange);
-    }
-
     protected virtual void DeleteOcelotConfig(params string[] files)
     {
         var allFiles = files.Append(_ocelotConfigFileName);
@@ -229,11 +228,12 @@ public class Steps : IDisposable
                 config.SetBasePath(env.ContentRootPath);
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                configureAddOcelot.Invoke(hostingContext, config); // config.AddJsonFile(_ocelotConfigFileName, false, false);
+                configureAddOcelot.Invoke(hostingContext, config); // config.AddOcelot(...);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(WithAddOcelot)
-            .Configure(WithUseOcelot);
+            .Configure(WithUseOcelot)
+            .UseEnvironment(nameof(AcceptanceTests));
 
         _ocelotServer = new TestServer(_webHostBuilder);
         _ocelotClient = _ocelotServer.CreateClient();
