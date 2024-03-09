@@ -3,10 +3,10 @@ using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
-public class PollyQoSProviderBase
+public abstract class PollyQoSProviderBase
 {
-    protected static readonly HashSet<HttpStatusCode> ServerErrorCodes = new()
-    {
+    protected static readonly HashSet<HttpStatusCode> ServerErrorCodes =
+    [
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
         HttpStatusCode.BadGateway,
@@ -16,7 +16,7 @@ public class PollyQoSProviderBase
         HttpStatusCode.VariantAlsoNegotiates,
         HttpStatusCode.InsufficientStorage,
         HttpStatusCode.LoopDetected,
-    };
+    ];
 
     protected static string GetRouteName(DownstreamRoute route)
         => string.IsNullOrWhiteSpace(route.ServiceName)
