@@ -2,24 +2,42 @@ using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.Responses;
+using FileSys = System.IO.File;
 
 namespace Ocelot.Configuration.Repository
 {
     public class DiskFileConfigurationRepository : IFileConfigurationRepository
     {
+        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
-        private readonly string _environmentFilePath;
-        private readonly string _ocelotFilePath;
+        private FileInfo _ocelotFile;
+        private FileInfo _environmentFile;
         private static readonly object _lock = new();
-        private const string ConfigurationFileName = "ocelot";
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
         {
+            _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
-            _environmentFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}{(string.IsNullOrEmpty(hostingEnvironment.EnvironmentName) ? string.Empty : ".")}{hostingEnvironment.EnvironmentName}.json";
+            Initialize(AppContext.BaseDirectory);
+        }
 
-            _ocelotFilePath = $"{AppContext.BaseDirectory}{ConfigurationFileName}.json";
+        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource, string folder)
+        {
+            _hostingEnvironment = hostingEnvironment;
+            _changeTokenSource = changeTokenSource;
+            Initialize(folder);
+        }
+
+        private void Initialize(string folder)
+        {
+            folder ??= AppContext.BaseDirectory;
+            _ocelotFile = new(Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile));
+            var envFile = !string.IsNullOrEmpty(_hostingEnvironment.EnvironmentName)
+                ? string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, _hostingEnvironment.EnvironmentName)
+                : ConfigurationBuilderExtensions.PrimaryConfigFile;
+            _environmentFile = new(Path.Combine(folder, envFile));
         }
 
         public Task<Response<FileConfiguration>> Get()
@@ -28,7 +46,7 @@ namespace Ocelot.Configuration.Repository
 
             lock (_lock)
             {
-                jsonConfiguration = System.IO.File.ReadAllText(_environmentFilePath);
+                jsonConfiguration = FileSys.ReadAllText(_environmentFile.FullName);
             }
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
@@ -42,19 +60,19 @@ namespace Ocelot.Configuration.Repository
 
             lock (_lock)
             {
-                if (System.IO.File.Exists(_environmentFilePath))
+                if (_environmentFile.Exists)
                 {
-                    System.IO.File.Delete(_environmentFilePath);
+                    _environmentFile.Delete();
                 }
 
-                System.IO.File.WriteAllText(_environmentFilePath, jsonConfiguration);
+                FileSys.WriteAllText(_environmentFile.FullName, jsonConfiguration);
 
-                if (System.IO.File.Exists(_ocelotFilePath))
+                if (_ocelotFile.Exists)
                 {
-                    System.IO.File.Delete(_ocelotFilePath);
+                    _ocelotFile.Delete();
                 }
 
-                System.IO.File.WriteAllText(_ocelotFilePath, jsonConfiguration);
+                FileSys.WriteAllText(_ocelotFile.FullName, jsonConfiguration);
             }
 
             _changeTokenSource.Activate();

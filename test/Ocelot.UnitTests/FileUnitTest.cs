@@ -15,8 +15,8 @@ public class FileUnitTest : UnitTest, IDisposable
     protected FileUnitTest(string folder)
     {
         folder ??= TestID;
-        var di = Directory.CreateDirectory(TestID);
-        _folders = [di.Name];
+        Directory.CreateDirectory(folder);
+        _folders = [folder];
 
         _primaryConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         _globalConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
