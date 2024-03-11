@@ -48,7 +48,7 @@ public sealed class ConfigurationMergeTests : Steps
     }
 
     private void GivenOcelotIsRunningMergedConfig(MergeOcelotJson mergeTo)
-        => StartOcelot((context, config) => config.AddOcelot(_globalConfig, context.HostingEnvironment, mergeTo, _ocelotConfigFileName, false, false));
+        => StartOcelot((context, config) => config.AddOcelot(_globalConfig, context.HostingEnvironment, mergeTo, _ocelotConfigFileName, _globalConfigFileName, null, false, false));
 
     private void TheOcelotPrimaryConfigFileExists(bool expected)
         => File.Exists(_ocelotConfigFileName).ShouldBe(expected);
