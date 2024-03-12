@@ -97,12 +97,9 @@ namespace Ocelot.DependencyInjection
         private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
             string primaryConfigFile, bool? optional, bool? reloadOnChange)
         {
-            if (mergeTo == MergeOcelotJson.ToMemory)
-            {
-                return builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
-            }
-
-            return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
+            return mergeTo == MergeOcelotJson.ToMemory ? 
+                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) : 
+                AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
@@ -116,7 +113,7 @@ namespace Ocelot.DependencyInjection
                 .Where(fi => reg.IsMatch(fi.Name) && fi.Name != environmentFileInfo.Name && fi.FullName != environmentFileInfo.FullName)
                 .ToArray();
 
-            fileConfiguration ??= new();
+            fileConfiguration ??= new FileConfiguration();
             primaryFile ??= PrimaryConfigFile;
             globalFile ??= GlobalConfigFile;
             var primaryFileInfo = new FileInfo(primaryFile);

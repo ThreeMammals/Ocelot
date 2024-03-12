@@ -14,7 +14,7 @@ namespace Ocelot.Configuration.Repository
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
         private FileInfo _ocelotFile;
         private FileInfo _environmentFile;
-        private static readonly object _lock = new();
+        private readonly object _lock = new();
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
         {
@@ -33,11 +33,11 @@ namespace Ocelot.Configuration.Repository
         private void Initialize(string folder)
         {
             folder ??= AppContext.BaseDirectory;
-            _ocelotFile = new(Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile));
+            _ocelotFile = new FileInfo(Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile));
             var envFile = !string.IsNullOrEmpty(_hostingEnvironment.EnvironmentName)
                 ? string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, _hostingEnvironment.EnvironmentName)
                 : ConfigurationBuilderExtensions.PrimaryConfigFile;
-            _environmentFile = new(Path.Combine(folder, envFile));
+            _environmentFile = new FileInfo(Path.Combine(folder, envFile));
         }
 
         public Task<Response<FileConfiguration>> Get()
