@@ -26,7 +26,6 @@ public static class OcelotBuilderExtensions
 
     private static Error CreateRequestTimedOutError(Exception e) => new RequestTimedOutError(e);
 
-
     #region Obsolete extensions will be removed in future version
 
     /// <summary>
@@ -113,7 +112,7 @@ public static class OcelotBuilderExtensions
     /// <param name="route">The downstream route to apply the handler for.</param>
     /// <param name="contextAccessor">The context accessor of the route.</param>
     /// <param name="loggerFactory">The factory of logger.</param>
-    /// <returns>A <see cref="DelegatingHandler"/> object, but concreate type is the <see cref="PollyPoliciesDelegatingHandler"/> class.</returns>
+    /// <returns>A <see cref="DelegatingHandler"/> object, but concrete type is the <see cref="PollyPoliciesDelegatingHandler"/> class.</returns>
     private static DelegatingHandler GetDelegatingHandlerV7(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
         => new PollyPoliciesDelegatingHandler(route, contextAccessor, loggerFactory);
 

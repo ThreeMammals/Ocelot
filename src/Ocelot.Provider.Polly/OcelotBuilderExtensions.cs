@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
@@ -9,7 +8,6 @@ using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Ocelot.Provider.Polly.v7;
 using Ocelot.Requester;
-
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
@@ -111,7 +109,7 @@ public static class OcelotBuilderExtensions
     /// <param name="route">The downstream route to apply the handler for.</param>
     /// <param name="contextAccessor">The context accessor of the route.</param>
     /// <param name="loggerFactory">The factory of logger.</param>
-    /// <returns>A <see cref="DelegatingHandler"/> object, but concreate type is the <see cref="PollyResiliencePipelineDelegatingHandler"/> class.</returns>
+    /// <returns>A <see cref="DelegatingHandler"/> object, but concrete type is the <see cref="PollyResiliencePipelineDelegatingHandler"/> class.</returns>
     private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
         => new PollyResiliencePipelineDelegatingHandler(route, contextAccessor, loggerFactory);
 
@@ -201,7 +199,7 @@ public static class OcelotBuilderExtensions
     /// <param name="route">The downstream route to apply the handler for.</param>
     /// <param name="contextAccessor">The context accessor of the route.</param>
     /// <param name="loggerFactory">The factory of logger.</param>
-    /// <returns>A <see cref="DelegatingHandler"/> object, but concreate type is the <see cref="PollyPoliciesDelegatingHandler"/> class.</returns>
+    /// <returns>A <see cref="DelegatingHandler"/> object, but concrete type is the <see cref="PollyPoliciesDelegatingHandler"/> class.</returns>
     private static DelegatingHandler GetDelegatingHandlerV7(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
         => new PollyPoliciesDelegatingHandler(route, contextAccessor, loggerFactory);
 

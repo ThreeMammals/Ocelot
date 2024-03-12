@@ -19,17 +19,17 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
         IHttpContextAccessor contextAccessor,
         IOcelotLoggerFactory loggerFactory)
     {
-        this._route = route;
-        this._contextAccessor = contextAccessor;
-        this._logger = loggerFactory.CreateLogger<PollyResiliencePipelineDelegatingHandler>();
+        _route = route;
+        _contextAccessor = contextAccessor;
+        _logger = loggerFactory.CreateLogger<PollyResiliencePipelineDelegatingHandler>();
     }
 
     private IPollyQoSResiliencePipelineProvider<HttpResponseMessage> GetQoSProvider()
     {
-        Debug.Assert(this._contextAccessor.HttpContext != null, "_contextAccessor.HttpContext != null");
+        Debug.Assert(_contextAccessor.HttpContext != null, "_contextAccessor.HttpContext != null");
 
         // TODO: Move IPollyQoSResiliencePipelineProvider<HttpResponseMessage> object injection to DI container by a DI helper
-        return this._contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>>();
+        return _contextAccessor.HttpContext.RequestServices.GetService<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>>();
     }
 
     /// <summary>

@@ -1,17 +1,16 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Logging;
-using Ocelot.Provider.Polly.v7;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 
-namespace Ocelot.Provider.Polly;
+namespace Ocelot.Provider.Polly.v7;
 
 /// <summary>Legacy QoS provider based on Polly v7.</summary>
 /// <remarks>Use the <see cref="PollyQoSResiliencePipelineProvider"/> as a new QoS provider based on Polly v8.</remarks>
 [Obsolete("Due to new v8 policy definition in Polly 8 (use PollyQoSResiliencePipelineProvider)")]
 public class PollyQoSProvider : PollyQoSProviderBase, IPollyQoSProvider<HttpResponseMessage>
 {
-    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
+    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = [];
 
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;

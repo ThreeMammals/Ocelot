@@ -3,7 +3,7 @@
 namespace Ocelot.Provider.Polly.Interfaces;
 
 /// <summary>Defines provider for Polly V8 pipelines.</summary>
-/// <typeparam name="TResult">A HTTP result type, usually it is <see cref="HttpResponseMessage"/> type.</typeparam>
+/// <typeparam name="TResult">An HTTP result type, usually it is <see cref="HttpResponseMessage"/> type.</typeparam>
 public interface IPollyQoSResiliencePipelineProvider<TResult>
     where TResult : IDisposable
 {
