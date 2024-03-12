@@ -75,19 +75,19 @@ More information on how to use these options is below.
 Multiple Environments
 ---------------------
 
-Like any other ASP.NET Core project Ocelot supports configuration file names such as **configuration.dev.json**, **configuration.test.json** etc. In order to implement this add the following 
-to you:
+Like any other ASP.NET Core project Ocelot supports configuration file names such as **appsettings.dev.json**, **appsettings.test.json** etc.
+In order to implement this add the following to you:
 
 .. code-block:: csharp
 
     ConfigureAppConfiguration((hostingContext, config) =>
     {
-        config
-            .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+        var env = hostingContext.HostingEnvironment;
+        config.SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", true, true)
-            .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
             .AddJsonFile("ocelot.json")
-            .AddJsonFile($"configuration.{hostingContext.HostingEnvironment.EnvironmentName}.json")
+            .AddJsonFile($"ocelot.{env.EnvironmentName}.json")
             .AddEnvironmentVariables();
     })
 
@@ -96,10 +96,12 @@ Ocelot will now use the environment specific configuration and fall back to **oc
 You also need to set the corresponding environment variable which is ``ASPNETCORE_ENVIRONMENT``.
 More info on this can be found in the ASP.NET Core docs: `Use multiple environments in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
 
-Merging Configuration Files
----------------------------
+.. _config-merging-files:
 
-This feature was requested in `issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_ and allows users to have multiple configuration files to make managing large configurations easier.
+Merging Configuration Files [#f1]_
+----------------------------------
+
+This feature allows users to have multiple configuration files to make managing large configurations easier [#f1]_.
 
 Instead of adding the configuration directly e.g. ``AddJsonFile("ocelot.json")`` you can call ``AddOcelot()`` like below:
 
@@ -107,15 +109,15 @@ Instead of adding the configuration directly e.g. ``AddJsonFile("ocelot.json")``
 
     ConfigureAppConfiguration((hostingContext, config) =>
     {
-        config
-            .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+        var env = hostingContext.HostingEnvironment;
+        config.SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", true, true)
-            .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-            .AddOcelot(hostingContext.HostingEnvironment)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
+            .AddOcelot(env) // happy path
             .AddEnvironmentVariables();
     })
 
-In this scenario Ocelot will look for any files that match the pattern ``(?i)ocelot.([a-zA-Z0-9]*).json`` and then merge these together.
+In this scenario Ocelot will look for any files that match the pattern ``^ocelot\.(.*?)\.json$`` and then merge these together.
 If you want to set the **GlobalConfiguration** property, you must have a file called **ocelot.global.json**. 
 
 The way Ocelot merges the files is basically load them, loop over them, add any Routes, add any **AggregateRoutes** and if the file is called **ocelot.global.json** add the **GlobalConfiguration** aswell as any Routes or **AggregateRoutes**.
@@ -125,24 +127,29 @@ At the moment there is no validation at this stage it only happens when Ocelot v
 This is something to be aware of when you are investigating problems. 
 We would advise always checking what is in **ocelot.json** file if you have any problems.
 
+Keep files in a folder
+^^^^^^^^^^^^^^^^^^^^^^
+
 You can also give Ocelot a specific path to look in for the configuration files like below:
 
 .. code-block:: csharp
 
     ConfigureAppConfiguration((hostingContext, config) =>
     {
-        config
-            .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+        var env = hostingContext.HostingEnvironment;
+        config.SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", true, true)
-            .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-            .AddOcelot("/foo/bar", hostingContext.HostingEnvironment)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
+            .AddOcelot("/my/folder", env) // happy path
             .AddEnvironmentVariables();
     })
 
-Ocelot needs the ``HostingEnvironment`` so it knows to exclude anything environment specific from the algorithm. 
+Ocelot needs the ``HostingEnvironment`` so it knows to exclude anything environment specific from the merging algorithm. 
 
-Merging configuration files to memory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _config-merging-tomemory:
+
+Merging files to memory [#f2]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default Ocelot writes the merged configuration back to disk as ``ocelot.json`` (primary configuration file) with adding the file to config.
 
@@ -154,7 +161,45 @@ If your server don't have write permissions to your configuration folder, you ca
     // config.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
     config.AddOcelot(hostingContext.HostingEnvironment, MergeOcelotJson.ToMemory);
 
-See more details on implementations in the `ConfigurationBuilderExtensions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ class.
+This feature is extremely useful in a cloud environment such as Azure, AWS, GCP where the application may not have enough write permissions to save files.
+Additionally, the Docker container environment may lack permissions and would require significant DevOps effort to implement file write operation.
+So don't waste your time: use the feature! [#f2]_
+
+Reload JSON Config On Change
+----------------------------
+
+Ocelot supports reloading the JSON configuration file on change. For instance, the following will recreate Ocelot internal configuration when the **ocelot.json** file is updated manually:
+
+.. code-block:: csharp
+
+    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true); // ASP.NET framework version
+
+Please note: as of version `23.2 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_, most ``AddOcelot`` methods have optional ``bool?`` arguments aka ``optional`` and ``reloadOnChange``.
+So, you can supply these arguments to the internal ``AddJsonFile`` call in the last step of configuring (see `AddOcelotJsonFile <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AddOcelotJsonFile&type=code>`_) e.g.
+
+.. code-block:: csharp
+
+    config.AddJsonFile(PrimaryConfigFile, optional ?? false, reloadOnChange ?? false);
+
+As you see, in previous versions less than `23.2 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`__ ``AddOcelot`` extension methods didn't apply the ``reloadOnChange`` arg because it was ``false``.
+Finally, we recommend to control reloading by ``AddOcelot`` extension methods instead of usage of the framework ``AddJsonFile`` one e.g.
+
+.. code-block:: csharp
+
+    ConfigureAppConfiguration((hostingContext, config) =>
+    {
+        config.AddJsonFile(ConfigurationBuilderExtensions.PrimaryConfigFile, optional: false, reloadOnChange: true); // old approach
+        var env = hostingContext.HostingEnvironment;
+        var mergeTo = MergeOcelotJson.ToFile // ToMemory
+        var folder = "/My/folder";
+        FileConfiguration configuration = new(); // read from anywhere and initialize
+        config.AddOcelot(env, mergeTo, optional: false, reloadOnChange: true); // with environment and merging kind
+        config.AddOcelot(folder, env, mergeTo, optional: false, reloadOnChange: true); // with folder, environment and merging kind
+        config.AddOcelot(configuration, optional: false, reloadOnChange: true); // with configuration object created by your own
+        config.AddOcelot(configuration, env, mergeTo, optional: false, reloadOnChange: true); // with configuration object, environment and merging kind
+    })
+
+It would be useful to look into `the ConfigurationBuilderExtensions class <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ code and note something to better understand the signatures of the overloaded methods [#f2]_.
 
 Store Configuration in Consul
 -----------------------------
@@ -166,7 +211,7 @@ The first thing you need to do is install the `NuGet package <https://www.nuget.
     Install-Package Ocelot.Provider.Consul
 
 Then you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in Consul KV store.
-In order to register Consul services we must call the ``AddConsul()`` and ``AddConfigStoredInConsul()`` extensions using the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
+In order to register Consul services we must call the ``AddConsul()`` and ``AddConfigStoredInConsul()`` extensions using the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f3]_ like below:
 
 .. code-block:: csharp
 
@@ -190,22 +235,15 @@ The team decided to create this feature after working on the Raft consensus algo
 Why not take advantage of the fact Consul already gives you this! 
 We guess it means if you want to use Ocelot to its fullest, you take on Consul as a dependency for now.
 
-This feature has a `3 <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot.Provider.Consul/ConsulFileConfigurationRepository.cs#L72>`_ seconds TTL cache before making a new request to your local Consul agent.
+This feature has a `3 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TimeSpan.FromSeconds%283%29&type=code>`_ TTL cache before making a new request to your local Consul agent.
 
-Reload JSON Config On Change
-----------------------------
+.. _config-consul-key:
 
-Ocelot supports reloading the JSON configuration file on change. For instance, the following will recreate Ocelot internal configuration when the **ocelot.json** file is updated manually:
-
-.. code-block:: csharp
-
-    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
-
-Configuration Key
------------------
+Consul Configuration Key [#f4]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are using Consul for configuration (or other providers in the future), you might want to key your configurations: so you can have multiple configurations.
-This feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_.
+
 In order to specify the key you need to set the **ConfigurationKey** property in the **ServiceDiscoveryProvider** options of the configuration JSON file e.g.
 
 .. code-block:: json
@@ -359,4 +397,7 @@ Ocelot allows you to choose the HTTP version it will use to make the proxy reque
 
 """"
 
-.. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
+.. [#f1] ":ref:`config-merging-files`" feature was requested in `issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_, since then we extended it in `issue 1216 <https://github.com/ThreeMammals/Ocelot/issues/1216>`_ (PR `1227 <https://github.com/ThreeMammals/Ocelot/pull/1227>`_) as ":ref:`config-merging-tomemory`" subfeature which was released as a part of the version `23.2 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_.
+.. [#f2] ":ref:`config-merging-tomemory`" subfeature is based on the ``MergeOcelotJson`` enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ class.
+.. [#f3] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
+.. [#f4] ":ref:`config-consul-key`" feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_ as a part of version `7.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/7.0.0>`_.
