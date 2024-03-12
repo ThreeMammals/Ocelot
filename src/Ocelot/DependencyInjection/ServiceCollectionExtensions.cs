@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
@@ -10,6 +11,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds default ASP.NET services and Ocelot application services.<br/>
     /// Creates default <see cref="IConfiguration"/> from the current service descriptors.
+    /// If the configuration is not registered, it will try to read ocelot configuration from current working directory.
     /// </summary>
     /// <remarks>
     /// Remarks for default ASP.NET services being injected see in docs of the <see cref="OcelotBuilder.AddDefaultAspNetServices(IMvcCoreBuilder, Assembly)"/> method.
@@ -18,9 +20,7 @@ public static class ServiceCollectionExtensions
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddOcelot(this IServiceCollection services)
     {
-        var descriptor = services.Where(descriptor => descriptor.ServiceType == typeof(IConfiguration)).FirstOrDefault();
-        var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider();
-        var configuration = provider.GetRequiredService<IConfiguration>();
+        var configuration = services.FindConfiguration(null);
         return new OcelotBuilder(services, configuration);
     }
 
@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds Ocelot application services and custom ASP.NET services with custom builder.<br/>
     /// Creates default <see cref="IConfiguration"/> from the current service descriptors.
+    /// If the configuration is not registered, it will try to read ocelot configuration from current working directory.
     /// </summary>
     /// <remarks>
     /// Warning! To understand which ASP.NET services should be injected/removed by custom builder, see docs of the <see cref="OcelotBuilder.AddDefaultAspNetServices(IMvcCoreBuilder, Assembly)"/> method.
@@ -50,9 +51,7 @@ public static class ServiceCollectionExtensions
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
     {
-        var descriptor = services.Where(descriptor => descriptor.ServiceType == typeof(IConfiguration)).FirstOrDefault();
-        var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider();
-        var configuration = provider.GetRequiredService<IConfiguration>();
+        var configuration = services.FindConfiguration(null);
         return new OcelotBuilder(services, configuration, customBuilder);
     }
 
@@ -69,5 +68,23 @@ public static class ServiceCollectionExtensions
     public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
     {
         return new OcelotBuilder(services, configuration, customBuilder);
+    }
+
+    private static IConfiguration MakeDefaultConfiguration(IWebHostEnvironment env)
+    {
+        return ConfigurationBuilderExtensions.AddOcelot(new ConfigurationBuilder(), env).Build();
+    }
+
+    private static IConfiguration FindConfiguration(this IServiceCollection services, IWebHostEnvironment env)
+    {
+        var descriptor = services.Where(descriptor => descriptor.ServiceType == typeof(IConfiguration)).FirstOrDefault();
+        if (descriptor == null)
+        {
+            return MakeDefaultConfiguration(env);
+        }
+
+        var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider();
+        var configuration = provider.GetService<IConfiguration>();
+        return configuration ?? MakeDefaultConfiguration(env);
     }
 }
