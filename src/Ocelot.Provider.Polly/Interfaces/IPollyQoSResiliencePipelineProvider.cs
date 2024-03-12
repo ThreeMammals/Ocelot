@@ -8,7 +8,7 @@ public interface IPollyQoSResiliencePipelineProvider<TResult>
     where TResult : IDisposable
 {
     /// <summary>
-    /// Gets Polly v8 resilience pipeline.
+    /// Gets Polly v8 pipeline.
     /// </summary>
     /// <param name="route">The route to apply a pipeline for.</param>
     /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <typeparamref name="TResult"/>.</returns>
