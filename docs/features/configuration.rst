@@ -190,13 +190,13 @@ Finally, we recommend to control reloading by ``AddOcelot`` extension methods in
     {
         config.AddJsonFile(ConfigurationBuilderExtensions.PrimaryConfigFile, optional: false, reloadOnChange: true); // old approach
         var env = hostingContext.HostingEnvironment;
-        var mergeTo = MergeOcelotJson.ToFile // ToMemory
+        var mergeTo = MergeOcelotJson.ToFile; // ToMemory
         var folder = "/My/folder";
         FileConfiguration configuration = new(); // read from anywhere and initialize
-        config.AddOcelot(env, mergeTo, optional: false, reloadOnChange: true); // with environment and merging kind
-        config.AddOcelot(folder, env, mergeTo, optional: false, reloadOnChange: true); // with folder, environment and merging kind
+        config.AddOcelot(env, mergeTo, optional: false, reloadOnChange: true); // with environment and merging type
+        config.AddOcelot(folder, env, mergeTo, optional: false, reloadOnChange: true); // with folder, environment and merging type
         config.AddOcelot(configuration, optional: false, reloadOnChange: true); // with configuration object created by your own
-        config.AddOcelot(configuration, env, mergeTo, optional: false, reloadOnChange: true); // with configuration object, environment and merging kind
+        config.AddOcelot(configuration, env, mergeTo, optional: false, reloadOnChange: true); // with configuration object, environment and merging type
     })
 
 It would be useful to look into `the ConfigurationBuilderExtensions class <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ code and note something to better understand the signatures of the overloaded methods [#f2]_.
