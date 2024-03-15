@@ -154,13 +154,6 @@ public class AuthenticationSteps : Steps, IDisposable
         },
     };
 
-    public static FileConfiguration GivenConfiguration(params FileRoute[] routes)
-    {
-        var configuration = new FileConfiguration();
-        configuration.Routes.AddRange(routes);
-        return configuration;
-    }
-
     protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody)
     {
         var url = DownstreamServiceUrl(port);
