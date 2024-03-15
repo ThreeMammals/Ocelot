@@ -4,7 +4,7 @@ Quality of Service
     Label: `QoS <https://github.com/ThreeMammals/Ocelot/labels/QoS>`_
 
 Ocelot supports one QoS capability at the current time. You can set on a per Route basis if you want to use a circuit breaker when making requests to a downstream service.
-This uses an awesome .NET library called `Polly <https://www.thepollyproject.org/>`_, check them out `in official repo <https://github.com/App-vNext/Polly>`_.
+This uses an awesome .NET library called `Polly`_, check them out `in official repository <https://github.com/App-vNext/Polly>`_.
 
 The first thing you need to do if you want to use the :doc:`../features/administration` API is bring in the relevant NuGet `package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
 
@@ -12,7 +12,7 @@ The first thing you need to do if you want to use the :doc:`../features/administ
 
     Install-Package Ocelot.Provider.Polly
 
-Then in your ``ConfigureServices`` method to add Polly services we must call the ``AddPolly()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
+Then in your ``ConfigureServices`` method to add `Polly`_ services we must call the ``AddPolly()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
 
 .. code-block:: csharp
 
@@ -43,32 +43,36 @@ You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBr
 
 There is no point setting the other two in isolation as they affect each other!
 
-Polly v7 vs v8
---------------
-
-**Important changes** of the version `23.2 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_:
-  - with Polly version 8, **ExceptionsAllowedBeforeBreaking** must be equal to or greater than **2**!
-  - the ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines, so it has different behaviour now based on v8 pipelines! 
-
-If you don't want to change your settings, you must use Polly v7 like this:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddPollyV7();
-
-**Please note!** Support for Polly V7 will be removed in a future version, so we advise you not to use this method (tagged as ``Obsolete``) unless you really have to.
-
 Defaults
 --------
 
 If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests.
 If someone needs this to be configurable, open an issue. [#f2]_
 
-Extensibility
--------------
+.. _qos-polly-v7-vs-v8:
 
-If you want to use your ``ResiliencePipeline`` provider, you can use the following syntax:
+`Polly`_ v7 vs v8
+-----------------
+
+**Important changes** of the version `23.2`_: [#f3]_
+  - with `Polly`_ version 8, ``ExceptionsAllowedBeforeBreaking`` must be equal to or greater than ``2``!
+  - the ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines, so it has different behaviour now based on v8 pipelines! 
+
+If you don't want to change your settings, you must use `Polly`_ v7 like this:
+
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddPollyV7();
+
+**Please note!** Support for `Polly`_ v7 will be removed in a future version, so we advise you not to use this method (tagged as ``Obsolete``) unless you really have to.
+
+.. _qos-extensibility:
+
+Extensibility [#f3]_
+--------------------
+
+If you want to use your ``ResiliencePipeline<T>`` provider, you can use the following syntax:
 
 .. code-block:: csharp
 
@@ -110,6 +114,11 @@ And finally, if you want to define your own set of exceptions to map, you can us
 
 .. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
 .. [#f2] If something doesn't work or you get stuck, please review current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtering by |QoS_label| label.
+.. [#f3] We upgraded `Polly`_ version from v7.x to v8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and delivered by PR `1914`_ as a part of the version `23.2`_.
 
+.. _Polly: https://www.thepollyproject.org
+.. _1875: https://github.com/ThreeMammals/Ocelot/issues/1875
+.. _1914: https://github.com/ThreeMammals/Ocelot/pull/1914
+.. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
    :target: https://github.com/ThreeMammals/Ocelot/labels/QoS
