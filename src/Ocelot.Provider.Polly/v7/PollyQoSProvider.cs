@@ -1,44 +1,29 @@
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Logging;
-using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
-using System.Net;
 
-namespace Ocelot.Provider.Polly;
+namespace Ocelot.Provider.Polly.v7;
 
-public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
+/// <summary>Legacy QoS provider based on Polly v7.</summary>
+/// <remarks>Use the <see cref="PollyQoSResiliencePipelineProvider"/> as a new QoS provider based on Polly v8.</remarks>
+[Obsolete("Due to new v8 policy definition in Polly 8 (use PollyQoSResiliencePipelineProvider)")]
+public class PollyQoSProvider : PollyQoSProviderBase, IPollyQoSProvider<HttpResponseMessage>
 {
-    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
+    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = [];
+
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;
 
-    //todo: this should be configurable and available as global config parameter in ocelot.json
+    // TODO: This should be configurable and available as global config parameter in ocelot.json
     public const int DefaultRequestTimeoutSeconds = 90;
-
-    private readonly HashSet<HttpStatusCode> _serverErrorCodes = new()
-    {
-        HttpStatusCode.InternalServerError,
-        HttpStatusCode.NotImplemented,
-        HttpStatusCode.BadGateway,
-        HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.GatewayTimeout,
-        HttpStatusCode.HttpVersionNotSupported,
-        HttpStatusCode.VariantAlsoNegotiates,
-        HttpStatusCode.InsufficientStorage,
-        HttpStatusCode.LoopDetected,
-    };
 
     public PollyQoSProvider(IOcelotLoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<PollyQoSProvider>();
     }
 
-    private static string GetRouteName(DownstreamRoute route)
-        => string.IsNullOrWhiteSpace(route.ServiceName)
-            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
-            : route.ServiceName;
-
+    [Obsolete("Due to new v8 policy definition in Polly 8 (use GetResiliencePipeline in PollyQoSResiliencePipelineProvider)")]
     public PollyPolicyWrapper<HttpResponseMessage> GetPollyPolicyWrapper(DownstreamRoute route)
     {
         lock (_lockObject)
@@ -61,7 +46,7 @@ public class PollyQoSProvider : IPollyQoSProvider<HttpResponseMessage>
             var info = $"Route: {GetRouteName(route)}; Breaker logging in {nameof(PollyQoSProvider)}: ";
 
             exceptionsAllowedBeforeBreakingPolicy = Policy
-                .HandleResult<HttpResponseMessage>(r => _serverErrorCodes.Contains(r.StatusCode))
+                .HandleResult<HttpResponseMessage>(r => ServerErrorCodes.Contains(r.StatusCode))
                 .Or<TimeoutRejectedException>()
                 .Or<TimeoutException>()
                 .CircuitBreakerAsync(route.QosOptions.ExceptionsAllowedBeforeBreaking,
