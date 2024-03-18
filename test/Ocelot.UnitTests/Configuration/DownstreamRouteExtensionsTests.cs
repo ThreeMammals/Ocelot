@@ -246,4 +246,39 @@ public class DownstreamRouteExtensionsTests
     }
 
 #endif
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("yes", true)]
+    [InlineData("on", true)]
+    [InlineData("enabled", true)]
+    [InlineData("enable", true)]
+    [InlineData("ok", true)]
+    [InlineData("  true  ", true)]
+    [InlineData("  yes  ", true)]
+    [InlineData("  on  ", true)]
+    [InlineData("  enabled  ", true)]
+    [InlineData("  enable  ", true)]
+    [InlineData("  ok  ", true)]
+    [InlineData("", false)]
+    [InlineData("  ", false)]
+    [InlineData(null, false)]
+    [InlineData("false", false)]
+    [InlineData("off", false)]
+    [InlineData("disabled", false)]
+    [InlineData("disable", false)]
+    [InlineData("no", false)]
+    [InlineData("abcxyz", false)]
+    public void should_parse_truthy_values(string value, bool expected)
+    {
+        // Arrange
+        var key = "mykey";
+        _metadata.Add(key, value);
+
+        // Act
+        var isTrusthy = _downstreamRoute.IsMetadataValueTruthy(key);
+
+        //Assert
+        isTrusthy.ShouldBe(expected);
+    }
 }
