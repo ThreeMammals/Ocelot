@@ -3,128 +3,129 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class DiskFileConfigurationRepositoryTests : IDisposable
+    public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     {
         private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
         private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
         private IFileConfigurationRepository _repo;
-        private string _environmentSpecificPath;
-        private string _ocelotJsonPath;
         private FileConfiguration _result;
-        private FileConfiguration _fileConfiguration;
-
-        // This is a bit dirty and it is dev.dev so that the ConfigurationBuilderExtensionsTests
-        // cant pick it up if they run in parralel..and the semaphore stops them running at the same time...sigh
-        // these are not really unit tests but whatever...
-        private string _environmentName = "DEV.DEV";
-
-        private static SemaphoreSlim _semaphore;
 
         public DiskFileConfigurationRepositoryTests()
         {
-            _semaphore = new SemaphoreSlim(1, 1);
-            _semaphore.Wait();
             _hostingEnvironment = new Mock<IWebHostEnvironment>();
-            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
             _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
             _changeTokenSource.Setup(m => m.Activate());
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
+        }
+
+        private void Arrange([CallerMemberName] string testName = null)
+        {
+            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(testName);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, TestID);
         }
 
         [Fact]
-        public void should_return_file_configuration()
+        public void Should_return_file_configuration()
         {
+            Arrange();
             var config = FakeFileConfigurationForGet();
+            GivenTheConfigurationIs(config);
 
-            this.Given(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenIGetTheRoutes())
-                .Then(_ => ThenTheFollowingIsReturned(config))
-                .BDDfy();
+            // Act
+            WhenIGetTheRoutes();
+
+            // Assert
+            ThenTheFollowingIsReturned(config);
         }
 
         [Fact]
-        public void should_return_file_configuration_if_environment_name_is_unavailable()
+        public void Should_return_file_configuration_if_environment_name_is_unavailable()
         {
+            Arrange();
             var config = FakeFileConfigurationForGet();
+            GivenTheEnvironmentNameIsUnavailable();
+            GivenTheConfigurationIs(config);
 
-            this.Given(_ => GivenTheEnvironmentNameIsUnavailable())
-                .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenIGetTheRoutes())
-                .Then(_ => ThenTheFollowingIsReturned(config))
-                .BDDfy();
+            // Act
+            WhenIGetTheRoutes();
+
+            // Assert
+            ThenTheFollowingIsReturned(config);
         }
 
         [Fact]
-        public void should_set_file_configuration()
+        public void Should_set_file_configuration()
         {
+            Arrange();
             var config = FakeFileConfigurationForSet();
 
-            this.Given(_ => GivenIHaveAConfiguration(config))
-                .When(_ => WhenISetTheConfiguration())
-                .Then(_ => ThenTheConfigurationIsStoredAs(config))
-                .And(_ => ThenTheConfigurationJsonIsIndented(config))
-                .And(x => AndTheChangeTokenIsActivated())
-                .BDDfy();
+            // Act
+            WhenISetTheConfiguration(config);
+
+            // Assert
+            ThenTheConfigurationIsStoredAs(config);
+            ThenTheConfigurationJsonIsIndented(config);
+            AndTheChangeTokenIsActivated();
         }
 
         [Fact]
-        public void should_set_file_configuration_if_environment_name_is_unavailable()
+        public void Should_set_file_configuration_if_environment_name_is_unavailable()
         {
+            Arrange();
             var config = FakeFileConfigurationForSet();
+            GivenTheEnvironmentNameIsUnavailable();
 
-            this.Given(_ => GivenIHaveAConfiguration(config))
-                .And(_ => GivenTheEnvironmentNameIsUnavailable())
-                .When(_ => WhenISetTheConfiguration())
-                .Then(_ => ThenTheConfigurationIsStoredAs(config))
-                .And(_ => ThenTheConfigurationJsonIsIndented(config))
-                .BDDfy();
+            // Act
+            WhenISetTheConfiguration(config);
+
+            // Assert
+            ThenTheConfigurationIsStoredAs(config);
+            ThenTheConfigurationJsonIsIndented(config);
         }
 
         [Fact]
-        public void should_set_environment_file_configuration_and_ocelot_file_configuration()
+        public void Should_set_environment_file_configuration_and_ocelot_file_configuration()
         {
+            Arrange();
             var config = FakeFileConfigurationForSet();
+            GivenTheConfigurationIs(config);
+            var ocelotJson = GivenTheUserAddedOcelotJson();
 
-            this.Given(_ => GivenIHaveAConfiguration(config))
-                .And(_ => GivenTheConfigurationIs(config))
-                .And(_ => GivenTheUserAddedOcelotJson())
-                .When(_ => WhenISetTheConfiguration())
-                .Then(_ => ThenTheConfigurationIsStoredAs(config))
-                .And(_ => ThenTheConfigurationJsonIsIndented(config))
-                .Then(_ => ThenTheOcelotJsonIsStoredAs(config))
-                .BDDfy();
+            // Act
+            WhenISetTheConfiguration(config);
+
+            // Assert
+            ThenTheConfigurationIsStoredAs(config);
+            ThenTheConfigurationJsonIsIndented(config);
+            ThenTheOcelotJsonIsStoredAs(ocelotJson, config);
         }
 
-        private void GivenTheUserAddedOcelotJson()
+        private FileInfo GivenTheUserAddedOcelotJson()
         {
-            _ocelotJsonPath = $"{AppContext.BaseDirectory}/ocelot.json";
-
-            if (File.Exists(_ocelotJsonPath))
+            var primaryFile = Path.Combine(TestID, ConfigurationBuilderExtensions.PrimaryConfigFile);
+            var ocelotJson = new FileInfo(primaryFile);
+            if (ocelotJson.Exists)
             {
-                File.Delete(_ocelotJsonPath);
+                ocelotJson.Delete();
             }
 
-            File.WriteAllText(_ocelotJsonPath, "Doesnt matter");
+            File.WriteAllText(ocelotJson.FullName, "Doesnt matter");
+            _files.Add(ocelotJson.FullName);
+            return ocelotJson;
         }
 
         private void GivenTheEnvironmentNameIsUnavailable()
         {
-            _environmentName = null;
-            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(_environmentName);
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object);
+            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns((string)null);
         }
 
-        private void GivenIHaveAConfiguration(FileConfiguration fileConfiguration)
+        private void WhenISetTheConfiguration(FileConfiguration fileConfiguration)
         {
-            _fileConfiguration = fileConfiguration;
-        }
-
-        private void WhenISetTheConfiguration()
-        {
-            _repo.Set(_fileConfiguration);
+            _repo.Set(fileConfiguration);
             _result = _repo.Get().Result.Data;
         }
 
@@ -151,34 +152,34 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void ThenTheOcelotJsonIsStoredAs(FileConfiguration expecteds)
+        private void ThenTheOcelotJsonIsStoredAs(FileInfo ocelotJson, FileConfiguration expecteds)
         {
-            var resultText = File.ReadAllText(_ocelotJsonPath);
+            var actual = File.ReadAllText(ocelotJson.FullName);
             var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
-            resultText.ShouldBe(expectedText);
+            actual.ShouldBe(expectedText);
         }
 
-        private void GivenTheConfigurationIs(FileConfiguration fileConfiguration)
+        private void GivenTheConfigurationIs(FileConfiguration fileConfiguration, [CallerMemberName] string environmentName = null)
         {
-            _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
-
+            var environmentSpecificPath = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-
-            if (File.Exists(_environmentSpecificPath))
+            var environmentSpecific = new FileInfo(environmentSpecificPath);
+            if (environmentSpecific.Exists)
             {
-                File.Delete(_environmentSpecificPath);
+                environmentSpecific.Delete();
             }
 
-            File.WriteAllText(_environmentSpecificPath, jsonConfiguration);
+            File.WriteAllText(environmentSpecific.FullName, jsonConfiguration);
+            _files.Add(environmentSpecific.FullName);
         }
 
-        private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds)
+        private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds, [CallerMemberName] string environmentName = null)
         {
-            var path = !string.IsNullOrEmpty(_environmentSpecificPath) ? _environmentSpecificPath : _environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot{(string.IsNullOrEmpty(_environmentName) ? string.Empty : ".")}{_environmentName}.json";
-
-            var resultText = File.ReadAllText(path);
+            var environmentSpecific = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
+            var actual = File.ReadAllText(environmentSpecific);
             var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
-            resultText.ShouldBe(expectedText);
+            actual.ShouldBe(expectedText);
+            _files.Add(environmentSpecific);
         }
 
         private void WhenIGetTheRoutes()
@@ -216,79 +217,34 @@ namespace Ocelot.UnitTests.Configuration
 
         private static FileConfiguration FakeFileConfigurationForSet()
         {
-            var routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "123.12.12.12",
-                            Port = 80,
-                        },
-                    },
-                    DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/asdfs/test/{test}",
-                },
-            };
-
-            var globalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "https",
-                    Port = 198,
-                    Host = "blah",
-                },
-            };
-
-            return new FileConfiguration
-            {
-                GlobalConfiguration = globalConfiguration,
-                Routes = routes,
-            };
+            var route = GivenRoute("123.12.12.12", "/asdfs/test/{test}");
+            return GivenConfiguration(route);
         }
 
         private static FileConfiguration FakeFileConfigurationForGet()
         {
-            var routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 80,
-                        },
-                    },
-                    DownstreamScheme = "https",
-                    DownstreamPathTemplate = "/test/test/{test}",
-                },
-            };
-
-            var globalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "https",
-                    Port = 198,
-                    Host = "blah",
-                },
-            };
-
-            return new FileConfiguration
-            {
-                GlobalConfiguration = globalConfiguration,
-                Routes = routes,
-            };
+            var route = GivenRoute("localhost", "/test/test/{test}");
+            return GivenConfiguration(route);
         }
 
-        public void Dispose()
+        private static FileRoute GivenRoute(string host, string downstream) => new()
         {
-            _semaphore.Release();
+            DownstreamHostAndPorts = [new(host, 80)],
+            DownstreamScheme = Uri.UriSchemeHttps,
+            DownstreamPathTemplate = downstream,
+        };
+
+        private static FileConfiguration GivenConfiguration(params FileRoute[] routes)
+        {
+            var config = new FileConfiguration();
+            config.Routes.AddRange(routes);
+            config.GlobalConfiguration.ServiceDiscoveryProvider = new()
+            {
+                Scheme = "https",
+                Port = 198,
+                Host = "blah",
+            };
+            return config;
         }
     }
 }

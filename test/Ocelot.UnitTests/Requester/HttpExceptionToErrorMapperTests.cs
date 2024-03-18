@@ -52,7 +52,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void Should_return_error_from_mapper()
         {
-            var errorMapping = new Dictionary<Type, Func<Exception, Error>>
+            IDictionary<Type, Func<Exception, Error>> errorMapping = new Dictionary<Type, Func<Exception, Error>>
             {
                 {typeof(TaskCanceledException), e => new AnyError()},
             };

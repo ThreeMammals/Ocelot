@@ -3,10 +3,10 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
-using Ocelot.Provider.Polly.Interfaces;
 using Polly;
 using Polly.Wrap;
 using System.Reflection;
+using Ocelot.Provider.Polly.v7;
 
 namespace Ocelot.UnitTests.Polly;
 

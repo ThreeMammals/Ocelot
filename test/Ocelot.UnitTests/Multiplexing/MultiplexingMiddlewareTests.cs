@@ -119,7 +119,6 @@ namespace Ocelot.UnitTests.Multiplexing
 
             // Assert
             ThePipelineIsCalled(1);
-            
         }
 
         [Fact]

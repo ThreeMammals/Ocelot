@@ -1,13 +1,15 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
-using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
-using System.Diagnostics;
 
-namespace Ocelot.Provider.Polly;
+namespace Ocelot.Provider.Polly.v7;
 
+/// <summary>Delegates <see cref="HttpRequest"/> sending to downstream.</summary>
+/// <remarks>Outdated V7 design! Use the <see cref="PollyResiliencePipelineDelegatingHandler"/> class.</remarks>
+[Obsolete("Due to new v8 policy definition in Polly 8 (use PollyResiliencePipelineDelegatingHandler)")]
 public class PollyPoliciesDelegatingHandler : DelegatingHandler
 {
     private readonly DownstreamRoute _route;
