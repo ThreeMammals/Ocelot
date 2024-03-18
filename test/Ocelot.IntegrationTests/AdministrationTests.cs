@@ -878,11 +878,11 @@ namespace Ocelot.IntegrationTests
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
-        
+
         private void ThenTheResultHaveMultiLineIndentedJson()
         {
             const string indent = "  ";
-            const int total = 46, skip = 1;
+            const int total = 47, skip = 1;
             var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
             lines.Length.ShouldBeGreaterThanOrEqualTo(total);
             lines.First().ShouldNotStartWith(indent);
