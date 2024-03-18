@@ -9,14 +9,14 @@ namespace Ocelot.Requester
     public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
     {
         /// <summary>This is a dictionary of custom mappers for exceptions.</summary>
-        private readonly Dictionary<Type, Func<Exception, Error>> _mappers;
+        private readonly IDictionary<Type, Func<Exception, Error>> _mappers;
 
         /// <summary>413 status.</summary>
         private const int RequestEntityTooLarge = (int)HttpStatusCode.RequestEntityTooLarge;
 
         public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
         {
-            _mappers = serviceProvider.GetService<Dictionary<Type, Func<Exception, Error>>>();
+            _mappers = serviceProvider.GetService<IDictionary<Type, Func<Exception, Error>>>();
         }
 
         public Error Map(Exception exception)

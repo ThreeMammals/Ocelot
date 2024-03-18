@@ -71,7 +71,11 @@ Program
 ^^^^^^^
 
 Then in your **Program.cs** you will want to have the following.
-The main things to note are ``AddOcelot()`` [#f1]_ (adds Ocelot default services), ``UseOcelot().Wait()`` (sets up all the Ocelot middleware).
+
+The main things to note are
+
+* ``AddOcelot()`` adds Ocelot required and default services [#f1]_
+* ``UseOcelot().Wait()`` sets up all the Ocelot middlewares.
 
 .. code-block:: csharp
 
@@ -120,4 +124,4 @@ The main things to note are ``AddOcelot()`` [#f1]_ (adds Ocelot default services
 
 """"
 
-.. [#f1] The ``AddOcelot`` method adds default ASP.NET services to DI-container. You could call another more extended ``AddOcelotUsingBuilder`` method while configuring services to build and use custom builder via an ``IMvcCoreBuilder`` interface object. See more instructions in :doc:`../features/dependencyinjection`, "**The AddOcelotUsingBuilder method**" section.
+.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.

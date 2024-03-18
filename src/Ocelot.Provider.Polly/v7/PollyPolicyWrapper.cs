@@ -1,4 +1,4 @@
-namespace Ocelot.Provider.Polly;
+namespace Ocelot.Provider.Polly.v7;
 
 public class PollyPolicyWrapper<TResult>
     where TResult : class
@@ -12,8 +12,8 @@ public class PollyPolicyWrapper<TResult>
     {
         var allPolicies = policies.Where(p => p != null).ToArray();
 
-        AsyncPollyPolicy = allPolicies.Length > 1 ? 
-            Policy.WrapAsync(allPolicies) : 
+        AsyncPollyPolicy = allPolicies.Length > 1 ?
+            Policy.WrapAsync(allPolicies) :
             allPolicies[0];
     }
 
