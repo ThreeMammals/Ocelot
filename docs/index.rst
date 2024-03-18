@@ -39,6 +39,7 @@ We **do** follow development process which is described in :doc:`../building/rel
    features/kubernetes
    features/loadbalancer
    features/logging
+   features/metadata
    features/methodtransformation
    features/middlewareinjection
    features/qualityofservice
