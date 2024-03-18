@@ -55,7 +55,7 @@ Now, the route metadata can be accessed through the ``DownstreamRoute`` object:
         public Task Invoke(HttpContext context, Func<Task> next)
         {
             var route = context.Items.DownstreamRoute();
-            var enabled = metadata.GetMetadataFromJson<bool>("plugin1.enabled");
+            var enabled = metadata.IsMetadataValueTruthy("plugin1.enabled");
             var values = metadata.GetMetadataValues("plugin1.values");
             var param1 = metadata.GetMetadataValue("plugin1.param", "system-default-value");
             var param2 = metadata.GetMetadataNumber<int>("plugin1.param2");
