@@ -59,12 +59,9 @@ namespace Ocelot.Configuration
             var strings = metadataValue.Split(separator, stringSplitOptions);
             char[] trimCharsArray = trimChars.ToCharArray();
 
-            if (trimCharsArray.Length > 0)
+            for (var i = 0; i < strings.Length; i++)
             {
-                for (var i = 0; i < strings.Length; i++)
-                {
-                    strings[i] = strings[i].Trim(trimCharsArray);
-                }
+                strings[i] = strings[i].Trim(trimCharsArray);
             }
 
             return strings.Where(x => x.Length > 0).ToArray();
