@@ -83,5 +83,22 @@ namespace Ocelot.Configuration
 
             return JsonSerializer.Deserialize<T>(metadataValue, jsonSerializerOptions);
         }
+
+        public static bool IsMetadataValueTruthy(this DownstreamRoute downstreamRoute, string key)
+        {
+            var metadataValue = downstreamRoute.GetMetadataValue(key);
+            if (metadataValue == null)
+            {
+                return false;
+            }
+
+            var trimmedValue = metadataValue.Trim().ToLower();
+            return trimmedValue == "true" ||
+                   trimmedValue == "yes" ||
+                   trimmedValue == "on" ||
+                   trimmedValue == "ok" ||
+                   trimmedValue == "enable" ||
+                   trimmedValue == "enabled";
+        }
     }
 }
