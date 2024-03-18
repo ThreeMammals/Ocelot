@@ -72,12 +72,12 @@ public static class ServiceCollectionExtensions
 
     private static IConfiguration MakeDefaultConfiguration(IWebHostEnvironment env)
     {
-        return ConfigurationBuilderExtensions.AddOcelot(new ConfigurationBuilder(), env).Build();
+        return new ConfigurationBuilder().AddOcelot(env).Build();
     }
 
     private static IConfiguration FindConfiguration(this IServiceCollection services, IWebHostEnvironment env)
     {
-        var descriptor = services.Where(descriptor => descriptor.ServiceType == typeof(IConfiguration)).FirstOrDefault();
+        var descriptor = services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IConfiguration));
         if (descriptor == null)
         {
             return MakeDefaultConfiguration(env);
