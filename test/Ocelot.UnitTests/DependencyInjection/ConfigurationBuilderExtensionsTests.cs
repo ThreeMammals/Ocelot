@@ -32,18 +32,15 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void Should_add_base_url_to_config()
         {
             // Arrange
-#pragma warning disable CS0618
             _configuration = new ConfigurationBuilder()
                 .AddOcelotBaseUrl("test")
                 .Build();
-#pragma warning restore CS0618
 
             // Act
             var actual = _configuration.GetValue("BaseUrl", string.Empty);
 
             // Assert
             actual.ShouldBe("test");
-
         }
 
         [Fact]
