@@ -71,9 +71,7 @@ public static class ServiceCollectionExtensions
     }
 
     private static IConfiguration MakeDefaultConfiguration(IWebHostEnvironment env)
-    {
-        return new ConfigurationBuilder().AddOcelot(env).Build();
-    }
+        => new ConfigurationBuilder().AddOcelot(env).Build();
 
     private static IConfiguration FindConfiguration(this IServiceCollection services, IWebHostEnvironment env)
     {
