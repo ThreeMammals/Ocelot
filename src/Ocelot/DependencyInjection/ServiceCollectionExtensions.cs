@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">Current services collection.</param>
     /// <param name="customBuilder">Current custom builder for ASP.NET MVC pipeline.</param>
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
+    [Obsolete("Use AddOcelotUsingBuilder() overloaded version with the 'IConfiguration configuration' parameter.")]
     public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
     {
         var configuration = services.FindConfiguration(null);
@@ -67,10 +68,11 @@ public static class ServiceCollectionExtensions
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder)
     {
+        configuration ??= services.FindConfiguration(null);
         return new OcelotBuilder(services, configuration, customBuilder);
     }
 
-    private static IConfiguration MakeDefaultConfiguration(IWebHostEnvironment env)
+    private static IConfiguration DefaultConfiguration(IWebHostEnvironment env)
         => new ConfigurationBuilder().AddOcelot(env).Build();
 
     private static IConfiguration FindConfiguration(this IServiceCollection services, IWebHostEnvironment env)
@@ -78,11 +80,11 @@ public static class ServiceCollectionExtensions
         var descriptor = services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IConfiguration));
         if (descriptor == null)
         {
-            return MakeDefaultConfiguration(env);
+            return DefaultConfiguration(env);
         }
 
         var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider();
         var configuration = provider.GetService<IConfiguration>();
-        return configuration ?? MakeDefaultConfiguration(env);
+        return configuration ?? DefaultConfiguration(env);
     }
 }
