@@ -105,12 +105,15 @@ namespace Ocelot.DependencyInjection
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
-            environmentFile ??= env?.EnvironmentName != null ? string.Format(EnvironmentConfigFile, env.EnvironmentName) : string.Empty;
+            var envName = string.IsNullOrEmpty(env?.EnvironmentName) ? "Development" : env.EnvironmentName;
+            environmentFile ??= string.Format(EnvironmentConfigFile, envName);
             var reg = SubConfigRegex();
             var environmentFileInfo = new FileInfo(environmentFile);
             var files = new DirectoryInfo(folder)
                 .EnumerateFiles()
-                .Where(fi => reg.IsMatch(fi.Name) && fi.Name != environmentFileInfo.Name && fi.FullName != environmentFileInfo.FullName)
+                .Where(fi => reg.IsMatch(fi.Name) &&
+                    !fi.Name.Equals(environmentFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
+                    !fi.FullName.Equals(environmentFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             fileConfiguration ??= new FileConfiguration();

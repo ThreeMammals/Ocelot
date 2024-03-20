@@ -119,6 +119,26 @@ namespace Ocelot.UnitTests.DependencyInjection
             TheOcelotPrimaryConfigFileExists(false);
         }
 
+        [Fact]
+        [Trait("PR", "1986")]
+        [Trait("Issue", "1518")]
+        public void Should_merge_files_with_null_environment()
+        {
+            // Arrange
+            _environmentConfigFileName = null; // Ups!
+            const IWebHostEnvironment NullEnvironment = null; // Wow!
+            GivenMultipleConfigurationFiles(TestID, false);
+
+            // Act
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(TestID, NullEnvironment, MergeOcelotJson.ToMemory, _primaryConfigFileName, _globalConfigFileName, _environmentConfigFileName, false, false)
+                .Build();
+
+            // Assert
+            ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
+            TheOcelotPrimaryConfigFileExists(false);
+        }
+
         private void GivenCombinedFileConfigurationObject()
         {
             _combinedFileConfiguration = new FileConfiguration
