@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
@@ -30,9 +29,9 @@ namespace Ocelot.UnitTests.DependencyInjection
 {
     public class OcelotBuilderTests
     {
+        private readonly IConfiguration _configRoot;
         private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;
-        private readonly IConfiguration _configRoot;
         private IOcelotBuilder _ocelotBuilder;
         private Exception _ex;
 
@@ -273,11 +272,31 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
-        public void Should_use_custom_mvc_builder()
+        public void Should_use_custom_mvc_builder_no_configuration()
         {
-            this.Given(x => x.WhenISetupOcelotServicesWithCustomMvcBuider())
-                .Then(x => CstorShouldUseCustomBuilderToInitMvcCoreBuilder())
-                .BDDfy();
+            // Arrange, Act
+            WhenISetupOcelotServicesWithCustomMvcBuider();
+
+            // Assert
+            CstorShouldUseCustomBuilderToInitMvcCoreBuilder();
+            ShouldFindConfiguration();
+        }
+
+        [Theory]
+        [Trait("PR", "1986")]
+        [Trait("Issue", "1518")]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Should_use_custom_mvc_builder_with_configuration(bool hasConfig)
+        {
+            // Arrange, Act
+            WhenISetupOcelotServicesWithCustomMvcBuider(
+                hasConfig ? _configRoot : null,
+                true);
+
+            // Assert
+            CstorShouldUseCustomBuilderToInitMvcCoreBuilder();
+            ShouldFindConfiguration();
         }
 
         private bool _fakeCustomBuilderCalled;
@@ -293,12 +312,14 @@ namespace Ocelot.UnitTests.DependencyInjection
                 });
         }
 
-        private void WhenISetupOcelotServicesWithCustomMvcBuider()
+        private void WhenISetupOcelotServicesWithCustomMvcBuider(IConfiguration configuration = null, bool useConfigParam = false)
         {
             _fakeCustomBuilderCalled = false;
             try
             {
-                _ocelotBuilder = _services.AddOcelotUsingBuilder(FakeCustomBuilder);
+                _ocelotBuilder = !useConfigParam
+                    ? _services.AddOcelotUsingBuilder(FakeCustomBuilder)
+                    : _services.AddOcelotUsingBuilder(configuration, FakeCustomBuilder);
             }
             catch (Exception e)
             {
@@ -324,6 +345,14 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .ShouldNotBeNull().ShouldBeOfType<OptionsCache<JsonOptions>>();
             _serviceProvider.GetService<IConfigureOptions<JsonOptions>>()
                 .ShouldNotBeNull().ShouldBeOfType<ConfigureNamedOptions<JsonOptions>>();
+        }
+
+        private void ShouldFindConfiguration()
+        {
+            _ocelotBuilder.ShouldNotBeNull();
+            var actual = _ocelotBuilder.Configuration.ShouldNotBeNull();
+            actual.Equals(_configRoot).ShouldBeTrue(); // check references equality
+            actual.ShouldBe(_configRoot);
         }
 
         private void AddSingletonDefinedAggregator<T>()

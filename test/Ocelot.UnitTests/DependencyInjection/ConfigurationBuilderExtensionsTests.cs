@@ -32,18 +32,15 @@ namespace Ocelot.UnitTests.DependencyInjection
         public void Should_add_base_url_to_config()
         {
             // Arrange
-#pragma warning disable CS0618
             _configuration = new ConfigurationBuilder()
                 .AddOcelotBaseUrl("test")
                 .Build();
-#pragma warning restore CS0618
 
             // Act
             var actual = _configuration.GetValue("BaseUrl", string.Empty);
 
             // Assert
             actual.ShouldBe("test");
-
         }
 
         [Fact]
@@ -116,6 +113,26 @@ namespace Ocelot.UnitTests.DependencyInjection
 
             // Act
             WhenIAddOcelotConfiguration(TestID, MergeOcelotJson.ToMemory);
+
+            // Assert
+            ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
+            TheOcelotPrimaryConfigFileExists(false);
+        }
+
+        [Fact]
+        [Trait("PR", "1986")]
+        [Trait("Issue", "1518")]
+        public void Should_merge_files_with_null_environment()
+        {
+            // Arrange
+            _environmentConfigFileName = null; // Ups!
+            const IWebHostEnvironment NullEnvironment = null; // Wow!
+            GivenMultipleConfigurationFiles(TestID, false);
+
+            // Act
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(TestID, NullEnvironment, MergeOcelotJson.ToMemory, _primaryConfigFileName, _globalConfigFileName, _environmentConfigFileName, false, false)
+                .Build();
 
             // Assert
             ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
