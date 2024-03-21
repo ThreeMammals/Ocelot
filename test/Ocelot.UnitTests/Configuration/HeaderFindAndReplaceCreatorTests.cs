@@ -1,3 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using Microsoft.Extensions.Options;
+using Moq;
+
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -23,37 +29,53 @@ namespace Ocelot.UnitTests.Configuration
             _factory = new Mock<IOcelotLoggerFactory>();
             _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
             _placeholders = new Mock<IPlaceholders>();
-            _creator = new HeaderFindAndReplaceCreator(_placeholders.Object, _factory.Object);
+            var fileGlobalConfiguration = new FileGlobalConfiguration();
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
+            fileGlobalConfiguration.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
+            fileGlobalConfiguration.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
+
+            var options = new Mock<IOptions<FileConfiguration>>();
+            options.Setup(x => x.Value).Returns(new FileConfiguration
+            {
+                GlobalConfiguration = fileGlobalConfiguration,
+            });
+
+            _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
         }
 
         [Fact]
-        public void should_create()
+        public void Should_create()
         {
             var route = new FileRoute
             {
                 UpstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Test", "Test, Chicken"},
-                    {"Moop", "o, a"},
-                },
+            {
+                {"Test", "Test, Chicken"},
+                {"Moop", "o, a"},
+            },
                 DownstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Pop", "West, East"},
-                    {"Bop", "e, r"},
-                },
+            {
+                {"Pop", "West, East"},
+                {"Bop", "e, r"},
+            },
             };
 
             var upstream = new List<HeaderFindAndReplace>
-            {
-                new("Test", "Test", "Chicken", 0),
-                new("Moop", "o", "a", 0),
-            };
+        {
+            new("Test", "Test", "Chicken", 0),
+            new("Moop", "o", "a", 0),
+            new("TestGlobal", "Test", "Chicken", 0),
+            new("MoopGlobal", "o", "a", 0),
+        };
 
             var downstream = new List<HeaderFindAndReplace>
-            {
-                new("Pop", "West", "East", 0),
-                new("Bop", "e", "r", 0),
-            };
+        {
+            new("Pop", "West", "East", 0),
+            new("Bop", "e", "r", 0),
+            new("PopGlobal", "West", "East", 0),
+            new("BopGlobal", "e", "r", 0),
+        };
 
             this.Given(x => GivenTheRoute(route))
                 .When(x => WhenICreate())
@@ -63,7 +85,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_with_add_headers_to_request()
+        public void Should_create_with_add_headers_to_request()
         {
             const string key = "X-Forwarded-For";
             const string value = "{RemoteIpAddress}";
@@ -71,9 +93,9 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {key, value},
-                },
+            {
+                {key, value},
+            },
             };
 
             var expected = new AddHeader(key, value);
@@ -85,20 +107,22 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_base_url_placeholder()
+        public void Should_use_base_url_placeholder()
         {
             var route = new FileRoute
             {
                 DownstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
-                },
+            {
+                {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
+            },
             };
 
             var downstream = new List<HeaderFindAndReplace>
-            {
-                new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
-            };
+        {
+            new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
+            new("PopGlobal", "West", "East", 0),
+            new("BopGlobal", "e", "r", 0),
+        };
 
             this.Given(x => GivenTheRoute(route))
                 .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
@@ -108,27 +132,37 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_log_errors_and_not_add_headers()
+        public void Should_log_errors_and_not_add_headers()
         {
             var route = new FileRoute
             {
                 DownstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
-                },
+            {
+                {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
+            },
                 UpstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
-                },
+            {
+                {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
+            },
             };
 
-            var expected = new List<HeaderFindAndReplace>();
+            var expectedDownstream = new List<HeaderFindAndReplace>
+        {
+            new("PopGlobal", "West", "East", 0),
+            new("BopGlobal", "e", "r", 0),
+        };
+
+            var expectedUpstream = new List<HeaderFindAndReplace>
+        {
+            new("TestGlobal", "Test", "Chicken", 0),
+            new("MoopGlobal", "o", "a", 0),
+        };
 
             this.Given(x => GivenTheRoute(route))
                 .And(x => GivenTheBaseUrlErrors())
                 .When(x => WhenICreate())
-                .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
-                .And(x => ThenTheFollowingUpstreamIsReturned(expected))
+                .Then(x => ThenTheFollowingDownstreamIsReturned(expectedDownstream))
+                .And(x => ThenTheFollowingUpstreamIsReturned(expectedUpstream))
                 .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
                 .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
                 .BDDfy();
@@ -140,20 +174,22 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_base_url_partial_placeholder()
+        public void Should_use_base_url_partial_placeholder()
         {
             var route = new FileRoute
             {
                 DownstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"Location", "http://www.bbc.co.uk/pay, {BaseUrl}pay"},
-                },
+            {
+                {"Location", "http://www.bbc.co.uk/pay, {BaseUrl}pay"},
+            },
             };
 
             var downstream = new List<HeaderFindAndReplace>
-            {
-                new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
-            };
+        {
+            new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
+            new("PopGlobal", "West", "East", 0),
+            new("BopGlobal", "e", "r", 0),
+        };
 
             this.Given(x => GivenTheRoute(route))
                 .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
@@ -186,7 +222,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_trace_id_header()
+        public void Should_add_trace_id_header()
         {
             var route = new FileRoute
             {
@@ -206,14 +242,14 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_downstream_header_as_is_when_no_replacement_is_given()
+        public void Should_add_downstream_header_as_is_when_no_replacement_is_given()
         {
             var route = new FileRoute
             {
                 DownstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"X-Custom-Header", "Value"},
-                },
+            {
+                {"X-Custom-Header", "Value"},
+            },
             };
 
             var expected = new AddHeader("X-Custom-Header", "Value");
@@ -225,14 +261,14 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_add_upstream_header_as_is_when_no_replacement_is_given()
+        public void Should_add_upstream_header_as_is_when_no_replacement_is_given()
         {
             var route = new FileRoute
             {
                 UpstreamHeaderTransform = new Dictionary<string, string>
-                {
-                    {"X-Custom-Header", "Value"},
-                },
+            {
+                {"X-Custom-Header", "Value"},
+            },
             };
 
             var expected = new AddHeader("X-Custom-Header", "Value");
@@ -241,6 +277,36 @@ namespace Ocelot.UnitTests.Configuration
                 .And(x => WhenICreate())
                 .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
                 .BDDfy();
+        }
+
+        [Fact]
+        public void Should_merge()
+        {
+            // Arrange
+            var local = new Dictionary<string, string>()
+        {
+            { "B", "localB" },
+            { "C", "localC" },
+        };
+            var global = new Dictionary<string, string>()
+        {
+            { "A", "globalA" },
+            { "B", "globalB" },
+        };
+
+            // Act
+            var actual = HeaderFindAndReplaceCreator.Merge(local, global);
+
+            // Assert
+            actual.ShouldNotBeNull();
+            var dictionary = actual.ToDictionary(x => x.Key, x => x.Value);
+            dictionary.Count.ShouldBe(3);
+            dictionary.ContainsKey("A").ShouldBeTrue();
+            dictionary["A"].ShouldBe("globalA");
+            dictionary.ContainsKey("B").ShouldBeTrue();
+            dictionary["B"].ShouldBe("localB"); // local value wins over global one
+            dictionary.ContainsKey("C").ShouldBeTrue();
+            dictionary["C"].ShouldBe("localC");
         }
 
         private void GivenThePlaceholderIs(string placeholderValue)
