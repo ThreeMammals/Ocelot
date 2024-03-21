@@ -40,6 +40,7 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private IDictionary<string, string> _metadata;
 
     public DownstreamRouteBuilder()
     {
@@ -47,6 +48,7 @@ public class DownstreamRouteBuilder
         _delegatingHandlers = new List<string>();
         _addHeadersToDownstream = new List<AddHeader>();
         _addHeadersToUpstream = new List<AddHeader>();
+        _metadata = new Dictionary<string, string>();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -259,6 +261,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithMetadata(IDictionary<string, string> metadata)
+    {
+        _metadata = new Dictionary<string, string>(metadata);
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -295,6 +303,7 @@ public class DownstreamRouteBuilder
             _dangerousAcceptAnyServerCertificateValidator,
             _securityOptions,
             _downstreamHttpMethod,
-            _downstreamHttpVersion);
+            _downstreamHttpVersion,
+            _metadata);
     }
 }

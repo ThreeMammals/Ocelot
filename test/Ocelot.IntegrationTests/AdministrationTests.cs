@@ -118,7 +118,7 @@ namespace Ocelot.IntegrationTests
                 .Then(x => ThenTheResultHaveMultiLineIndentedJson())
                 .BDDfy();
         }
-        
+
         [Fact]
         public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
@@ -878,11 +878,11 @@ namespace Ocelot.IntegrationTests
         {
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
-        
+
         private void ThenTheResultHaveMultiLineIndentedJson()
         {
             const string indent = "  ";
-            const int total = 46, skip = 1;
+            const int total = 47, skip = 1;
             var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
             lines.Length.ShouldBe(total);
             lines.First().ShouldNotStartWith(indent);

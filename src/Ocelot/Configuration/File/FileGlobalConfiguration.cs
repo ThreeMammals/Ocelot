@@ -9,6 +9,7 @@
             LoadBalancerOptions = new FileLoadBalancerOptions();
             QoSOptions = new FileQoSOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
+            Metadata = new Dictionary<string, string>();
         }
 
         public string RequestIdKey { get; set; }
@@ -28,5 +29,7 @@
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
 
         public string DownstreamHttpVersion { get; set; }
+
+        public IDictionary<string, string> Metadata { get; set; }
     }
 }

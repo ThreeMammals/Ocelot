@@ -10,17 +10,20 @@ namespace Ocelot.UnitTests.Configuration
         private readonly DynamicsCreator _creator;
         private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
+        private readonly Mock<IMetadataCreator> _metadataCreator;
         private List<Route> _result;
         private FileConfiguration _fileConfig;
         private RateLimitOptions _rlo1;
         private RateLimitOptions _rlo2;
         private Version _version;
+        private Dictionary<string, string> _expectedMetadata;
 
         public DynamicsCreatorTests()
         {
             _versionCreator = new Mock<IVersionCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object);
+            _metadataCreator = new Mock<IMetadataCreator>();
+            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object, _metadataCreator.Object);
         }
 
         [Fact]
@@ -32,6 +35,7 @@ namespace Ocelot.UnitTests.Configuration
                 .When(_ => WhenICreate())
                 .Then(_ => ThenNothingIsReturned())
                 .And(_ => ThenTheRloCreatorIsNotCalled())
+                .And(_ => ThenTheMetadataCreatorIsNotCalled())
                 .BDDfy();
         }
 
@@ -50,6 +54,10 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = false,
                         },
                         DownstreamHttpVersion = "1.1",
+                        Metadata = new Dictionary<string, string>
+                        {
+                            ["foo"] = "bar",
+                        },
                     },
                     new()
                     {
@@ -59,6 +67,10 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = true,
                         },
                         DownstreamHttpVersion = "2.0",
+                        Metadata = new Dictionary<string, string>
+                        {
+                            ["foo"] = "baz",
+                        },
                     },
                 },
             };
@@ -66,10 +78,12 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(_ => GivenThe(fileConfig))
                 .And(_ => GivenTheRloCreatorReturns())
                 .And(_ => GivenTheVersionCreatorReturns())
+                .And(_ => GivenTheMetadataCreatorReturns())
                 .When(_ => WhenICreate())
                 .Then(_ => ThenTheRoutesAreReturned())
                 .And(_ => ThenTheRloCreatorIsCalledCorrectly())
                 .And(_ => ThenTheVersionCreatorIsCalledCorrectly())
+                .And(_ => ThenTheMetadataCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
@@ -86,6 +100,12 @@ namespace Ocelot.UnitTests.Configuration
         {
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
+        }
+
+        private void ThenTheMetadataCreatorIsCalledCorrectly()
+        {
+            _metadataCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].Metadata, It.IsAny<FileGlobalConfiguration>()), Times.Once);
+            _metadataCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].Metadata, It.IsAny<FileGlobalConfiguration>()), Times.Once);
         }
 
         private void ThenTheRoutesAreReturned()
@@ -108,6 +128,16 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_version);
         }
 
+        private void GivenTheMetadataCreatorReturns()
+        {
+            _expectedMetadata = new()
+            {
+                ["foo"] = "bar",
+            };
+            _metadataCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
+                .Returns(_expectedMetadata);
+        }
+
         private void GivenTheRloCreatorReturns()
         {
             _rlo1 = new RateLimitOptionsBuilder().Build();
@@ -122,6 +152,11 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheRloCreatorIsNotCalled()
         {
             _rloCreator.Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+        }
+
+        private void ThenTheMetadataCreatorIsNotCalled()
+        {
+            _metadataCreator.Verify(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
         }
 
         private void ThenNothingIsReturned()
