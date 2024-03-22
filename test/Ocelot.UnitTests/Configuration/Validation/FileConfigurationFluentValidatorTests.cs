@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -473,7 +473,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(
+                    0, "route /asdf/ has duplicate upstream path or routing header mapping"))
                 .BDDfy();
         }
 
@@ -499,7 +500,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(
+                    0, "route /asdf/ has duplicate upstream path or routing header mapping"))
                 .BDDfy();
         }
 
@@ -529,7 +531,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
+                 .And(x => x.ThenTheErrorMessageAtPositionIs(
+                    0, "route /asdf/ has duplicate upstream path or routing header mapping"))
                 .BDDfy();
         }
 

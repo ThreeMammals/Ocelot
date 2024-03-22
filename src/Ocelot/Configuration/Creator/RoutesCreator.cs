@@ -21,6 +21,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IRouteKeyCreator _routeKeyCreator;
         private readonly ISecurityOptionsCreator _securityOptionsCreator;
         private readonly IVersionCreator _versionCreator;
+        private readonly IUpstreamHeaderRoutingOptionsCreator _upstreamHeaderRoutingOptionsCreator;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -37,7 +38,8 @@ namespace Ocelot.Configuration.Creator
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
-            IVersionCreator versionCreator
+            IVersionCreator versionCreator,
+            IUpstreamHeaderRoutingOptionsCreator upstreamHeaderRoutingOptionsCreator
             )
         {
             _routeKeyCreator = routeKeyCreator;
@@ -56,6 +58,7 @@ namespace Ocelot.Configuration.Creator
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _securityOptionsCreator = securityOptionsCreator;
             _versionCreator = versionCreator;
+            _upstreamHeaderRoutingOptionsCreator = upstreamHeaderRoutingOptionsCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -151,12 +154,14 @@ namespace Ocelot.Configuration.Creator
         private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
         {
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
+            var upstreamHeaderRoutingOptions = _upstreamHeaderRoutingOptionsCreator.Create(fileRoute.UpstreamHeaderRoutingOptions);
 
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
                 .WithUpstreamPathTemplate(upstreamTemplatePattern)
                 .WithDownstreamRoute(downstreamRoutes)
                 .WithUpstreamHost(fileRoute.UpstreamHost)
+                .WithUpstreamHeaderRoutingOptions(upstreamHeaderRoutingOptions)
                 .Build();
 
             return route;

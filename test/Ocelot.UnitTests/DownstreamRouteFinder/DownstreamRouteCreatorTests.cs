@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -21,6 +22,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
         private readonly string _upstreamQuery;
+        private readonly IHeaderDictionary _upstreamHeaders;
 
         public DownstreamRouteCreatorTests()
         {
@@ -33,6 +35,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .Returns(_qoSOptions);
             _creator = new DownstreamRouteCreator(_qosOptionsCreator.Object);
             _upstreamQuery = string.Empty;
+            _upstreamHeaders = new HeaderDictionary();
         }
 
         [Fact]
@@ -278,12 +281,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICreate()
         {
-            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void WhenICreateAgain()
         {
-            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void ThenTheDownstreamRoutesAreTheSameReference()
