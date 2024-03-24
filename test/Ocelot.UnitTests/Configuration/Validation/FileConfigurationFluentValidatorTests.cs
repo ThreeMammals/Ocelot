@@ -455,7 +455,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route.AuthenticationOptions = new FileAuthenticationOptions()
             {
                 AuthenticationProviderKey = "Test",
-                AuthenticationProviderKeys = new[] { "Test #1", "Test #2" },
+                AuthenticationProviderKeys = ["Test #1", "Test #2"],
             };
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -759,12 +759,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .BDDfy();
         }
 
-        [Fact]
+        [Theory]
         [Trait("Bug", "683")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template()
+        [InlineData("/foo/bar/{everything}",              "/bar/{everything}/{everything}", "foo", "route /bar/{everything}/{everything} has duplicated placeholder")]
+        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "route /foo/bar/{everything}/{everything} has duplicated placeholder")]
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_path_templates(string upstream, string downstream, string host, string expected)
         {
             // Arrange
-            var route = GivenDefaultRoute("/foo/bar/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
+            var route = GivenDefaultRoute(upstream, downstream, host);
             GivenAConfiguration(route);
 
             // Act
@@ -772,23 +774,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
             // Assert
             ThenTheResultIsNotValid();
-            ThenTheErrorMessageAtPositionIs(0, "route /bar/{everything}/{everything} has duplicated placeholder");
-        }
-
-        [Fact]
-        [Trait("Bug", "683")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_both_streams_path_template()
-        {
-            // Arrange
-            var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
-            GivenAConfiguration(route);
-
-            // Act
-            WhenIValidateTheConfiguration();
-
-            // Assert
-            ThenTheResultIsNotValid();
-            ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder");
+            ThenTheErrorMessageAtPositionIs(0, expected);
         }
 
         private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
