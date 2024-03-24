@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
+        public void Configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
         {
             var route = GivenServiceDiscoveryRoute();
             var configuration = GivenAConfiguration(route);
@@ -50,7 +50,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_service_discovery_options_specified_and_has_service_discovery_handler()
+        public void Configuration_is_valid_if_service_discovery_options_specified_and_has_service_discovery_handler()
         {
             var route = GivenServiceDiscoveryRoute();
             var configuration = GivenAConfiguration(route);
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_service_discovery_options_specified_dynamically_and_has_service_discovery_handler()
+        public void Configuration_is_valid_if_service_discovery_options_specified_dynamically_and_has_service_discovery_handler()
         {
             var configuration = new FileConfiguration();
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler()
+        public void Configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler()
         {
             var route = GivenServiceDiscoveryRoute();
             var configuration = GivenAConfiguration(route);
@@ -92,7 +92,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_service_discovery_options_specified_dynamically_but_service_discovery_handler()
+        public void Configuration_is_invalid_if_service_discovery_options_specified_dynamically_but_service_discovery_handler()
         {
             var configuration = new FileConfiguration();
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler_with_matching_name()
+        public void Configuration_is_invalid_if_service_discovery_options_specified_but_no_service_discovery_handler_with_matching_name()
         {
             var route = GivenServiceDiscoveryRoute();
             var configuration = GivenAConfiguration(route);
@@ -122,7 +122,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
+        public void Configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -139,7 +139,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_qos_options_specified_globally_and_has_qos_handler()
+        public void Configuration_is_valid_if_qos_options_specified_globally_and_has_qos_handler()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
+        public void Configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
+        public void Configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -194,7 +194,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_aggregates_are_valid()
+        public void Configuration_is_valid_if_aggregates_are_valid()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -221,7 +221,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_aggregates_are_duplicate_of_routes()
+        public void Configuration_is_invalid_if_aggregates_are_duplicate_of_routes()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -250,7 +250,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_if_aggregates_are_not_duplicate_of_routes()
+        public void Configuration_is_valid_if_aggregates_are_not_duplicate_of_routes()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -278,7 +278,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_aggregates_are_duplicate_of_aggregates()
+        public void Configuration_is_invalid_if_aggregates_are_duplicate_of_aggregates()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -316,7 +316,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_routes_dont_exist_for_aggregate()
+        public void Configuration_is_invalid_if_routes_dont_exist_for_aggregate()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -342,7 +342,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_aggregate_has_routes_with_specific_request_id_keys()
+        public void Configuration_is_invalid_if_aggregate_has_routes_with_specific_request_id_keys()
         {
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
@@ -371,7 +371,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
+        public void Configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("http://asdf.com", "http://www.bbc.co.uk/api/products/{productId}")))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -388,7 +388,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_one_route()
+        public void Configuration_is_valid_with_one_route()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute()))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -397,7 +397,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_without_slash_prefix_downstream_path_template()
+        public void Configuration_is_invalid_without_slash_prefix_downstream_path_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/asdf/", "api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -407,7 +407,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_without_slash_prefix_upstream_path_template()
+        public void Configuration_is_invalid_without_slash_prefix_upstream_path_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("api/prod/", "/api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -417,7 +417,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_upstream_url_contains_forward_slash_then_another_forward_slash()
+        public void Configuration_is_invalid_if_upstream_url_contains_forward_slash_then_another_forward_slash()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("//api/prod/", "/api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -427,7 +427,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_if_downstream_url_contains_forward_slash_then_another_forward_slash()
+        public void Configuration_is_invalid_if_downstream_url_contains_forward_slash_then_another_forward_slash()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/api/prod/", "//api/products/")))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -437,7 +437,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_valid_authentication_provider()
+        public void Configuration_is_valid_with_valid_authentication_provider()
         {
             var route = GivenDefaultRoute();
             route.AuthenticationOptions.AuthenticationProviderKey = "Test";
@@ -449,7 +449,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_with_invalid_authentication_provider()
+        public void Configuration_is_invalid_with_invalid_authentication_provider()
         {
             var route = GivenDefaultRoute();
             route.AuthenticationOptions = new FileAuthenticationOptions()
@@ -465,7 +465,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_with_duplicate_routes_all_verbs()
+        public void Configuration_is_not_valid_with_duplicate_routes_all_verbs()
         {
             var route = GivenDefaultRoute();
             var duplicate = GivenDefaultRoute();
@@ -478,7 +478,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_duplicate_routes_all_verbs_but_different_hosts()
+        public void Configuration_is_valid_with_duplicate_routes_all_verbs_but_different_hosts()
         {
             var route = GivenDefaultRoute();
             route.UpstreamHost = "host1";
@@ -491,7 +491,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_with_duplicate_routes_specific_verbs()
+        public void Configuration_is_not_valid_with_duplicate_routes_specific_verbs()
         {
             var route = GivenDefaultRoute();
             var duplicate = GivenDefaultRoute(null, "/www/test/");
@@ -504,7 +504,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_duplicate_routes_different_verbs()
+        public void Configuration_is_valid_with_duplicate_routes_different_verbs()
         {
             var route = GivenDefaultRoute(); // "Get" verb is inside
             var duplicate = GivenDefaultRoute(null, "/www/test/");
@@ -516,7 +516,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_with_duplicate_routes_with_duplicated_upstreamhosts()
+        public void Configuration_is_not_valid_with_duplicate_routes_with_duplicated_upstreamhosts()
         {
             var route = GivenDefaultRoute();
             route.UpstreamHttpMethod = new();
@@ -534,7 +534,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_duplicate_routes_but_different_upstreamhosts()
+        public void Configuration_is_valid_with_duplicate_routes_but_different_upstreamhosts()
         {
             var route = GivenDefaultRoute();
             route.UpstreamHttpMethod = new();
@@ -551,7 +551,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
+        public void Configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
         {
             var route = GivenDefaultRoute();
             route.UpstreamHttpMethod = new();
@@ -567,7 +567,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_with_invalid_rate_limit_configuration()
+        public void Configuration_is_invalid_with_invalid_rate_limit_configuration()
         {
             var route = GivenDefaultRoute();
             route.RateLimitOptions = new FileRateLimitRule
@@ -583,7 +583,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_valid_rate_limit_configuration()
+        public void Configuration_is_valid_with_valid_rate_limit_configuration()
         {
             var route = GivenDefaultRoute();
             route.RateLimitOptions = new FileRateLimitRule
@@ -598,7 +598,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_with_using_service_discovery_and_service_name()
+        public void Configuration_is_valid_with_using_service_discovery_and_service_name()
         {
             var route = GivenServiceDiscoveryRoute();
             var config = GivenAConfiguration(route);
@@ -614,7 +614,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Theory]
         [InlineData(null)]
         [InlineData(Empty)]
-        public void configuration_is_invalid_when_not_using_service_discovery_and_host(string downstreamHost)
+        public void Configuration_is_invalid_when_not_using_service_discovery_and_host(string downstreamHost)
         {
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts[0].Host = downstreamHost;
@@ -694,7 +694,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_when_not_using_service_discovery_and_host_is_set()
+        public void Configuration_is_valid_when_not_using_service_discovery_and_host_is_set()
         {
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -708,7 +708,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_valid_when_no_downstream_but_has_host_and_port()
+        public void Configuration_is_valid_when_no_downstream_but_has_host_and_port()
         {
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -722,7 +722,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_when_no_host_and_port()
+        public void Configuration_is_not_valid_when_no_host_and_port()
         {
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts = new();
@@ -734,7 +734,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_when_host_and_port_is_empty()
+        public void Configuration_is_not_valid_when_host_and_port_is_empty()
         {
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -749,7 +749,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template()
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template()
         {
             var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}");
             this.Given(x => x.GivenAConfiguration(route))
@@ -761,7 +761,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         [Fact]
         [Trait("Bug", "683")]
-        public void configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template()
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template()
         {
             // Arrange
             var route = GivenDefaultRoute("/foo/bar/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
@@ -777,7 +777,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         [Fact]
         [Trait("Bug", "683")]
-        public void configuration_is_invalid_when_placeholder_is_used_twice_in_both_streams_path_template()
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_both_streams_path_template()
         {
             // Arrange
             var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
