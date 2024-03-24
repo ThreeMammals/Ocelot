@@ -763,82 +763,59 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Trait("Bug", "683")]
         public void configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/bar/{everything}/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new() { Host = "a.b.cd" },
-                        },
-                        UpstreamPathTemplate = "/foo/bar/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /bar/{everything}/{everything} has duplicated placeholder"))
-                .BDDfy();
+            // Arrange
+            var route = GivenDefaultRoute("/foo/bar/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
+            GivenAConfiguration(route);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsNotValid();
+            ThenTheErrorMessageAtPositionIs(0, "route /bar/{everything}/{everything} has duplicated placeholder");
         }
 
         [Fact]
         [Trait("Bug", "683")]
         public void configuration_is_invalid_when_placeholder_is_used_twice_in_both_streams_path_template()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/bar/{everything}/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new() { Host = "a.b.cd" },
-                        },
-                        UpstreamPathTemplate = "/foo/bar/{everything}/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder"))
-                .BDDfy();
+            // Arrange
+            var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "a.b.cd");
+            GivenAConfiguration(route);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsNotValid();
+            ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder");
         }
 
-        private FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null);
+        private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
+        private static FileRoute GivenDefaultRoute(string upstream, string downstream) => GivenDefaultRoute(upstream, downstream, null);
 
-        private FileRoute GivenDefaultRoute(string upstreamPathTemplate, string downstreamPathTemplate) => new()
+        private static FileRoute GivenDefaultRoute(string upstream, string downstream, string host) => new()
         {
-            DownstreamPathTemplate = downstreamPathTemplate ?? "/api/products/",
-            UpstreamPathTemplate = upstreamPathTemplate ?? "/asdf/",
-            UpstreamHttpMethod = new List<string> { "Get" },
-            DownstreamHostAndPorts = new List<FileHostAndPort>
-            {
-                new("bbc.co.uk", 12345),
-            },
+            UpstreamHttpMethod = [HttpMethods.Get],
+            UpstreamPathTemplate = upstream ?? "/asdf/",
+            DownstreamPathTemplate = downstream ?? "/api/products/",
+            DownstreamHostAndPorts =
+            [
+                new(host ?? "bbc.co.uk", 12345),
+            ],
+            DownstreamScheme = Uri.UriSchemeHttp,
         };
 
-        private FileRoute GivenServiceDiscoveryRoute() => new()
+        private static FileRoute GivenServiceDiscoveryRoute() => new()
         {
-            DownstreamPathTemplate = "/",
-            DownstreamScheme = "http",
+            UpstreamHttpMethod = [HttpMethods.Get],
             UpstreamPathTemplate = "/laura",
-            UpstreamHttpMethod = new List<string> { "Get" },
+            DownstreamPathTemplate = "/",
+            DownstreamScheme = Uri.UriSchemeHttp,
             ServiceName = "test",
         };
 
-        private void GivenAConfiguration(FileConfiguration fileConfiguration)
-        {
-            _fileConfiguration = fileConfiguration;
-        }
+        private void GivenAConfiguration(FileConfiguration fileConfiguration) => _fileConfiguration = fileConfiguration;
 
         private FileConfiguration GivenAConfiguration(params FileRoute[] routes)
         {
@@ -848,9 +825,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
             return config;
         }
 
-        private FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new FileServiceDiscoveryProvider
+        private static FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new()
         {
-            Scheme = "https",
+            Scheme = Uri.UriSchemeHttps,
             Host = "localhost",
             Type = "ServiceFabric",
             Port = 8500,
