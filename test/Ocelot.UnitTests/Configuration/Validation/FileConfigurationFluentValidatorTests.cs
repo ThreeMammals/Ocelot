@@ -759,27 +759,32 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .BDDfy();
         }
 
-        private FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null);
-
-        private FileRoute GivenDefaultRoute(string upstreamPathTemplate, string downstreamPathTemplate) => new()
+        [Fact]
+        [Trait("Bug", "683")]
+        public void configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template()
         {
-            DownstreamPathTemplate = downstreamPathTemplate ?? "/api/products/",
-            UpstreamPathTemplate = upstreamPathTemplate ?? "/asdf/",
-            UpstreamHttpMethod = new List<string> { "Get" },
-            DownstreamHostAndPorts = new List<FileHostAndPort>
+            this.Given(x => x.GivenAConfiguration(new FileConfiguration
             {
-                new("bbc.co.uk", 12345),
-            },
-        };
-
-        private FileRoute GivenServiceDiscoveryRoute() => new()
-        {
-            DownstreamPathTemplate = "/",
-            DownstreamScheme = "http",
-            UpstreamPathTemplate = "/laura",
-            UpstreamHttpMethod = new List<string> { "Get" },
-            ServiceName = "test",
-        };
+                Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/bar/{everything}/{everything}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new() { Host = "a.b.cd" },
+                        },
+                        UpstreamPathTemplate = "/foo/bar/{everything}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+            }))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /bar/{everything}/{everything} has duplicated placeholder"))
+                .BDDfy();
+        }
 
         [Fact]
         [Trait("Bug", "683")]
@@ -807,6 +812,28 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder"))
                 .BDDfy();
         }
+
+        private FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null);
+
+        private FileRoute GivenDefaultRoute(string upstreamPathTemplate, string downstreamPathTemplate) => new()
+        {
+            DownstreamPathTemplate = downstreamPathTemplate ?? "/api/products/",
+            UpstreamPathTemplate = upstreamPathTemplate ?? "/asdf/",
+            UpstreamHttpMethod = new List<string> { "Get" },
+            DownstreamHostAndPorts = new List<FileHostAndPort>
+            {
+                new("bbc.co.uk", 12345),
+            },
+        };
+
+        private FileRoute GivenServiceDiscoveryRoute() => new()
+        {
+            DownstreamPathTemplate = "/",
+            DownstreamScheme = "http",
+            UpstreamPathTemplate = "/laura",
+            UpstreamHttpMethod = new List<string> { "Get" },
+            ServiceName = "test",
+        };
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {
