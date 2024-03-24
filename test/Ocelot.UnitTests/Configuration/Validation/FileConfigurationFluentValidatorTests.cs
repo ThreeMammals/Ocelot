@@ -748,22 +748,56 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .BDDfy();
         }
 
-        [Fact]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template()
+        [Theory]
+        [Trait("PR", "1927")]
+        [InlineData("/foo/{bar}/foo", "/yahoo/foo/{bar}")] // valid
+        [InlineData("/foo/{bar}/{foo}", "/yahoo/{foo}/{bar}")] // valid
+        [InlineData("/foo/{bar}/{bar}", "/yahoo/foo/{bar}", "UpstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
+        [InlineData("/foo/{bar}/{bar}", "/yahoo/{foo}/{bar}", "UpstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder", "DownstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in UpstreamPathTemplate '/foo/{bar}/{bar}'")] // invalid
+        [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/foo")] // valid
+        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
+        [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
+        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder", "UpstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in DownstreamPathTemplate '/foo/{bar}/{bar}'")] // invalid
+        public void IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
         {
-            var route = GivenDefaultRoute("/foo/bar/{everything}/{everything}", "/bar/{everything}");
-            this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /foo/bar/{everything}/{everything} has duplicated placeholder"))
-                .BDDfy();
+            // Arrange
+            var route = GivenDefaultRoute(upstream, downstream);
+            GivenAConfiguration(route);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenThereAreErrors(expected.Length > 0);
+            ThenTheErrorMessagesAre(expected);
         }
 
         [Theory]
+        [Trait("PR", "1927")]
+        [InlineData("/foo/{bar}/{foo}", "/yahoo/{foo}/{bar}")] // valid
+        [InlineData("/foo/{bar}/{yahoo}", "/yahoo/{foo}/{bar}", "UpstreamPathTemplate '/foo/{bar}/{yahoo}' doesn't contain the same placeholders in DownstreamPathTemplate '/yahoo/{foo}/{bar}'", "DownstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in UpstreamPathTemplate '/foo/{bar}/{yahoo}'")] // invalid
+        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
+        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{yahoo}", "UpstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in DownstreamPathTemplate '/foo/{bar}/{yahoo}'", "DownstreamPathTemplate '/foo/{bar}/{yahoo}' doesn't contain the same placeholders in UpstreamPathTemplate '/yahoo/{foo}/{bar}'")] // invalid
+        public void IsPlaceholderDefinedInBothTemplates_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
+        {
+            // Arrange
+            var route = GivenDefaultRoute(upstream, downstream);
+            GivenAConfiguration(route);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenThereAreErrors(expected.Length > 0);
+            ThenTheErrorMessagesAre(expected);
+        }
+
+        [Theory]
+        [Trait("PR", "1927")]
         [Trait("Bug", "683")]
-        [InlineData("/foo/bar/{everything}",              "/bar/{everything}/{everything}", "foo", "route /bar/{everything}/{everything} has duplicated placeholder")]
-        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "route /foo/bar/{everything}/{everything} has duplicated placeholder")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_path_templates(string upstream, string downstream, string host, string expected)
+        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}",              "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder")]
+        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template(string upstream, string downstream, string host, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream, host);
@@ -774,7 +808,26 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
             // Assert
             ThenTheResultIsNotValid();
-            ThenTheErrorMessageAtPositionIs(0, expected);
+            ThenTheErrorMessagesAre(expected);
+        }
+
+        [Theory]
+        [Trait("PR", "1927")]
+        [Trait("Bug", "683")]
+        [InlineData("/foo/bar/{everything}",              "/bar/{everything}/{everything}", "foo", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
+        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
+        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template(string upstream, string downstream, string host, params string[] expected)
+        {
+            // Arrange
+            var route = GivenDefaultRoute(upstream, downstream, host);
+            GivenAConfiguration(route);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsNotValid();
+            ThenTheErrorMessagesAre(expected);
         }
 
         private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
@@ -842,6 +895,21 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private void ThenTheErrorMessageAtPositionIs(int index, string expected)
         {
             _result.Data.Errors[index].Message.ShouldBe(expected);
+        }
+
+        private void ThenThereAreErrors(bool isError)
+        {
+            _result.Data.IsError.ShouldBe(isError);
+        }
+
+        private void ThenTheErrorMessagesAre(IEnumerable<string> messages)
+        {
+            _result.Data.Errors.Count.ShouldBe(messages.Count());
+
+            foreach (var msg in messages)
+            {
+                _result.Data.Errors.ShouldContain(e => e.Message == msg);
+            }
         }
 
         private void GivenTheAuthSchemeExists(string name)
