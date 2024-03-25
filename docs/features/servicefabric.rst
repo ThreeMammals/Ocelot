@@ -9,7 +9,7 @@ We also need to set up the **ServiceDiscoveryProvider** in **GlobalConfiguration
 The example here shows a typical configuration.
 It assumes *Service Fabric* is running on ``localhost`` and that the naming service is on port ``19081``.
 
-The example below is taken from the `samples/OcelotServiceFabric <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotServiceFabric>`_ folder so please check it if this doesn't make sense!
+The example below is taken from the `OcelotServiceFabric <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotServiceFabric>`_ sample, so please check it if this doesn't make sense!
 
 .. code-block:: json
 
@@ -24,6 +24,7 @@ The example below is taken from the `samples/OcelotServiceFabric <https://github
       }
     ],
     "GlobalConfiguration": {
+      "BaseUrl": "https://ocelot.com"
       "RequestIdKey": "OcRequestId",
       "ServiceDiscoveryProvider": {
         "Host": "localhost",
@@ -36,6 +37,61 @@ The example below is taken from the `samples/OcelotServiceFabric <https://github
 If you are using stateless / guest exe services, Ocelot will be able to proxy through the naming service without anything else.
 However, if you are using statefull / actor services, you must send the **PartitionKind** and **PartitionKey** query string values with the client request e.g.
 
-    GET http://ocelot.com/EquipmentInterfaces?PartitionKind=xxx&PartitionKey=xxx
+    GET ``http://ocelot.com/EquipmentInterfaces?PartitionKind=xxx&PartitionKey=xxx``
 
 There is no way for Ocelot to work these out for you.
+
+.. _sf-placeholders:
+
+Placeholders in Service Name [#f1]_
+-----------------------------------
+
+In Ocelot, you can insert placeholders for variables into your ``UpstreamPathTemplate`` and ``ServiceName`` using the format ``{something}``.
+
+It's important to note that the placeholder variable must exist in both the (**DownstreamPathTemplate** vs **ServiceName**) and the **UpstreamPathTemplate**.
+The **UpstreamPathTemplate** should include all placeholders from the **DownstreamPathTemplate** and **ServiceName**;
+otherwise, Ocelot will not start due to validation errors, which are logged.
+
+Once the validation stage is cleared, Ocelot will replace the placeholder values in the **UpstreamPathTemplate** with those in the **DownstreamPathTemplate** and/or **ServiceName** for each processed request.
+Thus, the :ref:`sf-placeholders` behave similarly to the :ref:`routing-placeholders` feature, but with the **ServiceName** property considered during the processing.
+
+
+Placeholders example
+^^^^^^^^^^^^^^^^^^^^
+
+Here is the example of variable ``version`` in *Service Fabric* service name.
+
+**Given** you have the following `ocelot.json`_:
+
+.. code-block:: json
+
+  {
+    "Routes": [
+      {
+        "UpstreamPathTemplate": "/api/{version}/{endpoint}",
+        "DownstreamPathTemplate": "/{endpoint}",
+        "ServiceName": "Service_{version}/Api",
+      }
+    ],
+    "GlobalConfiguration": {
+      "BaseUrl": "https://ocelot.com"
+      "ServiceDiscoveryProvider": {
+        "Host": "localhost",
+        "Port": 19081,
+        "Type": "ServiceFabric"
+      }
+    }
+  }
+
+**When** you make a request: GET ``https://ocelot.com/api/1.0/products``
+
+**Then** the *Service Fabric* request: GET ``http://localhost:19081/Service_1.0/Api/products``
+
+""""
+
+.. [#f1] ":ref:`sf-placeholders`" feature was requested in issue `721`_ and delivered by PR `722`_ as a part of the version `13.0.0`_.
+
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
+.. _721: https://github.com/ThreeMammals/Ocelot/issues/721
+.. _722: https://github.com/ThreeMammals/Ocelot/pull/722
+.. _13.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0

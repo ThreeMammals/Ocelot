@@ -43,10 +43,10 @@ namespace Ocelot.Configuration.Validator
                 .WithMessage((_, route) => $"{nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}' has duplicated placeholder");
 
             RuleForEach(configuration => configuration.Routes)
-                .Must((_, route) => IsPlaceholderDefinedInBothTemplates(route.UpstreamPathTemplate, route.DownstreamPathTemplate))
+                .Must(IsUpstreamPlaceholderDefinedInDownstream)
                 .WithMessage((_, route) => $"{nameof(route.UpstreamPathTemplate)} '{route.UpstreamPathTemplate}' doesn't contain the same placeholders in {nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}'");
             RuleForEach(configuration => configuration.Routes)
-                .Must((_, route) => IsPlaceholderDefinedInBothTemplates(route.DownstreamPathTemplate, route.UpstreamPathTemplate))
+                .Must(IsDownstreamPlaceholderDefinedInUpstream)
                 .WithMessage((_, route) => $"{nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}' doesn't contain the same placeholders in {nameof(route.UpstreamPathTemplate)} '{route.UpstreamPathTemplate}'");
 
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
@@ -121,6 +121,20 @@ namespace Ocelot.Configuration.Validator
                 .Select(m => m.Value).ToList();
             return placeholders.Count == placeholders.Distinct().Count();
         }
+
+        private static bool IsServiceFabricWithServiceName(FileConfiguration configuration, FileRoute route)
+            => Servicefabric.Equals(configuration?.GlobalConfiguration?.ServiceDiscoveryProvider?.Type, StringComparison.InvariantCultureIgnoreCase)
+                && !string.IsNullOrEmpty(route?.ServiceName) && PlaceholderRegex().IsMatch(route.ServiceName);
+
+        private bool IsUpstreamPlaceholderDefinedInDownstream(FileConfiguration configuration, FileRoute route)
+            => IsServiceFabricWithServiceName(configuration, route)
+                ? IsPlaceholderDefinedInBothTemplates(route.UpstreamPathTemplate, route.ServiceName + route.DownstreamPathTemplate)
+                : IsPlaceholderDefinedInBothTemplates(route.UpstreamPathTemplate, route.DownstreamPathTemplate);
+
+        private bool IsDownstreamPlaceholderDefinedInUpstream(FileConfiguration configuration, FileRoute route)
+            => IsServiceFabricWithServiceName(configuration, route)
+                ? IsPlaceholderDefinedInBothTemplates(route.ServiceName + route.DownstreamPathTemplate, route.UpstreamPathTemplate)
+                : IsPlaceholderDefinedInBothTemplates(route.DownstreamPathTemplate, route.UpstreamPathTemplate);
 
         private static bool IsPlaceholderDefinedInBothTemplates(string firstPathTemplate, string secondPathTemplate)
         {
