@@ -61,7 +61,7 @@ namespace Ocelot.AcceptanceTests
                                },
                            },
                            DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/users",
+                           UpstreamPathTemplate = "/users/{userId}",
                            UpstreamHttpMethod = new List<string> { "Get" },
                            AuthenticationOptions = new FileAuthenticationOptions
                            {
