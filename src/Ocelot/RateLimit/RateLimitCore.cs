@@ -17,7 +17,7 @@ namespace Ocelot.RateLimit
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
-            var counter = new RateLimitCounter(DateTime.UtcNow, 1);
+            RateLimitCounter counter;
             var rule = option.RateLimitRule;
 
             var counterId = ComputeCounterKey(requestIdentity, option);
@@ -26,40 +26,57 @@ namespace Ocelot.RateLimit
             lock (ProcessLocker)
             {
                 var entry = _counterHandler.Get(counterId);
-                if (entry.HasValue)
-                {
-                    // entry has not expired
-                    if (entry.Value.Timestamp + TimeSpan.FromSeconds(rule.PeriodTimespan) >= DateTime.UtcNow)
-                    {
-                        // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
-
-                        // deep copy
-                        counter = new RateLimitCounter(entry.Value.Timestamp, totalRequests);
-                    }
-                }
+                counter = CountRequests(entry, rule);
             }
 
+            TimeSpan expirationTime = ConvertToTimeSpan(rule.Period);
             if (counter.TotalRequests > rule.Limit)
             {
                 var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
                 if (retryAfter > 0)
                 {
-                    var expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
-                    _counterHandler.Set(counterId, counter, expirationTime);
+                    // rate limit exceeded, ban period is active
+                    expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
                 }
                 else
                 {
+                    // ban period elapsed, start counting
                     _counterHandler.Remove(counterId);
+                    counter = new RateLimitCounter(counter.Timestamp, 1);
                 }
             }
-            else
-            {
-                var expirationTime = ConvertToTimeSpan(rule.Period);
-                _counterHandler.Set(counterId, counter, expirationTime);
-            }
+
+            _counterHandler.Set(counterId, counter, expirationTime);
 
             return counter;
+        }
+
+        private static RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
+        {
+            // no entry - start counting
+            if (!entry.HasValue)
+            {
+                return new RateLimitCounter(DateTime.UtcNow, 1);
+            }
+            
+            // entry has not expired
+            if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
+            {
+                // increment request count
+                var totalRequests = entry.Value.TotalRequests + 1;
+
+                // deep copy
+                return new RateLimitCounter(entry.Value.Timestamp, totalRequests);
+            }
+            
+            // entry not expired, rate limit exceeded
+            if (entry.Value.TotalRequests > rule.Limit)
+            {
+                return entry.Value;
+            }
+
+            // rate limit not exceeded, period elapsed, start counting
+            return new RateLimitCounter(DateTime.UtcNow, 1);
         }
 
         public void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
@@ -95,7 +112,7 @@ namespace Ocelot.RateLimit
             return headers;
         }
 
-        public string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        public static string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
             var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
 
@@ -111,7 +128,7 @@ namespace Ocelot.RateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+        public static int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
             var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
@@ -119,7 +136,7 @@ namespace Ocelot.RateLimit
             return retryAfter;
         }
 
-        public TimeSpan ConvertToTimeSpan(string timeSpan)
+        public static TimeSpan ConvertToTimeSpan(string timeSpan)
         {
             var l = timeSpan.Length - 1;
             var value = timeSpan.Substring(0, l);
