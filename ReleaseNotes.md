@@ -1,39 +1,20 @@
-## January 2024 (version {0}) aka [Hornussen](https://www.myswitzerland.com/en-ch/planning/about-switzerland/custom-and-tradition/hornussen-where-the-nouss-flies-from-the-ramp-and-into-the-playing-field/) release
-> Codenamed as **[Hornussen Sport](https://www.youtube.com/results?search_query=Hornussen)**
-> Read the Docs: [Ocelot 23.1](https://ocelot.readthedocs.io/en/23.1.0/)
+## February 2024 (version {0}) aka [February'24](https://github.com/ThreeMammals/Ocelot/milestone/5) release
+> Codenamed as **[February'24](https://github.com/ThreeMammals/Ocelot/milestone/5)**
+> Read the Docs: [Ocelot 23.2](https://ocelot.readthedocs.io/en/23.2.0/)
 
 ### Focus On
 
 <details>
-  <summary><b>Multiplexing middleware</b> aka <a href="https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html">Request Aggregation</a> feature</summary>
+  <summary><b>New features of</b>: Service Fabric and ...</summary>
  
-- Significant refactoring and design review of the [Multiplexer](https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot/Multiplexer)
-- Optimizing multiplexer performance: `HttpContext` is not copied when there is only one downstream route, and etc.
-- Fixed [the bug](https://github.com/ThreeMammals/Ocelot/pull/1462) in the multiplexer: `HttpContext.User` information was not copied if there was more than one downstream request.
-</details>
-
-<details>
-  <summary><b>System routing</b>. Content streaming when <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding">Transfer-Encoding</a>: 'chunked'</summary>
-
-  - Correction of [the bug](https://github.com/ThreeMammals/Ocelot/pull/1972) when creating requests: The header [Transfer-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding): `chunked` was present even when there was no content or the request body size was 0. These cases are now addressed.
-</details>
-
-<details>
-  <summary><b>Updates of the features</b>: QoS, Load Balancer and Error Status Codes</summary>
- 
-- [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html): Possibility of implementation of custom Polly v8.2 providers. New `AddPolly` extension methods.
-- [Load Balancer](https://ocelot.readthedocs.io/en/latest/features/loadbalancer.html): Extension of the route key format, ensuring that the key remains unique for cases of **UpstreamHost** route property and **ServiceName** vs **ServiceNamespace** properties in Consul setup.
-- [Error Status Codes](https://ocelot.readthedocs.io/en/latest/features/errorcodes.html): When [413 Content Too Large](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/413), Ocelot now returns a 413 `PayloadTooLargeError` (Ocelot error code `41`).
-</details>
-
-<details>
-  <summary>Documentation for <b>Request Aggregation</b></summary>
- 
-  - [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html)
+- **[Service Fabric](https://ocelot.readthedocs.io/en/latest/features/servicefabric.html)**: Published old undocumented "[Placeholders in Service Name](https://ocelot.readthedocs.io/en/23.2.0/features/servicefabric.html#placeholders-in-service-name)" feature of [Service Fabric](https://ocelot.readthedocs.io/en/23.2.0/features/servicefabric.html) [service discovery provider](https://ocelot.readthedocs.io/en/23.2.0/search.html?q=ServiceDiscoveryProvider). This feature is available starting from version [13.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0).
 </details>
 
 <details>
   <summary><b>Stabilization</b> aka bug fixing</summary>
 
-  - See [all bugs](https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+is%3Aclosed+label%3Abug+milestone%3AJanuary%2724) of the [January'24](https://github.com/ThreeMammals/Ocelot/milestone/4) milestone
+  - [683](https://github.com/ThreeMammals/Ocelot/issues/683) by PR [1927](https://github.com/ThreeMammals/Ocelot/pull/1927)
+    Ocelot configuration validation logic has updated with [new rules](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+IsPlaceholderNotDuplicatedIn+IsUpstreamPlaceholderDefinedInDownstream+IsDownstreamPlaceholderDefinedInUpstream&type=code) to search for placeholder duplicates in path templates.
+    See more in the [FileConfigurationFluentValidator](https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FileConfigurationFluentValidator&type=code) class.
+  - See [all bugs](https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+is%3Aclosed+label%3Abug+milestone%3AFebruary%2724) of the [February'24](https://github.com/ThreeMammals/Ocelot/milestone/5) milestone
 </details>

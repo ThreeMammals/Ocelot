@@ -566,9 +566,9 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Theory]
-        [InlineData("/products", "/products/{productId}", "/products/")]
+        [InlineData("/products/{productId}", "/products/{productId}", "/products/")]
 
-        public void should_return_200_found(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL)
+        public void should_return_response_200_with_empty_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL)
         {
             var port = PortFinder.GetRandomPort();
 
@@ -582,11 +582,7 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            new("localhost", port),
                         },
                         UpstreamPathTemplate = upstreamPathTemplate,
                         UpstreamHttpMethod = new List<string> { "Get" },
@@ -594,12 +590,12 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamPathTemplate, HttpStatusCode.OK, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", requestURL, HttpStatusCode.OK, "Hello from Aly"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPathTemplate))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Aly"))
                 .BDDfy();
         }
 
@@ -897,12 +893,13 @@ namespace Ocelot.AcceptanceTests
                     },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", string.Empty, HttpStatusCode.Created, string.Empty))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.Created, nameof(HttpStatusCode.Created)))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
                 .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.Created)))
                 .BDDfy();
         }
 
@@ -1179,8 +1176,8 @@ namespace Ocelot.AcceptanceTests
 
                 if (_downstreamPath != basePath)
                 {
-                    context.Response.StatusCode = (int)statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsync("Downstream path didn't match base path");
                 }
                 else
                 {
