@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Ocelot.Configuration.File;
+using System.Security.Authentication;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -217,24 +219,44 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int port, HttpProtocols protocols)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            void options(KestrelServerOptions serverOptions)
+            {
+                serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
+                {
+                    listenOptions.Protocols = protocols;
+                });
+            }
+
+            _serviceHandler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
             {
                 context.Response.StatusCode = 200;
                 var reader = new StreamReader(context.Request.Body);
                 var body = await reader.ReadToEndAsync();
                 await context.Response.WriteAsync(body);
-            }, port, protocols);
+            });
         }
 
         private void GivenThereIsAServiceUsingHttpsRunningOn(string baseUrl, string basePath, int port, HttpProtocols protocols)
         {
-            _serviceHandler.GivenThereIsAServiceRunningOnUsingHttps(baseUrl, basePath, async context =>
+            void options(KestrelServerOptions serverOptions)
+            {
+                serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
+                {
+                    listenOptions.UseHttps("mycert.pfx", "password", options =>
+                    {
+                        options.SslProtocols = SslProtocols.Tls12;
+                    });
+                    listenOptions.Protocols = protocols;
+                });
+            }
+
+            _serviceHandler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
             {
                 context.Response.StatusCode = 200;
                 var reader = new StreamReader(context.Request.Body);
                 var body = await reader.ReadToEndAsync();
                 await context.Response.WriteAsync(body);
-            }, port, protocols);
+            });
         }
 
         public void Dispose()

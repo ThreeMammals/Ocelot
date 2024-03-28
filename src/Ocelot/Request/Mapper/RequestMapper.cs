@@ -7,7 +7,7 @@ namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
-    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host" };
+    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host", "transfer-encoding" };
     private static readonly string[] ContentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
 
     public HttpRequestMessage Map(HttpRequest request, DownstreamRoute downstreamRoute)
@@ -27,14 +27,18 @@ public class RequestMapper : IRequestMapper
 
     private static HttpContent MapContent(HttpRequest request)
     {
-        // TODO We should check if we really need to call HttpRequest.Body.Length
-        // But we assume that if CanSeek is true, the length is calculated without an important overhead
-        if (request.Body is null or { CanSeek: true, Length: <= 0 })
+        HttpContent content;
+
+        // No content if we have no body or if the request has no content according to RFC 2616 section 4.3
+        if (request.Body == null
+            || (!request.ContentLength.HasValue && StringValues.IsNullOrEmpty(request.Headers.TransferEncoding)))
         {
             return null;
         }
 
-        var content = new StreamHttpContent(request.HttpContext);
+        content = request.ContentLength is 0
+            ? new ByteArrayContent(Array.Empty<byte>()) 
+            : new StreamHttpContent(request.HttpContext);
 
         AddContentHeaders(request, content);
 

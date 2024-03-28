@@ -278,7 +278,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
-                        UpstreamPathTemplate = "/test",
+                        UpstreamPathTemplate = "/test/{productId}",
                     },
                 },
             };

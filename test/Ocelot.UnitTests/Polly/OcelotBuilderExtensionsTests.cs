@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Polly
             var services = new ServiceCollection();
             var options = new QoSOptionsBuilder()
                 .WithTimeoutValue(100)
-                .WithExceptionsAllowedBeforeBreaking(1)
+                .WithExceptionsAllowedBeforeBreaking(2)
                 .WithDurationOfBreak(200)
                 .Build();
             var route = new DownstreamRouteBuilder().WithQosOptions(options)
