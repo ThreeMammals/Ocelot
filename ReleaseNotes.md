@@ -1,5 +1,5 @@
-## February 2024 (version {0}) aka [February'24](https://github.com/ThreeMammals/Ocelot/milestone/5) release
-> Codenamed as **[February'24](https://github.com/ThreeMammals/Ocelot/milestone/5)**
+## February 2024 (version {0}) aka [Lunar Eclipse](https://www.timeanddate.com/eclipse/lunar/2024-march-25) release
+> Codenamed: **[Lunar Eclipse](https://www.bing.com/search?q=Lunar+Eclipse+2024)**
 > Read the Docs: [Ocelot 23.2](https://ocelot.readthedocs.io/en/23.2.0/)
 
 ### What's new?

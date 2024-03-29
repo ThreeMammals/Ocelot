@@ -20,8 +20,8 @@ We **do** follow development process which is described in :doc:`../building/rel
 Release Notes
 -------------
 
-   | **Codenamed**: `February'24 <https://github.com/ThreeMammals/Ocelot/milestone/5>`_ release
    | **Release Tag**: `23.2.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_
+   | **Release Codename**: `Lunar Eclipse <https://www.timeanddate.com/eclipse/lunar/2024-march-25>`_
 
 What's new?
 ^^^^^^^^^^^
