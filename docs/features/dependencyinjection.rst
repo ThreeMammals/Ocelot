@@ -261,8 +261,8 @@ and finally call the following native ``IConfigurationBuilder`` framework extens
 
 .. _di-configuration-addocelot:
 
-``AddOcelot`` method
-^^^^^^^^^^^^^^^^^^^^
+``AddOcelot`` methods
+^^^^^^^^^^^^^^^^^^^^^
 
 **Signatures** of the most common versions:
 
