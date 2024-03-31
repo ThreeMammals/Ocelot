@@ -313,6 +313,44 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
+        [Fact]
+        public void Should_return_response_200_with_query_string_upstream_template_multiple_params_with_same_name_and_map_all_traffic()
+        {
+            var subscriptionId = Guid.NewGuid().ToString();
+            var unitId = Guid.NewGuid().ToString();
+            var port = PortFinder.GetRandomPort();
+
+            var configuration = new FileConfiguration
+            {
+                Routes =
+                [
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts =
+                        [
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        ],
+                        UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&personId={personId}&userId={userId}",
+                        UpstreamHttpMethod = ["Get"],
+                    },
+                ],
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1&personId=123&userId=456", "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1&personId=123&userId=456"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
         /// <summary>
         /// To reproduce 1288: query string should contain the placeholder name and value.
         /// </summary>
