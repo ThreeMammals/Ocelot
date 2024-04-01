@@ -1,39 +1,54 @@
-## January 2024 (version {0}) aka [Hornussen](https://www.myswitzerland.com/en-ch/planning/about-switzerland/custom-and-tradition/hornussen-where-the-nouss-flies-from-the-ramp-and-into-the-playing-field/) release
-> Codenamed as **[Hornussen Sport](https://www.youtube.com/results?search_query=Hornussen)**
-> Read the Docs: [Ocelot 23.1](https://ocelot.readthedocs.io/en/23.1.0/)
+## February 2024 (version {0}) aka [Lunar Eclipse](https://www.timeanddate.com/eclipse/lunar/2024-march-25) release
+> Codenamed: **[Lunar Eclipse](https://www.bing.com/search?q=Lunar+Eclipse+2024)**
+> Read the Docs: [Ocelot 23.2](https://ocelot.readthedocs.io/en/23.2.0/)
+
+### What's new?
+
+- **[Configuration](https://ocelot.readthedocs.io/en/latest/features/configuration.html)**: A brand new [Merging files to memory](https://ocelot.readthedocs.io/en/23.2.0/features/configuration.html#merging-files-to-memory) by @ebjornset as a part of the [Merging Configuration Files](https://ocelot.readthedocs.io/en/23.2.0/features/configuration.html#merging-configuration-files) feature.
+  The `AddOcelot` method merges the **ocelot.*.json** files into a single **ocelot.json** file as the primary configuration file, which is written back to disk and then added to the `IConfigurationBuilder` for the well-known `IConfiguration`. You can now call another `AddOcelot` method that adds the merged JSON directly from memory to the `IConfigurationBuilder`, using `AddJsonStream` instead.
+  See more details in [Configuration Overview](https://ocelot.readthedocs.io/en/23.2.0/features/dependencyinjection.html#configuration-overview) of [Dependency Injection](https://ocelot.readthedocs.io/en/23.2.0/features/dependencyinjection.html).
+- **[Service Fabric](https://ocelot.readthedocs.io/en/latest/features/servicefabric.html)**: Published old undocumented "[Placeholders in Service Name](https://ocelot.readthedocs.io/en/23.2.0/features/servicefabric.html#placeholders-in-service-name)" feature of [Service Fabric](https://ocelot.readthedocs.io/en/23.2.0/features/servicefabric.html) [service discovery provider](https://ocelot.readthedocs.io/en/23.2.0/search.html?q=ServiceDiscoveryProvider).
+  This feature by @FelixBoers is available starting from version [13.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/13.0.0).
+- **[Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html)**: A brand new [Polly](https://github.com/App-vNext/Polly) v8 pipelines [Extensibility](https://ocelot.readthedocs.io/en/23.2.0/features/qualityofservice.html#extensibility) feature by @RaynaldM
 
 ### Focus On
 
 <details>
-  <summary><b>Multiplexing middleware</b> aka <a href="https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html">Request Aggregation</a> feature</summary>
+  <summary><b>Updates of the features</b>: Configuration, Dependency Injection and QoS</summary>
  
-- Significant refactoring and design review of the [Multiplexer](https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot/Multiplexer)
-- Optimizing multiplexer performance: `HttpContext` is not copied when there is only one downstream route, and etc.
-- Fixed [the bug](https://github.com/ThreeMammals/Ocelot/pull/1462) in the multiplexer: `HttpContext.User` information was not copied if there was more than one downstream request.
+  - [Configuration](https://ocelot.readthedocs.io/en/latest/features/configuration.html): New [Merging files to memory](https://ocelot.readthedocs.io/en/23.2.0/features/configuration.html#merging-files-to-memory) feature by @ebjornset
+  - [Dependency Injection](https://ocelot.readthedocs.io/en/latest/features/dependencyinjection.html): Added new overloaded [AddOcelot methods](https://ocelot.readthedocs.io/en/23.2.0/features/dependencyinjection.html#addocelot-method) by @ebjornset
+  - [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html): Support of new [Polly](https://github.com/App-vNext/Polly) v8 syntax and new [Extensibility](https://ocelot.readthedocs.io/en/23.2.0/features/qualityofservice.html#extensibility) feature by @RaynaldM
 </details>
 
 <details>
-  <summary><b>System routing</b>. Content streaming when <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding">Transfer-Encoding</a>: 'chunked'</summary>
+  <summary><b>Ocelot extra packages</b></summary>
 
-  - Correction of [the bug](https://github.com/ThreeMammals/Ocelot/pull/1972) when creating requests: The header [Transfer-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding): `chunked` was present even when there was no content or the request body size was 0. These cases are now addressed.
-</details>
-
-<details>
-  <summary><b>Updates of the features</b>: QoS, Load Balancer and Error Status Codes</summary>
- 
-- [Quality of Service](https://ocelot.readthedocs.io/en/latest/features/qualityofservice.html): Possibility of implementation of custom Polly v8.2 providers. New `AddPolly` extension methods.
-- [Load Balancer](https://ocelot.readthedocs.io/en/latest/features/loadbalancer.html): Extension of the route key format, ensuring that the key remains unique for cases of **UpstreamHost** route property and **ServiceName** vs **ServiceNamespace** properties in Consul setup.
-- [Error Status Codes](https://ocelot.readthedocs.io/en/latest/features/errorcodes.html): When [413 Content Too Large](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/413), Ocelot now returns a 413 `PayloadTooLargeError` (Ocelot error code `41`).
-</details>
-
-<details>
-  <summary>Documentation for <b>Request Aggregation</b></summary>
- 
-  - [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html)
+  - [Ocelot.Provider.Polly](https://www.nuget.org/packages/Ocelot.Provider.Polly): Support of new [Polly](https://github.com/App-vNext/Polly) v8 syntax.
+    *Polly* [8.0+](https://github.com/App-vNext/Polly/releases) versions introduced the concept of [resilience pipelines](https://www.pollydocs.org/pipelines/).
+    All [AddPolly extensions](https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot.Provider.Polly/OcelotBuilderExtensions.cs) have been automatically migrated from **v7** to **v8**.
+    Please note that older **v7** extensions are marked with the `[Obsolete]` attribute and renamed using the `V7` suffix. And the old **v7** implementation has been moved to the [v7 namespace](https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot.Provider.Polly/v7).
+    See more details in [Polly v7 vs v8](https://ocelot.readthedocs.io/en/23.2.0/features/qualityofservice.html#polly-v7-vs-v8) section of [Quality of Service](https://ocelot.readthedocs.io/en/23.2.0/features/qualityofservice.html) chapter.
 </details>
 
 <details>
   <summary><b>Stabilization</b> aka bug fixing</summary>
 
-  - See [all bugs](https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+is%3Aclosed+label%3Abug+milestone%3AJanuary%2724) of the [January'24](https://github.com/ThreeMammals/Ocelot/milestone/4) milestone
+  - [683](https://github.com/ThreeMammals/Ocelot/issues/683) by PR [1927](https://github.com/ThreeMammals/Ocelot/pull/1927)
+    [New rules](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+IsPlaceholderNotDuplicatedIn+IsUpstreamPlaceholderDefinedInDownstream+IsDownstreamPlaceholderDefinedInUpstream&type=code) have been added to Ocelot's configuration validation logic to find duplicate placeholders in path templates.
+    See more in the [FileConfigurationFluentValidator](https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FileConfigurationFluentValidator&type=code) class. Thanks to @AlyHKafoury!
+  - [1518](https://github.com/ThreeMammals/Ocelot/issues/1518) hotfix by PR [1986](https://github.com/ThreeMammals/Ocelot/pull/1986)
+    Using the default `IServiceCollection` [DI extensions](https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ServiceCollectionExtensions.cs) to register Ocelot services resulted in the `ServiceCollection` provider being forced to be created by calling `BuildServiceProvider()`.
+    This resulted in problems with dependency injection libraries, or worse, causing the Ocelot app to crash!
+    See more in the [ServiceCollectionExtensions](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+ServiceCollectionExtensions&type=code) class. Thanks to @ArwynFr!
+  - See [all bugs](https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+is%3Aclosed+label%3Abug+milestone%3AFebruary%2724) of the [February'24](https://github.com/ThreeMammals/Ocelot/milestone/5) milestone
+</details>
+
+<details>
+  <summary><b>Documentation</b> for version <a href="https://ocelot.readthedocs.io/en/23.2.0/">23.2</a></summary>
+
+  - [Configuration](https://ocelot.readthedocs.io/en/23.2.0/features/configuration.html)
+  - [Dependency Injection](https://ocelot.readthedocs.io/en/23.2.0/features/dependencyinjection.html)
+  - [Quality of Service](https://ocelot.readthedocs.io/en/23.2.0/features/qualityofservice.html)
+  - [Service Fabric](https://ocelot.readthedocs.io/en/23.2.0/features/servicefabric.html)
 </details>

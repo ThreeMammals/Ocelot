@@ -16,6 +16,8 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        [Trait("PR", "570")]
+        [Trait("Bug", "555")]
         public void should_fix_issue_555()
         {
             var port = PortFinder.GetRandomPort();
@@ -129,8 +131,12 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_support_placeholder_in_service_fabric_service_name()
+        [Theory]
+        [Trait("PR", "722")]
+        [Trait("Feat", "721")]
+        [InlineData("/api/{version}/values", "/values", "Service_{version}/Api", "/Service_1.0/Api/values",   "/api/1.0/values?test=best",                "test=best")]
+        [InlineData("/api/{version}/{all}",  "/{all}",  "Service_{version}/Api", "/Service_1.0/Api/products", "/api/1.0/products?test=the-best-from-Aly", "test=the-best-from-Aly")]
+        public void should_support_placeholder_in_service_fabric_service_name(string upstream, string downstream, string serviceName, string downstreamUrl, string url, string query)
         {
             var port = PortFinder.GetRandomPort();
 
@@ -140,11 +146,11 @@ namespace Ocelot.AcceptanceTests
                     {
                         new()
                         {
-                            DownstreamPathTemplate = "/values",
+                            DownstreamPathTemplate = downstream,
                             DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/api/{version}/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = "Service_{version}/Api",
+                            UpstreamPathTemplate = upstream,
+                            UpstreamHttpMethod = ["Get"],
+                            ServiceName = serviceName,
                         },
                     },
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -158,12 +164,12 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/Service_1.0/Api/values", 200, "Hello from Laura", "test=best"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamUrl, 200, "Hello from Felix Boers", query))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/1.0/values?test=best"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Felix Boers"))
                 .BDDfy();
         }
 
@@ -175,7 +181,7 @@ namespace Ocelot.AcceptanceTests
 
                 if (_downstreamPath != basePath)
                 {
-                    context.Response.StatusCode = statusCode;
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     await context.Response.WriteAsync("downstream path didnt match base path");
                 }
                 else
@@ -187,7 +193,7 @@ namespace Ocelot.AcceptanceTests
                     }
                     else
                     {
-                        context.Response.StatusCode = statusCode;
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         await context.Response.WriteAsync("downstream path didnt match base path");
                     }
                 }
