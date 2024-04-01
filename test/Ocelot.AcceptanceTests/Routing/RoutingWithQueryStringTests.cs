@@ -336,7 +336,7 @@ namespace Ocelot.AcceptanceTests.Routing
                                 Port = port,
                             },
                         ],
-                        UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&personId={personId}&userId={userId}",
+                        UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
                         UpstreamHttpMethod = ["Get"],
                     },
                 ],
