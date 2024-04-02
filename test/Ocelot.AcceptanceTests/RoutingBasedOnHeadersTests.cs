@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using TestStack.BDDfy;
-using Xunit;
+using Ocelot.Testing;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -24,7 +19,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_one_header_value()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -67,7 +62,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_one_header_value_when_more_headers()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -111,7 +106,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_two_header_values_when_more_headers()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
         var headerValue1 = "PL";
         var headerName2 = "region";
@@ -159,7 +154,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_not_match_one_header_value()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
         var anotherHeaderValue = "UK";
@@ -202,7 +197,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_not_match_one_header_value_when_no_headers()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -243,7 +238,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_not_match_two_header_values_when_one_different()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
         var headerValue1 = "PL";
         var headerName2 = "region";
@@ -290,7 +285,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_not_match_two_header_values_when_one_not_existing()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
         var headerValue1 = "PL";
         var headerName2 = "region";
@@ -336,7 +331,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_not_match_one_header_value_when_header_duplicated()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -379,8 +374,8 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_aggregated_route_match_header_value()
     {
-        var port1 = RandomPortFinder.GetRandomPort();
-        var port2 = RandomPortFinder.GetRandomPort();
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -453,8 +448,8 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_aggregated_route_not_match_header_value()
     {
-        var port1 = RandomPortFinder.GetRandomPort();
-        var port2 = RandomPortFinder.GetRandomPort();
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
 
@@ -526,7 +521,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_header_placeholder()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "Region";
 
         var configuration = new FileConfiguration
@@ -568,7 +563,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_header_placeholder_not_in_downstream_path()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "ProductName";
 
         var configuration = new FileConfiguration
@@ -610,7 +605,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_distinguish_route_for_different_roles()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "Origin";
 
         var configuration = new FileConfiguration
@@ -667,7 +662,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_header_and_url_placeholders()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
 
         var configuration = new FileConfiguration
@@ -709,7 +704,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_header_with_braces()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
 
         var configuration = new FileConfiguration
@@ -751,7 +746,7 @@ public class RoutingBasedOnHeadersTests : IDisposable
     [Fact]
     public void Should_match_two_headers_with_the_same_name()
     {
-        var port = RandomPortFinder.GetRandomPort();
+        var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue1 = "PL";
         var headerValue2 = "UK";
