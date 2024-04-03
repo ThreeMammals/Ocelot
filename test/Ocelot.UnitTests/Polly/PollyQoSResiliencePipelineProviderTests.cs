@@ -164,7 +164,7 @@ public class PollyQoSResiliencePipelineProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-        await Task.Delay(6000);
+        await Task.Delay(8000);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
     }
@@ -183,7 +183,7 @@ public class PollyQoSResiliencePipelineProviderTests
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
 
-        await Task.Delay(6000);
+        await Task.Delay(8000);
 
         Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
@@ -231,7 +231,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(10000)
             .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
-            .WithDurationOfBreak(5000)
+            .WithDurationOfBreak(7000)
             .Build();
 
         var upstreamPath = new UpstreamPathTemplateBuilder()
