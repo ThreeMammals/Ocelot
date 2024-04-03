@@ -65,6 +65,6 @@ namespace Ocelot.Configuration
         /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
         /// The property value is assignable to the <see cref="HttpClientHandler.UseDefaultCredentials"/> one.
         /// </value>
-        public bool UseDefaultCredentials { get; private set; }
+        public bool UseDefaultCredentials { get; }
     }
 }
