@@ -230,9 +230,9 @@ This is just one common use case, and you can add additional services to the bui
 Configuration Overview
 ----------------------
 
-*Dependency Injection* for the :doc:`../features/configuration` feature in Ocelot is designed to extend and/or control **configuring** of Ocelot core before the stage of building ASP.NET MVC pipeline services.
+*Dependency Injection* for the :doc:`../features/configuration` feature in Ocelot is designed to extend and/or control **the configuration** of Ocelot kernel before the stage of building ASP.NET MVC pipeline services.
 
-Use :ref:`di-configuration-extensions` in the following ``ConfigureAppConfiguration`` method (**Program.cs** and **Startup.cs**) of your app (minimal web app) to configure Ocelot pipeline and services:
+To configure the Ocelot pipeline and services, use the :ref:`di-configuration-extensions` in the following ``ConfigureAppConfiguration`` method (located in *Program.cs* and *Startup.cs*) of your minimal web app:
 
 .. code-block:: csharp
 
@@ -250,14 +250,17 @@ Use :ref:`di-configuration-extensions` in the following ``ConfigureAppConfigurat
     | **Namespace**: ``Ocelot.DependencyInjection``
     | **Class**: `ConfigurationBuilderExtensions`_
 
-The main one is the :ref:`di-configuration-addocelot` of the `ConfigurationBuilderExtensions`_ class, which has a list of overloaded versions with corresponding signatures.
+The main methods are the :ref:`di-configuration-addocelot` within the `ConfigurationBuilderExtensions`_ class.
+This method has a list of overloaded versions with corresponding signatures.
 
-The purpose of the method is to prepare everything before actually configuring with native extensions:
-merge partial JSON files, select a merge type to save the merged JSON configuration data ``ToFile`` or ``ToMemory``,
-and finally call the following native ``IConfigurationBuilder`` framework extensions:
+The purpose of this method is to prepare everything before actually configuring with native extensions. It involves the following steps:
 
-* ``AddJsonFile`` finally adds primary configuration file (aka `ocelot.json`_) after the merge stage writing the file back **to the file system** using the ``ToFile`` merge type option, which is implicitly the default.
-* ``AddJsonStream`` finally adds the JSON data of the primary configuration file as a UTF-8 stream after the merge stage **into memory** using the ``ToMemory`` merge type option.
+1. **Merging Partial JSON Files**: The ``GetMergedOcelotJson`` method merges partial JSON files.
+2. **Selecting Merge Type**: It allows you to choose a merge type to save the merged JSON configuration data either ``ToFile`` or ``ToMemory``.
+3. **Framework Extensions**: Finally, the method calls the following native ``IConfigurationBuilder`` framework extensions:
+
+   * The ``AddJsonFile`` method adds the primary configuration file (commonly known as `ocelot.json`_) after the merge stage. It writes the file back **to the file system** using the ``ToFile`` merge type option, which is implicitly the default.
+   * The ``AddJsonStream`` method adds the JSON data of the primary configuration file as a UTF-8 stream **into memory** after the merge stage. It uses the ``ToMemory`` merge type option.
 
 .. _di-configuration-addocelot:
 
@@ -271,7 +274,7 @@ and finally call the following native ``IConfigurationBuilder`` framework extens
     IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, IWebHostEnvironment env);
     IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env);
 
-**Note!** These versions use implicit ``ToFile`` merge type to write `ocelot.json`_ back to a disk and finally they call the ``AddJsonFile`` extension.
+**Note**: These versions use the implicit ``ToFile`` merge type to write `ocelot.json`_ back to disk. Finally, they call the ``AddJsonFile`` extension.
 
 **Signatures** of the versions to specify a ``MergeOcelotJson`` option:
 
@@ -282,8 +285,8 @@ and finally call the following native ``IConfigurationBuilder`` framework extens
     IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env, MergeOcelotJson mergeTo,
         string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null);
 
-**Note!** These versions have optional arguments to specify the location of 3 main files that are involved in the merge operation.
-In theory, these files can be located anywhere, but in practice it is better to keep the files in one folder.
+**Note**: These versions include optional arguments to specify the location of the three main files involved in the merge operation.
+In theory, these files can be located anywhere, but in practice, it is better to keep them in one folder.
 
 **Signatures** of the versions to indicate the ``FileConfiguration`` object of a self-created out-of-the-box configuration: [#f1]_
 
@@ -294,13 +297,13 @@ In theory, these files can be located anywhere, but in practice it is better to 
     IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env, MergeOcelotJson mergeTo,
         string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null);
 
-| **Note 1**. These versions have optional arguments to specify the location of 3 main files that are involved in the merge operation.
-| **Note 2**. Your ``FileConfiguration`` object can be serialized/deserialized to/from anywhere: local or remote storages, Consul KV storage and even a database.
-  Please, read more about this super useful feature in PR `1569`_ [#f1]_.
+| **Note 1**: These versions include optional arguments to specify the location of the three main files involved in the merge operation.
+| **Note 2**: Your ``FileConfiguration`` object can be serialized/deserialized from anywhere: local or remote storage, Consul KV storage, and even a database.
+  For more information about this super useful feature, please read PR `1569`_ [#f1]_.
 
 """"
 
-.. [#f1] Dynamic :doc:`../features/configuration` feature was requested in issues `1228`_, `1235`_, and delivered by PR `1569`_ as a part of the version `20.0`_. Since then we extended it in PR `1227`_ and released it as a part of the version `23.2`_.
+.. [#f1] The Dynamic :doc:`../features/configuration` feature was requested in issues `1228`_ and `1235`_. It was delivered by PR `1569`_ as part of version `20.0`_. Since then, we have extended it in PR `1227`_ and released it as part of version `23.2`_.
 
 .. _ServiceCollectionExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ServiceCollectionExtensions.cs#L7
 .. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs

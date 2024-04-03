@@ -48,18 +48,17 @@ Placeholders in Service Name [#f1]_
 
 In Ocelot, you can insert placeholders for variables into your ``UpstreamPathTemplate`` and ``ServiceName`` using the format ``{something}``.
 
-It's important to note that the placeholder variable must exist in both the (**DownstreamPathTemplate** vs **ServiceName**) and the **UpstreamPathTemplate**.
-The **UpstreamPathTemplate** should include all placeholders from the **DownstreamPathTemplate** and **ServiceName**;
-otherwise, Ocelot will not start due to validation errors, which are logged.
+Important Note: The placeholder variable must exist in both the ``DownstreamPathTemplate`` (or ``ServiceName``) and the ``UpstreamPathTemplate``.
+Specifically, the ``UpstreamPathTemplate`` should include all placeholders from the ``DownstreamPathTemplate`` and ``ServiceName``.
+Failure to do so will result in Ocelot not starting due to validation errors, which are logged.
 
-Once the validation stage is cleared, Ocelot will replace the placeholder values in the **UpstreamPathTemplate** with those in the **DownstreamPathTemplate** and/or **ServiceName** for each processed request.
-Thus, the :ref:`sf-placeholders` behave similarly to the :ref:`routing-placeholders` feature, but with the **ServiceName** property considered during the processing.
-
+Once the validation stage is cleared, Ocelot will replace the placeholder values in the ``UpstreamPathTemplate`` with those from the ``DownstreamPathTemplate`` and/or ``ServiceName`` for each processed request.
+Thus, the :ref:`sf-placeholders` behave similarly to the :ref:`routing-placeholders` feature, but with the ``ServiceName`` property considered during processing.
 
 Placeholders example
 ^^^^^^^^^^^^^^^^^^^^
 
-Here is the example of variable ``version`` in *Service Fabric* service name.
+Here is the example of the ``version`` variable in *Service Fabric* service name.
 
 **Given** you have the following `ocelot.json`_:
 
@@ -89,7 +88,7 @@ Here is the example of variable ``version`` in *Service Fabric* service name.
 
 """"
 
-.. [#f1] ":ref:`sf-placeholders`" feature was requested in issue `721`_ and delivered by PR `722`_ as a part of the version `13.0.0`_.
+.. [#f1] ":ref:`sf-placeholders`" feature was requested in issue `721`_ and delivered by PR `722`_ as a part of version `13.0.0`_.
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
 .. _721: https://github.com/ThreeMammals/Ocelot/issues/721
