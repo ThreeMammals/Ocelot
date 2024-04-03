@@ -56,6 +56,7 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
 int releaseId = 0;
+bool IsTechnicalRelease = true;
 string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
@@ -83,7 +84,7 @@ Task("RunTests")
 	.IsDependentOn("RunIntegrationTests");
 
 Task("Release")
-	.IsDependentOn("Build")
+	//.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
 	.IsDependentOn("PublishGitHubRelease")
@@ -154,12 +155,18 @@ Task("CreateReleaseNotes")
 
 		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
 		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-		Information("Last release tag is " + lastRelease);
-
 		var releaseVersion = versioning.NuGetVersion;
+
 		// Read main header from Git file, substitute version in header, and add content further...
+		Information("{0}  New release tag is " + releaseVersion);
+		Information("{1} Last release tag is " + lastRelease);
 		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
 		releaseNotes = new List<string> { releaseHeader };
+		if (IsTechnicalRelease)
+		{
+			WriteReleaseNotes();
+			return;
+		}
 
 		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
 			.ToList();
@@ -298,6 +305,7 @@ Task("CreateReleaseNotes")
 				}
 			}
 		} // END of Top 3
+
 		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
 		releaseNotes.AddRange(topContributors);
 		releaseNotes.Add("");
@@ -415,20 +423,23 @@ Task("RunIntegrationTests")
 
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("Compile")
-	.Does(() => 
+	//.IsDependentOn("Compile")
+	.Does(() =>
 	{
 		WriteReleaseNotes();
 		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
 
-		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
-		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
-		foreach(var projectFile in projectFiles)
+		if (!IsTechnicalRelease)
 		{
-			System.IO.File.AppendAllLines(
-				artifactsFile,
-				new[] { projectFile.GetFilename().FullPath }
-			);
+			CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+			var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+			foreach(var projectFile in projectFiles)
+			{
+				System.IO.File.AppendAllLines(
+					artifactsFile,
+					new[] { projectFile.GetFilename().FullPath }
+				);
+			}
 		}
 
 		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
@@ -511,12 +522,20 @@ Task("PublishToNuget")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		Information("Skipping of publishing to NuGet...");
+		if (IsTechnicalRelease)
+		{
+			Information("Skipping of publishing to NuGet because of technical release...");
+			return;
+		}
+
 		if (IsRunningOnCircleCI())
 		{
+			Information("Publish to NuGet...");
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 		}
 	});
+
+Task("Void").Does(() => {});
 
 RunTarget(target);
 
