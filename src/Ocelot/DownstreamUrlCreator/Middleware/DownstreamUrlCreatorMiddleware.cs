@@ -102,11 +102,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             // Remove old replaced query parameters
             foreach (var queryKey in queries.AllKeys)
             {
- var matchingPlaceholder = placeholders.FirstOrDefault(placeholder => queryKey == placeholder.Name.Trim(OpeningBrace, ClosingBrace));
-    if (matchingPlaceholder != null)
-    {
-        queries.Remove(queryKey);
-    }
+                var matchingPlaceholder = placeholders.FirstOrDefault(placeholder => queryKey == placeholder.Name.Trim(OpeningBrace, ClosingBrace));
+                if (matchingPlaceholder != null)
+                {
+                    queries.Remove(queryKey);
                 }
             }
 
