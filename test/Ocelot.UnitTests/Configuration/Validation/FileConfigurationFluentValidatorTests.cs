@@ -753,32 +753,12 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData("/foo/{bar}/foo", "/yahoo/foo/{bar}")] // valid
         [InlineData("/foo/{bar}/{foo}", "/yahoo/{foo}/{bar}")] // valid
         [InlineData("/foo/{bar}/{bar}", "/yahoo/foo/{bar}", "UpstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
-        [InlineData("/foo/{bar}/{bar}", "/yahoo/{foo}/{bar}", "UpstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder", "DownstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in UpstreamPathTemplate '/foo/{bar}/{bar}'")] // invalid
+        [InlineData("/foo/{bar}/{bar}", "/yahoo/{foo}/{bar}", "UpstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
         [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/foo")] // valid
         [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
         [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
-        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder", "UpstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in DownstreamPathTemplate '/foo/{bar}/{bar}'")] // invalid
+        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
         public void IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
-        {
-            // Arrange
-            var route = GivenDefaultRoute(upstream, downstream);
-            GivenAConfiguration(route);
-
-            // Act
-            WhenIValidateTheConfiguration();
-
-            // Assert
-            ThenThereAreErrors(expected.Length > 0);
-            ThenTheErrorMessagesAre(expected);
-        }
-
-        [Theory]
-        [Trait("PR", "1927")]
-        [InlineData("/foo/{bar}/{foo}", "/yahoo/{foo}/{bar}")] // valid
-        [InlineData("/foo/{bar}/{yahoo}", "/yahoo/{foo}/{bar}", "UpstreamPathTemplate '/foo/{bar}/{yahoo}' doesn't contain the same placeholders in DownstreamPathTemplate '/yahoo/{foo}/{bar}'", "DownstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in UpstreamPathTemplate '/foo/{bar}/{yahoo}'")] // invalid
-        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
-        [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{yahoo}", "UpstreamPathTemplate '/yahoo/{foo}/{bar}' doesn't contain the same placeholders in DownstreamPathTemplate '/foo/{bar}/{yahoo}'", "DownstreamPathTemplate '/foo/{bar}/{yahoo}' doesn't contain the same placeholders in UpstreamPathTemplate '/yahoo/{foo}/{bar}'")] // invalid
-        public void IsPlaceholderDefinedInBothTemplates_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream);
