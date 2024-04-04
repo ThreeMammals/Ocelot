@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.Validator
     /// </summary>
     public partial class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
-        private const string Servicefabric = "servicefabric";
+        private const string ServiceFabric = "ServiceFabric";
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
         public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
@@ -61,19 +61,24 @@ namespace Ocelot.Configuration.Validator
             RuleForEach(configuration => configuration.Aggregates)
                 .Must((config, aggregateRoute) => DoesNotContainRoutesWithSpecificRequestIdKeys(aggregateRoute, config.Routes))
                 .WithMessage((_, aggregateRoute) => $"{nameof(aggregateRoute)} {aggregateRoute.UpstreamPathTemplate} contains Route with specific RequestIdKey, this is not possible with Aggregates");
+
+            // Service Fabric service discovery features
+            RuleForEach(configuration => configuration.Routes)
+                .Must(ServiceFabricPlaceholdersInServiceName)
+                .WithMessage(ServiceFabricPlaceholdersInServiceNameMessage);
         }
 
         private bool HaveServiceDiscoveryProviderRegistered(FileRoute route, FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             return string.IsNullOrEmpty(route.ServiceName) ||
-                   serviceDiscoveryProvider?.Type?.ToLower() == Servicefabric ||
+                   ServiceFabric.Equals(serviceDiscoveryProvider?.Type, StringComparison.InvariantCultureIgnoreCase) ||
                    _serviceDiscoveryFinderDelegates.Any();
         }
 
         private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
         {
             return serviceDiscoveryProvider == null ||
-                Servicefabric.Equals(serviceDiscoveryProvider.Type, StringComparison.InvariantCultureIgnoreCase) ||
+                ServiceFabric.Equals(serviceDiscoveryProvider.Type, StringComparison.InvariantCultureIgnoreCase) ||
                 string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
         }
 
@@ -114,6 +119,26 @@ namespace Ocelot.Configuration.Validator
                 .Select(m => m.Value).ToList();
             return placeholders.Count == placeholders.Distinct().Count();
         }
+
+        private static bool ServiceFabricPlaceholdersInServiceName(FileConfiguration configuration, FileRoute route)
+        {
+            if (!ServiceFabric.Equals(configuration?.GlobalConfiguration?.ServiceDiscoveryProvider?.Type, StringComparison.InvariantCultureIgnoreCase) ||
+                string.IsNullOrEmpty(route?.ServiceName) ||
+                !PlaceholderRegex().IsMatch(route.ServiceName))
+            {
+                return true;
+            }
+
+            var firstPlaceholders = PlaceholderRegex().Matches(route.UpstreamPathTemplate)
+                .Select(m => m.Value).ToList();
+            var secondPlaceholders = PlaceholderRegex().Matches(route.ServiceName + route.DownstreamPathTemplate)
+                .Select(m => m.Value).ToList();
+            return firstPlaceholders.All(secondPlaceholders.Contains)
+                && secondPlaceholders.All(firstPlaceholders.Contains);
+        }
+
+        private string ServiceFabricPlaceholdersInServiceNameMessage(FileConfiguration configuration, FileRoute route)
+            => $"SD Provider: {configuration?.GlobalConfiguration?.ServiceDiscoveryProvider?.Type ?? "?"}; Placeholders in ServiceName feature has invalid configuration! {nameof(route.UpstreamPathTemplate)} '{route.UpstreamPathTemplate}' doesn't contain the same placeholders in both {nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}' and {nameof(route.ServiceName)} '{route.ServiceName}', or vice versa!";
 
         private static bool DoesNotContainRoutesWithSpecificRequestIdKeys(FileAggregateRoute fileAggregateRoute,
             IEnumerable<FileRoute> routes)
