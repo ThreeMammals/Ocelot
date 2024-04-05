@@ -189,10 +189,10 @@ For example:
 
 .. code-block:: csharp
 
-    ConfigureAppConfiguration((hostingContext, config) =>
+    ConfigureAppConfiguration((context, config) =>
     {
         config.AddJsonFile(ConfigurationBuilderExtensions.PrimaryConfigFile, optional: false, reloadOnChange: true); // old approach
-        var env = hostingContext.HostingEnvironment;
+        var env = context.HostingEnvironment;
         var mergeTo = MergeOcelotJson.ToFile; // ToMemory
         var folder = "/My/folder";
         FileConfiguration configuration = new(); // read from anywhere and initialize
