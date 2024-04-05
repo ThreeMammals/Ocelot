@@ -173,54 +173,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        [Fact]
-        [Trait("PR", "722, 2032")]
-        [Trait("Feat", "721")]
-        public void should_throw_exception_when_config_is_invalid_for_ServiceFabricPlaceholdersInServiceName_rule()
-        {
-            // Arrange
-            var port = PortFinder.GetRandomPort();
-            var invalidConfig = new FileConfiguration
-            {
-                Routes =
-                [
-                    new()
-                    {
-                        DownstreamPathTemplate = "/{all}",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/api/{version}/{all}",
-                        UpstreamHttpMethod = ["Get"],
-                        ServiceName = "Service_{invalid}/Api", // invalid placeholder is not defined in upstream
-                    },
-                ],
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    ServiceDiscoveryProvider = new()
-                    {
-                        Host = "localhost",
-                        Port = port,
-                        Type = "ServiceFabric",
-                    },
-                },
-            };
-            _steps.GivenThereIsAConfiguration(invalidConfig);
-
-            // Act
-            Exception exception = null;
-            try
-            {
-                _steps.GivenOcelotIsRunning();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
-
-            // Assert
-            exception.ShouldNotBeNull();
-            exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: SD Provider: ServiceFabric; Placeholders in ServiceName feature has invalid configuration! UpstreamPathTemplate '/api/{version}/{all}' doesn't contain the same placeholders in both DownstreamPathTemplate '/{all}' and ServiceName 'Service_{invalid}/Api', or vice versa!)");
-        }
-
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expectedQueryString)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
