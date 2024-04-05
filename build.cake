@@ -56,7 +56,7 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
 int releaseId = 0;
-bool IsTechnicalRelease = true;
+bool IsTechnicalRelease = false;
 string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
@@ -84,7 +84,7 @@ Task("RunTests")
 	.IsDependentOn("RunIntegrationTests");
 
 Task("Release")
-	//.IsDependentOn("Build")
+	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
 	.IsDependentOn("PublishGitHubRelease")
@@ -306,11 +306,11 @@ Task("CreateReleaseNotes")
 			}
 		} // END of Top 3
 
-		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		releaseNotes.AddRange(topContributors);
-		releaseNotes.Add("");
-		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		releaseNotes.AddRange(starring);
+		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		// releaseNotes.AddRange(topContributors);
+		// releaseNotes.Add("");
+		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		// releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
@@ -423,7 +423,7 @@ Task("RunIntegrationTests")
 
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
-	//.IsDependentOn("Compile")
+	.IsDependentOn("Compile")
 	.Does(() =>
 	{
 		WriteReleaseNotes();
@@ -530,7 +530,6 @@ Task("PublishToNuget")
 
 		if (IsRunningOnCircleCI())
 		{
-			Information("Publish to NuGet...");
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 		}
 	});
@@ -588,7 +587,7 @@ private void PersistVersion(string committedVersion, string newVersion)
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information("PublishPackages");
+		Information("Publishing to NuGet...");
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
 			.Distinct();
@@ -601,17 +600,13 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			}
 
 			var codePackage = packagesDir + File(artifact);
+			Information("Pushing package " + codePackage + "...");
 
-			Information("Pushing package " + codePackage);
-			
-			Information("Calling NuGetPush");
-
+			Information("Calling DotNetNuGetPush");
 			DotNetNuGetPush(
 				codePackage,
-				new DotNetNuGetPushSettings {
-					ApiKey = feedApiKey,
-					Source = codeFeedUrl
-				});
+				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl }
+			);
 		}
 }
 

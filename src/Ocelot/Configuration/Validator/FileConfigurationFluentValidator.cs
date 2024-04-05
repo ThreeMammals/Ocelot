@@ -42,13 +42,6 @@ namespace Ocelot.Configuration.Validator
                 .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.DownstreamPathTemplate))
                 .WithMessage((_, route) => $"{nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}' has duplicated placeholder");
 
-            RuleForEach(configuration => configuration.Routes)
-                .Must(IsUpstreamPlaceholderDefinedInDownstream)
-                .WithMessage((_, route) => $"{nameof(route.UpstreamPathTemplate)} '{route.UpstreamPathTemplate}' doesn't contain the same placeholders in {nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}'");
-            RuleForEach(configuration => configuration.Routes)
-                .Must(IsDownstreamPlaceholderDefinedInUpstream)
-                .WithMessage((_, route) => $"{nameof(route.DownstreamPathTemplate)} '{route.DownstreamPathTemplate}' doesn't contain the same placeholders in {nameof(route.UpstreamPathTemplate)} '{route.UpstreamPathTemplate}'");
-
             RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
                 .Must(HaveServiceDiscoveryProviderRegistered)
                 .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
@@ -120,37 +113,6 @@ namespace Ocelot.Configuration.Validator
             var placeholders = PlaceholderRegex().Matches(pathTemplate)
                 .Select(m => m.Value).ToList();
             return placeholders.Count == placeholders.Distinct().Count();
-        }
-
-        private static bool IsServiceFabricWithServiceName(FileConfiguration configuration, FileRoute route)
-            => Servicefabric.Equals(configuration?.GlobalConfiguration?.ServiceDiscoveryProvider?.Type, StringComparison.InvariantCultureIgnoreCase)
-                && !string.IsNullOrEmpty(route?.ServiceName) && PlaceholderRegex().IsMatch(route.ServiceName);
-
-        private bool IsUpstreamPlaceholderDefinedInDownstream(FileConfiguration configuration, FileRoute route)
-            => IsServiceFabricWithServiceName(configuration, route)
-                ? IsPlaceholderDefinedInBothTemplates(route.UpstreamPathTemplate, route.ServiceName + route.DownstreamPathTemplate)
-                : IsPlaceholderDefinedInBothTemplates(route.UpstreamPathTemplate, route.DownstreamPathTemplate);
-
-        private bool IsDownstreamPlaceholderDefinedInUpstream(FileConfiguration configuration, FileRoute route)
-            => IsServiceFabricWithServiceName(configuration, route)
-                ? IsPlaceholderDefinedInBothTemplates(route.ServiceName + route.DownstreamPathTemplate, route.UpstreamPathTemplate)
-                : IsPlaceholderDefinedInBothTemplates(route.DownstreamPathTemplate, route.UpstreamPathTemplate);
-
-        private static bool IsPlaceholderDefinedInBothTemplates(string firstPathTemplate, string secondPathTemplate)
-        {
-            var firstPlaceholders = PlaceholderRegex().Matches(firstPathTemplate)
-                .Select(m => m.Value).ToList();
-            var secondPlaceholders = PlaceholderRegex().Matches(secondPathTemplate)
-                .Select(m => m.Value).ToList();
-            foreach (var placeholder in firstPlaceholders)
-            {
-                if (!secondPlaceholders.Contains(placeholder))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private static bool DoesNotContainRoutesWithSpecificRequestIdKeys(FileAggregateRoute fileAggregateRoute,
