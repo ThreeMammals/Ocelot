@@ -22,12 +22,12 @@ namespace Ocelot.Configuration
             UpstreamHeaderTemplates = upstreamHeaderTemplates;
         }
 
-        public UpstreamPathTemplate UpstreamTemplatePattern { get; private set; }
-        public List<HttpMethod> UpstreamHttpMethod { get; private set; }
-        public string UpstreamHost { get; private set; }
-        public List<DownstreamRoute> DownstreamRoute { get; private set; }
-        public List<AggregateRouteConfig> DownstreamRouteConfig { get; private set; }
-        public string Aggregator { get; private set; }
-        public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; private set; }
+        public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; }
+        public UpstreamPathTemplate UpstreamTemplatePattern { get; }
+        public List<HttpMethod> UpstreamHttpMethod { get; }
+        public string UpstreamHost { get; }
+        public List<DownstreamRoute> DownstreamRoute { get; }
+        public List<AggregateRouteConfig> DownstreamRouteConfig { get; }
+        public string Aggregator { get; }
     }
 }
