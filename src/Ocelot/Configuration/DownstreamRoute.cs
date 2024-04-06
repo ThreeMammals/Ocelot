@@ -76,7 +76,7 @@ namespace Ocelot.Configuration
             SecurityOptions = securityOptions;
             DownstreamHttpMethod = downstreamHttpMethod;
             DownstreamHttpVersion = downstreamHttpVersion;
-            UpstreamHeaders = upstreamHeaders ?? new Dictionary<string, UpstreamHeaderTemplate>();
+            UpstreamHeaders = upstreamHeaders ?? new();
         }
 
         public string Key { get; }
