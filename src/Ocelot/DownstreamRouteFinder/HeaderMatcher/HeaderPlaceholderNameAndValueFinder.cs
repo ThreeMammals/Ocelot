@@ -1,8 +1,5 @@
 ﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 
@@ -10,17 +7,18 @@ public class HeaderPlaceholderNameAndValueFinder : IHeaderPlaceholderNameAndValu
 {
     public List<PlaceholderNameAndValue> Find(Dictionary<string, string> upstreamHeaders, Dictionary<string, UpstreamHeaderTemplate> templateHeaders)
     {
-        var placeholderNameAndValuesList = new List<PlaceholderNameAndValue>();
-
+        var result = new List<PlaceholderNameAndValue>();
         foreach (var templateHeader in templateHeaders)
         {
             var upstreamHeader = upstreamHeaders[templateHeader.Key];
             var matches = templateHeader.Value.Pattern.Matches(upstreamHeader);
-            var placeholders = matches.SelectMany(g => g.Groups as IEnumerable<Group>).Where(g => g.Name != "0")
-                                      .Select(g => new PlaceholderNameAndValue("{" + g.Name + "}", g.Value));
-            placeholderNameAndValuesList.AddRange(placeholders);
+            var placeholders = matches
+                .SelectMany(g => g.Groups as IEnumerable<Group>)
+                .Where(g => g.Name != "0")
+                .Select(g => new PlaceholderNameAndValue(string.Concat('{', g.Name, '}'), g.Value));
+            result.AddRange(placeholders);
         }
 
-        return placeholderNameAndValuesList;
+        return result;
     }
 }

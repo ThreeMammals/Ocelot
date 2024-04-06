@@ -4,7 +4,7 @@ using Ocelot.Values;
 namespace Ocelot.Configuration.Creator;
 
 /// <summary>
-/// Ocelot feature: Routing based on request header.<br/>
+/// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#upstream-headers">Routing based on request header</see>.
 /// </summary>
 public interface IUpstreamHeaderTemplatePatternCreator
 {
