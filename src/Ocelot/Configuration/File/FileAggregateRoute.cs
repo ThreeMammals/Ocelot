@@ -15,5 +15,12 @@ namespace Ocelot.Configuration.File
         public List<string> UpstreamHttpMethod => [HttpMethods.Get];
         public Dictionary<string, string> UpstreamHeaderTemplates { get; set; }
         public int Priority { get; set; } = 1;
+
+        public FileAggregateRoute()
+        {
+            RouteKeys = new();
+            RouteKeysConfig = new();
+            UpstreamHeaderTemplates = new();
+        }
     }
 }
