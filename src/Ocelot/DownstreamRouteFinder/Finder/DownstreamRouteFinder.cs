@@ -1,7 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder
@@ -9,21 +8,20 @@ namespace Ocelot.DownstreamRouteFinder.Finder
     public class DownstreamRouteFinder : IDownstreamRouteProvider
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
-        private readonly IPlaceholderNameAndValueFinder _placeholderNameAndValueFinder;
-        private readonly IHeadersToHeaderTemplatesMatcher _headersMatcher;
-        private readonly IHeaderPlaceholderNameAndValueFinder _headerPlaceholderNameAndValueFinder;
+        private readonly IPlaceholderNameAndValueFinder _pathPlaceholderFinder;
+        private readonly IHeadersToHeaderTemplatesMatcher _headerMatcher;
+        private readonly IHeaderPlaceholderNameAndValueFinder _headerPlaceholderFinder;
 
         public DownstreamRouteFinder(
             IUrlPathToUrlTemplateMatcher urlMatcher,
-            IPlaceholderNameAndValueFinder urlPathPlaceholderNameAndValueFinder,
-            IHeadersToHeaderTemplatesMatcher headersMatcher,
-            IHeaderPlaceholderNameAndValueFinder headerPlaceholderNameAndValueFinder
-            )
+            IPlaceholderNameAndValueFinder pathPlaceholderFinder,
+            IHeadersToHeaderTemplatesMatcher headerMatcher,
+            IHeaderPlaceholderNameAndValueFinder headerPlaceholderFinder)
         {
             _urlMatcher = urlMatcher;
-            _placeholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
-            _headersMatcher = headersMatcher;
-            _headerPlaceholderNameAndValueFinder = headerPlaceholderNameAndValueFinder;
+            _pathPlaceholderFinder = pathPlaceholderFinder;
+            _headerMatcher = headerMatcher;
+            _headerPlaceholderFinder = headerPlaceholderFinder;
         }
 
         public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
@@ -38,7 +36,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             foreach (var route in applicableRoutes)
             {
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, route.UpstreamTemplatePattern);
-                var headersMatch = _headersMatcher.Match(upstreamHeaders, route.UpstreamHeaderTemplates);
+                var headersMatch = _headerMatcher.Match(upstreamHeaders, route.UpstreamHeaderTemplates);
 
                 if (urlMatch.Data.Match && headersMatch)
                 {
@@ -46,12 +44,11 @@ namespace Ocelot.DownstreamRouteFinder.Finder
                 }
             }
 
-            if (downstreamRoutes.Any())
+            if (downstreamRoutes.Count != 0)
             {
                 var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.Route.UpstreamHost));
                 var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.Route.UpstreamHost));
-
-                return notNullOption != null ? new OkResponse<DownstreamRouteHolder>(notNullOption) : new OkResponse<DownstreamRouteHolder>(nullOption);
+                return new OkResponse<DownstreamRouteHolder>(notNullOption ?? nullOption);
             }
 
             return new ErrorResponse<DownstreamRouteHolder>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
@@ -65,8 +62,10 @@ namespace Ocelot.DownstreamRouteFinder.Finder
 
         private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, Dictionary<string, string> upstreamHeaders)
         {
-            var templatePlaceholderNameAndValues = _placeholderNameAndValueFinder.Find(path, query, route.UpstreamTemplatePattern.OriginalValue).Data;
-            var headerPlaceholders = _headerPlaceholderNameAndValueFinder.Find(upstreamHeaders, route.UpstreamHeaderTemplates);
+            var templatePlaceholderNameAndValues = _pathPlaceholderFinder
+                .Find(path, query, route.UpstreamTemplatePattern.OriginalValue)
+                .Data;
+            var headerPlaceholders = _headerPlaceholderFinder.Find(upstreamHeaders, route.UpstreamHeaderTemplates);
             templatePlaceholderNameAndValues.AddRange(headerPlaceholders);
 
             return new DownstreamRouteHolder(templatePlaceholderNameAndValues, route);
