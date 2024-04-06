@@ -1,19 +1,22 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Ocelot.Testing;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
-public class RoutingBasedOnHeadersTests : IDisposable
+public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
 {
-    private readonly Steps _steps;
     private string _downstreamPath;
     private readonly ServiceHandler _serviceHandler;
 
     public RoutingBasedOnHeadersTests()
     {
         _serviceHandler = new();
-        _steps = new();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler.Dispose();
+        base.Dispose();
     }
 
     [Fact]
@@ -49,13 +52,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, headerValue))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
@@ -92,14 +95,14 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader("other", "otherValue"))
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader("other", "otherValue"))
+            .And(x => GivenIAddAHeader(headerName, headerValue))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
@@ -139,15 +142,15 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => _steps.GivenIAddAHeader("other", "otherValue"))
-            .And(x => _steps.GivenIAddAHeader(headerName2, headerValue2))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName1, headerValue1))
+            .And(x => GivenIAddAHeader("other", "otherValue"))
+            .And(x => GivenIAddAHeader(headerName2, headerValue2))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
@@ -185,12 +188,12 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, anotherHeaderValue))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, anotherHeaderValue))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -227,11 +230,11 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -271,14 +274,14 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => _steps.GivenIAddAHeader("other", "otherValue"))
-            .And(x => _steps.GivenIAddAHeader(headerName2, "anothervalue"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName1, headerValue1))
+            .And(x => GivenIAddAHeader("other", "otherValue"))
+            .And(x => GivenIAddAHeader(headerName2, "anothervalue"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -318,13 +321,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => _steps.GivenIAddAHeader("other", "otherValue"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName1, headerValue1))
+            .And(x => GivenIAddAHeader("other", "otherValue"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -361,13 +364,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue))
-            .And(x => _steps.GivenIAddAHeader(headerName, "othervalue"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, headerValue))
+            .And(x => GivenIAddAHeader(headerName, "othervalue"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -435,13 +438,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port1}", "/a", 200, "Hello from Laura"))
-            .And(x => GivenThereIsAServiceRunningOn($"http://localhost:{port2}", "/b", 200, "Hello from Tom"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
+            .And(x => GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, headerValue))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
@@ -509,12 +512,12 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port1}", "/a", 200, "Hello from Laura"))
-            .And(x => GivenThereIsAServiceRunningOn($"http://localhost:{port2}", "/b", 200, "Hello from Tom"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
+            .And(x => x.GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
@@ -550,13 +553,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api.internal-uk/products", 200, "Hello from UK"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, "uk"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from UK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api.internal-uk/products", HttpStatusCode.OK, Hello("UK")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, "uk"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello("UK")))
             .BDDfy();
     }
 
@@ -592,13 +595,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products-info", 200, "Hello from products"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, "product-Camera"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from products"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-info", HttpStatusCode.OK, Hello("products")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, "product-Camera"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello("products")))
             .BDDfy();
     }
 
@@ -649,13 +652,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products-admin", 200, "Hello from products admin"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, "admin.xxx.com"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from products admin"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-admin", HttpStatusCode.OK, Hello("products admin")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, "admin.xxx.com"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello("products admin")))
             .BDDfy();
     }
 
@@ -691,13 +694,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/pl/v1/bb", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, "start_pl_version_v1_end"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/bb"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/pl/v1/bb", HttpStatusCode.OK, Hello()))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, "start_pl_version_v1_end"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/bb"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
@@ -733,13 +736,13 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/aa", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, "my_{header}"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/aa", HttpStatusCode.OK, Hello()))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, "my_{header}"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
@@ -777,44 +780,46 @@ public class RoutingBasedOnHeadersTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue1))
-            .And(x => _steps.GivenIAddAHeader(headerName, headerValue2))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader(headerName, headerValue1))
+            .And(x => GivenIAddAHeader(headerName, headerValue2))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    //private static string HelloFromJolanta = "Hello from Jolanta";
+
+    private static string Hello() => Hello("Jolanta");
+    private static string Hello(string who) => $"Hello from {who}";
+
+    private void GivenThereIsAServiceRunningOn(int port)
+        => GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, Hello());
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
+        basePath ??= "/";
+        responseBody ??= Hello();
+        var baseUrl = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
             if (_downstreamPath != basePath)
             {
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync("downstream path didnt match base path");
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await context.Response.WriteAsync($"{nameof(_downstreamPath)} is not equal to {nameof(basePath)}");
             }
             else
             {
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(responseBody);
             }
         });
     }
 
-    internal void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)
-    {
-        _downstreamPath.ShouldBe(expectedDownstreamPath);
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler.Dispose();
-        _steps.Dispose();
-    }
+    private void ThenTheDownstreamUrlPathShouldBe(string expected) => _downstreamPath.ShouldBe(expected);
 }
