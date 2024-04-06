@@ -2,8 +2,6 @@ using Ocelot.Cache;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
-using Ocelot.Values;
-
 namespace Ocelot.Configuration.Creator
 {
     public class RoutesCreator : IRoutesCreator
@@ -41,8 +39,7 @@ namespace Ocelot.Configuration.Creator
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
             IVersionCreator versionCreator,
-            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator
-            )
+            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -156,7 +153,6 @@ namespace Ocelot.Configuration.Creator
         private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
         {
             var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
-
             var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute);
 
             var route = new RouteBuilder()
