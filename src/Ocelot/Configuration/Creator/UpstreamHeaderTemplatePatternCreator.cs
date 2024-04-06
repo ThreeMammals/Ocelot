@@ -19,7 +19,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
     public Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
     {
-        var resultHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
+        var result = new Dictionary<string, UpstreamHeaderTemplate>();
 
         foreach (var headerTemplate in route.UpstreamHeaderTemplates)
         {
@@ -41,9 +41,9 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
                 ? $"^{headerTemplateValue}$"
                 : $"^(?i){headerTemplateValue}$"; // ignore case
 
-            resultHeaderTemplates.Add(headerTemplate.Key, new(template, headerTemplate.Value));
+            result.Add(headerTemplate.Key, new(template, headerTemplate.Value));
         }
 
-        return resultHeaderTemplates;
+        return result;
     }
 }
