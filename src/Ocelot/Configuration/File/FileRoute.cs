@@ -57,11 +57,11 @@
         public string ServiceName { get; set; }
         public string ServiceNamespace { get; set; }
         public int Timeout { get; set; }
-        public Dictionary<string, string> UpstreamHeaderTemplates { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
+        public Dictionary<string, string> UpstreamHeaderTemplates { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.
