@@ -129,7 +129,7 @@ namespace Ocelot.Configuration.Validator
             var matchingRoutes = routes
                 .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
                             && r.UpstreamHost == route.UpstreamHost
-                            && IsUpstreamHeaderTemplatesTheSame(r.UpstreamHeaderTemplates, route.UpstreamHeaderTemplates))
+                            && AreTheSame(r.UpstreamHeaderTemplates, route.UpstreamHeaderTemplates))
                 .ToList();
 
             if (matchingRoutes.Count == 1)
@@ -153,12 +153,9 @@ namespace Ocelot.Configuration.Validator
             return true;
         }
 
-        private static bool IsUpstreamHeaderTemplatesTheSame(Dictionary<string, string> upstreamHeaderTemplates,
-            Dictionary<string, string> otherHeaderTemplates)
-        {
-            return upstreamHeaderTemplates.Count == otherHeaderTemplates.Count &&
+        private static bool AreTheSame(Dictionary<string, string> upstreamHeaderTemplates, Dictionary<string, string> otherHeaderTemplates)
+            => upstreamHeaderTemplates.Count == otherHeaderTemplates.Count &&
                 upstreamHeaderTemplates.All(x => otherHeaderTemplates.ContainsKey(x.Key) && otherHeaderTemplates[x.Key] == x.Value);
-        }
 
         private static bool IsNotDuplicateIn(FileRoute route,
             IEnumerable<FileAggregateRoute> aggregateRoutes)
