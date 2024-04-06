@@ -2,7 +2,7 @@
 using Ocelot.Configuration.File;
 using Ocelot.Testing;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.Routing;
 
 public class RoutingBasedOnHeadersTests : IDisposable
 {
