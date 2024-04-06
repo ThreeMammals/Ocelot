@@ -1,16 +1,21 @@
 using Ocelot.Configuration.File;
 using Ocelot.Values;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Ocelot.Configuration.Creator;
 
-public class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatternCreator
+/// <summary>
+/// Default creator of upstream templates based on route headers.
+/// </summary>
+/// <remarks>Ocelot feature: Routing based on request header.</remarks>
+public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatternCreator
 {
-    private const string RegExMatchOneOrMoreOfEverything = ".+";
-    private const string RegExIgnoreCase = "(?i)";
-    private const string RegExPlaceholders = @"(\{header:.*?\})";
+#if NET7_0_OR_GREATER
+    [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+    private static partial Regex RegExPlaceholders();
+#else
+    private static readonly Regex RegExPlaceholdersVar = new(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+    private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
+#endif
 
     public Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
     {
@@ -19,30 +24,24 @@ public class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatte
         foreach (var headerTemplate in route.UpstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
-
-            var placeholders = new List<string>();
-
-            Regex expression = new Regex(RegExPlaceholders);
-            MatchCollection matches = expression.Matches(headerTemplateValue);
+            var matches = RegExPlaceholders().Matches(headerTemplateValue);
 
             if (matches.Count > 0)
             {
-                placeholders.AddRange(matches.Select(m => m.Groups[1].Value));
-            }
-
-            for (int i = 0; i < placeholders.Count; i++)
-            {
-                var indexOfPlaceholder = headerTemplateValue.IndexOf(placeholders[i]);
-
-                var placeholderName = placeholders[i][8..^1]; // remove "{header:" and "}"
-                headerTemplateValue = headerTemplateValue.Replace(placeholders[i], "(?<" + placeholderName + ">" + RegExMatchOneOrMoreOfEverything + ")");
+                var placeholders = matches.Select(m => m.Groups[1].Value).ToArray();
+                for (int i = 0; i < placeholders.Length; i++)
+                {
+                    var indexOfPlaceholder = headerTemplateValue.IndexOf(placeholders[i]);
+                    var placeholderName = placeholders[i][8..^1]; // remove "{header:" and "}"
+                    headerTemplateValue = headerTemplateValue.Replace(placeholders[i], $"(?<{placeholderName}>.+)");
+                }
             }
 
             var template = route.RouteIsCaseSensitive
-            ? $"^{headerTemplateValue}$"
-            : $"^{RegExIgnoreCase}{headerTemplateValue}$";
+                ? $"^{headerTemplateValue}$"
+                : $"^(?i){headerTemplateValue}$"; // ignore case
 
-            resultHeaderTemplates.Add(headerTemplate.Key, new UpstreamHeaderTemplate(template, headerTemplate.Value));
+            resultHeaderTemplates.Add(headerTemplate.Key, new(template, headerTemplate.Value));
         }
 
         return resultHeaderTemplates;
