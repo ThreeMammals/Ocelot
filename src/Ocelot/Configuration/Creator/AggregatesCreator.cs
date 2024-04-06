@@ -1,21 +1,17 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
-using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator
 {
     public class AggregatesCreator : IAggregatesCreator
     {
-        private readonly IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
-        private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
+        private readonly IUpstreamTemplatePatternCreator _creator;
+        private readonly IUpstreamHeaderTemplatePatternCreator _headerCreator;
 
-        public AggregatesCreator(
-            IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
-            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator
-            )
+        public AggregatesCreator(IUpstreamTemplatePatternCreator creator, IUpstreamHeaderTemplatePatternCreator headerCreator)
         {
-            _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
-            _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
+            _creator = creator;
+            _headerCreator = headerCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes)
@@ -41,9 +37,8 @@ namespace Ocelot.Configuration.Creator
                 applicableRoutes.Add(downstreamRoute);
             }
 
-            var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(aggregateRoute);
-
-            var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(aggregateRoute);
+            var upstreamTemplatePattern = _creator.Create(aggregateRoute);
+            var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
 
             var route = new RouteBuilder()
                 .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
