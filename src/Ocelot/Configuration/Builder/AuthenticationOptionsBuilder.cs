@@ -6,7 +6,6 @@ namespace Ocelot.Configuration.Builder
     {
         private List<string> _allowedScopes = new();
         private List<string> _requiredRole = new();
-        private string _authenticationProviderKey;
         private string[] _authenticationProviderKeys = Array.Empty<string>();
         private string _roleKey;
         private string _scopeKey;
@@ -26,10 +25,7 @@ namespace Ocelot.Configuration.Builder
 
         [Obsolete("Use the " + nameof(WithAuthenticationProviderKeys) + " property!")]
         public AuthenticationOptionsBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
-        {
-            _authenticationProviderKey = authenticationProviderKey;
-            return this;
-        }
+            => WithAuthenticationProviderKeys([authenticationProviderKey]);
 
         public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(string[] authenticationProviderKeys)
         {
@@ -57,7 +53,7 @@ namespace Ocelot.Configuration.Builder
 
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_allowedScopes, _requiredRole, _authenticationProviderKey, _authenticationProviderKeys, _scopeKey, _roleKey, _policyName);
+            return new AuthenticationOptions(_allowedScopes, _authenticationProviderKeys, _requiredRole, _scopeKey, _roleKey, _policyName);
         }
     }
 }

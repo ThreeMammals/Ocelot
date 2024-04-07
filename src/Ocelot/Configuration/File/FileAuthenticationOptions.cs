@@ -22,7 +22,6 @@
         public string AuthenticationProviderKey { get; set; }
         public string[] AuthenticationProviderKeys { get; set; }
 
-        public List<string> AllowedScopes { get; set; }
         public List<string> RequiredRole { get; set; }
         public string ScopeKey { get; set; }
         public string RoleKey { get; set; }
@@ -34,7 +33,7 @@
             .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}]")
             .ToString();
 
-        public override string ToString2()
+        public string ToString2()
         {
             var sb = new StringBuilder();
             sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AllowedScopes)}:[");
