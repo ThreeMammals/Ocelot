@@ -1,39 +1,44 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.Requester;
+using System.Reflection;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class PollyQoSTests : IDisposable
+    public sealed class PollyQoSTests : Steps, IDisposable
     {
-        private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;
 
         public PollyQoSTests()
         {
             _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
         }
 
-        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get))
-            => new()
-            {
-                Routes = new List<FileRoute>
+        public override void Dispose()
+        {
+            _serviceHandler.Dispose();
+            base.Dispose();
+        }
+
+        private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get)) => new()
+        {
+            Routes =
+            [
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = Uri.UriSchemeHttp,
+                    DownstreamHostAndPorts = new()
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = Uri.UriSchemeHttp,
-                        DownstreamHostAndPorts = new()
-                        {
-                            new("localhost", port),
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new() {httpMethod},
-                        QoSOptions = new FileQoSOptions(options),
+                        new("localhost", port),
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new() {httpMethod},
+                    QoSOptions = new FileQoSOptions(options),
                 },
-            };
+            ],
+        };
 
         [Fact]
         public void Should_not_timeout()
@@ -42,11 +47,11 @@ namespace Ocelot.AcceptanceTests
             var configuration = FileConfigurationFactory(port, new QoSOptions(10, 500, 1000, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithPolly())
+                .And(x => GivenThePostHasContent("postContent"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
 
@@ -57,11 +62,11 @@ namespace Ocelot.AcceptanceTests
             var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 2100))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithPolly())
+                .And(x => GivenThePostHasContent("postContent"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .BDDfy();
         }
 
@@ -72,12 +77,12 @@ namespace Ocelot.AcceptanceTests
             var configuration = FileConfigurationFactory(port, new QoSOptions(2, 5000, 100000, null));
 
             this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithPolly())
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .BDDfy();
         }
 
@@ -88,24 +93,24 @@ namespace Ocelot.AcceptanceTests
             var configuration = FileConfigurationFactory(port, new QoSOptions(2, 500, 1000, null));
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
-                .Given(x => _steps.GivenThereIsAConfiguration(configuration))
-                .Given(x => _steps.GivenOcelotIsRunningWithPolly())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .Given(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Given(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => GivenThereIsAConfiguration(configuration))
+                .Given(x => GivenOcelotIsRunningWithPolly())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .Given(x => GivenIWaitMilliseconds(3000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -125,27 +130,27 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}", 200, "Hello from Tom", 0))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/working"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithPolly())
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .And(x => WhenIGetUrlOnTheApiGateway("/working"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+                .And(x => WhenIGetUrlOnTheApiGateway("/"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
                 .And(x => GivenIWaitMilliseconds(3000))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -153,14 +158,26 @@ namespace Ocelot.AcceptanceTests
         [Trait("Bug", "1833")]
         public void Should_timeout_per_default_after_90_seconds()
         {
+            // Arrange
             var port = PortFinder.GetRandomPort();
             var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 95000))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithPolly())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-                .BDDfy();
+            GivenThereIsAServiceRunningOn(DownstreamUrl(port), (int)HttpStatusCode.Created, string.Empty, 3500); // 3.5s > 3s -> ServiceUnavailable
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunningWithPolly();
+            GivenIHackDefaultTimeoutValue(3); // after 3 secs -> Timeout exception aka request cancellation
+
+            // Act
+            WhenIGetUrlOnTheApiGateway("/");
+
+            // Assert
+            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        }
+
+        private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
+        {
+            var field = typeof(MessageInvokerPool).GetField("_requestTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
+            var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
+            field.SetValue(service, defaultTimeoutSeconds); // hack the value of default 90 seconds
         }
 
         private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
@@ -205,13 +222,6 @@ namespace Ocelot.AcceptanceTests
                 context.Response.StatusCode = statusCode;
                 await context.Response.WriteAsync(responseBody);
             });
-        }
-
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }
