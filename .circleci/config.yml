@@ -7,13 +7,13 @@ jobs:
       - image: ocelot2/circleci-build:latest
     steps:
       - checkout
-      - run: dotnet tool restore && dotnet cake
+      - run: dotnet cake
   release:
     docker:
       - image: ocelot2/circleci-build:latest
     steps:
       - checkout
-      - run: dotnet tool restore && dotnet cake --target=Release
+      - run: dotnet cake --target=Release
 workflows:
   version: 2
   main:

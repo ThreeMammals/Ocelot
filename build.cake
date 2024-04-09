@@ -62,8 +62,8 @@ string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KE
 
 var target = Argument("target", "Default");
 
-Information("target is " + target);
-Information("Build configuration is " + compileConfig);	
+Information("Target: " + target);
+Information("Build configuration: " + compileConfig);	
 
 TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
@@ -98,9 +98,11 @@ Task("Compile")
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
-			Framework = "net8.0", // build using .NET 8 SDK only
 		};
-
+		if (target != "Release")
+		{
+			settings.Framework = "net8.0"; // build using .NET 8 SDK only
+		}
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -344,13 +346,15 @@ Task("RunUnitTests")
 		var testSettings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			Framework = "net8.0", // .NET 8 SDK only
 			ResultsDirectory = artifactsForUnitTestsDir,
 			ArgumentCustomization = args => args
 				// this create the code coverage report
 				.Append("--collect:\"XPlat Code Coverage\"")
 		};
-
+		if (target != "Release")
+		{
+			testSettings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetTest(unitTestAssemblies, testSettings);
 
@@ -403,7 +407,10 @@ Task("RunAcceptanceTests")
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != "Release")
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 		DotNetTest(acceptanceTestAssemblies, settings);
 	});
@@ -420,7 +427,10 @@ Task("RunIntegrationTests")
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != "Release")
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
 		DotNetTest(integrationTestAssemblies, settings);
 	});
