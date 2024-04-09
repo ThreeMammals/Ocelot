@@ -98,6 +98,7 @@ Task("Compile")
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // build using .NET 8 SDK only
 		};
 
 		DotNetBuild(slnFile, settings);
@@ -343,10 +344,11 @@ Task("RunUnitTests")
 		var testSettings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ResultsDirectory = artifactsForUnitTestsDir,
-				ArgumentCustomization = args => args
-					// this create the code coverage report
-					.Append("--collect:\"XPlat Code Coverage\"")
+			ArgumentCustomization = args => args
+				// this create the code coverage report
+				.Append("--collect:\"XPlat Code Coverage\"")
 		};
 
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
@@ -396,6 +398,7 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
@@ -412,6 +415,7 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
