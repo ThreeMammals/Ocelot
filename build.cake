@@ -1,6 +1,6 @@
 #tool "dotnet:?package=GitVersion.Tool&version=5.12.0" // 6.0.0-beta.7 supports .NET 8, 7, 6
 #tool "dotnet:?package=coveralls.net&version=4.0.1"
-#addin nuget:?package=Newtonsoft.Json
+#addin nuget:?package=Newtonsoft.Json&version=13.0.3
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
 #tool "nuget:?package=ReportGenerator&version=5.2.0"
 #addin Cake.Coveralls&version=1.1.0
