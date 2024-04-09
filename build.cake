@@ -1,4 +1,4 @@
-#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
+#tool "dotnet:?package=GitVersion.Tool&version=6.0.0-beta.7" // supports .NET 8, 7, 6
 #tool "dotnet:?package=coveralls.net&version=4.0.1"
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
@@ -61,8 +61,7 @@ string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
-
-Information("Target: " + target);
+Information("\nTarget: " + target);
 Information("Build configuration: " + compileConfig);	
 
 TaskTeardown(context => {
