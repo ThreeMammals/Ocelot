@@ -16,8 +16,6 @@ using System.Text.RegularExpressions;
 const string Release = "Release"; // task name, target, and Release config name
 var compileConfig = Argument("configuration", Release); // compile
 
-var slnFile = "./Ocelot.sln";
-
 // build artifacts
 var artifactsDir = Directory("artifacts");
 
@@ -61,8 +59,10 @@ string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
+var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
 Information("\nTarget: " + target);
-Information("Build configuration: " + compileConfig);	
+Information("Build: " + compileConfig);
+Information("Solution: " + slnFile);
 
 TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
@@ -94,6 +94,8 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		Information("Build: " + compileConfig);
+		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
