@@ -22,8 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5B401523-36DA-4491-B73A-7590A26E420B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "src\Ocelot\Ocelot.csproj", "{D6DF4206-0DBA-41D8-884D-C3E08290FDBB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.UnitTests", "test\Ocelot.UnitTests\Ocelot.UnitTests.csproj", "{54E84F1A-E525-4443-96EC-039CBD50C263}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.AcceptanceTests", "test\Ocelot.AcceptanceTests\Ocelot.AcceptanceTests.csproj", "{F8C224FE-36BE-45F5-9B0E-666D8F4A9B52}"
@@ -34,6 +32,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Benchmarks", "test\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.IntegrationTests", "test\Ocelot.IntegrationTests\Ocelot.IntegrationTests.csproj", "{D4575572-99CA-4530-8737-C296EDA326F8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Testing", "test\Ocelot.Testing\Ocelot.Testing.csproj", "{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "src\Ocelot\Ocelot.csproj", "{D6DF4206-0DBA-41D8-884D-C3E08290FDBB}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Administration", "src\Ocelot.Administration\Ocelot.Administration.csproj", "{F69CEF43-27D2-4940-A47A-FCA879E371BC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Cache.CacheManager", "src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj", "{EB9F438F-062E-499F-B6EA-4412BEF6D74C}"
@@ -42,17 +44,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Consul", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Eureka", "src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj", "{9BBD3586-145C-4FA0-91C5-9ED58287D753}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Polly", "src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8FA0CBA0-0338-48EB-B37F-83CA5022237C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.OpenTracing", "src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj", "{11C622AD-8C0A-4CF4-811B-3DBB76550797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Testing", "test\Ocelot.Testing\Ocelot.Testing.csproj", "{AE6BCCBD-0687-4C58-B30F-4ABBC6422087}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "samples", "{8FA0CBA0-0338-48EB-B37F-83CA5022237C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.AdministrationApi", "samples\Administration\Ocelot.Samples.AdministrationApi.csproj", "{A7F0CAFA-AECB-43CA-BE89-5F5B728E7C22}"
 EndProject
@@ -73,6 +73,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.ApiGateway", "samples\ServiceDiscovery\ApiGateway\Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj", "{F25EA682-A763-431B-9D88-012A388D3618}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceDiscovery.DownstreamService", "samples\ServiceDiscovery\DownstreamService\Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj", "{DCBD0AB5-85DD-4F28-9166-0A23969E19EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceFabric.ApiGateway", "samples\ServiceFabric\ApiGateway\Ocelot.Samples.ServiceFabric.ApiGateway.csproj", "{D991C694-01F0-4F04-8135-5C133DC8E029}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceFabric.DownstreamService", "samples\ServiceFabric\DownstreamService\Ocelot.Samples.ServiceFabric.DownstreamService.csproj", "{AD09D124-7DD7-4C9E-9BCC-782B579B1786}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -180,6 +184,14 @@ Global
 		{DCBD0AB5-85DD-4F28-9166-0A23969E19EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCBD0AB5-85DD-4F28-9166-0A23969E19EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCBD0AB5-85DD-4F28-9166-0A23969E19EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D991C694-01F0-4F04-8135-5C133DC8E029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D991C694-01F0-4F04-8135-5C133DC8E029}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D991C694-01F0-4F04-8135-5C133DC8E029}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D991C694-01F0-4F04-8135-5C133DC8E029}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD09D124-7DD7-4C9E-9BCC-782B579B1786}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD09D124-7DD7-4C9E-9BCC-782B579B1786}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD09D124-7DD7-4C9E-9BCC-782B579B1786}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD09D124-7DD7-4C9E-9BCC-782B579B1786}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +222,8 @@ Global
 		{DF9EFF21-58D3-428D-8A33-ACFA24E9B6E8} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
 		{F25EA682-A763-431B-9D88-012A388D3618} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
 		{DCBD0AB5-85DD-4F28-9166-0A23969E19EC} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
+		{D991C694-01F0-4F04-8135-5C133DC8E029} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
+		{AD09D124-7DD7-4C9E-9BCC-782B579B1786} = {8FA0CBA0-0338-48EB-B37F-83CA5022237C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}

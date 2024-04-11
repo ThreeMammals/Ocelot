@@ -18,6 +18,6 @@
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="7.1.1541" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
 </Project>
