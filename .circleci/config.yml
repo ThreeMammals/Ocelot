@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  queue: eddiewebb/queue@2.2.1
+  queue: eddiewebb/queue@3.1.4
 jobs:
   build:
     docker:
@@ -18,12 +18,12 @@ workflows:
   version: 2
   main:
     jobs:
-      - queue/block_workflow:
-          time: '20'
-          only-on-branch: main
+      # - queue/block_workflow:
+      #     time: '20'
+      #     only-on-branch: main
       - release:
-          requires:
-            - queue/block_workflow
+          # requires:
+          #   - queue/block_workflow
           filters:
             branches:
               only: main
@@ -33,7 +33,7 @@ workflows:
           filters:
             branches:
               only: develop
-  pr:
+  PR:
     jobs:
       - build:
           filters:
