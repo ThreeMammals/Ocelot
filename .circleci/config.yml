@@ -5,6 +5,7 @@ jobs:
   build:
     docker:
       - image: ocelot2/circleci-build:latest
+    resource_class: medium+
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake
