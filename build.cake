@@ -104,6 +104,8 @@ Task("Compile")
 		{
 			settings.Framework = "net8.0"; // build using .NET 8 SDK only
 		}
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {settings.Framework}");
+		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -358,7 +360,9 @@ Task("RunUnitTests")
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
+			.First()
+			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
