@@ -354,6 +354,8 @@ Task("RunUnitTests")
 				.Append("--no-restore")
 				.Append("--no-build")
 				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+				.Append("--verbosity:detailed")
+				.Append("--consoleLoggerParameters:ErrorsOnly")
 		};
 		if (target != Release)
 		{
