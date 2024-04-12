@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Responder
         [Fact]
         public void should_return_request_entity_too_large()
         {
-            ShouldMapErrorsToStatusCode([OcelotErrorCode.PayloadTooLargeError], HttpStatusCode.RequestEntityTooLarge);
+            ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);
         }
 
         [Fact]

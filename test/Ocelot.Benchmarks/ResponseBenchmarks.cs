@@ -41,20 +41,20 @@ public class ResponseBenchmarks : ManualConfig
     {
         var configuration = new FileConfiguration
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new FileRoute
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts =
-                    [
+                    DownstreamHostAndPorts = new()
+                    {
                         new FileHostAndPort("localhost", 51879),
-                    ],
-                    DownstreamScheme = "http",
+                    },
+                    DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod =["GET"],
+                    UpstreamHttpMethod = new() { HttpMethods.Get },
                 },
-            ],
+            },
         };
 
         GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201);
@@ -115,12 +115,12 @@ public class ResponseBenchmarks : ManualConfig
     {
         var filePath = Path.Combine(directory, fileName);
         var generateDummy = isJson ? (Func<int, string, string>)GenerateDummyJsonFile : GenerateDummyDatFile;
-        return
-        [
+        return new object[]
+        {
             generateDummy(size, filePath),
             fileName,
             isJson,
-        ];
+        };
     }
 
     /// <summary>

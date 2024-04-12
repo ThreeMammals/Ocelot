@@ -46,7 +46,7 @@ public class AuthenticationOptionsCreatorTests
         // Arrange
         string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
         string[] authenticationProviderKeys = isAuthenticationProviderKeys ?
-            ["Test #1", "Test #2"] : null;
+            new string[] { "Test #1", "Test #2" } : null;
         var fileRoute = new FileRoute()
         {
             AuthenticationOptions = new FileAuthenticationOptions

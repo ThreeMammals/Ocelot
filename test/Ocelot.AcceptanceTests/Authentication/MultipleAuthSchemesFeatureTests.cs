@@ -19,9 +19,9 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
 
     public MultipleAuthSchemesFeatureTests() : base()
     {
-        _identityServers = [];
-        _identityServerUrls = [];
-        _tokens = [];
+        _identityServers = Array.Empty<IWebHost>();
+        _identityServerUrls = Array.Empty<string>();
+        _tokens = Array.Empty<BearerToken>();
     }
 
     public override void Dispose()

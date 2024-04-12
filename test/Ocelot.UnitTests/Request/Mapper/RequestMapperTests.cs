@@ -207,7 +207,8 @@ public class RequestMapperTests
     [Fact]
     public void Should_map_content_headers()
     {
-        var md5Bytes = MD5.HashData("some md5"u8.ToArray());
+        var bytes = Encoding.UTF8.GetBytes("some md5");
+        var md5Bytes = MD5.HashData(bytes);
 
         this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
             .And(_ => GivenTheContentTypeIs("application/json"))

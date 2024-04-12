@@ -23,8 +23,8 @@ namespace Ocelot.AcceptanceTests
 
         private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get)) => new()
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new()
                 {
                     DownstreamPathTemplate = "/",
@@ -37,7 +37,7 @@ namespace Ocelot.AcceptanceTests
                     UpstreamHttpMethod = new() {httpMethod},
                     QoSOptions = new FileQoSOptions(options),
                 },
-            ],
+            },
         };
 
         [Fact]

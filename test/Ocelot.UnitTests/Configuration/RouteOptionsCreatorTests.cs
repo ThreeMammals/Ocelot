@@ -126,7 +126,7 @@ public class RouteOptionsCreatorTests
             {
                 AuthenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null,
                 AuthenticationProviderKeys = isAuthenticationProviderKeys ?
-                    [string.Empty, "Test #1"] : null,
+                    new string[] { string.Empty, "Test #1" } : null,
             },
             RouteClaimsRequirement = new Dictionary<string, string>
             {

@@ -57,7 +57,7 @@ public class AuthenticationSteps : Steps, IDisposable
 
     protected static Client DefaultClient(AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
     {
-        apiScopes ??= ["api"];
+        apiScopes ??= new string[] { "api" };
         return new()
         {
             ClientId = "client",
@@ -65,7 +65,7 @@ public class AuthenticationSteps : Steps, IDisposable
             ClientSecrets = new List<Secret> { new("secret".Sha256()) },
             AllowedScopes = apiScopes
                 .Union(apiScopes.Select(x => $"{x}.readOnly"))
-                .Union(["openid", "offline_access"])
+                .Union(new string[] { "openid", "offline_access" })
                 .ToList(),
             AccessTokenType = tokenType,
             Enabled = true,
@@ -76,8 +76,8 @@ public class AuthenticationSteps : Steps, IDisposable
 
     public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, string[] apiScopes, Client[] clients)
     {
-        apiScopes ??= ["api"];
-        clients ??= [DefaultClient(tokenType, apiScopes)];
+        apiScopes ??= new string[] { "api" };
+        clients ??= new Client[] { DefaultClient(tokenType, apiScopes) };
         var builder = new WebHostBuilder()
             .UseUrls(url)
             .UseKestrel()
@@ -93,10 +93,10 @@ public class AuthenticationSteps : Steps, IDisposable
                         .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
                     .AddInMemoryApiResources(apiScopes
                         .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
-                        .Select(x => CreateApiResource(x.scope, ["openid", "offline_access"])))
+                        .Select(x => CreateApiResource(x.scope, new string[] { "openid", "offline_access" })))
                     .AddInMemoryClients(clients)
-                    .AddTestUsers(
-                    [
+                    .AddTestUsers(new()
+                    {
                         new()
                         {
                             Username = "test",
@@ -108,7 +108,7 @@ public class AuthenticationSteps : Steps, IDisposable
                                    new("LocationId", "321"),
                             },
                         },
-                    ]);
+                    });
             })
             .Configure(app =>
             {
@@ -141,14 +141,14 @@ public class AuthenticationSteps : Steps, IDisposable
     public static FileRoute GivenDefaultAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null) => new()
     {
         DownstreamPathTemplate = "/",
-        DownstreamHostAndPorts =
-            [
-                new("localhost", port),
-            ],
+        DownstreamHostAndPorts = new()
+        {
+            new("localhost", port),
+        },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [upstreamHttpMethod ?? HttpMethods.Get],
-        AuthenticationOptions = new FileAuthenticationOptions
+        UpstreamHttpMethod = new() { upstreamHttpMethod ?? HttpMethods.Get },
+        AuthenticationOptions = new()
         {
             AuthenticationProviderKey = authProviderKey ?? "Test",
         },

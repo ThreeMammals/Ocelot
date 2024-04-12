@@ -39,12 +39,12 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = ["GET", "POST", "PUT"],
-                DownstreamHostAndPorts =
-                [
+                UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+                DownstreamHostAndPorts = new()
+                {
                     new("localhost", 8080),
                     new("localhost", 4430),
-                ],
+                },
             };
 
             this.Given(_ => GivenThe(route))
@@ -60,12 +60,12 @@ namespace Ocelot.UnitTests.Configuration
             {
                 UpstreamHost = "my-host",
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = ["GET", "POST", "PUT"],
-                DownstreamHostAndPorts =
-                [
+                UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+                DownstreamHostAndPorts = new()
+                {
                     new("localhost", 8080),
                     new("localhost", 4430),
-                ],
+                },
             };
 
             this.Given(_ => GivenThe(route))
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
                 ServiceName = "products-service",
             };
 
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.Configuration
             var route = new FileRoute
             {
                 UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = ["GET", "POST", "PUT"],
+                UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
                 ServiceName = "products-service",
                 LoadBalancerOptions = new FileLoadBalancerOptions
                 {
