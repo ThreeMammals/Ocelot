@@ -1,10 +1,6 @@
 ﻿using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -22,6 +18,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     [Fact]
     public void Should_create_pattern_without_placeholders()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamHeaderTemplates = new Dictionary<string, string>
@@ -29,16 +26,19 @@ public class UpstreamHeaderTemplatePatternCreatorTests
                 ["country"] = "a text without placeholders",
             },
         };
+        GivenTheFollowingFileRoute(fileRoute);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^(?i)a text without placeholders$"))
-            .BDDfy();
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^(?i)a text without placeholders$");
     }
 
     [Fact]
     public void Should_create_pattern_case_sensitive()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             RouteIsCaseSensitive = true,
@@ -47,16 +47,19 @@ public class UpstreamHeaderTemplatePatternCreatorTests
                 ["country"] = "a text without placeholders",
             },
         };
+        GivenTheFollowingFileRoute(fileRoute);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^a text without placeholders$"))
-            .BDDfy();
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^a text without placeholders$");
     }
 
     [Fact]
     public void Should_create_pattern_with_placeholder_in_the_beginning()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamHeaderTemplates = new Dictionary<string, string>
@@ -64,16 +67,19 @@ public class UpstreamHeaderTemplatePatternCreatorTests
                 ["country"] = "{header:start}rest of the text",
             },
         };
+        GivenTheFollowingFileRoute(fileRoute);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^(?i)(?<start>.+)rest of the text$"))
-            .BDDfy();
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^(?i)(?<start>.+)rest of the text$");
     }
 
     [Fact]
     public void Should_create_pattern_with_placeholder_at_the_end()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamHeaderTemplates = new Dictionary<string, string>
@@ -81,16 +87,19 @@ public class UpstreamHeaderTemplatePatternCreatorTests
                 ["country"] = "rest of the text{header:end}",
             },
         };
+        GivenTheFollowingFileRoute(fileRoute);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^(?i)rest of the text(?<end>.+)$"))
-            .BDDfy();
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^(?i)rest of the text(?<end>.+)$");
     }
 
     [Fact]
     public void Should_create_pattern_with_placeholder_only()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamHeaderTemplates = new Dictionary<string, string>
@@ -99,15 +108,19 @@ public class UpstreamHeaderTemplatePatternCreatorTests
             },
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^(?i)(?<countrycode>.+)$"))
-            .BDDfy();
+        GivenTheFollowingFileRoute(fileRoute);
+
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^(?i)(?<countrycode>.+)$");
     }
 
     [Fact]
     public void Should_crate_pattern_with_more_placeholders()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamHeaderTemplates = new Dictionary<string, string>
@@ -115,11 +128,13 @@ public class UpstreamHeaderTemplatePatternCreatorTests
                 ["country"] = "any text {header:cc} and other {header:version} and {header:bob} the end",
             },
         };
+        GivenTheFollowingFileRoute(fileRoute);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("country", "^(?i)any text (?<cc>.+) and other (?<version>.+) and (?<bob>.+) the end$"))
-            .BDDfy();
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ThenTheFollowingIsReturned("country", "^(?i)any text (?<cc>.+) and other (?<version>.+) and (?<bob>.+) the end$");
     }
 
     private void GivenTheFollowingFileRoute(FileRoute fileRoute)

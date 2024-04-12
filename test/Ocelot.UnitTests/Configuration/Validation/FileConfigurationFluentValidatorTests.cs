@@ -721,198 +721,91 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void configuration_is_not_valid_when_upstream_headers_the_same()
+        public void Configuration_is_not_valid_when_upstream_headers_the_same()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header1", "value1" },
-                            { "header2", "value2" },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header2", "value2" },
-                            { "header1", "value1" },
-                        },
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsNotValid())
-                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
-                .BDDfy();
+                                { "header2", "value2" },
+                                { "header1", "value1" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsNotValid();
+            ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
         }
 
         [Fact]
-        public void configuration_is_valid_when_upstream_headers_not_the_same()
+        public void Configuration_is_valid_when_upstream_headers_not_the_same()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header1", "value1" },
-                            { "header2", "value2" },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header2", "value2" },
-                            { "header1", "valueDIFFERENT" },
-                        },
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsValid())
-                .BDDfy();
+                                { "header2", "value2" },
+                                { "header1", "valueDIFFERENT" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
         }
 
         [Fact]
-        public void configuration_is_valid_when_upstream_headers_count_not_the_same()
+        public void Configuration_is_valid_when_upstream_headers_count_not_the_same()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header1", "value1" },
-                            { "header2", "value2" },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header2", "value2" },
-                        },
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsValid())
-                .BDDfy();
+                                { "header2", "value2" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
         }
 
         [Fact]
-        public void configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
+        public void Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
         {
-            this.Given(x => x.GivenAConfiguration(new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/products/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
                             {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                        UpstreamHeaderTemplates = new Dictionary<string, string>
-                        {
-                            { "header1", "value1" },
-                            { "header2", "value2" },
-                        },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/www/test/",
-                        UpstreamPathTemplate = "/asdf/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "bbc.co.uk",
-                            },
-                        },
-                        UpstreamHttpMethod = new List<string> {"Get"},
-                    },
-                },
-            }))
-                .When(x => x.WhenIValidateTheConfiguration())
-                .Then(x => x.ThenTheResultIsValid())
-                .BDDfy();
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", []);
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
         }
 
         [Theory]
@@ -999,6 +892,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
             DownstreamPathTemplate = "/",
             DownstreamScheme = Uri.UriSchemeHttp,
             ServiceName = "test",
+        };
+
+        private static FileRoute GivenRouteWithUpstreamHeaderTemplates(string upstream, string downstream, Dictionary<string, string> templates) => new()
+        {
+            UpstreamPathTemplate = upstream,
+            DownstreamPathTemplate = downstream,
+            DownstreamHostAndPorts = [new("bbc.co.uk", 123)],
+            UpstreamHttpMethod = ["Get"],
+            UpstreamHeaderTemplates = templates,
         };
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration) => _fileConfiguration = fileConfiguration;
@@ -1097,12 +999,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
             // It can be set directly or by registering a provider in the dependency injection container.
 #if NET8_0_OR_GREATER
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
-            {
-            }
+            { }
 #else
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
-            {
-            }
+            { }
 #endif
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
