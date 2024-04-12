@@ -112,6 +112,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .BDDfy();
         }
 
+        [IgnorePublicMethod]
         public void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
             var scopes = new string[] { "api", "api2" };
@@ -127,4 +128,11 @@ namespace Ocelot.AcceptanceTests.Authentication
             base.Dispose();
         }
     }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class IgnoreXunitAnalyzersRule1013Attribute : Attribute { }
+
+    [IgnoreXunitAnalyzersRule1013]
+    [AttributeUsage(AttributeTargets.Method)]
+    public class IgnorePublicMethodAttribute : Attribute { }
 }

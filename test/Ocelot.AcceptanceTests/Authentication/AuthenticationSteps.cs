@@ -150,7 +150,7 @@ public class AuthenticationSteps : Steps, IDisposable
         UpstreamHttpMethod = new() { upstreamHttpMethod ?? HttpMethods.Get },
         AuthenticationOptions = new()
         {
-            AuthenticationProviderKey = authProviderKey ?? "Test",
+            AuthenticationProviderKeys = new string[] { authProviderKey ?? "Test" },
         },
     };
 
