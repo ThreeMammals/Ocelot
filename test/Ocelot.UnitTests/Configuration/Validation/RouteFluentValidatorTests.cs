@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
-    public class RouteFluentValidatorTests
+    public class RouteFluentValidatorTests : UnitTest
     {
         private readonly RouteFluentValidator _validator;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;

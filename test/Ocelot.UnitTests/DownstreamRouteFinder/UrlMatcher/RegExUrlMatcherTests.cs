@@ -4,7 +4,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 {
-    public class RegExUrlMatcherTests
+    public class RegExUrlMatcherTests : UnitTest
     {
         private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
         private string _path;

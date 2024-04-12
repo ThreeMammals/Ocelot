@@ -1210,7 +1210,7 @@ namespace Ocelot.AcceptanceTests
                         new("localhost", port),
                     },
                     UpstreamPathTemplate = upstream,
-                    UpstreamHttpMethod = [HttpMethods.Get],
+                    UpstreamHttpMethod = new() { HttpMethods.Get },
                 },
             },
         };

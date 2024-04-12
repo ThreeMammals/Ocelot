@@ -4,7 +4,7 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Request.Creator
 {
-    public class DownstreamRequestCreatorTests
+    public class DownstreamRequestCreatorTests : UnitTest
     {
         private readonly Mock<IFrameworkDescription> _framework;
         private readonly DownstreamRequestCreator _downstreamRequestCreator;

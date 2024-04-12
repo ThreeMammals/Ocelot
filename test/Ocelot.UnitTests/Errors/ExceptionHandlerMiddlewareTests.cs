@@ -7,7 +7,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Errors
 {
-    public class ExceptionHandlerMiddlewareTests
+    public class ExceptionHandlerMiddlewareTests : UnitTest
     {
         private bool _shouldThrowAnException;
         private readonly Mock<IRequestScopedDataRepository> _repo;

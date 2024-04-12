@@ -9,7 +9,7 @@ using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class FileConfigurationPollerTests : IDisposable
+    public class FileConfigurationPollerTests : UnitTest, IDisposable
     {
         private readonly FileConfigurationPoller _poller;
         private readonly Mock<IOcelotLoggerFactory> _factory;

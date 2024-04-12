@@ -3,7 +3,7 @@ using Ocelot.Cache.CacheManager;
 
 namespace Ocelot.UnitTests.CacheManager
 {
-    public class OcelotCacheManagerCache
+    public class OcelotCacheManagerCache : UnitTest
     {
         private readonly OcelotCacheManagerCache<string> _ocelotOcelotCacheManager;
         private readonly Mock<ICacheManager<string>> _mockCacheManager;

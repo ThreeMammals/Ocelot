@@ -88,7 +88,7 @@ public class PollyResiliencePipelineDelegatingHandlerTests
     private async Task<HttpResponseMessage> InvokeAsync(string methodName)
     {
         var m = typeof(PollyResiliencePipelineDelegatingHandler).GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-        var task = (Task<HttpResponseMessage>)m.Invoke(_sut, [new HttpRequestMessage(), CancellationToken.None]);
+        var task = (Task<HttpResponseMessage>)m.Invoke(_sut, new object[] { new HttpRequestMessage(), CancellationToken.None });
         var actual = await task!;
         return actual;
     }

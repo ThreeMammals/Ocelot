@@ -3,7 +3,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    public class ConfigurationServiceProviderTests
+    public class ConfigurationServiceProviderTests : UnitTest
     {
         private ConfigurationServiceProvider _serviceProvider;
         private List<Service> _result;

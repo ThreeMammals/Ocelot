@@ -5,7 +5,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class NoLoadBalancerTests
+    public class NoLoadBalancerTests : UnitTest
     {
         private readonly List<Service> _services;
         private NoLoadBalancer _loadBalancer;

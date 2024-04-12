@@ -9,7 +9,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class HttpRequesterMiddlewareTests
+    public class HttpRequesterMiddlewareTests : UnitTest
     {
         private readonly Mock<IHttpRequester> _requester;
         private Response<HttpResponseMessage> _response;

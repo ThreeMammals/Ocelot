@@ -8,7 +8,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Controllers
 {
-    public class FileConfigurationControllerTests
+    public class FileConfigurationControllerTests : UnitTest
     {
         private readonly FileConfigurationController _controller;
         private readonly Mock<IFileConfigurationRepository> _repo;

@@ -6,7 +6,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
-    public class PollKubeTests
+    public class PollKubeTests : UnitTest
     {
         private readonly int _delay;
         private PollKube _provider;

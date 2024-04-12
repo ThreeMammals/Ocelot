@@ -10,7 +10,7 @@ namespace Ocelot.Provider.Polly.v7;
 [Obsolete("Due to new v8 policy definition in Polly 8 (use PollyQoSResiliencePipelineProvider)")]
 public class PollyQoSProvider : PollyQoSProviderBase, IPollyQoSProvider<HttpResponseMessage>
 {
-    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = [];
+    private readonly Dictionary<string, PollyPolicyWrapper<HttpResponseMessage>> _policyWrappers = new();
 
     private readonly object _lockObject = new();
     private readonly IOcelotLogger _logger;

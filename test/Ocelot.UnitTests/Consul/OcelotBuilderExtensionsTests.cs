@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Consul
 {
-    public class OcelotBuilderExtensionsTests
+    public class OcelotBuilderExtensionsTests : UnitTest
     {
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configRoot;

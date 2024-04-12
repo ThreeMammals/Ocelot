@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class MultiplexingMiddlewareTests
+    public class MultiplexingMiddlewareTests : UnitTest
     {
         private MultiplexingMiddleware _middleware;
         private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
@@ -68,7 +68,7 @@ namespace Ocelot.UnitTests.Multiplexing
 
             // Act
             var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
-            var actual = (HttpContext)method.Invoke(_middleware, [_httpContext]);
+            var actual = (HttpContext)method.Invoke(_middleware, new object[] { _httpContext });
 
             // Assert
             AssertUsers(actual);
@@ -318,13 +318,11 @@ namespace Ocelot.UnitTests.Multiplexing
             b.WithDownstreamRoute(route2);
             b.WithDownstreamRoute(route3);
 
-            b.WithAggregateRouteConfig(
-            [
-                new AggregateRouteConfig
-                    { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-                new AggregateRouteConfig
-                    { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" }
-            ]);
+            b.WithAggregateRouteConfig(new()
+            {
+                new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
+                new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
+            });
 
             b.WithAggregator("TestAggregator");
 

@@ -3,7 +3,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class RemoveHeadersTests
+    public class RemoveHeadersTests : UnitTest
     {
         private List<Header> _headers;
         private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;

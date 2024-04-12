@@ -10,7 +10,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class AddHeadersToRequestPlainTests
+    public class AddHeadersToRequestPlainTests : UnitTest
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private HttpContext _context;

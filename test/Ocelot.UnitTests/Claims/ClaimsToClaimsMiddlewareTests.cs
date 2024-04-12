@@ -10,7 +10,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Claims
 {
-    public class ClaimsToClaimsMiddlewareTests
+    public class ClaimsToClaimsMiddlewareTests : UnitTest
     {
         private readonly Mock<IAddClaimsToRequest> _addHeaders;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

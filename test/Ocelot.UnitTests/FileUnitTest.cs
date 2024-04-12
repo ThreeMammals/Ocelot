@@ -16,12 +16,17 @@ public class FileUnitTest : UnitTest, IDisposable
     {
         folder ??= TestID;
         Directory.CreateDirectory(folder);
-        _folders = [folder];
+        _folders = new() { folder };
 
         _primaryConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         _globalConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
         _environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, EnvironmentName()));
-        _files = [_primaryConfigFileName, _globalConfigFileName, _environmentConfigFileName];
+        _files = new()
+        {
+            _primaryConfigFileName,
+            _globalConfigFileName,
+            _environmentConfigFileName,
+        };
     }
 
     protected virtual string EnvironmentName() => TestID;

@@ -8,7 +8,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class AddHeadersToResponseTests
+    public class AddHeadersToResponseTests : UnitTest
     {
         private readonly IAddHeadersToResponse _adder;
         private readonly Mock<IPlaceholders> _placeholders;

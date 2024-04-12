@@ -10,7 +10,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class LoadBalancerFactoryTests
+    public class LoadBalancerFactoryTests : UnitTest
     {
         private DownstreamRoute _route;
         private readonly LoadBalancerFactory _factory;

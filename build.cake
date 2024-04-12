@@ -1,9 +1,9 @@
-#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=4.0.1"
-#addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator&version=5.2.0"
-#addin Cake.Coveralls&version=1.1.0
+#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
+#tool dotnet:?package=coveralls.net&version=4.0.1
+#tool nuget:?package=ReportGenerator&version=5.2.4
+#addin nuget:?package=Newtonsoft.Json&version=13.0.3
+#addin nuget:?package=System.Text.Encodings.Web&version=8.0.0
+#addin nuget:?package=Cake.Coveralls&version=1.1.0
 
 #r "Spectre.Console"
 using Spectre.Console
@@ -13,10 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-// compile
-var compileConfig = Argument("configuration", "Release");
-
-var slnFile = "./Ocelot.sln";
+const string Release = "Release"; // task name, target, and Release config name
+var compileConfig = Argument("configuration", Release); // compile
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
@@ -61,9 +59,10 @@ string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
-
-Information("target is " + target);
-Information("Build configuration is " + compileConfig);	
+var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
+Information("\nTarget: " + target);
+Information("Build: " + compileConfig);
+Information("Solution: " + slnFile);
 
 TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
@@ -83,7 +82,7 @@ Task("RunTests")
 	.IsDependentOn("RunAcceptanceTests")
 	.IsDependentOn("RunIntegrationTests");
 
-Task("Release")
+Task(Release)
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
@@ -95,11 +94,18 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		Information("Build: " + compileConfig);
+		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // build using .NET 8 SDK only
+		}
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {settings.Framework}");
+		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -344,15 +350,23 @@ Task("RunUnitTests")
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
-				ArgumentCustomization = args => args
-					// this create the code coverage report
-					.Append("--collect:\"XPlat Code Coverage\"")
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
+				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+				.Append("--verbosity:detailed")
+				.Append("--consoleLoggerParameters:ErrorsOnly")
 		};
-
+		if (target != Release)
+		{
+			testSettings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
+			.First()
+			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
@@ -396,11 +410,15 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 		DotNetTest(acceptanceTestAssemblies, settings);
 	});
@@ -412,11 +430,15 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
 		DotNetTest(integrationTestAssemblies, settings);
 	});

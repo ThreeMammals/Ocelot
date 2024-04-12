@@ -10,7 +10,7 @@ using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
 namespace Ocelot.UnitTests.Consul
 {
-    public class ConsulServiceDiscoveryProviderTests : IDisposable
+    public class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
     {
         private IWebHost _fakeConsulBuilder;
         private readonly List<ServiceEntry> _serviceEntries;

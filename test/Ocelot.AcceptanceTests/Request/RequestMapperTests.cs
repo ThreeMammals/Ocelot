@@ -117,12 +117,12 @@ public sealed class RequestMapperTests : Steps, IDisposable
     {
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts =
-        [
+        DownstreamHostAndPorts = new()
+        {
             new("localhost", port),
-        ],
+        },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [method ?? HttpMethods.Get],
+        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
     };
 }
 

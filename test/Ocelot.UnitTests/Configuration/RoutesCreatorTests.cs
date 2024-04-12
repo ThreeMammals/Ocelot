@@ -7,7 +7,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class RoutesCreatorTests
+    public class RoutesCreatorTests : UnitTest
     {
         private readonly RoutesCreator _creator;
         private readonly Mock<IClaimsToThingCreator> _cthCreator;

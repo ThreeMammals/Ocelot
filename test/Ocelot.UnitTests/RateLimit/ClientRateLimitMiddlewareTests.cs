@@ -10,7 +10,7 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.RateLimit
 {
-    public class ClientRateLimitMiddlewareTests
+    public class ClientRateLimitMiddlewareTests : UnitTest
     {
         private readonly IRateLimitCounterHandler _rateLimitCounterHandler;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

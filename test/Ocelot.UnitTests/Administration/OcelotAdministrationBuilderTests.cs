@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Administration
 {
-    public class OcelotAdministrationBuilderTests
+    public class OcelotAdministrationBuilderTests : UnitTest
     {
         private readonly IServiceCollection _services;
         private IServiceProvider _serviceProvider;

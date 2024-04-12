@@ -10,7 +10,7 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class HttpHeadersTransformationMiddlewareTests
+    public class HttpHeadersTransformationMiddlewareTests : UnitTest
     {
         private readonly Mock<IHttpContextRequestHeaderReplacer> _preReplacer;
         private readonly Mock<IHttpResponseHeaderReplacer> _postReplacer;

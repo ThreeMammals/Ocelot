@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class SecurityOptionsCreatorTests
+    public class SecurityOptionsCreatorTests : UnitTest
     {
         private FileRoute _fileRoute;
         private SecurityOptions _result;

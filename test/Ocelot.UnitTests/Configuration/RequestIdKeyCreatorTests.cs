@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class RequestIdKeyCreatorTests
+    public class RequestIdKeyCreatorTests : UnitTest
     {
         private FileRoute _fileRoute;
         private FileGlobalConfiguration _fileGlobalConfig;

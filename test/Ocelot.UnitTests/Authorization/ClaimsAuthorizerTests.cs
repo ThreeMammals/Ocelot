@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Authorization
 {
-    public class ClaimsAuthorizerTests
+    public class ClaimsAuthorizerTests : UnitTest
     {
         private readonly ClaimsAuthorizer _claimsAuthorizer;
         private ClaimsPrincipal _claimsPrincipal;

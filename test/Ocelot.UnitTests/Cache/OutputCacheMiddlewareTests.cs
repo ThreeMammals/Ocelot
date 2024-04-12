@@ -10,7 +10,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class OutputCacheMiddlewareTests
+    public class OutputCacheMiddlewareTests : UnitTest
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
