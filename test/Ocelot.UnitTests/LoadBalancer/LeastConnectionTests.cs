@@ -5,7 +5,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class LeastConnectionTests
+    public class LeastConnectionTests : UnitTest
     {
         private ServiceHostAndPort _hostAndPort;
         private Response<ServiceHostAndPort> _result;

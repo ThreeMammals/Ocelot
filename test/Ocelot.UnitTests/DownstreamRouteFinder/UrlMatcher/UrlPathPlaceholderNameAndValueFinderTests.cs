@@ -3,7 +3,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
 {
-    public class UrlPathPlaceholderNameAndValueFinderTests
+    public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
     {
         private readonly IPlaceholderNameAndValueFinder _finder;
         private string _downstreamUrlPath;

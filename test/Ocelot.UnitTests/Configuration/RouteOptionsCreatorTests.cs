@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
-public class RouteOptionsCreatorTests
+public class RouteOptionsCreatorTests : UnitTest
 {
     private readonly RouteOptionsCreator _creator;
 

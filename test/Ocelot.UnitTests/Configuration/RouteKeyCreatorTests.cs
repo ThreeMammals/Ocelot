@@ -4,7 +4,7 @@ using Ocelot.LoadBalancer.LoadBalancers;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class RouteKeyCreatorTests
+    public class RouteKeyCreatorTests : UnitTest
     {
         private readonly RouteKeyCreator _creator;
         private FileRoute _route;

@@ -4,7 +4,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class UpstreamTemplatePatternCreatorTests
+    public class UpstreamTemplatePatternCreatorTests : UnitTest
     {
         private FileRoute _fileRoute;
         private readonly UpstreamTemplatePatternCreator _creator;

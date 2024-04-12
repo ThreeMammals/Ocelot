@@ -7,7 +7,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    public class DownstreamPathPlaceholderReplacerTests
+    public class DownstreamPathPlaceholderReplacerTests : UnitTest
     {
         private DownstreamRouteHolder _downstreamRoute;
         private Response<DownstreamPath> _result;

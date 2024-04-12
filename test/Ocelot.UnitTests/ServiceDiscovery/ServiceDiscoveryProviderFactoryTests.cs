@@ -11,7 +11,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    public class ServiceDiscoveryProviderFactoryTests
+    public class ServiceDiscoveryProviderFactoryTests : UnitTest
     {
         private ServiceProviderConfiguration _serviceConfig;
         private Response<IServiceDiscoveryProvider> _result;

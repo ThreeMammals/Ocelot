@@ -14,7 +14,7 @@ using System.Diagnostics;
 namespace Ocelot.UnitTests.Requester;
 
 [Trait("PR", "1824")]
-public class MessageInvokerPoolTests
+public class MessageInvokerPoolTests : UnitTest
 {
     private DownstreamRoute _downstreamRoute1;
     private DownstreamRoute _downstreamRoute2;

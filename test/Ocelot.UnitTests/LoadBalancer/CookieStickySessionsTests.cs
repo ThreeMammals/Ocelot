@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class CookieStickySessionsTests
+    public class CookieStickySessionsTests : UnitTest
     {
         private readonly CookieStickySessions _stickySessions;
         private readonly Mock<ILoadBalancer> _loadBalancer;

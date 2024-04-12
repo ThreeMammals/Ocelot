@@ -3,7 +3,7 @@ using Ocelot.Responder;
 
 namespace Ocelot.UnitTests.Responder
 {
-    public class ErrorsToHttpStatusCodeMapperTests
+    public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     {
         private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
         private int _result;

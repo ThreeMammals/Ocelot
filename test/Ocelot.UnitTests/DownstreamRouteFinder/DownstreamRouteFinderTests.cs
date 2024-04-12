@@ -8,7 +8,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    public class DownstreamRouteFinderTests
+    public class DownstreamRouteFinderTests : UnitTest
     {
         private readonly IDownstreamRouteProvider _downstreamRouteFinder;
         private readonly Mock<IUrlPathToUrlTemplateMatcher> _mockMatcher;

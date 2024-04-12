@@ -7,7 +7,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ClaimsToThingCreatorTests
+    public class ClaimsToThingCreatorTests : UnitTest
     {
         private readonly Mock<IClaimToThingConfigurationParser> _configParser;
         private Dictionary<string, string> _claimsToThings;

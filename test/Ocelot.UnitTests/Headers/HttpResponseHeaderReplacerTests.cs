@@ -9,7 +9,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class HttpResponseHeaderReplacerTests
+    public class HttpResponseHeaderReplacerTests : UnitTest
     {
         private DownstreamResponse _response;
         private readonly Placeholders _placeholders;

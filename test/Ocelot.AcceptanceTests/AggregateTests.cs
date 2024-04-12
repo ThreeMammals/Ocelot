@@ -15,7 +15,6 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
-using TestStack.BDDfy.Configuration;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -28,7 +27,6 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler = new ServiceHandler();
             _downstreamPaths = new string[3];
-            //Configurator.Processors.ConsoleReport.Disable();
         }
 
         public override void Dispose()

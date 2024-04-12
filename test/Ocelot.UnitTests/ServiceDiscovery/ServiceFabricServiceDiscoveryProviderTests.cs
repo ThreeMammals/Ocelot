@@ -4,7 +4,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    public class ServiceFabricServiceDiscoveryProviderTests
+    public class ServiceFabricServiceDiscoveryProviderTests : UnitTest
     {
         private ServiceFabricServiceDiscoveryProvider _provider;
         private ServiceFabricConfiguration _config;

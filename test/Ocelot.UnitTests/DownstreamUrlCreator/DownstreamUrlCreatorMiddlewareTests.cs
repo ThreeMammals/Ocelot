@@ -14,7 +14,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator
 {
-    public class DownstreamUrlCreatorMiddlewareTests
+    public class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
         private OkResponse<DownstreamPath> _downstreamPath;

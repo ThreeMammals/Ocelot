@@ -3,7 +3,7 @@ using Ocelot.Cache;
 
 namespace Ocelot.UnitTests.Controllers
 {
-    public class OutputCacheControllerTests
+    public class OutputCacheControllerTests : UnitTest
     {
         private readonly OutputCacheController _controller;
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;

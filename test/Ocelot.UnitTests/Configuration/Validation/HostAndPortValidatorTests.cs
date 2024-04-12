@@ -4,7 +4,7 @@ using Ocelot.Configuration.Validator;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
-    public class HostAndPortValidatorTests
+    public class HostAndPortValidatorTests : UnitTest
     {
         private HostAndPortValidator _validator;
         private ValidationResult _result;

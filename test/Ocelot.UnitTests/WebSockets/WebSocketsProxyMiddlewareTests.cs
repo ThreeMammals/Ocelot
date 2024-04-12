@@ -9,7 +9,7 @@ using System.Net.WebSockets;
 
 namespace Ocelot.UnitTests.WebSockets;
 
-public class WebSocketsProxyMiddlewareTests
+public class WebSocketsProxyMiddlewareTests : UnitTest
 {
     private readonly WebSocketsProxyMiddleware _middleware;
 

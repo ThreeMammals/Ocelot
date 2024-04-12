@@ -7,7 +7,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class LoadBalancerHouseTests
+    public class LoadBalancerHouseTests : UnitTest
     {
         private DownstreamRoute _route;
         private ILoadBalancer _loadBalancer;

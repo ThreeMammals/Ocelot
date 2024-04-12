@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    public class OcelotPiplineBuilderTests
+    public class OcelotPiplineBuilderTests : UnitTest
     {
         private readonly IServiceCollection _services;
         private readonly IConfiguration _configRoot;

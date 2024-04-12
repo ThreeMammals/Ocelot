@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
-public class RequestMapperTests
+public class RequestMapperTests : UnitTest
 {
     private readonly HttpRequest _inputRequest;
     private readonly RequestMapper _requestMapper;

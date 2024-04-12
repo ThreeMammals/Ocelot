@@ -11,7 +11,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class ClaimsToHeadersMiddlewareTests
+    public class ClaimsToHeadersMiddlewareTests : UnitTest
     {
         private readonly Mock<IAddHeadersToRequest> _addHeaders;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _downstreamRoute;

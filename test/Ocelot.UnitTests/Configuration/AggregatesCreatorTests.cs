@@ -6,7 +6,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class AggregatesCreatorTests
+    public class AggregatesCreatorTests : UnitTest
     {
         private readonly AggregatesCreator _creator;
         private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;

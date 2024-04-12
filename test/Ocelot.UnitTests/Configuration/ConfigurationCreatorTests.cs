@@ -6,7 +6,7 @@ using Ocelot.DependencyInjection;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ConfigurationCreatorTests
+    public class ConfigurationCreatorTests : UnitTest
     {
         private ConfigurationCreator _creator;
         private InternalConfiguration _result;

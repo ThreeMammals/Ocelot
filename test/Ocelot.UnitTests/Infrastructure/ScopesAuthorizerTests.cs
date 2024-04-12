@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
-    public class ScopesAuthorizerTests
+    public class ScopesAuthorizerTests : UnitTest
     {
         private readonly ScopesAuthorizer _authorizer;
         public Mock<IClaimsParser> _parser;

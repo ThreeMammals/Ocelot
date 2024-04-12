@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class AddHeadersToRequestClaimToThingTests
+    public class AddHeadersToRequestClaimToThingTests : UnitTest
     {
         private readonly AddHeadersToRequest _addHeadersToRequest;
         private readonly Mock<IClaimsParser> _parser;

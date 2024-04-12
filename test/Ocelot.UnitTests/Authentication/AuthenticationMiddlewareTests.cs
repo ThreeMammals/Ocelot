@@ -12,7 +12,7 @@ using AuthenticationOptions = Ocelot.Configuration.AuthenticationOptions;
 
 namespace Ocelot.UnitTests.Authentication
 {
-    public class AuthenticationMiddlewareTests
+    public class AuthenticationMiddlewareTests : UnitTest
     {
         private readonly Mock<IAuthenticationService> _authentication;
         private readonly Mock<IOcelotLoggerFactory> _factory;

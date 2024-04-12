@@ -8,7 +8,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class HeaderFindAndReplaceCreatorTests
+    public class HeaderFindAndReplaceCreatorTests : UnitTest
     {
         private readonly HeaderFindAndReplaceCreator _creator;
         private FileRoute _route;

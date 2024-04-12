@@ -8,7 +8,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class DelegateInvokingLoadBalancerCreatorTests
+    public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
     {
         private DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
         private Func<DownstreamRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;

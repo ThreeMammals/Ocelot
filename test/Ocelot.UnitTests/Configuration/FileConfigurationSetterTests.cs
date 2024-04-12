@@ -9,7 +9,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class FileConfigurationSetterTests
+    public class FileConfigurationSetterTests : UnitTest
     {
         private FileConfiguration _fileConfiguration;
         private readonly FileAndInternalConfigurationSetter _configSetter;

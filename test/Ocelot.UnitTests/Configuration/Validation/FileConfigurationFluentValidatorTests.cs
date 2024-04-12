@@ -18,7 +18,7 @@ using System.Text.Encodings.Web;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
-    public class FileConfigurationFluentValidatorTests
+    public class FileConfigurationFluentValidatorTests : UnitTest
     {
         private IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;

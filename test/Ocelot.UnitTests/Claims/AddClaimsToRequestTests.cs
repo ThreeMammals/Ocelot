@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Claims
 {
-    public class AddClaimsToRequestTests
+    public class AddClaimsToRequestTests : UnitTest
     {
         private readonly AddClaimsToRequest _addClaimsToRequest;
         private readonly Mock<IClaimsParser> _parser;

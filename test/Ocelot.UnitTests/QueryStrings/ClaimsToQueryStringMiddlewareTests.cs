@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
-    public class ClaimsToQueryStringMiddlewareTests
+    public class ClaimsToQueryStringMiddlewareTests : UnitTest
     {
         private readonly Mock<IAddQueriesToRequest> _addQueries;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

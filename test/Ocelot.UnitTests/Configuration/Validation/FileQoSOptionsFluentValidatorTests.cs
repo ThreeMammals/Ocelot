@@ -9,7 +9,7 @@ using Ocelot.Requester;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
-    public class FileQoSOptionsFluentValidatorTests
+    public class FileQoSOptionsFluentValidatorTests : UnitTest
     {
         private FileQoSOptionsFluentValidator _validator;
         private readonly ServiceCollection _services;

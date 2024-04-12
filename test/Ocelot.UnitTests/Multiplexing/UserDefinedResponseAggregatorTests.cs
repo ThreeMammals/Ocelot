@@ -8,7 +8,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class UserDefinedResponseAggregatorTests
+    public class UserDefinedResponseAggregatorTests : UnitTest
     {
         private readonly UserDefinedResponseAggregator _aggregator;
         private readonly Mock<IDefinedAggregatorProvider> _provider;

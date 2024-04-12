@@ -5,7 +5,7 @@ using _Eureka_ = Ocelot.Provider.Eureka.Eureka;
 
 namespace Ocelot.UnitTests.Eureka
 {
-    public class EurekaServiceDiscoveryProviderTests
+    public class EurekaServiceDiscoveryProviderTests : UnitTest
     {
         private readonly _Eureka_ _provider;
         private readonly Mock<IDiscoveryClient> _client;

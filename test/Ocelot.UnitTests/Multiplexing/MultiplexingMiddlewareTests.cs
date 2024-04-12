@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class MultiplexingMiddlewareTests
+    public class MultiplexingMiddlewareTests : UnitTest
     {
         private MultiplexingMiddleware _middleware;
         private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;

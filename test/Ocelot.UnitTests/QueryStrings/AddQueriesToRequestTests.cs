@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.QueryStrings
 {
-    public class AddQueriesToRequestTests
+    public class AddQueriesToRequestTests : UnitTest
     {
         private readonly AddQueriesToRequest _addQueriesToRequest;
         private DownstreamRequest _downstreamRequest;

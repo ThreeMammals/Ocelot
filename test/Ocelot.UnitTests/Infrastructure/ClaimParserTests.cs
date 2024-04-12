@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Infrastructure
 {
-    public class ClaimParserTests
+    public class ClaimParserTests : UnitTest
     {
         private readonly IClaimsParser _claimsParser;
         private readonly List<Claim> _claims;

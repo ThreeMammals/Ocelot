@@ -6,7 +6,7 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class CookieStickySessionsCreatorTests
+    public class CookieStickySessionsCreatorTests : UnitTest
     {
         private readonly CookieStickySessionsCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;

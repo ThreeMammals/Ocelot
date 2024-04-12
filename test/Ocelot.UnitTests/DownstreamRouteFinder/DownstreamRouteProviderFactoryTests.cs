@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
     using Ocelot.DownstreamRouteFinder.Finder;
 
-    public class DownstreamRouteProviderFactoryTests
+    public class DownstreamRouteProviderFactoryTests : UnitTest
     {
         private readonly DownstreamRouteProviderFactory _factory;
         private IInternalConfiguration _config;

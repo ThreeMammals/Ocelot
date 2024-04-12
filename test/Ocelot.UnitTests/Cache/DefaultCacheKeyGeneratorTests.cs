@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Cache;
 
-public sealed class DefaultCacheKeyGeneratorTests : IDisposable
+public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
 {
     private readonly ICacheKeyGenerator _cacheKeyGenerator;
     private readonly HttpRequestMessage _request;
