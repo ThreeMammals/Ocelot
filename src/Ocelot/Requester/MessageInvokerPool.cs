@@ -100,9 +100,14 @@ public class MessageInvokerPool : IMessageInvokerPool
         return handler;
     }
 
-    private readonly struct MessageInvokerCacheKey(DownstreamRoute downstreamRoute) : IEquatable<MessageInvokerCacheKey>
+    private readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
     {
-        public DownstreamRoute DownstreamRoute { get; } = downstreamRoute;
+        public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
+        {
+            DownstreamRoute = downstreamRoute;
+        }
+
+        public DownstreamRoute DownstreamRoute { get; }
 
         public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 
