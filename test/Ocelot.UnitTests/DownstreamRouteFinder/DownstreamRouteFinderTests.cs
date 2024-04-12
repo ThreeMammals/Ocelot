@@ -739,18 +739,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(urlPlaceholders));
             GivenTheHeaderPlaceholderAndNameFinderReturns(headerPlaceholders);
             GivenTheConfigurationIs(
-                [
+                new()
+                {
                     new RouteBuilder()
-                        .WithDownstreamRoute(new DownstreamRouteBuilder()
-                            .WithDownstreamPathTemplate("someDownstreamPath")
-                            .WithUpstreamHttpMethod(["Get"])
-                            .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                            .Build())
-                        .WithUpstreamHttpMethod(["Get"])
+                    .WithDownstreamRoute(new DownstreamRouteBuilder()
+                        .WithDownstreamPathTemplate("someDownstreamPath")
+                        .WithUpstreamHttpMethod(new() {"Get"})
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                        .WithUpstreamHeaders(upstreamHeadersConfig)
-                        .Build(),
-                ], string.Empty, serviceProviderConfig);
+                        .Build())
+                    .WithUpstreamHttpMethod(new() {"Get"})
+                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
+                    .WithUpstreamHeaders(upstreamHeadersConfig)
+                    .Build(),
+                },
+                string.Empty,
+                serviceProviderConfig);
             GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
             GivenTheHeadersMatcherReturns(true);
             GivenTheUpstreamHttpMethodIs("Get");
@@ -764,10 +767,10 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     new RouteBuilder()
                         .WithDownstreamRoute(new DownstreamRouteBuilder()
                             .WithDownstreamPathTemplate("someDownstreamPath")
-                            .WithUpstreamHttpMethod(["Get"])
+                            .WithUpstreamHttpMethod(new() { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .Build())
-                        .WithUpstreamHttpMethod(["Get"])
+                        .WithUpstreamHttpMethod(new() { "Get" })
                         .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                         .Build()
                 ));
@@ -794,20 +797,20 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                         new RouteBuilder()
                             .WithDownstreamRoute(new DownstreamRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
-                                .WithUpstreamHttpMethod(["Get"])
+                                .WithUpstreamHttpMethod(new() { "Get" })
                                 .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                                 .Build())
-                            .WithUpstreamHttpMethod(["Get"])
+                            .WithUpstreamHttpMethod(new() { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHeaders(upstreamHeadersConfig)
                             .Build(),
                         new RouteBuilder()
                             .WithDownstreamRoute(new DownstreamRouteBuilder()
                                 .WithDownstreamPathTemplate("someDownstreamPath")
-                                .WithUpstreamHttpMethod(["Get"])
+                                .WithUpstreamHttpMethod(new() { "Get" })
                                 .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                                 .Build())
-                            .WithUpstreamHttpMethod(["Get"])
+                            .WithUpstreamHttpMethod(new() { "Get" })
                             .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
                             .WithUpstreamHeaders(upstreamHeadersConfig)
                             .Build(),

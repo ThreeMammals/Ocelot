@@ -798,7 +798,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                                 { "header1", "value1" },
                                 { "header2", "value2" },
                             });
-            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", []);
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new());
             GivenAConfiguration(route1, route2);
 
             // Act
@@ -898,8 +898,11 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             UpstreamPathTemplate = upstream,
             DownstreamPathTemplate = downstream,
-            DownstreamHostAndPorts = [new("bbc.co.uk", 123)],
-            UpstreamHttpMethod = ["Get"],
+            DownstreamHostAndPorts = new()
+            {
+                new("bbc.co.uk", 123),
+            },
+            UpstreamHttpMethod = new() { HttpMethods.Get },
             UpstreamHeaderTemplates = templates,
         };
 

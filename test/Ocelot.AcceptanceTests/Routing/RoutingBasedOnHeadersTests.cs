@@ -427,12 +427,12 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
     {
         DownstreamPathTemplate = path ?? "/",
         DownstreamScheme = "http",
-        DownstreamHostAndPorts =
-        [
+        DownstreamHostAndPorts = new()
+        {
             new("localhost", port),
-        ],
+        },
         UpstreamPathTemplate = path ?? "/",
-        UpstreamHttpMethod = ["Get"],
+        UpstreamHttpMethod = new() { HttpMethods.Get },
         Key = key,
     };
 
@@ -456,7 +456,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
     {
         UpstreamPathTemplate = "/",
         UpstreamHost = "localhost",
-        RouteKeys = ["Laura", "Tom"],
+        RouteKeys = new() { "Laura", "Tom" },
         UpstreamHeaderTemplates = templates,
     };
 }

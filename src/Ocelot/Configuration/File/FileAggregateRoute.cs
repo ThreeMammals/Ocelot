@@ -12,7 +12,7 @@ namespace Ocelot.Configuration.File
         public string Aggregator { get; set; }
 
         // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
-        public List<string> UpstreamHttpMethod => [HttpMethods.Get];
+        public List<string> UpstreamHttpMethod => new() { HttpMethods.Get };
         public Dictionary<string, string> UpstreamHeaderTemplates { get; set; }
         public int Priority { get; set; } = 1;
 

@@ -44,10 +44,10 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder()
     {
-        _downstreamAddresses = [];
-        _delegatingHandlers = [];
-        _addHeadersToDownstream = [];
-        _addHeadersToUpstream = [];
+        _downstreamAddresses = new();
+        _delegatingHandlers = new();
+        _addHeadersToDownstream = new();
+        _addHeadersToUpstream = new();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -90,7 +90,7 @@ public class DownstreamRouteBuilder
     {
         _upstreamHttpMethod = input.Count > 0
             ? input.Select(x => new HttpMethod(x.Trim())).ToList()
-            : [];
+            : new();
         return this;
     }
 
