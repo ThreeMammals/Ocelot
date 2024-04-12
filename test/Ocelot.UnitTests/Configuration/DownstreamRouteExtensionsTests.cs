@@ -231,7 +231,6 @@ public class DownstreamRouteExtensionsTests
     [Fact]
     public void should_throw_error_when_invalid_number()
     {
-
         // Arrange
         var key = "mykey";
         _metadata.Add(key, "xyz");
