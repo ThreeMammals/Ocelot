@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_nothing()
+        public void Should_return_nothing()
         {
             var fileConfig = new FileConfiguration();
 
@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_routes()
+        public void Should_return_routes()
         {
             var fileConfig = new FileConfiguration
             {

@@ -55,7 +55,7 @@ public class DownstreamRouteExtensionsTests
     [Theory]
     [InlineData("key1", null)]
     [InlineData("hello", "world")]
-    public void should_return_default_value_when_key_not_found(string key, string defaultValue)
+    public void Should_return_default_value_when_key_not_found(string key, string defaultValue)
     {
         // Arrange
         _metadata.Add(key, defaultValue);
@@ -70,7 +70,7 @@ public class DownstreamRouteExtensionsTests
     [Theory]
     [InlineData("hello", "world")]
     [InlineData("object.key", "value1,value2,value3")]
-    public void should_return_found_metadata_value(string key, string value)
+    public void Should_return_found_metadata_value(string key, string value)
     {
         // Arrange
         _metadata.Add(key, value);
@@ -91,7 +91,7 @@ public class DownstreamRouteExtensionsTests
     [InlineData("mykey", "value1,   ,value2", "value1", "value2")]
     [InlineData("mykey", "value1, value2, value3", "value1", "value2", "value3")]
     [InlineData("mykey", ",  ,value1,  ,,  ,,,,,value2,,,   ", "value1", "value2")]
-    public void should_split_strings(string key, string value, params string[] expected)
+    public void Should_split_strings(string key, string value, params string[] expected)
     {
         // Arrange
         _metadata.Add(key, value);
@@ -104,22 +104,22 @@ public class DownstreamRouteExtensionsTests
     }
 
     [Fact]
-    public void should_parse_from_json_null() => should_parse_object_from_json<object>("mykey", "null", null);
+    public void Should_parse_from_json_null() => Should_parse_object_from_json<object>("mykey", "null", null);
 
     [Fact]
-    public void should_parse_from_json_string() => should_parse_object_from_json<string>("mykey", "\"string\"", "string");
+    public void Should_parse_from_json_string() => Should_parse_object_from_json<string>("mykey", "\"string\"", "string");
 
     [Fact]
-    public void should_parse_from_json_numbers() => should_parse_object_from_json<int>("mykey", "123", 123);
+    public void Should_parse_from_json_numbers() => Should_parse_object_from_json<int>("mykey", "123", 123);
 
     [Fact]
-    public void should_parse_from_object()
-        => should_parse_object_from_json<FakeObject>(
+    public void Should_parse_from_object()
+        => Should_parse_object_from_json<FakeObject>(
             "mykey",
             "{\"Id\": 88, \"Value\": \"Hello World!\", \"MyTime\": \"2024-01-01T10:10:10.000Z\"}",
             new FakeObject { Id = 88, Value = "Hello World!", MyTime = new DateTime(2024, 1, 1, 10, 10, 10, DateTimeKind.Unspecified) });
 
-    private void should_parse_object_from_json<T>(string key, string value, object expected)
+    private void Should_parse_object_from_json<T>(string key, string value, object expected)
     {
         // Arrange
         _metadata.Add(key, value);
@@ -132,7 +132,7 @@ public class DownstreamRouteExtensionsTests
     }
 
     [Fact]
-    public void should_parse_from_json_array()
+    public void Should_parse_from_json_array()
     {
         // Arrange
         var key = "mykey";
@@ -149,7 +149,7 @@ public class DownstreamRouteExtensionsTests
     }
 
     [Fact]
-    public void should_throw_error_when_invalid_json()
+    public void Should_throw_error_when_invalid_json()
     {
         // Arrange
         var key = "mykey";
@@ -165,7 +165,7 @@ public class DownstreamRouteExtensionsTests
     }
 
     [Fact]
-    public void should_parse_json_with_custom_json_settings_options()
+    public void Should_parse_json_with_custom_json_settings_options()
     {
         // Arrange
         var key = "mykey";
@@ -203,7 +203,7 @@ public class DownstreamRouteExtensionsTests
     [InlineData("99", 99)]
     [InlineData("500", 500)]
     [InlineData("999999999", 999999999)]
-    public void should_parse_integers(string value, int expected) => should_parse_number(value, expected);
+    public void Should_parse_integers(string value, int expected) => Should_parse_number(value, expected);
 
     [Theory]
     [InlineData("0", 0)]
@@ -212,9 +212,9 @@ public class DownstreamRouteExtensionsTests
     [InlineData("99.5", 99.5)]
     [InlineData("999999999", 999999999)]
     [InlineData("999999999.5", 999999999.5)]
-    public void should_parse_double(string value, double expected) => should_parse_number(value, expected);
+    public void Should_parse_double(string value, double expected) => Should_parse_number(value, expected);
 
-    private void should_parse_number<T>(string value, T expected)
+    private void Should_parse_number<T>(string value, T expected)
         where T : INumberBase<T>
     {
         // Arrange
@@ -229,7 +229,7 @@ public class DownstreamRouteExtensionsTests
     }
 
     [Fact]
-    public void should_throw_error_when_invalid_number()
+    public void Should_throw_error_when_invalid_number()
     {
         // Arrange
         var key = "mykey";
@@ -268,7 +268,7 @@ public class DownstreamRouteExtensionsTests
     [InlineData("disable", false)]
     [InlineData("no", false)]
     [InlineData("abcxyz", false)]
-    public void should_parse_truthy_values(string value, bool expected)
+    public void Should_parse_truthy_values(string value, bool expected)
     {
         // Arrange
         var key = "mykey";

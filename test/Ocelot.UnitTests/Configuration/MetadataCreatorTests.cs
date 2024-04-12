@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
-public class MetadataCreatorTests
+public class MetadataCreatorTests : UnitTest
 {
     private FileGlobalConfiguration _globalConfiguration;
     private Dictionary<string, string> _metadataInRoute;
@@ -11,7 +11,7 @@ public class MetadataCreatorTests
     private readonly MetadataCreator _sut = new();
 
     [Fact]
-    public void should_return_empty_metadata()
+    public void Should_return_empty_metadata()
     {
         this.Given(_ => GivenEmptyMetadataInGlobalConfiguration())
             .Given(_ => GivenEmptyMetadataInRoute())
@@ -20,7 +20,7 @@ public class MetadataCreatorTests
     }
 
     [Fact]
-    public void should_return_global_metadata()
+    public void Should_return_global_metadata()
     {
         this.Given(_ => GivenSomeMetadataInGlobalConfiguration())
             .Given(_ => GivenEmptyMetadataInRoute())
@@ -29,7 +29,7 @@ public class MetadataCreatorTests
     }
 
     [Fact]
-    public void should_return_route_metadata()
+    public void Should_return_route_metadata()
     {
         this.Given(_ => GivenEmptyMetadataInGlobalConfiguration())
             .Given(_ => GivenSomeMetadataInRoute())
@@ -38,7 +38,7 @@ public class MetadataCreatorTests
     }
 
     [Fact]
-    public void should_overwrite_global_metadata()
+    public void Should_overwrite_global_metadata()
     {
         this.Given(_ => GivenSomeMetadataInGlobalConfiguration())
             .Given(_ => GivenSomeMetadataInRoute())
