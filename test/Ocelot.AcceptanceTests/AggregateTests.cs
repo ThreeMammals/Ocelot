@@ -28,7 +28,7 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler = new ServiceHandler();
             _downstreamPaths = new string[3];
-            Configurator.Processors.ConsoleReport.Disable();
+            //Configurator.Processors.ConsoleReport.Disable();
         }
 
         public override void Dispose()
