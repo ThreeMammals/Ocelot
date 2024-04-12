@@ -351,6 +351,8 @@ Task("RunUnitTests")
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
 			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
 				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
 		};
 		if (target != Release)
