@@ -27,3 +27,4 @@ html_theme = 'alabaster'
 
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_static_path
 html_static_path = ['_static']
+html_css_files = ['overrides.css']
