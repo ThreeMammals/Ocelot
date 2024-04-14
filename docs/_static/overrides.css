@@ -1,3 +1,6 @@
 blockquote {
-    font-size: smaller;
+    font-size: 0.9em;
+}
+aside.footnote-list {
+    font-size: 0.9em;
 }
