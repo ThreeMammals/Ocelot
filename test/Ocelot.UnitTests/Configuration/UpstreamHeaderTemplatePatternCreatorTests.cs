@@ -6,9 +6,7 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class UpstreamHeaderTemplatePatternCreatorTests
 {
-    private FileRoute _fileRoute;
     private readonly UpstreamHeaderTemplatePatternCreator _creator;
-    private IDictionary<string, UpstreamHeaderTemplate> _result;
 
     public UpstreamHeaderTemplatePatternCreatorTests()
     {

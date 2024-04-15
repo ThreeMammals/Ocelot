@@ -1,13 +1,9 @@
 ﻿using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.Values;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
 
-public class HeadersToHeaderTemplatesMatcherTests
+public class HeadersToHeaderTemplatesMatcherTests : UnitTest
 {
     private readonly IHeadersToHeaderTemplatesMatcher _headerMatcher;
     private Dictionary<string, string> _upstreamHeaders;
@@ -22,123 +18,136 @@ public class HeadersToHeaderTemplatesMatcherTests
     [Fact]
     public void Should_match_when_no_template_headers()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "anyHeaderValue",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>();
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_match_the_same_headers()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "anyHeaderValue",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_not_match_the_same_headers_when_differ_case_and_case_sensitive()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "ANYHEADERVALUE",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsFalse())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsFalse();
     }
 
     [Fact]
     public void Should_match_the_same_headers_when_differ_case_and_case_insensitive()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "ANYHEADERVALUE",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_not_match_different_headers_values()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "anyHeaderValueDifferent",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsFalse())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsFalse();
     }
 
     [Fact]
     public void Should_not_match_the_same_headers_names()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeaderDifferent"] = "anyHeaderValue",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsFalse())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsFalse();
     }
 
     [Fact]
     public void Should_match_all_the_same_headers()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "anyHeaderValue",
@@ -146,24 +155,26 @@ public class HeadersToHeaderTemplatesMatcherTests
             ["secondHeader"] = "secondHeaderValue",
             ["thirdHeader"] = "thirdHeaderValue",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["secondHeader"] = new("^(?i)secondHeaderValue$", "secondHeaderValue"),
             ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_not_match_the_headers_when_one_of_them_different()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "anyHeaderValue",
@@ -171,79 +182,86 @@ public class HeadersToHeaderTemplatesMatcherTests
             ["secondHeader"] = "secondHeaderValueDIFFERENT",
             ["thirdHeader"] = "thirdHeaderValue",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["secondHeader"] = new("^(?i)secondHeaderValue$", "secondHeaderValue"),
             ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsFalse())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsFalse();
     }
 
     [Fact]
     public void Should_match_the_header_with_placeholder()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "PL",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_match_the_header_with_placeholders()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "PL-V1",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsTrue())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsTrue();
     }
 
     [Fact]
     public void Should_not_match_the_header_with_placeholders()
     {
+        // Arrange
         var upstreamHeaders = new Dictionary<string, string>()
         {
             ["anyHeader"] = "PL",
         };
-
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>()
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
+        GivenIHaveUpstreamHeaders(upstreamHeaders);
+        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
-        this.Given(x => x.GivenIHaveUpstreamHeaders(upstreamHeaders))
-            .And(x => x.GivenIHaveTemplateHeadersInRoute(templateHeaders))
-            .When(x => x.WhenIMatchTheHeaders())
-            .Then(x => x.ThenTheResultIsFalse())
-            .BDDfy();
+        // Act
+        WhenIMatchTheHeaders();
+
+        // Assert
+        ThenTheResultIsFalse();
     }
 
     private void GivenIHaveUpstreamHeaders(Dictionary<string, string> upstreamHeaders)
