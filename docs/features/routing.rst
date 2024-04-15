@@ -155,11 +155,10 @@ If you do not set **UpstreamHost** on a Route then any ``Host`` header will matc
 This means that if you have two Routes that are the same, apart from the **UpstreamHost**, where one is null and the other set Ocelot will favour the one that has been set. 
 
 Upstream Headers
-^^^^^^^^^^^^^^^^
+----------------
 
-Additionally to routing by UpstreamPathTemplate, you can define UpstreamHeaderTemplates. Then to match a route, all the headers from this section must exist in the request headers.
-
-The example:
+In addition to routing by ``UpstreamPathTemplate``, you can also define ``UpstreamHeaderTemplates``.
+For a route to match, all headers specified in this section must be present in the request headers.
 
 .. code-block:: json
 
@@ -174,20 +173,20 @@ The example:
             ],
         "UpstreamPathTemplate": "/",
         "UpstreamHttpMethod": [ "Get" ],
-        "UpstreamHeaderTemplates": {
+        "UpstreamHeaderTemplates": { // !
             "country": "uk",
             "version": "v1"
         }
     }
 
-In this case the route will be matched only if a request has both headers set to the configured values.
+In this scenario, the route will only match if a request includes both headers with the specified values.
 
-You can use placeholders in your UpstreamHeaderTemplates in the following way:
+Placeholders can be utilized in your ``UpstreamHeaderTemplates`` as follows:
 
 .. code-block:: json
 
     {
-        "DownstreamPathTemplate": "/{versionnumber}/api",
+        "DownstreamPathTemplate": "/{versionnumber}/api", // !
         "DownstreamScheme": "https",
         "DownstreamHostAndPorts": [
                 {
@@ -197,18 +196,19 @@ You can use placeholders in your UpstreamHeaderTemplates in the following way:
             ],
         "UpstreamPathTemplate": "/api",
         "UpstreamHttpMethod": [ "Get" ],
-        "UpstreamHeaderTemplates": {
+        "UpstreamHeaderTemplates": { // !!
             "version": "{header:versionnumber}"
         }
     }
 
-In this case the whole value for the request header "version" will be placed into the DownstreamPathTemplate. If you need, you can specify more complex upstream header template with placeholders like e.g. "version-{header:version}_country-{header:country}".
+In this scenario, the entire value of the request header "**version**" is inserted into the ``DownstreamPathTemplate``.
+If necessary, a more intricate upstream header template can be specified, using placeholders such as ``version-{header:version}_country-{header:country}``.
 
-Placeholders do not have to exist in DownstreamPathTemplate. This case may be used to require specific header no matter what the value it contains.
+Placeholders are not required in ``DownstreamPathTemplate``.
+This scenario can be utilized to mandate a specific header regardless of its value.
+Additionally, the ``UpstreamHeaderTemplates`` section is applicable for Aggregates as well.
 
-UpstreamHeaderTemplates section can be used also for Aggregates.
-
-This feature was requested in `Issue 360 <https://github.com/ThreeMammals/Ocelot/pull/360>`_ .
+This feature was proposed in Issue 360.
 
 Priority
 --------
