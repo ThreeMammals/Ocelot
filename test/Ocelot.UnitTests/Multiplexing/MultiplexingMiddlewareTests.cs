@@ -219,41 +219,41 @@ namespace Ocelot.UnitTests.Multiplexing
         [InlineData(3)]
         [InlineData(4)]
         [Trait("Bug", "2039")]
-        public async Task Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests(int numberOfRoutes)
+        public async Task Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests(int numberOfRoutes)
         {
             var mock = MockMiddlewareFactory(null, null);
 
             _middleware = mock.Object;
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests));
+            GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
             GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task<Stream>>("CopyBufferToTargetRequestAsync", Times.Exactly(numberOfRoutes),
+            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync", Times.Exactly(numberOfRoutes),
                 ItExpr.IsAny<HttpContext>());
         }
 
         [Fact]
         [Trait("Bug", "2039")]
-        public async Task Should_Not_Call_CopyBufferToTargetRequestAsync_With_One_Route()
+        public async Task Should_Not_Call_CloneRequestBodyAsync_With_One_Route()
         {
             var mock = MockMiddlewareFactory(null, null);
 
             _middleware = mock.Object;
 
             // Arrange
-            GivenUser("test", "Invoke", nameof(Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests));
+            GivenUser("test", "Invoke", nameof(Should_Not_Call_CloneRequestBodyAsync_With_One_Route));
             GivenTheFollowing(GivenDefaultRoute(1));
 
             // Act
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task<Stream>>("CopyBufferToTargetRequestAsync", Times.Never(),
+            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync", Times.Never(),
                 ItExpr.IsAny<HttpContext>());
         }
 

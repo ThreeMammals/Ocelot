@@ -215,7 +215,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         {
             Request =
             {
-                Body = await CopyBufferToTargetRequestAsync(source),
+                Body = await CloneRequestBodyAsync(source),
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
                 Host = from.Host,
@@ -257,7 +257,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return aggregator.Aggregate(route, httpContext, contexts);
     }
 
-    protected virtual async Task<Stream> CopyBufferToTargetRequestAsync(HttpContext source)
+    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpContext source)
     {
         source.Request.EnableBuffering();
         if (source.Request.Body.Position == 0)
