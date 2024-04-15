@@ -7,5 +7,5 @@ namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 /// </summary>
 public interface IHeadersToHeaderTemplatesMatcher
 {
-    bool Match(Dictionary<string, string> upstreamHeaders, Dictionary<string, UpstreamHeaderTemplate> routeHeaders);
+    bool Match(IDictionary<string, string> upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> routeHeaders);
 }

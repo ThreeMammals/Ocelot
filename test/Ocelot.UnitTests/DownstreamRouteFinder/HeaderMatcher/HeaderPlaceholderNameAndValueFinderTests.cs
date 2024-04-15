@@ -184,7 +184,8 @@ public class HeaderPlaceholderNameAndValueFinderTests
 
     private void WhenICallFindPlaceholders()
     {
-        _result = _finder.Find(_upstreamHeaders, _upstreamHeaderTemplates);
+        var result = _finder.Find(_upstreamHeaders, _upstreamHeaderTemplates);
+        _result = new(result);
     }
 
     private void TheResultIs(List<PlaceholderNameAndValue> expected)

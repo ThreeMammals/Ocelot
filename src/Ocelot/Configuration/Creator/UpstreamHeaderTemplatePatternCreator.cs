@@ -9,15 +9,16 @@ namespace Ocelot.Configuration.Creator;
 /// <remarks>Ocelot feature: Routing based on request header.</remarks>
 public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatternCreator
 {
+    private const string PlaceHolderPattern = @"(\{header:.*?\})";
 #if NET7_0_OR_GREATER
-    [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
     private static partial Regex RegExPlaceholders();
 #else
-    private static readonly Regex RegExPlaceholdersVar = new(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
     private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
 #endif
 
-    public Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
     {
         var result = new Dictionary<string, UpstreamHeaderTemplate>();
 

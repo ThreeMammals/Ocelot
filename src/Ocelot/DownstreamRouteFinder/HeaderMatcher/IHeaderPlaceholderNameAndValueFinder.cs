@@ -8,5 +8,5 @@ namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 /// </summary>
 public interface IHeaderPlaceholderNameAndValueFinder
 {
-    List<PlaceholderNameAndValue> Find(Dictionary<string, string> upstreamHeaders, Dictionary<string, UpstreamHeaderTemplate> templateHeaders);
+    IList<PlaceholderNameAndValue> Find(IDictionary<string, string> upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> templateHeaders);
 }

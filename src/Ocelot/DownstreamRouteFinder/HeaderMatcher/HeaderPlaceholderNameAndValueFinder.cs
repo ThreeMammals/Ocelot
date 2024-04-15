@@ -5,7 +5,7 @@ namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 
 public class HeaderPlaceholderNameAndValueFinder : IHeaderPlaceholderNameAndValueFinder
 {
-    public List<PlaceholderNameAndValue> Find(Dictionary<string, string> upstreamHeaders, Dictionary<string, UpstreamHeaderTemplate> templateHeaders)
+    public IList<PlaceholderNameAndValue> Find(IDictionary<string, string> upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> templateHeaders)
     {
         var result = new List<PlaceholderNameAndValue>();
         foreach (var templateHeader in templateHeaders)

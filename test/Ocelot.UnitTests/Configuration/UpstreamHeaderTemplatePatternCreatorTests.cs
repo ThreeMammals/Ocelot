@@ -8,7 +8,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
 {
     private FileRoute _fileRoute;
     private readonly UpstreamHeaderTemplatePatternCreator _creator;
-    private Dictionary<string, UpstreamHeaderTemplate> _result;
+    private IDictionary<string, UpstreamHeaderTemplate> _result;
 
     public UpstreamHeaderTemplatePatternCreatorTests()
     {

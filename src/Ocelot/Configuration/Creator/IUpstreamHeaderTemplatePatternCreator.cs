@@ -12,6 +12,6 @@ public interface IUpstreamHeaderTemplatePatternCreator
     /// Creates upstream templates based on route headers.
     /// </summary>
     /// <param name="route">The route info.</param>
-    /// <returns>A <see cref="Dictionary{TKey, TValue}"/> object where TKey is <see langword="string"/>, TValue is <see cref="UpstreamHeaderTemplate"/>.</returns>
-    Dictionary<string, UpstreamHeaderTemplate> Create(IRoute route);
+    /// <returns>An <see cref="IDictionary{TKey, TValue}"/> object where TKey is <see langword="string"/>, TValue is <see cref="UpstreamHeaderTemplate"/>.</returns>
+    IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route);
 }
