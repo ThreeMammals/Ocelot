@@ -184,7 +184,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <returns>The cloned Http context.</returns>
     private async Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route, List<PlaceholderNameAndValue> placeholders = null)
     {
-        var newHttpContext = CreateThreadContext(sourceContext);
+        var newHttpContext = await CreateThreadContextAsync(sourceContext);
         CopyItemsToNewContext(newHttpContext, sourceContext, placeholders);
         newHttpContext.Items.UpsertDownstreamRoute(route);
 
@@ -208,14 +208,14 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// </summary>
     /// <param name="source">The base http context.</param>
     /// <returns>The cloned context.</returns>
-    private static HttpContext CreateThreadContext(HttpContext source)
+    protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source)
     {
         var from = source.Request;
         var target = new DefaultHttpContext
         {
             Request =
             {
-                Body = from.Body, // TODO Consider stream cloning for multiple reads
+                Body = await CopyBufferToTargetRequestAsync(source),
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
                 Host = from.Host,
@@ -255,5 +255,27 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
         var aggregator = _factory.Get(route);
         return aggregator.Aggregate(route, httpContext, contexts);
+    }
+
+    protected virtual async Task<Stream> CopyBufferToTargetRequestAsync(HttpContext source)
+    {
+        source.Request.EnableBuffering();
+        if (source.Request.Body.Position == 0)
+        {
+            var targetBuffer = new MemoryStream();
+            if (source.Request.ContentLength is not null)
+            {
+                await source.Request.Body.CopyToAsync(targetBuffer, (int)source.Request.ContentLength, source.RequestAborted);
+                targetBuffer.Position = 0;
+                source.Request.Body.Position = 0;
+            }
+
+            return targetBuffer;
+        }
+        else
+        {
+            Logger.LogWarning("Ocelot does not support body copy without stream in initial position 0");
+            return source.Request.Body;
+        }
     }
 }

@@ -191,7 +191,7 @@ public class Steps : IDisposable
                 Console.WriteLine(e);
             }
         }
-     }
+    }
 
     public void ThenTheResponseBodyHeaderIs(string key, string value)
     {
@@ -815,6 +815,15 @@ public class Steps : IDisposable
     public void WhenIGetUrlOnTheApiGatewayAndDontWait(string url)
     {
         _ocelotClient.GetAsync(url);
+    }
+
+    public void WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Content = new StringContent(body),
+        };
+        _response = _ocelotClient.SendAsync(request).Result;
     }
 
     public void WhenICancelTheRequest()

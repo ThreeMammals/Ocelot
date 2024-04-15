@@ -61,14 +61,14 @@ namespace Ocelot.UnitTests.Multiplexing
 
         [Fact]
         [Trait("Bug", "1396")]
-        public void CreateThreadContext_CopyUser_ToTarget()
+        public async Task CreateThreadContext_CopyUser_ToTarget()
         {
             // Arrange
             GivenUser("test", "Copy", nameof(CreateThreadContext_CopyUser_ToTarget));
 
             // Act
-            var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
-            var actual = (HttpContext)method.Invoke(_middleware, new object[] { _httpContext });
+            var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext });
 
             // Assert
             AssertUsers(actual);
@@ -212,6 +212,49 @@ namespace Ocelot.UnitTests.Multiplexing
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 ItExpr.IsAny<List<HttpContext>>());
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [Trait("Bug", "2039")]
+        public async Task Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests(int numberOfRoutes)
+        {
+            var mock = MockMiddlewareFactory(null, null);
+
+            _middleware = mock.Object;
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests));
+            GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task<Stream>>("CopyBufferToTargetRequestAsync", Times.Exactly(numberOfRoutes),
+                ItExpr.IsAny<HttpContext>());
+        }
+
+        [Fact]
+        [Trait("Bug", "2039")]
+        public async Task Should_Not_Call_CopyBufferToTargetRequestAsync_With_One_Route()
+        {
+            var mock = MockMiddlewareFactory(null, null);
+
+            _middleware = mock.Object;
+
+            // Arrange
+            GivenUser("test", "Invoke", nameof(Should_Call_CopyBufferToTargetRequestAsync_EachTime_ForMultipleRequests));
+            GivenTheFollowing(GivenDefaultRoute(1));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task<Stream>>("CopyBufferToTargetRequestAsync", Times.Never(),
+                ItExpr.IsAny<HttpContext>());
         }
 
         [Fact]
