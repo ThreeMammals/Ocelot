@@ -721,6 +721,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Configuration_is_not_valid_when_upstream_headers_the_same()
         {
             // Arrange
@@ -745,6 +747,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Configuration_is_valid_when_upstream_headers_not_the_same()
         {
             // Arrange
@@ -768,6 +772,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Configuration_is_valid_when_upstream_headers_count_not_the_same()
         {
             // Arrange
@@ -790,6 +796,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
         {
             // Arrange

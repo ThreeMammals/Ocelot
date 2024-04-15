@@ -4,6 +4,8 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
 
+[Trait("PR", "1312")]
+[Trait("Feat", "360")]
 public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
 {
     private readonly IHeaderPlaceholderNameAndValueFinder _finder;

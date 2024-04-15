@@ -13,6 +13,8 @@ public class UpstreamHeaderTemplatePatternCreatorTests
         _creator = new();
     }
 
+    [Trait("PR", "1312")]
+    [Trait("Feat", "360")]
     [Theory(DisplayName = "Should create pattern")]
     [InlineData("country", "a text without placeholders", "^(?i)a text without placeholders$", " without placeholders")]
     [InlineData("country", "a text without placeholders", "^a text without placeholders$", " Route is case sensitive", true)]

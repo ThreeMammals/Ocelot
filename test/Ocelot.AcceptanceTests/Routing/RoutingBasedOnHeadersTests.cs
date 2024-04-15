@@ -3,6 +3,8 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
+[Trait("PR", "1312")]
+[Trait("Feat", "360")]
 public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
 {
     private string _downstreamPath;

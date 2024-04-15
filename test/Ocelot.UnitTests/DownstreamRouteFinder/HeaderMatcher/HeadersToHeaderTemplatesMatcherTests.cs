@@ -3,6 +3,8 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
 
+[Trait("PR", "1312")]
+[Trait("Feat", "360")]
 public class HeadersToHeaderTemplatesMatcherTests : UnitTest
 {
     private readonly IHeadersToHeaderTemplatesMatcher _headerMatcher;

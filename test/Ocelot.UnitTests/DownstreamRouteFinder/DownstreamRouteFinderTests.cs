@@ -716,6 +716,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Should_return_route_when_upstream_headers_match()
         {
             // Arrange
@@ -778,6 +780,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
         public void Should_not_return_route_when_upstream_headers_dont_match()
         {
             // Arrange
