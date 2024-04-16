@@ -600,68 +600,17 @@ namespace Ocelot.AcceptanceTests
 
         [Fact]
         [Trait("Bug", "2039")]
-        public void Should_return_response_200_with_body_sent_on_multiple_services()
+        public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
-            var configuration = new FileConfiguration
-            {
-                Routes = new()
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/Sub1",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new()
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port1,
-                            },
-                        },
-                        UpstreamPathTemplate = "/Service1",
-                        UpstreamHttpMethod = new() { "Get" },
-                        Key = "Service1",
-                    },
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = "/Sub2",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new()
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = "localhost",
-                                Port = port2,
-                            },
-                        },
-                        UpstreamPathTemplate = "/Service2",
-                        UpstreamHttpMethod = new() { "Get" },
-                        Key = "Service2",
-                    },
-                },
-                Aggregates = new()
-                {
-                    new FileAggregateRoute
-                    {
-                        UpstreamPathTemplate = "/",
-                        UpstreamHost = "localhost",
-                        RouteKeys = new ()
-                        {
-                            "Service1",
-                            "Service2",
-                        },
-                    },
-                },
-            };
-
+            var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
+            var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+            var configuration = GivenConfiguration(route1, route2);
             var requestBody = @"{""id"":1,""response"":""fromBody-#REPLACESTRING#""}";
-
             var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
             var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
-
-            var expected = "{\"Service1\":" + sub1ResponseContent + ",\"Service2\":" + sub2ResponseContent + "}";
+            var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
@@ -683,43 +632,39 @@ namespace Ocelot.AcceptanceTests
         }
 
         private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, string responseBody)
-        {
-            var baseUrl = $"{Uri.UriSchemeHttp}://localhost:{port}";
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPaths[index] != basePath)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didn't match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
                     await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
+                });
 
         private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<string, string> responseFromBody)
-        {
-            var baseUrl = $"{Uri.UriSchemeHttp}://localhost:{port}";
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPaths[index] != basePath)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didn't match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
                     var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
                     var responseBody = responseFromBody(requestBody);
                     await context.Response.WriteAsync(responseBody);
+                });
+
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Action<HttpContext> processContext)
+        {
+            var baseUrl = DownstreamUrl(port);
+            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            {
+                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                    ? context.Request.PathBase.Value
+                    : context.Request.Path.Value;
+
+                if (_downstreamPaths[index] != basePath)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsync("downstream path doesn't match base path");
+                }
+                else
+                {
+                    context.Response.StatusCode = statusCode;
+                    processContext?.Invoke(context);
                 }
             });
         }
@@ -759,11 +704,11 @@ namespace Ocelot.AcceptanceTests
             _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
         }
 
-        private static FileRoute GivenRoute(int port, string upstream, string key) => new()
+        private static FileRoute GivenRoute(int port, string upstream, string key, string downstream = null) => new()
         {
-            DownstreamPathTemplate = "/",
+            DownstreamPathTemplate = downstream ?? "/",
             DownstreamScheme = Uri.UriSchemeHttp,
-            DownstreamHostAndPorts = new() { new FileHostAndPort("localhost", port) },
+            DownstreamHostAndPorts = new() { new("localhost", port) },
             UpstreamPathTemplate = upstream,
             UpstreamHttpMethod = new() { HttpMethods.Get },
             Key = key,
@@ -772,14 +717,12 @@ namespace Ocelot.AcceptanceTests
         private static new FileConfiguration GivenConfiguration(params FileRoute[] routes)
         {
             var obj = Steps.GivenConfiguration(routes);
-            obj.Aggregates.Add(
-                new()
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
-                }
-            );
+            obj.Aggregates.Add(new()
+            {
+                UpstreamPathTemplate = "/",
+                UpstreamHost = "localhost",
+                RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+            });
             return obj;
         }
     }

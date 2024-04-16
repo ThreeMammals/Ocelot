@@ -61,10 +61,10 @@ namespace Ocelot.UnitTests.Multiplexing
 
         [Fact]
         [Trait("Bug", "1396")]
-        public async Task CreateThreadContext_CopyUser_ToTarget()
+        public async Task CreateThreadContextAsync_CopyUser_ToTarget()
         {
             // Arrange
-            GivenUser("test", "Copy", nameof(CreateThreadContext_CopyUser_ToTarget));
+            GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
 
             // Act
             var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -215,17 +215,15 @@ namespace Ocelot.UnitTests.Multiplexing
         }
 
         [Theory]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
         [Trait("Bug", "2039")]
+        [InlineData(1)] // Times.Never()
+        [InlineData(2)] // Times.Exactly(2)
+        [InlineData(3)] // Times.Exactly(3)
+        [InlineData(4)] // Times.Exactly(4)
         public async Task Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests(int numberOfRoutes)
         {
-            var mock = MockMiddlewareFactory(null, null);
-
-            _middleware = mock.Object;
-
             // Arrange
+            var mock = MockMiddlewareFactory(null, null);
             GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
             GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
 
@@ -233,27 +231,8 @@ namespace Ocelot.UnitTests.Multiplexing
             await WhenIMultiplex();
 
             // Assert
-            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync", Times.Exactly(numberOfRoutes),
-                ItExpr.IsAny<HttpContext>());
-        }
-
-        [Fact]
-        [Trait("Bug", "2039")]
-        public async Task Should_Not_Call_CloneRequestBodyAsync_With_One_Route()
-        {
-            var mock = MockMiddlewareFactory(null, null);
-
-            _middleware = mock.Object;
-
-            // Arrange
-            GivenUser("test", "Invoke", nameof(Should_Not_Call_CloneRequestBodyAsync_With_One_Route));
-            GivenTheFollowing(GivenDefaultRoute(1));
-
-            // Act
-            await WhenIMultiplex();
-
-            // Assert
-            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync", Times.Never(),
+            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
+                numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
                 ItExpr.IsAny<HttpContext>());
         }
 
