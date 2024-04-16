@@ -15,6 +15,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -622,6 +623,50 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
+        [Fact]
+        [Trait("Bug", "2039")]
+        public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
+        {
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
+            var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+            var configuration = GivenConfiguration(route1, route2);
+
+            var formValues = new[]
+            {
+                new KeyValuePair<string, string>("param1", "value1"),
+                new KeyValuePair<string, string>("param2", "from-form-REPLACESTRING"),
+            };
+
+            var sub1ResponseContent = @"""[key:param1=value1&param2=from-form-s1]""";
+            var sub2ResponseContent = @"""[key:param1=value1&param2=from-form-s2]""";
+            var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
+
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
+                .BDDfy();
+        }
+
+        private static string FormatFormCollection(IFormCollection reqForm)
+        {
+            var sb = new StringBuilder();
+            sb.Append("\"");
+
+            foreach (var kvp in reqForm)
+            {
+                sb.Append($"[{kvp.Key}:{kvp.Value}]");
+            }
+
+            sb.Append("\"");
+            return sb.ToString();
+        }
+
         private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
@@ -644,6 +689,14 @@ namespace Ocelot.AcceptanceTests
                 {
                     var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
                     var responseBody = responseFromBody(requestBody);
+                    await context.Response.WriteAsync(responseBody);
+                });
+
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<IFormCollection, string> responseFromForm)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
+                {
+                    var responseBody = responseFromForm(context.Request.Form);
                     await context.Response.WriteAsync(responseBody);
                 });
 

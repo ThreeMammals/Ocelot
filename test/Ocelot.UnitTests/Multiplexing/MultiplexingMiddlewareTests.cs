@@ -233,7 +233,8 @@ namespace Ocelot.UnitTests.Multiplexing
             // Assert
             mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
                 numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
-                ItExpr.IsAny<HttpContext>());
+                ItExpr.IsAny<HttpRequest>(),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]

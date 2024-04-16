@@ -215,7 +215,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         {
             Request =
             {
-                Body = await CloneRequestBodyAsync(source),
+                Body = await CloneRequestBodyAsync(source.Request, source.RequestAborted),
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
                 Host = from.Host,
@@ -257,17 +257,17 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return aggregator.Aggregate(route, httpContext, contexts);
     }
 
-    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpContext source)
+    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, CancellationToken aborted)
     {
-        source.Request.EnableBuffering();
-        if (source.Request.Body.Position == 0)
+        request.EnableBuffering();
+        if (request.Body.Position == 0)
         {
             var targetBuffer = new MemoryStream();
-            if (source.Request.ContentLength is not null)
+            if (request.ContentLength is not null)
             {
-                await source.Request.Body.CopyToAsync(targetBuffer, (int)source.Request.ContentLength, source.RequestAborted);
+                await request.Body.CopyToAsync(targetBuffer, (int)request.ContentLength, aborted);
                 targetBuffer.Position = 0;
-                source.Request.Body.Position = 0;
+                request.Body.Position = 0;
             }
 
             return targetBuffer;
@@ -275,7 +275,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         else
         {
             Logger.LogWarning("Ocelot does not support body copy without stream in initial position 0");
-            return source.Request.Body;
+            return request.Body;
         }
     }
 }

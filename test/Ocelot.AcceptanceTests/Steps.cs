@@ -826,6 +826,20 @@ public class Steps : IDisposable
         _response = _ocelotClient.SendAsync(request).Result;
     }
 
+    public void WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
+    {
+        var content = new MultipartFormDataContent();
+        var dataContent = new FormUrlEncodedContent(values);
+        content.Add(dataContent, name);
+        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Content = content,
+        };
+        _response = _ocelotClient.SendAsync(request).Result;
+    }
+
     public void WhenICancelTheRequest()
     {
         _ocelotClient.CancelPendingRequests();
