@@ -39,7 +39,7 @@ namespace Ocelot.Configuration
         /// <param name="keys">New <see cref="AuthenticationProviderKeys"/> to build.</param>
         private void BuildAuthenticationProviderKeys(string legacyKey, string[] keys)
         {
-            keys ??= new string[];
+            keys ??= Array.Empty<string>();
             if (string.IsNullOrEmpty(legacyKey))
             {
                 return;
