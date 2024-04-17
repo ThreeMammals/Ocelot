@@ -639,8 +639,8 @@ namespace Ocelot.AcceptanceTests
                 new KeyValuePair<string, string>("param2", "from-form-REPLACESTRING"),
             };
 
-            var sub1ResponseContent = @"""[key:param1=value1&param2=from-form-s1]""";
-            var sub2ResponseContent = @"""[key:param1=value1&param2=from-form-s2]""";
+            var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
+            var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
             var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
@@ -655,16 +655,17 @@ namespace Ocelot.AcceptanceTests
 
         private static string FormatFormCollection(IFormCollection reqForm)
         {
-            var sb = new StringBuilder();
-            sb.Append("\"");
+            var sb = new StringBuilder()
+                .Append('"');
 
             foreach (var kvp in reqForm)
             {
                 sb.Append($"[{kvp.Key}:{kvp.Value}]");
             }
 
-            sb.Append("\"");
-            return sb.ToString();
+            return sb
+                .Append('"')
+                .ToString();
         }
 
         private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
@@ -770,12 +771,14 @@ namespace Ocelot.AcceptanceTests
         private static new FileConfiguration GivenConfiguration(params FileRoute[] routes)
         {
             var obj = Steps.GivenConfiguration(routes);
-            obj.Aggregates.Add(new()
-            {
-                UpstreamPathTemplate = "/",
-                UpstreamHost = "localhost",
-                RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
-            });
+            obj.Aggregates.Add(
+                new()
+                {
+                    UpstreamPathTemplate = "/",
+                    UpstreamHost = "localhost",
+                    RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+                }
+            );
             return obj;
         }
     }

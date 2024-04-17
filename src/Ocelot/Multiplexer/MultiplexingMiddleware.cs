@@ -269,6 +269,10 @@ public class MultiplexingMiddleware : OcelotMiddleware
                 targetBuffer.Position = 0;
                 request.Body.Position = 0;
             }
+            else
+            {
+                Logger.LogWarning("Aggregation does not support body copy without Content-Length header!");
+            }
 
             return targetBuffer;
         }
