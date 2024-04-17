@@ -123,9 +123,16 @@ If you want to set the **GlobalConfiguration** property, you must have a file ca
 The way Ocelot merges the files is basically load them, loop over them, add any **Routes**, add any **AggregateRoutes** and if the file is called ``ocelot.global.json`` add the **GlobalConfiguration** aswell as any **Routes** or **AggregateRoutes**.
 Ocelot will then save the merged configuration to a file called `ocelot.json`_ and this will be used as the source of truth while Ocelot is running.
 
-At the moment there is no validation at this stage it only happens when Ocelot validates the final merged configuration.
-This is something to be aware of when you are investigating problems. 
-We would advise always checking what is in `ocelot.json`_ file if you have any problems.
+  **Note 1**: Currently, validation occurs only during the final merging of configurations in Ocelot.
+  It's essential to be aware of this when troubleshooting issues.
+  We recommend thoroughly inspecting the contents of the ``ocelot.json`` file if you encounter any problems.
+
+  **Note 2**: The Merging feature is operational only during the application's startup.
+  Consequently, the merged configuration in ``ocelot.json`` remains static post-merging and startup.
+  It's important to be aware that the ``ConfigureAppConfiguration`` method is invoked solely during the startup of an ASP.NET web application.
+  Once the Ocelot application has started, you cannot call the ``AddOcelot`` method, nor can you employ the merging feature within ``AddOcelot``.
+  If you still require on-the-fly updating of the primary configuration file, ``ocelot.json``, please refer to the :ref:`config-react-to-changes` section.
+  Additionally, note that merging partial configuration files (such as ``ocelot.*.json``) on the fly using :doc:`../features/administration` API is not currently implemented.
 
 Keep files in a folder
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -335,6 +342,8 @@ As a team, we highly recommend following these instructions when developing your
 * **Production environments**. **Do not use self-signed certificates at all!**
   System administrators or DevOps engineers must create real valid certificates being signed by hosting or cloud providers.
   **Switch off the feature for all routes!** Remove the **DangerousAcceptAnyServerCertificateValidator** property for all routes in production version of `ocelot.json`_ file!
+
+.. _config-react-to-changes:
 
 React to Configuration Changes
 ------------------------------
