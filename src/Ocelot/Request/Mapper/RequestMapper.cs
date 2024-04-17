@@ -22,7 +22,6 @@ public class RequestMapper : IRequestMapper
         };
 
         MapHeaders(request, requestMessage);
-
         return requestMessage;
     }
 
@@ -56,7 +55,7 @@ public class RequestMapper : IRequestMapper
 
         // The performance might be improved by retrieving the matching headers from the request
         // instead of calling request.Headers.TryGetValue for each used content header
-        var matchingHeaders = ContentHeaders.Where(header => request.Headers.ContainsKey(header));
+        var matchingHeaders = ContentHeaders.Where(request.Headers.ContainsKey);
 
         foreach (var key in matchingHeaders)
         {
