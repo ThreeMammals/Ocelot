@@ -1,75 +1,50 @@
 ﻿using Ocelot.Configuration.Creator;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+[Trait("Feat", "1672")]
+public sealed class HttpVersionPolicyCreatorTests : UnitTest
 {
-    public class HttpVersionPolicyCreatorTests
+    private readonly HttpVersionPolicyCreator _creator;
+
+    public HttpVersionPolicyCreatorTests()
     {
-        private readonly HttpVersionPolicyCreator _creator;
-        private string _input;
-        private HttpVersionPolicy _result;
+        _creator = new HttpVersionPolicyCreator();
+    }
 
-        public HttpVersionPolicyCreatorTests()
-        {
-            _creator = new HttpVersionPolicyCreator();
-        }
+    [Theory]
+    [InlineData(VersionPolicies.RequestVersionOrLower, HttpVersionPolicy.RequestVersionOrLower)]
+    [InlineData(VersionPolicies.RequestVersionExact, HttpVersionPolicy.RequestVersionExact)]
+    [InlineData(VersionPolicies.RequestVersionOrHigher, HttpVersionPolicy.RequestVersionOrHigher)]
+    public void Should_create_version_policy_based_on_input(string versionPolicy, HttpVersionPolicy expected)
+    {
+        // Arrange, Act
+        var actual = _creator.Create(versionPolicy);
 
-        [Theory]
-        [InlineData(VersionPolicies.RequestVersionOrLower)]
-        [InlineData(VersionPolicies.RequestVersionExact)]
-        [InlineData(VersionPolicies.RequestVersionOrHigher)]
-        public void should_create_version_policy_based_on_input(string versionPolicy)
-        {
-            this.Given(_ => GivenTheInput(versionPolicy))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs(versionPolicy))
-                .BDDfy();
-        }
+        // Assert
+        Assert.Equal(expected, actual);
+    }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("invalid version")]
-        public void should_default_to_request_version_or_lower(string versionPolicy)
-        {
-            this.Given(_ => GivenTheInput(versionPolicy))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
-                .BDDfy();
-        }
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("invalid version")]
+    public void Should_default_to_request_version_or_lower(string versionPolicy)
+    {
+        // Arrange, Act
+        var actual = _creator.Create(versionPolicy);
 
-        [Fact]
-        public void should_default_to_request_version_or_lower_when_setting_gibberish()
-        {
-            this.Given(_ => GivenTheInput("string is gibberish"))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs(HttpVersionPolicy.RequestVersionOrLower))
-                .BDDfy();
-        }
+        // Assert
+        Assert.Equal(HttpVersionPolicy.RequestVersionOrLower, actual);
+    }
 
-        private void GivenTheInput(string input)
-        {
-            _input = input;
-        }
+    [Fact]
+    public void Should_default_to_request_version_or_lower_when_setting_gibberish()
+    {
+        // Arrange, Act
+        var actual = _creator.Create("string is gibberish");
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_input);
-        }
-
-        private void ThenTheResultIs(HttpVersionPolicy result)
-        {
-            _result.ShouldBe(result);
-        }
-        
-        private void ThenTheResultIs(string result)
-        {
-            _result.ShouldBe(result switch
-            {
-                VersionPolicies.RequestVersionOrHigher => HttpVersionPolicy.RequestVersionOrHigher,
-                VersionPolicies.RequestVersionExact => HttpVersionPolicy.RequestVersionExact,
-                VersionPolicies.RequestVersionOrLower => HttpVersionPolicy.RequestVersionOrLower,
-                _ => HttpVersionPolicy.RequestVersionOrLower,
-            });
-        }
+        // Assert
+        Assert.Equal(HttpVersionPolicy.RequestVersionOrLower, actual);
     }
 }

@@ -7,6 +7,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
+[Trait("Feat", "1672")]
 public sealed class DefaultVersionPolicyTests : Steps
 {
     private const string Body = "supercalifragilistic";
