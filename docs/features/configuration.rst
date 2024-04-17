@@ -26,6 +26,7 @@ Here is an example Route configuration. You don't need to set all of these thing
     "DownstreamPathTemplate": "/",
     "DownstreamHttpMethod": "",
     "DownstreamHttpVersion": "",
+    "DownstreamVersionPolicy": "",
     "AddHeadersToRequest": {},
     "AddClaimsToRequest": {},
     "RouteClaimsRequirement": {},
@@ -399,6 +400,65 @@ DownstreamHttpVersion
 ---------------------
 
 Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as ``1.0``, ``1.1`` or ``2.0``.
+
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+DownstreamVersionPolicy
+-----------------------
+
+This routing property enables the configuration of the ``VersionPolicy`` property within ``HttpRequestMessage`` objects for downstream HTTP requests.
+For additional details, refer to the following documentation:
+
+* `HttpRequestMessage.VersionPolicy Property <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy>`_
+* `HttpVersionPolicy Enum <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy>`_
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+The ``DownstreamVersionPolicy`` option is intricately linked with the ``DownstreamHttpVersion`` setting.
+Therefore, merely specifying ``DownstreamHttpVersion`` may sometimes be inadequate, particularly if your downstream services or Ocelot logs report HTTP connection errors such as ``PROTOCOL_ERROR``.
+In these instances, selecting the precise ``DownstreamVersionPolicy`` value is crucial for the ``Version`` policy to prevent such protocol errors.
+
+HTTP/2 version policy
+^^^^^^^^^^^^^^^^^^^^^
+
+**Given** you aim to ensure a smooth HTTP/2 connection setup for the Ocelot app and downstream services with SSL enabled:
+
+.. code-block:: json
+
+  {
+    "DownstreamScheme": "https",
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamVersionPolicy": "", // empty
+    "DangerousAcceptAnyServerCertificateValidator": true
+  }
+
+**And** you configure global settings to use Kestrel with this snippet:
+
+.. code-block:: csharp
+
+    var builder = WebApplication.CreateBuilder(args);
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.ConfigureEndpointDefaults(listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        });
+    });
+
+**When** all components are set to communicate exclusively via HTTP/2 without TLS (plain HTTP).
+
+**Then** the downstream services may display error messages such as:
+
+    HTTP/2 connection error (PROTOCOL_ERROR): Invalid HTTP/2 connection preface
+
+To resolve the issue, ensure that ``HttpRequestMessage`` has its ``VersionPolicy`` set to ``RequestVersionOrHigher``.
+Therefore, the ``DownstreamVersionPolicy`` should be defined as follows:
+
+.. code-block:: json
+
+  {
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamVersionPolicy": "RequestVersionOrHigher" // !
+  }
 
 Dependency Injection
 --------------------
