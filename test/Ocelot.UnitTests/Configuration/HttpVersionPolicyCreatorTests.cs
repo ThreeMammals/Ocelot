@@ -1,20 +1,16 @@
 ﻿using Ocelot.Configuration.Creator;
-using System.Net.Http;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class VersionPolicyCreatorTests
+    public class HttpVersionPolicyCreatorTests
     {
-        private readonly VersionPolicyCreator _creator;
+        private readonly HttpVersionPolicyCreator _creator;
         private string _input;
         private HttpVersionPolicy _result;
 
-        public VersionPolicyCreatorTests()
+        public HttpVersionPolicyCreatorTests()
         {
-            _creator = new VersionPolicyCreator();
+            _creator = new HttpVersionPolicyCreator();
         }
 
         [Theory]

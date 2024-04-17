@@ -1,3 +1,5 @@
+using Ocelot.Configuration.File;
+
 namespace Ocelot.Configuration
 {
     public interface IInternalConfiguration
@@ -20,6 +22,8 @@ namespace Ocelot.Configuration
 
         Version DownstreamHttpVersion { get; }
 
+        /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamVersionPolicy"/> property.</summary>
+        /// <value>An <see cref="HttpVersionPolicy"/> enumeration value.</value>
         HttpVersionPolicy? DownstreamVersionPolicy { get; }
     }
 }

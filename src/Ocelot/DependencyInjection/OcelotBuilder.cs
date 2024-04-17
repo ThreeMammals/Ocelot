@@ -125,7 +125,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
-            Services.TryAddSingleton<IVersionPolicyCreator, VersionPolicyCreator>();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
             Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
             Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
@@ -139,6 +138,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
+            Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();
             Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
 
             // Add security
