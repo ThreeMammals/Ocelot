@@ -19,9 +19,11 @@ Here is an example Route configuration. You don't need to set all of these thing
 .. code-block:: json
 
   {
-    "DownstreamPathTemplate": "/",
     "UpstreamPathTemplate": "/",
+    "UpstreamHeaderTemplates": {}, // dictionary
+    "UpstreamHost": "",
     "UpstreamHttpMethod": [ "Get" ],
+    "DownstreamPathTemplate": "/",
     "DownstreamHttpMethod": "",
     "DownstreamHttpVersion": "",
     "AddHeadersToRequest": {},
@@ -37,7 +39,7 @@ Here is an example Route configuration. You don't need to set all of these thing
     "ServiceName": "",
     "DownstreamScheme": "http",
     "DownstreamHostAndPorts": [
-      { "Host": "localhost", "Port": 51876 }
+      { "Host": "localhost", "Port": 12345 }
     ],
     "QoSOptions": {
       "ExceptionsAllowedBeforeBreaking": 0,
@@ -70,7 +72,8 @@ Here is an example Route configuration. You don't need to set all of these thing
     }
   }
 
-More information on how to use these options is below.
+The actual Route schema for properties can be found in the C# `FileRoute <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileRoute.cs>`_ class.
+If you're interested in learning more about how to utilize these options, read below!
 
 Multiple Environments
 ---------------------

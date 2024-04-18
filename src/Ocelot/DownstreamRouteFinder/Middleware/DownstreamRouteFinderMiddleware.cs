@@ -24,26 +24,22 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var upstreamUrlPath = httpContext.Request.Path.ToString();
-
             var upstreamQueryString = httpContext.Request.QueryString.ToString();
-
-            var hostHeader = httpContext.Request.Headers["Host"].ToString();
+            var internalConfiguration = httpContext.Items.IInternalConfiguration();
+            var hostHeader = httpContext.Request.Headers.Host.ToString();
             var upstreamHost = hostHeader.Contains(':')
                 ? hostHeader.Split(':')[0]
                 : hostHeader;
+            var upstreamHeaders = httpContext.Request.Headers
+                .ToDictionary(h => h.Key, h => string.Join(';', h.Value));
 
-            Logger.LogDebug(() => $"Upstream url path is {upstreamUrlPath}");
-
-            var internalConfiguration = httpContext.Items.IInternalConfiguration();
+            Logger.LogDebug(() => $"Upstream URL path is '{upstreamUrlPath}'.");
 
             var provider = _factory.Get(internalConfiguration);
-
-            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost);
-
+            var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
             if (response.IsError)
             {
                 Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
-
                 httpContext.Items.UpsertErrors(response.Errors);
                 return;
             }
@@ -52,7 +48,6 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
 
             // why set both of these on HttpContext
             httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
-
             httpContext.Items.UpsertDownstreamRoute(response.Data);
 
             await _next.Invoke(httpContext);

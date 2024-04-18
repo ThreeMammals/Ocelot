@@ -143,6 +143,9 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
             Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
+            // Features
+            Services.AddHeaderRouting();
+
             // Add ASP.NET services
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
             MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
