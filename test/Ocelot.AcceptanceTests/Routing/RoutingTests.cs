@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Routing
 {
     public sealed class RoutingTests : IDisposable
     {

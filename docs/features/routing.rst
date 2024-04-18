@@ -154,6 +154,58 @@ The Route above will only be matched when the ``Host`` header value is ``somedom
 If you do not set **UpstreamHost** on a Route then any ``Host`` header will match it.
 This means that if you have two Routes that are the same, apart from the **UpstreamHost**, where one is null and the other set Ocelot will favour the one that has been set. 
 
+.. _routing-upstream-headers:
+
+Upstream Headers [#f3]_
+-----------------------
+
+In addition to routing by ``UpstreamPathTemplate``, you can also define ``UpstreamHeaderTemplates``.
+For a route to match, all headers specified in this dictionary object must be present in the request headers.
+
+.. code-block:: json
+
+  {
+    // ...
+    "UpstreamPathTemplate": "/",
+    "UpstreamHttpMethod": [ "Get" ],
+    "UpstreamHeaderTemplates": { // dictionary
+      "country": "uk", // 1st header
+      "version": "v1"  // 2nd header
+    }
+  }
+
+In this scenario, the route will only match if a request includes both headers with the specified values.
+
+Header placeholders
+^^^^^^^^^^^^^^^^^^^
+
+Let's explore a more intriguing scenario where placeholders can be effectively utilized within your ``UpstreamHeaderTemplates``.
+
+Consider the following approach using the special placeholder format ``{header:placeholdername}``:
+
+.. code-block:: json
+
+  {
+    "DownstreamPathTemplate": "/{versionnumber}/api", // with placeholder
+    "DownstreamScheme": "https",
+    "DownstreamHostAndPorts": [
+      { "Host": "10.0.10.1", "Port": 80 }
+    ],
+    "UpstreamPathTemplate": "/api",
+    "UpstreamHttpMethod": [ "Get" ],
+    "UpstreamHeaderTemplates": {
+      "version": "{header:versionnumber}" // 'header:' prefix vs placeholder
+    }
+  }
+
+In this scenario, the entire value of the request header "**version**" is inserted into the ``DownstreamPathTemplate``.
+If necessary, a more intricate upstream header template can be specified, using placeholders such as ``version-{header:version}_country-{header:country}``.
+
+  **Note 1**: Placeholders are not required in ``DownstreamPathTemplate``.
+  This scenario can be utilized to mandate a specific header regardless of its value.
+
+  **Note 2**: Additionally, the ``UpstreamHeaderTemplates`` dictionary options are applicable for :doc:`../features/requestaggregation` as well.
+
 Priority
 --------
 
@@ -294,7 +346,7 @@ Here are two user scenarios.
 
 .. _routing-security-options:
 
-Security Options [#f3]_
+Security Options [#f4]_
 -----------------------
 
 Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package
@@ -326,7 +378,7 @@ The current patterns managed are the following:
 
 .. _routing-dynamic:
 
-Dynamic Routing [#f4]_
+Dynamic Routing [#f5]_
 ----------------------
 
 The idea is to enable dynamic routing when using a :doc:`../features/servicediscovery` provider so you don't have to provide the Route config.
@@ -336,5 +388,6 @@ See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 
 .. [#f1] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_, see issue `748 <https://github.com/ThreeMammals/Ocelot/issues/748>`_ and the `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ release notes for details.
 .. [#f2] ":ref:`routing-upstream-host`" feature was requested as part of `issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_.
-.. [#f3] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
-.. [#f4] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.
+.. [#f3] ":ref:`routing-upstream-headers`" feature was proposed in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_, and released in version `24.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0>`_.
+.. [#f4] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
+.. [#f5] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.

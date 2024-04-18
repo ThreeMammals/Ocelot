@@ -20,6 +20,7 @@
             RateLimitOptions = new FileRateLimitRule();
             RouteClaimsRequirement = new Dictionary<string, string>();
             SecurityOptions = new FileSecurityOptions();
+            UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             UpstreamHttpMethod = new List<string>();
         }
@@ -60,6 +61,7 @@
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
+        public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.
@@ -101,6 +103,7 @@
             to.ServiceName = from.ServiceName;
             to.ServiceNamespace = from.ServiceNamespace;
             to.Timeout = from.Timeout;
+            to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
             to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);

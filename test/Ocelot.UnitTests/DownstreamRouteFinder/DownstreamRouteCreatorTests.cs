@@ -17,6 +17,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamHost;
         private string _upstreamUrlPath;
         private string _upstreamHttpMethod;
+        private Dictionary<string, string> _upstreamHeaders;
         private IInternalConfiguration _configuration;
         private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
@@ -260,6 +261,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _upstreamHost = "doesnt matter";
             _upstreamUrlPath = "/auth/test";
             _upstreamHttpMethod = "GET";
+            _upstreamHeaders = new Dictionary<string, string>();
             _configuration = config;
         }
 
@@ -278,12 +280,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICreate()
         {
-            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void WhenICreateAgain()
         {
-            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void ThenTheDownstreamRoutesAreTheSameReference()

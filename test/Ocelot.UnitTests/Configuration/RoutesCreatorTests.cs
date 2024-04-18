@@ -13,6 +13,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IClaimsToThingCreator> _cthCreator;
         private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
         private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
         private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
         private readonly Mock<IQoSOptionsCreator> _qosoCreator;
         private readonly Mock<IRouteOptionsCreator> _rroCreator;
@@ -41,6 +42,7 @@ namespace Ocelot.UnitTests.Configuration
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
         private Version _expectedVersion;
+        private Dictionary<string, UpstreamHeaderTemplate> _uht;
 
         public RoutesCreatorTests()
         {
@@ -59,6 +61,7 @@ namespace Ocelot.UnitTests.Configuration
             _rrkCreator = new Mock<IRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
             _versionCreator = new Mock<IVersionCreator>();
+            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -75,7 +78,8 @@ namespace Ocelot.UnitTests.Configuration
                 _lboCreator.Object,
                 _rrkCreator.Object,
                 _soCreator.Object,
-                _versionCreator.Object
+                _versionCreator.Object,
+                _uhtpCreator.Object
                 );
         }
 
@@ -166,6 +170,7 @@ namespace Ocelot.UnitTests.Configuration
             _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
             _dhp = new List<DownstreamHostAndPort>();
             _lbo = new LoadBalancerOptionsBuilder().Build();
+            _uht = new Dictionary<string, UpstreamHeaderTemplate>();
 
             _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
             _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
@@ -181,6 +186,7 @@ namespace Ocelot.UnitTests.Configuration
             _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
+            _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
         }
 
         private void ThenTheRoutesAreCreated()
@@ -250,6 +256,7 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
             _result[routeIndex].DownstreamRoute.Count.ShouldBe(1);
             _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);
+            _result[routeIndex].UpstreamHeaderTemplates.ShouldBe(_uht);
         }
 
         private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)

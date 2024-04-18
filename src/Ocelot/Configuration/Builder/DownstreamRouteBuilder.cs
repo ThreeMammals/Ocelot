@@ -40,13 +40,14 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
 
     public DownstreamRouteBuilder()
     {
-        _downstreamAddresses = new List<DownstreamHostAndPort>();
-        _delegatingHandlers = new List<string>();
-        _addHeadersToDownstream = new List<AddHeader>();
-        _addHeadersToUpstream = new List<AddHeader>();
+        _downstreamAddresses = new();
+        _delegatingHandlers = new();
+        _addHeadersToDownstream = new();
+        _addHeadersToUpstream = new();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -87,7 +88,9 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
     {
-        _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
+        _upstreamHttpMethod = input.Count > 0
+            ? input.Select(x => new HttpMethod(x.Trim())).ToList()
+            : new();
         return this;
     }
 
@@ -259,6 +262,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithUpstreamHeaders(Dictionary<string, UpstreamHeaderTemplate> input)
+    {
+        _upstreamHeaders = input;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -295,6 +304,7 @@ public class DownstreamRouteBuilder
             _dangerousAcceptAnyServerCertificateValidator,
             _securityOptions,
             _downstreamHttpMethod,
-            _downstreamHttpVersion);
+            _downstreamHttpVersion,
+            _upstreamHeaders);
     }
 }
