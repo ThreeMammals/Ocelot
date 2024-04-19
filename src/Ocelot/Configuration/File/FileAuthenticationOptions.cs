@@ -30,28 +30,11 @@
         public override string ToString() => new StringBuilder()
             .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
             .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys.Select(x => $"'{x}'"))}],")
-            .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}]")
+            .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}],")
+            .Append($"{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole).Append("],")
+            .Append($"{nameof(ScopeKey)}:[").AppendJoin(',', ScopeKey).Append("],")
+            .Append($"{nameof(RoleKey)}:[").AppendJoin(',', RoleKey).Append("],")
+            .Append($"{nameof(PolicyName)}:[").AppendJoin(',', PolicyName).Append(']')
             .ToString();
-
-        public string ToString2()
-        {
-            var sb = new StringBuilder();
-            sb.Append($"{nameof(AuthenticationProviderKey)}:{AuthenticationProviderKey},{nameof(AllowedScopes)}:[");
-            sb.AppendJoin(',', AllowedScopes);
-            sb.Append("]");
-            sb.Append($",{nameof(RequiredRole)}:[");
-            sb.AppendJoin(',', RequiredRole);
-            sb.Append("]");
-            sb.Append($",{nameof(ScopeKey)}:[");
-            sb.AppendJoin(',', ScopeKey);
-            sb.Append("]");
-            sb.Append($",{nameof(RoleKey)}:[");
-            sb.AppendJoin(',', RoleKey);
-            sb.Append("]");
-            sb.Append($",{nameof(PolicyName)}:[");
-            sb.AppendJoin(',', PolicyName);
-            sb.Append("]");
-            return sb.ToString();
-        }
     }
 }

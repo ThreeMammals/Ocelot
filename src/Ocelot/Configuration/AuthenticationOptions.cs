@@ -23,8 +23,7 @@ namespace Ocelot.Configuration
         public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys, List<string> requiredRole, string scopeKey, string roleKey, string policyName)
         {
             AllowedScopes = allowedScopes;
-            AuthenticationProviderKey = string.Empty;
-            AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
+            BuildAuthenticationProviderKeys(null, authenticationProviderKeys);
             PolicyName = policyName;
             RequiredRole = requiredRole;
             ScopeKey = scopeKey;
@@ -41,6 +40,8 @@ namespace Ocelot.Configuration
             keys ??= Array.Empty<string>();
             if (string.IsNullOrEmpty(legacyKey))
             {
+                AuthenticationProviderKeys = keys;
+                AuthenticationProviderKey = string.Empty;
                 return;
             }
 
