@@ -32,64 +32,61 @@ namespace Ocelot.UnitTests.Configuration
         [Fact]
         public void Should_return_nothing()
         {
+            // Arrange
             var fileConfig = new FileConfiguration();
+            GivenThe(fileConfig);
 
-            this.Given(_ => GivenThe(fileConfig))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenNothingIsReturned())
-                .And(_ => ThenTheRloCreatorIsNotCalled())
-                .And(_ => ThenTheMetadataCreatorIsNotCalled())
-                .BDDfy();
+            // Act
+            WhenICreate();
+
+            // Assert
+            ThenNothingIsReturned();
+            ThenTheRloCreatorIsNotCalled();
+            ThenTheMetadataCreatorIsNotCalled();
         }
 
         [Fact]
         public void Should_return_routes()
         {
+            // Arrange
             var fileConfig = new FileConfiguration
             {
-                DynamicRoutes = new List<FileDynamicRoute>
+                DynamicRoutes = new()
                 {
-                    new()
-                    {
-                        ServiceName = "1",
-                        RateLimitRule = new FileRateLimitRule
-                        {
-                            EnableRateLimiting = false,
-                        },
-                        DownstreamHttpVersion = "1.1",
-                        Metadata = new Dictionary<string, string>
-                        {
-                            ["foo"] = "bar",
-                        },
-                    },
-                    new()
-                    {
-                        ServiceName = "2",
-                        RateLimitRule = new FileRateLimitRule
-                        {
-                            EnableRateLimiting = true,
-                        },
-                        DownstreamHttpVersion = "2.0",
-                        Metadata = new Dictionary<string, string>
-                        {
-                            ["foo"] = "baz",
-                        },
-                    },
+                    GivenDynamicRoute("1", false, "1.1", "foo", "bar"),
+                    GivenDynamicRoute("2", true, "2.0", "foo", "baz"),
                 },
             };
+            GivenThe(fileConfig);
+            GivenTheRloCreatorReturns();
+            GivenTheVersionCreatorReturns();
+            GivenTheVersionPolicyCreatorReturns();
+            GivenTheMetadataCreatorReturns();
 
-            this.Given(_ => GivenThe(fileConfig))
-                .And(_ => GivenTheRloCreatorReturns())
-                .And(_ => GivenTheVersionCreatorReturns())
-                .And(_ => GivenTheVersionPolicyCreatorReturns())
-                .And(_ => GivenTheMetadataCreatorReturns())
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheRoutesAreReturned())
-                .And(_ => ThenTheRloCreatorIsCalledCorrectly())
-                .And(_ => ThenTheVersionCreatorIsCalledCorrectly())
-                .And(_ => ThenTheMetadataCreatorIsCalledCorrectly())
-                .BDDfy();
+            // Act
+            WhenICreate();
+
+            // Assert
+            ThenTheRoutesAreReturned();
+            ThenTheRloCreatorIsCalledCorrectly();
+            ThenTheVersionCreatorIsCalledCorrectly();
+            ThenTheMetadataCreatorIsCalledCorrectly();
         }
+
+        private FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting,
+            string downstreamHttpVersion, string key, string value) => new()
+        {
+            ServiceName = serviceName,
+            RateLimitRule = new FileRateLimitRule
+            {
+                EnableRateLimiting = enableRateLimiting,
+            },
+            DownstreamHttpVersion = downstreamHttpVersion,
+            Metadata = new Dictionary<string, string>
+            {
+                [key] = value,
+            },
+        };
 
         private void ThenTheRloCreatorIsCalledCorrectly()
         {
@@ -105,8 +102,8 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
 
-            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersionPolicy), Times.Once);
-            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersionPolicy), Times.Once);
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersionPolicy), Times.Exactly(2));
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersionPolicy), Times.Exactly(2));
         }
 
         private void ThenTheMetadataCreatorIsCalledCorrectly()
