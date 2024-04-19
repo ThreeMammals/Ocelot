@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Configuration
             _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _metadataCreator = new Mock<IMetadataCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object);
+            _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object, _metadataCreator.Object);
         }
 
         [Fact]

@@ -80,7 +80,7 @@ namespace Ocelot.Configuration
             DownstreamHttpVersion = downstreamHttpVersion;
             DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
             UpstreamHeaders = upstreamHeaders ?? new();
-            Metadata = metadata;
+            Metadata = metadata ?? new Dictionary<string, string>();
         }
 
         public string Key { get; }

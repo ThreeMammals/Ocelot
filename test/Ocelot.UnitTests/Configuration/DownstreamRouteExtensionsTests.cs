@@ -49,6 +49,8 @@ public class DownstreamRouteExtensionsTests
             new SecurityOptions(),
             null,
             new Version(),
+            HttpVersionPolicy.RequestVersionExact,
+            new(),
             _metadata);
     }
 

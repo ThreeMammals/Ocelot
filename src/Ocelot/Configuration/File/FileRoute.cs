@@ -78,7 +78,6 @@ namespace Ocelot.Configuration.File
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
         public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
-        public IDictionary<string, string> Metadata { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.

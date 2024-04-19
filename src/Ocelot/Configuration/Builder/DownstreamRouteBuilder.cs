@@ -51,7 +51,7 @@ public class DownstreamRouteBuilder
         _delegatingHandlers = new();
         _addHeadersToDownstream = new();
         _addHeadersToUpstream = new();
-        _metadata = new();
+        _metadata = new Dictionary<string, string>();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
