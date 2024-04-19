@@ -198,11 +198,11 @@ namespace Ocelot.AcceptanceTests
             {
                 if (requestCount == 2)
                 {
-                    // in Polly v8 
-                    // MinimumThroughput (ExceptionsAllowedBeforeBreaking) must be 2 or more
-                    // BreakDuration (DurationOfBreak) must be 500 or more
-                    // Timeout (TimeoutValue) must be 1000 or more
-                    // so we wait for 2.1 seconds to make sure the circuit is open
+                    // In Polly v8:
+                    //   MinimumThroughput (ExceptionsAllowedBeforeBreaking) must be 2 or more
+                    //   BreakDuration (DurationOfBreak) must be 500 or more
+                    //   Timeout (TimeoutValue) must be 1000 or more
+                    // So, we wait for 2.1 seconds to make sure the circuit is open
                     // DurationOfBreak * ExceptionsAllowedBeforeBreaking + Timeout
                     // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum
                     await Task.Delay(2100);

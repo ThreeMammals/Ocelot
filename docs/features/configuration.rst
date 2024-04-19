@@ -26,6 +26,7 @@ Here is an example Route configuration. You don't need to set all of these thing
     "DownstreamPathTemplate": "/",
     "DownstreamHttpMethod": "",
     "DownstreamHttpVersion": "",
+    "DownstreamHttpVersionPolicy": "",
     "AddHeadersToRequest": {},
     "AddClaimsToRequest": {},
     "RouteClaimsRequirement": {},
@@ -395,10 +396,75 @@ Registering a callback
         }
     }
 
+.. _config-http-version:
+
 DownstreamHttpVersion
 ---------------------
 
 Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as ``1.0``, ``1.1`` or ``2.0``.
+
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+.. _config-version-policy:
+
+DownstreamHttpVersionPolicy [#f5]_
+----------------------------------
+
+This routing property enables the configuration of the ``VersionPolicy`` property within ``HttpRequestMessage`` objects for downstream HTTP requests.
+For additional details, refer to the following documentation:
+
+* `HttpRequestMessage.VersionPolicy Property <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy>`_
+* `HttpVersionPolicy Enum <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy>`_
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+The ``DownstreamHttpVersionPolicy`` option is intricately linked with the :ref:`config-http-version` setting.
+Therefore, merely specifying ``DownstreamHttpVersion`` may sometimes be inadequate, particularly if your downstream services or Ocelot logs report HTTP connection errors such as ``PROTOCOL_ERROR``.
+In these routes, selecting the precise ``DownstreamHttpVersionPolicy`` value is crucial for the ``HttpVersion`` policy to prevent such protocol errors.
+
+HTTP/2 version policy
+^^^^^^^^^^^^^^^^^^^^^
+
+**Given** you aim to ensure a smooth HTTP/2 connection setup for the Ocelot app and downstream services with SSL enabled:
+
+.. code-block:: json
+
+  {
+    "DownstreamScheme": "https",
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamHttpVersionPolicy": "", // empty
+    "DangerousAcceptAnyServerCertificateValidator": true
+  }
+
+**And** you configure global settings to use Kestrel with this snippet:
+
+.. code-block:: csharp
+
+    var builder = WebApplication.CreateBuilder(args);
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.ConfigureEndpointDefaults(listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        });
+    });
+
+**When** all components are set to communicate exclusively via HTTP/2 without TLS (plain HTTP).
+
+**Then** the downstream services may display error messages such as:
+
+.. code-block::
+
+  HTTP/2 connection error (PROTOCOL_ERROR): Invalid HTTP/2 connection preface
+
+To resolve the issue, ensure that ``HttpRequestMessage`` has its ``VersionPolicy`` set to ``RequestVersionOrHigher``.
+Therefore, the ``DownstreamHttpVersionPolicy`` should be defined as follows:
+
+.. code-block:: json
+
+  {
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher" // !
+  }
 
 Dependency Injection
 --------------------
@@ -425,8 +491,10 @@ You can find additional details in the dedicated :ref:`di-configuration-overview
 .. [#f2] ":ref:`config-merging-tomemory`" subfeature is based on the ``MergeOcelotJson`` enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
 .. [#f3] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
 .. [#f4] ":ref:`config-consul-key`" feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_ as a part of version `7.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/7.0.0>`_.
+.. [#f5] ":ref:`config-version-policy`" feature was requested in `issue 1672 <https://github.com/ThreeMammals/Ocelot/issues/1672>`_ as a part of version `24.0`_.
 
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
 .. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs

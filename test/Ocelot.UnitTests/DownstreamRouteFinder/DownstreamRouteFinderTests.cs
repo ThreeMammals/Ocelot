@@ -907,7 +907,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private void GivenTheConfigurationIs(List<Route> routesConfig, string adminPath, ServiceProviderConfiguration serviceProviderConfig)
         {
             _routesConfig = routesConfig;
-            _config = new InternalConfiguration(_routesConfig, adminPath, serviceProviderConfig, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(
+                _routesConfig,
+                adminPath,
+                serviceProviderConfig,
+                string.Empty,
+                new LoadBalancerOptionsBuilder().Build(),
+                string.Empty,
+                new QoSOptionsBuilder().Build(),
+                new HttpHandlerOptionsBuilder().Build(),
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
         }
 
         private void GivenThereIsAnUpstreamUrlPath(string upstreamUrlPath)

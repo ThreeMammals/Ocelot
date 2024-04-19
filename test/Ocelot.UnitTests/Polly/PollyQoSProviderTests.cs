@@ -1,6 +1,5 @@
 ﻿using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
-using Ocelot.Provider.Polly;
 using Ocelot.Provider.Polly.v7;
 using Polly;
 using Polly.CircuitBreaker;
@@ -29,7 +28,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public void should_build_and_wrap_contains_two_policies()
+    public void Should_build_and_wrap_contains_two_policies()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
         var pollyPolicyWrapper = PolicyWrapperFactory("/", pollyQosProvider);
@@ -70,7 +69,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public void should_build_and_contains_one_policy_when_with_exceptions_allowed_before_breaking_is_zero()
+    public void Should_build_and_contains_one_policy_when_with_exceptions_allowed_before_breaking_is_zero()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
         var pollyPolicyWrapper = PolicyWrapperFactory("/", pollyQosProvider, true);
@@ -86,7 +85,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public void should_return_same_circuit_breaker_for_given_route()
+    public void Should_return_same_circuit_breaker_for_given_route()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
         var pollyPolicyWrapper = PolicyWrapperFactory("/", pollyQosProvider);
@@ -95,7 +94,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public void should_return_different_circuit_breaker_for_two_different_routes()
+    public void Should_return_different_circuit_breaker_for_two_different_routes()
     {
         var pollyQosProvider = PollyQoSProviderFactory();
         var pollyPolicyWrapper = PolicyWrapperFactory("/", pollyQosProvider);
@@ -113,7 +112,7 @@ public class PollyQoSProviderTests
     [InlineData(HttpStatusCode.VariantAlsoNegotiates)]
     [InlineData(HttpStatusCode.InsufficientStorage)]
     [InlineData(HttpStatusCode.LoopDetected)]
-    public async Task should_throw_broken_circuit_exception_after_two_exceptions(HttpStatusCode errorCode)
+    public async Task Should_throw_broken_circuit_exception_after_two_exceptions(HttpStatusCode errorCode)
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -125,7 +124,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public async Task should_not_throw_broken_circuit_exception_if_status_code_ok()
+    public async Task Should_not_throw_broken_circuit_exception_if_status_code_ok()
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -135,9 +134,9 @@ public class PollyQoSProviderTests
         Assert.Equal(HttpStatusCode.OK, (await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response))).StatusCode);
     }
 
-    [Fact(Skip = "TODO", DisplayName = "TODO " + nameof(should_throw_and_before_delay_should_not_allow_requests))]
+    [Fact(Skip = "TODO", DisplayName = "TODO " + nameof(Should_throw_and_before_delay_should_not_allow_requests))]
     [Trait("TODO", "Fix after the release")]
-    public async Task should_throw_and_before_delay_should_not_allow_requests()
+    public async Task Should_throw_and_before_delay_should_not_allow_requests()
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -154,7 +153,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error()
+    public async Task Should_throw_but_after_delay_should_allow_one_more_internal_server_error()
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -170,7 +169,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public async Task should_throw_but_after_delay_should_allow_one_more_internal_server_error_and_throw()
+    public async Task Should_throw_but_after_delay_should_allow_one_more_internal_server_error_and_throw()
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -188,7 +187,7 @@ public class PollyQoSProviderTests
     }
 
     [Fact]
-    public async Task should_throw_but_after_delay_should_allow_one_more_ok_request_and_put_counter_back_to_zero()
+    public async Task Should_throw_but_after_delay_should_allow_one_more_ok_request_and_put_counter_back_to_zero()
     {
         var pollyPolicyWrapper = PolicyWrapperFactory("/", PollyQoSProviderFactory());
 
@@ -208,14 +207,12 @@ public class PollyQoSProviderTests
             await pollyPolicyWrapper.AsyncPollyPolicy.ExecuteAsync(() => Task.FromResult(response)));
     }
 
-    private PollyQoSProvider PollyQoSProviderFactory()
+    private static PollyQoSProvider PollyQoSProviderFactory()
     {
         var factory = new Mock<IOcelotLoggerFactory>();
         factory.Setup(x => x.CreateLogger<PollyQoSProvider>())
             .Returns(new Mock<IOcelotLogger>().Object);
-
-        var pollyQoSProvider = new PollyQoSProvider(factory.Object);
-        return pollyQoSProvider;
+        return new PollyQoSProvider(factory.Object);
     }
 
     private static PollyPolicyWrapper<HttpResponseMessage> PolicyWrapperFactory(string routeTemplate, PollyQoSProvider pollyQoSProvider, bool inactiveExceptionsAllowedBeforeBreaking = false)
