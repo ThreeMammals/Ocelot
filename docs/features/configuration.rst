@@ -26,7 +26,7 @@ Here is an example Route configuration. You don't need to set all of these thing
     "DownstreamPathTemplate": "/",
     "DownstreamHttpMethod": "",
     "DownstreamHttpVersion": "",
-    "DownstreamVersionPolicy": "",
+    "DownstreamHttpVersionPolicy": "",
     "AddHeadersToRequest": {},
     "AddClaimsToRequest": {},
     "RouteClaimsRequirement": {},
@@ -407,8 +407,8 @@ Ocelot allows you to choose the HTTP version it will use to make the proxy reque
 
 .. _config-version-policy:
 
-DownstreamVersionPolicy [#f5]_
-------------------------------
+DownstreamHttpVersionPolicy [#f5]_
+----------------------------------
 
 This routing property enables the configuration of the ``VersionPolicy`` property within ``HttpRequestMessage`` objects for downstream HTTP requests.
 For additional details, refer to the following documentation:
@@ -417,9 +417,9 @@ For additional details, refer to the following documentation:
 * `HttpVersionPolicy Enum <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy>`_
 * `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
 
-The ``DownstreamVersionPolicy`` option is intricately linked with the :ref:`config-http-version` setting.
+The ``DownstreamHttpVersionPolicy`` option is intricately linked with the :ref:`config-http-version` setting.
 Therefore, merely specifying ``DownstreamHttpVersion`` may sometimes be inadequate, particularly if your downstream services or Ocelot logs report HTTP connection errors such as ``PROTOCOL_ERROR``.
-In these routes, selecting the precise ``DownstreamVersionPolicy`` value is crucial for the ``HttpVersion`` policy to prevent such protocol errors.
+In these routes, selecting the precise ``DownstreamHttpVersionPolicy`` value is crucial for the ``HttpVersion`` policy to prevent such protocol errors.
 
 HTTP/2 version policy
 ^^^^^^^^^^^^^^^^^^^^^
@@ -431,7 +431,7 @@ HTTP/2 version policy
   {
     "DownstreamScheme": "https",
     "DownstreamHttpVersion": "2.0",
-    "DownstreamVersionPolicy": "", // empty
+    "DownstreamHttpVersionPolicy": "", // empty
     "DangerousAcceptAnyServerCertificateValidator": true
   }
 
@@ -457,13 +457,13 @@ HTTP/2 version policy
   HTTP/2 connection error (PROTOCOL_ERROR): Invalid HTTP/2 connection preface
 
 To resolve the issue, ensure that ``HttpRequestMessage`` has its ``VersionPolicy`` set to ``RequestVersionOrHigher``.
-Therefore, the ``DownstreamVersionPolicy`` should be defined as follows:
+Therefore, the ``DownstreamHttpVersionPolicy`` should be defined as follows:
 
 .. code-block:: json
 
   {
     "DownstreamHttpVersion": "2.0",
-    "DownstreamVersionPolicy": "RequestVersionOrHigher" // !
+    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher" // !
   }
 
 Dependency Injection
