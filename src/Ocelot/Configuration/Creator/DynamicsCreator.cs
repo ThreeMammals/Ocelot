@@ -29,14 +29,14 @@ namespace Ocelot.Configuration.Creator
                 .Create(fileDynamicRoute.RateLimitRule, globalConfiguration);
 
             var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
-            var versionPolicy = _versionPolicyCreator.Create(fileDynamicRoute.DownstreamVersionPolicy);
+            var versionPolicy = _versionPolicyCreator.Create(fileDynamicRoute.DownstreamHttpVersionPolicy);
 
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
                 .WithServiceName(fileDynamicRoute.ServiceName)
                 .WithDownstreamHttpVersion(version)
-                .WithDownstreamPolicyVersion(versionPolicy)
+                .WithDownstreamHttpVersionPolicy(versionPolicy)
                 .Build();
 
             var route = new RouteBuilder()

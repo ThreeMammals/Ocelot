@@ -40,7 +40,7 @@ namespace Ocelot.Configuration
             SecurityOptions securityOptions,
             string downstreamHttpMethod,
             Version downstreamHttpVersion,
-            HttpVersionPolicy downstreamVersionPolicy,
+            HttpVersionPolicy downstreamHttpVersionPolicy,
             Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
@@ -77,7 +77,7 @@ namespace Ocelot.Configuration
             SecurityOptions = securityOptions;
             DownstreamHttpMethod = downstreamHttpMethod;
             DownstreamHttpVersion = downstreamHttpVersion;
-            DownstreamVersionPolicy = downstreamVersionPolicy;
+            DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
             UpstreamHeaders = upstreamHeaders ?? new();
         }
 
@@ -125,7 +125,7 @@ namespace Ocelot.Configuration
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
         /// </list>
         /// </remarks>
-        public HttpVersionPolicy DownstreamVersionPolicy { get; }
+        public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
     }
 }

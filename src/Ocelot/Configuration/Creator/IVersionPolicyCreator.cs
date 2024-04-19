@@ -8,7 +8,7 @@ public interface IVersionPolicyCreator
     /// <summary>
     /// Creates a <see cref="HttpVersionPolicy"/> by a string.
     /// </summary>
-    /// <param name="downstreamVersionPolicy">The string representation of the version policy.</param>
+    /// <param name="downstreamHttpVersionPolicy">The string representation of the version policy.</param>
     /// <returns>An <see cref="HttpVersionPolicy"/> enumeration value.</returns>
-    HttpVersionPolicy Create(string downstreamVersionPolicy);
+    HttpVersionPolicy Create(string downstreamHttpVersionPolicy);
 }

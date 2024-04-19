@@ -86,9 +86,9 @@ namespace Ocelot.Configuration.Validator
                 RuleFor(r => r.DownstreamHttpVersion).Matches("^[0-9]([.,][0-9]{1,1})?$");
             });
 
-            When(route => !string.IsNullOrEmpty(route.DownstreamVersionPolicy), () =>
+            When(route => !string.IsNullOrEmpty(route.DownstreamHttpVersionPolicy), () =>
             {
-                RuleFor(r => r.DownstreamVersionPolicy).Matches($@"^({VersionPolicies.RequestVersionExact}|{VersionPolicies.RequestVersionOrHigher}|{VersionPolicies.RequestVersionOrLower})$");
+                RuleFor(r => r.DownstreamHttpVersionPolicy).Matches($@"^({VersionPolicies.RequestVersionExact}|{VersionPolicies.RequestVersionOrHigher}|{VersionPolicies.RequestVersionOrLower})$");
             });
         }
 

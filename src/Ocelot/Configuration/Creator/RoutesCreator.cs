@@ -112,7 +112,7 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
-            var downstreamVersionPolicy = _versionPolicyCreator.Create(fileRoute.DownstreamVersionPolicy);
+            var downstreamHttpVersionPolicy = _versionPolicyCreator.Create(fileRoute.DownstreamHttpVersionPolicy);
 
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
@@ -149,7 +149,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDangerousAcceptAnyServerCertificateValidator(fileRoute.DangerousAcceptAnyServerCertificateValidator)
                 .WithSecurityOptions(securityOptions)
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
-                .WithDownstreamPolicyVersion(downstreamVersionPolicy)
+                .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .Build();
 

@@ -8,9 +8,9 @@ public class HttpVersionPolicyCreator : IVersionPolicyCreator
     /// <summary>
     /// Creates a <see cref="HttpVersionPolicy"/> by a string.
     /// </summary>
-    /// <param name="downstreamVersionPolicy">The string representation of the version policy.</param>
+    /// <param name="downstreamHttpVersionPolicy">The string representation of the version policy.</param>
     /// <returns>An <see cref="HttpVersionPolicy"/> enumeration value.</returns>
-    public HttpVersionPolicy Create(string downstreamVersionPolicy) => downstreamVersionPolicy switch
+    public HttpVersionPolicy Create(string downstreamHttpVersionPolicy) => downstreamHttpVersionPolicy switch
     {
         VersionPolicies.RequestVersionExact => HttpVersionPolicy.RequestVersionExact,
         VersionPolicies.RequestVersionOrHigher => HttpVersionPolicy.RequestVersionOrHigher,

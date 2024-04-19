@@ -220,7 +220,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)
         {
             _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
-            _result[routeIndex].DownstreamRoute[0].DownstreamVersionPolicy.ShouldBe(_expectedVersionPolicy);
+            _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
             _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
             _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
             _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);

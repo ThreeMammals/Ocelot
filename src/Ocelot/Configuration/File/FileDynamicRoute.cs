@@ -17,6 +17,6 @@ namespace Ocelot.Configuration.File
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
         /// </list>
         /// </remarks>
-        public string DownstreamVersionPolicy { get; set; }
+        public string DownstreamHttpVersionPolicy { get; set; }
     }
 }

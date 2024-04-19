@@ -14,7 +14,7 @@ namespace Ocelot.Configuration
             QoSOptions qoSOptions,
             HttpHandlerOptions httpHandlerOptions,
             Version downstreamHttpVersion,
-            HttpVersionPolicy? downstreamVersionPolicy)
+            HttpVersionPolicy? downstreamHttpVersionPolicy)
         {
             Routes = routes;
             AdministrationPath = administrationPath;
@@ -25,7 +25,7 @@ namespace Ocelot.Configuration
             QoSOptions = qoSOptions;
             HttpHandlerOptions = httpHandlerOptions;
             DownstreamHttpVersion = downstreamHttpVersion;
-            DownstreamVersionPolicy = downstreamVersionPolicy;
+            DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
         }
 
         public List<Route> Routes { get; }
@@ -39,8 +39,8 @@ namespace Ocelot.Configuration
 
         public Version DownstreamHttpVersion { get; }
 
-        /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamVersionPolicy"/> property.</summary>
+        /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamHttpVersionPolicy"/> property.</summary>
         /// <value>An <see cref="HttpVersionPolicy"/> enumeration value.</value>
-        public HttpVersionPolicy? DownstreamVersionPolicy { get; }
+        public HttpVersionPolicy? DownstreamHttpVersionPolicy { get; }
     }
 }

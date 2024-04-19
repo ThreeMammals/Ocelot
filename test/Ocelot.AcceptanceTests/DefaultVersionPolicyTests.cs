@@ -160,7 +160,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         DownstreamHostAndPorts = new() { new("localhost", port) },
         DownstreamScheme = Uri.UriSchemeHttps, // !!!
         DownstreamHttpVersion = httpVersion,
-        DownstreamVersionPolicy = versionPolicy,
+        DownstreamHttpVersionPolicy = versionPolicy,
         DangerousAcceptAnyServerCertificateValidator = true,
     };
 }

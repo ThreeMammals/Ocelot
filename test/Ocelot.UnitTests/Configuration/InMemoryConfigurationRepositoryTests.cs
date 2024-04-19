@@ -115,7 +115,7 @@ namespace Ocelot.UnitTests.Configuration
             public QoSOptions QoSOptions { get; }
             public HttpHandlerOptions HttpHandlerOptions { get; }
             public Version DownstreamHttpVersion { get; }
-            public HttpVersionPolicy? DownstreamVersionPolicy { get; }
+            public HttpVersionPolicy? DownstreamHttpVersionPolicy { get; }
         }
     }
 }

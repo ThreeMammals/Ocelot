@@ -53,7 +53,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = false,
                         },
                         DownstreamHttpVersion = "1.1",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrLower,
+                        DownstreamHttpVersionPolicy = VersionPolicies.RequestVersionOrLower,
                     },
                     new()
                     {
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.Configuration
                             EnableRateLimiting = true,
                         },
                         DownstreamHttpVersion = "2.0",
-                        DownstreamVersionPolicy = VersionPolicies.RequestVersionOrHigher,
+                        DownstreamHttpVersionPolicy = VersionPolicies.RequestVersionOrHigher,
                     },
                 },
             };
@@ -93,8 +93,8 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
             _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
 
-            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamVersionPolicy), Times.Once);
-            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamVersionPolicy), Times.Once);
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersionPolicy), Times.Once);
+            _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersionPolicy), Times.Once);
         }
 
         private void ThenTheRoutesAreReturned()
@@ -103,13 +103,13 @@ namespace Ocelot.UnitTests.Configuration
             _result[0].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
             _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
             _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-            _result[0].DownstreamRoute[0].DownstreamVersionPolicy.ShouldBe(_versionPolicy);
+            _result[0].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
             _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
 
             _result[1].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
             _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
             _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-            _result[1].DownstreamRoute[0].DownstreamVersionPolicy.ShouldBe(_versionPolicy);
+            _result[1].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
             _result[1].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[1].ServiceName);
         }
 

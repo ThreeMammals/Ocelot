@@ -47,7 +47,7 @@ namespace Ocelot.Configuration.Creator
 
             var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
 
-            var versionPolicy = _versionPolicyCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamVersionPolicy);
+            var versionPolicy = _versionPolicyCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersionPolicy);
 
             return new InternalConfiguration(routes,
                 adminPath,
