@@ -119,6 +119,7 @@ namespace Ocelot.Configuration
         /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
         /// <value>An <see cref="HttpVersionPolicy"/> enum value being mapped from a <see cref="VersionPolicies"/> constant.</value>
         /// <remarks>
+        /// Related to the <see cref="DownstreamHttpVersion"/> property.
         /// <list type="bullet">
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>

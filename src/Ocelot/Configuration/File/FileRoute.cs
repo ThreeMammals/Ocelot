@@ -43,12 +43,11 @@ namespace Ocelot.Configuration.File
         public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
         public string DownstreamHttpMethod { get; set; }
         public string DownstreamHttpVersion { get; set; }
-        public string DownstreamPathTemplate { get; set; }
-        public string DownstreamScheme { get; set; }
 
         /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
         /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
         /// <remarks>
+        /// Related to the <see cref="DownstreamHttpVersion"/> property.
         /// <list type="bullet">
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
         ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
@@ -56,7 +55,8 @@ namespace Ocelot.Configuration.File
         /// </list>
         /// </remarks>
         public string DownstreamHttpVersionPolicy { get; set; }
-
+        public string DownstreamPathTemplate { get; set; }
+        public string DownstreamScheme { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public string Key { get; set; }
@@ -101,9 +101,9 @@ namespace Ocelot.Configuration.File
             to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
             to.DownstreamHttpMethod = from.DownstreamHttpMethod;
             to.DownstreamHttpVersion = from.DownstreamHttpVersion;
+            to.DownstreamHttpVersionPolicy = from.DownstreamHttpVersionPolicy;
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
-            to.DownstreamHttpVersionPolicy = from.DownstreamHttpVersionPolicy;
             to.FileCacheOptions = new(from.FileCacheOptions);
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;
