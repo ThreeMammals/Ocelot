@@ -25,6 +25,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IRouteKeyCreator> _rrkCreator;
         private readonly Mock<ISecurityOptionsCreator> _soCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
+        private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -41,6 +42,7 @@ namespace Ocelot.UnitTests.Configuration
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
         private Version _expectedVersion;
+        private HttpVersionPolicy _expectedVersionPolicy;
         private Dictionary<string, UpstreamHeaderTemplate> _uht;
 
         public RoutesCreatorTests()
@@ -60,6 +62,7 @@ namespace Ocelot.UnitTests.Configuration
             _rrkCreator = new Mock<IRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
             _versionCreator = new Mock<IVersionCreator>();
+            _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
 
             _creator = new RoutesCreator(
@@ -78,8 +81,8 @@ namespace Ocelot.UnitTests.Configuration
                 _rrkCreator.Object,
                 _soCreator.Object,
                 _versionCreator.Object,
-                _uhtpCreator.Object
-                );
+                _versionPolicyCreator.Object,
+                _uhtpCreator.Object);
         }
 
         [Fact]
@@ -156,6 +159,7 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenTheDependenciesAreSetUpCorrectly()
         {
             _expectedVersion = new Version("1.1");
+            _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             _rro = new RouteOptions(false, false, false, false, false);
             _requestId = "testy";
             _rrk = "besty";
@@ -186,6 +190,7 @@ namespace Ocelot.UnitTests.Configuration
             _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
+            _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
             _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
         }
 
@@ -215,6 +220,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)
         {
             _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
+            _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
             _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
             _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
             _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);

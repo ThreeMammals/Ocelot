@@ -76,8 +76,7 @@ namespace Ocelot.Configuration.Builder
                 _upstreamTemplatePattern,
                 _upstreamHost,
                 _aggregator,
-                _upstreamHeaders
-                );
+                _upstreamHeaders);
         }
     }
 }

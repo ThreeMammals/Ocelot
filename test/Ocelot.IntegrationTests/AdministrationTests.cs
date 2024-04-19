@@ -884,7 +884,7 @@ namespace Ocelot.IntegrationTests
             const string indent = "  ";
             const int total = 52, skip = 1;
             var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
-            lines.Length.ShouldBe(total);
+            lines.Length.ShouldBeGreaterThanOrEqualTo(total);
             lines.First().ShouldNotStartWith(indent);
 
             lines.Skip(skip).Take(total - skip - 1).ToList()

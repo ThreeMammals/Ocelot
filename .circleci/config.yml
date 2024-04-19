@@ -8,13 +8,13 @@ jobs:
     resource_class: medium+
     steps:
       - checkout
-      - run: dotnet tool restore && dotnet cake
+      - run: dotnet dev-certs https && dotnet tool restore && dotnet cake
   release:
     docker:
       - image: ocelot2/circleci-build:latest
     steps:
       - checkout
-      - run: dotnet tool restore && dotnet cake --target=Release
+      - run: dotnet dev-certs https && dotnet tool restore && dotnet cake --target=Release
 workflows:
   version: 2
   main:

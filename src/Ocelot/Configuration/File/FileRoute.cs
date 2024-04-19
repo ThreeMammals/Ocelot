@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Configuration.File
+﻿using Ocelot.Configuration.Creator;
+
+namespace Ocelot.Configuration.File
 {
     public class FileRoute : IRoute, ICloneable
     {
@@ -41,6 +43,18 @@
         public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
         public string DownstreamHttpMethod { get; set; }
         public string DownstreamHttpVersion { get; set; }
+
+        /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
+        /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
+        /// <remarks>
+        /// Related to the <see cref="DownstreamHttpVersion"/> property.
+        /// <list type="bullet">
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
+        /// </list>
+        /// </remarks>
+        public string DownstreamHttpVersionPolicy { get; set; }
         public string DownstreamPathTemplate { get; set; }
         public string DownstreamScheme { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
@@ -87,6 +101,7 @@
             to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
             to.DownstreamHttpMethod = from.DownstreamHttpMethod;
             to.DownstreamHttpVersion = from.DownstreamHttpVersion;
+            to.DownstreamHttpVersionPolicy = from.DownstreamHttpVersionPolicy;
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
             to.FileCacheOptions = new(from.FileCacheOptions);

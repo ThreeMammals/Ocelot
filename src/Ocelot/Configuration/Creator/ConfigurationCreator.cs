@@ -12,6 +12,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IAdministrationPath _adminPath;
         private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
         private readonly IVersionCreator _versionCreator;
+        private readonly IVersionPolicyCreator _versionPolicyCreator;
 
         public ConfigurationCreator(
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
@@ -19,7 +20,8 @@ namespace Ocelot.Configuration.Creator
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IServiceProvider serviceProvider,
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
-            IVersionCreator versionCreator
+            IVersionCreator versionCreator,
+            IVersionPolicyCreator versionPolicyCreator
             )
         {
             _adminPath = serviceProvider.GetService<IAdministrationPath>();
@@ -28,6 +30,7 @@ namespace Ocelot.Configuration.Creator
             _qosOptionsCreator = qosOptionsCreator;
             _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
             _versionCreator = versionCreator;
+            _versionPolicyCreator = versionPolicyCreator;
         }
 
         public InternalConfiguration Create(FileConfiguration fileConfiguration, List<Route> routes)
@@ -44,6 +47,8 @@ namespace Ocelot.Configuration.Creator
 
             var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
 
+            var versionPolicy = _versionPolicyCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersionPolicy);
+
             return new InternalConfiguration(routes,
                 adminPath,
                 serviceProviderConfiguration,
@@ -52,7 +57,8 @@ namespace Ocelot.Configuration.Creator
                 fileConfiguration.GlobalConfiguration.DownstreamScheme,
                 qosOptions,
                 httpHandlerOptions,
-                version
+                version,
+                versionPolicy
                 );
         }
     }
