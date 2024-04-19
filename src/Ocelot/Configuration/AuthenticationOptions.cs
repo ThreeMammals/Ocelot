@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration.File;
-using System;
 
 namespace Ocelot.Configuration
 {

@@ -28,16 +28,16 @@ namespace Ocelot.Authorization.Middleware
 
         // Note roles is a duplicate of scopes - should refactor based on type
         // Note scopes and roles are processed as OR
-        // todo create logic to process policies that we use in the API
+        // TODO: Create logic to process policies that we use in the API
         public async Task Invoke(HttpContext httpContext)
         {
             var downstreamRoute = httpContext.Items.DownstreamRoute();
-
+            var options = downstreamRoute.AuthenticationOptions;
             if (!IsOptionsHttpMethod(httpContext) && IsAuthenticatedRoute(downstreamRoute))
             {
                 Logger.LogInformation("route is authenticated scopes must be checked");
 
-                var authorized = _scopesAuthorizer.Authorize(httpContext.User, downstreamRoute.AuthenticationOptions.AllowedScopes, downstreamRoute.AuthenticationOptions.ScopeKey);
+                var authorized = _scopesAuthorizer.Authorize(httpContext.User, options.AllowedScopes, options.ScopeKey);
 
                 if (authorized.IsError)
                 {
@@ -64,7 +64,7 @@ namespace Ocelot.Authorization.Middleware
             {
                 Logger.LogInformation("route and scope is authenticated role must be checked");
 
-                var authorizedRole = _rolesAuthorizer.Authorize(httpContext.User, downstreamRoute.AuthenticationOptions.RequiredRole, downstreamRoute.AuthenticationOptions.RoleKey);
+                var authorizedRole = _rolesAuthorizer.Authorize(httpContext.User, options.RequiredRole, options.RoleKey);
 
                 if (authorizedRole.IsError)
                 {

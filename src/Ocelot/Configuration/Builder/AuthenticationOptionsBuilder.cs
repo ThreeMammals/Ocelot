@@ -1,5 +1,3 @@
-using System;
-
 namespace Ocelot.Configuration.Builder
 {
     public class AuthenticationOptionsBuilder

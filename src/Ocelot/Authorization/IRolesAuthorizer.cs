@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.Responses;
 using System.Security.Claims;
-using Ocelot.Responses;
 
-namespace Ocelot.Authorization
+namespace Ocelot.Authorization;
+
+public interface IRolesAuthorizer
 {
-    public interface IRolesAuthorizer
-    {
-        Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeRequiredRole, string roleKey);
-    }
+    Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeRequiredRole, string roleKey);
 }
