@@ -2,17 +2,17 @@
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes.Interfaces;
 
-namespace Ocelot.Provider.Kubernetes
+namespace Ocelot.Provider.Kubernetes;
+
+public static class OcelotBuilderExtensions
 {
-    public static class OcelotBuilderExtensions
+    public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true)
     {
-        public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true)
-        {
-            builder.Services
-                .AddKubeClient(usePodServiceAccount)
-                .AddSingleton(KubernetesProviderFactory.Get)
-                .AddSingleton<IKubeServiceBuilder, KubeServiceBuilder>();
-            return builder;
-        }
+        builder.Services
+            .AddKubeClient(usePodServiceAccount)
+            .AddSingleton(KubernetesProviderFactory.Get)
+            .AddSingleton<IKubeServiceBuilder, KubeServiceBuilder>()
+            .AddSingleton<IKubeServiceCreator, KubeServiceCreator>();
+        return builder;
     }
 }

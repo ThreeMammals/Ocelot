@@ -8,10 +8,13 @@ namespace Ocelot.Provider.Kubernetes;
 public class KubeServiceBuilder : IKubeServiceBuilder
 {
     private readonly IOcelotLogger _logger;
+    private readonly IKubeServiceCreator _serviceCreator;
 
-    public KubeServiceBuilder(IOcelotLoggerFactory factory)
+
+    public KubeServiceBuilder(IOcelotLoggerFactory factory, IKubeServiceCreator serviceCreator)
     {
         _logger = factory.CreateLogger<KubeServiceBuilder>();
+        _serviceCreator = serviceCreator;
     }
 
     public virtual IEnumerable<Service> BuildServices(EndpointsV1 endpoint)
@@ -20,12 +23,8 @@ public class KubeServiceBuilder : IKubeServiceBuilder
 
         foreach (var subset in endpoint.Subsets)
         {
-            services.AddRange(subset.Addresses.Select(address => new Service(
-                endpoint.Metadata.Name,
-                new ServiceHostAndPort(address.Ip, subset.Ports.First().Port),
-                endpoint.Metadata.Uid,
-                string.Empty,
-                Enumerable.Empty<string>())));
+            var subServices = _serviceCreator.Create(endpoint, subset);
+            services.AddRange(subServices);
         }
 
         _logger.LogDebug(() => $"K8s '{endpoint.Kind ?? "?"}:{endpoint.ApiVersion ?? "?"}:{endpoint.Metadata?.Name ?? endpoint.Metadata?.Namespace ?? "?"}' endpoint: Total built {services.Count} services.");
