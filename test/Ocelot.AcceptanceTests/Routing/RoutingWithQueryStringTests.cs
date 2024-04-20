@@ -322,24 +322,24 @@ namespace Ocelot.AcceptanceTests.Routing
 
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new()
                     {
                         DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new()
                             {
                                 Host = "localhost",
                                 Port = port,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                     },
-                ],
+                },
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1&personId=123&userId=456", "Hello from Laura"))
