@@ -5,5 +5,5 @@ namespace Ocelot.Provider.Kubernetes.Interfaces;
 
 public interface IKubeServiceBuilder
 {
-    IEnumerable<Service> BuildServices(EndpointsV1 endpoint);
+    IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint);
 }

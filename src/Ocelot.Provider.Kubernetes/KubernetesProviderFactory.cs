@@ -24,6 +24,7 @@ namespace Ocelot.Provider.Kubernetes
             {
                 KeyOfServiceInK8s = route.ServiceName,
                 KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
+                Scheme = route.DownstreamScheme,
             };
 
             var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);

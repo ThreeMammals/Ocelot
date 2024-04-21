@@ -17,17 +17,12 @@ public class KubeServiceBuilder : IKubeServiceBuilder
         _serviceCreator = serviceCreator;
     }
 
-    public virtual IEnumerable<Service> BuildServices(EndpointsV1 endpoint)
+    public virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
     {
-        var services = new List<Service>();
-
-        foreach (var subset in endpoint.Subsets)
-        {
-            var subServices = _serviceCreator.Create(endpoint, subset);
-            services.AddRange(subServices);
-        }
-
-        _logger.LogDebug(() => $"K8s '{endpoint.Kind ?? "?"}:{endpoint.ApiVersion ?? "?"}:{endpoint.Metadata?.Name ?? endpoint.Metadata?.Namespace ?? "?"}' endpoint: Total built {services.Count} services.");
+        var services = endpoint.Subsets
+            .SelectMany(subset => _serviceCreator.Create(configuration, endpoint, subset))
+            .ToArray();
+        _logger.LogDebug(() => $"K8s '{endpoint.Kind ?? "?"}:{endpoint.ApiVersion ?? "?"}:{endpoint.Metadata?.Name ?? endpoint.Metadata?.Namespace ?? "?"}' endpoint: Total built {services.Length} services.");
         return services;
     }
 }

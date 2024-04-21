@@ -83,7 +83,7 @@ namespace Ocelot.UnitTests.Kubernetes
                 Port = 80,
             });
             endPointEntryOne.Subsets.Add(endpointSubsetV1);
-            _serviceBuilder.Setup(x => x.BuildServices(It.IsAny<EndpointsV1>()))
+            _serviceBuilder.Setup(x => x.BuildServices(It.IsAny<KubeRegistryConfiguration>(), It.IsAny<EndpointsV1>()))
                 .Returns(new Service[] { new(nameof(Should_return_service_from_k8s), new("localhost", 80), string.Empty, string.Empty, new string[0]) });
             this.Given(x => GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces))
                 .And(x => GivenTheServicesAreRegisteredWithKube(endPointEntryOne))
