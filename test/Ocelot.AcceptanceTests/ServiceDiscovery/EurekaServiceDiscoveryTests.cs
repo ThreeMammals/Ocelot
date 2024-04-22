@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
 using Steeltoe.Common.Discovery;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
@@ -44,7 +45,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
                         ServiceName = serviceName,
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
                     },
                 },
                 GlobalConfiguration = new FileGlobalConfiguration

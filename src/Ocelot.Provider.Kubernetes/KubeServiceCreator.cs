@@ -37,10 +37,11 @@ public class KubeServiceCreator : IKubeServiceCreator
     protected virtual ServiceHostAndPort GetServiceHostAndPort(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
     {
         var ports = subset.Ports;
-        bool portNameToScheme(EndpointPortV1 p) => p.Name.Equals(configuration.Scheme, StringComparison.InvariantCultureIgnoreCase);
+        bool portNameToScheme(EndpointPortV1 p) => p?.Name?.Equals(configuration.Scheme, StringComparison.InvariantCultureIgnoreCase) ?? false;
         var portV1 = string.IsNullOrEmpty(configuration.Scheme) || !ports.Any(portNameToScheme)
             ? ports.First()
             : ports.First(portNameToScheme);
+        portV1.Name ??= configuration.Scheme ?? string.Empty;
         _logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
         return new ServiceHostAndPort(address.Ip, portV1.Port, portV1.Name);
     }

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
 {
-    public class ServiceDiscoveryTests : IDisposable
+    public class ConsulServiceDiscoveryTests : IDisposable
     {
         private readonly Steps _steps;
         private readonly List<ServiceEntry> _consulServices;
@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         private readonly ServiceHandler _serviceHandler2;
         private readonly ServiceHandler _consulHandler;
 
-        public ServiceDiscoveryTests()
+        public ConsulServiceDiscoveryTests()
         {
             _serviceHandler = new ServiceHandler();
             _serviceHandler2 = new ServiceHandler();
