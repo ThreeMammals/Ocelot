@@ -10,7 +10,6 @@ public class KubeServiceBuilder : IKubeServiceBuilder
     private readonly IOcelotLogger _logger;
     private readonly IKubeServiceCreator _serviceCreator;
 
-
     public KubeServiceBuilder(IOcelotLoggerFactory factory, IKubeServiceCreator serviceCreator)
     {
         _logger = factory.CreateLogger<KubeServiceBuilder>();

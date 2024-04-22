@@ -1,4 +1,5 @@
 ﻿using KubeClient.Models;
+using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
 
@@ -6,6 +7,13 @@ namespace Ocelot.Provider.Kubernetes;
 
 public class KubeServiceCreator : IKubeServiceCreator
 {
+    private readonly IOcelotLogger _logger;
+
+    public KubeServiceCreator(IOcelotLoggerFactory factory)
+    {
+        _logger = factory.CreateLogger<KubeServiceCreator>();
+    }
+
     public virtual IEnumerable<Service> Create(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset)
         => subset.Addresses
             .SelectMany(address => CreateInstance(configuration, endpoint, subset, address))
@@ -33,6 +41,7 @@ public class KubeServiceCreator : IKubeServiceCreator
         var portV1 = string.IsNullOrEmpty(configuration.Scheme) || !ports.Any(portNameToScheme)
             ? ports.First()
             : ports.First(portNameToScheme);
+        _logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
         return new ServiceHostAndPort(address.Ip, portV1.Port, portV1.Name);
     }
 
