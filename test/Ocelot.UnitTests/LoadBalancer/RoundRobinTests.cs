@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class RoundRobinTests
+    public class RoundRobinTests : UnitTest
     {
         private readonly RoundRobin _roundRobin;
         private readonly List<Service> _services;

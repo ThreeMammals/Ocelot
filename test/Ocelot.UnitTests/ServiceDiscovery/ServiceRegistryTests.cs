@@ -3,7 +3,7 @@ using Ocelot.Values;
 // nothing in use
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
-    public class ServiceRegistryTests
+    public class ServiceRegistryTests : UnitTest
     {
         private Service _service;
         private List<Service> _services;

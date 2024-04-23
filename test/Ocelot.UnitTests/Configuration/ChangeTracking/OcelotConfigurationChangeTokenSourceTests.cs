@@ -2,7 +2,7 @@ using Ocelot.Configuration.ChangeTracking;
 
 namespace Ocelot.UnitTests.Configuration.ChangeTracking
 {
-    public class OcelotConfigurationChangeTokenSourceTests
+    public class OcelotConfigurationChangeTokenSourceTests : UnitTest
     {
         private readonly IOcelotConfigurationChangeTokenSource _source;
 

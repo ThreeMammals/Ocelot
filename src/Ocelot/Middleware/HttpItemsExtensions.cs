@@ -56,7 +56,7 @@ namespace Ocelot.Middleware
         public static List<Error> Errors(this IDictionary<object, object> input)
         {
             var errors = input.Get<List<Error>>("Errors");
-            return errors ?? [];
+            return errors ?? new();
         }
 
         public static DownstreamRouteFinder.DownstreamRouteHolder

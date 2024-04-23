@@ -6,7 +6,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class InMemoryConfigurationRepositoryTests
+    public class InMemoryConfigurationRepositoryTests : UnitTest
     {
         private readonly InMemoryInternalConfigurationRepository _repo;
         private IInternalConfiguration _config;

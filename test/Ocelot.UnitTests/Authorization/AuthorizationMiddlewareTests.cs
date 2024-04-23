@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Authorization
 {
-    public class AuthorizationMiddlewareTests
+    public class AuthorizationMiddlewareTests : UnitTest
     {
         private readonly Mock<IClaimsAuthorizer> _authService;
         private readonly Mock<IScopesAuthorizer> _authScopesService;

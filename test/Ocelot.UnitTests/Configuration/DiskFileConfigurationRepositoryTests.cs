@@ -229,7 +229,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private static FileRoute GivenRoute(string host, string downstream) => new()
         {
-            DownstreamHostAndPorts = [new(host, 80)],
+            DownstreamHostAndPorts = new() { new(host, 80) },
             DownstreamScheme = Uri.UriSchemeHttps,
             DownstreamPathTemplate = downstream,
         };

@@ -12,7 +12,7 @@ using AuthenticationOptions = Ocelot.Configuration.AuthenticationOptions;
 
 namespace Ocelot.UnitTests.Authentication
 {
-    public class AuthenticationMiddlewareTests
+    public class AuthenticationMiddlewareTests : UnitTest
     {
         private readonly Mock<IAuthenticationService> _authentication;
         private readonly Mock<IOcelotLoggerFactory> _factory;
@@ -121,7 +121,7 @@ namespace Ocelot.UnitTests.Authentication
         {
             var options = new AuthenticationOptions(null,
                 "Test",
-                [string.Empty, "Fail", "Test"]
+                new string[] { string.Empty, "Fail", "Test" }
             );
             var methods = new List<string> { "Get" };
             this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
@@ -143,7 +143,7 @@ namespace Ocelot.UnitTests.Authentication
         public void Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
         {
             var options = new AuthenticationOptions(null, null,
-                [string.Empty, "Fail", "Fail", "UnknownScheme"]
+                new string[] { string.Empty, "Fail", "Fail", "UnknownScheme" }
             );
             var methods = new List<string> { "Get" };
 

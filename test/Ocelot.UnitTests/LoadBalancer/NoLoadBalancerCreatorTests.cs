@@ -6,7 +6,7 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class NoLoadBalancerCreatorTests
+    public class NoLoadBalancerCreatorTests : UnitTest
     {
         private readonly NoLoadBalancerCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;

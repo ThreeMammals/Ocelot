@@ -5,7 +5,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class RateLimitOptionsCreatorTests
+    public class RateLimitOptionsCreatorTests : UnitTest
     {
         private FileRoute _fileRoute;
         private FileGlobalConfiguration _fileGlobalConfig;

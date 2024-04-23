@@ -1,16 +1,17 @@
 version: 2.1
 orbs:
-  queue: eddiewebb/queue@2.2.1
+  queue: eddiewebb/queue@3.1.4
 jobs:
   build:
     docker:
-      - image: ocelot2/circleci-build:8.21.0
+      - image: ocelot2/circleci-build:latest
+    resource_class: medium+
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: ocelot2/circleci-build:8.21.0
+      - image: ocelot2/circleci-build:latest
     steps:
       - checkout
       - run: dotnet tool restore && dotnet cake --target=Release
@@ -18,12 +19,12 @@ workflows:
   version: 2
   main:
     jobs:
-      - queue/block_workflow:
-          time: '20'
-          only-on-branch: main
+      # - queue/block_workflow:
+      #     time: '20'
+      #     only-on-branch: main
       - release:
-          requires:
-            - queue/block_workflow
+          # requires:
+          #   - queue/block_workflow
           filters:
             branches:
               only: main
@@ -33,7 +34,7 @@ workflows:
           filters:
             branches:
               only: develop
-  pr:
+  PR:
     jobs:
       - build:
           filters:

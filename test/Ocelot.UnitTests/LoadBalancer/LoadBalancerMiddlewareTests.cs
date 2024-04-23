@@ -13,7 +13,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class LoadBalancerMiddlewareTests
+    public class LoadBalancerMiddlewareTests : UnitTest
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;

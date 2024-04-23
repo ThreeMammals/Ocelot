@@ -14,7 +14,7 @@ using System.Diagnostics;
 namespace Ocelot.UnitTests.Requester;
 
 [Trait("PR", "1824")]
-public class MessageInvokerPoolTests
+public class MessageInvokerPoolTests : UnitTest
 {
     private DownstreamRoute _downstreamRoute1;
     private DownstreamRoute _downstreamRoute2;
@@ -321,7 +321,7 @@ public class MessageInvokerPoolTests
     {
         var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<List<Func<DelegatingHandler>>>([]));
+            .Returns(new OkResponse<List<Func<DelegatingHandler>>>(new()));
         return handlerFactory;
     }
 
@@ -333,7 +333,7 @@ public class MessageInvokerPoolTests
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
-            .WithUpstreamHttpMethod(["Get"])
+            .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
 
         return downstreamRoute;

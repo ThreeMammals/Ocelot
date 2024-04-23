@@ -4,7 +4,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Repository
 {
-    public class ScopedRequestDataRepositoryTests
+    public class ScopedRequestDataRepositoryTests : UnitTest
     {
         private readonly IRequestScopedDataRepository _requestScopedDataRepository;
         private readonly IHttpContextAccessor _httpContextAccesor;

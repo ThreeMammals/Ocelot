@@ -7,7 +7,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class HttpHandlerOptionsCreatorTests
+    public class HttpHandlerOptionsCreatorTests : UnitTest
     {
         private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private FileRoute _fileRoute;

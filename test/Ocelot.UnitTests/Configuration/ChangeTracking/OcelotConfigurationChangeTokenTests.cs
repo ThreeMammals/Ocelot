@@ -2,7 +2,7 @@ using Ocelot.Configuration.ChangeTracking;
 
 namespace Ocelot.UnitTests.Configuration.ChangeTracking
 {
-    public class OcelotConfigurationChangeTokenTests
+    public class OcelotConfigurationChangeTokenTests : UnitTest
     {
         [Fact]
         public void should_call_callback_with_state()

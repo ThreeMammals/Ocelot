@@ -497,7 +497,7 @@ namespace Ocelot.AcceptanceTests
                     Address = "localhost",
                     Port = servicePortUS,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = ["US"],
+                    Tags = new string[] { "US" },
                 },
             };
             var serviceEntryEU = new ServiceEntry
@@ -508,20 +508,20 @@ namespace Ocelot.AcceptanceTests
                     Address = "localhost",
                     Port = servicePortEU,
                     ID = Guid.NewGuid().ToString(),
-                    Tags = ["EU"],
+                    Tags = new string[] { "EU" },
                 },
             };
 
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new()
                     {
                         DownstreamPathTemplate = "/products",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         UpstreamHost = upstreamHostUS,
                         ServiceName = serviceNameUS,
                         LoadBalancerOptions = new() { Type = loadBalancerType },
@@ -531,12 +531,12 @@ namespace Ocelot.AcceptanceTests
                         DownstreamPathTemplate = "/products",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() {"Get" },
                         UpstreamHost = upstreamHostEU,
                         ServiceName = serviceNameEU,
                         LoadBalancerOptions = new() { Type = loadBalancerType },
                     },
-                ],
+                },
                 GlobalConfiguration = new()
                 {
                     ServiceDiscoveryProvider = new()

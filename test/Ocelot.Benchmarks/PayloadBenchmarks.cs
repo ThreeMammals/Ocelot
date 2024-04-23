@@ -38,20 +38,20 @@ public class PayloadBenchmarks : ManualConfig
     {
         var configuration = new FileConfiguration
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new FileRoute
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts =
-                    [
+                    DownstreamHostAndPorts = new()
+                    {
                         new FileHostAndPort("localhost", 51879),
-                    ],
+                    },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod =["Post"],
+                    UpstreamHttpMethod = new() { "Post" },
                 },
-            ],
+            },
         };
 
         GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201);
@@ -113,12 +113,12 @@ public class PayloadBenchmarks : ManualConfig
     {
         var filePath = Path.Combine(directory, fileName);
         var generateDummy = isJson ? (Func<int, string, string>) GenerateDummyJsonFile : GenerateDummyDatFile;
-        return
-        [
+        return new object[]
+        {
             generateDummy(size, filePath),
             fileName,
             isJson,
-        ];
+        };
     }
 
     /// <summary>

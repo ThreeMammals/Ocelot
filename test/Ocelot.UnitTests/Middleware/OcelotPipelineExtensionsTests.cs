@@ -12,7 +12,7 @@ using Ocelot.WebSockets;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    public class OcelotPipelineExtensionsTests
+    public class OcelotPipelineExtensionsTests : UnitTest
     {
         private ApplicationBuilder _builder;
         private RequestDelegate _handlers;

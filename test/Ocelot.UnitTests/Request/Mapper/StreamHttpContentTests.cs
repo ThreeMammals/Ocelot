@@ -35,8 +35,9 @@ public class StreamHttpContentTests
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
-        await CopyAsyncTest(new StreamHttpContent(_httpContext),
-            [inputStream, outputStream, StreamHttpContent.UnknownLength, false, CancellationToken.None]);
+        await CopyAsyncTest(
+            new StreamHttpContent(_httpContext),
+            new object[] { inputStream, outputStream, StreamHttpContent.UnknownLength, false, CancellationToken.None });
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -49,8 +50,9 @@ public class StreamHttpContentTests
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
-        await CopyAsyncTest(new StreamHttpContent(_httpContext),
-            [inputStream, outputStream, bytes.Length, false, CancellationToken.None]);
+        await CopyAsyncTest(
+            new StreamHttpContent(_httpContext),
+            new object[] { inputStream, outputStream, bytes.Length, false, CancellationToken.None });
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -64,8 +66,9 @@ public class StreamHttpContentTests
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await CopyAsyncTest(new StreamHttpContent(_httpContext),
-                [inputStream, outputStream, 10, false, CancellationToken.None]));
+            await CopyAsyncTest(
+                new StreamHttpContent(_httpContext),
+                new object[] { inputStream, outputStream, 10, false, CancellationToken.None }));
     }
 
     private StreamHttpContent StreamHttpContentFactory()

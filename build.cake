@@ -1,9 +1,9 @@
-#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=4.0.1"
-#addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator&version=5.2.0"
-#addin Cake.Coveralls&version=1.1.0
+#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
+#tool dotnet:?package=coveralls.net&version=4.0.1
+#tool nuget:?package=ReportGenerator&version=5.2.4
+#addin nuget:?package=Newtonsoft.Json&version=13.0.3
+#addin nuget:?package=System.Text.Encodings.Web&version=8.0.0
+#addin nuget:?package=Cake.Coveralls&version=1.1.0
 
 #r "Spectre.Console"
 using Spectre.Console
@@ -13,10 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-// compile
-var compileConfig = Argument("configuration", "Release");
-
-var slnFile = "./Ocelot.sln";
+const string Release = "Release"; // task name, target, and Release config name
+var compileConfig = Argument("configuration", Release); // compile
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
@@ -56,13 +54,15 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
 int releaseId = 0;
+bool IsTechnicalRelease = false;
 string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
-
-Information("target is " + target);
-Information("Build configuration is " + compileConfig);	
+var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
+Information("\nTarget: " + target);
+Information("Build: " + compileConfig);
+Information("Solution: " + slnFile);
 
 TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
@@ -82,7 +82,7 @@ Task("RunTests")
 	.IsDependentOn("RunAcceptanceTests")
 	.IsDependentOn("RunIntegrationTests");
 
-Task("Release")
+Task(Release)
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
@@ -94,11 +94,18 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		Information("Build: " + compileConfig);
+		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // build using .NET 8 SDK only
+		}
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {settings.Framework}");
+		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -154,12 +161,18 @@ Task("CreateReleaseNotes")
 
 		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
 		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-		Information("Last release tag is " + lastRelease);
-
 		var releaseVersion = versioning.NuGetVersion;
+
 		// Read main header from Git file, substitute version in header, and add content further...
+		Information("{0}  New release tag is " + releaseVersion);
+		Information("{1} Last release tag is " + lastRelease);
 		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
 		releaseNotes = new List<string> { releaseHeader };
+		if (IsTechnicalRelease)
+		{
+			WriteReleaseNotes();
+			return;
+		}
 
 		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
 			.ToList();
@@ -298,11 +311,12 @@ Task("CreateReleaseNotes")
 				}
 			}
 		} // END of Top 3
-		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		releaseNotes.AddRange(topContributors);
-		releaseNotes.Add("");
-		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		releaseNotes.AddRange(starring);
+
+		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		// releaseNotes.AddRange(topContributors);
+		// releaseNotes.Add("");
+		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		// releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
@@ -336,15 +350,23 @@ Task("RunUnitTests")
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
-				ArgumentCustomization = args => args
-					// this create the code coverage report
-					.Append("--collect:\"XPlat Code Coverage\"")
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
+				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+				.Append("--verbosity:detailed")
+				.Append("--consoleLoggerParameters:ErrorsOnly")
 		};
-
+		if (target != Release)
+		{
+			testSettings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
+			.First()
+			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
@@ -388,11 +410,15 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 		DotNetTest(acceptanceTestAssemblies, settings);
 	});
@@ -404,11 +430,15 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
 		DotNetTest(integrationTestAssemblies, settings);
 	});
@@ -416,19 +446,22 @@ Task("RunIntegrationTests")
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("Compile")
-	.Does(() => 
+	.Does(() =>
 	{
 		WriteReleaseNotes();
 		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
 
-		CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
-		var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
-		foreach(var projectFile in projectFiles)
+		if (!IsTechnicalRelease)
 		{
-			System.IO.File.AppendAllLines(
-				artifactsFile,
-				new[] { projectFile.GetFilename().FullPath }
-			);
+			CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
+			var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+			foreach(var projectFile in projectFiles)
+			{
+				System.IO.File.AppendAllLines(
+					artifactsFile,
+					new[] { projectFile.GetFilename().FullPath }
+				);
+			}
 		}
 
 		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
@@ -511,12 +544,19 @@ Task("PublishToNuget")
     .IsDependentOn("DownloadGitHubReleaseArtifacts")
     .Does(() =>
     {
-		Information("Skipping of publishing to NuGet...");
+		if (IsTechnicalRelease)
+		{
+			Information("Skipping of publishing to NuGet because of technical release...");
+			return;
+		}
+
 		if (IsRunningOnCircleCI())
 		{
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 		}
 	});
+
+Task("Void").Does(() => {});
 
 RunTarget(target);
 
@@ -569,7 +609,7 @@ private void PersistVersion(string committedVersion, string newVersion)
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information("PublishPackages");
+		Information("Publishing to NuGet...");
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
 			.Distinct();
@@ -582,17 +622,13 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			}
 
 			var codePackage = packagesDir + File(artifact);
+			Information("Pushing package " + codePackage + "...");
 
-			Information("Pushing package " + codePackage);
-			
-			Information("Calling NuGetPush");
-
+			Information("Calling DotNetNuGetPush");
 			DotNetNuGetPush(
 				codePackage,
-				new DotNetNuGetPushSettings {
-					ApiKey = feedApiKey,
-					Source = codeFeedUrl
-				});
+				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl }
+			);
 		}
 }
 

@@ -54,18 +54,19 @@ If someone needs this to be configurable, open an issue. [#f2]_
 `Polly`_ v7 vs v8
 -----------------
 
-**Important changes** of the version `23.2`_: [#f3]_
-  - with `Polly`_ version 8, ``ExceptionsAllowedBeforeBreaking`` must be equal to or greater than ``2``!
-  - the ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines, so it has different behaviour now based on v8 pipelines! 
+Important changes in version `23.2`_: [#f3]_
 
-If you don't want to change your settings, you must use `Polly`_ v7 like this:
+  - With `Polly`_ version 8+, the ``ExceptionsAllowedBeforeBreaking`` value must be equal to or greater than **2**!
+  - The ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines. Consequently, it now exhibits different behavior based on v8 pipelines.
+
+If you prefer not to modify your settings, you can continue using `Polly`_ v7 as follows:
 
 .. code-block:: csharp
 
     services.AddOcelot()
         .AddPollyV7();
 
-**Please note!** Support for `Polly`_ v7 will be removed in a future version, so we advise you not to use this method (tagged as ``Obsolete``) unless you really have to.
+**Note**: Support for `Polly`_ v7 will be removed in a future version. We recommend avoiding this method (which is tagged as ``Obsolete``) unless absolutely necessary.
 
 .. _qos-extensibility:
 
@@ -114,7 +115,7 @@ And finally, if you want to define your own set of exceptions to map, you can us
 
 .. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
 .. [#f2] If something doesn't work or you get stuck, please review current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtering by |QoS_label| label.
-.. [#f3] We upgraded `Polly`_ version from v7.x to v8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and delivered by PR `1914`_ as a part of the version `23.2`_.
+.. [#f3] We upgraded `Polly`_ version from v7.x to v8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and delivered by PR `1914`_ as a part of version `23.2`_.
 
 .. _Polly: https://www.thepollyproject.org
 .. _1875: https://github.com/ThreeMammals/Ocelot/issues/1875

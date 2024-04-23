@@ -7,7 +7,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    public class DownstreamRouteCreatorTests
+    public class DownstreamRouteCreatorTests : UnitTest
     {
         private readonly DownstreamRouteCreator _creator;
         private readonly QoSOptions _qoSOptions;

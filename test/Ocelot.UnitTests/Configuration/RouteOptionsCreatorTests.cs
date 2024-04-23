@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
-public class RouteOptionsCreatorTests
+public class RouteOptionsCreatorTests : UnitTest
 {
     private readonly RouteOptionsCreator _creator;
 
@@ -126,7 +126,7 @@ public class RouteOptionsCreatorTests
             {
                 AuthenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null,
                 AuthenticationProviderKeys = isAuthenticationProviderKeys ?
-                    [string.Empty, "Test #1"] : null,
+                    new string[] { string.Empty, "Test #1" } : null,
             },
             RouteClaimsRequirement = new Dictionary<string, string>
             {

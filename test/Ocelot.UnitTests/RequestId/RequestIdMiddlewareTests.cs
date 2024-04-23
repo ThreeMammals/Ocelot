@@ -11,7 +11,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.RequestId
 {
-    public class RequestIdMiddlewareTests
+    public class RequestIdMiddlewareTests : UnitTest
     {
         private readonly HttpRequestMessage _downstreamRequest;
         private string _value;

@@ -9,9 +9,9 @@
     <OutputType>Exe</OutputType>
     <PackageId>Ocelot.ManualTest</PackageId>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
-    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Update="Views;Areas\**\Views">

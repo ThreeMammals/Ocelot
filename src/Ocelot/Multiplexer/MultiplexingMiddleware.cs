@@ -104,7 +104,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
             .Select(downstreamRoute => ProcessRouteAsync(context, downstreamRoute))
             .ToArray();
         var contexts = await Task.WhenAll(tasks);
-        await MapAsync(context, route, [.. contexts]);
+        await MapAsync(context, route, new(contexts));
     }
 
     /// <summary>

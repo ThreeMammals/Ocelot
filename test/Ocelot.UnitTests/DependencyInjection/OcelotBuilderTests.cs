@@ -27,7 +27,7 @@ using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
-    public class OcelotBuilderTests
+    public class OcelotBuilderTests : UnitTest
     {
         private readonly IConfiguration _configRoot;
         private readonly IServiceCollection _services;

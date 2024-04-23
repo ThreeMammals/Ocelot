@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class LoadBalancerOptionsCreatorTests
+    public class LoadBalancerOptionsCreatorTests : UnitTest
     {
         private readonly ILoadBalancerOptionsCreator _creator;
         private FileLoadBalancerOptions _fileLoadBalancerOptions;

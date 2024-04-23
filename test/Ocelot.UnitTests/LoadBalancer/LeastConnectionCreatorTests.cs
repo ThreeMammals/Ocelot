@@ -6,7 +6,7 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class LeastConnectionCreatorTests
+    public class LeastConnectionCreatorTests : UnitTest
     {
         private readonly LeastConnectionCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;

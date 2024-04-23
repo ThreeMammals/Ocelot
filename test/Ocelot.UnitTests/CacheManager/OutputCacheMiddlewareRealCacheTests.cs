@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.CacheManager
 {
-    public class OutputCacheMiddlewareRealCacheTests
+    public class OutputCacheMiddlewareRealCacheTests : UnitTest
     {
         private readonly IOcelotCache<CachedResponse> _cacheManager;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;

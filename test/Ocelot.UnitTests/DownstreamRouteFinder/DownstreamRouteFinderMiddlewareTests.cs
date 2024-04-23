@@ -11,7 +11,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder
 {
-    public class DownstreamRouteFinderMiddlewareTests
+    public class DownstreamRouteFinderMiddlewareTests : UnitTest
     {
         private readonly Mock<IDownstreamRouteProvider> _finder;
         private readonly Mock<IDownstreamRouteProviderFactory> _factory;

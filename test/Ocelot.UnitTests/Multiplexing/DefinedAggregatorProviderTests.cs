@@ -7,7 +7,7 @@ using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class DefinedAggregatorProviderTests
+    public class DefinedAggregatorProviderTests : UnitTest
     {
         private ServiceLocatorDefinedAggregatorProvider _provider;
         private Response<IDefinedAggregator> _aggregator;

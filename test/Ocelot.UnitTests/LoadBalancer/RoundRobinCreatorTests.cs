@@ -6,7 +6,7 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.LoadBalancer
 {
-    public class RoundRobinCreatorTests
+    public class RoundRobinCreatorTests : UnitTest
     {
         private readonly RoundRobinCreator _creator;
         private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;

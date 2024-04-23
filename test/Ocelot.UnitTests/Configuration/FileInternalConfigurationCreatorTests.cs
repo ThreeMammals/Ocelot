@@ -9,7 +9,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class FileInternalConfigurationCreatorTests
+    public class FileInternalConfigurationCreatorTests : UnitTest
     {
         private readonly Mock<IConfigurationValidator> _validator;
         private readonly Mock<IRoutesCreator> _routesCreator;

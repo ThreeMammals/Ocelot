@@ -417,5 +417,4 @@ test/Ocelot.AcceptanceTests/ocelot.json
 # Read the Docs
 # https://ocelot.readthedocs.io
 _build/
-_static/
 _templates/

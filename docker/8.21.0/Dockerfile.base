@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine
+
+RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib git openssh-client
+
+RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
+
+RUN chmod u+x ./dotnet-install.sh 
+
+# Install .NET 8 SDK (already included in the base image, but listed for consistency)
+RUN ./dotnet-install.sh -c 8.0 -i /usr/share/dotnet
+
+# Install .NET 7 SDK
+RUN ./dotnet-install.sh -c 7.0 -i /usr/share/dotnet
+
+# Install .NET 6 SDK
+RUN ./dotnet-install.sh -c 6.0 -i /usr/share/dotnet

@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class DownstreamAddressesCreatorTests
+    public class DownstreamAddressesCreatorTests : UnitTest
     {
         public DownstreamAddressesCreator _creator;
         private FileRoute _route;

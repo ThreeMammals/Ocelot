@@ -154,21 +154,21 @@ namespace Ocelot.AcceptanceTests.Caching
 
         private static FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions) => new()
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new FileRoute()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts =
-                    [
+                    DownstreamHostAndPorts = new()
+                    {
                         new FileHostAndPort("localhost", port),
-                    ],
+                    },
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod =["Get"],
+                    UpstreamHttpMethod = new() { HttpMethods.Get },
                     FileCacheOptions = cacheOptions,
                 },
-            ],
+            },
         };
 
         private static void GivenTheCacheExpires()

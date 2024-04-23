@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {
-    public class ClaimsToDownstreamPathMiddlewareTests
+    public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     {
         private readonly Mock<IChangeDownstreamPathTemplate> _changePath;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

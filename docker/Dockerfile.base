@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine
 
-RUN apk add bash icu-libs krb5-libs libgcc libintl libssl1.1 libstdc++ zlib git openssh-client
+RUN apk add bash icu-libs krb5-libs libgcc libintl libssl3 libstdc++ zlib git openssh-client
 
 RUN curl -L --output ./dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 
@@ -14,3 +14,12 @@ RUN ./dotnet-install.sh -c 7.0 -i /usr/share/dotnet
 
 # Install .NET 6 SDK
 RUN ./dotnet-install.sh -c 6.0 -i /usr/share/dotnet
+
+# Generate and export the development certificate
+RUN dotnet dev-certs https -ep /certs/cert.pem -p '' && \
+    chmod 644 /certs/cert.pem
+
+ENV ASPNETCORE_URLS="https://+;http://+" 
+ENV ASPNETCORE_HTTPS_PORT=443 
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="" 
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/cert.pem

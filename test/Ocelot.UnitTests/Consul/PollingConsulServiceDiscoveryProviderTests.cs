@@ -6,7 +6,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Consul
 {
-    public class PollingConsulServiceDiscoveryProviderTests
+    public class PollingConsulServiceDiscoveryProviderTests : UnitTest
     {
         private readonly int _delay;
         private readonly List<Service> _services;

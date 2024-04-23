@@ -4,13 +4,13 @@
     {
         public FileAuthenticationOptions()
         {
-            AllowedScopes = [];
-            AuthenticationProviderKeys = [];
+            AllowedScopes = new();
+            AuthenticationProviderKeys = Array.Empty<string>();
         }
 
         public FileAuthenticationOptions(FileAuthenticationOptions from)
         {
-            AllowedScopes = [..from.AllowedScopes];
+            AllowedScopes = new(from.AllowedScopes);
             AuthenticationProviderKey = from.AuthenticationProviderKey;
             AuthenticationProviderKeys = from.AuthenticationProviderKeys;
         }

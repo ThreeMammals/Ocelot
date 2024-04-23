@@ -10,7 +10,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
-    public class KubeTests : IDisposable
+    public class KubeTests : UnitTest, IDisposable
     {
         private IWebHost _fakeKubeBuilder;
         private readonly Kube _provider;

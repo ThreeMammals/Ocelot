@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Consul
 {
-    public class ConsulFileConfigurationRepositoryTests
+    public class ConsulFileConfigurationRepositoryTests : UnitTest
     {
         private ConsulFileConfigurationRepository _repo;
         private readonly Mock<IOptions<FileConfiguration>> _options;

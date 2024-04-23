@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class SimpleJsonResponseAggregatorTests
+    public class SimpleJsonResponseAggregatorTests : UnitTest
     {
         private readonly SimpleJsonResponseAggregator _aggregator;
         private List<HttpContext> _downstreamContexts;

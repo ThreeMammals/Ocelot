@@ -142,14 +142,14 @@ namespace Ocelot.AcceptanceTests
 
             var configuration = new FileConfiguration
             {
-                Routes = new List<FileRoute>
+                Routes = new()
                     {
                         new()
                         {
                             DownstreamPathTemplate = downstream,
-                            DownstreamScheme = "http",
+                            DownstreamScheme = Uri.UriSchemeHttp,
                             UpstreamPathTemplate = upstream,
-                            UpstreamHttpMethod = ["Get"],
+                            UpstreamHttpMethod = new() { HttpMethods.Get },
                             ServiceName = serviceName,
                         },
                     },

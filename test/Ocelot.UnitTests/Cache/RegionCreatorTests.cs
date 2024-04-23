@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class RegionCreatorTests
+    public class RegionCreatorTests : UnitTest
     {
         private string _result;
         private FileRoute _route;
