@@ -260,26 +260,24 @@ public class MultiplexingMiddleware : OcelotMiddleware
     protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, CancellationToken aborted)
     {
         request.EnableBuffering();
-        if (request.Body.Position == 0)
-        {
-            var targetBuffer = new MemoryStream();
-            if (request.ContentLength is not null)
-            {
-                await request.Body.CopyToAsync(targetBuffer, (int)request.ContentLength, aborted);
-                targetBuffer.Position = 0;
-                request.Body.Position = 0;
-            }
-            else
-            {
-                Logger.LogWarning("Aggregation does not support body copy without Content-Length header!");
-            }
-
-            return targetBuffer;
-        }
-        else
+        if (request.Body.Position != 0)
         {
             Logger.LogWarning("Ocelot does not support body copy without stream in initial position 0");
             return request.Body;
         }
+
+        var targetBuffer = new MemoryStream();
+        if (request.ContentLength is not null)
+        {
+            await request.Body.CopyToAsync(targetBuffer, (int)request.ContentLength, aborted);
+            targetBuffer.Position = 0;
+            request.Body.Position = 0;
+        }
+        else
+        {
+            Logger.LogWarning("Aggregation does not support body copy without Content-Length header!");
+        }
+
+        return targetBuffer;
     }
 }
