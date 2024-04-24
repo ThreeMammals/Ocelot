@@ -15,10 +15,10 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 {
     private readonly string _kubernetesUrl;
-    private string _receivedToken;
     private readonly IKubeApiClient _clientFactory;
     private readonly ServiceHandler _serviceHandler;
     private readonly ServiceHandler _kubernetesHandler;
+    private string _receivedToken;
 
     public KubernetesServiceDiscoveryTests()
     {
@@ -30,7 +30,6 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             AuthStrategy = KubeAuthStrategy.BearerToken,
             AllowInsecure = true,
         };
-
         _clientFactory = KubeApiClient.Create(option);
         _serviceHandler = new ServiceHandler();
         _kubernetesHandler = new ServiceHandler();
@@ -44,21 +43,10 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_return_services_from_K8s()
+    public void ShouldReturnServicesFromK8s()
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
-        const string serviceName = nameof(Should_return_services_from_K8s);
-        var token = "Bearer txpc696iUhbVoudg164r93CxDTrKRVWG";
-        var endpoints = new EndpointsV1
-        {
-            Kind = "endpoint",
-            ApiVersion = "1.0",
-            Metadata = new()
-            {
-                Name = serviceName,
-                Namespace = namespaces,
-            },
-        };
+        const string serviceName = nameof(ShouldReturnServicesFromK8s);
         var servicePort = PortFinder.GetRandomPort();
         var downstreamUrl = DownstreamUrl(servicePort);
         var downstream = new Uri(downstreamUrl);
@@ -73,24 +61,89 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             Name = downstream.Scheme,
             Port = servicePort,
         });
-        endpoints.Subsets.Add(subsetV1);
+        var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
         var configuration = GivenKubeConfiguration(namespaces, route);
         var downstreamResponse = serviceName;
         this.Given(x => GivenK8sProductServiceOneIsRunning(downstreamUrl, downstreamResponse))
-            .And(x => GivenThereIsAFakeKubernetesProvider(_kubernetesUrl, serviceName, namespaces, endpoints))
+            .And(x => GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithKubernetes())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamResponse))
-            .And(_ => ThenTheTokenIs(token))
+            .And(_ => ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
+            .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Feat", "1967")]
+    [InlineData("", HttpStatusCode.BadGateway)]
+    [InlineData("http", HttpStatusCode.OK)]
+    public void ShouldReturnServicesByPortNameAsDownstreamScheme(string downstreamScheme, HttpStatusCode statusCode)
+    {
+        const string serviceName = "example-web";
+        const string namespaces = "default";
+        var servicePort = PortFinder.GetRandomPort();
+        var downstreamUrl = DownstreamUrl(servicePort);
+        var downstream = new Uri(downstreamUrl);
+
+        var subsetV1 = new EndpointSubsetV1();
+        subsetV1.Addresses.Add(new()
+        {
+            Ip = Dns.GetHostAddresses(downstream.Host).Select(x => x.ToString()).First(a => a.Contains('.')),
+            Hostname = downstream.Host,
+        });
+        subsetV1.Ports.Add(new()
+        {
+            Name = "https", // This service instance is offline -> BadGateway
+            Port = 443,
+        });
+        subsetV1.Ports.Add(new()
+        {
+            Name = downstream.Scheme, // http, should be real scheme
+            Port = downstream.Port, // not 80, should be real port
+        });
+        var endpoints = GivenEndpoints(subsetV1);
+
+        var route = GivenRouteWithServiceName(namespaces);
+        route.DownstreamPathTemplate = "/{url}";
+        route.DownstreamScheme = downstreamScheme; // !!! Warning !!! Select port by name as scheme
+        route.UpstreamPathTemplate = "/api/example/{url}";
+        route.ServiceName = serviceName; // "example-web"
+        var configuration = GivenKubeConfiguration(namespaces, route);
+
+        this.Given(x => GivenK8sProductServiceOneIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
+            .And(x => GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningWithKubernetes())
+            .When(x => WhenIGetUrlOnTheApiGateway("/api/example/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(statusCode))
+            .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
+                    ? nameof(ShouldReturnServicesByPortNameAsDownstreamScheme) : string.Empty))
+            .And(_ => ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
     }
 
     private void ThenTheTokenIs(string token)
     {
         _receivedToken.ShouldBe(token);
+    }
+
+    private EndpointsV1 GivenEndpoints(EndpointSubsetV1 subset, [CallerMemberName] string serviceName = "")
+    {
+        var e = new EndpointsV1()
+        {
+            Kind = "endpoint",
+            ApiVersion = "1.0",
+            Metadata = new()
+            {
+                Name = serviceName,
+                Namespace = nameof(KubernetesServiceDiscoveryTests),
+            },
+        };
+        e.Subsets.Add(subset);
+        return e;
     }
 
     private FileRoute GivenRouteWithServiceName(string serviceNamespace, [CallerMemberName] string serviceName = null) => new()
@@ -120,9 +173,8 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         return configuration;
     }
 
-    private void GivenThereIsAFakeKubernetesProvider(string url, string serviceName, string namespaces, EndpointsV1 endpoints)
-    {
-        _kubernetesHandler.GivenThereIsAServiceRunningOn(url, async context =>
+    private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints)
+        => _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
@@ -136,7 +188,6 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                 await context.Response.WriteAsync(json);
             }
         });
-    }
 
     private void GivenOcelotIsRunningWithKubernetes()
         => GivenOcelotIsRunningWithServices(s =>
@@ -146,8 +197,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         });
 
     private void GivenK8sProductServiceOneIsRunning(string url, string response)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        => _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             try
             {
@@ -159,5 +209,4 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                 await context.Response.WriteAsync(exception.StackTrace);
             }
         });
-    }
 }
