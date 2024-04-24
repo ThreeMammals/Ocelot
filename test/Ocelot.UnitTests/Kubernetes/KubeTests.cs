@@ -11,7 +11,7 @@ using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
-    public class KubeTests : UnitTest, IDisposable
+    public class KubeTests : IDisposable
     {
         private IWebHost _fakeKubeBuilder;
         private readonly Kube _provider;
@@ -61,6 +61,7 @@ namespace Ocelot.UnitTests.Kubernetes
         [Fact]
         public void Should_return_service_from_k8s()
         {
+            // Arrange
             var token = "Bearer txpc696iUhbVoudg164r93CxDTrKRVWG";
             var endPointEntryOne = new EndpointsV1
             {
@@ -85,12 +86,15 @@ namespace Ocelot.UnitTests.Kubernetes
             endPointEntryOne.Subsets.Add(endpointSubsetV1);
             _serviceBuilder.Setup(x => x.BuildServices(It.IsAny<KubeRegistryConfiguration>(), It.IsAny<EndpointsV1>()))
                 .Returns(new Service[] { new(nameof(Should_return_service_from_k8s), new("localhost", 80), string.Empty, string.Empty, new string[0]) });
-            this.Given(x => GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces))
-                .And(x => GivenTheServicesAreRegisteredWithKube(endPointEntryOne))
-                .When(x => WhenIGetTheServices())
-                .Then(x => ThenTheCountIs(1))
-                .And(_ => ThenTheTokenIs(token))
-                .BDDfy();
+            GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces);
+            GivenTheServicesAreRegisteredWithKube(endPointEntryOne);
+
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(1);
+            ThenTheTokenIs(token);
         }
 
         private void ThenTheTokenIs(string token)
