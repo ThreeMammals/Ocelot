@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_follow_ordering_add_specifics()
+        public void Should_follow_ordering_add_specifics()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_follow_ordering_order_specifics_and_globals()
+        public void Should_follow_ordering_order_specifics_and_globals()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_follow_ordering_order_specifics()
+        public void Should_follow_ordering_order_specifics()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -145,7 +145,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_follow_ordering_order_and_only_add_specifics_in_config()
+        public void Should_follow_ordering_order_and_only_add_specifics_in_config()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -179,7 +179,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_follow_ordering_dont_add_specifics()
+        public void Should_follow_ordering_dont_add_specifics()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -208,7 +208,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_apply_re_route_specific()
+        public void Should_apply_re_route_specific()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -233,7 +233,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_all_from_all_routes_provider_and_qos()
+        public void Should_all_from_all_routes_provider_and_qos()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -258,7 +258,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_provider_with_no_delegates()
+        public void Should_return_provider_with_no_delegates()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .Build();
@@ -277,7 +277,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_provider_with_qos_delegate()
+        public void Should_return_provider_with_qos_delegate()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -301,7 +301,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_return_provider_with_qos_delegate_when_timeout_value_set()
+        public void Should_return_provider_with_qos_delegate_when_timeout_value_set()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -323,7 +323,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
+        public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -353,7 +353,7 @@ namespace Ocelot.UnitTests.Requester
         }
 
         [Fact]
-        public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
+        public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
         {
             var qosOptions = new QoSOptionsBuilder()
                 .WithTimeoutValue(1)
@@ -384,7 +384,9 @@ namespace Ocelot.UnitTests.Requester
 
         private void ThenTheWarningIsLogged()
         {
-            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Route {_downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")), Times.Once);
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(
+                y => y.Invoke() == $"Route {_downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")),
+                Times.Once);
         }
 
         private void ThenHandlerAtPositionIs<T>(int pos)

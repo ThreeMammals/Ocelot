@@ -54,9 +54,13 @@ namespace Ocelot.Configuration
             return this;
         }
 
-        public HttpHandlerOptions Build()
-        {
-            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer, _pooledConnectionLifetime, _useDefaultCredentials);
-        }
+        public HttpHandlerOptions Build() => new(
+            _allowAutoRedirect,
+            _useCookieContainer,
+            _useTracing,
+            _useProxy,
+            _maxConnectionPerServer,
+            _pooledConnectionLifetime,
+            _useDefaultCredentials);
     }
 }

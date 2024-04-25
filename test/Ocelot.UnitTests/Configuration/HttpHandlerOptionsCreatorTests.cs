@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_not_use_tracing_if_fake_tracer_registered()
+        public void Should_not_use_tracing_if_fake_tracer_registered()
         {
             var fileRoute = new FileRoute
             {
@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_use_tracing_if_real_tracer_registered()
+        public void Should_use_tracing_if_real_tracer_registered()
         {
             var fileRoute = new FileRoute
             {
@@ -62,7 +62,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
+        public void Should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
         {
             var fileRoute = new FileRoute();
             var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_with_specified_useCookie_and_allowAutoRedirect()
+        public void Should_create_options_with_specified_useCookie_and_allowAutoRedirect()
         {
             var fileRoute = new FileRoute
             {
@@ -95,7 +95,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_with_useproxy_true_as_default()
+        public void Should_create_options_with_useproxy_true_as_default()
         {
             var fileRoute = new FileRoute
             {
@@ -111,7 +111,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_with_specified_useproxy()
+        public void Should_create_options_with_specified_useproxy()
         {
             var fileRoute = new FileRoute
             {
@@ -130,7 +130,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_with_specified_MaxConnectionsPerServer()
+        public void Should_create_options_with_specified_MaxConnectionsPerServer()
         {
             var fileRoute = new FileRoute
             {
@@ -149,7 +149,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_fixing_specified_MaxConnectionsPerServer_range()
+        public void Should_create_options_fixing_specified_MaxConnectionsPerServer_range()
         {
             var fileRoute = new FileRoute
             {
@@ -168,7 +168,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_options_fixing_specified_MaxConnectionsPerServer_range_when_zero()
+        public void Should_create_options_fixing_specified_MaxConnectionsPerServer_range_when_zero()
         {
             var fileRoute = new FileRoute
             {
@@ -187,38 +187,46 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
+        [Trait("Feat", "657")]
         public void Should_create_options_with_useDefaultCredentials_false_as_default()
         {
+            // Arrange
             var fileRoute = new FileRoute
             {
-                HttpHandlerOptions = new FileHttpHandlerOptions(),
+                HttpHandlerOptions = new(),
             };
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
+                useDefaultCredentials: false);
+            GivenTheFollowing(fileRoute);
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, false);
+            // Act
+            WhenICreateHttpHandlerOptions();
 
-            this.Given(x => GivenTheFollowing(fileRoute))
-                .When(x => WhenICreateHttpHandlerOptions())
-                .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-                .BDDfy();
+            // Assert
+            ThenTheFollowingOptionsReturned(expectedOptions);
         }
 
         [Fact]
-        public void Should_create_options_with_useDefaultCredentials_true_if_set()
+        [Trait("Feat", "657")]
+        public void Should_create_options_with_UseDefaultCredentials_true_if_set()
         {
+            // Arrange
             var fileRoute = new FileRoute
             {
-                HttpHandlerOptions = new FileHttpHandlerOptions
+                HttpHandlerOptions = new()
                 {
                     UseDefaultCredentials = true,
                 },
             };
+            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
+                useDefaultCredentials: true);
+            GivenTheFollowing(fileRoute);
 
-            var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime, true);
+            // Act
+            WhenICreateHttpHandlerOptions();
 
-            this.Given(x => GivenTheFollowing(fileRoute))
-                .When(x => WhenICreateHttpHandlerOptions())
-                .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-                .BDDfy();
+            // Assert
+            ThenTheFollowingOptionsReturned(expectedOptions);
         }
 
         private void GivenTheFollowing(FileRoute fileRoute)
@@ -244,7 +252,6 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenARealTracer()
         {
-            var tracer = new FakeTracer();
             _serviceCollection.AddSingleton<ITracer, FakeTracer>();
             _serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);

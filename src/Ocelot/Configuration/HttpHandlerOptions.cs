@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-
-namespace Ocelot.Configuration
+﻿namespace Ocelot.Configuration
 {
     /// <summary>
     /// Describes configuration parameters for http handler, that is created to handle a request to service.

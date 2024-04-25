@@ -162,7 +162,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenTheCookieIsSet()
     {
-        _response.Headers.TryGetValues("Set-Cookie", out var test).ShouldBeTrue();
+        _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
     }
 
     private void GivenADownstreamService()
@@ -249,8 +249,6 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenTheInvokersShouldNotBeTheSame() => Assert.NotEqual(_firstInvoker, _secondInvoker);
 
-    private void GivenARequest(string url) => GivenARequestWithAUrlAndMethod(_downstreamRoute1, url, HttpMethod.Get);
-
     private void GivenARequest() =>
         GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
 
@@ -315,7 +313,7 @@ public class MessageInvokerPoolTests : UnitTest
             .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
     }
 
-    private Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
+    private static Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
     {
         var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
@@ -323,7 +321,7 @@ public class MessageInvokerPoolTests : UnitTest
         return handlerFactory;
     }
 
-    private DownstreamRoute DownstreamRouteFactory(string path)
+    private static DownstreamRoute DownstreamRouteFactory(string path)
     {
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate(path)
