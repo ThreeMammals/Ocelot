@@ -71,7 +71,7 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
         options.UseCookieContainer ??= globalOptions.UseCookieContainer ?? false;
         options.UseProxy ??= globalOptions.UseProxy ?? false;
         options.UseTracing ??= globalOptions.UseTracing ?? false;
-        options.UseDefaultCredentials = globalOptions.UseDefaultCredentials ?? false; // TODO
+        options.UseDefaultCredentials ??= globalOptions.UseDefaultCredentials ?? false;
         var useTracing = _tracer != null && options.UseTracing.Value;
         return new(options, useTracing);
     }
