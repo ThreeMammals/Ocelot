@@ -74,9 +74,9 @@ The example here shows a typical configuration:
 
 Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` type.
 
-  Note: **Host**, **Port** and **Token** are no longer in use.
+  **Note 1**: ``Host``, ``Port`` and ``Token`` are no longer in use.
 
-  Note 2: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
+  **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
   Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
 
 .. _k8s-pollkube-provider:
@@ -158,4 +158,4 @@ Consequently, if the port name is not designated, the default downstream scheme 
 
 .. [#f1] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 .. [#f2] This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider. 
-.. [#f3] _"Downstream Scheme vs Port Names"_ feature was requested as part of `issue 1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
+.. [#f3] *"Downstream Scheme vs Port Names"* feature was requested as part of `issue 1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
