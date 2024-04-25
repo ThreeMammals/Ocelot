@@ -191,7 +191,7 @@ public class Steps : IDisposable
                 Console.WriteLine(e);
             }
         }
-     }
+    }
 
     public void ThenTheResponseBodyHeaderIs(string key, string value)
     {
@@ -815,6 +815,29 @@ public class Steps : IDisposable
     public void WhenIGetUrlOnTheApiGatewayAndDontWait(string url)
     {
         _ocelotClient.GetAsync(url);
+    }
+
+    public void WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Content = new StringContent(body),
+        };
+        _response = _ocelotClient.SendAsync(request).Result;
+    }
+
+    public void WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
+    {
+        var content = new MultipartFormDataContent();
+        var dataContent = new FormUrlEncodedContent(values);
+        content.Add(dataContent, name);
+        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, url)
+        {
+            Content = content,
+        };
+        _response = _ocelotClient.SendAsync(request).Result;
     }
 
     public void WhenICancelTheRequest()

@@ -19,8 +19,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
     public MultiplexingMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IResponseAggregatorFactory factory
-    )
+        IResponseAggregatorFactory factory)
         : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
     {
         _factory = factory;
@@ -184,7 +183,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <returns>The cloned Http context.</returns>
     private async Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route, List<PlaceholderNameAndValue> placeholders = null)
     {
-        var newHttpContext = CreateThreadContext(sourceContext);
+        var newHttpContext = await CreateThreadContextAsync(sourceContext);
         CopyItemsToNewContext(newHttpContext, sourceContext, placeholders);
         newHttpContext.Items.UpsertDownstreamRoute(route);
 
@@ -208,14 +207,15 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// </summary>
     /// <param name="source">The base http context.</param>
     /// <returns>The cloned context.</returns>
-    private static HttpContext CreateThreadContext(HttpContext source)
+    protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source)
     {
         var from = source.Request;
+        var bodyStream = await CloneRequestBodyAsync(from, source.RequestAborted);
         var target = new DefaultHttpContext
         {
             Request =
             {
-                Body = from.Body, // TODO Consider stream cloning for multiple reads
+                Body = bodyStream,
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
                 Host = from.Host,
@@ -237,12 +237,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
             RequestAborted = source.RequestAborted,
             User = source.User,
         };
-
         foreach (var header in from.Headers)
         {
             target.Request.Headers[header.Key] = header.Value.ToArray();
         }
 
+        // Once the downstream request is completed and the downstream response has been read, the downstream response object can dispose of the body's Stream object
+        target.Response.RegisterForDisposeAsync(bodyStream); // manage Stream lifetime by HttpResponse object
         return target;
     }
 
@@ -255,5 +256,29 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
         var aggregator = _factory.Get(route);
         return aggregator.Aggregate(route, httpContext, contexts);
+    }
+
+    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, CancellationToken aborted)
+    {
+        request.EnableBuffering();
+        if (request.Body.Position != 0)
+        {
+            Logger.LogWarning("Ocelot does not support body copy without stream in initial position 0");
+            return request.Body;
+        }
+
+        var targetBuffer = new MemoryStream();
+        if (request.ContentLength is not null)
+        {
+            await request.Body.CopyToAsync(targetBuffer, (int)request.ContentLength, aborted);
+            targetBuffer.Position = 0;
+            request.Body.Position = 0;
+        }
+        else
+        {
+            Logger.LogWarning("Aggregation does not support body copy without Content-Length header!");
+        }
+
+        return targetBuffer;
     }
 }

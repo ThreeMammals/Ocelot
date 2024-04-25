@@ -217,9 +217,12 @@ Below is an example of an aggregator that you could implement for your solution:
 Gotchas
 -------
 
-You cannot use Routes with specific **RequestIdKeys** as this would be crazy complicated to track.
+* You cannot use Routes with specific **RequestIdKeys** as this would be crazy complicated to track.
+* Aggregation only supports the ``GET`` HTTP verb.
+* Aggregation allows for the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
+  Form data and attached files should also be forwarded.
+  It is essential to always specify the ``Content-Length`` header in requests to upstream; otherwise, Ocelot will log warnings like *"Aggregation does not support body copy without Content-Length header!"*.
 
-Aggregation only supports the ``GET`` HTTP verb.
 
 """"
 

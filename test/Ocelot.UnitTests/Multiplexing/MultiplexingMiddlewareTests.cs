@@ -61,14 +61,14 @@ namespace Ocelot.UnitTests.Multiplexing
 
         [Fact]
         [Trait("Bug", "1396")]
-        public void CreateThreadContext_CopyUser_ToTarget()
+        public async Task CreateThreadContextAsync_CopyUser_ToTarget()
         {
             // Arrange
-            GivenUser("test", "Copy", nameof(CreateThreadContext_CopyUser_ToTarget));
+            GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
 
             // Act
-            var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
-            var actual = (HttpContext)method.Invoke(_middleware, new object[] { _httpContext });
+            var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext });
 
             // Assert
             AssertUsers(actual);
@@ -212,6 +212,29 @@ namespace Ocelot.UnitTests.Multiplexing
                 ItExpr.IsAny<HttpContext>(),
                 ItExpr.IsAny<Route>(),
                 ItExpr.IsAny<List<HttpContext>>());
+        }
+
+        [Theory]
+        [Trait("Bug", "2039")]
+        [InlineData(1)] // Times.Never()
+        [InlineData(2)] // Times.Exactly(2)
+        [InlineData(3)] // Times.Exactly(3)
+        [InlineData(4)] // Times.Exactly(4)
+        public async Task Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests(int numberOfRoutes)
+        {
+            // Arrange
+            var mock = MockMiddlewareFactory(null, null);
+            GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
+            GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
+                numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
+                ItExpr.IsAny<HttpRequest>(),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]
