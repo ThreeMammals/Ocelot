@@ -330,19 +330,13 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     public void Should_create_options_with_useDefaultCredentials_false_as_default()
     {
         // Arrange
-        var fileRoute = new FileRoute
-        {
-            HttpHandlerOptions = new(),
-        };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
-            useDefaultCredentials: false);
-        GivenTheFollowing(fileRoute);
+        FileHttpHandlerOptions opts = new();
 
         // Act
-        WhenICreateHttpHandlerOptions();
+        var actual = _creator.Create(opts);
 
         // Assert
-        ThenTheFollowingOptionsReturned(expectedOptions);
+        Assert.False(actual.UseDefaultCredentials);
     }
 
     [Fact]
@@ -350,22 +344,16 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     public void Should_create_options_with_UseDefaultCredentials_true_if_set()
     {
         // Arrange
-        var fileRoute = new FileRoute
+        FileHttpHandlerOptions opts = new()
         {
-            HttpHandlerOptions = new()
-            {
-                UseDefaultCredentials = true,
-            },
+            UseDefaultCredentials = true,
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime,
-            useDefaultCredentials: true);
-        GivenTheFollowing(fileRoute);
 
         // Act
-        WhenICreateHttpHandlerOptions();
+        var actual = _creator.Create(opts);
 
         // Assert
-        ThenTheFollowingOptionsReturned(expectedOptions);
+        Assert.True(actual.UseDefaultCredentials);
     }
 
     private static FileHttpHandlerOptions RouteOptions() => new()
