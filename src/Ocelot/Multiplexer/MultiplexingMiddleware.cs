@@ -19,8 +19,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
     public MultiplexingMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IResponseAggregatorFactory factory
-    )
+        IResponseAggregatorFactory factory)
         : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
     {
         _factory = factory;
@@ -211,11 +210,12 @@ public class MultiplexingMiddleware : OcelotMiddleware
     protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source)
     {
         var from = source.Request;
+        var bodyStream = await CloneRequestBodyAsync(from, source.RequestAborted);
         var target = new DefaultHttpContext
         {
             Request =
             {
-                Body = await CloneRequestBodyAsync(source.Request, source.RequestAborted),
+                Body = bodyStream,
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
                 Host = from.Host,
@@ -237,12 +237,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
             RequestAborted = source.RequestAborted,
             User = source.User,
         };
-
         foreach (var header in from.Headers)
         {
             target.Request.Headers[header.Key] = header.Value.ToArray();
         }
 
+        // Once the downstream request is completed and the downstream response has been read, the downstream response object can dispose of the body's Stream object
+        target.Response.RegisterForDisposeAsync(bodyStream); // manage Stream lifetime by HttpResponse object
         return target;
     }
 
