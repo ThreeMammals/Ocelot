@@ -1,8 +1,8 @@
-﻿namespace Ocelot.Provider.Kubernetes
+﻿namespace Ocelot.Provider.Kubernetes;
+
+public class KubeRegistryConfiguration
 {
-    public class KubeRegistryConfiguration
-    {
-        public string KubeNamespace { get; set; }
-        public string KeyOfServiceInK8s { get; set; }
-    }
+    public string KubeNamespace { get; set; }
+    public string KeyOfServiceInK8s { get; set; }
+    public string Scheme { get; set; }
 }
