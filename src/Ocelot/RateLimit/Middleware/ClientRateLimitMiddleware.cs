@@ -54,7 +54,7 @@ namespace Ocelot.RateLimit.Middleware
                 if (counter.TotalRequests > rule.Limit)
                 {
                     //compute retry after value
-                    var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
+                    var retryAfter = ClientRateLimitProcessor.RetryAfterFrom(counter.Timestamp, rule);
 
                     // log blocked request
                     LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute);

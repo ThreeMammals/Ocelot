@@ -3,7 +3,7 @@ using Ocelot.Configuration;
 
 namespace Ocelot.RateLimit
 {
-    public class ClientRateLimitProcessor
+    public class ClientRateLimitProcessor // TODO Interface extraction
     {
         private readonly RateLimitCore _core;
 
@@ -13,23 +13,15 @@ namespace Ocelot.RateLimit
         }
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            return _core.ProcessRequest(requestIdentity, option);
-        }
+            => _core.ProcessRequest(requestIdentity, option);
 
-        public int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
-        {
-            return RateLimitCore.RetryAfterFrom(timestamp, rule);
-        }
+        public static int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+            => RateLimitCore.RetryAfterFrom(timestamp, rule);
 
         public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            return _core.GetRateLimitHeaders(context, requestIdentity, option);
-        }
+            => _core.GetRateLimitHeaders(context, requestIdentity, option);
 
-        public TimeSpan ConvertToTimeSpan(string timeSpan)
-        {
-            return RateLimitCore.ConvertToTimeSpan(timeSpan);
-        }
+        public static TimeSpan ConvertToTimeSpan(string timeSpan)
+            => RateLimitCore.ConvertToTimeSpan(timeSpan);
     }
 }

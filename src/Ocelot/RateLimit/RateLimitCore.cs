@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace Ocelot.RateLimit
 {
-    public class RateLimitCore
+    public class RateLimitCore // TODO Extract interface
     {
         private readonly IRateLimitCounterHandler _counterHandler;
         private static readonly object ProcessLocker = new();
@@ -47,7 +47,6 @@ namespace Ocelot.RateLimit
             }
 
             _counterHandler.Set(counterId, counter, expirationTime);
-
             return counter;
         }
 
@@ -82,7 +81,6 @@ namespace Ocelot.RateLimit
         public void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
         {
             var counterId = ComputeCounterKey(requestIdentity, option);
-            var rule = option.RateLimitRule;
 
             // stores: id (string) - timestamp (datetime) - total_requests (long)
             _counterHandler.Set(counterId, counter, expirationTime);
@@ -96,17 +94,17 @@ namespace Ocelot.RateLimit
             var entry = _counterHandler.Get(counterId);
             if (entry.HasValue)
             {
-                headers = new RateLimitHeaders(context, rule.Period,
-                    (rule.Limit - entry.Value.TotalRequests).ToString(),
-                    (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo)
-                    );
+                headers = new RateLimitHeaders(context,
+                    limit: rule.Period,
+                    remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
+                    reset: (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
             }
             else
             {
                 headers = new RateLimitHeaders(context,
-                    rule.Period,
-                    rule.Limit.ToString(),
-                    (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                    limit: rule.Period, // TODO Double check
+                    remaining: rule.Limit.ToString(), // TODO Double check
+                    reset: (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
             }
 
             return headers;
@@ -115,11 +113,9 @@ namespace Ocelot.RateLimit
         public static string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
         {
             var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
-
             var idBytes = Encoding.UTF8.GetBytes(key);
 
             byte[] hashBytes;
-
             using (var algorithm = SHA1.Create())
             {
                 hashBytes = algorithm.ComputeHash(idBytes);
@@ -142,23 +138,14 @@ namespace Ocelot.RateLimit
             var value = timeSpan.Substring(0, l);
             var type = timeSpan.Substring(l, 1);
 
-            switch (type)
+            return type switch
             {
-                case "d":
-                    return TimeSpan.FromDays(double.Parse(value));
-
-                case "h":
-                    return TimeSpan.FromHours(double.Parse(value));
-
-                case "m":
-                    return TimeSpan.FromMinutes(double.Parse(value));
-
-                case "s":
-                    return TimeSpan.FromSeconds(double.Parse(value));
-
-                default:
-                    throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}");
-            }
+                "d" => TimeSpan.FromDays(double.Parse(value)),
+                "h" => TimeSpan.FromHours(double.Parse(value)),
+                "m" => TimeSpan.FromMinutes(double.Parse(value)),
+                "s" => TimeSpan.FromSeconds(double.Parse(value)),
+                _ => throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}"),
+            };
         }
     }
 }
