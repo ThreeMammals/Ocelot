@@ -3,149 +3,152 @@ using Ocelot.Configuration;
 using System.Globalization;
 using System.Security.Cryptography;
 
-namespace Ocelot.RateLimiting
+namespace Ocelot.RateLimiting;
+
+public class RateLimitCore : IRateLimitCore
 {
-    public class RateLimitCore // TODO Extract interface
+    private readonly IRateLimitCounterHandler _counterHandler;
+    private static readonly object ProcessLocker = new();
+
+    public RateLimitCore(IRateLimitCounterHandler counterStore)
     {
-        private readonly IRateLimitCounterHandler _counterHandler;
-        private static readonly object ProcessLocker = new();
+        _counterHandler = counterStore;
+    }
 
-        public RateLimitCore(IRateLimitCounterHandler counterStore)
+    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    {
+        RateLimitCounter counter;
+        var rule = option.RateLimitRule;
+
+        var counterId = ComputeCounterKey(requestIdentity, option);
+
+        // serial reads and writes
+        lock (ProcessLocker)
         {
-            _counterHandler = counterStore;
-        }
-
-        public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            RateLimitCounter counter;
-            var rule = option.RateLimitRule;
-
-            var counterId = ComputeCounterKey(requestIdentity, option);
-
-            // serial reads and writes
-            lock (ProcessLocker)
-            {
-                var entry = _counterHandler.Get(counterId);
-                counter = CountRequests(entry, rule);
-            }
-
-            TimeSpan expirationTime = ConvertToTimeSpan(rule.Period);
-            if (counter.TotalRequests > rule.Limit)
-            {
-                var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
-                if (retryAfter > 0)
-                {
-                    // rate limit exceeded, ban period is active
-                    expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
-                }
-                else
-                {
-                    // ban period elapsed, start counting
-                    _counterHandler.Remove(counterId);
-                    counter = new RateLimitCounter(counter.Timestamp, 1);
-                }
-            }
-
-            _counterHandler.Set(counterId, counter, expirationTime);
-            return counter;
-        }
-
-        private static RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
-        {
-            // no entry - start counting
-            if (!entry.HasValue)
-            {
-                return new RateLimitCounter(DateTime.UtcNow, 1);
-            }
-            
-            // entry has not expired
-            if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
-            {
-                // increment request count
-                var totalRequests = entry.Value.TotalRequests + 1;
-
-                // deep copy
-                return new RateLimitCounter(entry.Value.Timestamp, totalRequests);
-            }
-            
-            // entry not expired, rate limit exceeded
-            if (entry.Value.TotalRequests > rule.Limit)
-            {
-                return entry.Value;
-            }
-
-            // rate limit not exceeded, period elapsed, start counting
-            return new RateLimitCounter(DateTime.UtcNow, 1);
-        }
-
-        public void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
-        {
-            var counterId = ComputeCounterKey(requestIdentity, option);
-
-            // stores: id (string) - timestamp (datetime) - total_requests (long)
-            _counterHandler.Set(counterId, counter, expirationTime);
-        }
-
-        public RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            var rule = option.RateLimitRule;
-            RateLimitHeaders headers;
-            var counterId = ComputeCounterKey(requestIdentity, option);
             var entry = _counterHandler.Get(counterId);
-            if (entry.HasValue)
+            counter = CountRequests(entry, rule);
+        }
+
+        TimeSpan expirationTime = ConvertToTimeSpan(rule.Period);
+        if (counter.TotalRequests > rule.Limit)
+        {
+            var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
+            if (retryAfter > 0)
             {
-                headers = new RateLimitHeaders(context,
-                    limit: rule.Period,
-                    remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
-                    reset: (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                // rate limit exceeded, ban period is active
+                expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
             }
             else
             {
-                headers = new RateLimitHeaders(context,
-                    limit: rule.Period, // TODO Double check
-                    remaining: rule.Limit.ToString(), // TODO Double check
-                    reset: (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                // ban period elapsed, start counting
+                _counterHandler.Remove(counterId);
+                counter = new RateLimitCounter(counter.Timestamp, 1);
             }
-
-            return headers;
         }
 
-        public static string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        _counterHandler.Set(counterId, counter, expirationTime);
+        return counter;
+    }
+
+    protected virtual RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
+    {
+        // no entry - start counting
+        if (!entry.HasValue)
         {
-            var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
-            var idBytes = Encoding.UTF8.GetBytes(key);
-
-            byte[] hashBytes;
-            using (var algorithm = SHA1.Create())
-            {
-                hashBytes = algorithm.ComputeHash(idBytes);
-            }
-
-            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+            return new RateLimitCounter(DateTime.UtcNow, 1);
         }
 
-        public static int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+        // entry has not expired
+        if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
         {
-            var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
-            retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-            return retryAfter;
+            // increment request count
+            var totalRequests = entry.Value.TotalRequests + 1;
+
+            // deep copy
+            return new RateLimitCounter(entry.Value.Timestamp, totalRequests);
         }
 
-        public static TimeSpan ConvertToTimeSpan(string timeSpan)
+        // entry not expired, rate limit exceeded
+        if (entry.Value.TotalRequests > rule.Limit)
         {
-            var l = timeSpan.Length - 1;
-            var value = timeSpan.Substring(0, l);
-            var type = timeSpan.Substring(l, 1);
-
-            return type switch
-            {
-                "d" => TimeSpan.FromDays(double.Parse(value)),
-                "h" => TimeSpan.FromHours(double.Parse(value)),
-                "m" => TimeSpan.FromMinutes(double.Parse(value)),
-                "s" => TimeSpan.FromSeconds(double.Parse(value)),
-                _ => throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}"),
-            };
+            return entry.Value;
         }
+
+        // rate limit not exceeded, period elapsed, start counting
+        return new RateLimitCounter(DateTime.UtcNow, 1);
+    }
+
+    // TODO Should be protected actually
+    public virtual void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
+    {
+        var counterId = ComputeCounterKey(requestIdentity, option);
+
+        // stores: id (string) - timestamp (datetime) - total_requests (long)
+        _counterHandler.Set(counterId, counter, expirationTime);
+    }
+
+    public virtual RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    {
+        var rule = option.RateLimitRule;
+        RateLimitHeaders headers;
+        var counterId = ComputeCounterKey(requestIdentity, option);
+        var entry = _counterHandler.Get(counterId);
+        if (entry.HasValue)
+        {
+            headers = new RateLimitHeaders(context,
+                limit: rule.Period,
+                remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
+                reset: (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+        }
+        else
+        {
+            headers = new RateLimitHeaders(context,
+                limit: rule.Period, // TODO Double check
+                remaining: rule.Limit.ToString(), // TODO Double check
+                reset: (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+        }
+
+        return headers;
+    }
+
+    // TODO Should be protected actually
+    public virtual string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    {
+        var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
+        var idBytes = Encoding.UTF8.GetBytes(key);
+
+        byte[] hashBytes;
+        using (var algorithm = SHA1.Create())
+        {
+            hashBytes = algorithm.ComputeHash(idBytes);
+        }
+
+        return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+    }
+
+    // TODO Should be protected actually
+    public virtual int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+    {
+        var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
+        var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
+        retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
+        return retryAfter;
+    }
+
+    // TODO Should be protected actually
+    public virtual TimeSpan ConvertToTimeSpan(string timeSpan)
+    {
+        var l = timeSpan.Length - 1;
+        var value = timeSpan.Substring(0, l);
+        var type = timeSpan.Substring(l, 1);
+
+        return type switch
+        {
+            "d" => TimeSpan.FromDays(double.Parse(value)),
+            "h" => TimeSpan.FromHours(double.Parse(value)),
+            "m" => TimeSpan.FromMinutes(double.Parse(value)),
+            "s" => TimeSpan.FromSeconds(double.Parse(value)),
+            _ => throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}"),
+        };
     }
 }
