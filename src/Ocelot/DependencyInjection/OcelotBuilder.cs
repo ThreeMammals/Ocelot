@@ -27,7 +27,7 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimit;
+using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class ClientRateLimitProcessor // TODO Interface extraction
     {

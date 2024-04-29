@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class DistributedCacheRateLimitCounterHandler : IRateLimitCounterHandler
     {

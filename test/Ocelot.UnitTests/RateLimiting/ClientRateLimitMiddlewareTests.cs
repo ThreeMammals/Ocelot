@@ -4,8 +4,8 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.RateLimit;
-using Ocelot.RateLimit.Middleware;
+using Ocelot.RateLimiting;
+using Ocelot.RateLimiting.Middleware;
 using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.RateLimiting;

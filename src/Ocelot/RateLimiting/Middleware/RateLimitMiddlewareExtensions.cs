@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.RateLimit.Middleware
+namespace Ocelot.RateLimiting.Middleware
 {
     public static class RateLimitMiddlewareExtensions
     {

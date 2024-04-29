@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class MemoryCacheRateLimitCounterHandler : IRateLimitCounterHandler
     {

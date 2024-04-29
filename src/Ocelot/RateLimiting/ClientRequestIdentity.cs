@@ -1,4 +1,4 @@
-﻿namespace Ocelot.RateLimit
+﻿namespace Ocelot.RateLimiting
 {
     public class ClientRequestIdentity
     {

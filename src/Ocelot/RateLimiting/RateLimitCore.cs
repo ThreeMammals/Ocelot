@@ -3,7 +3,7 @@ using Ocelot.Configuration;
 using System.Globalization;
 using System.Security.Cryptography;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class RateLimitCore // TODO Extract interface
     {

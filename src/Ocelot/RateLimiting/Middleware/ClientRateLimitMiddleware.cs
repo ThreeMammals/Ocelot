@@ -3,7 +3,7 @@ using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.RateLimit.Middleware
+namespace Ocelot.RateLimiting.Middleware
 {
     public class ClientRateLimitMiddleware : OcelotMiddleware
     {

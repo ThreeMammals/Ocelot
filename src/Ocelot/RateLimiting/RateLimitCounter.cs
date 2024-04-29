@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     /// <summary>
     /// Stores the initial access time and the numbers of calls made from that point.

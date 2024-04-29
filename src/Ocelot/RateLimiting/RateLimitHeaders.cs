@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class RateLimitHeaders
     {
