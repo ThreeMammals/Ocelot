@@ -8,15 +8,16 @@ namespace Ocelot.RateLimiting.Middleware
     public class ClientRateLimitMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ClientRateLimitProcessor _processor;
+        private readonly IRateLimitCore _limiter;
 
-        public ClientRateLimitMiddleware(RequestDelegate next,
+        public ClientRateLimitMiddleware(
+            RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRateLimitCounterHandler counterHandler)
-                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
+            IRateLimitCore limiter)
+            : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
-            _processor = new ClientRateLimitProcessor(counterHandler);
+            _limiter = limiter;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -48,13 +49,13 @@ namespace Ocelot.RateLimiting.Middleware
             if (rule.Limit > 0)
             {
                 // increment counter
-                var counter = _processor.ProcessRequest(identity, options);
+                var counter = _limiter.ProcessRequest(identity, options);
 
                 // check if limit is reached
                 if (counter.TotalRequests > rule.Limit)
                 {
                     //compute retry after value
-                    var retryAfter = ClientRateLimitProcessor.RetryAfterFrom(counter.Timestamp, rule);
+                    var retryAfter = _limiter.RetryAfterFrom(counter.Timestamp, rule);
 
                     // log blocked request
                     LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute);
@@ -75,7 +76,7 @@ namespace Ocelot.RateLimiting.Middleware
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _processor.GetRateLimitHeaders(httpContext, identity, options);
+                var headers = _limiter.GetRateLimitHeaders(httpContext, identity, options);
                 httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
