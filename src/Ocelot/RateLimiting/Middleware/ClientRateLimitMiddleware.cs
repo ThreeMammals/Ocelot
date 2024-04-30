@@ -12,9 +12,9 @@ namespace Ocelot.RateLimiting.Middleware
 
         public ClientRateLimitMiddleware(
             RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
+            IOcelotLoggerFactory factory,
             IRateLimitCore limiter)
-            : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
+            : base(factory.CreateLogger<ClientRateLimitMiddleware>())
         {
             _next = next;
             _limiter = limiter;

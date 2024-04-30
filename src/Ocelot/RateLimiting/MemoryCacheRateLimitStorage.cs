@@ -2,11 +2,17 @@
 
 namespace Ocelot.RateLimiting
 {
-    public class MemoryCacheRateLimitCounterHandler : IRateLimitCounterHandler
+    /// <summary>
+    /// Default storage based on the memory cache of the local web server instance.
+    /// </summary>
+    /// <remarks>
+    /// See the <see cref="IMemoryCache"/> interface docs for more details.
+    /// </remarks>
+    public class MemoryCacheRateLimitStorage : IRateLimitStorage
     {
         private readonly IMemoryCache _memoryCache;
 
-        public MemoryCacheRateLimitCounterHandler(IMemoryCache memoryCache)
+        public MemoryCacheRateLimitStorage(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
         }

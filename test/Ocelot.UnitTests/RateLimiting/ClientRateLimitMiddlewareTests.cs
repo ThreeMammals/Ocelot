@@ -12,7 +12,7 @@ namespace Ocelot.UnitTests.RateLimiting;
 
 public class ClientRateLimitMiddlewareTests : UnitTest
 {
-    private readonly IRateLimitCounterHandler _rateLimitCounterHandler;
+    private readonly IRateLimitStorage _storage;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
     private readonly ClientRateLimitMiddleware _middleware;
@@ -25,12 +25,12 @@ public class ClientRateLimitMiddlewareTests : UnitTest
     {
         _url = "http://localhost:51879";
         var cacheEntryOptions = new MemoryCacheOptions();
-        _rateLimitCounterHandler = new MemoryCacheRateLimitCounterHandler(new MemoryCache(cacheEntryOptions));
+        _storage = new MemoryCacheRateLimitStorage(new MemoryCache(cacheEntryOptions));
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
-        _rateLimitCore = new RateLimitCore(_rateLimitCounterHandler);
+        _rateLimitCore = new RateLimitCore(_storage);
         _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCore);
     }
 

@@ -7,12 +7,12 @@ namespace Ocelot.RateLimiting;
 
 public class RateLimitCore : IRateLimitCore
 {
-    private readonly IRateLimitCounterHandler _counterHandler;
+    private readonly IRateLimitStorage _storage;
     private static readonly object ProcessLocker = new();
 
-    public RateLimitCore(IRateLimitCounterHandler counterStore)
+    public RateLimitCore(IRateLimitStorage storage)
     {
-        _counterHandler = counterStore;
+        _storage = storage;
     }
 
     public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
@@ -25,7 +25,7 @@ public class RateLimitCore : IRateLimitCore
         // serial reads and writes
         lock (ProcessLocker)
         {
-            var entry = _counterHandler.Get(counterId);
+            var entry = _storage.Get(counterId);
             counter = CountRequests(entry, rule);
         }
 
@@ -41,12 +41,12 @@ public class RateLimitCore : IRateLimitCore
             else
             {
                 // ban period elapsed, start counting
-                _counterHandler.Remove(counterId);
+                _storage.Remove(counterId);
                 counter = new RateLimitCounter(counter.Timestamp, 1);
             }
         }
 
-        _counterHandler.Set(counterId, counter, expirationTime);
+        _storage.Set(counterId, counter, expirationTime);
         return counter;
     }
 
@@ -84,7 +84,7 @@ public class RateLimitCore : IRateLimitCore
         var counterId = ComputeCounterKey(requestIdentity, option);
 
         // stores: id (string) - timestamp (datetime) - total_requests (long)
-        _counterHandler.Set(counterId, counter, expirationTime);
+        _storage.Set(counterId, counter, expirationTime);
     }
 
     public virtual RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
@@ -92,7 +92,7 @@ public class RateLimitCore : IRateLimitCore
         var rule = option.RateLimitRule;
         RateLimitHeaders headers;
         var counterId = ComputeCounterKey(requestIdentity, option);
-        var entry = _counterHandler.Get(counterId);
+        var entry = _storage.Get(counterId);
         if (entry.HasValue)
         {
             headers = new RateLimitHeaders(context,

@@ -3,11 +3,17 @@ using Newtonsoft.Json;
 
 namespace Ocelot.RateLimiting
 {
-    public class DistributedCacheRateLimitCounterHandler : IRateLimitCounterHandler
+    /// <summary>
+    /// Custom storage based on a distributed cache of a remote/local services.
+    /// </summary>
+    /// <remarks>
+    /// See the <see cref="IDistributedCache"/> interface docs for more details.
+    /// </remarks>
+    public class DistributedCacheRateLimitStorage : IRateLimitStorage
     {
         private readonly IDistributedCache _memoryCache;
 
-        public DistributedCacheRateLimitCounterHandler(IDistributedCache memoryCache)
+        public DistributedCacheRateLimitStorage(IDistributedCache memoryCache)
         {
             _memoryCache = memoryCache;
         }

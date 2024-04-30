@@ -112,7 +112,7 @@ namespace Ocelot.DependencyInjection
 
             // Feature: Rate Limiting
             Services.TryAddSingleton<IRateLimitCore, RateLimitCore>();
-            Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            Services.TryAddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
 
             Services.TryAddSingleton<IRequestMapper, RequestMapper>();
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
