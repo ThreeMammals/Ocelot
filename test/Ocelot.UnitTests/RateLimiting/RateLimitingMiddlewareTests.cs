@@ -10,28 +10,28 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
-public class ClientRateLimitMiddlewareTests : UnitTest
+public class RateLimitingMiddlewareTests : UnitTest
 {
     private readonly IRateLimitStorage _storage;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private readonly ClientRateLimitMiddleware _middleware;
+    private readonly RateLimitingMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly IRateLimitCore _rateLimitCore;
     private DownstreamResponse _downstreamResponse;
     private readonly string _url;
 
-    public ClientRateLimitMiddlewareTests()
+    public RateLimitingMiddlewareTests()
     {
         _url = "http://localhost:51879";
         var cacheEntryOptions = new MemoryCacheOptions();
         _storage = new MemoryCacheRateLimitStorage(new MemoryCache(cacheEntryOptions));
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
-        _loggerFactory.Setup(x => x.CreateLogger<ClientRateLimitMiddleware>()).Returns(_logger.Object);
+        _loggerFactory.Setup(x => x.CreateLogger<RateLimitingMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
         _rateLimitCore = new RateLimitCore(_storage);
-        _middleware = new ClientRateLimitMiddleware(_next, _loggerFactory.Object, _rateLimitCore);
+        _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimitCore);
     }
 
     [Fact]

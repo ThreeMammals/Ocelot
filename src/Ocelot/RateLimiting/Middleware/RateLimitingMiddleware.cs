@@ -5,16 +5,16 @@ using Ocelot.Middleware;
 
 namespace Ocelot.RateLimiting.Middleware
 {
-    public class ClientRateLimitMiddleware : OcelotMiddleware
+    public class RateLimitingMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IRateLimitCore _limiter;
 
-        public ClientRateLimitMiddleware(
+        public RateLimitingMiddleware(
             RequestDelegate next,
             IOcelotLoggerFactory factory,
             IRateLimitCore limiter)
-            : base(factory.CreateLogger<ClientRateLimitMiddleware>())
+            : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;
             _limiter = limiter;

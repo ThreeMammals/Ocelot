@@ -2,11 +2,11 @@
 
 namespace Ocelot.RateLimiting.Middleware
 {
-    public static class RateLimitMiddlewareExtensions
+    public static class RateLimitingMiddlewareExtensions
     {
         public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<ClientRateLimitMiddleware>();
+            return builder.UseMiddleware<RateLimitingMiddleware>();
         }
     }
 }
