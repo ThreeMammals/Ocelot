@@ -15,32 +15,31 @@ public class RateLimitCore : IRateLimitCore
         _storage = storage;
     }
 
-    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options)
     {
         RateLimitCounter counter;
-        var rule = option.RateLimitRule;
+        var rule = options.RateLimitRule;
+        var counterId = GetStorageKey(identity, options);
 
-        var counterId = ComputeCounterKey(requestIdentity, option);
-
-        // serial reads and writes
+        // Serial reads and writes
         lock (ProcessLocker)
         {
             var entry = _storage.Get(counterId);
             counter = CountRequests(entry, rule);
         }
 
-        TimeSpan expirationTime = ConvertToTimeSpan(rule.Period);
+        TimeSpan expirationTime = ToTimespan(rule.Period);
         if (counter.TotalRequests > rule.Limit)
         {
             var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
             if (retryAfter > 0)
             {
-                // rate limit exceeded, ban period is active
-                expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan);
+                // Rate Limit exceeded, ban period is active
+                expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan); // TODO retryAfter seconds?
             }
             else
             {
-                // ban period elapsed, start counting
+                // Ban period elapsed, start counting
                 _storage.Remove(counterId);
                 counter = new RateLimitCounter(counter.Timestamp, 1);
             }
@@ -52,69 +51,65 @@ public class RateLimitCore : IRateLimitCore
 
     protected virtual RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
     {
-        // no entry - start counting
-        if (!entry.HasValue)
+        if (!entry.HasValue) // no entry, start counting
         {
-            return new RateLimitCounter(DateTime.UtcNow, 1);
+            return new RateLimitCounter(DateTime.UtcNow, 1); // current request is the 1st one
         }
 
-        // entry has not expired
-        if (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period) >= DateTime.UtcNow)
+        var counter = entry.Value;
+        if (counter.Timestamp + ToTimespan(rule.Period) >= DateTime.UtcNow) // entry has not expired
         {
-            // increment request count
-            var totalRequests = entry.Value.TotalRequests + 1;
-
-            // deep copy
-            return new RateLimitCounter(entry.Value.Timestamp, totalRequests);
+            var totalRequests = counter.TotalRequests + 1; // increment request count
+            return new RateLimitCounter(counter.Timestamp, totalRequests); // deep copy
         }
 
-        // entry not expired, rate limit exceeded
-        if (entry.Value.TotalRequests > rule.Limit)
+        // Entry not expired, rate limit exceeded
+        if (counter.TotalRequests > rule.Limit)
         {
-            return entry.Value;
+            return counter;
         }
 
-        // rate limit not exceeded, period elapsed, start counting
+        // Rate limit not exceeded, period elapsed, start counting
         return new RateLimitCounter(DateTime.UtcNow, 1);
     }
 
     // TODO Should be protected actually
-    public virtual void SaveRateLimitCounter(ClientRequestIdentity requestIdentity, RateLimitOptions option, RateLimitCounter counter, TimeSpan expirationTime)
+    public virtual void SaveCounter(ClientRequestIdentity identity, RateLimitOptions options, RateLimitCounter counter, TimeSpan expiration)
     {
-        var counterId = ComputeCounterKey(requestIdentity, option);
+        var counterId = GetStorageKey(identity, options);
 
-        // stores: id (string) - timestamp (datetime) - total_requests (long)
-        _storage.Set(counterId, counter, expirationTime);
+        // Store with key: id (string) - timestamp (datetime) - total_requests (long)
+        _storage.Set(counterId, counter, expiration);
     }
 
-    public virtual RateLimitHeaders GetRateLimitHeaders(HttpContext context, ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var rule = option.RateLimitRule;
+        var rule = options.RateLimitRule;
         RateLimitHeaders headers;
-        var counterId = ComputeCounterKey(requestIdentity, option);
+        var counterId = GetStorageKey(identity, options);
         var entry = _storage.Get(counterId);
         if (entry.HasValue)
         {
             headers = new RateLimitHeaders(context,
                 limit: rule.Period,
                 remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
-                reset: (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                reset: (entry.Value.Timestamp + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
         }
         else
         {
             headers = new RateLimitHeaders(context,
                 limit: rule.Period, // TODO Double check
                 remaining: rule.Limit.ToString(), // TODO Double check
-                reset: (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                reset: (DateTime.UtcNow + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
         }
 
         return headers;
     }
 
     // TODO Should be protected actually
-    public virtual string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+    public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var key = $"{option.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{option.RateLimitRule.Period}_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
+        var key = $"{options.RateLimitCounterPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
         var idBytes = Encoding.UTF8.GetBytes(key);
 
         byte[] hashBytes;
@@ -127,20 +122,25 @@ public class RateLimitCore : IRateLimitCore
     }
 
     // TODO Should be protected actually
-    public virtual int RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
+    public virtual int RetryAfterFrom(DateTime startedAt, RateLimitRule rule)
     {
-        var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
+        var secondsPast = Convert.ToInt32((DateTime.UtcNow - startedAt).TotalSeconds);
         var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
         retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
         return retryAfter;
     }
 
-    // TODO Should be protected actually
-    public virtual TimeSpan ConvertToTimeSpan(string timeSpan)
+    /// <summary>
+    /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
+    /// </summary>
+    /// <param name="timespan">The string value with dimentions: '1s', '1m', '1h', '1d'.</param>
+    /// <returns>A <see cref="TimeSpan"/> value.</returns>
+    /// <exception cref="FormatException">By default if the value dimension can't be detected.</exception>
+    public virtual TimeSpan ToTimespan(string timespan)
     {
-        var l = timeSpan.Length - 1;
-        var value = timeSpan.Substring(0, l);
-        var type = timeSpan.Substring(l, 1);
+        var len = timespan.Length - 1;
+        var value = timespan.Substring(0, len);
+        var type = timespan.Substring(len, 1);
 
         return type switch
         {
@@ -148,7 +148,7 @@ public class RateLimitCore : IRateLimitCore
             "h" => TimeSpan.FromHours(double.Parse(value)),
             "m" => TimeSpan.FromMinutes(double.Parse(value)),
             "s" => TimeSpan.FromSeconds(double.Parse(value)),
-            _ => throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}"),
+            _ => throw new FormatException($"{timespan} can't be converted to TimeSpan, unknown type {type}"),
         };
     }
 }

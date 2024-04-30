@@ -76,7 +76,7 @@ namespace Ocelot.RateLimiting.Middleware
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _limiter.GetRateLimitHeaders(httpContext, identity, options);
+                var headers = _limiter.GetHeaders(httpContext, identity, options);
                 httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
