@@ -63,7 +63,7 @@ public class RateLimitCore : IRateLimitCore
             return new RateLimitCounter(counter.Timestamp, totalRequests); // deep copy
         }
 
-        // Entry not expired, rate limit exceeded
+        // Entry has expired, rate limit exceeded
         if (counter.TotalRequests > rule.Limit)
         {
             return counter;
@@ -138,6 +138,11 @@ public class RateLimitCore : IRateLimitCore
     /// <exception cref="FormatException">By default if the value dimension can't be detected.</exception>
     public virtual TimeSpan ToTimespan(string timespan)
     {
+        if (string.IsNullOrEmpty(timespan))
+        {
+            return TimeSpan.Zero;
+        }
+
         var len = timespan.Length - 1;
         var value = timespan.Substring(0, len);
         var type = timespan.Substring(len, 1);
