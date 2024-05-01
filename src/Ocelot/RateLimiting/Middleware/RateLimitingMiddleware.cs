@@ -8,12 +8,12 @@ namespace Ocelot.RateLimiting.Middleware
     public class RateLimitingMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IRateLimitCore _limiter;
+        private readonly IRateLimiting _limiter;
 
         public RateLimitingMiddleware(
             RequestDelegate next,
             IOcelotLoggerFactory factory,
-            IRateLimitCore limiter)
+            IRateLimiting limiter)
             : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;

@@ -17,7 +17,7 @@ public class RateLimitingMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly RateLimitingMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly IRateLimitCore _rateLimitCore;
+    private readonly IRateLimiting _rateLimiting;
     private DownstreamResponse _downstreamResponse;
     private readonly string _url;
 
@@ -30,8 +30,8 @@ public class RateLimitingMiddlewareTests : UnitTest
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<RateLimitingMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
-        _rateLimitCore = new RateLimitCore(_storage);
-        _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimitCore);
+        _rateLimiting = new Ocelot.RateLimiting.RateLimiting(_storage);
+        _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimiting);
     }
 
     [Fact]

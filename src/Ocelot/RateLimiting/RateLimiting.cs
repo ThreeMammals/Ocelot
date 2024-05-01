@@ -5,12 +5,12 @@ using System.Security.Cryptography;
 
 namespace Ocelot.RateLimiting;
 
-public class RateLimitCore : IRateLimitCore
+public class RateLimiting : IRateLimiting
 {
     private readonly IRateLimitStorage _storage;
     private static readonly object ProcessLocker = new();
 
-    public RateLimitCore(IRateLimitStorage storage)
+    public RateLimiting(IRateLimitStorage storage)
     {
         _storage = storage;
     }

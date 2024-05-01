@@ -11,6 +11,6 @@ public static class Features
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddRateLimiting(this IServiceCollection services) => services
-        .AddSingleton<IRateLimitCore, RateLimitCore>()
+        .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
         .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
 }

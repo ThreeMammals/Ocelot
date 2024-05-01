@@ -6,7 +6,7 @@ namespace Ocelot.RateLimiting;
 /// <summary>
 /// Defines basic Rate Limiting functionality.
 /// </summary>
-public interface IRateLimitCore
+public interface IRateLimiting
 {
     /// <summary>Retrieves the key for the attached storage.</summary>
     /// <remarks>See the <see cref="IRateLimitStorage"/> interface.</remarks>

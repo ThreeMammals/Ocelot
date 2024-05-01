@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
-public sealed class RateLimitCoreTests
+public sealed class RateLimitingTests
 {
     private readonly Mock<IRateLimitStorage> _storage;
-    private readonly RateLimitCore _sut;
+    private readonly Ocelot.RateLimiting.RateLimiting _sut;
 
-    public RateLimitCoreTests()
+    public RateLimitingTests()
     {
         _storage = new();
         _sut = new(_storage.Object);
@@ -57,7 +57,7 @@ public sealed class RateLimitCoreTests
         Assert.Equal(expected, actual);
     }
 
-    private static MethodInfo CountRequests() => typeof(RateLimitCore).GetMethod("CountRequests", BindingFlags.NonPublic | BindingFlags.Instance);
+    private static MethodInfo CountRequests() => typeof(Ocelot.RateLimiting.RateLimiting).GetMethod("CountRequests", BindingFlags.NonPublic | BindingFlags.Instance);
 
     [Fact]
     [Trait("Bug", "1590")]
