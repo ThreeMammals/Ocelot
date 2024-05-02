@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Values;
 using System.Numerics;
 using System.Text.Json;
@@ -8,12 +9,10 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class DownstreamRouteExtensionsTests
 {
-    private readonly Dictionary<string, string> _metadata;
     private readonly DownstreamRoute _downstreamRoute;
 
     public DownstreamRouteExtensionsTests()
     {
-        _metadata = new Dictionary<string, string>();
         _downstreamRoute = new DownstreamRoute(
             null,
             new UpstreamPathTemplate(null, 0, false, null),
@@ -51,7 +50,7 @@ public class DownstreamRouteExtensionsTests
             new Version(),
             HttpVersionPolicy.RequestVersionExact,
             new(),
-            _metadata);
+            new MetadataOptions(new FileMetadataOptions()));
     }
 
     [Theory]
@@ -60,10 +59,10 @@ public class DownstreamRouteExtensionsTests
     public void Should_return_default_value_when_key_not_found(string key, string defaultValue)
     {
         // Arrange
-        _metadata.Add(key, defaultValue);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, defaultValue);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataValue(key, defaultValue);
+        var metadataValue = _downstreamRoute.GetMetadata(key, defaultValue);
 
         // Assert
         metadataValue.ShouldBe(defaultValue);
@@ -75,10 +74,10 @@ public class DownstreamRouteExtensionsTests
     public void Should_return_found_metadata_value(string key, string value)
     {
         // Arrange
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataValue(key);
+        var metadataValue = _downstreamRoute.GetMetadata<string>(key);
 
         //Assert
         metadataValue.ShouldBe(value);
@@ -96,10 +95,10 @@ public class DownstreamRouteExtensionsTests
     public void Should_split_strings(string key, string value, params string[] expected)
     {
         // Arrange
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataValues(key);
+        var metadataValue = _downstreamRoute.GetMetadata<string[]>(key);
 
         //Assert
         metadataValue.ShouldBe(expected);
@@ -109,7 +108,7 @@ public class DownstreamRouteExtensionsTests
     public void Should_parse_from_json_null() => Should_parse_object_from_json<object>("mykey", "null", null);
 
     [Fact]
-    public void Should_parse_from_json_string() => Should_parse_object_from_json<string>("mykey", "\"string\"", "string");
+    public void Should_parse_from_json_string() => Should_parse_object_from_json<string>("mykey", "string", "string");
 
     [Fact]
     public void Should_parse_from_json_numbers() => Should_parse_object_from_json<int>("mykey", "123", 123);
@@ -124,10 +123,10 @@ public class DownstreamRouteExtensionsTests
     private void Should_parse_object_from_json<T>(string key, string value, object expected)
     {
         // Arrange
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataFromJson<T>(key);
+        var metadataValue = _downstreamRoute.GetMetadata<T>(key);
 
         //Assert
         metadataValue.ShouldBeEquivalentTo(expected);
@@ -138,16 +137,17 @@ public class DownstreamRouteExtensionsTests
     {
         // Arrange
         var key = "mykey";
-        _metadata.Add(key, "[\"value1\", \"value2\", \"value3\"]");
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, "[\"value1\", \"value2\", \"value3\"]");
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataFromJson<IEnumerable<string>>(key);
+        var metadataValue = _downstreamRoute.GetMetadata<IEnumerable<string>>(key);
 
         //Assert
-        metadataValue.ShouldNotBeNull();
-        metadataValue.ElementAt(0).ShouldBe("value1");
-        metadataValue.ElementAt(1).ShouldBe("value2");
-        metadataValue.ElementAt(2).ShouldBe("value3");
+        IEnumerable<string> enumerable = metadataValue as string[] ?? metadataValue.ToArray();
+        enumerable.ShouldNotBeNull();
+        enumerable.ElementAt(0).ShouldBe("value1");
+        enumerable.ElementAt(1).ShouldBe("value2");
+        enumerable.ElementAt(2).ShouldBe("value3");
     }
 
     [Fact]
@@ -155,14 +155,14 @@ public class DownstreamRouteExtensionsTests
     {
         // Arrange
         var key = "mykey";
-        _metadata.Add(key, "[[[");
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, "[[[");
 
         // Act
 
         //Assert
         Assert.Throws<JsonException>(() =>
         {
-            _ = _downstreamRoute.GetMetadataFromJson<IEnumerable<string>>(key);
+            _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key);
         });
     }
 
@@ -182,10 +182,10 @@ public class DownstreamRouteExtensionsTests
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataFromJson<FakeObject>(key, jsonSerializerOptions: serializerOptions);
+        var metadataValue = _downstreamRoute.GetMetadata<FakeObject>(key, jsonSerializerOptions: serializerOptions);
 
         //Assert
         metadataValue.ShouldBeEquivalentTo(expected);
@@ -221,10 +221,10 @@ public class DownstreamRouteExtensionsTests
     {
         // Arrange
         var key = "mykey";
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadataNumber<T>(key);
+        var metadataValue = _downstreamRoute.GetMetadata<T>(key);
 
         //Assert
         metadataValue.ShouldBe(expected);
@@ -235,14 +235,14 @@ public class DownstreamRouteExtensionsTests
     {
         // Arrange
         var key = "mykey";
-        _metadata.Add(key, "xyz");
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, "xyz");
 
         // Act
 
         // Assert
         Assert.Throws<FormatException>(() =>
         {
-            _ = _downstreamRoute.GetMetadataNumber<int>(key);
+            _ = _downstreamRoute.GetMetadata<int>(key);
         });
     }
 
@@ -274,10 +274,10 @@ public class DownstreamRouteExtensionsTests
     {
         // Arrange
         var key = "mykey";
-        _metadata.Add(key, value);
+        _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var isTrusthy = _downstreamRoute.IsMetadataValueTruthy(key);
+        var isTrusthy = _downstreamRoute.GetMetadata<bool>(key);
 
         //Assert
         isTrusthy.ShouldBe(expected);

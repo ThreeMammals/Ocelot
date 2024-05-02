@@ -1,101 +1,113 @@
-﻿using System.Globalization;
-using System.Numerics;
-using System.Text.Json;
+﻿using System.Text.Json;
 
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration;
+
+public static class DownstreamRouteExtensions
 {
-    public static class DownstreamRouteExtensions
-    {
-        public static string GetMetadataValue(this DownstreamRoute downstreamRoute,
-                                              string key,
-                                              string defaultValue = null)
+    private static readonly HashSet<string> TruthyValues =
+        new(StringComparer.OrdinalIgnoreCase)
         {
-            var metadata = downstreamRoute?.Metadata;
+            "true",
+            "yes",
+            "on",
+            "ok",
+            "enable",
+            "enabled",
+            "1",
+        };
 
-            if (metadata == null)
-            {
-                return defaultValue;
-            }
+    private static readonly HashSet<string> FalsyValues =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "false",
+            "no",
+            "off",
+            "disable",
+            "disabled",
+            "0",
+        };
 
-            if (!metadata.TryGetValue(key, out string value))
-            {
-                return defaultValue;
-            }
+    /// <summary>
+    /// The known numeric types
+    /// </summary>
+    private static readonly HashSet<Type> NumericTypes = new()
+    {
+        typeof(byte),
+        typeof(sbyte),
+        typeof(short),
+        typeof(ushort),
+        typeof(int),
+        typeof(uint),
+        typeof(long),
+        typeof(ulong),
+        typeof(float),
+        typeof(double),
+        typeof(decimal),
+    };
 
+    public static T GetMetadata<T>(this DownstreamRoute downstreamRoute, string key, T defaultValue = default,
+        JsonSerializerOptions jsonSerializerOptions = null)
+    {
+        var metadata = downstreamRoute?.MetadataOptions.Metadata;
+
+        if (metadata == null || !metadata.TryGetValue(key, out var metadataValue))
+        {
+            return defaultValue;
+        }
+
+        // if the value is null, return the default value of the target type
+        if (metadataValue == null)
+        {
+            return default;
+        }
+
+        return (T)ConvertTo(typeof(T), metadataValue, downstreamRoute.MetadataOptions,
+            jsonSerializerOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    }
+
+    private static object ConvertTo(Type targetType, string value, MetadataOptions metadataOptions,
+        JsonSerializerOptions jsonSerializerOptions)
+    {
+        if (targetType == typeof(string))
+        {
             return value;
         }
 
-#if NET7_0_OR_GREATER
-        public static T GetMetadataNumber<T>(this DownstreamRoute downstreamRoute,
-                                             string key,
-                                             T defaultValue = default,
-                                             NumberStyles numberStyles = NumberStyles.Any,
-                                             CultureInfo cultureInfo = null)
-            where T : INumberBase<T>
+        if (targetType == typeof(bool))
         {
-            var metadataValue = downstreamRoute.GetMetadataValue(key);
-            if (metadataValue == null)
-            {
-                return defaultValue;
-            }
-
-            IFormatProvider formatProvider = cultureInfo ?? CultureInfo.CurrentCulture;
-            return T.Parse(metadataValue, numberStyles, formatProvider);
-        }
-#endif
-
-        public static string[] GetMetadataValues(this DownstreamRoute downstreamRoute,
-                                                 string key,
-                                                 string separator = ",",
-                                                 StringSplitOptions stringSplitOptions = StringSplitOptions.RemoveEmptyEntries,
-                                                 string trimChars = " ")
-        {
-            var metadataValue = downstreamRoute.GetMetadataValue(key);
-            if (metadataValue == null)
-            {
-                return Array.Empty<string>();
-            }
-
-            var strings = metadataValue.Split(separator, stringSplitOptions);
-            char[] trimCharsArray = trimChars.ToCharArray();
-
-            for (var i = 0; i < strings.Length; i++)
-            {
-                strings[i] = strings[i].Trim(trimCharsArray);
-            }
-
-            return strings.Where(x => x.Length > 0).ToArray();
+            return TruthyValues.Contains(value.Trim());
         }
 
-        public static T GetMetadataFromJson<T>(this DownstreamRoute downstreamRoute,
-                                               string key,
-                                               T defaultValue = default,
-                                               JsonSerializerOptions jsonSerializerOptions = null)
+        if (targetType == typeof(bool?))
         {
-            var metadataValue = downstreamRoute.GetMetadataValue(key);
-            if (metadataValue == null)
+            if (TruthyValues.Contains(value.Trim()))
             {
-                return defaultValue;
+                return true;
             }
 
-            return JsonSerializer.Deserialize<T>(metadataValue, jsonSerializerOptions);
-        }
-
-        public static bool IsMetadataValueTruthy(this DownstreamRoute downstreamRoute, string key)
-        {
-            var metadataValue = downstreamRoute.GetMetadataValue(key);
-            if (metadataValue == null)
+            if (FalsyValues.Contains(value.Trim()))
             {
                 return false;
             }
 
-            var trimmedValue = metadataValue.Trim().ToLower();
-            return trimmedValue == "true" ||
-                   trimmedValue == "yes" ||
-                   trimmedValue == "on" ||
-                   trimmedValue == "ok" ||
-                   trimmedValue == "enable" ||
-                   trimmedValue == "enabled";
+            return null;
         }
+
+        if (targetType == typeof(string[]))
+        {
+            if (value == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            return value.Split(metadataOptions.Separators, metadataOptions.StringSplitOption)
+                .Select(s => s.Trim(metadataOptions.TrimChars))
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToArray();
+        }
+
+        return NumericTypes.Contains(targetType)
+            ? Convert.ChangeType(value, targetType, metadataOptions.CurrentCulture)
+            : JsonSerializer.Deserialize(value, targetType, jsonSerializerOptions);
     }
 }

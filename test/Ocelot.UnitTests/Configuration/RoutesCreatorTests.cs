@@ -125,7 +125,7 @@ namespace Ocelot.UnitTests.Configuration
                             { "e","f" },
                         },
                         UpstreamHttpMethod = new List<string> { "GET", "POST" },
-                        Metadata = new Dictionary<string, string>()
+                        Metadata = new Dictionary<string, string>
                         {
                             ["foo"] = "bar",
                         },
@@ -147,7 +147,7 @@ namespace Ocelot.UnitTests.Configuration
                             { "k","l" },
                         },
                         UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
-                        Metadata = new Dictionary<string, string>()
+                        Metadata = new Dictionary<string, string>
                         {
                             ["foo"] = "baz",
                         },
@@ -208,7 +208,10 @@ namespace Ocelot.UnitTests.Configuration
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
             _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
             _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
-            _metadataCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(_expectedMetadata);
+            _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(new MetadataOptions(new FileMetadataOptions
+            {
+                Metadata = _expectedMetadata,
+            }));
         }
 
         private void ThenTheRoutesAreCreated()
@@ -268,7 +271,7 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
             _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
             _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
-            _result[routeIndex].DownstreamRoute[0].Metadata.ShouldBe(_expectedMetadata);
+            _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
             _result[routeIndex].UpstreamHttpMethod
                 .Select(x => x.Method)
                 .ToList()

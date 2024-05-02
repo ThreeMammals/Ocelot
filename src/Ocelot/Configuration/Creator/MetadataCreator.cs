@@ -1,25 +1,33 @@
-﻿using Ocelot.Configuration.File;
+﻿using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.Configuration.Creator;
 
 public class MetadataCreator : IMetadataCreator
 {
-    public IDictionary<string, string> Create(IDictionary<string, string> routeMetadata, FileGlobalConfiguration fileGlobalConfiguration)
+    public MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration fileGlobalConfiguration)
     {
-        var metadata = fileGlobalConfiguration?.Metadata != null
-            ? new Dictionary<string, string>(fileGlobalConfiguration.Metadata)
+        return Create(new FileMetadataOptions { Metadata = metadata ?? new Dictionary<string, string>() }, fileGlobalConfiguration);
+    }
+
+    public MetadataOptions Create(FileMetadataOptions routeMetadataOptions, FileGlobalConfiguration fileGlobalConfiguration)
+    {
+        var metadata = fileGlobalConfiguration.MetadataOptions.Metadata.Any()
+            ? new Dictionary<string, string>(fileGlobalConfiguration.MetadataOptions.Metadata)
             : new Dictionary<string, string>();
 
-        if (routeMetadata == null)
-        {
-            return metadata;
-        }
-
-        foreach (var (key, value) in routeMetadata)
+        foreach (var (key, value) in routeMetadataOptions.Metadata)
         {
             metadata[key] = value;
         }
 
-        return metadata;
+        return new MetadataOptionsBuilder()
+            .WithMetadata(metadata)
+            .WithSeparators(fileGlobalConfiguration.MetadataOptions.Separators)
+            .WithTrimChars(fileGlobalConfiguration.MetadataOptions.TrimChars)
+            .WithStringSplitOption(fileGlobalConfiguration.MetadataOptions.StringSplitOption)
+            .WithNumberStyle(fileGlobalConfiguration.MetadataOptions.NumberStyle)
+            .WithCurrentCulture(fileGlobalConfiguration.MetadataOptions.CurrentCulture)
+            .Build();
     }
 }

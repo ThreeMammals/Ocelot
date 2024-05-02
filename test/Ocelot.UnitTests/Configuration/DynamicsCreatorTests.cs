@@ -146,8 +146,8 @@ namespace Ocelot.UnitTests.Configuration
             {
                 ["foo"] = "bar",
             };
-            _metadataCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
-                .Returns(_expectedMetadata);
+            _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
+                .Returns(new MetadataOptions(new FileMetadataOptions{Metadata = _expectedMetadata}));
         }
 
         private void GivenTheRloCreatorReturns()
@@ -168,7 +168,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheMetadataCreatorIsNotCalled()
         {
-            _metadataCreator.Verify(x => x.Create(It.IsAny<Dictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+            _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
         }
 
         private void ThenNothingIsReturned()

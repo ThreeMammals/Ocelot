@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration.Creator;
+﻿using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
@@ -7,7 +8,7 @@ public class MetadataCreatorTests : UnitTest
 {
     private FileGlobalConfiguration _globalConfiguration;
     private Dictionary<string, string> _metadataInRoute;
-    private IDictionary<string, string> _result;
+    private MetadataOptions _result;
     private readonly MetadataCreator _sut = new();
 
     [Fact]
@@ -48,7 +49,7 @@ public class MetadataCreatorTests : UnitTest
 
     private void WhenICreate()
     {
-        _result = _sut.Create(_metadataInRoute, _globalConfiguration);
+        _result = _sut.Create(new FileMetadataOptions{Metadata = _metadataInRoute}, _globalConfiguration);
     }
 
     private void GivenEmptyMetadataInGlobalConfiguration()
@@ -60,9 +61,12 @@ public class MetadataCreatorTests : UnitTest
     {
         _globalConfiguration = new FileGlobalConfiguration()
         {
-            Metadata = new Dictionary<string, string>
+            MetadataOptions = new FileMetadataOptions
             {
-                ["foo"] = "bar",
+                Metadata = new Dictionary<string, string>
+                {
+                    ["foo"] = "bar",
+                }
             },
         };
     }
@@ -82,12 +86,12 @@ public class MetadataCreatorTests : UnitTest
 
     private void ThenDownstreamRouteMetadataMustBeEmpty()
     {
-        _result.Keys.ShouldBeEmpty();
+        _result.Metadata.Keys.ShouldBeEmpty();
     }
 
     private void ThenDownstreamMetadataMustContain(string key, string value)
     {
-        _result.Keys.ShouldContain(key);
-        _result[key].ShouldBeEquivalentTo(value);
+        _result.Metadata.Keys.ShouldContain(key);
+        _result.Metadata[key].ShouldBeEquivalentTo(value);
     }
 }

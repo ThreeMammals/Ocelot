@@ -11,7 +11,7 @@ namespace Ocelot.Configuration.File
             LoadBalancerOptions = new FileLoadBalancerOptions();
             QoSOptions = new FileQoSOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
-            Metadata = new Dictionary<string, string>();
+            MetadataOptions = new FileMetadataOptions();
         }
 
         public string RequestIdKey { get; set; }
@@ -44,6 +44,6 @@ namespace Ocelot.Configuration.File
         /// </remarks>
         public string DownstreamHttpVersionPolicy { get; set; }
 
-        public IDictionary<string, string> Metadata { get; set; }
+        public FileMetadataOptions MetadataOptions { get; set; }
     }
 }

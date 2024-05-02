@@ -36,7 +36,6 @@ namespace Ocelot.Configuration.Creator
 
             var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
             var versionPolicy = _versionPolicyCreator.Create(fileDynamicRoute.DownstreamHttpVersionPolicy);
-
             var metadata = _metadataCreator.Create(fileDynamicRoute.Metadata, globalConfiguration);
 
             var downstreamRoute = new DownstreamRouteBuilder()

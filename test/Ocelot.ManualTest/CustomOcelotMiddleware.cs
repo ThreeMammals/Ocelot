@@ -12,7 +12,7 @@ public static class CustomOcelotMiddleware
         var logger = GetLogger(context);
         var downstreamRoute = context.Items.DownstreamRoute();
 
-        if (downstreamRoute?.Metadata is { } metadata)
+        if (downstreamRoute?.MetadataOptions?.Metadata is { } metadata)
         {
             logger.LogInformation(() =>
             {
