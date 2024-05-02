@@ -49,7 +49,7 @@ public class MetadataCreatorTests : UnitTest
 
     private void WhenICreate()
     {
-        _result = _sut.Create(new FileMetadataOptions{Metadata = _metadataInRoute}, _globalConfiguration);
+        _result = _sut.Create( _metadataInRoute, _globalConfiguration);
     }
 
     private void GivenEmptyMetadataInGlobalConfiguration()
@@ -59,14 +59,14 @@ public class MetadataCreatorTests : UnitTest
 
     private void GivenSomeMetadataInGlobalConfiguration()
     {
-        _globalConfiguration = new FileGlobalConfiguration()
+        _globalConfiguration = new FileGlobalConfiguration
         {
             MetadataOptions = new FileMetadataOptions
             {
                 Metadata = new Dictionary<string, string>
                 {
                     ["foo"] = "bar",
-                }
+                },
             },
         };
     }

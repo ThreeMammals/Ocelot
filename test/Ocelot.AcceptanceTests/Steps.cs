@@ -29,6 +29,7 @@ using Serilog;
 using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Security.Policy;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
@@ -473,6 +474,33 @@ public class Steps : IDisposable
 
         _ocelotServer = new TestServer(_webHostBuilder);
 
+        _ocelotClient = _ocelotServer.CreateClient();
+    }
+
+    public void GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<T>()
+        where T: DelegatingHandler
+    {
+        _webHostBuilder = new WebHostBuilder();
+
+        _webHostBuilder
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", true, false)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile(_ocelotConfigFileName, true, false);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddOcelot()
+                    .AddDelegatingHandler<T>();
+            })
+            .Configure(a => { a.UseOcelot().Wait(); });
+
+        _ocelotServer = new TestServer(_webHostBuilder);
         _ocelotClient = _ocelotServer.CreateClient();
     }
 

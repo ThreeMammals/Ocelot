@@ -7,22 +7,17 @@ public class MetadataCreator : IMetadataCreator
 {
     public MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration fileGlobalConfiguration)
     {
-        return Create(new FileMetadataOptions { Metadata = metadata ?? new Dictionary<string, string>() }, fileGlobalConfiguration);
-    }
-
-    public MetadataOptions Create(FileMetadataOptions routeMetadataOptions, FileGlobalConfiguration fileGlobalConfiguration)
-    {
-        var metadata = fileGlobalConfiguration.MetadataOptions.Metadata.Any()
+        var mergedMetadata = fileGlobalConfiguration.MetadataOptions.Metadata.Any()
             ? new Dictionary<string, string>(fileGlobalConfiguration.MetadataOptions.Metadata)
             : new Dictionary<string, string>();
 
-        foreach (var (key, value) in routeMetadataOptions.Metadata)
+        foreach (var (key, value) in metadata)
         {
-            metadata[key] = value;
+            mergedMetadata[key] = value;
         }
 
         return new MetadataOptionsBuilder()
-            .WithMetadata(metadata)
+            .WithMetadata(mergedMetadata)
             .WithSeparators(fileGlobalConfiguration.MetadataOptions.Separators)
             .WithTrimChars(fileGlobalConfiguration.MetadataOptions.TrimChars)
             .WithStringSplitOption(fileGlobalConfiguration.MetadataOptions.StringSplitOption)
