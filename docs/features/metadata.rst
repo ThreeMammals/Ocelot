@@ -55,10 +55,10 @@ Now, the route metadata can be accessed through the ``DownstreamRoute`` object:
         public Task Invoke(HttpContext context, Func<Task> next)
         {
             var route = context.Items.DownstreamRoute();
-            var enabled = metadata.IsMetadataValueTruthy("plugin1.enabled");
-            var values = metadata.GetMetadataValues("plugin1.values");
-            var param1 = metadata.GetMetadataValue("plugin1.param", "system-default-value");
-            var param2 = metadata.GetMetadataNumber<int>("plugin1.param2");
+            var enabled = route.GetMetadata<bool>("plugin1.enabled");
+            var values = route.GetMetadata<string[]>("plugin1.values");
+            var param1 = route.GetMetadata<string>("plugin1.param", "system-default-value");
+            var param2 = route.GetMetadata<int>("plugin1.param2");
 
             // working on the plugin1's function
 
@@ -69,7 +69,9 @@ Now, the route metadata can be accessed through the ``DownstreamRoute`` object:
 Extension Methods
 -----------------
 
-Ocelot provides some extension methods help you to retrieve your metadata values effortlessly.
+Ocelot provides one DowstreamRoute extension method to help you retrieve your metadata values effortlessly.
+With the exception of the types string, bool, bool?, string[] and numeric, all strings passed as parameters are treated as json strings and an attempt is made to convert them into objects of generic type T.
+If the value is null, then, if not explicitely specified, the default for the chosen target type is returned.
 
 .. list-table::
     :widths: 20 40 40
@@ -77,20 +79,22 @@ Ocelot provides some extension methods help you to retrieve your metadata values
     * - Method
       - Description
       - Notes
-    * - ``GetMetadataValue``
-      - The metadata value is a string.
-      -
-    * - ``GetMetadataValues``
-      - The metadata value is spitted by a given separator (default ``,``) and 
+    * - ``GetMetadata<string>``
+      - The metadata value is returned as string without further parsing
+    * - ``GetMetadata<string[]>``
+      - The metadata value is splitted by a given separator (default ``,``) and 
         returned as a string array.
-      -
-    * - ``GetMetadataNumber<T>``
+      - Several parameters can be set in the global configuration, such as Separators (default = ``[","]``), StringSplitOptions (default ``None``) and TrimChars, the characters that should be trimmed (default = ``[' ']``).
+    * - ``GetMetadata<Any known numeric type>``
       - The metadata value is parsed to a number.
-      - | Only available in .NET 7 or above.
-        | For .NET 6, use ``GetMetadataFromJson<>``.
-    * - ``GetMetadataFromJson<T>``
-      - The metadata value is serialized to the given generic type.
-      -
-    * - ``IsMetadataValueTruthy``
-      - Check if the metadata value is a truthy value.
+      - Some parameters can be set in the global configuration, such as NumberStyle (default ``Any``) and CurrentCulture (default ``CultureInfo.CurrentCulture``)
+    * - ``GetMetadata<T>``
+      - The metadata value is converted to the given generic type. The value is treated as a json string and the json serializer tries to deserialize the string to the target type.
+      - A JsonSerializerOptions object can be passed as method parameter, Web is used as default.
+    * - ``GetMetadata<bool>``
+      - Check if the metadata value is a truthy value, otherwise return false.
       - The truthy values are: ``true``, ``yes``, ``ok``, ``on``, ``enable``, ``enabled``
+    * - ``GetMetadata<bool?>``
+      - Check if the metadata value is a truthy value (return true), or falsy value (return false), otherwise return null.
+      - The known truthy values are: ``true``, ``yes``, ``ok``, ``on``, ``enable``, ``enabled``, ``1``, the known falsy values are: ``false``, ``no``, ``off``, ``disable``, ``disabled``, ``0``
+
