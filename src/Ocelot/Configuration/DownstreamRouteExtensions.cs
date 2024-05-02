@@ -1,9 +1,14 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Ocelot.Configuration;
 
 public static class DownstreamRouteExtensions
 {
+    /// <summary>
+    /// The known truthy values
+    /// </summary>
     private static readonly HashSet<string> TruthyValues =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -16,6 +21,9 @@ public static class DownstreamRouteExtensions
             "1",
         };
 
+    /// <summary>
+    /// The known falsy values
+    /// </summary>
     private static readonly HashSet<string> FalsyValues =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -45,26 +53,40 @@ public static class DownstreamRouteExtensions
         typeof(decimal),
     };
 
+    /// <summary>
+    /// Extension method to get metadata from a downstream route.
+    /// </summary>
+    /// <typeparam name="T">The metadata target type.</typeparam>
+    /// <param name="downstreamRoute">The current downstream route.</param>
+    /// <param name="key">The metadata key in downstream route Metadata dictionary.</param>
+    /// <param name="defaultValue">The fallback value if no value found.</param>
+    /// <param name="jsonSerializerOptions">Custom json serializer options if needed.</param>
+    /// <returns>The parsed metadata value.</returns>
     public static T GetMetadata<T>(this DownstreamRoute downstreamRoute, string key, T defaultValue = default,
         JsonSerializerOptions jsonSerializerOptions = null)
     {
         var metadata = downstreamRoute?.MetadataOptions.Metadata;
 
-        if (metadata == null || !metadata.TryGetValue(key, out var metadataValue))
+        if (metadata == null || !metadata.TryGetValue(key, out var metadataValue) || metadataValue == null)
         {
             return defaultValue;
-        }
-
-        // if the value is null, return the default value of the target type
-        if (metadataValue == null)
-        {
-            return default;
         }
 
         return (T)ConvertTo(typeof(T), metadataValue, downstreamRoute.MetadataOptions,
             jsonSerializerOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web));
     }
 
+    /// <summary>
+    /// Converting a string value to the target type
+    /// Some custom conversion has been for the following types:
+    /// bool, bool?, string[], numeric types
+    /// otherwise trying to deserialize the value using the JsonSerializer
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="value">The string value.</param>
+    /// <param name="metadataOptions">The metadata options, it includes the global configuration.</param>
+    /// <param name="jsonSerializerOptions">If needed, some custom json serializer options.</param>
+    /// <returns>The converted string.</returns>
     private static object ConvertTo(Type targetType, string value, MetadataOptions metadataOptions,
         JsonSerializerOptions jsonSerializerOptions)
     {
@@ -107,7 +129,35 @@ public static class DownstreamRouteExtensions
         }
 
         return NumericTypes.Contains(targetType)
-            ? Convert.ChangeType(value, targetType, metadataOptions.CurrentCulture)
+            ? ConvertToNumericType(value, targetType, metadataOptions.CurrentCulture, metadataOptions.NumberStyle)
             : JsonSerializer.Deserialize(value, targetType, jsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Using reflection to invoke the Parse method of the numeric type
+    /// </summary>
+    /// <param name="value">The number as string.</param>
+    /// <param name="targetType">The target numeric type.</param>
+    /// <param name="provider">The current format provider.</param>
+    /// <param name="numberStyle">The current number style configuration.</param>
+    /// <returns>The parsed string as object of type targetType.</returns>
+    /// <exception cref="InvalidOperationException">Exception thrown if the type doesn't contain a "Parse" method. This shouldn't happen.</exception>
+    private static object ConvertToNumericType(string value, Type targetType, IFormatProvider provider,
+        NumberStyles numberStyle)
+    {
+        MethodInfo parseMethod =
+            targetType.GetMethod("Parse", new[] { typeof(string), typeof(NumberStyles), typeof(IFormatProvider) }) ??
+            throw new InvalidOperationException("No suitable parse method found.");
+
+        try
+        {
+            // Invoke the parse method dynamically with the number style and format provider
+            return parseMethod.Invoke(null, new object[] { value, numberStyle, provider });
+        }
+        catch (TargetInvocationException e)
+        {
+            // if the parse method throws an exception, rethrow the inner exception
+            throw e.InnerException ?? e;
+        }
     }
 }
