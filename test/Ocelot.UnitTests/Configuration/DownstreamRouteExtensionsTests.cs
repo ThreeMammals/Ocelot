@@ -198,8 +198,6 @@ public class DownstreamRouteExtensionsTests
         public DateTime MyTime { get; set; }
     }
 
-#if NET7_0_OR_GREATER
-
     [Theory]
     [InlineData("0", 0)]
     [InlineData("99", 99)]
@@ -217,7 +215,6 @@ public class DownstreamRouteExtensionsTests
     public void Should_parse_double(string value, double expected) => Should_parse_number(value, expected);
 
     private void Should_parse_number<T>(string value, T expected)
-        where T : INumberBase<T>
     {
         // Arrange
         var key = "mykey";
@@ -245,8 +242,6 @@ public class DownstreamRouteExtensionsTests
             _ = _downstreamRoute.GetMetadata<int>(key);
         });
     }
-
-#endif
 
     [Theory]
     [InlineData("true", true)]
