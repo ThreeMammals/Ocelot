@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.Metadata;
 using Ocelot.Middleware;
 using System.Globalization;
 
