@@ -4,12 +4,12 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
-public class MetadataCreatorTests : UnitTest
+public class DefaultMetadataCreatorTests : UnitTest
 {
     private FileGlobalConfiguration _globalConfiguration;
     private Dictionary<string, string> _metadataInRoute;
     private MetadataOptions _result;
-    private readonly MetadataCreator _sut = new();
+    private readonly DefaultMetadataCreator _sut = new();
 
     [Fact]
     public void Should_return_empty_metadata()

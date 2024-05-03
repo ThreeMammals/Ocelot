@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Creator;
 /// <summary>
 /// This class implements the <see cref="IMetadataCreator"/> interface.
 /// </summary>
-public class MetadataCreator : IMetadataCreator
+public class DefaultMetadataCreator : IMetadataCreator
 {
     public MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration fileGlobalConfiguration)
     {
