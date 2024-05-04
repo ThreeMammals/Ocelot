@@ -25,55 +25,66 @@ public class RateLimiting : IRateLimiting
         lock (ProcessLocker)
         {
             var entry = _storage.Get(counterId);
-            counter = CountRequests(entry, rule);
+            counter = Count(entry, rule);
         }
 
-        TimeSpan expirationTime = ToTimespan(rule.Period);
+        var expiration = ToTimespan(rule.Period); // default expiration is set for the Period value
         if (counter.TotalRequests > rule.Limit)
         {
-            var retryAfter = RetryAfterFrom(counter.Timestamp, rule);
+            var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
             if (retryAfter > 0)
             {
                 // Rate Limit exceeded, ban period is active
-                expirationTime = TimeSpan.FromSeconds(rule.PeriodTimespan); // TODO retryAfter seconds?
+                expiration = TimeSpan.FromSeconds(rule.PeriodTimespan); // current state should expire in the storage after ban period
             }
             else
             {
                 // Ban period elapsed, start counting
-                _storage.Remove(counterId);
-                counter = new RateLimitCounter(counter.Timestamp, 1);
+                _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
+                counter = new RateLimitCounter(DateTime.UtcNow, null, 1);
             }
         }
 
-        _storage.Set(counterId, counter, expirationTime);
+        _storage.Set(counterId, counter, expiration);
         return counter;
     }
 
-    protected virtual RateLimitCounter CountRequests(RateLimitCounter? entry, RateLimitRule rule)
+    /// <summary>
+    /// Counts requests based on the current counter state and taking into account the limiting rule.
+    /// </summary>
+    /// <param name="entry">Old counter with starting moment inside.</param>
+    /// <param name="rule">The limiting rule.</param>
+    /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
+    public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule)
     {
+        var now = DateTime.UtcNow;
         if (!entry.HasValue) // no entry, start counting
         {
-            return new RateLimitCounter(DateTime.UtcNow, 1); // current request is the 1st one
+            return new RateLimitCounter(now, null, 1); // current request is the 1st one
         }
 
         var counter = entry.Value;
-        if (counter.Timestamp + ToTimespan(rule.Period) >= DateTime.UtcNow) // entry has not expired
+        var total = counter.TotalRequests + 1; // increment request count
+        var startedAt = counter.StartedAt;
+        if (startedAt + ToTimespan(rule.Period) >= now) // counting Period is active
         {
-            var totalRequests = counter.TotalRequests + 1; // increment request count
-            return new RateLimitCounter(counter.Timestamp, totalRequests); // deep copy
+            var exceededAt = total >= rule.Limit && !counter.ExceededAt.HasValue // current request number equals to the limit
+                ? now // the exceeding moment is now, the next request will fail but the current one doesn't
+                : counter.ExceededAt;
+            return new RateLimitCounter(startedAt, exceededAt, total); // deep copy
         }
 
-        // Entry has expired, rate limit exceeded
-        if (counter.TotalRequests > rule.Limit)
+        var wasExceededAt = counter.ExceededAt;
+        if (wasExceededAt + TimeSpan.FromSeconds(rule.PeriodTimespan) >= now) // ban PeriodTimespan is active
         {
-            return counter;
+            return new RateLimitCounter(startedAt, wasExceededAt, total); // still count
         }
 
-        // Rate limit not exceeded, period elapsed, start counting
-        return new RateLimitCounter(DateTime.UtcNow, 1);
+        // Ban PeriodTimespan elapsed, start counting NOW!
+        return new RateLimitCounter(now, null, 1);
     }
 
-    // TODO Should be protected actually
+    // TODO Apply the method during your next refactoring
     public virtual void SaveCounter(ClientRequestIdentity identity, RateLimitOptions options, RateLimitCounter counter, TimeSpan expiration)
     {
         var counterId = GetStorageKey(identity, options);
@@ -93,7 +104,7 @@ public class RateLimiting : IRateLimiting
             headers = new RateLimitHeaders(context,
                 limit: rule.Period,
                 remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
-                reset: (entry.Value.Timestamp + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+                reset: (entry.Value.StartedAt + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
         }
         else
         {
@@ -106,7 +117,6 @@ public class RateLimiting : IRateLimiting
         return headers;
     }
 
-    // TODO Should be protected actually
     public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
         var key = $"{options.RateLimitCounterPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
@@ -121,13 +131,39 @@ public class RateLimiting : IRateLimiting
         return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
     }
 
-    // TODO Should be protected actually
-    public virtual int RetryAfterFrom(DateTime startedAt, RateLimitRule rule)
+    /// <summary>
+    /// Gets the seconds to wait for the next retry by starting moment and the rule.
+    /// </summary>
+    /// <remarks>The method must be called after the <see cref="Count(RateLimitCounter?, RateLimitRule)"/> one.</remarks>
+    /// <param name="counter">The counter state.</param>
+    /// <param name="rule">The current rule.</param>
+    /// <returns>An <see cref="int"/> value of seconds.</returns>
+    public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule)
     {
-        var secondsPast = Convert.ToInt32((DateTime.UtcNow - startedAt).TotalSeconds);
-        var retryAfter = Convert.ToInt32(TimeSpan.FromSeconds(rule.PeriodTimespan).TotalSeconds);
-        retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-        return retryAfter;
+        const double defaultSeconds = 1.0D; // one second
+        var periodTimespan = rule.PeriodTimespan < defaultSeconds
+            ? defaultSeconds // allow values which are greater or equal to 1 second
+            : rule.PeriodTimespan; // good value
+        var now = DateTime.UtcNow;
+        if (counter.StartedAt + ToTimespan(rule.Period) >= now) // counting Period is active
+        {
+            return counter.TotalRequests < rule.Limit
+                ? 0.0D // happy path, no need to retry, current request is valid
+                : counter.ExceededAt.HasValue
+                    ? periodTimespan - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
+                    : periodTimespan; // exceeding not yet detected -> let's ban for whole period
+        }
+
+        if (counter.ExceededAt.HasValue && // limit exceeding was happen
+            counter.ExceededAt + TimeSpan.FromSeconds(periodTimespan) >= now) // ban PeriodTimespan is active
+        {
+            var startedAt = counter.ExceededAt.Value; // ban period was started at
+            double secondsPast = (now - startedAt).TotalSeconds;
+            double retryAfter = periodTimespan - secondsPast;
+            return retryAfter; // it can be negative, which means the wait in PeriodTimespan seconds has ended
+        }
+
+        return 0.0D; // ban period elapsed, no need to retry, current request is valid
     }
 
     /// <summary>

@@ -33,12 +33,22 @@ public interface IRateLimiting
     RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options);
 
     /// <summary>
-    /// Gets Retry seconds based on starting point and a rule.
+    /// Counts requests based on the current counter state and taking into account the limiting rule.
     /// </summary>
-    /// <param name="startedAt">The starting moment.</param>
+    /// <param name="entry">Old counter with starting moment inside.</param>
     /// <param name="rule">The limiting rule.</param>
-    /// <returns>An <see langword="int"/> value in seconds.</returns>
-    int RetryAfterFrom(DateTime startedAt, RateLimitRule rule);
+    /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
+    RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule);
+
+    /// <summary>
+    /// Gets the seconds to wait for the next retry by starting moment and the rule.
+    /// </summary>
+    /// <remarks>The method must be called after the counting by the <see cref="Count(RateLimitCounter?, RateLimitRule)"/> method is completed; otherwise it doesn't make sense.</remarks>
+    /// <param name="counter">The counter with starting moment inside.</param>
+    /// <param name="rule">The limiting rule.</param>
+    /// <returns>A <see cref="double"/> value in seconds.</returns>
+    double RetryAfter(RateLimitCounter counter, RateLimitRule rule);
+
     void SaveCounter(ClientRequestIdentity identity, RateLimitOptions options, RateLimitCounter counter, TimeSpan expiration);
 
     /// <summary>

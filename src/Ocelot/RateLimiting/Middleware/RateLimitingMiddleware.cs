@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Globalization;
 
 namespace Ocelot.RateLimiting.Middleware
 {
@@ -54,21 +55,15 @@ namespace Ocelot.RateLimiting.Middleware
                 // check if limit is reached
                 if (counter.TotalRequests > rule.Limit)
                 {
-                    //compute retry after value
-                    var retryAfter = _limiter.RetryAfterFrom(counter.Timestamp, rule);
-
-                    // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute);
-
-                    var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    var retryAfter = _limiter.RetryAfter(counter, rule); // compute retry after value based on counter state
+                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute); // log blocked request virtually
 
                     // break execution
-                    var ds = ReturnQuotaExceededResponse(httpContext, options, retrystring);
+                    var ds = ReturnQuotaExceededResponse(httpContext, options, retryAfter.ToString(CultureInfo.InvariantCulture));
                     httpContext.Items.UpsertDownstreamResponse(ds);
 
                     // Set Error
                     httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.HttpStatusCode));
-
                     return;
                 }
             }
@@ -124,7 +119,7 @@ namespace Ocelot.RateLimiting.Middleware
 
             if (!option.DisableRateLimitHeaders)
             {
-                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter);
+                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter); // in seconds, not date string
             }
 
             return new DownstreamResponse(http);
