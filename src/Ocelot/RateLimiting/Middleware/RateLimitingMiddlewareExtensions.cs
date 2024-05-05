@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.RateLimiting.Middleware
+namespace Ocelot.RateLimiting.Middleware;
+
+public static class RateLimitingMiddlewareExtensions
 {
-    public static class RateLimitingMiddlewareExtensions
+    public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<RateLimitingMiddleware>();
-        }
+        return builder.UseMiddleware<RateLimitingMiddleware>();
     }
 }
