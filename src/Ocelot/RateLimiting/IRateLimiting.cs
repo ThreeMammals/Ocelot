@@ -49,8 +49,6 @@ public interface IRateLimiting
     /// <returns>A <see cref="double"/> value in seconds.</returns>
     double RetryAfter(RateLimitCounter counter, RateLimitRule rule);
 
-    void SaveCounter(ClientRequestIdentity identity, RateLimitOptions options, RateLimitCounter counter, TimeSpan expiration);
-
     /// <summary>
     /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
     /// </summary>

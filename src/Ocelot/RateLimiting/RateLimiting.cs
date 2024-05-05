@@ -84,15 +84,6 @@ public class RateLimiting : IRateLimiting
         return new RateLimitCounter(now, null, 1);
     }
 
-    // TODO Apply the method during your next refactoring
-    public virtual void SaveCounter(ClientRequestIdentity identity, RateLimitOptions options, RateLimitCounter counter, TimeSpan expiration)
-    {
-        var counterId = GetStorageKey(identity, options);
-
-        // Store with key: id (string) - timestamp (datetime) - total_requests (long)
-        _storage.Set(counterId, counter, expiration);
-    }
-
     public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
     {
         var rule = options.RateLimitRule;
