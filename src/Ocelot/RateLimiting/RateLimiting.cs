@@ -82,13 +82,9 @@ public class RateLimiting : IRateLimiting
         }
 
         var wasExceededAt = counter.ExceededAt;
-        if (wasExceededAt + TimeSpan.FromSeconds(rule.PeriodTimespan) >= now) // ban PeriodTimespan is active
-        {
-            return new RateLimitCounter(startedAt, wasExceededAt, total); // still count
-        }
-
-        // Ban PeriodTimespan elapsed, start counting NOW!
-        return new RateLimitCounter(now, null, 1);
+        return wasExceededAt + TimeSpan.FromSeconds(rule.PeriodTimespan) >= now // ban PeriodTimespan is active
+            ? new RateLimitCounter(startedAt, wasExceededAt, total) // still count
+            : new RateLimitCounter(now, null, 1); // Ban PeriodTimespan elapsed, start counting NOW!
     }
 
     public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
