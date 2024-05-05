@@ -15,37 +15,44 @@ public class RateLimiting : IRateLimiting
         _storage = storage;
     }
 
+    /// <summary>
+    /// Main entry point to process the current request and apply the limiting rule.
+    /// </summary>
+    /// <remarks>Warning! The method performs the storage operations which MUST BE thread safe.</remarks>
+    /// <param name="identity">The representation of current request.</param>
+    /// <param name="options">The current rate limiting options.</param>
+    /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
     public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options)
     {
         RateLimitCounter counter;
         var rule = options.RateLimitRule;
         var counterId = GetStorageKey(identity, options);
 
-        // Serial reads and writes
+        // Serial reads/writes from/to the storage which must be thread safe
         lock (ProcessLocker)
         {
             var entry = _storage.Get(counterId);
             counter = Count(entry, rule);
+            var expiration = ToTimespan(rule.Period); // default expiration is set for the Period value
+            if (counter.TotalRequests > rule.Limit)
+            {
+                var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
+                if (retryAfter > 0)
+                {
+                    // Rate Limit exceeded, ban period is active
+                    expiration = TimeSpan.FromSeconds(rule.PeriodTimespan); // current state should expire in the storage after ban period
+                }
+                else
+                {
+                    // Ban period elapsed, start counting
+                    _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
+                    counter = new RateLimitCounter(DateTime.UtcNow, null, 1);
+                }
+            }
+
+            _storage.Set(counterId, counter, expiration);
         }
 
-        var expiration = ToTimespan(rule.Period); // default expiration is set for the Period value
-        if (counter.TotalRequests > rule.Limit)
-        {
-            var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
-            if (retryAfter > 0)
-            {
-                // Rate Limit exceeded, ban period is active
-                expiration = TimeSpan.FromSeconds(rule.PeriodTimespan); // current state should expire in the storage after ban period
-            }
-            else
-            {
-                // Ban period elapsed, start counting
-                _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
-                counter = new RateLimitCounter(DateTime.UtcNow, null, 1);
-            }
-        }
-
-        _storage.Set(counterId, counter, expiration);
         return counter;
     }
 
@@ -86,10 +93,15 @@ public class RateLimiting : IRateLimiting
 
     public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var rule = options.RateLimitRule;
         RateLimitHeaders headers;
-        var counterId = GetStorageKey(identity, options);
-        var entry = _storage.Get(counterId);
+        RateLimitCounter? entry;
+        lock (ProcessLocker)
+        {
+            var counterId = GetStorageKey(identity, options);
+            entry = _storage.Get(counterId);
+        }
+
+        var rule = options.RateLimitRule;
         if (entry.HasValue)
         {
             headers = new RateLimitHeaders(context,

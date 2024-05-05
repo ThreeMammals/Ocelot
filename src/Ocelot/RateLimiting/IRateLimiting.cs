@@ -27,6 +27,7 @@ public interface IRateLimiting
     /// <summary>
     /// Main entry point to process the current request and apply the limiting rule.
     /// </summary>
+    /// <remarks>Warning! The method performs the storage operations which should be thread safe.</remarks>
     /// <param name="identity">The representation of current request.</param>
     /// <param name="options">The current rate limiting options.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
