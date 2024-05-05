@@ -12,22 +12,14 @@ public class MemoryCacheRateLimitStorage : IRateLimitStorage
 {
     private readonly IMemoryCache _memoryCache;
 
-    public MemoryCacheRateLimitStorage(IMemoryCache memoryCache)
-    {
-        _memoryCache = memoryCache;
-    }
+    public MemoryCacheRateLimitStorage(IMemoryCache memoryCache) => _memoryCache = memoryCache;
 
     public void Set(string id, RateLimitCounter counter, TimeSpan expirationTime)
-    {
-        _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
-    }
+        => _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
 
     public bool Exists(string id) => _memoryCache.TryGetValue(id, out RateLimitCounter counter);
 
     public RateLimitCounter? Get(string id) => _memoryCache.TryGetValue(id, out RateLimitCounter counter) ? counter : null;
 
-    public void Remove(string id)
-    {
-        _memoryCache.Remove(id);
-    }
+    public void Remove(string id) => _memoryCache.Remove(id);
 }
