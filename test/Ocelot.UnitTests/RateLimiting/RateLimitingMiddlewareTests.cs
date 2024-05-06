@@ -7,6 +7,9 @@ using Ocelot.Middleware;
 using Ocelot.RateLimiting;
 using Ocelot.RateLimiting.Middleware;
 using Ocelot.Request.Middleware;
+using System.Text;
+using _DownstreamRouteHolder_ = Ocelot.DownstreamRouteFinder.DownstreamRouteHolder;
+using _RateLimiting_ = Ocelot.RateLimiting.RateLimiting;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
@@ -18,7 +21,7 @@ public class RateLimitingMiddlewareTests : UnitTest
     private readonly RateLimitingMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly IRateLimiting _rateLimiting;
-    private DownstreamResponse _downstreamResponse;
+    private readonly List<DownstreamResponse> _downstreamResponses;
     private readonly string _url;
 
     public RateLimitingMiddlewareTests()
@@ -30,14 +33,17 @@ public class RateLimitingMiddlewareTests : UnitTest
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<RateLimitingMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
-        _rateLimiting = new Ocelot.RateLimiting.RateLimiting(_storage);
+        _rateLimiting = new _RateLimiting_(_storage);
         _middleware = new RateLimitingMiddleware(_next, _loggerFactory.Object, _rateLimiting);
+        _downstreamResponses = new();
     }
 
     [Fact]
-    public void Should_call_middleware_and_ratelimiting()
+    [Trait("Feat", "37")]
+    public async Task Should_call_middleware_and_ratelimiting()
     {
         // Arrange
+        const long limit = 3L;
         var upstreamTemplate = new UpstreamPathTemplateBuilder()
             .Build();
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -47,9 +53,9 @@ public class RateLimitingMiddlewareTests : UnitTest
                 clientIdHeader: "ClientId",
                 getClientWhitelist: () => new List<string>(),
                 disableRateLimitHeaders: false,
-                quotaExceededMessage: string.Empty,
+                quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
-                new RateLimitRule("1s", 100.0D, 3),
+                new RateLimitRule("1s", 100.0D, limit),
                 (int)HttpStatusCode.TooManyRequests))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
@@ -58,20 +64,27 @@ public class RateLimitingMiddlewareTests : UnitTest
             .WithDownstreamRoute(downstreamRoute)
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
-        var downstreamRouteHolder = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new(), route);
+        var downstreamRouteHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act, Assert
-        WhenICallTheMiddlewareMultipleTimes(2, downstreamRouteHolder);
-        _downstreamResponse.ShouldBeNull();
+        await WhenICallTheMiddlewareMultipleTimes(limit, downstreamRouteHolder);
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
 
-        // Act, Assert
-        WhenICallTheMiddlewareMultipleTimes(3, downstreamRouteHolder);
-        _downstreamResponse.ShouldNotBeNull()
-            .StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        // Act, Assert: the next request should fail
+        await WhenICallTheMiddlewareMultipleTimes(3, downstreamRouteHolder);
+        _downstreamResponses.ShouldNotBeNull();
+        for (int i = 0; i < _downstreamResponses.Count; i++)
+        {
+            var response = _downstreamResponses[i].ShouldNotBeNull();
+            response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, $"Downstream Response no is {i}");
+            var body = await response.Content.ReadAsStringAsync();
+            body.ShouldBe("Exceeding!");
+        }
     }
 
     [Fact]
-    public void Should_call_middleware_withWhitelistClient()
+    [Trait("Feat", "37")]
+    public async Task Should_call_middleware_withWhitelistClient()
     {
         // Arrange
         var route = new RouteBuilder()
@@ -82,7 +95,7 @@ public class RateLimitingMiddlewareTests : UnitTest
                     clientIdHeader: "ClientId",
                     getClientWhitelist: () => new List<string> { "ocelotclient2" },
                     disableRateLimitHeaders: false,
-                    quotaExceededMessage: string.Empty,
+                    quotaExceededMessage: "Exceeding!",
                     rateLimitCounterPrefix: string.Empty,
                     new RateLimitRule("1s", 100.0D, 3),
                     (int)HttpStatusCode.TooManyRequests))
@@ -90,22 +103,74 @@ public class RateLimitingMiddlewareTests : UnitTest
                 .Build())
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new(), route);
+        var downstreamRoute = new _DownstreamRouteHolder_(new(), route);
 
         // Act
-        WhenICallTheMiddlewareWithWhiteClient(downstreamRoute);
+        await WhenICallTheMiddlewareWithWhiteClient(downstreamRoute);
 
         // Assert
-        _downstreamResponse.ShouldBeNull();
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
     }
 
-    private void WhenICallTheMiddlewareMultipleTimes(int times, Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+    [Fact]
+    [Trait("Bug", "1590")]
+    public async Task MiddlewareInvoke_PeriodTimespanValueIsGreaterThanPeriod_StatusNotEqualTo429()
+    {
+        // Arrange
+        const long limit = 100L;
+        var upstreamTemplate = new UpstreamPathTemplateBuilder()
+            .Build();
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithEnableRateLimiting(true)
+            .WithRateLimitOptions(new(
+                enableRateLimiting: true,
+                clientIdHeader: "ClientId",
+                getClientWhitelist: () => new List<string>(),
+                disableRateLimitHeaders: false,
+                quotaExceededMessage: "Exceeding!",
+                rateLimitCounterPrefix: string.Empty,
+                new RateLimitRule("1s", 30.0D, limit), // bug scenario
+                (int)HttpStatusCode.TooManyRequests))
+            .WithUpstreamHttpMethod(new() { "Get" })
+            .WithUpstreamPathTemplate(upstreamTemplate)
+            .Build();
+        var route = new RouteBuilder()
+            .WithDownstreamRoute(downstreamRoute)
+            .WithUpstreamHttpMethod(new() { "Get" })
+            .Build();
+        var downstreamRouteHolder = new _DownstreamRouteHolder_(new(), route);
+
+        // Act, Assert: 100 requests must be successful
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit, downstreamRouteHolder); // make 100 requests, but not exceed the limit
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
+        contexts.ForEach(ctx =>
+        {
+            ctx.ShouldNotBeNull();
+            ctx.Items.Errors().ShouldNotBeNull().ShouldBeEmpty(); // no errors
+            ctx.Response.StatusCode.ShouldBe((int)HttpStatusCode.OK); // not 429 aka TooManyRequests
+        });
+
+        // Act, Assert: the next 101st request should fail
+        contexts = await WhenICallTheMiddlewareMultipleTimes(1, downstreamRouteHolder);
+        _downstreamResponses.ShouldNotBeNull();
+        var ds = _downstreamResponses.SingleOrDefault().ShouldNotBeNull();
+        ds.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, $"Downstream Response no {limit + 1}");
+        var body = await ds.Content.ReadAsStringAsync();
+        body.ShouldBe("Exceeding!");
+        contexts[0].Items.Errors().ShouldNotBeNull().ShouldNotBeEmpty(); // having errors
+        contexts[0].Items.Errors().Single().HttpStatusCode.ShouldBe((int)HttpStatusCode.TooManyRequests);
+    }
+
+    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ downstreamRoute)
     {
         var contexts = new List<HttpContext>();
+        _downstreamResponses.Clear();
         for (var i = 0; i < times; i++)
         {
             var context = new DefaultHttpContext();
-            context.Response.Body = new FakeStream();
+            var stream = GetFakeStream($"{i}");
+            context.Response.Body = stream;
+            context.Response.RegisterForDispose(stream);
             context.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
             context.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
             context.Items.UpsertDownstreamRoute(downstreamRoute);
@@ -113,23 +178,30 @@ public class RateLimitingMiddlewareTests : UnitTest
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
             context.Request.Headers.TryAdd("ClientId", "ocelotclient1");
             contexts.Add(context);
+
+            await _middleware.Invoke(context);
+
+            _downstreamResponses.Add(context.Items.DownstreamResponse());
         }
 
-        foreach (var ctx in contexts)
-        {
-            _middleware.Invoke(ctx).GetAwaiter().GetResult();
-            var ds = ctx.Items.DownstreamResponse();
-            _downstreamResponse = ds;
-        }
+        return contexts;
     }
 
-    private void WhenICallTheMiddlewareWithWhiteClient(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+    private static Stream GetFakeStream(string str)
+    {
+        byte[] data = Encoding.ASCII.GetBytes(str);
+        return new MemoryStream(data, 0, data.Length);
+    }
+
+    private async Task WhenICallTheMiddlewareWithWhiteClient(_DownstreamRouteHolder_ downstreamRoute)
     {
         const string ClientId = "ocelotclient2";
         for (var i = 0; i < 10; i++)
         {
             var context = new DefaultHttpContext();
-            context.Response.Body = new FakeStream();
+            var stream = GetFakeStream($"{i}");
+            context.Response.Body = stream;
+            context.Response.RegisterForDispose(stream);
             context.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
             context.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
             context.Items.UpsertDownstreamRoute(downstreamRoute);
@@ -137,24 +209,10 @@ public class RateLimitingMiddlewareTests : UnitTest
             request.Headers.Add("ClientId", ClientId);
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
             context.Request.Headers.TryAdd("ClientId", ClientId);
-            _middleware.Invoke(context).GetAwaiter().GetResult();
-            var ds = context.Items.DownstreamResponse();
-            _downstreamResponse = ds;
+
+            await _middleware.Invoke(context);
+
+            _downstreamResponses.Add(context.Items.DownstreamResponse());
         }
     }
-}
-
-internal class FakeStream : Stream
-{
-    public override void Flush() { } // do nothing
-    public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
-    public override void SetLength(long value) => throw new NotImplementedException();
-    public override void Write(byte[] buffer, int offset, int count) { } // do nothing
-
-    public override bool CanRead { get; }
-    public override bool CanSeek { get; }
-    public override bool CanWrite => true;
-    public override long Length { get; }
-    public override long Position { get; set; }
 }
