@@ -3,24 +3,23 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
-public sealed class ClientRateLimitingTests : IDisposable
+public sealed class ClientRateLimitingTests : Steps, IDisposable
 {
     const int OK = (int)HttpStatusCode.OK;
     const int TooManyRequests = (int)HttpStatusCode.TooManyRequests;
 
-    private readonly Steps _steps;
     private int _counterOne;
     private readonly ServiceHandler _serviceHandler;
 
     public ClientRateLimitingTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        _steps.Dispose();
+        _serviceHandler.Dispose();
+        base.Dispose();
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public sealed class ClientRateLimitingTests : IDisposable
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/api/ClientRateLimit",
                     UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
+                    RequestIdKey = RequestIdKey,
                     RateLimitOptions = new FileRateLimitRule
                     {
                         EnableRateLimiting = true,
@@ -71,15 +70,15 @@ public sealed class ClientRateLimitingTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(TooManyRequests))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .BDDfy();
     }
 
@@ -106,7 +105,7 @@ public sealed class ClientRateLimitingTests : IDisposable
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/ClientRateLimit/?{count}",
                     UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
+                    RequestIdKey = RequestIdKey,
 
                     RateLimitOptions = new FileRateLimitRule
                     {
@@ -132,22 +131,22 @@ public sealed class ClientRateLimitingTests : IDisposable
             },
         };
         _counterOne = 0;
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 2))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(TooManyRequests))
-            .And(x => _steps.GivenIWait(1000))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(TooManyRequests))
-            .And(x => _steps.GivenIWait(1000))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("4")) // total 4 OK responses
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 2))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
+            .And(x => GivenIWait(1000))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
+            .And(x => GivenIWait(1000))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(() => $"/ClientRateLimit/?{Count()}", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
+            .And(x => ThenTheResponseBodyShouldBe("4")) // total 4 OK responses
             .BDDfy();
     }
 
@@ -158,7 +157,7 @@ public sealed class ClientRateLimitingTests : IDisposable
         for (int i = 0; i < times; i++)
         {
             var url = urlDelegate.Invoke();
-            _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
+            WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
         }
     }
 
@@ -185,7 +184,7 @@ public sealed class ClientRateLimitingTests : IDisposable
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/api/ClientRateLimit",
                     UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
+                    RequestIdKey = RequestIdKey,
 
                     RateLimitOptions = new FileRateLimitRule
                     {
@@ -210,11 +209,11 @@ public sealed class ClientRateLimitingTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/ClientRateLimit"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
+            .Then(x => ThenTheStatusCodeShouldBe(OK))
             .BDDfy();
     }
 
@@ -223,7 +222,7 @@ public sealed class ClientRateLimitingTests : IDisposable
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
         {
             _counterOne++;
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = OK;
             context.Response.WriteAsync(_counterOne.ToString());
             return Task.CompletedTask;
         });
