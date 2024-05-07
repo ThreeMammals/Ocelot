@@ -27,7 +27,7 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimit;
+using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
@@ -109,7 +109,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
             Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            Services.AddRateLimiting(); // Feature: Rate Limiting
             Services.TryAddSingleton<IRequestMapper, RequestMapper>();
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();

@@ -2,21 +2,23 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Globalization;
 
-namespace Ocelot.RateLimit.Middleware
+namespace Ocelot.RateLimiting.Middleware
 {
-    public class ClientRateLimitMiddleware : OcelotMiddleware
+    public class RateLimitingMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ClientRateLimitProcessor _processor;
+        private readonly IRateLimiting _limiter;
 
-        public ClientRateLimitMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IRateLimitCounterHandler counterHandler)
-                : base(loggerFactory.CreateLogger<ClientRateLimitMiddleware>())
+        public RateLimitingMiddleware(
+            RequestDelegate next,
+            IOcelotLoggerFactory factory,
+            IRateLimiting limiter)
+            : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;
-            _processor = new ClientRateLimitProcessor(counterHandler);
+            _limiter = limiter;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -48,26 +50,20 @@ namespace Ocelot.RateLimit.Middleware
             if (rule.Limit > 0)
             {
                 // increment counter
-                var counter = _processor.ProcessRequest(identity, options);
+                var counter = _limiter.ProcessRequest(identity, options);
 
                 // check if limit is reached
                 if (counter.TotalRequests > rule.Limit)
                 {
-                    //compute retry after value
-                    var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
-
-                    // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute);
-
-                    var retrystring = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    var retryAfter = _limiter.RetryAfter(counter, rule); // compute retry after value based on counter state
+                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute); // log blocked request virtually
 
                     // break execution
-                    var ds = ReturnQuotaExceededResponse(httpContext, options, retrystring);
+                    var ds = ReturnQuotaExceededResponse(httpContext, options, retryAfter.ToString(CultureInfo.InvariantCulture));
                     httpContext.Items.UpsertDownstreamResponse(ds);
 
                     // Set Error
                     httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.HttpStatusCode));
-
                     return;
                 }
             }
@@ -75,7 +71,7 @@ namespace Ocelot.RateLimit.Middleware
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _processor.GetRateLimitHeaders(httpContext, identity, options);
+                var headers = _limiter.GetHeaders(httpContext, identity, options);
                 httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
@@ -123,7 +119,7 @@ namespace Ocelot.RateLimit.Middleware
 
             if (!option.DisableRateLimitHeaders)
             {
-                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter);
+                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter); // in seconds, not date string
             }
 
             return new DownstreamResponse(http);

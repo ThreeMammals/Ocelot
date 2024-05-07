@@ -1,6 +1,6 @@
 using Ocelot.Errors;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.RateLimiting
 {
     public class QuotaExceededError : Error
     {

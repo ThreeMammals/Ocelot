@@ -1,35 +1,50 @@
 Rate Limiting
 =============
 
+`What's rate limiting? <https://www.bing.com/search?q=Rate+Limiting>`_
+
+* `Rate limiting | Wikipedia <https://en.wikipedia.org/wiki/Rate_limiting>`_ 
+* `Rate Limiting pattern | Azure Architecture Center | Microsoft Learn <https://learn.microsoft.com/en-us/azure/architecture/patterns/rate-limiting-pattern>`_
+* `Rate Limiting | Ask Google <https://www.google.com/search?q=Rate+Limiting>`_
+
 Ocelot Own Implementation
 -------------------------
 
-Ocelot supports rate limiting of upstream requests so that your downstream services do not become overloaded.
+Ocelot provides *rate limiting* for upstream requests to prevent downstream services from becoming overwhelmed. [#f1]_
 
-The authors of this feature were inspired by `@catcherwong article <http://www.c-sharpcorner.com/article/building-api-gateway-using-ocelot-in-asp-net-core-rate-limiting-part-four/>`_ to finally write this documentation.
-This feature was added by `@geffzhang <https://github.com/ThreeMammals/Ocelot/commits?author=geffzhang>`_ on GitHub! Thanks very much!
+Rate Limit by Client's Header
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To get rate limiting working for a Route you need to add the following JSON to it: 
+To implement *rate limiting* for a Route, you need to incorporate the following JSON configuration:
 
 .. code-block:: json
 
   "RateLimitOptions": {
-    "ClientWhitelist": [],
+    "ClientWhitelist": [], // array of strings
     "EnableRateLimiting": true,
-    "Period": "1s",
-    "PeriodTimespan": 1,
+    "Period": "1s", // seconds, minutes, hours, days
+    "PeriodTimespan": 1, // only seconds
     "Limit": 1
   }
 
-* **ClientWhitelist** - This is an array that contains the whitelist of the client.
-  It means that the client in this array will not be affected by the rate limiting.
-* **EnableRateLimiting** - This value specifies enable endpoint rate limiting.
-* **Period** - This value specifies the period that the limit applies to, such as ``1s``, ``5m``, ``1h``, ``1d`` and so on.
-  If you make more requests in the period than the limit allows then you need to wait for **PeriodTimespan** to elapse before you make another request.
-* **PeriodTimespan** - This value specifies that we can retry after a certain number of seconds.
-* **Limit** - This value specifies the maximum number of requests that a client can make in a defined period.
+* **ClientWhitelist** - An array containing the whitelisted clients. Clients listed here will be exempt from rate limiting.
+  For more information on the **ClientIdHeader** option, refer to the :ref:`rl-global-configuration` section.
+* **EnableRateLimiting** - This setting enables rate limiting on endpoints.
+* **Period** - This parameter defines the duration for which the limit is applicable, such as ``1s`` (seconds), ``5m`` (minutes), ``1h`` (hours), and ``1d`` (days).
+  If you reach the exact **Limit** of requests, the excess occurs immediately, and the **PeriodTimespan** begins.
+  You must wait for the **PeriodTimespan** duration to pass before making another request.
+  Should you exceed the number of requests within the period more than the **Limit** permits, the **QuotaExceededMessage** will appear in the response, accompanied by the **HttpStatusCode**.
+* **PeriodTimespan** - This parameter indicates the time in **seconds** after which a retry is permissible.
+  During this interval, the **QuotaExceededMessage** will appear in the response, accompanied by an **HttpStatusCode**.
+  Clients are advised to consult the ``Retry-After`` header to determine the timing of subsequent requests.
+* **Limit** - This parameter defines the upper limit of requests a client is allowed to make within a specified **Period**.
 
-You can also set the following in the **GlobalConfiguration** part of **ocelot.json**:
+.. _rl-global-configuration:
+
+Global Configuration
+^^^^^^^^^^^^^^^^^^^^
+
+You can set the following in the ``GlobalConfiguration`` section of `ocelot.json`_:
 
 .. code-block:: json
 
@@ -38,33 +53,48 @@ You can also set the following in the **GlobalConfiguration** part of **ocelot.j
     "RateLimitOptions": {
       "DisableRateLimitHeaders": false,
       "QuotaExceededMessage": "Customize Tips!",
-      "HttpStatusCode": 123,
-      "ClientIdHeader": "Test"
+      "HttpStatusCode": 418, // I'm a teapot
+      "ClientIdHeader": "MyRateLimiting"
     }
   }
 
-* **DisableRateLimitHeaders** - This value specifies whether ``X-Rate-Limit`` and ``Retry-After`` headers are disabled.
-* **QuotaExceededMessage** - This value specifies the exceeded message.
-* **HttpStatusCode** - This value specifies the returned HTTP status code when rate limiting occurs.
-* **ClientIdHeader** - Allows you to specifiy the header that should be used to identify clients. By default it is ``ClientId``
+* **DisableRateLimitHeaders** - Determines if the ``X-Rate-Limit`` and ``Retry-After`` headers are disabled.
+* **QuotaExceededMessage** - Defines the message displayed when the quota is exceeded. It is optional and the default message is informative.
+* **HttpStatusCode** - Indicates the HTTP status code returned during *rate limiting*. The default value is **429** (`Too Many Requests`_).
+* **ClientIdHeader** - Specifies the header used to identify clients, with ``ClientId`` as the default.
 
 Future and ASP.NET Core Implementation
 --------------------------------------
 
-The Ocelot team considers to redesign *Rate Limiting* feature,
-because of `Announcing Rate Limiting for .NET <https://devblogs.microsoft.com/dotnet/announcing-rate-limiting-for-dotnet/>`_ by Brennan Conroy on July 13th, 2022.
-There is no decision at the moment, and the old version of the feature is included as a part of release `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ for .NET 7.
+The Ocelot team is contemplating a redesign of the *Rate Limiting* feature following the `Announcing Rate Limiting for .NET`_ by Brennan Conroy on July 13th, 2022.
+Currently, no decision has been made, and the previous version of the feature remains part of the `20.0`_ release for .NET 7. [#f2]_
 
-See more about new feature being added into ASP.NET Core 7.0 release:
+Discover the new features being introduced in the ASP.NET Core 7.0 release:
 
-* `RateLimiter Class <https://learn.microsoft.com/en-us/dotnet/api/system.threading.ratelimiting.ratelimiter>`_, since ASP.NET Core	**7.0**
-* `System.Threading.RateLimiting <https://www.nuget.org/packages/System.Threading.RateLimiting>`_ NuGet package
-* `Rate limiting middleware in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit>`_ article by Arvin Kahbazi, Maarten Balliauw, and Rick Anderson
+* The `RateLimiter Class <https://learn.microsoft.com/en-us/dotnet/api/system.threading.ratelimiting.ratelimiter>`_, available since ASP.NET Core 7.0
+* The `System.Threading.RateLimiting <https://www.nuget.org/packages/System.Threading.RateLimiting>`_ NuGet package
+* The `Rate limiting middleware in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit>`_ article by Arvin Kahbazi, Maarten Balliauw, and Rick Anderson
 
-However, it makes sense to keep the old implementation as a Ocelot built-in native feature, but we are going to migrate to the new Rate Limiter from ``Microsoft.AspNetCore.RateLimiting`` namespace.
+While retaining the old implementation as an Ocelot built-in feature makes sense, we plan to transition to the new Rate Limiter from the ``Microsoft.AspNetCore.RateLimiting`` namespace.
 
+Please share your thoughts with us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|
+
+""""
+
+.. [#f1] Historically, the *"Ocelot Own Rate Limiting"* feature is one of the oldest and first features of Ocelot. This feature was delivered in PR `37`_ by `@geffzhang`_ on GitHub. Many thanks! It was initially released in version `1.3.2`_. The authors were inspired by `@catcherwong article`_ to write this documentation.
+.. [#f2] Since PR `37`_ and version `1.3.2`_, the Ocelot team has reviewed and redesigned the feature to provide stable behavior. The fix for bug `1590`_ (PR `1592`_) was released as part of version `23.3`_.
+
+.. _Announcing Rate Limiting for .NET: https://devblogs.microsoft.com/dotnet/announcing-rate-limiting-for-dotnet/
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
+.. _@geffzhang: https://github.com/ThreeMammals/Ocelot/commits?author=geffzhang
+.. _@catcherwong article: http://www.c-sharpcorner.com/article/building-api-gateway-using-ocelot-in-asp-net-core-rate-limiting-part-four/
+.. _Too Many Requests: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+.. _37: https://github.com/ThreeMammals/Ocelot/pull/37
+.. _1590: https://github.com/ThreeMammals/Ocelot/issues/1590
+.. _1592: https://github.com/ThreeMammals/Ocelot/pull/1592
+.. _1.3.2: https://github.com/ThreeMammals/Ocelot/releases/tag/1.3.2
+.. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
   :width: 23
-
-Please, share your opinion to us in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository. |octocat|
