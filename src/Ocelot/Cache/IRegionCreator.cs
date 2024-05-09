@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Cache
+namespace Ocelot.Cache;
+
+public interface IRegionCreator
 {
-    public interface IRegionCreator
-    {
-        string Create(FileRoute route);
-    }
+    string Create(FileCacheOptions fileCacheOptions, string upstreamPathTemplate, IList<string> upstreamHttpMethod);
 }

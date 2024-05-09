@@ -48,7 +48,7 @@ namespace Ocelot.UnitTests.Cache
         private void WhenICreateTheRegion()
         {
             var regionCreator = new RegionCreator();
-            _result = regionCreator.Create(_route);
+            _result = regionCreator.Create(_route.FileCacheOptions, _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
         }
 
         private void ThenTheRegionIs(string expected)
