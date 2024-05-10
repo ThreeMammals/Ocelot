@@ -239,7 +239,7 @@ namespace Ocelot.AcceptanceTests.Caching
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
                     UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post },
-                    FileCacheOptions = asGlobalConfig ? null : cacheOptions,
+                    FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
                 },
             },
             GlobalConfiguration = asGlobalConfig ? new FileGlobalConfiguration { CacheOptions = cacheOptions } : null,
