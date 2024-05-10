@@ -39,7 +39,8 @@ Finally, in order to use caching on a route in your Route configuration add this
     "FileCacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
-      "Header": "Authorization"
+      "Header": "Authorization",
+	  "EnableContentHashing": true
     }
 
 In this example **TtlSeconds** is set to 15 which means the cache will expire after 15 seconds.
@@ -47,6 +48,13 @@ The **Region** represents a region of caching.
 
 Additionally, if a header name is defined in the **Header** property, that header value is looked up by the key (header name) in the ``HttpRequest`` headers,
 and if the header is found, its value will be included in caching key. This causes the cache to become invalid due to the header value changing.
+
+In Ocelot Release 23.0.0 the new property **EnableContentHashing** has been introduced. Until now, the request body was used to compute the cache key.
+Since the request body hashing could lead to performance issues, it was decided to disable it by default. 
+It's quite obvious that this is a breaking change with some drawbacks for users who need to calculate the key taking into account the request's body (eg. POST method).
+But the good news is that you don't have to copy this property for each route, it's now possible to define its value in the global configuration. 
+This also applies to **Header** and **Region**. We're looking for an alternative, but **TtlSeconds** still needs to be explicitly defined for each route, 
+otherwise the cache won't be activated for the routes.
 
 If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager is setup and then passed into the Ocelot ``AddCacheManager`` configuration method.
 You can use any settings supported by the **CacheManager** package and just pass them in.
