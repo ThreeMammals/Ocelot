@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.CacheManager
         {
             var route = new DownstreamRouteBuilder()
                 .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100, "kanken", null))
+                .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 

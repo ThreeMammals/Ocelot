@@ -6,19 +6,23 @@ namespace Ocelot.Configuration
     {
         internal CacheOptions() { }
 
-        public CacheOptions(int ttlSeconds, string region, string header)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CacheOptions"/> class.
+        /// The default value for EnableContentHashing is false, but
+        /// it is set to null for route-level configuration to allow
+        /// global configuration usage.
+        /// The default value for TtlSeconds is 0
+        /// </summary>
+        /// <param name="ttlSeconds"></param>
+        /// <param name="region"></param>
+        /// <param name="header"></param>
+        /// <param name="enableContentHashing"></param>
+        public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing)
         {
-            TtlSeconds = ttlSeconds;
+            TtlSeconds = ttlSeconds ?? 0;
             Region = region;
             Header = header;
-        }
-
-        public CacheOptions(int ttlSeconds, string region, string header, bool enableContentHashing)
-        {
-            TtlSeconds = ttlSeconds;
-            Region = region;
-            Header = header;
-            EnableContentHashing = enableContentHashing;
+            EnableContentHashing = enableContentHashing ?? false;
         }
 
         public int TtlSeconds { get; }

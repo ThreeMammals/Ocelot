@@ -1,5 +1,6 @@
 ﻿using Ocelot.Cache;
 using Ocelot.Configuration.File;
+using System.Diagnostics;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -11,11 +12,13 @@ public class CacheOptionsCreator : ICacheOptionsCreator
         _regionCreator = regionCreator ?? throw new ArgumentNullException(nameof(regionCreator));
     }
 
-
-    public CacheOptions Create(FileCacheOptions fileCacheOptions, string upstreamPathTemplate, IList<string> upstreamHttpMethods)
+    public CacheOptions Create(FileCacheOptions fileCacheOptions, string upstreamPathTemplate, IList<string> upstreamHttpMethods, FileGlobalConfiguration globalConfiguration)
     {
-        var region = _regionCreator.Create(fileCacheOptions, upstreamPathTemplate, upstreamHttpMethods);
+        var region = _regionCreator.Create(fileCacheOptions.Region ?? globalConfiguration.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
+        var header = fileCacheOptions.Header ?? globalConfiguration.CacheOptions.Header;
+        var ttlSeconds = fileCacheOptions.TtlSeconds ?? globalConfiguration.CacheOptions.TtlSeconds;
+        var enableContentHashing = fileCacheOptions.EnableContentHashing ?? globalConfiguration.CacheOptions.EnableContentHashing;
 
-        return new CacheOptions(fileCacheOptions.TtlSeconds, region, fileCacheOptions.Header, fileCacheOptions.EnableContentHashing);
+        return new CacheOptions(ttlSeconds, region, header, enableContentHashing);
     }
 }

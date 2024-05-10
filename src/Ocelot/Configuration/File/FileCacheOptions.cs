@@ -2,11 +2,7 @@
 
 public class FileCacheOptions
 {
-    public FileCacheOptions()
-    {
-        Region = string.Empty;
-        TtlSeconds = 0;
-    }
+    public FileCacheOptions() { }
 
     public FileCacheOptions(FileCacheOptions from)
     {
@@ -16,8 +12,26 @@ public class FileCacheOptions
         EnableContentHashing = from.EnableContentHashing;
     }
 
-    public int TtlSeconds { get; set; }
+    /// <summary>
+    /// using int? to have null as default value
+    /// and allowing global configuration usage
+    /// If null then use global configuration with 0 by default.
+    /// </summary>
+    /// <value>
+    /// The time to live seconds, with 0 by default.
+    /// </value>
+    public int? TtlSeconds { get; set; }
+
     public string Region { get; set; }
     public string Header { get; set; }
-    public bool EnableContentHashing { get; set; }
+
+    /// <summary>
+    /// using bool? to have null as default value
+    /// and allowing global configuration usage
+    /// If null then use global configuration with false by default.
+    /// </summary>
+    /// <value>
+    /// True if content hashing is enabled; otherwise, false.
+    /// </value>
+    public bool? EnableContentHashing { get; set; }
 }
