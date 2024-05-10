@@ -832,6 +832,7 @@ public class Steps : IDisposable
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        var result = _response.Content.ReadAsStringAsync().Result;
     }
 
     public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)

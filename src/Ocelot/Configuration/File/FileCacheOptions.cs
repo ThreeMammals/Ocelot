@@ -21,7 +21,6 @@ public class FileCacheOptions
     /// The time to live seconds, with 0 by default.
     /// </value>
     public int? TtlSeconds { get; set; }
-
     public string Region { get; set; }
     public string Header { get; set; }
 
