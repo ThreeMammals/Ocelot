@@ -79,7 +79,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRouteOptionsCreator, RouteOptionsCreator>();
             Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
             Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-            Services.TryAddSingleton<IRegionCreator, RegionCreator>();
             Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
             Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
             Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();

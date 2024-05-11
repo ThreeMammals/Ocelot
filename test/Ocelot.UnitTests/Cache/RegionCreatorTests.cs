@@ -1,11 +1,12 @@
-using Ocelot.Cache;
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Cache
 {
     public class RegionCreatorTests : UnitTest
     {
-        private string _result;
+        private CacheOptions _cacheOptions;
         private FileRoute _route;
 
         [Fact]
@@ -47,13 +48,13 @@ namespace Ocelot.UnitTests.Cache
 
         private void WhenICreateTheRegion()
         {
-            var regionCreator = new RegionCreator();
-            _result = regionCreator.Create(_route.FileCacheOptions.Region, _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
+            var cacheOptionsCreator = new CacheOptionsCreator();
+            _cacheOptions = cacheOptionsCreator.Create(_route.FileCacheOptions, _route.UpstreamPathTemplate, _route.UpstreamHttpMethod, new FileGlobalConfiguration());
         }
 
         private void ThenTheRegionIs(string expected)
         {
-            _result.ShouldBe(expected);
+            _cacheOptions.Region.ShouldBe(expected);
         }
     }
 }
