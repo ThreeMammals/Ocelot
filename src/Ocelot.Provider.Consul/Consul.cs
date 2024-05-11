@@ -1,4 +1,5 @@
-﻿using Ocelot.Infrastructure.Extensions;
+﻿using Microsoft.Extensions.Configuration;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
@@ -12,34 +13,34 @@ public class Consul : IServiceDiscoveryProvider
     private readonly ConsulRegistryConfiguration _config;
     private readonly IConsulClient _consul;
     private readonly IOcelotLogger _logger;
+    private readonly IConsulServiceBuilder _serviceBuilder;
 
-    public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
+    public Consul(
+        ConsulRegistryConfiguration config,
+        IOcelotLoggerFactory factory,
+        IConsulClientFactory clientFactory,
+        IConsulServiceBuilder serviceBuilder)
     {
         _config = config;
         _consul = clientFactory.Get(_config);
         _logger = factory.CreateLogger<Consul>();
+        _serviceBuilder = serviceBuilder;
     }
 
     public async Task<List<Service>> GetAsync()
     {
-        var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
-
         var services = new List<Service>();
+        var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
 
         foreach (var serviceEntry in queryResult.Response)
         {
             var service = serviceEntry.Service;
             if (IsValid(service))
             {
-                var nodes = await _consul.Catalog.Nodes();
-                if (nodes.Response == null)
+                var item = await _serviceBuilder.BuildServiceAsync(_consul, _config, serviceEntry);
+                if (item != null)
                 {
-                    services.Add(BuildService(serviceEntry, null));
-                }
-                else
-                {
-                    var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == service.Address);
-                    services.Add(BuildService(serviceEntry, serviceNode));
+                    services.Add(item);
                 }
             }
             else
@@ -49,7 +50,7 @@ public class Consul : IServiceDiscoveryProvider
             }
         }
 
-        return services.ToList();
+        return services;
     }
 
     private static Service BuildService(ServiceEntry serviceEntry, Node serviceNode)

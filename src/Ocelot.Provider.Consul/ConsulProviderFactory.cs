@@ -23,11 +23,12 @@ public static class ConsulProviderFactory
     {
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
+        var serviceBuilder = provider.GetService<IConsulServiceBuilder>();
 
         var consulRegistryConfiguration = new ConsulRegistryConfiguration(
             config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
 
-        var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
+        var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory, serviceBuilder);
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {

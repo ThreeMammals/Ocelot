@@ -26,6 +26,7 @@ namespace Ocelot.UnitTests.Consul
         private readonly Mock<IOcelotLogger> _logger;
         private string _receivedToken;
         private readonly IConsulClientFactory _clientFactory;
+        private readonly IConsulServiceBuilder _serviceBuilder;
 
         public ConsulServiceDiscoveryProviderTests()
         {
@@ -36,12 +37,13 @@ namespace Ocelot.UnitTests.Consul
             _fakeConsulServiceDiscoveryUrl = $"{_consulScheme}://{_consulHost}:{_port}";
             _serviceEntries = new List<ServiceEntry>();
             _factory = new Mock<IOcelotLoggerFactory>();
-            _clientFactory = new ConsulClientFactory();
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
-            _provider = new ConsulProvider(config, _factory.Object, _clientFactory);
+            _clientFactory = new ConsulClientFactory();
+            _serviceBuilder = new ConsulServiceBuilder();
+            _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
         }
 
         [Fact]
@@ -71,7 +73,7 @@ namespace Ocelot.UnitTests.Consul
         {
             var token = "test token";
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
-            _provider = new ConsulProvider(config, _factory.Object, _clientFactory);
+            _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
 
             var serviceEntryOne = new ServiceEntry
             {
