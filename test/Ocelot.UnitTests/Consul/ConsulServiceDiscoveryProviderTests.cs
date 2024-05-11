@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Values;
 using ConsulProvider = Ocelot.Provider.Consul.Consul;
 

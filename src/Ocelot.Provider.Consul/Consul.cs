@@ -1,5 +1,6 @@
 ﻿using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 

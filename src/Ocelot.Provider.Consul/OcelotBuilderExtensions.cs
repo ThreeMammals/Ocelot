@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
+using Ocelot.Provider.Consul.Interfaces;
 
 namespace Ocelot.Provider.Consul;
 
