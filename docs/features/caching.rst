@@ -39,7 +39,7 @@ Finally, in order to use caching on a route in your Route configuration add this
     "FileCacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
-      "Header": "Authorization",
+      "Header": "OC-Caching-Control",
 	  "EnableContentHashing": true
     }
 
