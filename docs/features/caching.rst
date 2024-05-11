@@ -40,7 +40,7 @@ Finally, in order to use caching on a route in your Route configuration add this
       "TtlSeconds": 15,
       "Region": "europe-central",
       "Header": "OC-Caching-Control",
-	  "EnableContentHashing": true
+	  "EnableContentHashing": false // my route has GET verb only, assigning 'true' for requests with body: POST, PUT etc.
     }
 
 In this example **TtlSeconds** is set to 15 which means the cache will expire after 15 seconds.
