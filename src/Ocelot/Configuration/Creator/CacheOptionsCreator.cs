@@ -6,10 +6,10 @@ public class CacheOptionsCreator : ICacheOptionsCreator
 {
     public CacheOptions Create(FileCacheOptions fileCacheOptions, string upstreamPathTemplate, IList<string> upstreamHttpMethods, FileGlobalConfiguration globalConfiguration)
     {
-        var region = GetRegion(fileCacheOptions.Region ?? globalConfiguration.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
-        var header = fileCacheOptions.Header ?? globalConfiguration.CacheOptions.Header;
-        var ttlSeconds = fileCacheOptions.TtlSeconds ?? globalConfiguration.CacheOptions.TtlSeconds;
-        var enableContentHashing = fileCacheOptions.EnableContentHashing ?? globalConfiguration.CacheOptions.EnableContentHashing;
+        var region = GetRegion(fileCacheOptions.Region ?? globalConfiguration?.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
+        var header = fileCacheOptions.Header ?? globalConfiguration?.CacheOptions.Header;
+        var ttlSeconds = fileCacheOptions.TtlSeconds ?? globalConfiguration?.CacheOptions.TtlSeconds;
+        var enableContentHashing = fileCacheOptions.EnableContentHashing ?? globalConfiguration?.CacheOptions.EnableContentHashing;
 
         return new CacheOptions(ttlSeconds, region, header, enableContentHashing);
     }
