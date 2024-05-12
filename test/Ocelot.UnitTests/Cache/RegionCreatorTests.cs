@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.Cache
         private void WhenICreateTheRegion()
         {
             var cacheOptionsCreator = new CacheOptionsCreator();
-            _cacheOptions = cacheOptionsCreator.Create(_route.FileCacheOptions, _route.UpstreamPathTemplate, _route.UpstreamHttpMethod, new FileGlobalConfiguration());
+            _cacheOptions = cacheOptionsCreator.Create(_route.FileCacheOptions, new FileGlobalConfiguration(), _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
         }
 
         private void ThenTheRegionIs(string expected)

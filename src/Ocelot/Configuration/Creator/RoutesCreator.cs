@@ -36,8 +36,7 @@ namespace Ocelot.Configuration.Creator
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
-            IVersionCreator versionCreator
-            )
+            IVersionCreator versionCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -104,7 +103,7 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
-            var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod, globalConfiguration);
+            var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)

@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
             _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
             _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-            _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<string>(), It.IsAny<IList<string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(_cacheOptions);
+            _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
             _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
@@ -264,7 +264,7 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
             _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
             _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
-            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod, globalConfig), Times.Once);
+            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
