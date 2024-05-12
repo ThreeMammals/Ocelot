@@ -4,12 +4,12 @@ namespace Ocelot.Configuration.Creator;
 
 public class CacheOptionsCreator : ICacheOptionsCreator
 {
-    public CacheOptions Create(FileCacheOptions fileCacheOptions, string upstreamPathTemplate, IList<string> upstreamHttpMethods, FileGlobalConfiguration globalConfiguration)
+    public CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration global, string upstreamPathTemplate, IList<string> upstreamHttpMethods)
     {
-        var region = GetRegion(fileCacheOptions.Region ?? globalConfiguration?.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
-        var header = fileCacheOptions.Header ?? globalConfiguration?.CacheOptions.Header;
-        var ttlSeconds = fileCacheOptions.TtlSeconds ?? globalConfiguration?.CacheOptions.TtlSeconds;
-        var enableContentHashing = fileCacheOptions.EnableContentHashing ?? globalConfiguration?.CacheOptions.EnableContentHashing;
+        var region = GetRegion(options.Region ?? global?.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
+        var header = options.Header ?? global?.CacheOptions.Header;
+        var ttlSeconds = options.TtlSeconds ?? global?.CacheOptions.TtlSeconds;
+        var enableContentHashing = options.EnableContentHashing ?? global?.CacheOptions.EnableContentHashing;
 
         return new CacheOptions(ttlSeconds, region, header, enableContentHashing);
     }

@@ -9,46 +9,45 @@ public class CacheOptionsCreatorTests
     [Trait("Issue", "2059")]
     public void ShouldCreateCacheOptions()
     {
-        var fileCacheOptions = FileCacheOptionsFactory();
+        var options = FileCacheOptionsFactory();
         var cacheOptionsCreator = new CacheOptionsCreator();
-        var result = cacheOptionsCreator.Create(fileCacheOptions, null, null, null);
+        var result = cacheOptionsCreator.Create(options, null, null, null);
 
-        result.TtlSeconds.ShouldBe(fileCacheOptions.TtlSeconds.Value);
-        result.Region.ShouldBe(fileCacheOptions.Region);
-        result.Header.ShouldBe(fileCacheOptions.Header);
-        result.EnableContentHashing.ShouldBe(fileCacheOptions.EnableContentHashing.Value);
+        result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
+        result.Region.ShouldBe(options.Region);
+        result.Header.ShouldBe(options.Header);
+        result.EnableContentHashing.ShouldBe(options.EnableContentHashing.Value);
     }
 
     [Fact]
     [Trait("Issue", "2059")]
     public void ShouldCreateCacheOptionsUsingGlobalConfiguration()
     {
-        var globalConfiguration = GlobalConfigurationFactory();
-        var fileCacheOptions = new FileCacheOptions();
+        var global = GlobalConfigurationFactory();
 
         var cacheOptionsCreator = new CacheOptionsCreator();
-        var result = cacheOptionsCreator.Create(fileCacheOptions, null, null, globalConfiguration);
+        var result = cacheOptionsCreator.Create(new FileCacheOptions(), global, null, null);
 
-        result.TtlSeconds.ShouldBe(globalConfiguration.CacheOptions.TtlSeconds.Value);
-        result.Region.ShouldBe(globalConfiguration.CacheOptions.Region);
-        result.Header.ShouldBe(globalConfiguration.CacheOptions.Header);
-        result.EnableContentHashing.ShouldBe(globalConfiguration.CacheOptions.EnableContentHashing.Value);
+        result.TtlSeconds.ShouldBe(global.CacheOptions.TtlSeconds.Value);
+        result.Region.ShouldBe(global.CacheOptions.Region);
+        result.Header.ShouldBe(global.CacheOptions.Header);
+        result.EnableContentHashing.ShouldBe(global.CacheOptions.EnableContentHashing.Value);
     }
 
     [Fact]
     [Trait("Issue", "2059")]
     public void RouteCacheOptionsShouldOverrideGlobalConfiguration()
     {
-        var globalConfiguration = GlobalConfigurationFactory();
-        var fileCacheOptions = FileCacheOptionsFactory();
+        var global = GlobalConfigurationFactory();
+        var options = FileCacheOptionsFactory();
 
         var cacheOptionsCreator = new CacheOptionsCreator();
-        var result = cacheOptionsCreator.Create(fileCacheOptions, null, null, globalConfiguration);
+        var result = cacheOptionsCreator.Create(options, global, null, null);
 
-        result.TtlSeconds.ShouldBe(fileCacheOptions.TtlSeconds.Value);
-        result.Region.ShouldBe(fileCacheOptions.Region);
-        result.Header.ShouldBe(fileCacheOptions.Header);
-        result.EnableContentHashing.ShouldBe(fileCacheOptions.EnableContentHashing.Value);
+        result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
+        result.Region.ShouldBe(options.Region);
+        result.Header.ShouldBe(options.Header);
+        result.EnableContentHashing.ShouldBe(options.EnableContentHashing.Value);
     }
 
     [Fact]
@@ -56,7 +55,7 @@ public class CacheOptionsCreatorTests
     public void ShouldCreateCacheOptionsWithDefaults()
     {
         var cacheOptionsCreator = new CacheOptionsCreator();
-        var result = cacheOptionsCreator.Create(new FileCacheOptions(), "/", new List<string> { "GET" }, null);
+        var result = cacheOptionsCreator.Create(new FileCacheOptions(), null, "/", new List<string> { "GET" });
 
         result.TtlSeconds.ShouldBe(0);
         result.Region.ShouldBe("GET");
@@ -68,19 +67,19 @@ public class CacheOptionsCreatorTests
     [Trait("Issue", "2059")]
     public void ShouldComputeRegionIfNotProvided()
     {
-        var globalConfiguration = GlobalConfigurationFactory();
-        var fileCacheOptions = FileCacheOptionsFactory();
+        var global = GlobalConfigurationFactory();
+        var options = FileCacheOptionsFactory();
 
-        globalConfiguration.CacheOptions.Region = null;
-        fileCacheOptions.Region = null;
+        global.CacheOptions.Region = null;
+        options.Region = null;
 
         var cacheOptionsCreator = new CacheOptionsCreator();
-        var result = cacheOptionsCreator.Create(fileCacheOptions, "/api/values", new List<string> { "GET", "POST" }, globalConfiguration);
+        var result = cacheOptionsCreator.Create(options, global, "/api/values", new List<string> { "GET", "POST" });
 
-        result.TtlSeconds.ShouldBe(fileCacheOptions.TtlSeconds.Value);
+        result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
         result.Region.ShouldBe("GETPOSTapivalues");
-        result.Header.ShouldBe(fileCacheOptions.Header);
-        result.EnableContentHashing.ShouldBe(fileCacheOptions.EnableContentHashing.Value);
+        result.Header.ShouldBe(options.Header);
+        result.EnableContentHashing.ShouldBe(options.EnableContentHashing.Value);
     }
 
     private static FileGlobalConfiguration GlobalConfigurationFactory() => new()
