@@ -1,5 +1,4 @@
-﻿using Ocelot.Cache;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -17,7 +16,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IQoSOptionsCreator> _qosoCreator;
         private readonly Mock<IRouteOptionsCreator> _rroCreator;
         private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-        private readonly Mock<IRegionCreator> _rCreator;
+        private readonly Mock<ICacheOptionsCreator> _coCreator;
         private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
         private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
         private readonly Mock<IDownstreamAddressesCreator> _daCreator;
@@ -34,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration
         private List<ClaimToThing> _ctt;
         private QoSOptions _qoso;
         private RateLimitOptions _rlo;
-        private string _region;
+        private CacheOptions _cacheOptions;
         private HttpHandlerOptions _hho;
         private HeaderTransformations _ht;
         private List<DownstreamHostAndPort> _dhp;
@@ -51,7 +50,7 @@ namespace Ocelot.UnitTests.Configuration
             _qosoCreator = new Mock<IQoSOptionsCreator>();
             _rroCreator = new Mock<IRouteOptionsCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _rCreator = new Mock<IRegionCreator>();
+            _coCreator = new Mock<ICacheOptionsCreator>();
             _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
             _hfarCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _daCreator = new Mock<IDownstreamAddressesCreator>();
@@ -68,7 +67,7 @@ namespace Ocelot.UnitTests.Configuration
                 _qosoCreator.Object,
                 _rroCreator.Object,
                 _rloCreator.Object,
-                _rCreator.Object,
+                _coCreator.Object,
                 _hhoCreator.Object,
                 _hfarCreator.Object,
                 _daCreator.Object,
@@ -161,7 +160,8 @@ namespace Ocelot.UnitTests.Configuration
             _ctt = new List<ClaimToThing>();
             _qoso = new QoSOptionsBuilder().Build();
             _rlo = new RateLimitOptionsBuilder().Build();
-            _region = "vesty";
+
+            _cacheOptions = new CacheOptions(0, "vesty", null, false);
             _hho = new HttpHandlerOptionsBuilder().Build();
             _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
             _dhp = new List<DownstreamHostAndPort>();
@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
             _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
             _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-            _rCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_region);
+            _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
             _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
@@ -222,8 +222,8 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].DownstreamRoute[0].ClaimsToClaims.ShouldBe(_ctt);
             _result[routeIndex].DownstreamRoute[0].QosOptions.ShouldBe(_qoso);
             _result[routeIndex].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_region);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(expected.FileCacheOptions.TtlSeconds);
+            _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_cacheOptions.Region);
+            _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(0);
             _result[routeIndex].DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_hho);
             _result[routeIndex].DownstreamRoute[0].UpstreamHeadersFindAndReplace.ShouldBe(_ht.Upstream);
             _result[routeIndex].DownstreamRoute[0].DownstreamHeadersFindAndReplace.ShouldBe(_ht.Downstream);
@@ -264,7 +264,7 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
             _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
             _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
-            _rCreator.Verify(x => x.Create(fileRoute), Times.Once);
+            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);

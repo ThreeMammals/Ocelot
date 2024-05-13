@@ -1,4 +1,3 @@
-using Ocelot.Cache;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
@@ -14,7 +13,7 @@ namespace Ocelot.Configuration.Creator
         private readonly IQoSOptionsCreator _qosOptionsCreator;
         private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
-        private readonly IRegionCreator _regionCreator;
+        private readonly ICacheOptionsCreator _cacheOptionsCreator;
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
         private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
         private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
@@ -30,21 +29,20 @@ namespace Ocelot.Configuration.Creator
             IQoSOptionsCreator qosOptionsCreator,
             IRouteOptionsCreator fileRouteOptionsCreator,
             IRateLimitOptionsCreator rateLimitOptionsCreator,
-            IRegionCreator regionCreator,
+            ICacheOptionsCreator cacheOptionsCreator,
             IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
             IHeaderFindAndReplaceCreator headerFAndRCreator,
             IDownstreamAddressesCreator downstreamAddressesCreator,
             ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
             IRouteKeyCreator routeKeyCreator,
             ISecurityOptionsCreator securityOptionsCreator,
-            IVersionCreator versionCreator
-            )
+            IVersionCreator versionCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
             _downstreamAddressesCreator = downstreamAddressesCreator;
             _headerFAndRCreator = headerFAndRCreator;
-            _regionCreator = regionCreator;
+            _cacheOptionsCreator = cacheOptionsCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
@@ -93,8 +91,6 @@ namespace Ocelot.Configuration.Creator
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
 
-            var region = _regionCreator.Create(fileRoute);
-
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
 
             var hAndRs = _headerFAndRCreator.Create(fileRoute);
@@ -106,6 +102,8 @@ namespace Ocelot.Configuration.Creator
             var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions);
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
+
+            var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
@@ -122,7 +120,7 @@ namespace Ocelot.Configuration.Creator
                 .WithClaimsToDownstreamPath(claimsToDownstreamPath)
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileRouteOptions.IsCached)
-                .WithCacheOptions(new CacheOptions(fileRoute.FileCacheOptions.TtlSeconds, region, fileRoute.FileCacheOptions.Header))
+                .WithCacheOptions(cacheOptions)
                 .WithDownstreamScheme(fileRoute.DownstreamScheme)
                 .WithLoadBalancerOptions(lbOptions)
                 .WithDownstreamAddresses(downstreamAddresses)

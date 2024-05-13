@@ -19,7 +19,7 @@ public class DownstreamRouteBuilder
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
     private bool _isCached;
-    private CacheOptions _fileCacheOptions;
+    private CacheOptions _cacheOptions;
     private string _downstreamScheme;
     private LoadBalancerOptions _loadBalancerOptions;
     private QoSOptions _qosOptions;
@@ -87,7 +87,7 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
     {
-        _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
+        _upstreamHttpMethod = input.Count == 0 ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
         return this;
     }
 
@@ -147,7 +147,7 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder WithCacheOptions(CacheOptions input)
     {
-        _fileCacheOptions = input;
+        _cacheOptions = input;
         return this;
     }
 
@@ -276,7 +276,7 @@ public class DownstreamRouteBuilder
             _downstreamScheme,
             _requestIdHeaderKey,
             _isCached,
-            _fileCacheOptions,
+            _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,
             _routeClaimRequirement,

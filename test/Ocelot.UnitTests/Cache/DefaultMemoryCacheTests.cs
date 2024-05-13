@@ -3,13 +3,13 @@ using Ocelot.Cache;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class AspMemoryCacheTests : UnitTest
+    public class DefaultMemoryCacheTests : UnitTest
     {
-        private readonly AspMemoryCache<Fake> _cache;
+        private readonly DefaultMemoryCache<Fake> _cache;
 
-        public AspMemoryCacheTests()
+        public DefaultMemoryCacheTests()
         {
-            _cache = new AspMemoryCache<Fake>(new MemoryCache(new MemoryCacheOptions()));
+            _cache = new DefaultMemoryCache<Fake>(new MemoryCache(new MemoryCacheOptions()));
         }
 
         [Fact]

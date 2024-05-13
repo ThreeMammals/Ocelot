@@ -2,12 +2,12 @@
 
 namespace Ocelot.Cache
 {
-    public class AspMemoryCache<T> : IOcelotCache<T>
+    public class DefaultMemoryCache<T> : IOcelotCache<T>
     {
         private readonly IMemoryCache _memoryCache;
         private readonly Dictionary<string, List<string>> _regions;
 
-        public AspMemoryCache(IMemoryCache memoryCache)
+        public DefaultMemoryCache(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
             _regions = new Dictionary<string, List<string>>();
