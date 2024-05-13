@@ -3,10 +3,11 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
+[Trait("Feat", "2058")]
+[Trait("Bug", "2059")]
 public class CacheOptionsCreatorTests
 {
     [Fact]
-    [Trait("Issue", "2059")]
     public void ShouldCreateCacheOptions()
     {
         var options = FileCacheOptionsFactory();
@@ -20,7 +21,6 @@ public class CacheOptionsCreatorTests
     }
 
     [Fact]
-    [Trait("Issue", "2059")]
     public void ShouldCreateCacheOptionsUsingGlobalConfiguration()
     {
         var global = GlobalConfigurationFactory();
@@ -35,7 +35,6 @@ public class CacheOptionsCreatorTests
     }
 
     [Fact]
-    [Trait("Issue", "2059")]
     public void RouteCacheOptionsShouldOverrideGlobalConfiguration()
     {
         var global = GlobalConfigurationFactory();
@@ -51,7 +50,6 @@ public class CacheOptionsCreatorTests
     }
 
     [Fact]
-    [Trait("Issue", "2059")]
     public void ShouldCreateCacheOptionsWithDefaults()
     {
         var cacheOptionsCreator = new CacheOptionsCreator();
@@ -64,7 +62,6 @@ public class CacheOptionsCreatorTests
     }
 
     [Fact]
-    [Trait("Issue", "2059")]
     public void ShouldComputeRegionIfNotProvided()
     {
         var global = GlobalConfigurationFactory();

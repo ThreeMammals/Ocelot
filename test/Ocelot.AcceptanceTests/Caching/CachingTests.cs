@@ -119,7 +119,8 @@ namespace Ocelot.AcceptanceTests.Caching
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Trait("Issue", "2059")]
+        [Trait("Feat", "2058")]
+        [Trait("Bug", "2059")]
         public void Should_return_different_cached_response_when_request_body_changes_and_EnableContentHashing_is_true(bool asGlobalConfig)
         {
             var port = PortFinder.GetRandomPort();
@@ -128,7 +129,6 @@ namespace Ocelot.AcceptanceTests.Caching
                 TtlSeconds = 100,
                 EnableContentHashing = true,
             };
-
             var (testBody1String, testBody2String) = TestBodiesFactory();
             var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 
@@ -154,7 +154,8 @@ namespace Ocelot.AcceptanceTests.Caching
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Trait("Issue", "2059")]
+        [Trait("Feat", "2058")]
+        [Trait("Bug", "2059")]
         public void Should_return_same_cached_response_when_request_body_changes_and_EnableContentHashing_is_false(bool asGlobalConfig)
         {
             var port = PortFinder.GetRandomPort();
@@ -162,7 +163,6 @@ namespace Ocelot.AcceptanceTests.Caching
             {
                 TtlSeconds = 100,
             };
-
             var (testBody1String, testBody2String) = TestBodiesFactory();
             var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 

@@ -8,9 +8,8 @@ namespace Ocelot.Configuration.Creator;
 public interface ICacheOptionsCreator
 {
     /// <summary>
-    /// Creates cache options based on the file cache options, upstream path template and upstream HTTP methods.
-    /// Upstream path template and upstream HTTP methods are used to get the region name.
-    /// </summary>
+    /// Creates cache options based on the file cache options, upstream path template and upstream HTTP methods.</summary>
+    /// <remarks>Upstream path template and upstream HTTP methods are used to get the region name.</remarks>
     /// <param name="options">The file cache options.</param>
     /// <param name="global">The global configuration.</param>
     /// <param name="upstreamPathTemplate">The upstream path template as string.</param>
