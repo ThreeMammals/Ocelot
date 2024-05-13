@@ -165,7 +165,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/",
-                        CacheOptions = new FileCacheOptions
+                        FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                             Region = "Geoff",
@@ -185,7 +185,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test",
-                        CacheOptions = new FileCacheOptions
+                        FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                             Region = "Dave",
@@ -449,7 +449,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/",
-                        CacheOptions = new FileCacheOptions
+                        FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                         },
@@ -468,7 +468,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test",
-                        CacheOptions = new FileCacheOptions
+                        FileCacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                         },

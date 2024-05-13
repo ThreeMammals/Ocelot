@@ -36,7 +36,7 @@ Finally, in order to use caching on a route in your Route configuration add this
 
 .. code-block:: json
 
-    "CacheOptions": { // obsolete name is FileCacheOptions
+    "FileCacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
       "Header": "OC-Caching-Control",
@@ -48,8 +48,6 @@ The **Region** represents a region of caching.
 
 Additionally, if a header name is defined in the **Header** property, that header value is looked up by the key (header name) in the ``HttpRequest`` headers,
 and if the header is found, its value will be included in caching key. This causes the cache to become invalid due to the header value changing.
-
-    **Note** that the ``FileCacheOptions`` name has been deprecated as of version `23.3`_; therefore, use ``CacheOptions`` to specify options at the route level.
 
 ``EnableContentHashing`` option
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

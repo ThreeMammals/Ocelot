@@ -19,7 +19,7 @@ namespace Ocelot.Configuration.Creator
             var isAuthorized = fileRoute.RouteClaimsRequirement?.Any() == true;
 
             // TODO: This sounds more like a hack, it might be better to refactor this at some point.
-            var isCached = (fileRoute.CacheOptions?.TtlSeconds ?? fileRoute.FileCacheOptions?.TtlSeconds ?? 0) > 0;
+            var isCached = fileRoute.FileCacheOptions.TtlSeconds > 0;
             var enableRateLimiting = fileRoute.RateLimitOptions?.EnableRateLimiting == true;
             var useServiceDiscovery = !string.IsNullOrEmpty(fileRoute.ServiceName);
 

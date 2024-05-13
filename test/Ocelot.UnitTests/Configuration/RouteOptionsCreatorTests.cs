@@ -132,7 +132,7 @@ public class RouteOptionsCreatorTests : UnitTest
             {
                 {string.Empty, string.Empty},
             },
-            CacheOptions = new FileCacheOptions
+            FileCacheOptions = new FileCacheOptions
             {
                 TtlSeconds = 1,
             },
