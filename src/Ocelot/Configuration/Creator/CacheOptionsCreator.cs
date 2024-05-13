@@ -21,7 +21,7 @@ public class CacheOptionsCreator : ICacheOptionsCreator
             return region;
         }
 
-        var methods = string.Join(string.Empty, upstreamHttpMethod.Select(m => m));
+        var methods = string.Join(string.Empty, upstreamHttpMethod);
         return $"{methods}{upstreamPathTemplate.Replace("/", string.Empty)}";
     }
 }
