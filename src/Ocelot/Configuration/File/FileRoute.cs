@@ -13,6 +13,7 @@
             DownstreamHeaderTransform = new Dictionary<string, string>();
             DownstreamHostAndPorts = new List<FileHostAndPort>();
             CacheOptions = new FileCacheOptions();
+            FileCacheOptions = new FileCacheOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             LoadBalancerOptions = new FileLoadBalancerOptions();
             Priority = 1;
@@ -92,6 +93,7 @@
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
             to.CacheOptions = new(from.CacheOptions);
+            to.FileCacheOptions = new(from.FileCacheOptions);
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;
             to.LoadBalancerOptions = new(from.LoadBalancerOptions);
