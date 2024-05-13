@@ -264,7 +264,7 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
             _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
             _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
-            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
+            _coCreator.Verify(x => x.Create(fileRoute.CacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);

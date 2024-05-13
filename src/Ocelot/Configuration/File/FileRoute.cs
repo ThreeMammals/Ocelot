@@ -12,7 +12,7 @@
             DelegatingHandlers = new List<string>();
             DownstreamHeaderTransform = new Dictionary<string, string>();
             DownstreamHostAndPorts = new List<FileHostAndPort>();
-            FileCacheOptions = new FileCacheOptions();
+            CacheOptions = new FileCacheOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             LoadBalancerOptions = new FileLoadBalancerOptions();
             Priority = 1;
@@ -42,7 +42,11 @@
         public string DownstreamHttpVersion { get; set; }
         public string DownstreamPathTemplate { get; set; }
         public string DownstreamScheme { get; set; }
+
+        [Obsolete]
         public FileCacheOptions FileCacheOptions { get; set; }
+        public FileCacheOptions CacheOptions { get; set; }
+
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public string Key { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
@@ -87,7 +91,7 @@
             to.DownstreamHttpVersion = from.DownstreamHttpVersion;
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
-            to.FileCacheOptions = new(from.FileCacheOptions);
+            to.CacheOptions = new(from.CacheOptions);
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;
             to.LoadBalancerOptions = new(from.LoadBalancerOptions);

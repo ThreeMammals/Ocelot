@@ -54,7 +54,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/",
-                        FileCacheOptions = new FileCacheOptions
+                        CacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                         },
@@ -73,7 +73,7 @@ namespace Ocelot.IntegrationTests
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
                         UpstreamPathTemplate = "/test",
-                        FileCacheOptions = new FileCacheOptions
+                        CacheOptions = new FileCacheOptions
                         {
                             TtlSeconds = 10,
                         },

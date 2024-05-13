@@ -29,7 +29,7 @@ namespace Ocelot.UnitTests.Cache
         {
             var route = new FileRoute
             {
-                FileCacheOptions = new FileCacheOptions
+                CacheOptions = new FileCacheOptions
                 {
                     Region = "region",
                 },
@@ -49,7 +49,7 @@ namespace Ocelot.UnitTests.Cache
         private void WhenICreateTheRegion()
         {
             var cacheOptionsCreator = new CacheOptionsCreator();
-            _cacheOptions = cacheOptionsCreator.Create(_route.FileCacheOptions, new FileGlobalConfiguration(), _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
+            _cacheOptions = cacheOptionsCreator.Create(_route.CacheOptions, new FileGlobalConfiguration(), _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
         }
 
         private void ThenTheRegionIs(string expected)

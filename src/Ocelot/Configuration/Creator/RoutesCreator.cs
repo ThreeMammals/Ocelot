@@ -103,7 +103,7 @@ namespace Ocelot.Configuration.Creator
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 
-            var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
+            var cacheOptions = _cacheOptionsCreator.Create(fileRoute.CacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
