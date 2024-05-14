@@ -18,17 +18,20 @@ public static class ConsulProviderFactory
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
+    private static ConsulRegistryConfiguration configuration;
+    private static ConsulRegistryConfiguration ConfigurationGetter() => configuration;
+    public static Func<ConsulRegistryConfiguration> GetConfiguration { get; } = ConfigurationGetter;
+
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider,
         ServiceProviderConfiguration config, DownstreamRoute route)
     {
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
+
+        configuration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
         var serviceBuilder = provider.GetService<IConsulServiceBuilder>();
 
-        var consulRegistryConfiguration = new ConsulRegistryConfiguration(
-            config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
-
-        var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory, serviceBuilder);
+        var consulProvider = new Consul(configuration, factory, consulFactory, serviceBuilder);
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {

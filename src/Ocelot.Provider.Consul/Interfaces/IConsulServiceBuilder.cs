@@ -4,5 +4,6 @@ namespace Ocelot.Provider.Consul.Interfaces;
 
 public interface IConsulServiceBuilder
 {
-    Task<Service> BuildServiceAsync(IConsulClient client, ConsulRegistryConfiguration configuration, ServiceEntry entry);
+    Service BuildService(ServiceEntry entry, IEnumerable<Node> nodes);
+    Task<Service> BuildServiceAsync(ServiceEntry entry, IEnumerable<Node> nodes);
 }

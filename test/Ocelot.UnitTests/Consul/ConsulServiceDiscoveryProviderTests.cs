@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Consul
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
             _clientFactory = new ConsulClientFactory();
-            _serviceBuilder = new ConsulServiceBuilder();
+            _serviceBuilder = new ConsulServiceBuilder(() => config, _clientFactory, _factory.Object);
             _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
         }
 

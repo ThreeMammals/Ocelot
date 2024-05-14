@@ -1,4 +1,5 @@
 ﻿using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Values;
 
@@ -6,10 +7,37 @@ namespace Ocelot.Provider.Consul;
 
 public class ConsulServiceBuilder : IConsulServiceBuilder
 {
-    public async Task<Service> BuildServiceAsync(IConsulClient client, ConsulRegistryConfiguration configuration, ServiceEntry entry)
+    private readonly ConsulRegistryConfiguration _configuration;
+    private readonly IConsulClient _client;
+    private readonly IOcelotLogger _logger;
+
+    public ConsulServiceBuilder(
+        Func<ConsulRegistryConfiguration> configurationFactory,
+        IConsulClientFactory clientFactory,
+        IOcelotLoggerFactory loggerFactory)
     {
-        var nodes = await client.Catalog.Nodes();
-        Node serviceNode = nodes?.Response?.FirstOrDefault(n => n.Address == entry.Service.Address);
+        _configuration = configurationFactory.Invoke();
+        _client = clientFactory.Get(_configuration);
+        _logger = loggerFactory.CreateLogger<ConsulServiceBuilder>();
+    }
+
+    public virtual Service BuildService(ServiceEntry entry, IEnumerable<Node> nodes)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        nodes ??= _client.Catalog.Nodes().Result?.Response;
+        return BuildServiceInternal(entry, nodes);
+    }
+
+    public virtual async Task<Service> BuildServiceAsync(ServiceEntry entry, IEnumerable<Node> nodes)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        nodes ??= (await _client.Catalog.Nodes())?.Response;
+        return BuildServiceInternal(entry, nodes);
+    }
+
+    protected virtual Service BuildServiceInternal(ServiceEntry entry, IEnumerable<Node> nodes)
+    {
+        var serviceNode = nodes?.FirstOrDefault(n => n.Address == entry.Service.Address);
         return CreateService(entry, serviceNode);
     }
 

@@ -12,7 +12,9 @@ public static class OcelotBuilderExtensions
     {
         builder.Services
             .AddSingleton(ConsulProviderFactory.Get)
+            .AddSingleton(ConsulProviderFactory.GetConfiguration)
             .AddSingleton<IConsulClientFactory, ConsulClientFactory>()
+            .AddSingleton<IConsulServiceBuilder, ConsulServiceBuilder>()
             .RemoveAll(typeof(IFileConfigurationPollerOptions))
             .AddSingleton<IFileConfigurationPollerOptions, ConsulFileConfigurationPollerOption>();
         return builder;

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Ocelot.Infrastructure.Extensions;
-using Ocelot.Logging;
+﻿using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -9,7 +7,6 @@ namespace Ocelot.Provider.Consul;
 
 public class Consul : IServiceDiscoveryProvider
 {
-    private const string VersionPrefix = "version-";
     private readonly ConsulRegistryConfiguration _config;
     private readonly IConsulClient _consul;
     private readonly IOcelotLogger _logger;
@@ -27,17 +24,22 @@ public class Consul : IServiceDiscoveryProvider
         _serviceBuilder = serviceBuilder;
     }
 
-    public async Task<List<Service>> GetAsync()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var services = new List<Service>();
-        var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
+        var entriesTask = _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
+        var nodesTask = _consul.Catalog.Nodes();
 
-        foreach (var serviceEntry in queryResult.Response)
+        await Task.WhenAll(entriesTask, nodesTask);
+
+        var entries = entriesTask.Result.Response;
+        var nodes = nodesTask.Result.Response;
+
+        foreach (var serviceEntry in entries)
         {
-            var service = serviceEntry.Service;
-            if (IsValid(service))
+            if (IsValid(serviceEntry))
             {
-                var item = await _serviceBuilder.BuildServiceAsync(_consul, _config, serviceEntry);
+                var item = _serviceBuilder.BuildService(serviceEntry, nodes);
                 if (item != null)
                 {
                     services.Add(item);
@@ -45,6 +47,7 @@ public class Consul : IServiceDiscoveryProvider
             }
             else
             {
+                var service = serviceEntry.Service;
                 _logger.LogWarning(
                     () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
             }
@@ -53,26 +56,12 @@ public class Consul : IServiceDiscoveryProvider
         return services;
     }
 
-    private static Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
+    protected virtual bool IsValid(ServiceEntry entry)
     {
-        var service = serviceEntry.Service;
-        return new Service(
-            service.Service,
-            new ServiceHostAndPort(
-                serviceNode == null ? service.Address : serviceNode.Name,
-                service.Port),
-            service.ID,
-            GetVersionFromStrings(service.Tags),
-            service.Tags ?? Enumerable.Empty<string>());
+        var address = entry.Service.Address;
+        return !string.IsNullOrEmpty(address)
+            && !address.Contains($"{Uri.UriSchemeHttp}://")
+            && !address.Contains($"{Uri.UriSchemeHttps}://")
+            && entry.Service.Port > 0;
     }
-
-    private static bool IsValid(AgentService service)
-        => !string.IsNullOrEmpty(service.Address)
-        && !service.Address.Contains($"{Uri.UriSchemeHttp}://")
-        && !service.Address.Contains($"{Uri.UriSchemeHttps}://")
-        && service.Port > 0;
-
-    private static string GetVersionFromStrings(IEnumerable<string> strings)
-        => strings?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
-            .TrimStart(VersionPrefix);
 }
