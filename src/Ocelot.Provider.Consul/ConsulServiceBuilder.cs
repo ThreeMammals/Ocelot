@@ -21,42 +21,71 @@ public class ConsulServiceBuilder : IConsulServiceBuilder
         _logger = loggerFactory.CreateLogger<ConsulServiceBuilder>();
     }
 
-    public virtual Service BuildService(ServiceEntry entry, IEnumerable<Node> nodes)
+    public ConsulRegistryConfiguration Configuration => _configuration;
+
+    public virtual bool IsValid(ServiceEntry entry)
     {
-        ArgumentNullException.ThrowIfNull(entry);
-        nodes ??= _client.Catalog.Nodes().Result?.Response;
-        return BuildServiceInternal(entry, nodes);
+        var address = entry.Service.Address;
+        return !string.IsNullOrEmpty(address)
+            && !address.Contains($"{Uri.UriSchemeHttp}://")
+            && !address.Contains($"{Uri.UriSchemeHttps}://")
+            && entry.Service.Port > 0;
     }
 
-    public virtual async Task<Service> BuildServiceAsync(ServiceEntry entry, IEnumerable<Node> nodes)
+    public virtual IEnumerable<Service> BuildServices(ServiceEntry[] entries, Node[] nodes)
     {
-        ArgumentNullException.ThrowIfNull(entry);
-        nodes ??= (await _client.Catalog.Nodes())?.Response;
-        return BuildServiceInternal(entry, nodes);
+        ArgumentNullException.ThrowIfNull(entries);
+        var services = new List<Service>();
+
+        foreach (var serviceEntry in entries)
+        {
+            var service = serviceEntry.Service;
+            if (IsValid(serviceEntry))
+            {
+                var serviceNode = nodes?.FirstOrDefault(n => n.Address == service.Address);
+                var item = CreateService(serviceEntry, serviceNode);
+                if (item != null)
+                {
+                    services.Add(item);
+                }
+            }
+            else
+            {
+                _logger.LogWarning(
+                    () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
+            }
+        }
+
+        return services;
     }
 
-    protected virtual Service BuildServiceInternal(ServiceEntry entry, IEnumerable<Node> nodes)
-    {
-        var serviceNode = nodes?.FirstOrDefault(n => n.Address == entry.Service.Address);
-        return CreateService(entry, serviceNode);
-    }
+    public virtual Service CreateService(ServiceEntry entry, Node node)
+        => new(
+            GetServiceName(entry, node),
+            GetServiceHostAndPort(entry, node),
+            GetServiceId(entry, node),
+            GetServiceVersion(entry, node),
+            GetServiceTags(entry, node)
+        );
 
-    private static Service CreateService(ServiceEntry serviceEntry, Node serviceNode)
-    {
-        var service = serviceEntry.Service;
-        return new Service(
-            service.Service,
-            new ServiceHostAndPort(
-                serviceNode == null ? service.Address : serviceNode.Name,
-                service.Port),
-            service.ID,
-            GetVersionFromStrings(service.Tags),
-            service.Tags ?? Enumerable.Empty<string>());
-    }
+    protected virtual string GetServiceName(ServiceEntry entry, Node node)
+        => entry.Service.Service;
+
+    protected virtual ServiceHostAndPort GetServiceHostAndPort(ServiceEntry entry, Node node)
+        => new(
+            downstreamHost: node != null ? node.Name : entry.Service.Address,
+            downstreamPort: entry.Service.Port);
+
+    protected virtual string GetServiceId(ServiceEntry entry, Node serviceNode)
+        => entry.Service.ID;
+
+    protected virtual string GetServiceVersion(ServiceEntry entry, Node serviceNode)
+        => entry.Service.Tags?
+            .FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
+            .TrimStart(VersionPrefix);
+
+    protected virtual IEnumerable<string> GetServiceTags(ServiceEntry entry, Node serviceNode)
+        => entry.Service.Tags ?? Enumerable.Empty<string>();
 
     private const string VersionPrefix = "version-";
-
-    private static string GetVersionFromStrings(IEnumerable<string> strings)
-        => strings?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
-            .TrimStart(VersionPrefix);
 }

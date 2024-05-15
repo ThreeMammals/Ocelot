@@ -40,6 +40,7 @@ namespace Ocelot.UnitTests.Consul
             _logger = new Mock<IOcelotLogger>();
             _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
             _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
+            _factory.Setup(x => x.CreateLogger<ConsulServiceBuilder>()).Returns(_logger.Object);
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
             _clientFactory = new ConsulClientFactory();
             _serviceBuilder = new ConsulServiceBuilder(() => config, _clientFactory, _factory.Object);
