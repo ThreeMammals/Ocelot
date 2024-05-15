@@ -22,6 +22,8 @@ public class ConsulServiceBuilder : IConsulServiceBuilder
     }
 
     public ConsulRegistryConfiguration Configuration => _configuration;
+    protected IConsulClient Client => _client;
+    protected IOcelotLogger Logger => _logger;
 
     public virtual bool IsValid(ServiceEntry entry)
     {
@@ -42,7 +44,7 @@ public class ConsulServiceBuilder : IConsulServiceBuilder
             var service = serviceEntry.Service;
             if (IsValid(serviceEntry))
             {
-                var serviceNode = nodes?.FirstOrDefault(n => n.Address == service.Address);
+                var serviceNode = GetNode(serviceEntry, nodes);
                 var item = CreateService(serviceEntry, serviceNode);
                 if (item != null)
                 {
@@ -59,6 +61,9 @@ public class ConsulServiceBuilder : IConsulServiceBuilder
         return services;
     }
 
+    protected virtual Node GetNode(ServiceEntry entry, Node[] nodes)
+        => nodes?.FirstOrDefault(n => n.Address == entry?.Service?.Address);
+
     public virtual Service CreateService(ServiceEntry entry, Node node)
         => new(
             GetServiceName(entry, node),
@@ -73,8 +78,11 @@ public class ConsulServiceBuilder : IConsulServiceBuilder
 
     protected virtual ServiceHostAndPort GetServiceHostAndPort(ServiceEntry entry, Node node)
         => new(
-            downstreamHost: node != null ? node.Name : entry.Service.Address,
-            downstreamPort: entry.Service.Port);
+            GetDownstreamHost(entry, node),
+            entry.Service.Port);
+
+    protected virtual string GetDownstreamHost(ServiceEntry entry, Node node)
+        => node != null ? node.Name : entry.Service.Address;
 
     protected virtual string GetServiceId(ServiceEntry entry, Node serviceNode)
         => entry.Service.ID;
