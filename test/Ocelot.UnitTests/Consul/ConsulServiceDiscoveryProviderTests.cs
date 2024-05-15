@@ -48,8 +48,9 @@ namespace Ocelot.UnitTests.Consul
         }
 
         [Fact]
-        public void should_return_service_from_consul()
+        public void Should_return_service_from_consul()
         {
+            // Arrange
             var serviceEntryOne = new ServiceEntry
             {
                 Service = new AgentService
@@ -61,21 +62,23 @@ namespace Ocelot.UnitTests.Consul
                     Tags = Array.Empty<string>(),
                 },
             };
+            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
+            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne);
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
-                .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-                .When(x => WhenIGetTheServices())
-                .Then(x => ThenTheCountIs(1))
-                .BDDfy();
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(1);
         }
 
         [Fact]
-        public void should_use_token()
+        public void Should_use_token()
         {
+            // Arrange
             var token = "test token";
             var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
             _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
-
             var serviceEntryOne = new ServiceEntry
             {
                 Service = new AgentService
@@ -87,63 +90,74 @@ namespace Ocelot.UnitTests.Consul
                     Tags = Array.Empty<string>(),
                 },
             };
+            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
+            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne);
 
-            this.Given(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
-                .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-                .When(_ => WhenIGetTheServices())
-                .Then(_ => ThenTheCountIs(1))
-                .And(_ => ThenTheTokenIs(token))
-                .BDDfy();
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(1);
+            ThenTheTokenIs(token);
         }
 
         [Fact]
-        public void should_not_return_services_with_invalid_address()
+        public void Should_not_return_services_with_invalid_address()
         {
+            // Arrange
             var serviceEntryOne = GivenService(address: "http://localhost", port: 50881)
                 .ToServiceEntry();
             var serviceEntryTwo = GivenService(address: "http://localhost", port: 50888)
                 .ToServiceEntry();
+            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
+            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
-                .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-                .When(x => WhenIGetTheServices())
-                .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
-                .BDDfy();
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(0);
+            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
         }
 
         [Fact]
-        public void should_not_return_services_with_empty_address()
+        public void Should_not_return_services_with_empty_address()
         {
+            // Arrange
             var serviceEntryOne = GivenService(port: 50881)
                 .WithAddress(string.Empty)
                 .ToServiceEntry();
             var serviceEntryTwo = GivenService(port: 50888)
                 .WithAddress(null)
                 .ToServiceEntry();
+            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
+            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
-                .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-                .When(x => WhenIGetTheServices())
-                .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
-                .BDDfy();
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(0);
+            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
         }
 
         [Fact]
-        public void should_not_return_services_with_invalid_port()
+        public void Should_not_return_services_with_invalid_port()
         {
+            // Arrange
             var serviceEntryOne = GivenService(port: -1)
                 .ToServiceEntry();
             var serviceEntryTwo = GivenService(port: 0)
                 .ToServiceEntry();
+            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
+            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName))
-                .And(x => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-                .When(x => WhenIGetTheServices())
-                .Then(x => ThenTheCountIs(0))
-                .And(x => ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo))
-                .BDDfy();
+            // Act
+            WhenIGetTheServices();
+
+            // Assert
+            ThenTheCountIs(0);
+            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
         }
 
         private AgentService GivenService(string address = null, int? port = null, string id = null, string[] tags = null)
