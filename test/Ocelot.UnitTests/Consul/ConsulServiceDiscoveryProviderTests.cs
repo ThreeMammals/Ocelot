@@ -6,236 +6,187 @@ using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
-using Ocelot.Values;
+using System.Runtime.CompilerServices;
 using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
-namespace Ocelot.UnitTests.Consul
+namespace Ocelot.UnitTests.Consul;
+
+public sealed class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
 {
-    public class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
+    private readonly int _port;
+    private readonly string _consulHost;
+    private readonly string _consulScheme;
+    private readonly string _fakeConsulServiceDiscoveryUrl;
+    private readonly List<ServiceEntry> _consulServiceEntries;
+    private readonly Mock<IOcelotLoggerFactory> _factory;
+    private readonly Mock<IOcelotLogger> _logger;
+    private IConsulClientFactory _clientFactory;
+    private IConsulServiceBuilder _serviceBuilder;
+    private ConsulRegistryConfiguration _config;
+    private IWebHost _fakeConsulBuilder;
+    private ConsulProvider _provider;
+    private string _receivedToken;
+
+    public ConsulServiceDiscoveryProviderTests()
     {
-        private IWebHost _fakeConsulBuilder;
-        private readonly List<ServiceEntry> _serviceEntries;
-        private ConsulProvider _provider;
-        private readonly string _serviceName;
-        private readonly int _port;
-        private readonly string _consulHost;
-        private readonly string _consulScheme;
-        private readonly string _fakeConsulServiceDiscoveryUrl;
-        private List<Service> _services;
-        private readonly Mock<IOcelotLoggerFactory> _factory;
-        private readonly Mock<IOcelotLogger> _logger;
-        private string _receivedToken;
-        private readonly IConsulClientFactory _clientFactory;
-        private readonly IConsulServiceBuilder _serviceBuilder;
+        _port = 8500;
+        _consulHost = "localhost";
+        _consulScheme = "http";
+        _fakeConsulServiceDiscoveryUrl = $"{_consulScheme}://{_consulHost}:{_port}";
+        _consulServiceEntries = new List<ServiceEntry>();
+        _factory = new Mock<IOcelotLoggerFactory>();
+        _logger = new Mock<IOcelotLogger>();
+        _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
+        _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
+        _factory.Setup(x => x.CreateLogger<ConsulServiceBuilder>()).Returns(_logger.Object);
+    }
 
-        public ConsulServiceDiscoveryProviderTests()
+    public void Dispose()
+    {
+        _fakeConsulBuilder?.Dispose();
+    }
+
+    private void Arrange([CallerMemberName] string serviceName = null)
+    {
+        _config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, serviceName, null);
+        _clientFactory = new ConsulClientFactory();
+        _serviceBuilder = new ConsulServiceBuilder(() => _config, _clientFactory, _factory.Object);
+        _provider = new ConsulProvider(_config, _factory.Object, _clientFactory, _serviceBuilder);
+    }
+
+    [Fact]
+    public async Task Should_return_service_from_consul()
+    {
+        Arrange();
+        var service1 = GivenService(50881);
+        _consulServiceEntries.Add(service1.ToServiceEntry());
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Should_use_token()
+    {
+        Arrange();
+        const string token = "test token";
+        var service1 = GivenService(50881);
+        _consulServiceEntries.Add(service1.ToServiceEntry());
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+        var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, nameof(Should_use_token), token);
+        _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().Count.ShouldBe(1);
+        _receivedToken.ShouldBe(token);
+    }
+
+    [Fact]
+    public async Task Should_not_return_services_with_invalid_address()
+    {
+        Arrange();
+        var service1 = GivenService(50881, "http://localhost");
+        var service2 = GivenService(50888, "http://localhost");
+        _consulServiceEntries.Add(service1.ToServiceEntry());
+        _consulServiceEntries.Add(service2.ToServiceEntry());
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().Count.ShouldBe(0);
+        ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning();
+    }
+
+    [Fact]
+    public async Task Should_not_return_services_with_empty_address()
+    {
+        Arrange();
+        var service1 = GivenService(50881).WithAddress(string.Empty);
+        var service2 = GivenService(50888).WithAddress(null);
+        _consulServiceEntries.Add(service1.ToServiceEntry());
+        _consulServiceEntries.Add(service2.ToServiceEntry());
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().Count.ShouldBe(0);
+        ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning();
+    }
+
+    [Fact]
+    public async Task Should_not_return_services_with_invalid_port()
+    {
+        Arrange();
+        var service1 = GivenService(-1);
+        var service2 = GivenService(0);
+        _consulServiceEntries.Add(service1.ToServiceEntry());
+        _consulServiceEntries.Add(service2.ToServiceEntry());
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().Count.ShouldBe(0);
+        ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning();
+    }
+
+    private static AgentService GivenService(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null) => new()
+    {
+        Service = serviceName,
+        Address = address ?? "localhost",
+        Port = port,
+        ID = id ?? Guid.NewGuid().ToString(),
+        Tags = tags ?? Array.Empty<string>(),
+    };
+
+    private void ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning()
+    {
+        foreach (var entry in _consulServiceEntries)
         {
-            _serviceName = "test";
-            _port = 8500;
-            _consulHost = "localhost";
-            _consulScheme = "http";
-            _fakeConsulServiceDiscoveryUrl = $"{_consulScheme}://{_consulHost}:{_port}";
-            _serviceEntries = new List<ServiceEntry>();
-            _factory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
-            _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
-            _factory.Setup(x => x.CreateLogger<ConsulServiceBuilder>()).Returns(_logger.Object);
-            var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, null);
-            _clientFactory = new ConsulClientFactory();
-            _serviceBuilder = new ConsulServiceBuilder(() => config, _clientFactory, _factory.Object);
-            _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
+            var service = entry.Service;
+            var expected = $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
+            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == expected)), Times.Once);
         }
+    }
 
-        [Fact]
-        public void Should_return_service_from_consul()
-        {
-            // Arrange
-            var serviceEntryOne = new ServiceEntry
+    private void GivenThereIsAFakeConsulServiceDiscoveryProvider([CallerMemberName] string serviceName = "test")
+    {
+        _fakeConsulBuilder = new WebHostBuilder()
+            .UseUrls(_fakeConsulServiceDiscoveryUrl)
+            .UseKestrel()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseIISIntegration()
+            .UseUrls(_fakeConsulServiceDiscoveryUrl)
+            .Configure(app =>
             {
-                Service = new AgentService
+                app.Run(async context =>
                 {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
-            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne);
-
-            // Act
-            WhenIGetTheServices();
-
-            // Assert
-            ThenTheCountIs(1);
-        }
-
-        [Fact]
-        public void Should_use_token()
-        {
-            // Arrange
-            var token = "test token";
-            var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, _serviceName, token);
-            _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = _serviceName,
-                    Address = "localhost",
-                    Port = 50881,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
-            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne);
-
-            // Act
-            WhenIGetTheServices();
-
-            // Assert
-            ThenTheCountIs(1);
-            ThenTheTokenIs(token);
-        }
-
-        [Fact]
-        public void Should_not_return_services_with_invalid_address()
-        {
-            // Arrange
-            var serviceEntryOne = GivenService(address: "http://localhost", port: 50881)
-                .ToServiceEntry();
-            var serviceEntryTwo = GivenService(address: "http://localhost", port: 50888)
-                .ToServiceEntry();
-            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
-            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
-
-            // Act
-            WhenIGetTheServices();
-
-            // Assert
-            ThenTheCountIs(0);
-            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
-        }
-
-        [Fact]
-        public void Should_not_return_services_with_empty_address()
-        {
-            // Arrange
-            var serviceEntryOne = GivenService(port: 50881)
-                .WithAddress(string.Empty)
-                .ToServiceEntry();
-            var serviceEntryTwo = GivenService(port: 50888)
-                .WithAddress(null)
-                .ToServiceEntry();
-            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
-            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
-
-            // Act
-            WhenIGetTheServices();
-
-            // Assert
-            ThenTheCountIs(0);
-            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
-        }
-
-        [Fact]
-        public void Should_not_return_services_with_invalid_port()
-        {
-            // Arrange
-            var serviceEntryOne = GivenService(port: -1)
-                .ToServiceEntry();
-            var serviceEntryTwo = GivenService(port: 0)
-                .ToServiceEntry();
-            GivenThereIsAFakeConsulServiceDiscoveryProvider(_fakeConsulServiceDiscoveryUrl, _serviceName);
-            GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo);
-
-            // Act
-            WhenIGetTheServices();
-
-            // Assert
-            ThenTheCountIs(0);
-            ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(serviceEntryOne, serviceEntryTwo);
-        }
-
-        private AgentService GivenService(string address = null, int? port = null, string id = null, string[] tags = null)
-            => new()
-            {
-                Service = _serviceName,
-                Address = address ?? "localhost",
-                Port = port ?? 123,
-                ID = id ?? Guid.NewGuid().ToString(),
-                Tags = tags ?? Array.Empty<string>(),
-            };
-
-        private void ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning(params ServiceEntry[] serviceEntries)
-        {
-            foreach (var entry in serviceEntries)
-            {
-                var service = entry.Service;
-                var expected = $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.";
-                _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == expected)), Times.Once);
-            }
-        }
-
-        private void ThenTheCountIs(int count)
-        {
-            _services.Count.ShouldBe(count);
-        }
-
-        private void WhenIGetTheServices()
-        {
-            _services = _provider.GetAsync().GetAwaiter().GetResult();
-        }
-
-        private void ThenTheTokenIs(string token)
-        {
-            _receivedToken.ShouldBe(token);
-        }
-
-        private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries)
-        {
-            foreach (var serviceEntry in serviceEntries)
-            {
-                _serviceEntries.Add(serviceEntry);
-            }
-        }
-
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
-        {
-            _fakeConsulBuilder = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .Configure(app =>
-                {
-                    app.Run(async context =>
+                    if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                     {
-                        if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+                        if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
                         {
-                            if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
-                            {
-                                _receivedToken = values.First();
-                            }
-
-                            var json = JsonConvert.SerializeObject(_serviceEntries);
-                            context.Response.Headers.Append("Content-Type", "application/json");
-                            await context.Response.WriteAsync(json);
+                            _receivedToken = values.First();
                         }
-                    });
-                })
-                .Build();
 
-            _fakeConsulBuilder.Start();
-        }
-
-        public void Dispose()
-        {
-            _fakeConsulBuilder?.Dispose();
-        }
+                        var json = JsonConvert.SerializeObject(_consulServiceEntries);
+                        context.Response.Headers.Append("Content-Type", "application/json");
+                        await context.Response.WriteAsync(json);
+                    }
+                });
+            })
+            .Build();
+        _fakeConsulBuilder.Start();
     }
 }
