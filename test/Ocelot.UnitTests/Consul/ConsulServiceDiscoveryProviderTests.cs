@@ -38,7 +38,7 @@ public sealed class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
         _logger = new Mock<IOcelotLogger>();
         _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
         _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
-        _factory.Setup(x => x.CreateLogger<ConsulServiceBuilder>()).Returns(_logger.Object);
+        _factory.Setup(x => x.CreateLogger<DefaultConsulServiceBuilder>()).Returns(_logger.Object);
     }
 
     public void Dispose()
@@ -50,7 +50,7 @@ public sealed class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
     {
         _config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, serviceName, null);
         _clientFactory = new ConsulClientFactory();
-        _serviceBuilder = new ConsulServiceBuilder(() => _config, _clientFactory, _factory.Object);
+        _serviceBuilder = new DefaultConsulServiceBuilder(() => _config, _clientFactory, _factory.Object);
         _provider = new ConsulProvider(_config, _factory.Object, _clientFactory, _serviceBuilder);
     }
 

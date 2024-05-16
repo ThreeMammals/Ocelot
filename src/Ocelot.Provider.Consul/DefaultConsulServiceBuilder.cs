@@ -5,20 +5,20 @@ using Ocelot.Values;
 
 namespace Ocelot.Provider.Consul;
 
-public class ConsulServiceBuilder : IConsulServiceBuilder
+public class DefaultConsulServiceBuilder : IConsulServiceBuilder
 {
     private readonly ConsulRegistryConfiguration _configuration;
     private readonly IConsulClient _client;
     private readonly IOcelotLogger _logger;
 
-    public ConsulServiceBuilder(
+    public DefaultConsulServiceBuilder(
         Func<ConsulRegistryConfiguration> configurationFactory,
         IConsulClientFactory clientFactory,
         IOcelotLoggerFactory loggerFactory)
     {
         _configuration = configurationFactory.Invoke();
         _client = clientFactory.Get(_configuration);
-        _logger = loggerFactory.CreateLogger<ConsulServiceBuilder>();
+        _logger = loggerFactory.CreateLogger<DefaultConsulServiceBuilder>();
     }
 
     public ConsulRegistryConfiguration Configuration => _configuration;
