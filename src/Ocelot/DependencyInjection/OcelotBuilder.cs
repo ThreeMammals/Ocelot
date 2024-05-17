@@ -117,7 +117,8 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
-            Services.TryAddSingleton<IMetadataCreator, DefaultMetadataCreator>();
+            
+            Services.AddOcelotMetadata();
             Services.AddOcelotMessageInvokerPool();
 
             // See this for why we register this as singleton:

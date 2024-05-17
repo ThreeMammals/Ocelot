@@ -135,30 +135,31 @@ public static class DownstreamRouteExtensions
     }
 
     /// <summary>
-    /// Using reflection to invoke the Parse method of the numeric type
+    /// Converting string to the known numeric types
     /// </summary>
     /// <param name="value">The number as string.</param>
     /// <param name="targetType">The target numeric type.</param>
     /// <param name="provider">The current format provider.</param>
     /// <param name="numberStyle">The current number style configuration.</param>
     /// <returns>The parsed string as object of type targetType.</returns>
-    /// <exception cref="InvalidOperationException">Exception thrown if the type doesn't contain a "Parse" method. This shouldn't happen.</exception>
+    /// <exception cref="NotImplementedException">Exception thrown if the conversion for the type target type can't be found.</exception>
     private static object ConvertToNumericType(string value, Type targetType, IFormatProvider provider,
         NumberStyles numberStyle)
     {
-        MethodInfo parseMethod =
-            targetType.GetMethod("Parse", new[] { typeof(string), typeof(NumberStyles), typeof(IFormatProvider) }) ??
-            throw new InvalidOperationException("No suitable parse method found.");
-
-        try
+        return targetType switch
         {
-            // Invoke the parse method dynamically with the number style and format provider
-            return parseMethod.Invoke(null, new object[] { value, numberStyle, provider });
-        }
-        catch (TargetInvocationException e)
-        {
-            // if the parse method throws an exception, rethrow the inner exception
-            throw e.InnerException ?? e;
-        }
+            { } t when t == typeof(byte) => byte.Parse(value, numberStyle, provider),
+            { } t when t == typeof(sbyte) => sbyte.Parse(value, numberStyle, provider),
+            { } t when t == typeof(short) => short.Parse(value, numberStyle, provider),
+            { } t when t == typeof(ushort) => ushort.Parse(value, numberStyle, provider),
+            { } t when t == typeof(int) => int.Parse(value, numberStyle, provider),
+            { } t when t == typeof(uint) => uint.Parse(value, numberStyle, provider),
+            { } t when t == typeof(long) => long.Parse(value, numberStyle, provider),
+            { } t when t == typeof(ulong) => ulong.Parse(value, numberStyle, provider),
+            { } t when t == typeof(float) => float.Parse(value, numberStyle, provider),
+            { } t when t == typeof(double) => double.Parse(value, numberStyle, provider),
+            { } t when t == typeof(decimal) => decimal.Parse(value, numberStyle, provider),
+            _ => throw new NotImplementedException($"No conversion available for the type: {targetType.Name}"),
+        };
     }
 }

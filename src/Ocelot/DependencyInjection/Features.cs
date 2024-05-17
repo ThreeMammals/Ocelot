@@ -15,4 +15,12 @@ public static class Features
         .AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         .AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>()
         .AddSingleton<IHeaderPlaceholderNameAndValueFinder, HeaderPlaceholderNameAndValueFinder>();
+
+    /// <summary>
+    /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/metadata.rst">Inject custom metadata and use it in delegating handlers</see>.
+    /// </summary>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddOcelotMetadata(this IServiceCollection services) => 
+        services.AddSingleton<IMetadataCreator, DefaultMetadataCreator>();
 }

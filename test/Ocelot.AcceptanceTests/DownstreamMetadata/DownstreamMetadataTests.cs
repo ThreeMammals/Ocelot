@@ -4,7 +4,7 @@ using Ocelot.Metadata;
 using Ocelot.Middleware;
 using System.Globalization;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.DownstreamMetadata;
 
 public class DownstreamMetadataTests : IDisposable
 {
@@ -136,7 +136,9 @@ public class DownstreamMetadataTests : IDisposable
             {
                 MetadataOptions = new FileMetadataOptions
                 {
-                    Separators = separators, TrimChars = trimChars, StringSplitOption = stringSplitOption,
+                    Separators = separators,
+                    TrimChars = trimChars,
+                    StringSplitOption = stringSplitOption,
                 },
             },
         };
@@ -182,7 +184,8 @@ public class DownstreamMetadataTests : IDisposable
             {
                 MetadataOptions = new FileMetadataOptions
                 {
-                    NumberStyle = numberStyles.ToString(), CurrentCulture = cultureName,
+                    NumberStyle = numberStyles.ToString(),
+                    CurrentCulture = cultureName,
                 },
             },
         };
