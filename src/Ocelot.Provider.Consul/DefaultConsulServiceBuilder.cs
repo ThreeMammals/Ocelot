@@ -25,24 +25,31 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     protected IConsulClient Client => _client;
     protected IOcelotLogger Logger => _logger;
 
- public virtual bool IsValid(ServiceEntry entry)
-{
-    string address = entry.Service.Address;
-    return !string.IsNullOrEmpty(address)
-        && !address.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase)
-        && !address.StartsWith(Uri.UriSchemeHttps + "://", StringComparison.OrdinalIgnoreCase)
-        && entry.Service.Port > 0;
-}
+    public virtual bool IsValid(ServiceEntry entry)
+    {
+        var service = entry.Service;
+        var address = service.Address;
+        bool valid = !string.IsNullOrEmpty(address)
+            && !address.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase)
+            && !address.StartsWith(Uri.UriSchemeHttps + "://", StringComparison.OrdinalIgnoreCase)
+            && service.Port > 0;
 
+        if (!valid)
+        {
+            _logger.LogWarning(
+                () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
+        }
+
+        return valid;
+    }
 
     public virtual IEnumerable<Service> BuildServices(ServiceEntry[] entries, Node[] nodes)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        var services = new List<Service>();
+        var services = new List<Service>(entries.Length);
 
         foreach (var serviceEntry in entries)
         {
-            var service = serviceEntry.Service;
             if (IsValid(serviceEntry))
             {
                 var serviceNode = GetNode(serviceEntry, nodes);
@@ -51,11 +58,6 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
                 {
                     services.Add(item);
                 }
-            }
-            else
-            {
-                _logger.LogWarning(
-                    () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
             }
         }
 
