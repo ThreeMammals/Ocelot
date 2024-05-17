@@ -65,7 +65,7 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     }
 
     protected virtual Node GetNode(ServiceEntry entry, Node[] nodes)
-        => nodes?.FirstOrDefault(n => n.Address == entry?.Service?.Address);
+        => entry.Node ?? nodes?.FirstOrDefault(n => n.Address == entry?.Service?.Address);
 
     public virtual Service CreateService(ServiceEntry entry, Node node)
         => new(
