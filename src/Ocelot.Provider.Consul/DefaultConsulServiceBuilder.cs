@@ -25,14 +25,15 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     protected IConsulClient Client => _client;
     protected IOcelotLogger Logger => _logger;
 
-    public virtual bool IsValid(ServiceEntry entry)
-    {
-        var address = entry.Service.Address;
-        return !string.IsNullOrEmpty(address)
-            && !address.Contains($"{Uri.UriSchemeHttp}://")
-            && !address.Contains($"{Uri.UriSchemeHttps}://")
-            && entry.Service.Port > 0;
-    }
+ public virtual bool IsValid(ServiceEntry entry)
+{
+    string address = entry.Service.Address;
+    return !string.IsNullOrEmpty(address)
+        && !address.StartsWith(Uri.UriSchemeHttp + "://", StringComparison.OrdinalIgnoreCase)
+        && !address.StartsWith(Uri.UriSchemeHttps + "://", StringComparison.OrdinalIgnoreCase)
+        && entry.Service.Port > 0;
+}
+
 
     public virtual IEnumerable<Service> BuildServices(ServiceEntry[] entries, Node[] nodes)
     {
