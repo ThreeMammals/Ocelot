@@ -142,6 +142,23 @@ public sealed class ConsulTests : UnitTest, IDisposable
         ThenTheLoggerHasBeenCalledCorrectlyWithValidationWarning();
     }
 
+    [Fact]
+    public async Task GetAsync_NoEntries_ShouldLogWarning()
+    {
+        Arrange();
+        _consulServiceEntries.Clear(); // NoEntries
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
+        GivenThereIsAFakeConsulServiceDiscoveryProvider();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        actual.ShouldNotBeNull().ShouldBeEmpty();
+        var expected = $"Consul Provider: No service entries found for '{nameof(GetAsync_NoEntries_ShouldLogWarning)}' service!";
+        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == expected)), Times.Once);
+    }
+
     private static AgentService GivenService(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null) => new()
     {
         Service = serviceName,

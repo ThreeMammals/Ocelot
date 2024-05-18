@@ -65,7 +65,7 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     }
 
     protected virtual Node GetNode(ServiceEntry entry, Node[] nodes)
-        => entry.Node ?? nodes?.FirstOrDefault(n => n.Address == entry?.Service?.Address);
+        => entry?.Node ?? nodes?.FirstOrDefault(n => n.Address == entry?.Service?.Address);
 
     public virtual Service CreateService(ServiceEntry entry, Node node)
         => new(
@@ -87,15 +87,16 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     protected virtual string GetDownstreamHost(ServiceEntry entry, Node node)
         => node != null ? node.Name : entry.Service.Address;
 
-    protected virtual string GetServiceId(ServiceEntry entry, Node serviceNode)
+    protected virtual string GetServiceId(ServiceEntry entry, Node node)
         => entry.Service.ID;
 
-    protected virtual string GetServiceVersion(ServiceEntry entry, Node serviceNode)
-        => entry.Service.Tags?
-            .FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
-            .TrimStart(VersionPrefix);
+    protected virtual string GetServiceVersion(ServiceEntry entry, Node node)
+        => entry.Service.Tags
+            ?.FirstOrDefault(tag => tag.StartsWith(VersionPrefix, StringComparison.Ordinal))
+            ?.TrimStart(VersionPrefix)
+            ?? string.Empty;
 
-    protected virtual IEnumerable<string> GetServiceTags(ServiceEntry entry, Node serviceNode)
+    protected virtual IEnumerable<string> GetServiceTags(ServiceEntry entry, Node node)
         => entry.Service.Tags ?? Enumerable.Empty<string>();
 
     private const string VersionPrefix = "version-";
