@@ -11,7 +11,7 @@ using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
 namespace Ocelot.UnitTests.Consul;
 
-public sealed class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
+public sealed class ConsulTests : UnitTest, IDisposable
 {
     private readonly int _port;
     private readonly string _consulHost;
@@ -27,7 +27,7 @@ public sealed class ConsulServiceDiscoveryProviderTests : UnitTest, IDisposable
     private ConsulProvider _provider;
     private string _receivedToken;
 
-    public ConsulServiceDiscoveryProviderTests()
+    public ConsulTests()
     {
         _port = 8500;
         _consulHost = "localhost";
