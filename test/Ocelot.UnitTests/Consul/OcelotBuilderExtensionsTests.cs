@@ -5,69 +5,46 @@ using Ocelot.DependencyInjection;
 using Ocelot.Provider.Consul;
 using System.Reflection;
 
-namespace Ocelot.UnitTests.Consul
+namespace Ocelot.UnitTests.Consul;
+
+public class OcelotBuilderExtensionsTests : UnitTest
 {
-    public class OcelotBuilderExtensionsTests : UnitTest
+    private readonly IServiceCollection _services;
+    private readonly IConfiguration _configRoot;
+
+    public OcelotBuilderExtensionsTests()
     {
-        private readonly IServiceCollection _services;
-        private readonly IConfiguration _configRoot;
-        private IOcelotBuilder _ocelotBuilder;
-        private Exception _ex;
+        _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
+        _services = new ServiceCollection();
+        _services.AddSingleton(GetHostingEnvironment());
+        _services.AddSingleton(_configRoot);
+    }
 
-        public OcelotBuilderExtensionsTests()
+    private static IWebHostEnvironment GetHostingEnvironment()
+    {
+        var environment = new Mock<IWebHostEnvironment>();
+        environment.Setup(e => e.ApplicationName)
+            .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+        return environment.Object;
+    }
+
+    [Fact]
+    public void ShouldSetUpConsul()
+    {
+        // Arrange
+        Exception ex = null;
+        try
         {
-            _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
-            _services = new ServiceCollection();
-            _services.AddSingleton(GetHostingEnvironment());
-            _services.AddSingleton(_configRoot);
+            // Act
+            var ocelotBuilder = _services.AddOcelot(_configRoot);
+            ocelotBuilder.AddConsul().AddConfigStoredInConsul();
+        }
+        catch (Exception e)
+        {
+            ex = e;
         }
 
-        private static IWebHostEnvironment GetHostingEnvironment()
-        {
-            var environment = new Mock<IWebHostEnvironment>();
-            environment
-                .Setup(e => e.ApplicationName)
-                .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
-
-            return environment.Object;
-        }
-
-        [Fact]
-        public void should_set_up_consul()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpConsul())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
-
-        private void WhenISetUpOcelotServices()
-        {
-            try
-            {
-                _ocelotBuilder = _services.AddOcelot(_configRoot);
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpConsul()
-        {
-            try
-            {
-                _ocelotBuilder.AddConsul().AddConfigStoredInConsul();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void ThenAnExceptionIsntThrown()
-        {
-            _ex.ShouldBeNull();
-        }
+        // Assert
+        ex.ShouldBeNull();
     }
 }
