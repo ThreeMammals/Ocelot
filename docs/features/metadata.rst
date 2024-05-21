@@ -81,9 +81,9 @@ If the value is null, then, if not explicitely specified, the default for the ch
       - Notes
     * - ``GetMetadata<string>``
       - The metadata value is returned as string without further parsing
+      -  
     * - ``GetMetadata<string[]>``
-      - The metadata value is splitted by a given separator (default ``,``) and 
-        returned as a string array.
+      - The metadata value is splitted by a given separator (default ``,``) and returned as a string array.
       - Several parameters can be set in the global configuration, such as Separators (default = ``[","]``), StringSplitOptions (default ``None``) and TrimChars, the characters that should be trimmed (default = ``[' ']``).
     * - ``GetMetadata<Any known numeric type>``
       - The metadata value is parsed to a number.
@@ -97,4 +97,3 @@ If the value is null, then, if not explicitely specified, the default for the ch
     * - ``GetMetadata<bool?>``
       - Check if the metadata value is a truthy value (return true), or falsy value (return false), otherwise return null.
       - The known truthy values are: ``true``, ``yes``, ``ok``, ``on``, ``enable``, ``enabled``, ``1``, the known falsy values are: ``false``, ``no``, ``off``, ``disable``, ``disabled``, ``0``
-
