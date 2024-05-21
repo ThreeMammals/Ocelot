@@ -4,6 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
+[Trait("Feat", "738")]
 public class DefaultMetadataCreatorTests : UnitTest
 {
     private FileGlobalConfiguration _globalConfiguration;

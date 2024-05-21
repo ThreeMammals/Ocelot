@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace Ocelot.UnitTests.Configuration;
 
+[Trait("Feat", "738")]
 public class DownstreamRouteExtensionsTests
 {
     private readonly DownstreamRoute _downstreamRoute;

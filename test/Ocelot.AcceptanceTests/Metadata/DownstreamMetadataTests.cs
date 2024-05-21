@@ -6,6 +6,7 @@ using System.Globalization;
 
 namespace Ocelot.AcceptanceTests.Metadata;
 
+[Trait("Feat", "738")]
 public class DownstreamMetadataTests : IDisposable
 {
     private readonly Steps _steps;
