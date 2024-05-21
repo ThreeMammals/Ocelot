@@ -22,6 +22,7 @@ namespace Ocelot.Configuration.Creator
         private readonly ISecurityOptionsCreator _securityOptionsCreator;
         private readonly IVersionCreator _versionCreator;
         private readonly IVersionPolicyCreator _versionPolicyCreator;
+        private readonly IMetadataCreator _metadataCreator;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -40,7 +41,8 @@ namespace Ocelot.Configuration.Creator
             ISecurityOptionsCreator securityOptionsCreator,
             IVersionCreator versionCreator,
             IVersionPolicyCreator versionPolicyCreator,
-            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
+            IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
+            IMetadataCreator metadataCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -60,6 +62,7 @@ namespace Ocelot.Configuration.Creator
             _versionCreator = versionCreator;
             _versionPolicyCreator = versionPolicyCreator;
             _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
+            _metadataCreator = metadataCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -113,6 +116,8 @@ namespace Ocelot.Configuration.Creator
 
             var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
+            var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
+
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
@@ -150,6 +155,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHttpVersion(downstreamHttpVersion)
                 .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
+                .WithMetadata(metadata)
                 .Build();
 
             return route;

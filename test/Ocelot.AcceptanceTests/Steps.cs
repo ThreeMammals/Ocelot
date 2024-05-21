@@ -29,6 +29,7 @@ using Serilog;
 using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Security.Policy;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
@@ -536,7 +537,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>()
+    public void GivenOcelotIsRunningWithHandlerRegisteredInDi<TOne>(bool global = false)
         where TOne : DelegatingHandler
     {
         _webHostBuilder = new WebHostBuilder();
@@ -555,7 +556,7 @@ public class Steps : IDisposable
             {
                 s.AddSingleton(_webHostBuilder);
                 s.AddOcelot()
-                    .AddDelegatingHandler<TOne>(true);
+                    .AddDelegatingHandler<TOne>(global);
             })
             .Configure(a => { a.UseOcelot().Wait(); });
 

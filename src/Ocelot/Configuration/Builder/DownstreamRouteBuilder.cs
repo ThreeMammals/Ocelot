@@ -42,6 +42,7 @@ public class DownstreamRouteBuilder
     private Version _downstreamHttpVersion;
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
+    private MetadataOptions _metadataOptions;
 
     public DownstreamRouteBuilder()
     {
@@ -275,6 +276,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithMetadata(MetadataOptions metadataOptions)
+    {
+        _metadataOptions = metadataOptions;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -313,6 +320,7 @@ public class DownstreamRouteBuilder
             _downstreamHttpMethod,
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
-            _upstreamHeaders);
+            _upstreamHeaders,
+            _metadataOptions);
     }
 }

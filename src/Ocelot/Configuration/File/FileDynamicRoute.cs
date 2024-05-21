@@ -19,5 +19,6 @@ namespace Ocelot.Configuration.File
         /// </list>
         /// </remarks>
         public string DownstreamHttpVersionPolicy { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
     }
 }

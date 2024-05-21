@@ -12,6 +12,7 @@ namespace Ocelot.Configuration.File
             QoSOptions = new FileQoSOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             CacheOptions = new FileCacheOptions();
+            MetadataOptions = new FileMetadataOptions();
         }
 
         public string RequestIdKey { get; set; }
@@ -45,5 +46,7 @@ namespace Ocelot.Configuration.File
         public string DownstreamHttpVersionPolicy { get; set; }
 
         public FileCacheOptions CacheOptions { get; set; }
+
+        public FileMetadataOptions MetadataOptions { get; set; }
     }
 }

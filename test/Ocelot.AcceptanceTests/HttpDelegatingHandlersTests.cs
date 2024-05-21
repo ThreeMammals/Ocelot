@@ -123,7 +123,7 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<FakeHandlerAgain>())
+                .And(x => _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
