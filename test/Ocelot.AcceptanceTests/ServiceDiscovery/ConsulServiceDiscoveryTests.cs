@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Provider.Consul;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -37,37 +38,19 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_use_consul_service_discovery_and_load_balance_request()
+    public void Should_use_consul_service_discovery_and_load_balance_request()
     {
+        const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var servicePort1 = PortFinder.GetRandomPort();
-        var servicePort2 = PortFinder.GetRandomPort();
-        var serviceName = "product";
-        var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-        var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(servicePort1, serviceName: serviceName);
-        var serviceEntryTwo = GivenServiceEntry(servicePort2, serviceName: serviceName);
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute(serviceName: serviceName),
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-            },
-        };
-
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var serviceEntryOne = GivenServiceEntry(port1, serviceName: serviceName);
+        var serviceEntryTwo = GivenServiceEntry(port2, serviceName: serviceName);
+        var route = GivenRoute(serviceName: serviceName);
+        var configuration = GivenServiceDiscovery(consulPort, route);
+        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), 200))
+            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), 200))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul())
@@ -78,33 +61,16 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_handle_request_to_consul_for_downstream_service_and_make_request()
+    public void Should_handle_request_to_consul_for_downstream_service_and_make_request()
     {
+        const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        const string serviceName = "web";
-        var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
         var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
+        var configuration = GivenServiceDiscovery(consulPort, route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
+        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => GivenOcelotIsRunningWithConsul())
@@ -115,37 +81,25 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
+    public void Should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
     {
-        var consulPort = PortFinder.GetRandomPort();
         const string serviceName = "web";
-        var downstreamServicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(downstreamServicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
-        var configuration = new FileConfiguration
+        var consulPort = PortFinder.GetRandomPort();
+        var servicePort = PortFinder.GetRandomPort();
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
+
+        var configuration = GivenServiceDiscovery(consulPort);
+        configuration.GlobalConfiguration.DownstreamScheme = "http";
+        configuration.GlobalConfiguration.HttpHandlerOptions = new()
         {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-                DownstreamScheme = "http",
-                HttpHandlerOptions = new FileHttpHandlerOptions
-                {
-                    AllowAutoRedirect = true,
-                    UseCookieContainer = true,
-                    UseTracing = false,
-                },
-            },
+            AllowAutoRedirect = true,
+            UseCookieContainer = true,
+            UseTracing = false,
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/something", 200, "Hello from Laura"))
+        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => GivenOcelotIsRunningWithConsul())
         .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
@@ -155,36 +109,23 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
+    public void Should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var serviceOnePort = PortFinder.GetRandomPort();
-        var serviceTwoPort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{serviceOnePort}";
-        var downstreamServiceTwoUrl = $"http://localhost:{serviceTwoPort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(serviceOnePort, serviceName: serviceName);
-        var serviceEntryTwo = GivenServiceEntry(serviceTwoPort, serviceName: serviceName);
-        var configuration = new FileConfiguration
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-                LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                DownstreamScheme = "http",
-            },
-        };
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var serviceEntry1 = GivenServiceEntry(port1, serviceName: serviceName);
+        var serviceEntry2 = GivenServiceEntry(port2, serviceName: serviceName);
 
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+        var configuration = GivenServiceDiscovery(consulPort);
+        configuration.GlobalConfiguration.LoadBalancerOptions = new() { Type = nameof(LeastConnection) };
+        configuration.GlobalConfiguration.DownstreamScheme = "http";
+
+        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), 200))
+            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), 200))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
@@ -194,36 +135,21 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_use_token_to_make_request_to_consul()
+    public void Should_use_token_to_make_request_to_consul()
     {
         const string serviceName = "web";
-        var token = "abctoken";
+        const string token = "abctoken";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                    Token = token,
-                },
-            },
-        };
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
 
-        this.Given(_ => GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-            .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-            .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+        var configuration = GivenServiceDiscovery(consulPort, route);
+        configuration.GlobalConfiguration.ServiceDiscoveryProvider.Token = token;
+
+        this.Given(_ => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
+            .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithConsul())
             .When(_ => WhenIGetUrlOnTheApiGateway("/home"))
@@ -234,48 +160,30 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_send_request_to_service_after_it_becomes_available_in_consul()
+    public void Should_send_request_to_service_after_it_becomes_available_in_consul()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var servicePort1 = PortFinder.GetRandomPort();
-        var servicePort2 = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-        var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(servicePort1, serviceName: serviceName);
-        var serviceEntryTwo = GivenServiceEntry(servicePort2, serviceName: serviceName);
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute(serviceName: serviceName),
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-            },
-        };
-
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var serviceEntry1 = GivenServiceEntry(port1, serviceName: serviceName);
+        var serviceEntry2 = GivenServiceEntry(port2, serviceName: serviceName);
+        var route = GivenRoute(serviceName: serviceName);
+        var configuration = GivenServiceDiscovery(consulPort, route);
+        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), 200))
+            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), 200))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul())
             .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
-            .And(x => WhenIRemoveAService(serviceEntryTwo))
+            .And(x => WhenIRemoveAService(serviceEntry2))
             .And(x => GivenIResetCounters())
             .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .And(x => ThenOnlyOneServiceHasBeenCalled())
-            .And(x => WhenIAddAServiceBackIn(serviceEntryTwo))
+            .And(x => WhenIAddAServiceBackIn(serviceEntry2))
             .And(x => GivenIResetCounters())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
@@ -284,37 +192,23 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
+    public void Should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
     {
-        var consulPort = PortFinder.GetRandomPort();
         const string serviceName = "web";
-        var downstreamServicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-        var serviceEntryOne = GivenServiceEntry(downstreamServicePort, "localhost", $"web_90_0_2_224_{downstreamServicePort}", new[] { "version-v1" }, serviceName);
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                    Type = "PollConsul",
-                    PollingInterval = 0,
-                    Namespace = string.Empty,
-                },
-            },
-        };
+        var consulPort = PortFinder.GetRandomPort();
+        var servicePort = PortFinder.GetRandomPort();
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", $"web_90_0_2_224_{servicePort}", new[] { "version-v1" }, serviceName);
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
+        var configuration = GivenServiceDiscovery(consulPort, route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+        var sd = configuration.GlobalConfiguration.ServiceDiscoveryProvider;
+        sd.Type = nameof(PollConsul);
+        sd.PollingInterval = 0;
+        sd.Namespace = string.Empty;
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
+        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => GivenOcelotIsRunningWithConsul())
         .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
@@ -335,45 +229,28 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
         // with different ServiceNames (e.g. product-us and product-eu),
         // UpstreamHost is used to determine which ServiceName to use when making a request to Consul (e.g. Host: us-shop goes to product-us) 
+        const string serviceNameUS = "product-us";
+        const string serviceNameEU = "product-eu";
         var consulPort = PortFinder.GetRandomPort();
         var servicePortUS = PortFinder.GetRandomPort();
         var servicePortEU = PortFinder.GetRandomPort();
-        var serviceNameUS = "product-us";
-        var serviceNameEU = "product-eu";
-        var downstreamServiceUrlUS = $"http://localhost:{servicePortUS}";
-        var downstreamServiceUrlEU = $"http://localhost:{servicePortEU}";
-        var upstreamHostUS = "us-shop";
-        var upstreamHostEU = "eu-shop";
+        const string upstreamHostUS = "us-shop";
+        const string upstreamHostEU = "eu-shop";
         var publicUrlUS = $"http://{upstreamHostUS}";
         var publicUrlEU = $"http://{upstreamHostEU}";
-        var responseBodyUS = "Phone chargers with US plug";
-        var responseBodyEU = "Phone chargers with EU plug";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+        const string responseBodyUS = "Phone chargers with US plug";
+        const string responseBodyEU = "Phone chargers with EU plug";
         var serviceEntryUS = GivenServiceEntry(servicePortUS, serviceName: serviceNameUS, tags: new[] { "US" });
         var serviceEntryEU = GivenServiceEntry(servicePortEU, serviceName: serviceNameEU, tags: new[] { "EU" });
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS),
-                GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU),
-            },
-            GlobalConfiguration = new()
-            {
-                ServiceDiscoveryProvider = new()
-                {
-                    Scheme = "http",
-                    Host = "localhost",
-                    Port = consulPort,
-                },
-            },
-        };
+        var routeUS = GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS);
+        var routeEU = GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU);
+        var configuration = GivenServiceDiscovery(consulPort, routeUS, routeEU);
 
         // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
         // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
-        this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(downstreamServiceUrlUS, "/products", MapGet("/products", responseBodyUS)))
-            .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", MapGet("/products", responseBodyEU)))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+        this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortUS), "/products", MapGet("/products", responseBodyUS)))
+            .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
@@ -396,20 +273,17 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private static ServiceEntry GivenServiceEntry(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null)
+    private static ServiceEntry GivenServiceEntry(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null) => new()
     {
-        return new ServiceEntry
+        Service = new AgentService
         {
-            Service = new AgentService
-            {
-                Service = serviceName,
-                Address = address ?? "localhost",
-                Port = port,
-                ID = id ?? Guid.NewGuid().ToString(),
-                Tags = tags ?? Array.Empty<string>(),
-            },
-        };
-    }
+            Service = serviceName,
+            Address = address ?? "localhost",
+            Port = port,
+            ID = id ?? Guid.NewGuid().ToString(),
+            Tags = tags ?? Array.Empty<string>(),
+        },
+    };
 
     private static FileRoute GivenRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
     {
@@ -421,6 +295,18 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         ServiceName = serviceName,
         LoadBalancerOptions = new() { Type = loadBalancerType ?? nameof(LeastConnection) },
     };
+
+    private static FileConfiguration GivenServiceDiscovery(int consulPort, params FileRoute[] routes)
+    {
+        var config = GivenConfiguration(routes);
+        config.GlobalConfiguration.ServiceDiscoveryProvider = new()
+        {
+            Scheme = Uri.UriSchemeHttp,
+            Host = "localhost",
+            Port = consulPort,
+        };
+        return config;
+    }
 
     private void ThenTheTokenIs(string token)
     {
@@ -565,17 +451,17 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         });
     }
 
-    private RequestDelegate MapGet(string path, string responseBody) => async context =>
+    private static RequestDelegate MapGet(string path, string responseBody) => async context =>
     {
         var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
         if (downstreamPath == path)
         {
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(responseBody);
         }
         else
         {
-            context.Response.StatusCode = 404;
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             await context.Response.WriteAsync("Not Found");
         }
     };
