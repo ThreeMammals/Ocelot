@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
@@ -39,43 +41,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
             var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort1,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort2,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(servicePort1, serviceName: serviceName);
+            var serviceEntryTwo = GivenServiceEntry(servicePort2, serviceName: serviceName);
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    },
+                {
+                    GivenRoute(serviceName: serviceName),
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
@@ -107,32 +80,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             const string serviceName = "web";
             var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort,
-                    ID = "web_90_0_2_224_8080",
-                    Tags = new[] { "version-v1" },
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/home",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/home",
-                            UpstreamHttpMethod = new List<string> { "Get", "Options" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    },
+                {
+                    GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
@@ -163,18 +117,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             var downstreamServicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = downstreamServicePort,
-                    ID = "web_90_0_2_224_8080",
-                    Tags = new[] { "version-v1" },
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(downstreamServicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
             var configuration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -209,36 +152,15 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         [Fact]
         public void should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
         {
+            const string serviceName = "product";
             var consulPort = PortFinder.GetRandomPort();
-            var serviceName = "product";
             var serviceOnePort = PortFinder.GetRandomPort();
             var serviceTwoPort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{serviceOnePort}";
             var downstreamServiceTwoUrl = $"http://localhost:{serviceTwoPort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = serviceOnePort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = serviceTwoPort,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(serviceOnePort, serviceName: serviceName);
+            var serviceEntryTwo = GivenServiceEntry(serviceTwoPort, serviceName: serviceName);
             var configuration = new FileConfiguration
             {
                 GlobalConfiguration = new FileGlobalConfiguration
@@ -269,38 +191,19 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         [Fact]
         public void should_use_token_to_make_request_to_consul()
         {
+            const string serviceName = "web";
             var token = "abctoken";
             var consulPort = PortFinder.GetRandomPort();
-            var serviceName = "web";
             var servicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{servicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort,
-                    ID = "web_90_0_2_224_8080",
-                    Tags = new[] { "version-v1" },
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/home",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/home",
-                            UpstreamHttpMethod = new List<string> { "Get", "Options" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    },
+                {
+                    GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
@@ -328,50 +231,21 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         [Fact]
         public void should_send_request_to_service_after_it_becomes_available_in_consul()
         {
+            const string serviceName = "product";
             var consulPort = PortFinder.GetRandomPort();
-            var serviceName = "product";
             var servicePort1 = PortFinder.GetRandomPort();
             var servicePort2 = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
             var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort1,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-            var serviceEntryTwo = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = servicePort2,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = Array.Empty<string>(),
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(servicePort1, serviceName: serviceName);
+            var serviceEntryTwo = GivenServiceEntry(servicePort2, serviceName: serviceName);
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    },
+                {
+                    GivenRoute(serviceName: serviceName),
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
@@ -412,32 +286,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             var downstreamServicePort = PortFinder.GetRandomPort();
             var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryOne = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceName,
-                    Address = "localhost",
-                    Port = downstreamServicePort,
-                    ID = $"web_90_0_2_224_{downstreamServicePort}",
-                    Tags = new[] { "version-v1" },
-                },
-            };
-
+            var serviceEntryOne = GivenServiceEntry(downstreamServicePort, "localhost", $"web_90_0_2_224_{downstreamServicePort}", new[] { "version-v1" }, serviceName);
             var configuration = new FileConfiguration
             {
                 Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/home",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/home",
-                            UpstreamHttpMethod = new List<string> { "Get", "Options" },
-                            ServiceName = serviceName,
-                            LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" },
-                        },
-                    },
+                {
+                    GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" }),
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
@@ -457,7 +312,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningWithConsul())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
@@ -489,53 +344,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             var responseBodyUS = "Phone chargers with US plug";
             var responseBodyEU = "Phone chargers with EU plug";
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-            var serviceEntryUS = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceNameUS,
-                    Address = "localhost",
-                    Port = servicePortUS,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[] { "US" },
-                },
-            };
-            var serviceEntryEU = new ServiceEntry
-            {
-                Service = new AgentService
-                {
-                    Service = serviceNameEU,
-                    Address = "localhost",
-                    Port = servicePortEU,
-                    ID = Guid.NewGuid().ToString(),
-                    Tags = new string[] { "EU" },
-                },
-            };
-
+            var serviceEntryUS = GivenServiceEntry(servicePortUS, serviceName: serviceNameUS, tags: new[] { "US" });
+            var serviceEntryEU = GivenServiceEntry(servicePortEU, serviceName: serviceNameEU, tags: new[] { "EU" });
             var configuration = new FileConfiguration
             {
                 Routes = new()
                 {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/products",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new() { "Get" },
-                        UpstreamHost = upstreamHostUS,
-                        ServiceName = serviceNameUS,
-                        LoadBalancerOptions = new() { Type = loadBalancerType },
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/products",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new() {"Get" },
-                        UpstreamHost = upstreamHostEU,
-                        ServiceName = serviceNameEU,
-                        LoadBalancerOptions = new() { Type = loadBalancerType },
-                    },
+                    GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS),
+                    GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU),
                 },
                 GlobalConfiguration = new()
                 {
@@ -574,6 +390,32 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
                 .BDDfy();
         }
+
+        private static ServiceEntry GivenServiceEntry(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null)
+        {
+            return new ServiceEntry
+            {
+                Service = new AgentService
+                {
+                    Service = serviceName,
+                    Address = address ?? "localhost",
+                    Port = port,
+                    ID = id ?? Guid.NewGuid().ToString(),
+                    Tags = tags ?? Array.Empty<string>(),
+                },
+            };
+        }
+
+        private static FileRoute GivenRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
+        {
+            DownstreamPathTemplate = downstream ?? "/",
+            DownstreamScheme = Uri.UriSchemeHttp,
+            UpstreamPathTemplate = upstream ?? "/",
+            UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : new() { HttpMethods.Get },
+            UpstreamHost = upstreamHost,
+            ServiceName = serviceName,
+            LoadBalancerOptions = new() { Type = loadBalancerType ?? nameof(LeastConnection) },
+        };
 
         private void ThenTheTokenIs(string token)
         {
