@@ -8,9 +8,8 @@ using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public class ConsulServiceDiscoveryTests : IDisposable
+public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
 {
-    private readonly Steps _steps;
     private readonly List<ServiceEntry> _consulServices;
     private int _counterOne;
     private int _counterTwo;
@@ -27,8 +26,14 @@ public class ConsulServiceDiscoveryTests : IDisposable
         _serviceHandler = new ServiceHandler();
         _serviceHandler2 = new ServiceHandler();
         _consulHandler = new ServiceHandler();
-        _steps = new Steps();
         _consulServices = new List<ServiceEntry>();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _serviceHandler2?.Dispose();
+        _consulHandler?.Dispose();
     }
 
     [Fact]
@@ -64,9 +69,9 @@ public class ConsulServiceDiscoveryTests : IDisposable
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithConsul())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
             .BDDfy();
@@ -101,11 +106,11 @@ public class ConsulServiceDiscoveryTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
         .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        .And(x => _steps.GivenOcelotIsRunningWithConsul())
-        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/home"))
-        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .And(x => GivenThereIsAConfiguration(configuration))
+        .And(x => GivenOcelotIsRunningWithConsul())
+        .When(x => WhenIGetUrlOnTheApiGateway("/home"))
+        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
         .BDDfy();
     }
 
@@ -141,11 +146,11 @@ public class ConsulServiceDiscoveryTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
         .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        .And(x => _steps.GivenOcelotIsRunningWithConsul())
-        .When(x => _steps.WhenIGetUrlOnTheApiGateway("/web/something"))
-        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .And(x => GivenThereIsAConfiguration(configuration))
+        .And(x => GivenOcelotIsRunningWithConsul())
+        .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
+        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
         .BDDfy();
     }
 
@@ -180,9 +185,9 @@ public class ConsulServiceDiscoveryTests : IDisposable
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithConsul())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
             .BDDfy();
@@ -219,11 +224,11 @@ public class ConsulServiceDiscoveryTests : IDisposable
         this.Given(_ => GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
             .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-            .And(_ => _steps.GivenThereIsAConfiguration(configuration))
-            .And(_ => _steps.GivenOcelotIsRunningWithConsul())
-            .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/home"))
-            .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunningWithConsul())
+            .When(_ => WhenIGetUrlOnTheApiGateway("/home"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(_ => ThenTheTokenIs(token))
             .BDDfy();
     }
@@ -261,18 +266,18 @@ public class ConsulServiceDiscoveryTests : IDisposable
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithConsul())
-            .And(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
             .And(x => WhenIRemoveAService(serviceEntryTwo))
             .And(x => GivenIResetCounters())
-            .And(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+            .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .And(x => ThenOnlyOneServiceHasBeenCalled())
             .And(x => WhenIAddAServiceBackIn(serviceEntryTwo))
             .And(x => GivenIResetCounters())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
             .BDDfy();
@@ -310,11 +315,11 @@ public class ConsulServiceDiscoveryTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/api/home", 200, "Hello from Laura"))
         .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-        .And(x => _steps.GivenThereIsAConfiguration(configuration))
-        .And(x => _steps.GivenOcelotIsRunningWithConsul())
-        .When(x => _steps.WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
-        .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .And(x => GivenThereIsAConfiguration(configuration))
+        .And(x => GivenOcelotIsRunningWithConsul())
+        .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
+        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
         .BDDfy();
     }
 
@@ -370,24 +375,24 @@ public class ConsulServiceDiscoveryTests : IDisposable
             .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(downstreamServiceUrlEU, "/products", MapGet("/products", responseBodyEU)))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop for the first time")
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
+            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
-            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop for the first time")
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
+            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
-            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop again")
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
+            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(3))
-            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop again")
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
+            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(4))
-            .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(responseBodyEU))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
             .BDDfy();
     }
 
@@ -574,12 +579,4 @@ public class ConsulServiceDiscoveryTests : IDisposable
             await context.Response.WriteAsync("Not Found");
         }
     };
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _serviceHandler2?.Dispose();
-        _consulHandler?.Dispose();
-        _steps.Dispose();
-    }
 }
