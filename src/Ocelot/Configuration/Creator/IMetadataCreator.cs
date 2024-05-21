@@ -7,5 +7,5 @@ namespace Ocelot.Configuration.Creator;
 /// </summary>
 public interface IMetadataCreator
 {
-    MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration fileGlobalConfiguration);
+    MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration globalConfiguration);
 }

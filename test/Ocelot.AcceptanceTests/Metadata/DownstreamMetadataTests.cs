@@ -4,7 +4,7 @@ using Ocelot.Metadata;
 using Ocelot.Middleware;
 using System.Globalization;
 
-namespace Ocelot.AcceptanceTests.DownstreamMetadata;
+namespace Ocelot.AcceptanceTests.Metadata;
 
 public class DownstreamMetadataTests : IDisposable
 {
@@ -210,7 +210,7 @@ public class DownstreamMetadataTests : IDisposable
     }
 
     /// <summary>
-    /// Starting ocelot with the delegating handler of type currentType
+    /// Starting ocelot with the delegating handler of type currentType.
     /// </summary>
     /// <param name="currentType">The current delegating handler type.</param>
     /// <exception cref="NotImplementedException">Throws if delegating handler type doesn't match.</exception>
@@ -219,24 +219,22 @@ public class DownstreamMetadataTests : IDisposable
         switch (currentType)
         {
             case { } t when t == typeof(StringDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<StringDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<StringDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(StringArrayDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<StringArrayDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<StringArrayDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(BoolDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<BoolDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<BoolDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(DoubleDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<DoubleDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<DoubleDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(SuperDataContainerDownStreamMetadataHandler):
-                _steps
-                    .GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<
-                        SuperDataContainerDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<SuperDataContainerDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(IntDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<IntDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<IntDownStreamMetadataHandler>();
                 break;
             default:
                 throw new NotImplementedException();
@@ -291,7 +289,7 @@ public class DownstreamMetadataTests : IDisposable
 
     /// <summary>
     /// Simple delegating handler that checks if the metadata is correctly passed to the downstream route
-    /// and checking if the extension method GetMetadata returns the correct value
+    /// and checking if the extension method GetMetadata returns the correct value.
     /// </summary>
     /// <typeparam name="T">The current type.</typeparam>
     private class DownstreamMetadataHandler<T> : DelegatingHandler

@@ -8,7 +8,7 @@ namespace Ocelot.Metadata;
 public static class DownstreamRouteExtensions
 {
     /// <summary>
-    /// The known truthy values
+    /// The known truthy values.
     /// </summary>
     private static readonly HashSet<string> TruthyValues =
         new(StringComparer.OrdinalIgnoreCase)
@@ -23,7 +23,7 @@ public static class DownstreamRouteExtensions
         };
 
     /// <summary>
-    /// The known falsy values
+    /// The known falsy values.
     /// </summary>
     private static readonly HashSet<string> FalsyValues =
         new(StringComparer.OrdinalIgnoreCase)
@@ -37,7 +37,7 @@ public static class DownstreamRouteExtensions
         };
 
     /// <summary>
-    /// The known numeric types
+    /// The known numeric types.
     /// </summary>
     private static readonly HashSet<Type> NumericTypes = new()
     {
@@ -78,10 +78,10 @@ public static class DownstreamRouteExtensions
     }
 
     /// <summary>
-    /// Converting a string value to the target type
+    /// Converting a string value to the target type.
     /// Some custom conversion has been for the following types:
-    /// bool, bool?, string[], numeric types
-    /// otherwise trying to deserialize the value using the JsonSerializer
+    /// <see cref="bool"/>, <see langword="bool?"/>, <see cref="Array"/>, numeric types;
+    /// otherwise trying to deserialize the value using the JsonSerializer.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="value">The string value.</param>
@@ -135,7 +135,7 @@ public static class DownstreamRouteExtensions
     }
 
     /// <summary>
-    /// Converting string to the known numeric types
+    /// Converting string to the known numeric types.
     /// </summary>
     /// <param name="value">The number as string.</param>
     /// <param name="targetType">The target numeric type.</param>

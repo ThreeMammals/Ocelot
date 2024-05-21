@@ -111,7 +111,7 @@ namespace Ocelot.AcceptanceTests
                                         evictionTimestamp = 0,
                                         serviceUpTimestamp = 1457714988223,
                                     },
-                                    metadata = new Metadata
+                                    metadata = new()
                                     {
                                         value = "java.util.Collections$EmptyMap",
                                     },
@@ -231,7 +231,7 @@ namespace Ocelot.AcceptanceTests
         public long serviceUpTimestamp { get; set; }
     }
 
-    public class Metadata
+    public class ValueMetadata
     {
         [JsonProperty("@class")]
         public string value { get; set; }
@@ -250,7 +250,7 @@ namespace Ocelot.AcceptanceTests
         public int countryId { get; set; }
         public DataCenterInfo dataCenterInfo { get; set; }
         public LeaseInfo leaseInfo { get; set; }
-        public Metadata metadata { get; set; }
+        public ValueMetadata metadata { get; set; }
         public string homePageUrl { get; set; }
         public string statusPageUrl { get; set; }
         public string healthCheckUrl { get; set; }

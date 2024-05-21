@@ -477,33 +477,6 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithSpecificHandlerRegisteredInDi<T>()
-        where T: DelegatingHandler
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddOcelot()
-                    .AddDelegatingHandler<T>();
-            })
-            .Configure(a => { a.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
     public void GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<TOne, TWo>()
         where TOne : DelegatingHandler
         where TWo : DelegatingHandler
@@ -564,7 +537,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithGlobalHandlerRegisteredInDi<TOne>()
+    public void GivenOcelotIsRunningWithHandlerRegisteredInDi<TOne>(bool global = false)
         where TOne : DelegatingHandler
     {
         _webHostBuilder = new WebHostBuilder();
@@ -583,7 +556,7 @@ public class Steps : IDisposable
             {
                 s.AddSingleton(_webHostBuilder);
                 s.AddOcelot()
-                    .AddDelegatingHandler<TOne>(true);
+                    .AddDelegatingHandler<TOne>(global);
             })
             .Configure(a => { a.UseOcelot().Wait(); });
 

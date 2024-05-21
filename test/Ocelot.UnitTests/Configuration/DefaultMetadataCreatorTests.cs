@@ -14,37 +14,57 @@ public class DefaultMetadataCreatorTests : UnitTest
     [Fact]
     public void Should_return_empty_metadata()
     {
-        this.Given(_ => GivenEmptyMetadataInGlobalConfiguration())
-            .Given(_ => GivenEmptyMetadataInRoute())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenDownstreamRouteMetadataMustBeEmpty());
+        // Arrange
+        GivenEmptyMetadataInGlobalConfiguration();
+        GivenEmptyMetadataInRoute();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenDownstreamRouteMetadataMustBeEmpty();
     }
 
     [Fact]
     public void Should_return_global_metadata()
     {
-        this.Given(_ => GivenSomeMetadataInGlobalConfiguration())
-            .Given(_ => GivenEmptyMetadataInRoute())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenDownstreamMetadataMustContain("foo", "bar"));
+        // Arrange
+        GivenSomeMetadataInGlobalConfiguration();
+        GivenEmptyMetadataInRoute();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenDownstreamMetadataMustContain("foo", "bar");
     }
 
     [Fact]
     public void Should_return_route_metadata()
     {
-        this.Given(_ => GivenEmptyMetadataInGlobalConfiguration())
-            .Given(_ => GivenSomeMetadataInRoute())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenDownstreamMetadataMustContain("foo", "baz"));
+        // Arrange
+        GivenEmptyMetadataInGlobalConfiguration();
+        GivenSomeMetadataInRoute();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenDownstreamMetadataMustContain("foo", "baz");
     }
 
     [Fact]
     public void Should_overwrite_global_metadata()
     {
-        this.Given(_ => GivenSomeMetadataInGlobalConfiguration())
-            .Given(_ => GivenSomeMetadataInRoute())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenDownstreamMetadataMustContain("foo", "baz"));
+        // Arrange
+        GivenSomeMetadataInGlobalConfiguration();
+        GivenSomeMetadataInRoute();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenDownstreamMetadataMustContain("foo", "baz");
     }
 
     private void WhenICreate()
