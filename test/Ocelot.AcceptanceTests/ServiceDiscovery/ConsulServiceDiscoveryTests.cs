@@ -1,9 +1,13 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
 using Ocelot.Provider.Consul;
+using Ocelot.Provider.Consul.Interfaces;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -12,9 +16,11 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
 {
     private readonly List<ServiceEntry> _consulServices;
+    private readonly List<Node> _consulNodes;
     private int _counterOne;
     private int _counterTwo;
     private int _counterConsul;
+    private int _counterNodes;
     private static readonly object SyncLock = new();
     private string _downstreamPath;
     private string _receivedToken;
@@ -27,7 +33,8 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         _serviceHandler = new ServiceHandler();
         _serviceHandler2 = new ServiceHandler();
         _consulHandler = new ServiceHandler();
-        _consulServices = new List<ServiceEntry>();
+        _consulServices = new();
+        _consulNodes = new();
     }
 
     public override void Dispose()
@@ -69,15 +76,15 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
         var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
         var configuration = GivenServiceDiscovery(consulPort, route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-        .And(x => GivenThereIsAConfiguration(configuration))
-        .And(x => GivenOcelotIsRunningWithConsul())
-        .When(x => WhenIGetUrlOnTheApiGateway("/home"))
-        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .When(x => WhenIGetUrlOnTheApiGateway("/home"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
     }
 
     [Fact]
@@ -97,15 +104,15 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             UseTracing = false,
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/something", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
-        .And(x => GivenThereIsAConfiguration(configuration))
-        .And(x => GivenOcelotIsRunningWithConsul())
-        .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
-        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/something", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
     }
 
     [Fact]
@@ -147,7 +154,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         var configuration = GivenServiceDiscovery(consulPort, route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider.Token = token;
 
-        this.Given(_ => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
+        this.Given(_ => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
             .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(_ => GivenThereIsAConfiguration(configuration))
@@ -206,24 +213,24 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         sd.PollingInterval = 0;
         sd.Namespace = string.Empty;
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", 200, "Hello from Laura"))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-        .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
-        .And(x => GivenThereIsAConfiguration(configuration))
-        .And(x => GivenOcelotIsRunningWithConsul())
-        .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
-        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul())
+            .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
     }
 
     [Theory]
     [Trait("PR", "1944")]
-    [Trait("Issues", "849 1496")]
-    [InlineData("LeastConnection")]
-    [InlineData("RoundRobin")]
-    [InlineData("NoLoadBalancer")]
-    [InlineData("CookieStickySessions")]
+    [Trait("Bugs", "849 1496")]
+    [InlineData(nameof(LeastConnection))]
+    [InlineData(nameof(RoundRobin))]
+    [InlineData(nameof(NoLoadBalancer))]
+    [InlineData(nameof(CookieStickySessions))]
     public void Should_use_consul_service_discovery_based_on_upstream_host(string loadBalancerType)
     {
         // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
@@ -273,6 +280,55 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             .BDDfy();
     }
 
+    [Fact]
+    [Trait("Bug", "954")]
+    public void Should_return_service_address_by_overridden_service_builder_when_there_is_a_node()
+    {
+        const string serviceName = "OpenTestService";
+        var consulPort = PortFinder.GetRandomPort();
+        var servicePort = PortFinder.GetRandomPort(); // 9999
+        var serviceEntry = GivenServiceEntry(servicePort,
+            id: "OPEN_TEST_01",
+            serviceName: serviceName,
+            tags: new[] { serviceName });
+        var serviceNode = new Node() { Name = "n1" }; // cornerstone of the bug
+        serviceEntry.Node = serviceNode;
+        var route = GivenRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: new[] { "POST", "GET" });
+        var configuration = GivenServiceDiscovery(consulPort, route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Raman"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
+            .And(x => x.GivenTheServiceNodesAreRegisteredWithConsul(serviceNode))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithConsul()) // default services registration results with the bug: "n1" host issue
+            .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+            .And(x => ThenTheResponseBodyShouldBe(""))
+            .And(x => ThenConsulShouldHaveBeenCalledTimes(1))
+            .And(x => ThenConsulNodesShouldHaveBeenCalledTimes(1))
+
+            // Override default service builder
+            .Given(x => GivenOcelotIsRunningWithServices(WithOverriddenConsulServiceBuilder))
+            .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Raman"))
+            .And(x => ThenConsulShouldHaveBeenCalledTimes(2))
+            .And(x => ThenConsulNodesShouldHaveBeenCalledTimes(2))
+            .BDDfy();
+    }
+
+    private static void WithOverriddenConsulServiceBuilder(IServiceCollection services)
+        => services.AddOcelot().AddConsul<MyConsulServiceBuilder>();
+
+    public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
+    {
+        public MyConsulServiceBuilder(Func<ConsulRegistryConfiguration> configurationFactory, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
+            : base(configurationFactory, clientFactory, loggerFactory) { }
+
+        protected override string GetDownstreamHost(ServiceEntry entry, Node node) => entry.Service.Address;
+    }
+
     private static ServiceEntry GivenServiceEntry(int port, string address = null, string id = null, string[] tags = null, [CallerMemberName] string serviceName = null) => new()
     {
         Service = new AgentService
@@ -304,6 +360,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             Scheme = Uri.UriSchemeHttp,
             Host = "localhost",
             Port = consulPort,
+            Type = nameof(Provider.Consul.Consul),
         };
         return config;
     }
@@ -313,9 +370,9 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         _receivedToken.ShouldBe(token);
     }
 
-    private void WhenIAddAServiceBackIn(ServiceEntry serviceEntryTwo)
+    private void WhenIAddAServiceBackIn(ServiceEntry serviceEntry)
     {
-        _consulServices.Add(serviceEntryTwo);
+        _consulServices.Add(serviceEntry);
     }
 
     private void ThenOnlyOneServiceHasBeenCalled()
@@ -324,9 +381,9 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         _counterTwo.ShouldBe(0);
     }
 
-    private void WhenIRemoveAService(ServiceEntry serviceEntryTwo)
+    private void WhenIRemoveAService(ServiceEntry serviceEntry)
     {
-        _consulServices.Remove(serviceEntryTwo);
+        _consulServices.Remove(serviceEntry);
     }
 
     private void GivenIResetCounters()
@@ -348,13 +405,8 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         total.ShouldBe(expected);
     }
 
-    private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries)
-    {
-        foreach (var serviceEntry in serviceEntries)
-        {
-            _consulServices.Add(serviceEntry);
-        }
-    }
+    private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries) => _consulServices.AddRange(serviceEntries);
+    private void GivenTheServiceNodesAreRegisteredWithConsul(params Node[] nodes) => _consulNodes.AddRange(nodes);
 
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
     {
@@ -377,14 +429,21 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
                 var json = JsonConvert.SerializeObject(services);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
+                return;
+            }
+
+            if (context.Request.Path.Value == "/v1/catalog/nodes")
+            {
+                _counterNodes++;
+                var json = JsonConvert.SerializeObject(_consulNodes);
+                context.Response.Headers.Append("Content-Type", "application/json");
+                await context.Response.WriteAsync(json);
             }
         });
     }
 
-    private void ThenConsulShouldHaveBeenCalledTimes(int expected)
-    {
-        _counterConsul.ShouldBe(expected);
-    }
+    private void ThenConsulShouldHaveBeenCalledTimes(int expected) => _counterConsul.ShouldBe(expected);
+    private void ThenConsulNodesShouldHaveBeenCalledTimes(int expected) => _counterNodes.ShouldBe(expected);
 
     private void GivenProductServiceOneIsRunning(string url, int statusCode)
     {
@@ -432,7 +491,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         });
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
     {
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
@@ -440,12 +499,12 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
 
             if (_downstreamPath != basePath)
             {
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync("downstream path didnt match base path");
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await context.Response.WriteAsync("Downstream path doesn't match base path");
             }
             else
             {
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(responseBody);
             }
         });
