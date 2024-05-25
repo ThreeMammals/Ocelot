@@ -1,4 +1,6 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using System.Net.Security;
 
@@ -10,13 +12,18 @@ public class MessageInvokerPool : IMessageInvokerPool
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
 
-    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+    public MessageInvokerPool(
+        IDelegatingHandlerHandlerFactory handlerFactory,
+        IOcelotLoggerFactory loggerFactory,
+        IOptions<FileConfiguration> options)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
 
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
+
+        _defaultRequestTimeoutSeconds = options.Value.GlobalConfiguration.RequestTimeoutSeconds;
     }
 
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
@@ -31,17 +38,15 @@ public class MessageInvokerPool : IMessageInvokerPool
     }
 
     public void Clear() => _handlersPool.Clear();
-
-    /// <summary>
-    /// TODO This should be configurable and available as global config parameter in ocelot.json.
-    /// </summary>
-    public const int DefaultRequestTimeoutSeconds = 90;
+    
+    private readonly int _defaultRequestTimeoutSeconds;
+    
     private int _requestTimeoutSeconds;
 
     public int RequestTimeoutSeconds
     {
-        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : DefaultRequestTimeoutSeconds;
-        set => _requestTimeoutSeconds = value > 0 ? value : DefaultRequestTimeoutSeconds;
+        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : _defaultRequestTimeoutSeconds;
+        set => _requestTimeoutSeconds = value > 0 ? value : _defaultRequestTimeoutSeconds;
     }
 
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)

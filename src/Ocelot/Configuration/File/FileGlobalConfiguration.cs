@@ -17,6 +17,8 @@ namespace Ocelot.Configuration.File
 
         public string RequestIdKey { get; set; }
 
+        public int RequestTimeoutSeconds { get; set; } = 90;
+
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
 
         public FileRateLimitOptions RateLimitOptions { get; set; }
