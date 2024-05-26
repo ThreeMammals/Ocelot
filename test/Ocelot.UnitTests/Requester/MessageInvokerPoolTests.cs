@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -28,15 +27,14 @@ public class MessageInvokerPoolTests : UnitTest
     private HttpContext _context;
     private HttpResponseMessage _response;
     private IWebHost _host;
-    private IOptions<FileConfiguration> _fileConfiguration;
+    private FileGlobalConfiguration _fileGlobalConfiguration;
 
     public MessageInvokerPoolTests()
     {
         _ocelotLoggerFactory = new Mock<IOcelotLoggerFactory>();
         _ocelotLogger = new Mock<IOcelotLogger>();
         _ocelotLoggerFactory.Setup(x => x.CreateLogger<MessageInvokerPool>()).Returns(_ocelotLogger.Object);
-        _fileConfiguration = new OptionsWrapper<FileConfiguration>(
-            new FileConfiguration { GlobalConfiguration = new FileGlobalConfiguration() });
+        _fileGlobalConfiguration = new FileGlobalConfiguration();
     }
 
     [Fact]
@@ -235,7 +233,7 @@ public class MessageInvokerPoolTests : UnitTest
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
 
     private void GivenAMessageInvokerPool() =>
-        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object, _fileConfiguration);
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object, _fileGlobalConfiguration);
 
     private void WhenGettingMessageInvokerTwice()
     {

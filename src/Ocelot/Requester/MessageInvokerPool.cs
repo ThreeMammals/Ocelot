@@ -15,7 +15,7 @@ public class MessageInvokerPool : IMessageInvokerPool
     public MessageInvokerPool(
         IDelegatingHandlerHandlerFactory handlerFactory,
         IOcelotLoggerFactory loggerFactory,
-        IOptions<FileConfiguration> options)
+        FileGlobalConfiguration fileGlobalConfigure)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
@@ -23,7 +23,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
 
-        _defaultRequestTimeoutSeconds = options.Value.GlobalConfiguration.RequestTimeoutSeconds;
+        RequestTimeoutSeconds = fileGlobalConfigure.RequestTimeoutSeconds ?? 0;
     }
 
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
@@ -39,14 +39,14 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public void Clear() => _handlersPool.Clear();
     
-    private readonly int _defaultRequestTimeoutSeconds;
+    public const int DefaultRequestTimeoutSeconds = 90;
     
     private int _requestTimeoutSeconds;
 
     public int RequestTimeoutSeconds
     {
-        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : _defaultRequestTimeoutSeconds;
-        set => _requestTimeoutSeconds = value > 0 ? value : _defaultRequestTimeoutSeconds;
+        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : DefaultRequestTimeoutSeconds;
+        set => _requestTimeoutSeconds = value > 0 ? value : DefaultRequestTimeoutSeconds;
     }
 
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)
