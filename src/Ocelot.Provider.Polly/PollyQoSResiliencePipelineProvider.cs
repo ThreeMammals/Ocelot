@@ -1,4 +1,5 @@
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;

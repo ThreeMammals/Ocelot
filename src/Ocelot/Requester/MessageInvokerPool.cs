@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using System.Net.Security;
