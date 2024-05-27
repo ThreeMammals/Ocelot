@@ -216,62 +216,14 @@ For example:
 
 Examining the code within the `ConfigurationBuilderExtensions class <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ would be helpful for gaining a better understanding of the signatures of the overloaded methods [#f2]_.
 
-Store Configuration in Consul
------------------------------
+Store Configuration in `Consul`_
+--------------------------------
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_ that provides `Consul <https://www.consul.io/>`_ support in Ocelot.
+As a developer, if you have enabled :doc:`../features/servicediscovery` with `Consul`_ support in Ocelot, you may choose to manage your configuration saving to the *Consul* `KV store`_.
 
-.. code-block:: powershell
+Beyond the traditional methods of storing configuration in a file vs folder (:ref:`config-merging-files`), or in-memory (:ref:`config-merging-tomemory`), you also have the alternative to utilize the `Consul`_ server's storage capabilities.
 
-    Install-Package Ocelot.Provider.Consul
-
-Then you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in Consul KV store.
-In order to register Consul services we must call the ``AddConsul()`` and ``AddConfigStoredInConsul()`` extensions using the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f3]_ like below:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddConsul()
-        .AddConfigStoredInConsul();
-
-You also need to add the following to your `ocelot.json`_. This is how Ocelot finds your Consul agent and interacts to load and store the configuration from Consul.
-
-.. code-block:: json
-
-  "GlobalConfiguration": {
-    "ServiceDiscoveryProvider": {
-      "Host": "localhost",
-      "Port": 9500
-    }
-  }
-
-The team decided to create this feature after working on the Raft consensus algorithm and finding out its super hard.
-Why not take advantage of the fact Consul already gives you this! 
-We guess it means if you want to use Ocelot to its fullest, you take on Consul as a dependency for now.
-
-This feature has a `3 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TimeSpan.FromSeconds%283%29&type=code>`_ TTL cache before making a new request to your local Consul agent.
-
-.. _config-consul-key:
-
-Consul Configuration Key [#f4]_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you are using Consul for configuration (or other providers in the future), you might want to key your configurations: so you can have multiple configurations.
-
-In order to specify the key you need to set the **ConfigurationKey** property in the **ServiceDiscoveryProvider** options of the configuration JSON file e.g.
-
-.. code-block:: json
-
-  "GlobalConfiguration": {
-    "ServiceDiscoveryProvider": {
-      "Host": "localhost",
-      "Port": 9500,
-      "ConfigurationKey": "Ocelot_A"
-    }
-  }
-
-In this example Ocelot will use ``Ocelot_A`` as the key for your configuration when looking it up in Consul.
-If you do not set the **ConfigurationKey**, Ocelot will use the string ``InternalConfiguration`` as the key.
+For further details on managing Ocelot configurations via a Consul instance, please consult the ":ref:`sd-consul-configuration-in-kv`" section.
 
 Follow Redirects aka HttpHandlerOptions 
 ---------------------------------------
@@ -417,7 +369,7 @@ Ocelot allows you to choose the HTTP version it will use to make the proxy reque
 
 .. _config-version-policy:
 
-DownstreamHttpVersionPolicy [#f5]_
+DownstreamHttpVersionPolicy [#f3]_
 ----------------------------------
 
 This routing property enables the configuration of the ``VersionPolicy`` property within ``HttpRequestMessage`` objects for downstream HTTP requests.
@@ -557,12 +509,12 @@ Now, the route metadata can be accessed through the `DownstreamRoute` object:
 
 .. [#f1] ":ref:`config-merging-files`" feature was requested in `issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_, since then we extended it in `issue 1216 <https://github.com/ThreeMammals/Ocelot/issues/1216>`_ (PR `1227 <https://github.com/ThreeMammals/Ocelot/pull/1227>`_) as ":ref:`config-merging-tomemory`" subfeature which was released as a part of version `23.2`_.
 .. [#f2] ":ref:`config-merging-tomemory`" subfeature is based on the ``MergeOcelotJson`` enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
-.. [#f3] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
-.. [#f4] ":ref:`config-consul-key`" feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_ as a part of version `7.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/7.0.0>`_.
-.. [#f5] ":ref:`config-version-policy`" feature was requested in `issue 1672 <https://github.com/ThreeMammals/Ocelot/issues/1672>`_ as a part of version `24.0`_.
+.. [#f3] ":ref:`config-version-policy`" feature was requested in `issue 1672 <https://github.com/ThreeMammals/Ocelot/issues/1672>`_ as a part of version `23.3`_.
 
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
-.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
 .. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _Consul: https://www.consul.io/
+.. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
