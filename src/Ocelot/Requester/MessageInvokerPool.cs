@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using System.Net.Security;
@@ -10,11 +11,12 @@ public class MessageInvokerPool : IMessageInvokerPool
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
+    private readonly FileGlobalConfiguration _global;
 
     public MessageInvokerPool(
         IDelegatingHandlerHandlerFactory handlerFactory,
         IOcelotLoggerFactory loggerFactory,
-        FileGlobalConfiguration fileGlobalConfigure)
+        IOptions<FileGlobalConfiguration> global)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
@@ -22,7 +24,8 @@ public class MessageInvokerPool : IMessageInvokerPool
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
 
-        RequestTimeoutSeconds = fileGlobalConfigure.RequestTimeoutSeconds ?? 0;
+        _global = global.Value;
+        _requestTimeoutSeconds = _global.RequestTimeoutSeconds;
     }
 
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
@@ -40,11 +43,11 @@ public class MessageInvokerPool : IMessageInvokerPool
     
     public const int DefaultRequestTimeoutSeconds = 90;
     
-    private int _requestTimeoutSeconds;
+    private int? _requestTimeoutSeconds;
 
     public int RequestTimeoutSeconds
     {
-        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : DefaultRequestTimeoutSeconds;
+        get => _requestTimeoutSeconds ?? _global?.RequestTimeoutSeconds ?? DefaultRequestTimeoutSeconds;
         set => _requestTimeoutSeconds = value > 0 ? value : DefaultRequestTimeoutSeconds;
     }
 
