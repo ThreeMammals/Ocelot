@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
@@ -19,7 +20,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
+        IOptions<FileGlobalConfiguration> global))
     {
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
         _registry = registry;
