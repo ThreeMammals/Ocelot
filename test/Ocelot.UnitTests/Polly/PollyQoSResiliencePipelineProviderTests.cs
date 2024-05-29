@@ -1,6 +1,5 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Polly;
