@@ -42,7 +42,8 @@ namespace Ocelot.Configuration
             Version downstreamHttpVersion,
             HttpVersionPolicy downstreamHttpVersionPolicy,
             Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
-            MetadataOptions metadataOptions)
+            MetadataOptions metadataOptions,
+            int timeout)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -81,6 +82,7 @@ namespace Ocelot.Configuration
             DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
             UpstreamHeaders = upstreamHeaders ?? new();
             MetadataOptions = metadataOptions;
+            Timeout = timeout;
         }
 
         public string Key { get; }
@@ -131,11 +133,12 @@ namespace Ocelot.Configuration
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
         public bool UseServiceDiscovery { get; }
         public MetadataOptions MetadataOptions { get; }
+        public int Timeout { get; }
 
         /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
         /// <returns>A <see cref="string"/> object with the name.</returns>
         public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
             ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
-            : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
+            : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);        
     }
 }
