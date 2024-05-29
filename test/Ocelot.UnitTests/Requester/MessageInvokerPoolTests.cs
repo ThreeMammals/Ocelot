@@ -27,14 +27,12 @@ public class MessageInvokerPoolTests : UnitTest
     private HttpContext _context;
     private HttpResponseMessage _response;
     private IWebHost _host;
-    private FileGlobalConfiguration _fileGlobalConfiguration;
 
     public MessageInvokerPoolTests()
     {
         _ocelotLoggerFactory = new Mock<IOcelotLoggerFactory>();
         _ocelotLogger = new Mock<IOcelotLogger>();
         _ocelotLoggerFactory.Setup(x => x.CreateLogger<MessageInvokerPool>()).Returns(_ocelotLogger.Object);
-        _fileGlobalConfiguration = new FileGlobalConfiguration();
     }
 
     [Fact]
@@ -233,7 +231,7 @@ public class MessageInvokerPoolTests : UnitTest
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
 
     private void GivenAMessageInvokerPool() =>
-        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object, _fileGlobalConfiguration);
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
 
     private void WhenGettingMessageInvokerTwice()
     {

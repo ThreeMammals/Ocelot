@@ -8,7 +8,7 @@ namespace Ocelot.Configuration.Creator
         {
             return fileRoute.Timeout > 0 
                 ? fileRoute.Timeout 
-                : globalConfiguration.RequestTimeoutSeconds ?? 0;
+                : (globalConfiguration.RequestTimeoutSeconds ?? 0) * 1000;
         }
     }
 }
