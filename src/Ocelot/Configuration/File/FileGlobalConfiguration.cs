@@ -13,11 +13,12 @@ namespace Ocelot.Configuration.File
             HttpHandlerOptions = new FileHttpHandlerOptions();
             CacheOptions = new FileCacheOptions();
             MetadataOptions = new FileMetadataOptions();
+            RequestTimeoutSeconds = 90;
         }
 
         public string RequestIdKey { get; set; }
 
-        public int? RequestTimeoutSeconds { get; set; }
+        public int RequestTimeoutSeconds { get; set; }
 
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
 
