@@ -38,7 +38,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
     public void Should_not_timeout()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(10, 500, 1000, null), HttpMethods.Post);
+        var route = GivenRoute(port, new QoSOptions(10, 500, .5, 5, 1000, null), HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty, 10))

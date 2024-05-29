@@ -23,13 +23,43 @@ namespace Ocelot.Configuration
         public QoSOptions(
             int exceptionsAllowedBeforeBreaking,
             int durationOfBreak,
-            int timeoutValue, 
+            int timeoutValue,
             string key)
         {
             DurationOfBreak = durationOfBreak;
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             Key = key;
             TimeoutValue = timeoutValue;
+        }
+
+        public QoSOptions(
+            int exceptionsAllowedBeforeBreaking,
+            int durationOfBreak,
+            double failureRatio,
+            int timeoutValue,
+            string key)
+        {
+            DurationOfBreak = durationOfBreak;
+            ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            Key = key;
+            TimeoutValue = timeoutValue;
+            FailureRatio = failureRatio;
+        }
+
+        public QoSOptions(
+            int exceptionsAllowedBeforeBreaking,
+            int durationOfBreak,
+            double failureRatio,
+            int samplingDuration,
+            int timeoutValue,
+           string key)
+        {
+            DurationOfBreak = durationOfBreak;
+            ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+            Key = key;
+            TimeoutValue = timeoutValue;
+            FailureRatio = failureRatio;
+            SamplingDuration = samplingDuration;
         }
 
         /// <summary>How long the circuit should stay open before resetting in milliseconds.</summary>
@@ -49,6 +79,22 @@ namespace Ocelot.Configuration
         /// An <see cref="int"/> value (no of exceptions).
         /// </value>
         public int ExceptionsAllowedBeforeBreaking { get; }
+
+        /// <summary>
+        /// The failure-success ratio that will cause the circuit to break/open. 
+        /// </summary>
+        /// <value>
+        /// An <see cref="double"/> 0.8 means 80% failed of all sampled executions.
+        /// </value>
+        public double FailureRatio { get; } = .8;
+
+        /// <summary>
+        /// The time period over which the failure-success ratio is calculated (in seconds).
+        /// </summary>
+        /// <value>
+        /// An <see cref="int"/> Time period in seconds, 10 means 10 seconds.
+        /// </value>
+        public int SamplingDuration { get; } = 10;
 
         public string Key { get; }
 
