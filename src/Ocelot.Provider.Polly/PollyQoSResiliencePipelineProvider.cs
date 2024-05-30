@@ -4,6 +4,7 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System;
 using System.Net;
 
 namespace Ocelot.Provider.Polly;
@@ -116,6 +117,15 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         if (options.TimeoutValue == int.MaxValue || options.TimeoutValue <= 0)
         {
             return builder;
+        }
+
+        if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
+        {
+            builder.AddTimeout(TimeSpan.FromMilliseconds(options.TimeoutValue));
+        }
+        else
+        {
+            builder.AddTimeout(TimeSpan.FromMilliseconds(route.Timeout));
         }
 
         var strategyOptions = new TimeoutStrategyOptions
