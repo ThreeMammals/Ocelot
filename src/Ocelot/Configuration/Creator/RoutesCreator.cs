@@ -23,7 +23,8 @@ namespace Ocelot.Configuration.Creator
         private readonly IVersionCreator _versionCreator;
         private readonly IVersionPolicyCreator _versionPolicyCreator;
         private readonly IMetadataCreator _metadataCreator;
-        private readonly ITimeoutCreator _timeoutCreator;
+        
+        public const int DefaultRequestTimeoutSeconds = 90;
 
         public RoutesCreator(
             IClaimsToThingCreator claimsToThingCreator,
@@ -43,8 +44,7 @@ namespace Ocelot.Configuration.Creator
             IVersionCreator versionCreator,
             IVersionPolicyCreator versionPolicyCreator,
             IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
-            IMetadataCreator metadataCreator,
-            ITimeoutCreator timeoutCreator)
+            IMetadataCreator metadataCreator)
         {
             _routeKeyCreator = routeKeyCreator;
             _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -65,7 +65,6 @@ namespace Ocelot.Configuration.Creator
             _versionPolicyCreator = versionPolicyCreator;
             _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
             _metadataCreator = metadataCreator;
-            _timeoutCreator = timeoutCreator;
         }
 
         public List<Route> Create(FileConfiguration fileConfiguration)
@@ -77,6 +76,13 @@ namespace Ocelot.Configuration.Creator
                     return SetUpRoute(route, downstreamRoute);
                 })
                 .ToList();
+        }
+
+        public int CreateTimeout(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        {
+            return fileRoute.Timeout > 0 
+                ? fileRoute.Timeout.Value 
+                : (globalConfiguration.TimeoutSeconds ?? DefaultRequestTimeoutSeconds) * 1000;
         }
 
         private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
@@ -121,8 +127,6 @@ namespace Ocelot.Configuration.Creator
 
             var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
 
-            var timeout = _timeoutCreator.Create(fileRoute, globalConfiguration);
-
             var route = new DownstreamRouteBuilder()
                 .WithKey(fileRoute.Key)
                 .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
@@ -161,7 +165,7 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .WithMetadata(metadata)
-                .WithTimeout(timeout)
+                .WithTimeout(CreateTimeout(fileRoute, globalConfiguration))
                 .Build();
 
             return route;

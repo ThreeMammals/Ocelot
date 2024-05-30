@@ -17,6 +17,12 @@ namespace Ocelot.Configuration.File
 
         public string RequestIdKey { get; set; }
 
+        /// <summary>
+        /// The timeout in seconds for requests.
+        /// </summary>
+        /// <value>
+        /// The timeout value in seconds.
+        /// </value>
         public int? TimeoutSeconds { get; set; }
 
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
