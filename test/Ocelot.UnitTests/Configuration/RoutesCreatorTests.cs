@@ -27,7 +27,6 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IVersionCreator> _versionCreator;
         private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
         private readonly Mock<IMetadataCreator> _metadataCreator;
-        private readonly Mock<ITimeoutCreator> _timeoutCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -68,7 +67,6 @@ namespace Ocelot.UnitTests.Configuration
             _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
             _metadataCreator = new Mock<IMetadataCreator>();
-            _timeoutCreator = new Mock<ITimeoutCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -88,8 +86,7 @@ namespace Ocelot.UnitTests.Configuration
                 _versionCreator.Object,
                 _versionPolicyCreator.Object,
                 _uhtpCreator.Object,
-                _metadataCreator.Object,
-                _timeoutCreator.Object);
+                _metadataCreator.Object);
         }
 
         [Fact]

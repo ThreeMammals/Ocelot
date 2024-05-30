@@ -48,9 +48,10 @@ public class MessageInvokerPool : IMessageInvokerPool
 
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
-        var timeoutHandler = new TimeoutDelegatingHandler(downstreamRoute.QosOptions.TimeoutValue > 0
-            ? TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue)
-            : TimeSpan.FromMilliseconds(downstreamRoute.Timeout))
+        int milliseconds = downstreamRoute.QosOptions.TimeoutValue > 0
+            ? downstreamRoute.QosOptions.TimeoutValue
+            : downstreamRoute.Timeout;
+        var timeoutHandler = new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(milliseconds))
         {
             InnerHandler = baseHandler,
         };

@@ -17,7 +17,7 @@ namespace Ocelot.Configuration
             DurationOfBreak = from.DurationOfBreak;
             ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
             Key = string.Empty;
-            TimeoutValue = from.TimeoutValue;
+            TimeoutValue = from.TimeoutValue ?? 0;
         }
 
         public QoSOptions(

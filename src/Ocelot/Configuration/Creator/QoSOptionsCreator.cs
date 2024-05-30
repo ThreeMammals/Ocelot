@@ -10,7 +10,7 @@ namespace Ocelot.Configuration.Creator
             return new QoSOptionsBuilder()
                 .WithExceptionsAllowedBeforeBreaking(options.ExceptionsAllowedBeforeBreaking)
                 .WithDurationOfBreak(options.DurationOfBreak)
-                .WithTimeoutValue(options.TimeoutValue)
+                .WithTimeoutValue(options.TimeoutValue ?? 0)
                 .Build();
         }
 
@@ -18,7 +18,7 @@ namespace Ocelot.Configuration.Creator
         {
             var key = CreateKey(pathTemplate, httpMethods);
 
-            return Map(key, options.TimeoutValue, options.DurationOfBreak, options.ExceptionsAllowedBeforeBreaking);
+            return Map(key, options.TimeoutValue ?? 0, options.DurationOfBreak, options.ExceptionsAllowedBeforeBreaking);
         }
 
         public QoSOptions Create(QoSOptions options, string pathTemplate, List<string> httpMethods)
