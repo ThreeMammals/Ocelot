@@ -71,7 +71,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
             Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
             Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
-            Services.TryAddSingleton<ITimeoutCreator, TimeoutCreator>();
             Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
             Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             Services.TryAddSingleton<IRouteOptionsCreator, RouteOptionsCreator>();
