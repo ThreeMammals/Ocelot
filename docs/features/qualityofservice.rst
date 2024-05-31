@@ -43,30 +43,12 @@ You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBr
 
 There is no point setting the other two in isolation as they affect each other!
 
-Defaults
---------
+Notes
+-----
 
-If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests.
-If someone needs this to be configurable, open an issue. [#f2]_
+1. If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests. If someone needs this to be configurable, open an issue. [#f2]_
 
-.. _qos-polly-v7-vs-v8:
-
-`Polly`_ v7 vs v8
------------------
-
-Important changes in version `23.2`_: [#f3]_
-
-  - With `Polly`_ version 8+, the ``ExceptionsAllowedBeforeBreaking`` value must be equal to or greater than **2**!
-  - The ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines. Consequently, it now exhibits different behavior based on v8 pipelines.
-
-If you prefer not to modify your settings, you can continue using `Polly`_ v7 as follows:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddPollyV7();
-
-**Note**: Support for `Polly`_ v7 will be removed in a future version. We recommend avoiding this method (which is tagged as ``Obsolete``) unless absolutely necessary.
+2. `Polly`_ V7 syntax no longer supported. In version `23.2`_ [#f3]_ with `Polly`_ version 8+, the ``ExceptionsAllowedBeforeBreaking`` value must be equal to or greater than **2**!
 
 .. _qos-extensibility:
 
