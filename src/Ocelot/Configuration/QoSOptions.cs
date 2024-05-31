@@ -89,7 +89,6 @@ namespace Ocelot.Configuration
         /// </value>
         public double FailureRatio { get; } = .8;
 
-
         /// <summary>
         /// The time period over which the failure-success ratio is calculated (in milliseconds).
         /// </summary>
