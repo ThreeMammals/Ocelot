@@ -49,6 +49,14 @@ Defaults
 If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests.
 If someone needs this to be configurable, open an issue. [#f2]_
 
+Polly V7 syntax no longer supported
+-----------------------------------
+
+Important changes in version `23.2`_: [#f3]_
+
+  - With `Polly`_ version 8+, the ``ExceptionsAllowedBeforeBreaking`` value must be equal to or greater than **2**!
+
+
 .. _qos-extensibility:
 
 Extensibility [#f3]_
