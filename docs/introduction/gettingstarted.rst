@@ -85,11 +85,11 @@ The main things to note are
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Configuration.AddJsonFile("ocelot.json");
-    builder.Services.AddOcelot();
     builder.Services.AddHealthChecks();
+    builder.Services.AddOcelot();
     var app = builder.Build();
-    app.UseOcelot().Wait();
     app.UseHealthChecks("/healthyz");
+    app.UseOcelot().Wait();
     app.Run();
 
 """"
