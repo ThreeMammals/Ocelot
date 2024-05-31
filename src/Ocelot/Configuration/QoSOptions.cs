@@ -73,7 +73,8 @@ namespace Ocelot.Configuration
         /// How many times a circuit can fail before being set to open.
         /// </summary>
         /// <remarks>
-        /// If using Polly version 8 or above, this value must be 2 or greater.
+        /// if set to 0, the circuit-breaker is deactivated
+        /// otherwise this value must be 2 or greater. 
         /// </remarks>
         /// <value>
         /// An <see cref="int"/> value (no of exceptions).
@@ -84,31 +85,34 @@ namespace Ocelot.Configuration
         /// The failure-success ratio that will cause the circuit to break/open. 
         /// </summary>
         /// <value>
-        /// An <see cref="double"/> 0.8 means 80% failed of all sampled executions.
+        /// An <see cref="double"/> ratio of exceptions/requests  (0.8 means 80% failed of all sampled executions).
         /// </value>
         public double FailureRatio { get; } = .8;
 
+
         /// <summary>
-        /// The time period over which the failure-success ratio is calculated (in seconds).
+        /// The time period over which the failure-success ratio is calculated (in milliseconds).
         /// </summary>
         /// <value>
-        /// An <see cref="int"/> Time period in seconds, 10 means 10 seconds.
+        /// An <see cref="int"/> Time period in milliseconds.
         /// </value>
-        public int SamplingDuration { get; } = 10;
+        public int SamplingDuration { get; } = 10000;
 
         public string Key { get; }
 
         /// <summary>
         /// Value for TimeoutStrategy in milliseconds.
         /// </summary>
-        /// <remarks>
-        /// If using Polly version 8 or above, this value must be 1000 (1 sec) or greater.
-        /// </remarks>
         /// <value>
         /// An <see cref="int"/> value (milliseconds).
         /// </value>
         public int TimeoutValue { get; }
 
         public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
+
+        public bool IsValid() =>
+            ExceptionsAllowedBeforeBreaking <= 0 || 
+            ExceptionsAllowedBeforeBreaking >= 2 && DurationOfBreak > 0 && !(FailureRatio <= 0) &&
+            !(FailureRatio > 1) && SamplingDuration > 0;
     }
 }

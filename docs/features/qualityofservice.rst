@@ -35,12 +35,17 @@ Then add the following section to a Route configuration:
   "QoSOptions": {
     "ExceptionsAllowedBeforeBreaking": 3,
     "DurationOfBreak": 1000,
-    "TimeoutValue": 5000
+    "TimeoutValue": 5000,
+	"FailureRatio": .8 // .8 = 80% of failed, this is default value
+	"SamplingDuration": 10000 // The time period over which the failure-success ratio is calculated (in milliseconds), default is 10000 (10s)
   }
 
 - You must set a number equal or greater than ``2`` against ``ExceptionsAllowedBeforeBreaking`` for this rule to be implemented. [#f2]_
 - ``DurationOfBreak`` means the circuit breaker will stay open for 1 second after it is tripped.
 - ``TimeoutValue`` means if a request takes more than 5 seconds, it will automatically be timed out. 
+
+  | Please note: if you use the Circuit-Breaker, Ocelot checks that the parameters are correct during execution. If not, it throws an exception.
+  | For a complete explanation about Circuit-Breaker strategies and mechanisms, consult Polly documentation here <https://www.pollydocs.org/strategies/circuit-breaker>
 
 .. _qos-circuit-breaker-strategy:
 
