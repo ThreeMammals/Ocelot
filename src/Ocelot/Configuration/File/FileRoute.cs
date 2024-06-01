@@ -80,7 +80,8 @@ namespace Ocelot.Configuration.File
         /// The timeout value in seconds.
         /// </value>
         public int? Timeout { get; set; }
-        public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+        public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
+
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
