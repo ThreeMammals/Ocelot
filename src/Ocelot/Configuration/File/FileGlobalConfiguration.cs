@@ -23,7 +23,7 @@ namespace Ocelot.Configuration.File
         /// <value>
         /// The timeout value in seconds.
         /// </value>
-        public int? TimeoutSeconds { get; set; }
+        public int? Timeout { get; set; }
 
         public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
 

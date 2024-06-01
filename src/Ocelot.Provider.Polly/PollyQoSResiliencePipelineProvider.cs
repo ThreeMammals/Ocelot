@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
@@ -16,14 +18,18 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
+    private readonly FileGlobalConfiguration _global;
+    
+    public const int DefaultRequestTimeoutSeconds = 40;
 
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
-        IOptions<FileGlobalConfiguration> global))
+        IOptions<FileGlobalConfiguration> global)
     {
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
         _registry = registry;
+        _global = global.Value;
     }
 
     protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
@@ -125,7 +131,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         }
         else
         {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(route.Timeout));
+            builder.AddTimeout(TimeSpan.FromMilliseconds(_global.QoSOptions.TimeoutValue ?? DefaultRequestTimeoutSeconds));
         }
 
         var strategyOptions = new TimeoutStrategyOptions

@@ -82,7 +82,7 @@ namespace Ocelot.Configuration.Creator
         {
             return fileRoute.Timeout > 0 
                 ? fileRoute.Timeout.Value 
-                : (globalConfiguration.TimeoutSeconds ?? DefaultRequestTimeoutSeconds) * 1000;
+                : (globalConfiguration.Timeout ?? DefaultRequestTimeoutSeconds) * 1000;
         }
 
         private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
