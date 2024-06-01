@@ -100,13 +100,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
             // Remove old replaced query parameters
-            foreach (var queryKey in queries.AllKeys)
+            var placeholderNames = new HashSet<string>(placeholders.Select(p => p.Name.Trim(OpeningBrace, ClosingBrace)));
+            foreach (var queryKey in queries.AllKeys.Where(placeholderNames.Contains))
             {
-                var matchingPlaceholder = placeholders.FirstOrDefault(placeholder => queryKey == placeholder.Name.Trim(OpeningBrace, ClosingBrace));
-                if (matchingPlaceholder != null)
-                {
-                    queries.Remove(queryKey);
-                }
+                queries.Remove(queryKey);
             }
 
             var parameters = newQueries.AllKeys
