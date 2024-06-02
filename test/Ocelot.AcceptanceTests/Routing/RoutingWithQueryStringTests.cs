@@ -52,7 +52,8 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
-        [Theory(DisplayName = "1182: " + nameof(Should_return_200_with_query_string_template_different_keys))]
+        [Theory]
+        [Trait("Bug", "952")]
         [InlineData("")]
         [InlineData("&x=xxx")]
         public void Should_return_200_with_query_string_template_different_keys(string additionalParams)
@@ -71,11 +72,7 @@ namespace Ocelot.AcceptanceTests.Routing
                             DownstreamScheme = "http",
                             DownstreamHostAndPorts = new List<FileHostAndPort>
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                new("localhost", port),
                             },
                             UpstreamPathTemplate = "/api/units/{subscriptionId}/updates?unit={unit}",
                             UpstreamHttpMethod = new List<string> { "Get" },
@@ -92,7 +89,74 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
-        [Theory(DisplayName = "1174: " + nameof(Should_return_200_and_forward_query_parameters_without_duplicates))]
+        [Fact]
+        [Trait("Bug", "952")]
+        public void Should_map_query_parameters_with_different_names()
+        {
+            const string userId = "webley";
+            var port = PortFinder.GetRandomPort();
+            var configuration = new FileConfiguration
+            {
+                Routes = new()
+                {
+                    new()
+                    {
+                        UpstreamPathTemplate = "/users?userId={userId}",
+                        UpstreamHttpMethod = new() { "Get" },
+                        DownstreamPathTemplate = "/persons?personId={userId}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new()
+                        {
+                            new("localhost", port),
+                        },
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/persons", $"?personId={userId}", "Hello from @webley"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/users?userId={userId}"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from @webley"))
+                .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Bug", "952")]
+        public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
+        {
+            const string uid = "webley";
+            var port = PortFinder.GetRandomPort();
+            var configuration = new FileConfiguration
+            {
+                Routes = new()
+                {
+                    new()
+                    {
+                        UpstreamPathTemplate = "/users?userId={uid}",
+                        UpstreamHttpMethod = new() { "Get" },
+                        DownstreamPathTemplate = "/persons?personId={uid}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new()
+                        {
+                            new("localhost", port),
+                        },
+                    },
+                },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from @webley"))
+                .BDDfy();
+        }
+
+        [Theory]
+        [Trait("Bug", "1174")]
         [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
         [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00:00:00z%20and%20DateOfSale%20le%202020-03-15T00:00:00z")]
         public void Should_return_200_and_forward_query_parameters_without_duplicates(string everythingelse, string expected)
@@ -355,7 +419,8 @@ namespace Ocelot.AcceptanceTests.Routing
         /// <summary>
         /// To reproduce 1288: query string should contain the placeholder name and value.
         /// </summary>
-        [Fact(DisplayName = "1288: " + nameof(Should_copy_query_string_to_downstream_path))]
+        [Fact]
+        [Trait("Bug", "1288")]
         public void Should_copy_query_string_to_downstream_path()
         {
             var idName = "id";

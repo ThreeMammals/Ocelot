@@ -343,8 +343,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Fact]
         [Trait("Bug", "473")]
-        [Fact(DisplayName = "473: " + nameof(Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different))]
         public void Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different()
         {
             var methods = new List<string> { "Post", "Get" };
@@ -408,8 +408,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Fact]
         [Trait("Bug", "952")]
-        [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names))]
         public void Should_map_query_parameters_with_different_names()
         {
             var methods = new List<string> { "Post", "Get" };
@@ -440,8 +440,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Fact]
         [Trait("Bug", "952")]
-        [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ))]
         public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
         {
             var methods = new List<string> { "Post", "Get" };
@@ -472,8 +472,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Theory]
         [Trait("Bug", "1174")]
-        [Theory(DisplayName = "1174: " + nameof(Should_forward_query_parameters_without_duplicates))]
         [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
         [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
         public void Should_forward_query_parameters_without_duplicates(string everythingelse)

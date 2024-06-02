@@ -114,14 +114,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 .Where(key => !string.IsNullOrEmpty(key) && !parameters.ContainsKey(key))
                 .All(key => parameters.TryAdd(key, queries[key]));
 
-            //// Remove old replaced query parameters
-            //foreach (var placeholder in placeholders)
-            //{
-            //    parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
-            //}
-
-            return QuestionMark + string.Join(Ampersand, parameters.Select(p => $"{p.Key}={p.Value}"));
+            return QuestionMark + string.Join(Ampersand, parameters.Select(MapQueryParameter));
         }
+
+        private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
