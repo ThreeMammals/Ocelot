@@ -1,5 +1,7 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Polly;
@@ -365,8 +367,10 @@ public class PollyQoSResiliencePipelineProviderTests
         loggerFactoryMock
             .Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
             .Returns(new Mock<IOcelotLogger>().Object);
+        var globalConfigurationOption = new OptionsWrapper<FileGlobalConfiguration>(
+            new FileGlobalConfiguration());
         var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        return new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        return new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry, globalConfigurationOption);
     }
 
     private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false, int timeOut = 10000)
