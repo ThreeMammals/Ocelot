@@ -549,8 +549,10 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         }
 
         [Fact]
+        [Trait("Bug", "2002")]
         public void Should_map_when_query_parameters_has_same_names_with_placeholder()
         {
+            // Arrange
             var methods = new List<string> { "Post", "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
@@ -559,30 +561,33 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .WithUpstreamHttpMethod(methods)
                 .WithDownstreamScheme(Uri.UriSchemeHttp)
                 .Build();
-            var config = new ServiceProviderConfigurationBuilder().Build();
+            GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+                new List<PlaceholderNameAndValue>
+                {
+                    new("{userId}", "webley"),
+                    new("{personId}", "12345"),
+                },
+                new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                    .WithUpstreamHttpMethod(methods)
+                    .Build()
+            ));
+            GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
+            GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+            GivenTheUrlReplacerWillReturn("/persons?personId=12345&userId=webley");
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRouteHolder(
-                        new List<PlaceholderNameAndValue>
-                        {
-                            new("{userId}", "webley"),
-                            new("{personId}", "12345"),
-                        },
-                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                            .WithUpstreamHttpMethod(methods)
-                            .Build())))
-                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley"))
-                .And(x => GivenTheServiceProviderConfigIs(config))
-                .And(x => x.GivenTheUrlReplacerWillReturn("/persons?personId=12345&userId=webley"))
-                .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=12345&userId=webley"))
-                .And(x => ThenTheQueryStringIs("?personId=12345&userId=webley"))
-                .BDDfy();
+            // Act
+            WhenICallTheMiddleware();
+
+            // Assert
+            ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=12345&userId=webley");
+            ThenTheQueryStringIs("?personId=12345&userId=webley");
         }
 
         [Fact]
+        [Trait("Bug", "2002")]
         public void Should_map_all_given_traffic_query_with_placeholder()
         {
+            // Arrange
             var methods = new List<string> { "Post", "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
@@ -591,25 +596,26 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .WithUpstreamHttpMethod(methods)
                 .WithDownstreamScheme(Uri.UriSchemeHttp)
                 .Build();
-            var config = new ServiceProviderConfigurationBuilder().Build();
+            GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+                new List<PlaceholderNameAndValue>
+                {
+                    new("{userId}", "webley"),
+                    new("{personId}", "12345"),
+                },
+                new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                    .WithUpstreamHttpMethod(methods)
+                    .Build()
+            ));
+            GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
+            GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+            GivenTheUrlReplacerWillReturn("/persons?groupId=6789&personId=12345&userId=webley");
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(
-                    new DownstreamRouteHolder(
-                        new List<PlaceholderNameAndValue>
-                        {
-                            new("{userId}", "webley"),
-                            new("{personId}", "12345"),
-                        },
-                        new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                            .WithUpstreamHttpMethod(methods)
-                            .Build())))
-                .And(x => x.GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley"))
-                .And(x => GivenTheServiceProviderConfigIs(config))
-                .And(x => x.GivenTheUrlReplacerWillReturn("/persons?groupId=6789&personId=12345&userId=webley"))
-                .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?groupId=6789&personId=12345&userId=webley"))
-                .And(x => ThenTheQueryStringIs("?groupId=6789&personId=12345&userId=webley"))
-                .BDDfy();
+            // Act
+            WhenICallTheMiddleware();
+
+            // Assert
+            ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?groupId=6789&personId=12345&userId=webley");
+            ThenTheQueryStringIs("?groupId=6789&personId=12345&userId=webley");
         }
 
         private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
@@ -627,7 +633,6 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
         private void GivenTheDownStreamRouteIs(DownstreamRouteHolder downstreamRoute)
         {
             _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-
             _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         }
 
