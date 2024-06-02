@@ -20,7 +20,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     private readonly IOcelotLogger _logger;
     private readonly FileGlobalConfiguration _global;
     
-    public const int DefaultRequestTimeoutSeconds = 40;
+    public const int DefaultQoSTimeoutMilliseconds = 40_000;
 
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,

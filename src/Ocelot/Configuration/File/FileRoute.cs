@@ -72,6 +72,13 @@ namespace Ocelot.Configuration.File
         public FileSecurityOptions SecurityOptions { get; set; }
         public string ServiceName { get; set; }
         public string ServiceNamespace { get; set; }
+
+        /// <summary>
+        /// The timeout in seconds for requests.
+        /// </summary>
+        /// <value>
+        /// The timeout value in seconds.
+        /// </value>
         public int? Timeout { get; set; }
         public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
         public string UpstreamHost { get; set; }

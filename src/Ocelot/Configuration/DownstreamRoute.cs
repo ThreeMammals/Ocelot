@@ -133,12 +133,19 @@ namespace Ocelot.Configuration
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
         public bool UseServiceDiscovery { get; }
         public MetadataOptions MetadataOptions { get; }
-        public int Timeout { get; }
 
         /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
         /// <returns>A <see cref="string"/> object with the name.</returns>
         public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
             ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
             : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);        
+
+        /// <summary>
+        /// The timeout duration for the downstream request in seconds.
+        /// </summary>
+        /// <value>
+        /// The timeout value in seconds.
+        /// </value>
+        public int Timeout { get; }
     }
 }
