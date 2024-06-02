@@ -24,30 +24,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+            "/api/units/{subscriptionId}/{unitId}/updates");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
@@ -65,26 +47,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unit}",
+            "/api/units/{subscriptionId}/updates?unit={unit}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unit}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new("localhost", port),
-                        },
-                        UpstreamPathTemplate = "/api/units/{subscriptionId}/updates?unit={unit}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
@@ -99,25 +67,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     {
         const string userId = "webley";
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new()
-                {
-                    UpstreamPathTemplate = "/users?userId={userId}",
-                    UpstreamHttpMethod = new() { "Get" },
-                    DownstreamPathTemplate = "/persons?personId={userId}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new("localhost", port),
-                    },
-                },
-            },
-        };
+        var route = GivenRoute(port,
+            "/persons?personId={userId}",
+            "/users?userId={userId}");
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/persons", $"?personId={userId}", "Hello from @webley"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userId}", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userId}"))
@@ -132,25 +87,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     {
         const string uid = "webley";
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new()
-                {
-                    UpstreamPathTemplate = "/users?userId={uid}",
-                    UpstreamHttpMethod = new() { "Get" },
-                    DownstreamPathTemplate = "/persons?personId={uid}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new("localhost", port),
-                    },
-                },
-            },
-        };
+        var route = GivenRoute(port,
+            "/persons?personId={uid}",
+            "/users?userId={uid}");
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
@@ -166,25 +108,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     public void Should_return_200_and_forward_query_parameters_without_duplicates(string everythingelse, string expected)
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/contracts?{everythingelse}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new() { Host = "localhost", Port = port },
-                    },
-                    UpstreamPathTemplate = "/contracts?{everythingelse}",
-                    UpstreamHttpMethod = new() { "Get" },
-                },
-            },
-        };
+        var route = GivenRoute(port,
+            "/api/contracts?{everythingelse}",
+            "/contracts?{everythingelse}");
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/contracts", $"?{expected}", "Hello from @sunilk3"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", $"?{expected}", "Hello from @sunilk3"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
@@ -199,30 +128,10 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, "/{everything}", "/{everything}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/odata/customers?$filter=Name eq 'Sam' "))
@@ -237,30 +146,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
@@ -275,30 +166,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
@@ -312,30 +185,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
@@ -349,30 +204,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
@@ -388,30 +225,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/api/units/{subscriptionId}/{unitId}/updates",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-                    UpstreamHttpMethod = new() { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1&personId=123&userId=456", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1&personId=123&userId=456", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1&personId=123&userId=456"))
@@ -432,26 +251,12 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var queryName = idName + "1";
         var queryValue = "2" + idValue + "12";
         var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            $"/cpx/t1/{{{idName}}}",
+            $"/safe/{{{idName}}}");
+        var configuration = GivenConfiguration(route);
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = $"/cpx/t1/{{{idName}}}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new() { Host = "localhost", Port = port },
-                        },
-                        UpstreamPathTemplate = $"/safe/{{{idName}}}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/safe/{idValue}?{queryName}={queryValue}"))
@@ -460,8 +265,21 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string queryString, string responseBody)
+    private static FileRoute GivenRoute(int port, string downstream, string upstream) => new()
     {
+        DownstreamPathTemplate = downstream,
+        DownstreamScheme = Uri.UriSchemeHttp,
+        DownstreamHostAndPorts = new()
+        {
+            new("localhost", port),
+        },
+        UpstreamPathTemplate = upstream,
+        UpstreamHttpMethod = new() { HttpMethods.Get },
+    };
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, string queryString, string responseBody)
+    {
+        var baseUrl = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
             if (context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString)
