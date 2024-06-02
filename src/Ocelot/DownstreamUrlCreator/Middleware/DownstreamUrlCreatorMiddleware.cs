@@ -99,6 +99,13 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             var queries = HttpUtility.ParseQueryString(queryString);
             var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
+            // Remove old replaced query parameters
+            var placeholderNames = new HashSet<string>(placeholders.Select(p => p.Name.Trim(OpeningBrace, ClosingBrace)));
+            foreach (var queryKey in queries.AllKeys.Where(placeholderNames.Contains))
+            {
+                queries.Remove(queryKey);
+            }
+
             var parameters = newQueries.AllKeys
                 .Where(key => !string.IsNullOrEmpty(key))
                 .ToDictionary(key => key, key => newQueries[key]);
@@ -107,11 +114,11 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 .Where(key => !string.IsNullOrEmpty(key) && !parameters.ContainsKey(key))
                 .All(key => parameters.TryAdd(key, queries[key]));
 
-            // Remove old replaced query parameters
-            foreach (var placeholder in placeholders)
-            {
-                parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
-            }
+            //// Remove old replaced query parameters
+            //foreach (var placeholder in placeholders)
+            //{
+            //    parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
+            //}
 
             var orderedParams = parameters.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value}");
             return QuestionMark + string.Join(Ampersand, orderedParams);
