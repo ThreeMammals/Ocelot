@@ -130,7 +130,7 @@ namespace Ocelot.Configuration.File
             to.ServiceNamespace = from.ServiceNamespace;
             to.Timeout = from.Timeout;
             to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
-            to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
+            to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
