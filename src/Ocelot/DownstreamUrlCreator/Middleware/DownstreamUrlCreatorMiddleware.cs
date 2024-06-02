@@ -120,8 +120,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             //    parameters.Remove(placeholder.Name.Trim(OpeningBrace, ClosingBrace));
             //}
 
-            var orderedParams = parameters.OrderBy(x => x.Key).Select(x => $"{x.Key}={x.Value}");
-            return QuestionMark + string.Join(Ampersand, orderedParams);
+            return QuestionMark + string.Join(Ampersand, parameters.Select(p => $"{p.Key}={p.Value}"));
         }
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)

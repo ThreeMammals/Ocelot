@@ -343,6 +343,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Trait("Bug", "473")]
         [Fact(DisplayName = "473: " + nameof(Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different))]
         public void Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different()
         {
@@ -372,8 +373,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheUrlReplacerWillReturn("/Authorized/1?server=2"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?refreshToken=123456789&server=2"))
-                .And(x => ThenTheQueryStringIs("?refreshToken=123456789&server=2"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=123456789"))
+                .And(x => ThenTheQueryStringIs("?server=2&refreshToken=123456789"))
                 .BDDfy();
         }
 
@@ -407,6 +408,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Trait("Bug", "952")]
         [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names))]
         public void Should_map_query_parameters_with_different_names()
         {
@@ -438,6 +440,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Trait("Bug", "952")]
         [Fact(DisplayName = "952: " + nameof(Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ))]
         public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
         {
@@ -469,10 +472,11 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .BDDfy();
         }
 
+        [Trait("Bug", "1174")]
         [Theory(DisplayName = "1174: " + nameof(Should_forward_query_parameters_without_duplicates))]
-        [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "endDate=2019-12-12&projectNumber=45&startDate=2019-12-12")]
-        [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
-        public void Should_forward_query_parameters_without_duplicates(string everythingelse, string expectedOrdered)
+        [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
+        [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
+        public void Should_forward_query_parameters_without_duplicates(string everythingelse)
         {
             var methods = new List<string> { "Get" };
             var downstreamRoute = new DownstreamRouteBuilder()
@@ -483,6 +487,7 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .WithDownstreamScheme(Uri.UriSchemeHttp)
                 .Build();
             var config = new ServiceProviderConfigurationBuilder().Build();
+            var query = everythingelse;
             this.Given(x => x.GivenTheDownStreamRouteIs(
                     new DownstreamRouteHolder(
                         new List<PlaceholderNameAndValue>
@@ -496,8 +501,8 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator
                 .And(x => GivenTheServiceProviderConfigIs(config))
                 .And(x => x.GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}"))
                 .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/api/contracts?{expectedOrdered}"))
-                .And(x => ThenTheQueryStringIs($"?{expectedOrdered}"))
+                .Then(x => x.ThenTheDownstreamRequestUriIs($"http://localhost:5000/api/contracts?{query}"))
+                .And(x => ThenTheQueryStringIs($"?{query}"))
                 .BDDfy();
         }
 
