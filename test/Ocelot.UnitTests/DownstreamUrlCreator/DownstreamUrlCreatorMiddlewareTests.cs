@@ -16,7 +16,10 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator;
 
 public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 {
+    // TODO: Convert to integration tests to use real IDownstreamPathPlaceholderReplacer service (no mocking). There are a lot of failings
+    // private readonly IDownstreamPathPlaceholderReplacer _downstreamUrlTemplateVariableReplacer;
     private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
+
     private OkResponse<DownstreamPath> _downstreamPath;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
@@ -571,69 +574,41 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     public void Should_map_when_query_parameters_has_same_names_with_placeholder()
     {
         // Arrange
-        var methods = new List<string> { "Post", "Get" };
+        const string username = "bbenameur";
+        const string groupName = "Paris";
+        const string roleid = "123456";
+        const string everything = "something=9874565";
+        var withGetMethod = new List<string> { "Get" };
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
-                .WithOriginalValue("/users?userId={userId}&personId={personId}").Build())
-            .WithDownstreamPathTemplate("/persons?personId={personId}&userId={userId}")
-            .WithUpstreamHttpMethod(methods)
+                .WithOriginalValue("/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}")
+                .Build())
+            .WithDownstreamPathTemplate("/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}")
+            .WithUpstreamHttpMethod(withGetMethod)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>
             {
-                new("{userId}", "webley"),
-                new("{personId}", "12345"),
+                new("{username}", username),
+                new("{groupName}", groupName),
+                new("{roleid}", roleid),
+                new("{everything}", everything),
             },
             new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
+                .WithUpstreamHttpMethod(withGetMethod)
                 .Build()
         ));
-        GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
+        GivenTheDownstreamRequestUriIs($"http://localhost:5000/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        GivenTheUrlReplacerWillReturn("/persons?personId=12345&userId=webley");
+        GivenTheUrlReplacerWillReturn($"/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
 
         // Act
         WhenICallTheMiddleware();
 
         // Assert
-        ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=12345&userId=webley");
-        ThenTheQueryStringIs("?personId=12345&userId=webley");
-    }
-
-    [Fact]
-    [Trait("Bug", "2002")]
-    public void Should_map_all_given_traffic_query_with_placeholder()
-    {
-        // Arrange
-        var methods = new List<string> { "Post", "Get" };
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
-                .WithOriginalValue("/users?userId={userId}&personId={personId}&groupId={groupId}").Build())
-            .WithDownstreamPathTemplate("/persons?personId={personId}&userId={userId}")
-            .WithUpstreamHttpMethod(methods)
-            .WithDownstreamScheme(Uri.UriSchemeHttp)
-            .Build();
-        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>
-            {
-                new("{userId}", "webley"),
-                new("{personId}", "12345"),
-            },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-        ));
-        GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
-        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        GivenTheUrlReplacerWillReturn("/persons?groupId=6789&personId=12345&userId=webley");
-
-        // Act
-        WhenICallTheMiddleware();
-
-        // Assert
-        ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?groupId=6789&personId=12345&userId=webley");
-        ThenTheQueryStringIs("?groupId=6789&personId=12345&userId=webley");
+        ThenTheDownstreamRequestUriIs($"http://localhost:5000/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
+        ThenTheQueryStringIs($"?roleId={roleid}&{everything}");
     }
 
     private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)

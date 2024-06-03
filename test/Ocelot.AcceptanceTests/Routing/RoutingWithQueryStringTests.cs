@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Routing;
@@ -96,6 +96,26 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
+            .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "952")]
+    public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ_case_sensitive()
+    {
+        const string userid = "webley";
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port,
+            "/persons?personId={userid}",
+            "/users?userId={userid}");
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userid}&userId={userid}", "Hello from @webley"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userid}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .BDDfy();
@@ -220,22 +240,27 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
 
     [Fact]
     [Trait("Bug", "2002")]
-    public void Should_return_response_200_with_query_string_upstream_template_multiple_params_with_same_name_and_map_all_traffic()
+    public void Should_map_when_query_parameters_has_same_names_with_placeholder()
     {
-        var subscriptionId = Guid.NewGuid().ToString();
-        var unitId = Guid.NewGuid().ToString();
+        const string username = "bbenameur";
+        const string groupName = "Paris";
+        const string roleid = "123456";
+        const string everything = "something=9874565";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/units/{subscriptionId}/{unitId}/updates",
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+            "/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}",
+            "/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1&personId=123&userId=456", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port,
+                $"/account/{username}/groups/{groupName}/roles",
+                $"?roleId={roleid}&{everything}",
+                "Hello from Béchir"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1&personId=123&userId=456"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Béchir"))
             .BDDfy();
     }
 
