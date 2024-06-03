@@ -72,8 +72,8 @@ public class PollyQoSResiliencePipelineProviderTests
         var resiliencePipelineDescriptor = resiliencePipeline.GetPipelineDescriptor();
         resiliencePipelineDescriptor.ShouldNotBeNull();
         resiliencePipelineDescriptor.Strategies.Count.ShouldBe(2);
-        resiliencePipelineDescriptor.Strategies[0].Options.ShouldBeOfType<TimeoutStrategyOptions>();
-        resiliencePipelineDescriptor.Strategies[1].Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
+        resiliencePipelineDescriptor.Strategies[0].Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
+        resiliencePipelineDescriptor.Strategies[1].Options.ShouldBeOfType<TimeoutStrategyOptions>();
     }
 
     [Fact]
@@ -90,6 +90,47 @@ public class PollyQoSResiliencePipelineProviderTests
         resiliencePipelineDescriptor.ShouldNotBeNull();
         resiliencePipelineDescriptor.Strategies.Count.ShouldBe(1);
         resiliencePipelineDescriptor.Strategies.Single().Options.ShouldBeOfType<TimeoutStrategyOptions>();
+    }
+
+    [Fact]
+    public async Task Should_throw_after_timeout()
+    {
+        var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
+
+        const int timeOut = 1000;
+        var route = DownstreamRouteFactory("/", false, timeOut);
+        var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
+
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        var cancellationTokenSource = new CancellationTokenSource();
+        await Assert.ThrowsAsync<TimeoutRejectedException>(async () =>
+            await resiliencePipeline.ExecuteAsync(async (cancellationToken) =>
+            {
+                await Task.Delay(timeOut + 500, cancellationToken); // add 500ms to make sure it's timed out
+                return response;
+            }, cancellationTokenSource.Token));
+    }
+
+    [Fact]
+    public async Task Should_not_throw_before_timeout()
+    {
+        var pollyQoSResiliencePipelineProvider = PollyQoSResiliencePipelineProviderFactory();
+
+        const int timeOut = 1000;
+        var route = DownstreamRouteFactory("/", false, timeOut);
+        var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        await resiliencePipeline.ExecuteAsync(async cancellationToken =>
+        {
+            await Task.Delay(timeOut - 100, cancellationToken); // subtract 100ms to make sure it's not timed out
+            return response;
+        }, cancellationTokenSource.Token);
+
+        Assert.True(response.IsSuccessStatusCode);
     }
 
     [Theory]
@@ -110,6 +151,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
 
         var response = new HttpResponseMessage(errorCode);
+
         await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
         await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
@@ -129,6 +171,8 @@ public class PollyQoSResiliencePipelineProviderTests
         Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
     }
+
+
 
     [Fact]
     public async Task Should_throw_and_before_delay_should_not_allow_requests()
@@ -226,10 +270,10 @@ public class PollyQoSResiliencePipelineProviderTests
         return pollyQoSResiliencePipelineProvider;
     }
 
-    private static DownstreamRoute DownstreamRouteFactory(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false)
+    private static DownstreamRoute DownstreamRouteFactory(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false, int timeOut = 10000)
     {
         var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(10000)
+            .WithTimeoutValue(timeOut)
             .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
             .WithDurationOfBreak(5000)
             .Build();

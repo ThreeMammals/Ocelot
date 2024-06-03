@@ -15,7 +15,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _resiliencePipelineRegistry;
     private readonly IOcelotLogger _logger;
 
-    public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory, 
+    public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory,
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> resiliencePipelineRegistry)
     {
         _resiliencePipelineRegistry = resiliencePipelineRegistry;
@@ -40,7 +40,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
 
         var currentRouteName = GetRouteName(route);
         return _resiliencePipelineRegistry.GetOrAddPipeline<HttpResponseMessage>(
-            key: new OcelotResiliencePipelineKey(currentRouteName), 
+            key: new OcelotResiliencePipelineKey(currentRouteName),
             configure: (builder) => PollyResiliencePipelineWrapperFactory(builder, route));
     }
 
@@ -48,37 +48,57 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
     {
         var options = route.QosOptions;
 
+     
+
+        // Add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 2
+        if (options.ExceptionsAllowedBeforeBreaking >= 2)
+        {
+            // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
+            var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
+
+            var circuitBreakerStrategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
+            {
+                FailureRatio = 0.8,
+                SamplingDuration = TimeSpan.FromSeconds(10),
+                MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
+                BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
+                    .Handle<TimeoutRejectedException>()
+                    .Handle<TimeoutException>(),
+                OnOpened = args =>
+                {
+                    _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
+                        args.Outcome.Exception);
+                    return ValueTask.CompletedTask;
+                },
+                OnClosed = _ =>
+                {
+                    _logger.LogInformation(info + "Closed");
+                    return ValueTask.CompletedTask;
+                },
+                OnHalfOpened = _ =>
+                {
+                    _logger.LogInformation(info + "Half Opened");
+                    return ValueTask.CompletedTask;
+                }
+            };
+
+            builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+        }
+
         // Add TimeoutStrategy if TimeoutValue is not int.MaxValue and greater than 0
         if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
         {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(options.TimeoutValue));
-        }
-
-        // Add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 0
-        if (options.ExceptionsAllowedBeforeBreaking <= 0)
-        {
-            return; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
-        }
-
-        var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
-
-        var circuitBreakerStrategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
-        {
-            FailureRatio = 0.8,
-            SamplingDuration = TimeSpan.FromSeconds(10),
-            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking, 
-            BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
-            ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
-                .Handle<TimeoutRejectedException>()
-                .Handle<TimeoutException>(),
-            OnOpened = args =>
+            builder.AddTimeout(new TimeoutStrategyOptions
             {
-                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms", args.Outcome.Exception);
-                return ValueTask.CompletedTask;
-            },
-        };
-
-        builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+                Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
+                OnTimeout = _ =>
+                {
+                    _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
+                    return ValueTask.CompletedTask;
+                }
+            });
+        }
     }
 }
