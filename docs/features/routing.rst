@@ -210,7 +210,7 @@ Priority
 --------
 
 You can define the order you want your Routes to match the Upstream ``HttpRequest`` by including a **Priority** property in **ocelot.json**.
-See `issue 270 <https://github.com/ThreeMammals/Ocelot/pull/270>`_ for reference.
+See issue `270`_ for reference.
 
 .. code-block:: json
 
@@ -247,7 +247,7 @@ Query String Placeholders
 
 In addition to URL path :ref:`routing-placeholders` Ocelot is able to forward query string parameters with their processing in the form of ``{something}``.
 Also, the query parameter placeholder needs to be present in both the **DownstreamPathTemplate** and **UpstreamPathTemplate** properties.
-Placeholder replacement works bi-directionally between path and query strings, with some `restrictions <#restrictions-on-use>`_ on usage.
+Placeholder replacement works bi-directionally between path and query strings, with some restrictions on usage (see :ref:`routing-merging-of-query-parameters`).
 
 Path to Query String direction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -261,7 +261,9 @@ Ocelot allows you to specify a query string as part of the **DownstreamPathTempl
     "DownstreamPathTemplate": "/api/subscriptions/{subscription}/updates?unitId={unit}",
   }
 
-In this example Ocelot will use the value from the ``{unit}`` placeholder in the upstream path template and add it to the downstream request as a query string parameter called ``unitId``! Make sure you name the placeholder differently due to `restrictions <#restrictions-on-use>`_ on usage.
+In this example Ocelot will use the value from the ``{unit}`` placeholder in the upstream path template and add it to the downstream request as a query string parameter called ``unitId``!
+
+  Note! Make sure you name the placeholder differently due to :ref:`routing-merging-of-query-parameters`.
 
 
 Query String to Path direction
@@ -279,7 +281,10 @@ Ocelot will also allow you to put query string parameters in the **UpstreamPathT
 In this example Ocelot will only match requests that have a matching URL path and the query string starts with ``unitId=something``.
 You can have other queries after this but you must start with the matching parameter.
 Also Ocelot will swap the ``{uid}`` parameter from the query string and use it in the downstream request path.
-Note, the best practice is giving different placeholder name than the name of query parameter due to `restrictions <#restrictions-on-use>`_ on usage.
+
+  Note, the best practice is giving different placeholder name than the name of query parameter due to :ref:`routing-merging-of-query-parameters`.
+
+.. _routing-catch-all-query-string:
 
 Catch All Query String
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -295,54 +300,68 @@ The placeholder ``{everything}`` name does not matter, any name will work.
   }
 
 This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
-such as OData filters and etc (see issue `1174 <https://github.com/ThreeMammals/Ocelot/issues/1174>`_).
+such as OData filters and etc (see issue `1174`_).
 
-**Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f1]_
-Thus, upstream paths ``/contracts?`` and ``/contracts`` are routed to downstream path ``/apipath/contracts``, which has no query string at all.
+  **Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f1]_
+  Thus, upstream paths ``/contracts?`` and ``/contracts`` are routed to downstream path ``/apipath/contracts``, which has no query string at all.
 
-Restrictions on use
-^^^^^^^^^^^^^^^^^^^
+.. _routing-merging-of-query-parameters:
 
-The query string parameters are ordered and merged to produce the final downstream URL.
-This is necessary because the ``DownstreamUrlCreatorMiddleware`` needs to have some control when replacing placeholders and merging duplicate parameters.
-So, even if your parameter is presented as the first parameter in the upstream, then in the final downstream URL the said query parameter will have a different position.
-But this doesn't seem to break anything in the downstream API.
+Merging of Query Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Because of parameters merging, special ASP.NET API `model binding <https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-7.0#collections>`_
-for arrays is not supported if you use array items representation like ``selectedCourses=1050&selectedCourses=2000``.
-This query string will be merged as ``selectedCourses=1050`` in downstream URL. So, array data will be lost!
-Make sure upstream clients generate correct query string for array models like ``selectedCourses[0]=1050&selectedCourses[1]=2000``.
-To understand array model bidings, see `Bind arrays and string values from headers and query strings <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-7.0#bind-arrays-and-string-values-from-headers-and-query-strings>`_ docs.
+Query string parameters are unsorted and merged to create the final downstream URL.
+This process is essential as the ``DownstreamUrlCreatorMiddleware`` requires control over placeholder replacement and the merging of duplicate parameters.
+A parameter that appears first in the **UpstreamPathTemplate** may occupy a different position in the final downstream URL.
+Furthermore, if the **DownstreamPathTemplate** includes query parameters at the beginning, their position in the **UpstreamPathTemplate** will be indeterminate unless explicitly defined.
 
-**Warning!** Query string placeholders have naming restrictions due to ``DownstreamUrlCreatorMiddleware`` implementations.
-On the other hand, it gives you the flexibility to control whether the parameter is present in the final downstream URL.
-Here are two user scenarios.
+In a typical scenario, the merging algorithm constructs the final downstream URL query string by:
 
-* User wants to save the parameter after replacing the placeholder (see issue `473 <https://github.com/ThreeMammals/Ocelot/issues/473>`_).
-  To do this you need to use the following template definition:
+1. Taking the initially defined query parameters in **DownstreamPathTemplate** and placing them at the beginning, with any necessary placeholder replacements.
+2. Adding all parameters from the :ref:`routing-catch-all-query-string`, represented by the placeholder ``{everything}``, into the second position (following the explicitly defined parameters from **step 1**).
+3. Appending any remaining replaced placeholder values as parameter values to the end of the string, if they are present.
 
-  .. code-block:: json
+Array parameters in ASP.NET API's model binding
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+Due to parameters merging, ASP.NET API's special `model binding`_ for arrays **is not supported** having the array item representation format of ``selectedCourses=1050&selectedCourses=2000``.
+This query string will be merged into ``selectedCourses=1050`` in the downstream URL, resulting in the loss of array data.
+It is crucial for upstream clients to generate the correct query string for array models, such as ``selectedCourses[0]=1050&selectedCourses[1]=2000``.
+For a comprehensive understanding of array model bindings, refer to the documentation: `Bind arrays and string values from headers and query strings`_.
+
+Control over parameter existence
+""""""""""""""""""""""""""""""""
+
+Be aware that query string placeholders are subject to naming restrictions due to the ``DownstreamUrlCreatorMiddleware``'s merging algorithm implementation.
+However, this also provides the flexibility to manage the presence of parameters in the final downstream URL by their names.
+
+Consider the following 2 development scenarios :htm:`&rarr;`
+
+1. A developer wishes **to preserve a parameter** after substituting a placeholder (refer to issue `473`_).
+   This requires the use of the template definition below:
+
+   .. code-block:: json
   
-    {
-      "UpstreamPathTemplate": "/path/{serverId}/{action}",
-      "DownstreamPathTemplate": "/path2/{action}?server={serverId}"
-    }
+     {
+       "UpstreamPathTemplate": "/path/{serverId}/{action}",
+       "DownstreamPathTemplate": "/path2/{action}?server={serverId}"
+     }
 
-  So, ``{serverId}`` placeholder and ``server`` parameter **names are different**!
-  Finally, the ``server`` parameter is kept.
+   | Here, the ``{serverId}`` placeholder and the ``server`` parameter **names differ**! Ultimately, the ``server`` parameter is retained.
+   | It is important to note that due to the case-sensitive comparison of names, the ``server`` parameter will not be preserved with the ``{server}`` placeholder. However, using the ``{Server}`` placeholder is acceptable for retaining the parameter.
 
-* User wants to remove old parameter after replacing placeholder (see issue `952 <https://github.com/ThreeMammals/Ocelot/issues/952>`_).
-  To do this you need to use the same names:
+2. The developer intends **to remove an outdated parameter** after substituting a placeholder (refer to issue `952`_).
+   For this action, you must use identical names having the case-sensitive comparison:
 
-  .. code-block:: json
+   .. code-block:: json
   
-    {
-      "UpstreamPathTemplate": "/users?userId={userId}",
-      "DownstreamPathTemplate": "/persons?personId={userId}"
-    }
+     {
+       "UpstreamPathTemplate": "/users?userId={userId}",
+       "DownstreamPathTemplate": "/persons?personId={userId}"
+     }
 
-  So, both ``{userId}`` placeholder and ``userId`` parameter **names are the same**!
-  Finally, the ``userId`` parameter is removed.
+   | Thus, the ``{userId}`` placeholder and the ``userId`` parameter **have identical names**! Subsequently, the ``userId`` parameter is eliminated.
+   | Be aware that due to the case sensitive nature of the comparison, if the ``{userid}`` placeholder is used, the ``userId`` parameter will not be removed!
 
 .. _routing-security-options:
 
@@ -391,3 +410,10 @@ See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 .. [#f3] ":ref:`routing-upstream-headers`" feature was proposed in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_, and released in version `24.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0>`_.
 .. [#f4] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
 .. [#f5] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.
+
+.. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
+.. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings
+.. _270: https://github.com/ThreeMammals/Ocelot/issues/270
+.. _473: https://github.com/ThreeMammals/Ocelot/issues/473
+.. _952: https://github.com/ThreeMammals/Ocelot/issues/952
+.. _1174: https://github.com/ThreeMammals/Ocelot/issues/1174
