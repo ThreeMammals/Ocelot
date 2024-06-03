@@ -87,7 +87,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(120)))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -110,7 +110,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(30)))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
