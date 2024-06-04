@@ -14,7 +14,6 @@ using System.Diagnostics;
 
 namespace Ocelot.UnitTests.Requester;
 
-[Trait("PR", "1824")]
 public class MessageInvokerPoolTests : UnitTest
 {
     private DownstreamRoute _downstreamRoute1;
@@ -37,90 +36,117 @@ public class MessageInvokerPoolTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1824")]
     public void If_calling_the_same_downstream_route_twice_should_return_the_same_message_invoker()
     {
+        // Arrange
         GivenADownstreamRoute("/super-test");
         AndAHandlerFactory();
         GivenAMessageInvokerPool();
+
+        // Act
         WhenGettingMessageInvokerTwice();
+
+        // Assert
         ThenTheInvokersShouldBeTheSame();
     }
 
     [Fact]
+    [Trait("PR", "1824")]
     public void If_calling_two_different_downstream_routes_should_return_different_message_invokers()
     {
+        // Arrange
         GivenTwoDifferentDownstreamRoutes("/super-test", "/super-test");
         AndAHandlerFactory();
         GivenAMessageInvokerPool();
+
+        // Act
         WhenGettingMessageInvokerForBothRoutes();
+
+        // Assert
         ThenTheInvokersShouldNotBeTheSame();
     }
 
     [Fact]
+    [Trait("PR", "1824")]
     public void If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
     {
+        // Arrange
         var fakeOne = new FakeDelegatingHandler();
         var fakeTwo = new FakeDelegatingHandler();
-
         var handlers = new List<Func<DelegatingHandler>>
         {
             () => fakeOne,
             () => fakeTwo,
         };
-
         GivenTheFactoryReturns(handlers);
         GivenADownstreamRoute("/super-test");
         GivenAMessageInvokerPool();
         GivenARequest();
+
+        // Act
         WhenICallTheClient("http://www.bbc.co.uk");
+
+        // Assert
         ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo);
         ThenSomethingIsReturned();
     }
 
+    /// <summary>120 seconds.</summary>
+    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+
     [Fact]
+    [Trait("PR", "1824")]
     public void Should_log_if_ignoring_ssl_errors()
     {
-        const int DefaultTimeout = RoutesCreator.DefaultRequestTimeoutSeconds;
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(DefaultTimeout)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
-            .WithTimeout(DefaultTimeout)
+            .WithTimeout(RoutesCreator.DefaultRequestTimeoutSeconds)
             .Build();
-
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
-        WhenICallTheClient("http://www.google.com/");
+
+        // Act
+        WhenICallTheClient("http://www.bbc.co.uk");
+
+        // Assert
         ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged();
     }
 
     [Fact]
+    [Trait("PR", "1824")]
     public void Should_re_use_cookies_from_container()
     {
-        const int DefaultTimeout = RoutesCreator.DefaultRequestTimeoutSeconds;
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(DefaultTimeout)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
-            .WithTimeout(DefaultTimeout)
+            .WithTimeout(RoutesCreator.DefaultRequestTimeoutSeconds)
             .Build();
-
         GivenADownstreamService();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert 1
         WhenICallTheClient("http://localhost:5003");
         ThenTheCookieIsSet();
+
+        // Act, Assert 2
         WhenICallTheClient("http://localhost:5003");
         ThenTheResponseIsOk();
     }
@@ -143,10 +169,11 @@ public class MessageInvokerPoolTests : UnitTest
             .WithHttpHandlerOptions(handlerOptions)
             .Build();
         GivenTheFactoryReturnsNothing();
-
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert
         WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
     }
     
@@ -169,10 +196,11 @@ public class MessageInvokerPoolTests : UnitTest
             .WithTimeout(timeoutSeconds) // !!! TimeoutValueInRoute
             .Build();
         GivenTheFactoryReturnsNothing();
-
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert
         WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(timeoutSeconds));
     }
 
@@ -190,17 +218,16 @@ public class MessageInvokerPoolTests : UnitTest
         var handlerOptions = new HttpHandlerOptionsBuilder()
             .WithUseMaxConnectionPerServer(int.MaxValue)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(handlerOptions)
             .WithTimeout(routeTimeout) // this value is greater than QoS one
             .Build();
-
-        // Assert
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert
         WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout));
     }
 
