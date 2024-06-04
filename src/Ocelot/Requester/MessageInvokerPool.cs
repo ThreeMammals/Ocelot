@@ -34,6 +34,8 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public void Clear() => _handlersPool.Clear();
 
+    private int? _timeoutMilliseconds = null;
+
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)
     {
         var baseHandler = CreateHandler(downstreamRoute);
@@ -46,11 +48,16 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
+        if (!_timeoutMilliseconds.HasValue)
+        {
+            _timeoutMilliseconds = downstreamRoute.QosOptions.TimeoutValue > 0
+                ? downstreamRoute.QosOptions.TimeoutValue
+                : downstreamRoute.Timeout * 1000;
+        }
+
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
-        var timeout = downstreamRoute.QosOptions.TimeoutValue > 0
-            ? TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue)
-            : TimeSpan.FromSeconds(downstreamRoute.Timeout);
+        var timeout = TimeSpan.FromMilliseconds(_timeoutMilliseconds.Value);
         var timeoutHandler = new TimeoutDelegatingHandler(timeout)
         {
             InnerHandler = baseHandler,
