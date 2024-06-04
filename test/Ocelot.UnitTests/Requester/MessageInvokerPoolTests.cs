@@ -154,6 +154,61 @@ public class MessageInvokerPoolTests : UnitTest
             .Then(x => WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds)))
             .BDDfy();
     }
+    
+    [Theory]
+    [Trait("Issue", "1869")]
+    [InlineData(5)]
+    [InlineData(10)]
+    public void Create_TimeoutValueInRoute_MessageInvokerTimeout(int timeoutSeconds)
+    {
+        // Arrange
+        var qosOptions = new QoSOptionsBuilder()
+            .Build();
+        var handlerOptions = new HttpHandlerOptionsBuilder()
+            .WithUseMaxConnectionPerServer(int.MaxValue)
+            .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(qosOptions)
+            .WithHttpHandlerOptions(handlerOptions)
+            .WithTimeout(timeoutSeconds)
+            .Build();
+        GivenTheFactoryReturnsNothing();
+
+        this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
+            .And(x => GivenAMessageInvokerPool())
+            .And(x => GivenARequest(route))
+            .Then(x => WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(timeoutSeconds)))
+            .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Issue", "1869")]
+    [InlineData(5, 6)]
+    [InlineData(10, 12)]
+    public void Create_TimeoutValueInQosOptions_And_RouteTimeout_MessageInvokerTimeout(int qosTimeout, int routeTimeout)
+    {
+        // Arrange
+        var qosOptions = new QoSOptionsBuilder()
+            .WithTimeoutValue(qosTimeout * 1000)
+            .Build();
+        
+        var handlerOptions = new HttpHandlerOptionsBuilder()
+            .WithUseMaxConnectionPerServer(int.MaxValue)
+            .Build();
+        
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(qosOptions)
+            .WithHttpHandlerOptions(handlerOptions)
+            .WithTimeout(routeTimeout)
+            .Build();
+        
+        // Assert
+        this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
+            .And(x => GivenAMessageInvokerPool())
+            .And(x => GivenARequest(route))
+            .Then(x => WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout)))
+            .BDDfy();
+    }
 
     private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
     {
