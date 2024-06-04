@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File
 {
-    public class FileRoute : IRoute, ICloneable
+    public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
     {
         public FileRoute()
         {
@@ -73,12 +73,8 @@ namespace Ocelot.Configuration.File
         public string ServiceName { get; set; }
         public string ServiceNamespace { get; set; }
 
-        /// <summary>
-        /// The timeout in seconds for requests.
-        /// </summary>
-        /// <value>
-        /// The timeout value in seconds.
-        /// </value>
+        /// <summary>The timeout in seconds for requests.</summary>
+        /// <value>A <see cref="Nullable{T}"/> where T is <see cref="int"/> value in seconds.</value>
         public int? Timeout { get; set; }
         public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
 

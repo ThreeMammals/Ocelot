@@ -125,13 +125,15 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return builder;
         }
 
-        if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
+        var options = route.QosOptions;
+        var timeout = options.TimeoutValue;
+        if (timeout.HasValue && timeout.Value > 0)
         {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(options.TimeoutValue));
+            builder.AddTimeout(TimeSpan.FromMilliseconds(timeout.Value));
         }
         else
         {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(_global.QoSOptions.TimeoutValue ?? DefaultRequestTimeoutSeconds));
+            builder.AddTimeout(TimeSpan.FromMilliseconds(_global.QoSOptions.TimeoutValue ?? DefaultQoSTimeoutMilliseconds));
         }
 
         var strategyOptions = new TimeoutStrategyOptions

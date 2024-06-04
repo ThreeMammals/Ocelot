@@ -50,8 +50,9 @@ public class MessageInvokerPool : IMessageInvokerPool
 
         if (!_timeoutMilliseconds.HasValue)
         {
-            _timeoutMilliseconds = downstreamRoute.QosOptions.TimeoutValue > 0
-                ? downstreamRoute.QosOptions.TimeoutValue
+            var qosTimeout = downstreamRoute.QosOptions.TimeoutValue;
+            _timeoutMilliseconds = qosTimeout.HasValue && qosTimeout.Value > 0
+                ? qosTimeout.Value
                 : downstreamRoute.Timeout * 1000;
         }
 

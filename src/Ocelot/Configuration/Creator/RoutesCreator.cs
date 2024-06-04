@@ -23,7 +23,10 @@ namespace Ocelot.Configuration.Creator
         private readonly IVersionCreator _versionCreator;
         private readonly IVersionPolicyCreator _versionPolicyCreator;
         private readonly IMetadataCreator _metadataCreator;
-        
+
+        /// <summary>
+        /// Defines the default timeout in seconds for all routes, applicable at both the Route-level and globally.
+        /// </summary>
         public const int DefaultRequestTimeoutSeconds = 90;
 
         public RoutesCreator(
@@ -78,11 +81,11 @@ namespace Ocelot.Configuration.Creator
                 .ToList();
         }
 
-        public int CreateTimeout(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
+        public int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
         {
-            return fileRoute.Timeout > 0 
-                ? fileRoute.Timeout.Value 
-                : globalConfiguration.Timeout ?? DefaultRequestTimeoutSeconds;
+            return route.Timeout > 0 
+                ? route.Timeout.Value 
+                : global.Timeout ?? DefaultRequestTimeoutSeconds;
         }
 
         private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
