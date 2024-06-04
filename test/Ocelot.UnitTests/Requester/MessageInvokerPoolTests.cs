@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -82,17 +83,17 @@ public class MessageInvokerPoolTests : UnitTest
     [Fact]
     public void Should_log_if_ignoring_ssl_errors()
     {
+        const int DefaultTimeout = RoutesCreator.DefaultRequestTimeoutSeconds;
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(120)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(DefaultTimeout)))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
-            .WithTimeout(90)
+            .WithTimeout(DefaultTimeout)
             .Build();
 
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
@@ -106,16 +107,16 @@ public class MessageInvokerPoolTests : UnitTest
     [Fact]
     public void Should_re_use_cookies_from_container()
     {
+        const int DefaultTimeout = RoutesCreator.DefaultRequestTimeoutSeconds;
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(30)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(DefaultTimeout)))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
-            .WithTimeout(90)
+            .WithTimeout(DefaultTimeout)
             .Build();
 
         this.Given(_ => GivenADownstreamService())
@@ -130,10 +131,10 @@ public class MessageInvokerPoolTests : UnitTest
     }
 
     [Theory]
-    [Trait("Issue", "1833")]
+    [Trait("Bug", "1833")]
     [InlineData(5, 5)]
     [InlineData(10, 10)]
-    public void Create_TimeoutValueInQosOptions_MessageInvokerTimeout(int qosTimeout, int expectedSeconds)
+    public void SendAsync_TimeoutValueInQosOptions_ThrowTimeoutException(int qosTimeout, int expectedSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -156,10 +157,11 @@ public class MessageInvokerPoolTests : UnitTest
     }
     
     [Theory]
-    [Trait("Issue", "1869")]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314 1869")]
     [InlineData(5)]
     [InlineData(10)]
-    public void Create_TimeoutValueInRoute_MessageInvokerTimeout(int timeoutSeconds)
+    public void SendAsync_TimeoutValueInRoute_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -170,7 +172,7 @@ public class MessageInvokerPoolTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(handlerOptions)
-            .WithTimeout(timeoutSeconds)
+            .WithTimeout(timeoutSeconds) // !!! TimeoutValueInRoute
             .Build();
         GivenTheFactoryReturnsNothing();
 
@@ -182,16 +184,16 @@ public class MessageInvokerPoolTests : UnitTest
     }
 
     [Theory]
-    [Trait("Issue", "1869")]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314 1869")]
     [InlineData(5, 6)]
     [InlineData(10, 12)]
-    public void Create_TimeoutValueInQosOptions_And_RouteTimeout_MessageInvokerTimeout(int qosTimeout, int routeTimeout)
+    public void SendAsync_TimeoutValueInQosOptionsIsLessThanRouteTimeout_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(qosTimeout * 1000)
+            .WithTimeoutValue(qosTimeout * 1000) // !!! TimeoutValueInQosOptionsIsLessThanRouteTimeout
             .Build();
-        
         var handlerOptions = new HttpHandlerOptionsBuilder()
             .WithUseMaxConnectionPerServer(int.MaxValue)
             .Build();
@@ -199,7 +201,7 @@ public class MessageInvokerPoolTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(handlerOptions)
-            .WithTimeout(routeTimeout)
+            .WithTimeout(routeTimeout) // this value is greater than QoS one
             .Build();
         
         // Assert
