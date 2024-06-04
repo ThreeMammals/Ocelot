@@ -92,6 +92,7 @@ public class MessageInvokerPoolTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
+            .WithTimeout(90)
             .Build();
 
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
@@ -114,6 +115,7 @@ public class MessageInvokerPoolTests : UnitTest
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
+            .WithTimeout(90)
             .Build();
 
         this.Given(_ => GivenADownstreamService())
