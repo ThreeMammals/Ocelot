@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.Text;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Ocelot.AcceptanceTests.Caching
 {
@@ -10,6 +12,7 @@ namespace Ocelot.AcceptanceTests.Caching
 
         private const string HelloTomContent = "Hello from Tom";
         private const string HelloLauraContent = "Hello from Laura";
+        private int _counter = 0;
 
         public CachingTests()
         {
@@ -113,6 +116,75 @@ namespace Ocelot.AcceptanceTests.Caching
                 .BDDfy();
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [Trait("Feat", "2058")]
+        [Trait("Bug", "2059")]
+        public void Should_return_different_cached_response_when_request_body_changes_and_EnableContentHashing_is_true(bool asGlobalConfig)
+        {
+            var port = PortFinder.GetRandomPort();
+            var options = new FileCacheOptions
+            {
+                TtlSeconds = 100,
+                EnableContentHashing = true,
+            };
+            var (testBody1String, testBody2String) = TestBodiesFactory();
+            var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
+
+            this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody2String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody2String))
+                .And(x => ThenTheCounterValueShouldBe(2))
+                .BDDfy();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [Trait("Feat", "2058")]
+        [Trait("Bug", "2059")]
+        public void Should_return_same_cached_response_when_request_body_changes_and_EnableContentHashing_is_false(bool asGlobalConfig)
+        {
+            var port = PortFinder.GetRandomPort();
+            var options = new FileCacheOptions
+            {
+                TtlSeconds = 100,
+            };
+            var (testBody1String, testBody2String) = TestBodiesFactory();
+            var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
+
+            this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+                .And(x => ThenTheCounterValueShouldBe(1))
+                .BDDfy();
+        }
+
         [Fact]
         [Trait("Issue", "1172")]
         public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
@@ -152,7 +224,7 @@ namespace Ocelot.AcceptanceTests.Caching
                 .BDDfy();
         }
 
-        private static FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions) => new()
+        private static FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions, bool asGlobalConfig = false) => new()
         {
             Routes = new()
             {
@@ -163,12 +235,14 @@ namespace Ocelot.AcceptanceTests.Caching
                     {
                         new FileHostAndPort("localhost", port),
                     },
+                    DownstreamHttpMethod = "Post",
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() { HttpMethods.Get },
-                    FileCacheOptions = cacheOptions,
+                    UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post },
+                    FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
                 },
             },
+            GlobalConfiguration = asGlobalConfig ? new FileGlobalConfiguration { CacheOptions = cacheOptions } : null,
         };
 
         private static void GivenTheCacheExpires()
@@ -196,10 +270,61 @@ namespace Ocelot.AcceptanceTests.Caching
             });
         }
 
+        private void GivenThereIsAnEchoServiceRunningOn(string url)
+        {
+            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            {
+                using var streamReader = new StreamReader(context.Request.Body);
+                var requestBody = await streamReader.ReadToEndAsync();
+
+                _counter++;
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await context.Response.WriteAsync(requestBody);
+            });
+        }
+
+        private void ThenTheCounterValueShouldBe(int expected)
+        {
+            Assert.Equal(expected, _counter);
+        }
+
+        private (string TestBody1String, string TestBody2String) TestBodiesFactory()
+        {
+            var testBody1 = new TestBody
+            {
+                Age = 30,
+                Email = "test.test@email.com",
+                FirstName = "Jean",
+                LastName = "Test",
+            };
+
+            var testBody1String = JsonSerializer.Serialize(testBody1);
+
+            var testBody2 = new TestBody
+            {
+                Age = 31,
+                Email = "test.test@email.com",
+                FirstName = "Jean",
+                LastName = "Test",
+            };
+
+            var testBody2String = JsonSerializer.Serialize(testBody2);
+
+            return (testBody1String, testBody2String);
+        }
+
         public void Dispose()
         {
             _serviceHandler?.Dispose();
             _steps.Dispose();
         }
+    }
+
+    public class TestBody
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public int Age { get; set; }
     }
 }

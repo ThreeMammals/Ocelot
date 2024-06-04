@@ -27,12 +27,12 @@
     <Compile Remove="Kubernetes\KubeProviderFactoryTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Administration\Ocelot.Administration.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
     <ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
@@ -75,7 +75,7 @@
     <PackageReference Include="CacheManager.Core" Version="2.0.0-beta-1629" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Configuration" Version="2.0.0-beta-1629" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Logging" Version="2.0.0-beta-1629" />
-    <PackageReference Include="Polly" Version="8.3.1" />
+    <PackageReference Include="Polly" Version="8.4.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
   </ItemGroup>
   <!-- Conditionally obtain references for the net 6.0 target -->

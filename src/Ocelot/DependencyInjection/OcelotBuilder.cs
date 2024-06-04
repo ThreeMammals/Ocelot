@@ -27,7 +27,7 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimit;
+using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
@@ -54,8 +54,6 @@ namespace Ocelot.DependencyInjection
             Services = services;
             Services.Configure<FileConfiguration>(configurationRoot);
 
-            Services.TryAddSingleton<IOcelotCache<FileConfiguration>, AspMemoryCache<FileConfiguration>>();
-            Services.TryAddSingleton<IOcelotCache<CachedResponse>, AspMemoryCache<CachedResponse>>();
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
             Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
             Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
@@ -81,7 +79,6 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IRouteOptionsCreator, RouteOptionsCreator>();
             Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
             Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-            Services.TryAddSingleton<IRegionCreator, RegionCreator>();
             Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
             Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
             Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
@@ -109,14 +106,17 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
             Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            Services.TryAddSingleton<IRateLimitCounterHandler, MemoryCacheRateLimitCounterHandler>();
+            Services.AddRateLimiting(); // Feature: Rate Limiting
             Services.TryAddSingleton<IRequestMapper, RequestMapper>();
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-            Services.TryAddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>();
+            
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
+
+            Services.AddOcelotCache();
+            Services.AddOcelotMetadata();
             Services.AddOcelotMessageInvokerPool();
 
             // See this for why we register this as singleton:
@@ -138,11 +138,15 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IQoSFactory, QoSFactory>();
             Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
             Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
+            Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();
             Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
 
             // Add security
             Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
             Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
+
+            // Features
+            Services.AddHeaderRouting();
 
             // Add ASP.NET services
             var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;

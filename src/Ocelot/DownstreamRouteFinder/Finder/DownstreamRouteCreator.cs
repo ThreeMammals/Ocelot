@@ -18,7 +18,8 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>>();
         }
 
-        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod, IInternalConfiguration configuration, string upstreamHost)
+        public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+            IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
         {
             var serviceName = GetServiceName(upstreamUrlPath);
 

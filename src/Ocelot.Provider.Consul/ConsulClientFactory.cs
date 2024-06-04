@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Provider.Consul;
+﻿using Ocelot.Provider.Consul.Interfaces;
+
+namespace Ocelot.Provider.Consul;
 
 public class ConsulClientFactory : IConsulClientFactory
 {

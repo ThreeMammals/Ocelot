@@ -336,6 +336,21 @@
       ],
       "UpstreamPathTemplate": "/bbc/",
       "UpstreamHttpMethod": [ "Get" ]
+    },
+    {
+      "DownstreamPathTemplate": "/posts",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/list-post",
+      "UpstreamHttpMethod": [ "GET" ],
+      "Metadata": {
+        "api_id": "e99d7ce0-d918-443e-b243-1960a8212b5d"
+      }
     }
   ],
 

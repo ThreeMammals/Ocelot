@@ -19,7 +19,7 @@ public class DownstreamRouteBuilder
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
     private bool _isCached;
-    private CacheOptions _fileCacheOptions;
+    private CacheOptions _cacheOptions;
     private string _downstreamScheme;
     private LoadBalancerOptions _loadBalancerOptions;
     private QoSOptions _qosOptions;
@@ -40,13 +40,16 @@ public class DownstreamRouteBuilder
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
+    private HttpVersionPolicy _downstreamHttpVersionPolicy;
+    private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
+    private MetadataOptions _metadataOptions;
 
     public DownstreamRouteBuilder()
     {
-        _downstreamAddresses = new List<DownstreamHostAndPort>();
-        _delegatingHandlers = new List<string>();
-        _addHeadersToDownstream = new List<AddHeader>();
-        _addHeadersToUpstream = new List<AddHeader>();
+        _downstreamAddresses = new();
+        _delegatingHandlers = new();
+        _addHeadersToDownstream = new();
+        _addHeadersToUpstream = new();
     }
 
     public DownstreamRouteBuilder WithDownstreamAddresses(List<DownstreamHostAndPort> downstreamAddresses)
@@ -87,7 +90,9 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
     {
-        _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
+        _upstreamHttpMethod = input.Count > 0
+            ? input.Select(x => new HttpMethod(x.Trim())).ToList()
+            : new();
         return this;
     }
 
@@ -147,7 +152,7 @@ public class DownstreamRouteBuilder
 
     public DownstreamRouteBuilder WithCacheOptions(CacheOptions input)
     {
-        _fileCacheOptions = input;
+        _cacheOptions = input;
         return this;
     }
 
@@ -259,6 +264,24 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithUpstreamHeaders(Dictionary<string, UpstreamHeaderTemplate> input)
+    {
+        _upstreamHeaders = input;
+        return this;
+    }
+
+    public DownstreamRouteBuilder WithDownstreamHttpVersionPolicy(HttpVersionPolicy downstreamHttpVersionPolicy)
+    {
+        _downstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
+        return this;
+    }
+
+    public DownstreamRouteBuilder WithMetadata(MetadataOptions metadataOptions)
+    {
+        _metadataOptions = metadataOptions;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -276,7 +299,7 @@ public class DownstreamRouteBuilder
             _downstreamScheme,
             _requestIdHeaderKey,
             _isCached,
-            _fileCacheOptions,
+            _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,
             _routeClaimRequirement,
@@ -295,6 +318,9 @@ public class DownstreamRouteBuilder
             _dangerousAcceptAnyServerCertificateValidator,
             _securityOptions,
             _downstreamHttpMethod,
-            _downstreamHttpVersion);
+            _downstreamHttpVersion,
+            _downstreamHttpVersionPolicy,
+            _upstreamHeaders,
+            _metadataOptions);
     }
 }

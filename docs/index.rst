@@ -113,6 +113,7 @@ Updated Documentation
    features/kubernetes
    features/loadbalancer
    features/logging
+   features/metadata
    features/methodtransformation
    features/middlewareinjection
    features/qualityofservice

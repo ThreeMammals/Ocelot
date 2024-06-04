@@ -39,7 +39,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var config = new InternalConfiguration(null, null, new ServiceProviderConfigurationBuilder().Build(), string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            var config = new InternalConfiguration(
+                null,
+                null,
+                new ServiceProviderConfigurationBuilder().Build(),
+                string.Empty,
+                new LoadBalancerOptionsBuilder().Build(),
+                string.Empty,
+                new QoSOptionsBuilder().Build(),
+                new HttpHandlerOptionsBuilder().Build(),
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithDownstreamPathTemplate("any old string")
@@ -74,7 +84,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             _downstreamRoute = new OkResponse<DownstreamRouteHolder>(downstreamRoute);
             _finder
-                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>()))
+                .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
                 .Returns(_downstreamRoute);
         }
 

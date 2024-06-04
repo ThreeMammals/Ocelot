@@ -2,7 +2,7 @@
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ReturnsErrorTests : IDisposable
+    public sealed class ReturnsErrorTests : IDisposable
     {
         private readonly Steps _steps;
         private readonly ServiceHandler _serviceHandler;

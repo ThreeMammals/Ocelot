@@ -39,7 +39,10 @@ namespace Ocelot.Configuration
             bool dangerousAcceptAnyServerCertificateValidator,
             SecurityOptions securityOptions,
             string downstreamHttpMethod,
-            Version downstreamHttpVersion)
+            Version downstreamHttpVersion,
+            HttpVersionPolicy downstreamHttpVersionPolicy,
+            Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
+            MetadataOptions metadataOptions)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -75,6 +78,9 @@ namespace Ocelot.Configuration
             SecurityOptions = securityOptions;
             DownstreamHttpMethod = downstreamHttpMethod;
             DownstreamHttpVersion = downstreamHttpVersion;
+            DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
+            UpstreamHeaders = upstreamHeaders ?? new();
+            MetadataOptions = metadataOptions;
         }
 
         public string Key { get; }
@@ -111,5 +117,19 @@ namespace Ocelot.Configuration
         public SecurityOptions SecurityOptions { get; }
         public string DownstreamHttpMethod { get; }
         public Version DownstreamHttpVersion { get; }
+
+        /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
+        /// <value>An <see cref="HttpVersionPolicy"/> enum value being mapped from a <see cref="VersionPolicies"/> constant.</value>
+        /// <remarks>
+        /// Related to the <see cref="DownstreamHttpVersion"/> property.
+        /// <list type="bullet">
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
+        /// </list>
+        /// </remarks>
+        public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
+        public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
+        public MetadataOptions MetadataOptions { get; }
     }
 }

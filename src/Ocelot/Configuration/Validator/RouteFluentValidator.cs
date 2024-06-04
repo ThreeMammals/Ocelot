@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Configuration.Validator
 {
@@ -83,6 +84,11 @@ namespace Ocelot.Configuration.Validator
             When(route => !string.IsNullOrEmpty(route.DownstreamHttpVersion), () =>
             {
                 RuleFor(r => r.DownstreamHttpVersion).Matches("^[0-9]([.,][0-9]{1,1})?$");
+            });
+
+            When(route => !string.IsNullOrEmpty(route.DownstreamHttpVersionPolicy), () =>
+            {
+                RuleFor(r => r.DownstreamHttpVersionPolicy).Matches($@"^({VersionPolicies.RequestVersionExact}|{VersionPolicies.RequestVersionOrHigher}|{VersionPolicies.RequestVersionOrLower})$");
             });
         }
 

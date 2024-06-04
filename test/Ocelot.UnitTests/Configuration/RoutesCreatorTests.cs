@@ -1,5 +1,4 @@
-﻿using Ocelot.Cache;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -13,11 +12,12 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IClaimsToThingCreator> _cthCreator;
         private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
         private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
         private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
         private readonly Mock<IQoSOptionsCreator> _qosoCreator;
         private readonly Mock<IRouteOptionsCreator> _rroCreator;
         private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-        private readonly Mock<IRegionCreator> _rCreator;
+        private readonly Mock<ICacheOptionsCreator> _coCreator;
         private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
         private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
         private readonly Mock<IDownstreamAddressesCreator> _daCreator;
@@ -25,6 +25,8 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IRouteKeyCreator> _rrkCreator;
         private readonly Mock<ISecurityOptionsCreator> _soCreator;
         private readonly Mock<IVersionCreator> _versionCreator;
+        private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
+        private readonly Mock<IMetadataCreator> _metadataCreator;
         private FileConfiguration _fileConfig;
         private RouteOptions _rro;
         private string _requestId;
@@ -34,13 +36,16 @@ namespace Ocelot.UnitTests.Configuration
         private List<ClaimToThing> _ctt;
         private QoSOptions _qoso;
         private RateLimitOptions _rlo;
-        private string _region;
+        private CacheOptions _cacheOptions;
         private HttpHandlerOptions _hho;
         private HeaderTransformations _ht;
         private List<DownstreamHostAndPort> _dhp;
         private LoadBalancerOptions _lbo;
         private List<Route> _result;
         private Version _expectedVersion;
+        private HttpVersionPolicy _expectedVersionPolicy;
+        private Dictionary<string, UpstreamHeaderTemplate> _uht;
+        private Dictionary<string, string> _expectedMetadata;
 
         public RoutesCreatorTests()
         {
@@ -51,7 +56,7 @@ namespace Ocelot.UnitTests.Configuration
             _qosoCreator = new Mock<IQoSOptionsCreator>();
             _rroCreator = new Mock<IRouteOptionsCreator>();
             _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _rCreator = new Mock<IRegionCreator>();
+            _coCreator = new Mock<ICacheOptionsCreator>();
             _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
             _hfarCreator = new Mock<IHeaderFindAndReplaceCreator>();
             _daCreator = new Mock<IDownstreamAddressesCreator>();
@@ -59,6 +64,9 @@ namespace Ocelot.UnitTests.Configuration
             _rrkCreator = new Mock<IRouteKeyCreator>();
             _soCreator = new Mock<ISecurityOptionsCreator>();
             _versionCreator = new Mock<IVersionCreator>();
+            _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
+            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
+            _metadataCreator = new Mock<IMetadataCreator>();
 
             _creator = new RoutesCreator(
                 _cthCreator.Object,
@@ -68,19 +76,21 @@ namespace Ocelot.UnitTests.Configuration
                 _qosoCreator.Object,
                 _rroCreator.Object,
                 _rloCreator.Object,
-                _rCreator.Object,
+                _coCreator.Object,
                 _hhoCreator.Object,
                 _hfarCreator.Object,
                 _daCreator.Object,
                 _lboCreator.Object,
                 _rrkCreator.Object,
                 _soCreator.Object,
-                _versionCreator.Object
-                );
+                _versionCreator.Object,
+                _versionPolicyCreator.Object,
+                _uhtpCreator.Object,
+                _metadataCreator.Object);
         }
 
         [Fact]
-        public void should_return_nothing()
+        public void Should_return_nothing()
         {
             var fileConfig = new FileConfiguration();
 
@@ -91,7 +101,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_return_re_routes()
+        public void Should_return_routes()
         {
             var fileConfig = new FileConfiguration
             {
@@ -114,6 +124,10 @@ namespace Ocelot.UnitTests.Configuration
                             { "e","f" },
                         },
                         UpstreamHttpMethod = new List<string> { "GET", "POST" },
+                        Metadata = new Dictionary<string, string>
+                        {
+                            ["foo"] = "bar",
+                        },
                     },
                     new()
                     {
@@ -132,6 +146,10 @@ namespace Ocelot.UnitTests.Configuration
                             { "k","l" },
                         },
                         UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                        Metadata = new Dictionary<string, string>
+                        {
+                            ["foo"] = "baz",
+                        },
                     },
                 },
             };
@@ -153,6 +171,7 @@ namespace Ocelot.UnitTests.Configuration
         private void GivenTheDependenciesAreSetUpCorrectly()
         {
             _expectedVersion = new Version("1.1");
+            _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             _rro = new RouteOptions(false, false, false, false, false);
             _requestId = "testy";
             _rrk = "besty";
@@ -161,11 +180,17 @@ namespace Ocelot.UnitTests.Configuration
             _ctt = new List<ClaimToThing>();
             _qoso = new QoSOptionsBuilder().Build();
             _rlo = new RateLimitOptionsBuilder().Build();
-            _region = "vesty";
+
+            _cacheOptions = new CacheOptions(0, "vesty", null, false);
             _hho = new HttpHandlerOptionsBuilder().Build();
             _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
             _dhp = new List<DownstreamHostAndPort>();
             _lbo = new LoadBalancerOptionsBuilder().Build();
+            _uht = new Dictionary<string, UpstreamHeaderTemplate>();
+            _expectedMetadata = new Dictionary<string, string>()
+            {
+                ["foo"] = "bar",
+            };
 
             _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
             _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
@@ -175,12 +200,18 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
             _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
             _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-            _rCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_region);
+            _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
             _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
             _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
             _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
             _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
             _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
+            _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
+            _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
+            _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(new MetadataOptions(new FileMetadataOptions
+            {
+                Metadata = _expectedMetadata,
+            }));
         }
 
         private void ThenTheRoutesAreCreated()
@@ -209,6 +240,7 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)
         {
             _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
+            _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
             _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
             _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
             _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
@@ -222,8 +254,8 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].DownstreamRoute[0].ClaimsToClaims.ShouldBe(_ctt);
             _result[routeIndex].DownstreamRoute[0].QosOptions.ShouldBe(_qoso);
             _result[routeIndex].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_region);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(expected.FileCacheOptions.TtlSeconds);
+            _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_cacheOptions.Region);
+            _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(0);
             _result[routeIndex].DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_hho);
             _result[routeIndex].DownstreamRoute[0].UpstreamHeadersFindAndReplace.ShouldBe(_ht.Upstream);
             _result[routeIndex].DownstreamRoute[0].DownstreamHeadersFindAndReplace.ShouldBe(_ht.Downstream);
@@ -239,6 +271,7 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
             _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
             _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
+            _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
             _result[routeIndex].UpstreamHttpMethod
                 .Select(x => x.Method)
                 .ToList()
@@ -250,6 +283,7 @@ namespace Ocelot.UnitTests.Configuration
             _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
             _result[routeIndex].DownstreamRoute.Count.ShouldBe(1);
             _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);
+            _result[routeIndex].UpstreamHeaderTemplates.ShouldBe(_uht);
         }
 
         private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
@@ -264,12 +298,13 @@ namespace Ocelot.UnitTests.Configuration
             _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
             _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
             _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
-            _rCreator.Verify(x => x.Create(fileRoute), Times.Once);
+            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
             _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
             _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions), Times.Once);
+            _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
         }
     }
 }

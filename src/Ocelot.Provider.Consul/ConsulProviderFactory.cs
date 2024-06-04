@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Provider.Consul;
@@ -17,16 +18,20 @@ public static class ConsulProviderFactory
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
+    private static ConsulRegistryConfiguration configuration;
+    private static ConsulRegistryConfiguration ConfigurationGetter() => configuration;
+    public static Func<ConsulRegistryConfiguration> GetConfiguration { get; } = ConfigurationGetter;
+
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider,
         ServiceProviderConfiguration config, DownstreamRoute route)
     {
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
 
-        var consulRegistryConfiguration = new ConsulRegistryConfiguration(
-            config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
+        configuration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
+        var serviceBuilder = provider.GetService<IConsulServiceBuilder>();
 
-        var consulProvider = new Consul(consulRegistryConfiguration, factory, consulFactory);
+        var consulProvider = new Consul(configuration, factory, consulFactory, serviceBuilder);
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {

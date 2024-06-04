@@ -17,6 +17,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         private string _upstreamHost;
         private string _upstreamUrlPath;
         private string _upstreamHttpMethod;
+        private Dictionary<string, string> _upstreamHeaders;
         private IInternalConfiguration _configuration;
         private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
@@ -38,7 +39,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_create_downstream_route()
         {
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration))
                 .When(_ => WhenICreate())
@@ -65,7 +76,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
             var routes = new List<Route> { route };
 
-            var configuration = new InternalConfiguration(routes, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                routes,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration))
                 .When(_ => WhenICreate())
@@ -77,7 +98,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_cache_downstream_route()
         {
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
                 .When(_ => WhenICreate())
@@ -90,7 +121,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_not_cache_downstream_route()
         {
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration, "/geoffistheworst/"))
                 .When(_ => WhenICreate())
@@ -104,7 +145,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_create_downstream_route_with_no_path()
         {
             var upstreamUrlPath = "/auth/";
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
                 .When(_ => WhenICreate())
@@ -116,7 +167,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_create_downstream_route_with_only_first_segment_no_traling_slash()
         {
             var upstreamUrlPath = "/auth";
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
                 .When(_ => WhenICreate())
@@ -128,7 +189,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_create_downstream_route_with_segments_no_traling_slash()
         {
             var upstreamUrlPath = "/auth/test";
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrHigher);
 
             this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
                 .When(_ => WhenICreate())
@@ -140,7 +211,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_create_downstream_route_and_remove_query_string()
         {
             var upstreamUrlPath = "/auth/test?test=1&best=2";
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
                 .When(_ => WhenICreate())
@@ -152,7 +233,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         public void should_create_downstream_route_for_sticky_sessions()
         {
             var loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(CookieStickySessions)).WithKey("boom").WithExpiryInMs(1).Build();
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration))
                 .When(_ => WhenICreate())
@@ -168,7 +259,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                 .WithTimeoutValue(1)
                 .Build();
 
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration))
                 .And(_ => GivenTheQosCreatorReturns(qoSOptions))
@@ -180,7 +281,17 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_create_downstream_route_with_handler_options()
         {
-            var configuration = new InternalConfiguration(null, "doesnt matter", null, "doesnt matter", _loadBalancerOptions, "http", _qoSOptions, _handlerOptions, new Version("1.1"));
+            var configuration = new InternalConfiguration(
+                null,
+                "doesnt matter",
+                null,
+                "doesnt matter",
+                _loadBalancerOptions,
+                "http",
+                _qoSOptions,
+                _handlerOptions,
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
 
             this.Given(_ => GivenTheConfiguration(configuration))
                 .When(_ => WhenICreate())
@@ -260,6 +371,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _upstreamHost = "doesnt matter";
             _upstreamUrlPath = "/auth/test";
             _upstreamHttpMethod = "GET";
+            _upstreamHeaders = new Dictionary<string, string>();
             _configuration = config;
         }
 
@@ -278,12 +390,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void WhenICreate()
         {
-            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void WhenICreateAgain()
         {
-            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost);
+            _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
         }
 
         private void ThenTheDownstreamRoutesAreTheSameReference()

@@ -15,6 +15,7 @@ namespace Ocelot.UnitTests.Configuration
         private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
         private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
         private readonly Mock<IVersionCreator> _vCreator;
+        private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
         private FileConfiguration _fileConfig;
         private List<Route> _routes;
         private ServiceProviderConfiguration _spc;
@@ -27,6 +28,7 @@ namespace Ocelot.UnitTests.Configuration
         public ConfigurationCreatorTests()
         {
             _vCreator = new Mock<IVersionCreator>();
+            _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
             _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
             _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
             _qosCreator = new Mock<IQoSOptionsCreator>();
@@ -114,7 +116,7 @@ namespace Ocelot.UnitTests.Configuration
         private void WhenICreate()
         {
             var serviceProvider = _serviceCollection.BuildServiceProvider();
-            _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object);
+            _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _versionPolicyCreator.Object);
             _result = _creator.Create(_fileConfig, _routes);
         }
     }

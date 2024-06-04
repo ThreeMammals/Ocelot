@@ -73,7 +73,11 @@ The example here shows a typical configuration:
     }
 
 Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` type.
-Note: **Host**, **Port** and **Token** are no longer in use.
+
+  **Note 1**: ``Host``, ``Port`` and ``Token`` are no longer in use.
+
+  **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
+  Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
 
 .. _k8s-pollkube-provider:
 
@@ -99,10 +103,10 @@ This really depends on how volatile your services are.
 We doubt it will matter for most people and polling may give a tiny performance improvement over calling Kubernetes per request.
 There is no way for Ocelot to work these out for you. 
 
-Global vs Route levels
-^^^^^^^^^^^^^^^^^^^^^^
+Global vs Route Levels
+----------------------
 
-If your downstream service resides in a different namespace, you can override the global setting at the Route-level by specifying a **ServiceNamespace**:
+If your downstream service resides in a different namespace, you can override the global setting at the Route-level by specifying a ``ServiceNamespace``:
 
 .. code-block:: json
 
@@ -113,7 +117,45 @@ If your downstream service resides in a different namespace, you can override th
     }
   ]
 
+Downstream Scheme vs Port Names [#f3]_
+--------------------------------------
+
+Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
+When binding multiple ports, you assign a name to each subset port.
+To allow the ``Kube`` provider to recognize the desired port by its name, you need to specify the ``DownstreamScheme`` with the port's name;
+if not, the collection's first port entry will be chosen by default.
+
+For instance, consider a service on Kubernetes that exposes two ports: ``https`` for **443** and ``http`` for **80**, as follows:
+
+.. code-block:: text
+
+  Name:         my-service
+  Namespace:    default
+  Subsets:
+    Addresses:  10.1.161.59
+    Ports:
+      Name   Port  Protocol
+      ----   ----  --------
+      https  443   TCP
+      http   80    TCP
+
+**When** you need to use the ``http`` port while intentionally bypassing the default ``https`` port (first one),
+you must define ``DownstreamScheme`` to enable the provider to recognize the desired ``http`` port by comparing ``DownstreamScheme`` with the port name as follows:
+
+.. code-block:: json
+
+  "Routes": [
+    {
+      "ServiceName": "my-service",
+      "DownstreamScheme": "http", // port name -> http -> port is 80
+    }
+  ]
+
+**Note**: In the absence of a specified ``DownstreamScheme`` (which is the default behavior), the ``Kube`` provider will select **the first available port** from the ``EndpointSubsetV1.Ports`` collection.
+Consequently, if the port name is not designated, the default downstream scheme utilized will be ``http``.
+
 """"
 
 .. [#f1] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 .. [#f2] This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider. 
+.. [#f3] *"Downstream Scheme vs Port Names"* feature was requested as part of `issue 1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_

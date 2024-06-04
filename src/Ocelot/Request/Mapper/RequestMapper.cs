@@ -18,10 +18,10 @@ public class RequestMapper : IRequestMapper
             Method = MapMethod(request, downstreamRoute),
             RequestUri = MapUri(request),
             Version = downstreamRoute.DownstreamHttpVersion,
+            VersionPolicy = downstreamRoute.DownstreamHttpVersionPolicy,
         };
 
         MapHeaders(request, requestMessage);
-
         return requestMessage;
     }
 
@@ -55,7 +55,7 @@ public class RequestMapper : IRequestMapper
 
         // The performance might be improved by retrieving the matching headers from the request
         // instead of calling request.Headers.TryGetValue for each used content header
-        var matchingHeaders = ContentHeaders.Where(header => request.Headers.ContainsKey(header));
+        var matchingHeaders = ContentHeaders.Where(request.Headers.ContainsKey);
 
         foreach (var key in matchingHeaders)
         {

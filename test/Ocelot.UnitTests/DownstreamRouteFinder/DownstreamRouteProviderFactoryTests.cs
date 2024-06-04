@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 
@@ -21,7 +22,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         {
             var services = new ServiceCollection();
             services.AddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
+            services.AddSingleton<IHeaderPlaceholderNameAndValueFinder, HeaderPlaceholderNameAndValueFinder>();
             services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
+            services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
             services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
             services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
             services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
@@ -148,12 +151,32 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
 
         private void GivenTheRoutes(List<Route> routes)
         {
-            _config = new InternalConfiguration(routes, string.Empty, null, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(
+                routes,
+                string.Empty,
+                null,
+                string.Empty,
+                new LoadBalancerOptionsBuilder().Build(),
+                string.Empty,
+                new QoSOptionsBuilder().Build(),
+                new HttpHandlerOptionsBuilder().Build(),
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
         }
 
         private void GivenTheRoutes(List<Route> routes, ServiceProviderConfiguration config)
         {
-            _config = new InternalConfiguration(routes, string.Empty, config, string.Empty, new LoadBalancerOptionsBuilder().Build(), string.Empty, new QoSOptionsBuilder().Build(), new HttpHandlerOptionsBuilder().Build(), new Version("1.1"));
+            _config = new InternalConfiguration(
+                routes,
+                string.Empty,
+                config,
+                string.Empty,
+                new LoadBalancerOptionsBuilder().Build(),
+                string.Empty,
+                new QoSOptionsBuilder().Build(),
+                new HttpHandlerOptionsBuilder().Build(),
+                new Version("1.1"),
+                HttpVersionPolicy.RequestVersionOrLower);
         }
     }
 }
