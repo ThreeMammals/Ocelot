@@ -21,32 +21,27 @@ public sealed class PollyQoSTests : Steps, IDisposable
         base.Dispose();
     }
 
-    private static FileConfiguration FileConfigurationFactory(int port, QoSOptions options, string httpMethod = nameof(HttpMethods.Get)) => new()
+    private static FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null) => new()
     {
-        Routes = new()
+        DownstreamPathTemplate = "/",
+        DownstreamScheme = Uri.UriSchemeHttp,
+        DownstreamHostAndPorts = new()
         {
-            new()
-            {
-                DownstreamPathTemplate = "/",
-                DownstreamScheme = Uri.UriSchemeHttp,
-                DownstreamHostAndPorts = new()
-                {
-                    new("localhost", port),
-                },
-                UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = new() {httpMethod},
-                QoSOptions = new FileQoSOptions(options),
-            },
+            new("localhost", port),
         },
+        UpstreamPathTemplate = upstream ?? "/",
+        UpstreamHttpMethod = new() { httpMethod ?? HttpMethods.Get },
+        QoSOptions = new(options),
     };
 
     [Fact]
     public void Should_not_timeout()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = FileConfigurationFactory(port, new QoSOptions(10, 500, 1000, null), HttpMethods.Post);
+        var route = GivenRoute(port, new QoSOptions(10, 500, 1000, null), HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty, 10))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty, 10))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => GivenThePostHasContent("postContent"))
@@ -59,9 +54,10 @@ public sealed class PollyQoSTests : Steps, IDisposable
     public void Should_timeout()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = FileConfigurationFactory(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
+        var route = GivenRoute(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 201, string.Empty, 2100))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 2100))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => GivenThePostHasContent("postContent"))
@@ -74,9 +70,10 @@ public sealed class PollyQoSTests : Steps, IDisposable
     public void Should_open_circuit_breaker_after_two_exceptions()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = FileConfigurationFactory(port, new QoSOptions(2, 5000, 100000, null));
+        var route = GivenRoute(port, new QoSOptions(2, 5000, 100000, null));
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsABrokenServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -90,9 +87,10 @@ public sealed class PollyQoSTests : Steps, IDisposable
     public void Should_open_circuit_breaker_then_close()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = FileConfigurationFactory(port, new QoSOptions(2, 500, 1000, null));
+        var route = GivenRoute(port, new QoSOptions(2, 500, 1000, null));
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
             .Given(x => GivenThereIsAConfiguration(configuration))
             .Given(x => GivenOcelotIsRunningWithPolly())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -120,16 +118,12 @@ public sealed class PollyQoSTests : Steps, IDisposable
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var qos1 = new QoSOptions(2, 500, 1000, null);
+        var route = GivenRoute(port1, qos1);
+        var route2 = GivenRoute(port2, new(new FileQoSOptions()), null, "/working");
+        var configuration = GivenConfiguration(route, route2);
 
-        var configuration = FileConfigurationFactory(port1, qos1);
-        var route2 = configuration.Routes[0].Clone() as FileRoute;
-        route2.DownstreamHostAndPorts[0].Port = port2;
-        route2.UpstreamPathTemplate = "/working";
-        route2.QoSOptions = new();
-        configuration.Routes.Add(route2);
-
-        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn($"http://localhost:{port1}", "Hello from Laura"))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port2}", 200, "Hello from Tom", 0))
+        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, "Hello from Tom", 0))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -158,19 +152,17 @@ public sealed class PollyQoSTests : Steps, IDisposable
     [Trait("Bug", "1833")]
     public void Should_timeout_per_default_after_90_seconds()
     {
-        // Arrange
         var port = PortFinder.GetRandomPort();
-        var configuration = FileConfigurationFactory(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-        GivenThereIsAServiceRunningOn(DownstreamUrl(port), (int)HttpStatusCode.Created, string.Empty, 3500); // 3.5s > 3s -> ServiceUnavailable
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunningWithPolly();
-        GivenIHackDefaultTimeoutValue(3); // after 3 secs -> Timeout exception aka request cancellation
+        var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+        var configuration = GivenConfiguration(route);
 
-        // Act
-        WhenIGetUrlOnTheApiGateway("/");
-
-        // Assert
-        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 3500)) // 3.5s > 3s -> ServiceUnavailable
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithPolly())
+            .And(x => GivenIHackDefaultTimeoutValue(3)) // after 3 secs -> Timeout exception aka request cancellation
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .BDDfy();
     }
 
     private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
@@ -182,18 +174,20 @@ public sealed class PollyQoSTests : Steps, IDisposable
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 
-    private void GivenThereIsABrokenServiceRunningOn(string url)
+    private void GivenThereIsABrokenServiceRunningOn(int port)
     {
+        string url = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
-            context.Response.StatusCode = 500;
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await context.Response.WriteAsync("this is an exception");
         });
     }
 
-    private void GivenThereIsAPossiblyBrokenServiceRunningOn(string url, string responseBody)
+    private void GivenThereIsAPossiblyBrokenServiceRunningOn(int port, string responseBody)
     {
         var requestCount = 0;
+        string url = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             if (requestCount == 2)
@@ -214,12 +208,13 @@ public sealed class PollyQoSTests : Steps, IDisposable
         });
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody, int timeout)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody, int timeout)
     {
+        string url = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             Thread.Sleep(timeout);
-            context.Response.StatusCode = statusCode;
+            context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsync(responseBody);
         });
     }
