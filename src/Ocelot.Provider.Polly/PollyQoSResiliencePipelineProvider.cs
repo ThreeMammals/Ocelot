@@ -12,13 +12,13 @@ namespace Ocelot.Provider.Polly;
 /// </summary>
 public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
 {
-    private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _resiliencePipelineRegistry;
+    private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
 
     public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory,
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> resiliencePipelineRegistry)
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
     {
-        _resiliencePipelineRegistry = resiliencePipelineRegistry;
+        _registry = registry;
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
     }
 
@@ -39,7 +39,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
         }
 
         var currentRouteName = GetRouteName(route);
-        return _resiliencePipelineRegistry.GetOrAddPipeline<HttpResponseMessage>(
+        return _registry.GetOrAddPipeline<HttpResponseMessage>(
             key: new OcelotResiliencePipelineKey(currentRouteName),
             configure: (builder) => PollyResiliencePipelineWrapperFactory(builder, route));
     }
@@ -48,9 +48,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
     {
         var options = route.QosOptions;
 
-     
-
-        // Add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 2
+        // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater than 2
         if (options.ExceptionsAllowedBeforeBreaking >= 2)
         {
             // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
@@ -81,13 +79,14 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
                 {
                     _logger.LogInformation(info + "Half Opened");
                     return ValueTask.CompletedTask;
-                }
+                },
             };
 
             builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
         }
 
-        // Add TimeoutStrategy if TimeoutValue is not int.MaxValue and greater than 0
+        // Add Timeout strategy if TimeoutValue is not int.MaxValue and greater than 0
+        // TimeoutValue must be defined in QosOptions!
         if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
         {
             builder.AddTimeout(new TimeoutStrategyOptions
@@ -97,7 +96,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
                 {
                     _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
                     return ValueTask.CompletedTask;
-                }
+                },
             });
         }
     }
