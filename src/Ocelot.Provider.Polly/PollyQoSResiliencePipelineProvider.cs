@@ -4,23 +4,45 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
 /// <summary>
 /// Default provider for Polly V8 pipelines.
 /// </summary>
-public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
 
-    public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory,
+    public PollyQoSResiliencePipelineProvider(
+        IOcelotLoggerFactory loggerFactory,
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
     {
-        _registry = registry;
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
+        _registry = registry;
     }
+
+    protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
+    {
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.NotImplemented,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.HttpVersionNotSupported,
+        HttpStatusCode.VariantAlsoNegotiates,
+        HttpStatusCode.InsufficientStorage,
+        HttpStatusCode.LoopDetected,
+    };
+
+    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes;
+
+    protected virtual string GetRouteName(DownstreamRoute route)
+        => string.IsNullOrWhiteSpace(route.ServiceName)
+            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
+            : route.ServiceName;
 
     /// <summary>
     /// Gets Polly V8 resilience pipeline (applies QoS feature) for the route.
@@ -44,7 +66,7 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
             configure: (builder) => PollyResiliencePipelineWrapperFactory(builder, route));
     }
 
-    private void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    protected virtual void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         var options = route.QosOptions;
 
