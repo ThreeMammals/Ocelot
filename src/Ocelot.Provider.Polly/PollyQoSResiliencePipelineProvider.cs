@@ -84,7 +84,9 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             FailureRatio = 0.8,
             SamplingDuration = TimeSpan.FromSeconds(10),
             MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
-            BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
+            BreakDuration = options.DurationOfBreak > QoSOptions.LowBreakDuration
+                ? TimeSpan.FromMilliseconds(options.DurationOfBreak)
+                : TimeSpan.FromMilliseconds(QoSOptions.DefaultBreakDuration),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                 .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
                 .Handle<TimeoutRejectedException>()
