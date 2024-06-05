@@ -68,58 +68,70 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     protected virtual void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
-        var options = route.QosOptions;
+        ConfigureCircuitBreaker(builder, route);
+        ConfigureTimeout(builder, route);
+    }
 
-        // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater than 2
-        if (options.ExceptionsAllowedBeforeBreaking >= 2)
+    protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    {
+        // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater/equal than/to 2
+        if (route.QosOptions.ExceptionsAllowedBeforeBreaking < 2)
         {
-            // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
-            var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
-
-            var circuitBreakerStrategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
-            {
-                FailureRatio = 0.8,
-                SamplingDuration = TimeSpan.FromSeconds(10),
-                MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
-                BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
-                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                    .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
-                    .Handle<TimeoutRejectedException>()
-                    .Handle<TimeoutException>(),
-                OnOpened = args =>
-                {
-                    _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
-                        args.Outcome.Exception);
-                    return ValueTask.CompletedTask;
-                },
-                OnClosed = _ =>
-                {
-                    _logger.LogInformation(info + "Closed");
-                    return ValueTask.CompletedTask;
-                },
-                OnHalfOpened = _ =>
-                {
-                    _logger.LogInformation(info + "Half Opened");
-                    return ValueTask.CompletedTask;
-                },
-            };
-
-            builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+            return builder;
         }
+
+        var options = route.QosOptions;
+        var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
+        var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
+        {
+            FailureRatio = 0.8,
+            SamplingDuration = TimeSpan.FromSeconds(10),
+            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
+            BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
+            ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
+                .Handle<TimeoutRejectedException>()
+                .Handle<TimeoutException>(),
+            OnOpened = args =>
+            {
+                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
+                    args.Outcome.Exception);
+                return ValueTask.CompletedTask;
+            },
+            OnClosed = _ =>
+            {
+                _logger.LogInformation(info + "Closed");
+                return ValueTask.CompletedTask;
+            },
+            OnHalfOpened = _ =>
+            {
+                _logger.LogInformation(info + "Half Opened");
+                return ValueTask.CompletedTask;
+            },
+        };
+        return builder.AddCircuitBreaker(strategyOptions);
+    }
+
+    protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    {
+        var options = route.QosOptions;
 
         // Add Timeout strategy if TimeoutValue is not int.MaxValue and greater than 0
         // TimeoutValue must be defined in QosOptions!
-        if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
+        if (options.TimeoutValue == int.MaxValue || options.TimeoutValue <= 0)
         {
-            builder.AddTimeout(new TimeoutStrategyOptions
-            {
-                Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
-                OnTimeout = _ =>
-                {
-                    _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
-                    return ValueTask.CompletedTask;
-                },
-            });
+            return builder;
         }
+
+        var strategyOptions = new TimeoutStrategyOptions
+        {
+            Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
+            OnTimeout = _ =>
+            {
+                _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
+                return ValueTask.CompletedTask;
+            },
+        };
+        return builder.AddTimeout(strategyOptions);
     }
 }
