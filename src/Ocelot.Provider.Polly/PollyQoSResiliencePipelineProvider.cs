@@ -63,10 +63,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         var currentRouteName = GetRouteName(route);
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
             key: new OcelotResiliencePipelineKey(currentRouteName),
-            configure: (builder) => PollyResiliencePipelineWrapperFactory(builder, route));
+            configure: (builder) => ConfigureStrategies(builder, route));
     }
 
-    protected virtual void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    protected virtual void ConfigureStrategies(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         ConfigureCircuitBreaker(builder, route);
         ConfigureTimeout(builder, route);
