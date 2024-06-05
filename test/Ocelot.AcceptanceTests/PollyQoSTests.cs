@@ -70,16 +70,47 @@ public sealed class PollyQoSTests : Steps, IDisposable
     public void Should_open_circuit_breaker_after_two_exceptions()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(2, 5000, 100000, null));
+        var route = GivenRoute(port, new QoSOptions(2, 1000, 100000, null));
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port))
+        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
+            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
+            .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2085")]
+    public void Should_open_circuit_breaker_for_DefaultBreakDuration()
+    {
+        int invalidDuration = QoSOptions.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, new QoSOptions(2, invalidDuration, 100000, null));
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
+            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
+            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
+            .Given(x => GivenIWaitMilliseconds(QoSOptions.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
+            .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // still opened
+            .Given(x => GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound))
+            .Given(x => GivenIWaitMilliseconds(500)) // BreakDuration should elapse now
+            .When(x => WhenIGetUrlOnTheApiGateway("/")) // closed, service online
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound)) // closed, service online
+            .And(x => ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.NotFound)))
             .BDDfy();
     }
 
@@ -174,14 +205,21 @@ public sealed class PollyQoSTests : Steps, IDisposable
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 
-    private void GivenThereIsABrokenServiceRunningOn(int port)
+    private HttpStatusCode _brokenServiceStatusCode;
+    private void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode)
     {
         string url = DownstreamUrl(port);
+        _brokenServiceStatusCode = brokenStatusCode;
         _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            await context.Response.WriteAsync("this is an exception");
+            context.Response.StatusCode = (int)_brokenServiceStatusCode;
+            await context.Response.WriteAsync(_brokenServiceStatusCode.ToString());
         });
+    }
+
+    private void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode)
+    {
+        _brokenServiceStatusCode = onlineStatusCode;
     }
 
     private void GivenThereIsAPossiblyBrokenServiceRunningOn(int port, string responseBody)

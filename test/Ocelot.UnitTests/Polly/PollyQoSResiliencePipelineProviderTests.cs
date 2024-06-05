@@ -2,6 +2,7 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
+using Polly;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Testing;
@@ -12,26 +13,88 @@ namespace Ocelot.UnitTests.Polly;
 public class PollyQoSResiliencePipelineProviderTests
 {
     [Fact]
-    public void Should_build()
+    public void ShouldBuild()
     {
         // Arrange
         var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(1000) // 1s, minimum required by Polly
+            .WithTimeoutValue(1000) // 10ms, minimum required by Polly
             .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
-            .WithDurationOfBreak(500) // 0.5s, minimum required by Polly
+            .WithDurationOfBreak(QoSOptions.LowBreakDuration + 1) // 0.5s, minimum required by Polly
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
         var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var resiliencePipelineRegistry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, resiliencePipelineRegistry);
+        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
+        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
 
         // Assert
         resiliencePipeline.ShouldNotBeNull();
+        resiliencePipeline.ShouldBeOfType<ResiliencePipeline<HttpResponseMessage>>();
+        resiliencePipeline.ShouldNotBe(ResiliencePipeline<HttpResponseMessage>.Empty);
+    }
+
+    [Fact]
+    [Trait("Bug", "2085")]
+    public void ShouldNotBuild_ReturnedEmpty()
+    {
+        // Arrange
+        var options = new QoSOptionsBuilder().Build(); // empty options
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(options)
+            .Build();
+        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
+        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+
+        // Assert
+        resiliencePipeline.ShouldNotBeNull();
+        resiliencePipeline.ShouldBeOfType<ResiliencePipeline<HttpResponseMessage>>();
+        resiliencePipeline.ShouldBe(ResiliencePipeline<HttpResponseMessage>.Empty);
+    }
+
+    [Theory]
+    [Trait("Bug", "2085")]
+    [InlineData(0, QoSOptions.DefaultBreakDuration)] // default
+    [InlineData(QoSOptions.LowBreakDuration - 1, QoSOptions.DefaultBreakDuration)] // default
+    [InlineData(QoSOptions.LowBreakDuration, QoSOptions.DefaultBreakDuration)] // default
+    [InlineData(QoSOptions.LowBreakDuration + 1, QoSOptions.LowBreakDuration + 1)] // not default, exact
+    public void ShouldBuild_WithDefaultBreakDuration(int durationOfBreak, int expectedMillisecons)
+    {
+        // Arrange
+        var options = new QoSOptionsBuilder()
+            .WithTimeoutValue(1000) // 10ms, minimum required by Polly
+            .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
+            .WithDurationOfBreak(durationOfBreak) // 0.5s, minimum required by Polly
+            .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(options)
+            .Build();
+        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
+        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+
+        // Assert
+        resiliencePipeline.ShouldNotBeNull();
+        resiliencePipeline.ShouldBeOfType<ResiliencePipeline<HttpResponseMessage>>();
+        resiliencePipeline.ShouldNotBe(ResiliencePipeline<HttpResponseMessage>.Empty);
+        var descriptor = resiliencePipeline.GetPipelineDescriptor();
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.Count.ShouldBe(2);
+        descriptor.Strategies[0].Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
+        descriptor.Strategies[1].Options.ShouldBeOfType<TimeoutStrategyOptions>();
+        var strategyOptions = descriptor.Strategies[0].Options as CircuitBreakerStrategyOptions<HttpResponseMessage>;
+        strategyOptions.ShouldNotBeNull();
+        strategyOptions.BreakDuration.ShouldBe(TimeSpan.FromMilliseconds(expectedMillisecons));
     }
 
     [Fact]
@@ -74,7 +137,8 @@ public class PollyQoSResiliencePipelineProviderTests
     }
 
     [Fact]
-    public void Should_build_and_wrap_contains_two_policies()
+    [Trait("Bug", "2085")]
+    public void ShouldBuild_ContainsTwoStrategies()
     {
         var pollyQoSResiliencePipelineProvider = GivenProvider();
 
@@ -82,11 +146,11 @@ public class PollyQoSResiliencePipelineProviderTests
         var resiliencePipeline = pollyQoSResiliencePipelineProvider.GetResiliencePipeline(route);
         resiliencePipeline.ShouldNotBeNull();
 
-        var resiliencePipelineDescriptor = resiliencePipeline.GetPipelineDescriptor();
-        resiliencePipelineDescriptor.ShouldNotBeNull();
-        resiliencePipelineDescriptor.Strategies.Count.ShouldBe(2);
-        resiliencePipelineDescriptor.Strategies[0].Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
-        resiliencePipelineDescriptor.Strategies[1].Options.ShouldBeOfType<TimeoutStrategyOptions>();
+        var descriptor = resiliencePipeline.GetPipelineDescriptor();
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.Count.ShouldBe(2);
+        descriptor.Strategies[0].Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
+        descriptor.Strategies[1].Options.ShouldBeOfType<TimeoutStrategyOptions>();
     }
 
     [Fact]
