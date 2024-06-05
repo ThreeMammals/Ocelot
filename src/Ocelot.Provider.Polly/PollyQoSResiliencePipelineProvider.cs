@@ -51,13 +51,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <see cref="HttpResponseMessage"/>.</returns>
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
-        var options = route.QosOptions;
-
-        // Check if we need pipeline at all before calling GetOrAddPipeline
-        if (options is null ||
-            (options.ExceptionsAllowedBeforeBreaking == 0 && options.TimeoutValue is int.MaxValue))
+        var options = route?.QosOptions;
+        if (options is null || !options.UseQos)
         {
-            return null; // shortcut > no qos
+            return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
         var currentRouteName = GetRouteName(route);
