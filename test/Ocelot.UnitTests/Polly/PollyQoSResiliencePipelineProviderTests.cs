@@ -26,9 +26,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -48,9 +46,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -78,9 +74,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -363,14 +357,12 @@ public class PollyQoSResiliencePipelineProviderTests
 
     private static PollyQoSResiliencePipelineProvider GivenProvider()
     {
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        loggerFactoryMock
-            .Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        loggerFactory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
             .Returns(new Mock<IOcelotLogger>().Object);
-        var globalConfigurationOption = new OptionsWrapper<FileGlobalConfiguration>(
-            new FileGlobalConfiguration());
+        var globalConfiguration = new OptionsWrapper<FileGlobalConfiguration>(new());
         var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        return new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry, globalConfigurationOption);
+        return new PollyQoSResiliencePipelineProvider(loggerFactory.Object, registry, globalConfiguration);
     }
 
     private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false, int timeOut = 10000)
