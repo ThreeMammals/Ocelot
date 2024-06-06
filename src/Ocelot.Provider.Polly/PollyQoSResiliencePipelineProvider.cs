@@ -4,23 +4,45 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System.Net;
 
 namespace Ocelot.Provider.Polly;
 
 /// <summary>
 /// Default provider for Polly V8 pipelines.
 /// </summary>
-public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
+public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelineProvider<HttpResponseMessage>
 {
-    private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _resiliencePipelineRegistry;
+    private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
 
-    public PollyQoSResiliencePipelineProvider(IOcelotLoggerFactory loggerFactory, 
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> resiliencePipelineRegistry)
+    public PollyQoSResiliencePipelineProvider(
+        IOcelotLoggerFactory loggerFactory,
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
     {
-        _resiliencePipelineRegistry = resiliencePipelineRegistry;
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
+        _registry = registry;
     }
+
+    protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
+    {
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.NotImplemented,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.HttpVersionNotSupported,
+        HttpStatusCode.VariantAlsoNegotiates,
+        HttpStatusCode.InsufficientStorage,
+        HttpStatusCode.LoopDetected,
+    };
+
+    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes;
+
+    protected virtual string GetRouteName(DownstreamRoute route)
+        => string.IsNullOrWhiteSpace(route.ServiceName)
+            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
+            : route.ServiceName;
 
     /// <summary>
     /// Gets Polly V8 resilience pipeline (applies QoS feature) for the route.
@@ -29,56 +51,86 @@ public class PollyQoSResiliencePipelineProvider : PollyQoSProviderBase, IPollyQo
     /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <see cref="HttpResponseMessage"/>.</returns>
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
-        var options = route.QosOptions;
-
-        // Check if we need pipeline at all before calling GetOrAddPipeline
-        if (options is null ||
-            (options.ExceptionsAllowedBeforeBreaking == 0 && options.TimeoutValue is int.MaxValue))
+        var options = route?.QosOptions;
+        if (options is null || !options.UseQos)
         {
-            return null; // shortcut > no qos
+            return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
         var currentRouteName = GetRouteName(route);
-        return _resiliencePipelineRegistry.GetOrAddPipeline<HttpResponseMessage>(
-            key: new OcelotResiliencePipelineKey(currentRouteName), 
-            configure: (builder) => PollyResiliencePipelineWrapperFactory(builder, route));
+        return _registry.GetOrAddPipeline<HttpResponseMessage>(
+            key: new OcelotResiliencePipelineKey(currentRouteName),
+            configure: (builder) => ConfigureStrategies(builder, route));
     }
 
-    private void PollyResiliencePipelineWrapperFactory(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    protected virtual void ConfigureStrategies(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
+        ConfigureCircuitBreaker(builder, route);
+        ConfigureTimeout(builder, route);
+    }
+
+    protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    {
+        // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater/equal than/to 2
+        if (route.QosOptions.ExceptionsAllowedBeforeBreaking < 2)
+        {
+            return builder;
+        }
+
         var options = route.QosOptions;
-
-        // Add TimeoutStrategy if TimeoutValue is not int.MaxValue and greater than 0
-        if (options.TimeoutValue != int.MaxValue && options.TimeoutValue > 0)
-        {
-            builder.AddTimeout(TimeSpan.FromMilliseconds(options.TimeoutValue));
-        }
-
-        // Add CircuitBreakerStrategy only if ExceptionsAllowedBeforeBreaking is greater than 0
-        if (options.ExceptionsAllowedBeforeBreaking <= 0)
-        {
-            return; // shortcut > no qos (no timeout, no ExceptionsAllowedBeforeBreaking)
-        }
-
         var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
-
-        var circuitBreakerStrategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
+        var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
             FailureRatio = 0.8,
             SamplingDuration = TimeSpan.FromSeconds(10),
-            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking, 
-            BreakDuration = TimeSpan.FromMilliseconds(options.DurationOfBreak),
+            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
+            BreakDuration = options.DurationOfBreak > QoSOptions.LowBreakDuration
+                ? TimeSpan.FromMilliseconds(options.DurationOfBreak)
+                : TimeSpan.FromMilliseconds(QoSOptions.DefaultBreakDuration),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                 .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
                 .Handle<TimeoutRejectedException>()
                 .Handle<TimeoutException>(),
             OnOpened = args =>
             {
-                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms", args.Outcome.Exception);
+                _logger.LogError(info + $"Breaking for {args.BreakDuration.TotalMilliseconds} ms",
+                    args.Outcome.Exception);
+                return ValueTask.CompletedTask;
+            },
+            OnClosed = _ =>
+            {
+                _logger.LogInformation(info + "Closed");
+                return ValueTask.CompletedTask;
+            },
+            OnHalfOpened = _ =>
+            {
+                _logger.LogInformation(info + "Half Opened");
                 return ValueTask.CompletedTask;
             },
         };
+        return builder.AddCircuitBreaker(strategyOptions);
+    }
 
-        builder.AddCircuitBreaker(circuitBreakerStrategyOptions);
+    protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
+    {
+        var options = route.QosOptions;
+
+        // Add Timeout strategy if TimeoutValue is not int.MaxValue and greater than 0
+        // TimeoutValue must be defined in QosOptions!
+        if (options.TimeoutValue == int.MaxValue || options.TimeoutValue <= 0)
+        {
+            return builder;
+        }
+
+        var strategyOptions = new TimeoutStrategyOptions
+        {
+            Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
+            OnTimeout = _ =>
+            {
+                _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
+                return ValueTask.CompletedTask;
+            },
+        };
+        return builder.AddTimeout(strategyOptions);
     }
 }
