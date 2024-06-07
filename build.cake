@@ -312,11 +312,11 @@ Task("CreateReleaseNotes")
 			}
 		} // END of Top 3
 
-		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		// releaseNotes.AddRange(topContributors);
-		// releaseNotes.Add("");
-		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		// releaseNotes.AddRange(starring);
+		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		releaseNotes.AddRange(topContributors);
+		releaseNotes.Add("");
+		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");

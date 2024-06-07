@@ -56,8 +56,11 @@ We **do** follow development process which is described in :doc:`../building/rel
 Release Notes
 -------------
 
-| **Release Tag**: `23.3.0`_
-| **Release Codename**: `Twilight Texas <https://texas.com>`_
+| Release Tag: `23.3.0`_
+| Release Codename: **Twilight Texas** 
+  :htm:`&rarr;` `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_
+  :htm:`&rarr;` `for women <https://www.goodreads.com/series/50439-twilight-texas>`_
+  :htm:`&rarr;` `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_
 
 What's new?
 ^^^^^^^^^^^

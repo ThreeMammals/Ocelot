@@ -1,5 +1,5 @@
-## Spring 2024 (version {0}) aka [Twilight Texas]() release
-> Codenamed: **[Twilight Texas]()**
+## Spring 2024 (version {0}) aka [Twilight Texas](https://www.timeanddate.com/eclipse/map/2024-april-8) release
+> Codenamed: **[Twilight Texas](https://www.timeanddate.com/eclipse/map/2024-april-8)**
 > Read the Docs: [Ocelot 23.3](https://ocelot.readthedocs.io/en/23.3.0/)
 
 ### What's new?
