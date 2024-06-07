@@ -174,9 +174,10 @@ Task("CreateReleaseNotes")
 			return;
 		}
 
-		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
+		var debugUserEmail = false;
+		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
 			.ToList();
-		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
+		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
 		var summary = shortlogSummary
 			.Where(x => re.IsMatch(x))
 			.Select(x => re.Match(x))
@@ -184,6 +185,7 @@ Task("CreateReleaseNotes")
 			{
 				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
 				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+				email = m.Groups["email"]?.Value?.Trim() ?? string.Empty,
 			})
 			.ToList();
 
@@ -192,13 +194,18 @@ Task("CreateReleaseNotes")
 		foreach (var contributor in summary)
 		{
 			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
-			starring.Add($"{stars}  {contributor.author}");
+			var emailInfo = debugUserEmail ? ", " + contributor.email : string.Empty;
+			starring.Add($"{stars}  {contributor.author}{emailInfo}");
 		}
 
 		// Honoring aka Top Contributors
 		const int top3 = 3; // going to create Top 3
 		var topContributors = new List<string>();
+		// Ocelot Core team members should not be in Top 3 Chart
+		var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" };
+		var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "redbird_project@yahoo.fr", "58469901+ggnaegi@users.noreply.github.com" };
 		var commitsGrouping = summary
+			.Where(x => !coreTeamNames.Contains(x.author) && !coreTeamEmails.Contains(x.email)) // filter out Ocelot Core team members
 			.GroupBy(x => x.commits)
 			.Select(g => new
 			{
@@ -210,7 +217,7 @@ Task("CreateReleaseNotes")
 			.ToList();
 
 		// local helpers
-		string[] places = new[] { "1st", "2nd", "3rd" };
+		string[] places = new[] { "1st", "2nd", "3rd", "4", "5", "6", "7", "8", "9", "10", "11" };
 		static string Plural(int n) => n == 1 ? "" : "s";
 		static string Honor(string place, string author, int commits, string suffix = null)
 			=> $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
@@ -312,11 +319,11 @@ Task("CreateReleaseNotes")
 			}
 		} // END of Top 3
 
-		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		// releaseNotes.AddRange(topContributors);
-		// releaseNotes.Add("");
-		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		// releaseNotes.AddRange(starring);
+		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		releaseNotes.AddRange(topContributors);
+		releaseNotes.Add("");
+		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
