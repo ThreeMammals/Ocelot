@@ -117,6 +117,8 @@ If your downstream service resides in a different namespace, you can override th
     }
   ]
 
+.. _k8s-downstream-scheme-vs-port-names:
+
 Downstream Scheme vs Port Names [#f3]_
 --------------------------------------
 

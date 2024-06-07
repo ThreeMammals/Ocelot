@@ -49,6 +49,8 @@ The **Region** represents a region of caching.
 Additionally, if a header name is defined in the **Header** property, that header value is looked up by the key (header name) in the ``HttpRequest`` headers,
 and if the header is found, its value will be included in caching key. This causes the cache to become invalid due to the header value changing.
 
+.. _cch-enablecontenthashing-option:
+
 ``EnableContentHashing`` option
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

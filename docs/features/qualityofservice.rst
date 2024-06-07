@@ -23,6 +23,8 @@ Next, within your ``ConfigureServices`` method, to incorporate `Polly`_ services
     services.AddOcelot()
         .AddPolly();
 
+.. _qos-configuration:
+
 Configuration
 -------------
 
@@ -39,6 +41,8 @@ Then add the following section to a Route configuration:
 - You must set a number equal or greater than ``2`` against ``ExceptionsAllowedBeforeBreaking`` for this rule to be implemented. [#f2]_
 - ``DurationOfBreak`` means the circuit breaker will stay open for 1 second after it is tripped.
 - ``TimeoutValue`` means if a request takes more than 5 seconds, it will automatically be timed out. 
+
+.. _qos-circuit-breaker-strategy:
 
 Circuit Breaker strategy
 ------------------------
@@ -61,6 +65,8 @@ Alternatively, you may omit ``DurationOfBreak`` to default to the implicit 5 sec
   }
 
 This setup activates only the `Circuit breaker <https://www.pollydocs.org/strategies/circuit-breaker.html>`_ strategy.
+
+.. _qos-timeout-strategy:
 
 Timeout strategy
 ----------------
