@@ -199,14 +199,14 @@ namespace Ocelot.UnitTests.DependencyInjection
             RequestIdKey = "RequestIdKey",
         };
 
-        private static List<FileAggregateRoute> GetFileAggregatesRouteData() =>
-        [
+        private static List<FileAggregateRoute> GetFileAggregatesRouteData() => new()
+        {
             new()
             {
-                RouteKeys = [ "KeyB", "KeyBB" ],
+                RouteKeys = new() { "KeyB", "KeyBB" },
                 UpstreamPathTemplate = "UpstreamPathTemplate",
             },
-        ];
+        };
 
         private static FileRoute GetRoute(string suffix) => new()
         {
@@ -214,16 +214,16 @@ namespace Ocelot.UnitTests.DependencyInjection
             DownstreamPathTemplate = "DownstreamPathTemplate" + suffix,
             Key = "Key" + suffix,
             UpstreamHost = "UpstreamHost" + suffix,
-            UpstreamHttpMethod = ["UpstreamHttpMethod" + suffix],
-            DownstreamHostAndPorts =
-            [
+            UpstreamHttpMethod = new() { "UpstreamHttpMethod" + suffix },
+            DownstreamHostAndPorts = new()
+            {
                 new("Host"+suffix, 80),
-            ],
+            },
         };
 
-        private static List<FileRoute> GetServiceARoutes() => [GetRoute("A")];
-        private static List<FileRoute> GetServiceBRoutes() => [GetRoute("B"), GetRoute("BB")];
-        private static List<FileRoute> GetEnvironmentSpecificRoutes() => [GetRoute("Spec")];
+        private static List<FileRoute> GetServiceARoutes() => new() { GetRoute("A") };
+        private static List<FileRoute> GetServiceBRoutes() => new() { GetRoute("B"), GetRoute("BB") };
+        private static List<FileRoute> GetEnvironmentSpecificRoutes() => new() { GetRoute("Spec") };
 
         private void GivenTheEnvironmentIs(string folder, [CallerMemberName] string testName = null)
         {

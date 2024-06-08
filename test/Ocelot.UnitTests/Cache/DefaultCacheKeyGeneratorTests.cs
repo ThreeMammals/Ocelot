@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Cache;
 
-public sealed class DefaultCacheKeyGeneratorTests : IDisposable
+public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
 {
     private readonly ICacheKeyGenerator _cacheKeyGenerator;
     private readonly HttpRequestMessage _request;
@@ -59,7 +59,7 @@ public sealed class DefaultCacheKeyGeneratorTests : IDisposable
     [Fact]
     public void should_generate_cache_key_with_cache_options_header()
     {
-        CacheOptions options = new CacheOptions(100, "region", headerName);
+        CacheOptions options = new CacheOptions(100, "region", headerName, false);
         var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}");
 
         this.Given(x => x.GivenDownstreamRoute(options))

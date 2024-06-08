@@ -10,7 +10,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Cache
 {
-    public class OutputCacheMiddlewareTests
+    public class OutputCacheMiddlewareTests : UnitTest
     {
         private readonly Mock<IOcelotCache<CachedResponse>> _cache;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
@@ -106,7 +106,7 @@ namespace Ocelot.UnitTests.Cache
             var route = new RouteBuilder()
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithIsCached(true)
-                    .WithCacheOptions(new CacheOptions(100, "kanken", null))
+                    .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })

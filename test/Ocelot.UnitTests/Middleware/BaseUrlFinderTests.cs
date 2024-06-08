@@ -4,7 +4,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.UnitTests.Middleware
 {
-    public class BaseUrlFinderTests
+    public class BaseUrlFinderTests : UnitTest
     {
         private BaseUrlFinder _baseUrlFinder;
         private IConfiguration _config;

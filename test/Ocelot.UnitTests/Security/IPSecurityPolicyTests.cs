@@ -10,7 +10,7 @@ using Ocelot.Security.IPSecurity;
 
 namespace Ocelot.UnitTests.Security
 {
-    public class IPSecurityPolicyTests
+    public class IPSecurityPolicyTests : UnitTest
     {
         private readonly DownstreamRouteBuilder _downstreamRouteBuilder;
         private readonly IPSecurityPolicy _ipSecurityPolicy;

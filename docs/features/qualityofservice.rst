@@ -3,21 +3,30 @@ Quality of Service
 
     Label: `QoS <https://github.com/ThreeMammals/Ocelot/labels/QoS>`_
 
-Ocelot supports one QoS capability at the current time. You can set on a per Route basis if you want to use a circuit breaker when making requests to a downstream service.
-This uses an awesome .NET library called `Polly`_, check them out `in official repository <https://github.com/App-vNext/Polly>`_.
+Ocelot currently supports a single **QoS** capability.
+It allows you to configure, on a per-route basis, the use of a circuit breaker when making requests to downstream services.
+This feature leverages a superb .NET library known as `Polly`_. For more information, visit their `official repository <https://github.com/App-vNext/Polly>`_.
 
-The first thing you need to do if you want to use the :doc:`../features/administration` API is bring in the relevant NuGet `package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
+Installation
+------------
+
+To use the :doc:`../features/administration` API, the first step is to import the relevant NuGet `package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
 
 .. code-block:: powershell
 
     Install-Package Ocelot.Provider.Polly
 
-Then in your ``ConfigureServices`` method to add `Polly`_ services we must call the ``AddPolly()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_ like below:
+Next, within your ``ConfigureServices`` method, to incorporate `Polly`_ services, invoke the ``AddPolly()`` extension on the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_ as shown below:
 
 .. code-block:: csharp
 
     services.AddOcelot()
         .AddPolly();
+
+.. _qos-configuration:
+
+Configuration
+-------------
 
 Then add the following section to a Route configuration: 
 
@@ -29,11 +38,40 @@ Then add the following section to a Route configuration:
     "TimeoutValue": 5000
   }
 
-- You must set a number equal or greater than ``2`` against **ExceptionsAllowedBeforeBreaking** for this rule to be implemented. [#f2]_
-- **DurationOfBreak** means the circuit breaker will stay open for 1 second after it is tripped.
-- **TimeoutValue** means if a request takes more than 5 seconds, it will automatically be timed out. 
+- You must set a number equal or greater than ``2`` against ``ExceptionsAllowedBeforeBreaking`` for this rule to be implemented. [#f2]_
+- ``DurationOfBreak`` means the circuit breaker will stay open for 1 second after it is tripped.
+- ``TimeoutValue`` means if a request takes more than 5 seconds, it will automatically be timed out. 
 
-You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBreaking** and **DurationOfBreak** options:
+.. _qos-circuit-breaker-strategy:
+
+Circuit Breaker strategy
+------------------------
+
+The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be configured independently of ``TimeoutValue``:
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "ExceptionsAllowedBeforeBreaking": 3,
+    "DurationOfBreak": 1000
+  }
+
+Alternatively, you may omit ``DurationOfBreak`` to default to the implicit 5 seconds as per Polly `documentation <https://www.pollydocs.org/>`_:
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "ExceptionsAllowedBeforeBreaking": 3
+  }
+
+This setup activates only the `Circuit breaker <https://www.pollydocs.org/strategies/circuit-breaker.html>`_ strategy.
+
+.. _qos-timeout-strategy:
+
+Timeout strategy
+----------------
+
+The ``TimeoutValue`` can be configured independently from the ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` settings:
 
 .. code-block:: json
 
@@ -41,32 +79,23 @@ You can set the **TimeoutValue** in isolation of the **ExceptionsAllowedBeforeBr
     "TimeoutValue": 5000
   }
 
-There is no point setting the other two in isolation as they affect each other!
+This setup activates only the `Timeout <https://www.pollydocs.org/strategies/timeout.html>`_ strategy.
 
-Defaults
---------
+Notes
+-----
 
-If you do not add a QoS section, QoS will not be used, however Ocelot will default to a **90** seconds timeout on all downstream requests.
-If someone needs this to be configurable, open an issue. [#f2]_
+1. Without a QoS section, QoS will not be utilized, and Ocelot will impose a default timeout of **90** seconds for all downstream requests.
+   To request configurability, please open an issue. [#f2]_
 
-.. _qos-polly-v7-vs-v8:
+2. `Polly`_ V7 syntax is no longer supported as of version `23.2`_. [#f3]_
 
-`Polly`_ v7 vs v8
------------------
+3. For `Polly`_ version 8 and above, the following constraints on values are specified in `the documentation <https://www.pollydocs.org/>`_:
 
-Important changes in version `23.2`_: [#f3]_
+   * The ``ExceptionsAllowedBeforeBreaking`` value must be **2** or higher.
+   * The ``DurationOfBreak`` value must exceed **500** milliseconds, defaulting to **5000** milliseconds (5 seconds) if unspecified or if the value is **500** milliseconds or less.
+   * The ``TimeoutValue`` must be over **10** milliseconds.
 
-  - With `Polly`_ version 8+, the ``ExceptionsAllowedBeforeBreaking`` value must be equal to or greater than **2**!
-  - The ``AddPolly`` method has been migrated from v7 policy wrappers to v8 resilience pipelines. Consequently, it now exhibits different behavior based on v8 pipelines.
-
-If you prefer not to modify your settings, you can continue using `Polly`_ v7 as follows:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddPollyV7();
-
-**Note**: Support for `Polly`_ v7 will be removed in a future version. We recommend avoiding this method (which is tagged as ``Obsolete``) unless absolutely necessary.
+   Consult the `Resilience strategies <https://www.pollydocs.org/strategies/index.html>`_ documentation for a detailed understanding of each option.
 
 .. _qos-extensibility:
 

@@ -10,7 +10,7 @@ using Ocelot.Request.Middleware;
 
 namespace Ocelot.UnitTests.Request;
 
-public class DownstreamRequestInitialiserMiddlewareTests
+public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
 {
     private readonly DownstreamRequestInitialiserMiddleware _middleware;
     private readonly HttpContext _httpContext;

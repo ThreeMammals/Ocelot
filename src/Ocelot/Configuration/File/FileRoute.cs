@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Configuration.File
+﻿using Ocelot.Configuration.Creator;
+
+namespace Ocelot.Configuration.File
 {
     public class FileRoute : IRoute, ICloneable
     {
@@ -15,11 +17,13 @@
             FileCacheOptions = new FileCacheOptions();
             HttpHandlerOptions = new FileHttpHandlerOptions();
             LoadBalancerOptions = new FileLoadBalancerOptions();
+            Metadata = new Dictionary<string, string>();
             Priority = 1;
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
             RouteClaimsRequirement = new Dictionary<string, string>();
             SecurityOptions = new FileSecurityOptions();
+            UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             UpstreamHttpMethod = new List<string>();
         }
@@ -40,12 +44,25 @@
         public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
         public string DownstreamHttpMethod { get; set; }
         public string DownstreamHttpVersion { get; set; }
+
+        /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
+        /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
+        /// <remarks>
+        /// Related to the <see cref="DownstreamHttpVersion"/> property.
+        /// <list type="bullet">
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
+        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
+        /// </list>
+        /// </remarks>
+        public string DownstreamHttpVersionPolicy { get; set; }
         public string DownstreamPathTemplate { get; set; }
         public string DownstreamScheme { get; set; }
         public FileCacheOptions FileCacheOptions { get; set; }
         public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
         public string Key { get; set; }
         public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
         public int Priority { get; set; }
         public FileQoSOptions QoSOptions { get; set; }
         public FileRateLimitRule RateLimitOptions { get; set; }
@@ -60,6 +77,7 @@
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
+        public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
 
         /// <summary>
         /// Clones this object by making a deep copy.
@@ -85,12 +103,14 @@
             to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
             to.DownstreamHttpMethod = from.DownstreamHttpMethod;
             to.DownstreamHttpVersion = from.DownstreamHttpVersion;
+            to.DownstreamHttpVersionPolicy = from.DownstreamHttpVersionPolicy;
             to.DownstreamPathTemplate = from.DownstreamPathTemplate;
             to.DownstreamScheme = from.DownstreamScheme;
             to.FileCacheOptions = new(from.FileCacheOptions);
             to.HttpHandlerOptions = new(from.HttpHandlerOptions);
             to.Key = from.Key;
             to.LoadBalancerOptions = new(from.LoadBalancerOptions);
+            to.Metadata = new Dictionary<string, string>(from.Metadata);
             to.Priority = from.Priority;
             to.QoSOptions = new(from.QoSOptions);
             to.RateLimitOptions = new(from.RateLimitOptions);
@@ -101,6 +121,7 @@
             to.ServiceName = from.ServiceName;
             to.ServiceNamespace = from.ServiceNamespace;
             to.Timeout = from.Timeout;
+            to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
             to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);

@@ -41,7 +41,7 @@ public class ServiceCollectionExtensionsTests
 
         // Act
         var method = typeof(Extensions).GetMethod("FindConfiguration", BindingFlags.NonPublic | BindingFlags.Static);
-        var actual = (IConfiguration)method.Invoke(null, [services, env]);
+        var actual = (IConfiguration)method.Invoke(null, new object[] { services, env });
 
         // Assert
         actual.ShouldNotBeNull();

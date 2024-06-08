@@ -6,11 +6,6 @@ namespace Ocelot.Requester;
 
 public class MessageInvokerPool : IMessageInvokerPool
 {
-    /// <summary>
-    /// TODO This should be configurable and available as global config parameter in ocelot.json.
-    /// </summary>
-    public const int DefaultRequestTimeoutSeconds = 90;
-
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
@@ -37,6 +32,18 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public void Clear() => _handlersPool.Clear();
 
+    /// <summary>
+    /// TODO This should be configurable and available as global config parameter in ocelot.json.
+    /// </summary>
+    public const int DefaultRequestTimeoutSeconds = 90;
+    private int _requestTimeoutSeconds;
+
+    public int RequestTimeoutSeconds
+    {
+        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : DefaultRequestTimeoutSeconds;
+        set => _requestTimeoutSeconds = value > 0 ? value : DefaultRequestTimeoutSeconds;
+    }
+
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)
     {
         var baseHandler = CreateHandler(downstreamRoute);
@@ -52,7 +59,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
         var timeoutHandler = new TimeoutDelegatingHandler(downstreamRoute.QosOptions.TimeoutValue == 0
-            ? TimeSpan.FromSeconds(DefaultRequestTimeoutSeconds)
+            ? TimeSpan.FromSeconds(RequestTimeoutSeconds)
             : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue))
         {
             InnerHandler = baseHandler,
@@ -93,9 +100,14 @@ public class MessageInvokerPool : IMessageInvokerPool
         return handler;
     }
 
-    private readonly struct MessageInvokerCacheKey(DownstreamRoute downstreamRoute) : IEquatable<MessageInvokerCacheKey>
+    private readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
     {
-        public DownstreamRoute DownstreamRoute { get; } = downstreamRoute;
+        public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
+        {
+            DownstreamRoute = downstreamRoute;
+        }
+
+        public DownstreamRoute DownstreamRoute { get; }
 
         public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 

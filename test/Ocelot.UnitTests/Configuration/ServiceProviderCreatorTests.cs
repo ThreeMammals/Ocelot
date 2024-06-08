@@ -5,7 +5,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ServiceProviderCreatorTests
+    public class ServiceProviderCreatorTests : UnitTest
     {
         private readonly ServiceProviderConfigurationCreator _creator;
         private FileGlobalConfiguration _globalConfig;

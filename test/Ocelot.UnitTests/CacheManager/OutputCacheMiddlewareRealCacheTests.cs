@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.CacheManager
 {
-    public class OutputCacheMiddlewareRealCacheTests
+    public class OutputCacheMiddlewareRealCacheTests : UnitTest
     {
         private readonly IOcelotCache<CachedResponse> _cacheManager;
         private readonly ICacheKeyGenerator _cacheKeyGenerator;
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.CacheManager
         {
             var route = new DownstreamRouteBuilder()
                 .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100, "kanken", null))
+                .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
 

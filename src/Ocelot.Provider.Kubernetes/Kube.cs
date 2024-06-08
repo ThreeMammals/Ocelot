@@ -1,5 +1,6 @@
 ﻿using KubeClient.Models;
 using Ocelot.Logging;
+using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
@@ -9,47 +10,44 @@ namespace Ocelot.Provider.Kubernetes;
 /// </summary>
 public class Kube : IServiceDiscoveryProvider
 {
-    private readonly KubeRegistryConfiguration _kubeRegistryConfiguration;
+    private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
+    private readonly IKubeServiceBuilder _serviceBuilder;
+    private readonly List<Service> _services;
 
-    public Kube(KubeRegistryConfiguration kubeRegistryConfiguration, IOcelotLoggerFactory factory, IKubeApiClient kubeApi)
+    public Kube(
+        KubeRegistryConfiguration configuration,
+        IOcelotLoggerFactory factory,
+        IKubeApiClient kubeApi,
+        IKubeServiceBuilder serviceBuilder)
     {
-        _kubeRegistryConfiguration = kubeRegistryConfiguration;
+        _configuration = configuration;
         _logger = factory.CreateLogger<Kube>();
         _kubeApi = kubeApi;
+        _serviceBuilder = serviceBuilder;
+        _services = new();
     }
 
-    public async Task<List<Service>> GetAsync()
+    public virtual async Task<List<Service>> GetAsync()
     {
         var endpoint = await _kubeApi
             .ResourceClient(client => new EndPointClientV1(client))
-            .GetAsync(_kubeRegistryConfiguration.KeyOfServiceInK8s, _kubeRegistryConfiguration.KubeNamespace);
+            .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
 
-        var services = new List<Service>();
-        if (endpoint != null && endpoint.Subsets.Any())
+        _services.Clear();
+        if (endpoint?.Subsets.Count != 0)
         {
-            services.AddRange(BuildServices(endpoint));
+            _services.AddRange(BuildServices(_configuration, endpoint));
         }
         else
         {
-            _logger.LogWarning(() => $"namespace:{_kubeRegistryConfiguration.KubeNamespace}service:{_kubeRegistryConfiguration.KeyOfServiceInK8s} Unable to use ,it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
+            _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
         }
 
-        return services;
+        return _services;
     }
 
-    private static List<Service> BuildServices(EndpointsV1 endpoint)
-    {
-        var services = new List<Service>();
-
-        foreach (var subset in endpoint.Subsets)
-        {
-            services.AddRange(subset.Addresses.Select(address => new Service(endpoint.Metadata.Name,
-                new ServiceHostAndPort(address.Ip, subset.Ports.First().Port),
-                endpoint.Metadata.Uid, string.Empty, Enumerable.Empty<string>())));
-        }
-
-        return services;
-    }
+    protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
+        => _serviceBuilder.BuildServices(configuration, endpoint);
 }

@@ -15,6 +15,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -42,96 +43,86 @@ namespace Ocelot.AcceptanceTests
             var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key1data/{userid}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port,
                             },
-                        ],
+                        },
                         Key = "key1",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key2data/{userid}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port,
                             },
-                        ],
+                        },
                         Key = "key2",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key3data/{userid}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port,
                             },
-                        ],
+                        },
                         Key = "key3",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/api/values?MailId={userid}",
                         UpstreamPathTemplate = "/key4data/{userid}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port,
                             },
-                        ],
+                        },
                         Key = "key4",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
-                        RouteKeys =
-                        [
-                            "key1",
-                            "key2",
-                            "key3",
-                            "key4"
-                        ],
+                        RouteKeys = new() { "key1", "key2", "key3", "key4" },
                         UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                     },
                     new FileAggregateRoute
                     {
-                        RouteKeys =
-                        [
-                            "key1",
-                            "key2"
-                        ],
+                        RouteKeys = new() { "key1", "key2" },
                         UpstreamPathTemplate = "/EmpDetail/US/{userid}",
                     },
-                ],
+                },
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
                     RequestIdKey = "CorrelationID",
@@ -157,78 +148,73 @@ namespace Ocelot.AcceptanceTests
             var port3 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port1,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/Comments",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Comments",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/users/{userId}",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port2,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/UserDetails/{userId}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "UserDetails",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/posts/{postId}",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port3,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/PostDetails/{postId}",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "PostDetails",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
                         UpstreamPathTemplate = "/",
                         UpstreamHost = "localhost",
-                        RouteKeys =
-                        [
-                            "Comments",
-                            "UserDetails",
-                            "PostDetails"
-                        ],
-                        RouteKeysConfig =
-                        [
+                        RouteKeys = new() { "Comments", "UserDetails", "PostDetails" },
+                        RouteKeysConfig = new()
+                        {
                             new AggregateRouteConfig
                                 { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
                             new AggregateRouteConfig
                                 { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
-                        ],
+                        },
                     },
-                ],
+                },
             };
 
             var userDetailsResponseContent = @"{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""}";
@@ -255,22 +241,22 @@ namespace Ocelot.AcceptanceTests
             var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port1,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Laura",
                     },
 
@@ -278,33 +264,29 @@ namespace Ocelot.AcceptanceTests
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port2,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/tom",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Tom",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
                         UpstreamPathTemplate = "/",
                         UpstreamHost = "localhost",
-                        RouteKeys =
-                        [
-                            "Laura",
-                            "Tom"
-                        ],
+                        RouteKeys = new() { "Laura", "Tom" },
                         Aggregator = "FakeDefinedAggregator",
                     },
-                ],
+                },
             };
 
             var expected = "Bye from Laura, Bye from Tom";
@@ -347,54 +329,50 @@ namespace Ocelot.AcceptanceTests
             var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port1,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Laura",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port2,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/tom",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Tom",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
                         UpstreamPathTemplate = "/",
                         UpstreamHost = "localhost",
-                        RouteKeys =
-                        [
-                            "Laura",
-                            "Tom"
-                        ],
+                        RouteKeys = new() { "Laura", "Tom" },
                     },
-                ],
+                },
             };
 
             var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
@@ -417,54 +395,50 @@ namespace Ocelot.AcceptanceTests
             var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port1,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Laura",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port2,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/tom",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Tom",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
                         UpstreamPathTemplate = "/",
                         UpstreamHost = "localhost",
-                        RouteKeys =
-                        [
-                            "Laura",
-                            "Tom"
-                        ],
+                        RouteKeys = new() { "Laura", "Tom" },
                     },
-                ],
+                },
             };
 
             var expected = "{\"Laura\":,\"Tom\":}";
@@ -487,54 +461,50 @@ namespace Ocelot.AcceptanceTests
             var port2 = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
             {
-                Routes =
-                [
+                Routes = new()
+                {
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port1,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/laura",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Laura",
                     },
                     new FileRoute
                     {
                         DownstreamPathTemplate = "/",
                         DownstreamScheme = "http",
-                        DownstreamHostAndPorts =
-                        [
+                        DownstreamHostAndPorts = new()
+                        {
                             new FileHostAndPort
                             {
                                 Host = "localhost",
                                 Port = port2,
                             },
-                        ],
+                        },
                         UpstreamPathTemplate = "/tom",
-                        UpstreamHttpMethod = ["Get"],
+                        UpstreamHttpMethod = new() { "Get" },
                         Key = "Tom",
                     },
-                ],
-                Aggregates =
-                [
+                },
+                Aggregates = new()
+                {
                     new FileAggregateRoute
                     {
                         UpstreamPathTemplate = "/",
                         UpstreamHost = "localhost",
-                        RouteKeys =
-                        [
-                            "Laura",
-                            "Tom"
-                        ],
+                        RouteKeys = new() { "Laura", "Tom" },
                     },
-                ],
+                },
             };
 
             this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
@@ -629,6 +599,75 @@ namespace Ocelot.AcceptanceTests
             }
         }
 
+        [Fact]
+        [Trait("Bug", "2039")]
+        public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
+        {
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
+            var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+            var configuration = GivenConfiguration(route1, route2);
+            var requestBody = @"{""id"":1,""response"":""fromBody-#REPLACESTRING#""}";
+            var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
+            var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
+            var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
+
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlWithBodyOnTheApiGateway("/", requestBody))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
+                .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Bug", "2039")]
+        public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
+        {
+            var port1 = PortFinder.GetRandomPort();
+            var port2 = PortFinder.GetRandomPort();
+            var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
+            var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+            var configuration = GivenConfiguration(route1, route2);
+
+            var formValues = new[]
+            {
+                new KeyValuePair<string, string>("param1", "value1"),
+                new KeyValuePair<string, string>("param2", "from-form-REPLACESTRING"),
+            };
+
+            var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
+            var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
+            var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
+
+            this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
+                .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning())
+                .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
+                .BDDfy();
+        }
+
+        private static string FormatFormCollection(IFormCollection reqForm)
+        {
+            var sb = new StringBuilder()
+                .Append('"');
+
+            foreach (var kvp in reqForm)
+            {
+                sb.Append($"[{kvp.Key}:{kvp.Value}]");
+            }
+
+            return sb
+                .Append('"')
+                .ToString();
+        }
+
         private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
@@ -639,21 +678,47 @@ namespace Ocelot.AcceptanceTests
         }
 
         private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, string responseBody)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
+                {
+                    await context.Response.WriteAsync(responseBody);
+                });
+
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<string, string> responseFromBody)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
+                {
+                    var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                    var responseBody = responseFromBody(requestBody);
+                    await context.Response.WriteAsync(responseBody);
+                });
+
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<IFormCollection, string> responseFromForm)
+            => GivenServiceIsRunning(index, port, basePath, statusCode,
+                async context =>
+                {
+                    var responseBody = responseFromForm(context.Request.Form);
+                    await context.Response.WriteAsync(responseBody);
+                });
+
+        private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Action<HttpContext> processContext)
         {
-            var baseUrl = $"{Uri.UriSchemeHttp}://localhost:{port}";
+            var baseUrl = DownstreamUrl(port);
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
             {
-                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                    ? context.Request.PathBase.Value
+                    : context.Request.Path.Value;
 
                 if (_downstreamPaths[index] != basePath)
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didn't match base path");
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsync("downstream path doesn't match base path");
                 }
                 else
                 {
                     context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
+                    processContext?.Invoke(context);
                 }
             });
         }
@@ -693,13 +758,13 @@ namespace Ocelot.AcceptanceTests
             _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
         }
 
-        private static FileRoute GivenRoute(int port, string upstream, string key) => new()
+        private static FileRoute GivenRoute(int port, string upstream, string key, string downstream = null) => new()
         {
-            DownstreamPathTemplate = "/",
+            DownstreamPathTemplate = downstream ?? "/",
             DownstreamScheme = Uri.UriSchemeHttp,
-            DownstreamHostAndPorts = [new FileHostAndPort("localhost", port)],
+            DownstreamHostAndPorts = new() { new("localhost", port) },
             UpstreamPathTemplate = upstream,
-            UpstreamHttpMethod = [HttpMethods.Get],
+            UpstreamHttpMethod = new() { HttpMethods.Get },
             Key = key,
         };
 

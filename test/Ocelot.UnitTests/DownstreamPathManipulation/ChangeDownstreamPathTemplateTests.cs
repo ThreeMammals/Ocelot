@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation
 {
-    public class ChangeDownstreamPathTemplateTests
+    public class ChangeDownstreamPathTemplateTests : UnitTest
     {
         private readonly ChangeDownstreamPathTemplate _changeDownstreamPath;
         private DownstreamPathTemplate _downstreamPathTemplate;

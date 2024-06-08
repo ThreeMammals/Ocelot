@@ -9,7 +9,7 @@ using Ocelot.Security.Middleware;
 
 namespace Ocelot.UnitTests.Security
 {
-    public class SecurityMiddlewareTests
+    public class SecurityMiddlewareTests : UnitTest
     {
         private readonly List<Mock<ISecurityPolicy>> _securityPolicyList;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

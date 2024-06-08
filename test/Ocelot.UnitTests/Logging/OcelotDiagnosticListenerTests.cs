@@ -4,7 +4,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.Logging
 {
-    public class OcelotDiagnosticListenerTests
+    public class OcelotDiagnosticListenerTests : UnitTest
     {
         private readonly OcelotDiagnosticListener _listener;
         private readonly Mock<IOcelotLoggerFactory> _factory;

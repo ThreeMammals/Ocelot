@@ -5,12 +5,13 @@ using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Responses;
 using System.Text;
 
 namespace Ocelot.UnitTests.Consul
 {
-    public class ConsulFileConfigurationRepositoryTests
+    public class ConsulFileConfigurationRepositoryTests : UnitTest
     {
         private ConsulFileConfigurationRepository _repo;
         private readonly Mock<IOptions<FileConfiguration>> _options;

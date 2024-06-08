@@ -1,9 +1,9 @@
-#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=4.0.1"
-#addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator&version=5.2.0"
-#addin Cake.Coveralls&version=1.1.0
+#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
+#tool dotnet:?package=coveralls.net&version=4.0.1
+#tool nuget:?package=ReportGenerator&version=5.2.4
+#addin nuget:?package=Newtonsoft.Json&version=13.0.3
+#addin nuget:?package=System.Text.Encodings.Web&version=8.0.0
+#addin nuget:?package=Cake.Coveralls&version=1.1.0
 
 #r "Spectre.Console"
 using Spectre.Console
@@ -13,10 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-// compile
-var compileConfig = Argument("configuration", "Release");
-
-var slnFile = "./Ocelot.sln";
+const string Release = "Release"; // task name, target, and Release config name
+var compileConfig = Argument("configuration", Release); // compile
 
 // build artifacts
 var artifactsDir = Directory("artifacts");
@@ -61,9 +59,10 @@ string gitHubUsername = "TomPallister";
 string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
-
-Information("target is " + target);
-Information("Build configuration is " + compileConfig);	
+var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
+Information("\nTarget: " + target);
+Information("Build: " + compileConfig);
+Information("Solution: " + slnFile);
 
 TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
@@ -83,7 +82,7 @@ Task("RunTests")
 	.IsDependentOn("RunAcceptanceTests")
 	.IsDependentOn("RunIntegrationTests");
 
-Task("Release")
+Task(Release)
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
@@ -95,11 +94,18 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		Information("Build: " + compileConfig);
+		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // build using .NET 8 SDK only
+		}
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {settings.Framework}");
+		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -168,9 +174,10 @@ Task("CreateReleaseNotes")
 			return;
 		}
 
-		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
+		var debugUserEmail = false;
+		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
 			.ToList();
-		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
+		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
 		var summary = shortlogSummary
 			.Where(x => re.IsMatch(x))
 			.Select(x => re.Match(x))
@@ -178,6 +185,7 @@ Task("CreateReleaseNotes")
 			{
 				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
 				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+				email = m.Groups["email"]?.Value?.Trim() ?? string.Empty,
 			})
 			.ToList();
 
@@ -186,13 +194,18 @@ Task("CreateReleaseNotes")
 		foreach (var contributor in summary)
 		{
 			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
-			starring.Add($"{stars}  {contributor.author}");
+			var emailInfo = debugUserEmail ? ", " + contributor.email : string.Empty;
+			starring.Add($"{stars}  {contributor.author}{emailInfo}");
 		}
 
 		// Honoring aka Top Contributors
 		const int top3 = 3; // going to create Top 3
 		var topContributors = new List<string>();
+		// Ocelot Core team members should not be in Top 3 Chart
+		var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" };
+		var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "redbird_project@yahoo.fr", "58469901+ggnaegi@users.noreply.github.com" };
 		var commitsGrouping = summary
+			.Where(x => !coreTeamNames.Contains(x.author) && !coreTeamEmails.Contains(x.email)) // filter out Ocelot Core team members
 			.GroupBy(x => x.commits)
 			.Select(g => new
 			{
@@ -204,7 +217,7 @@ Task("CreateReleaseNotes")
 			.ToList();
 
 		// local helpers
-		string[] places = new[] { "1st", "2nd", "3rd" };
+		string[] places = new[] { "1st", "2nd", "3rd", "4", "5", "6", "7", "8", "9", "10", "11" };
 		static string Plural(int n) => n == 1 ? "" : "s";
 		static string Honor(string place, string author, int commits, string suffix = null)
 			=> $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
@@ -306,11 +319,11 @@ Task("CreateReleaseNotes")
 			}
 		} // END of Top 3
 
-		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		// releaseNotes.AddRange(topContributors);
-		// releaseNotes.Add("");
-		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		// releaseNotes.AddRange(starring);
+		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+		releaseNotes.AddRange(topContributors);
+		releaseNotes.Add("");
+		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+		releaseNotes.AddRange(starring);
 		releaseNotes.Add("");
 		releaseNotes.Add($"### Features in Release {releaseVersion}");
 		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
@@ -344,15 +357,23 @@ Task("RunUnitTests")
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
-				ArgumentCustomization = args => args
-					// this create the code coverage report
-					.Append("--collect:\"XPlat Code Coverage\"")
+			ArgumentCustomization = args => args
+				.Append("--no-restore")
+				.Append("--no-build")
+				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+				.Append("--verbosity:detailed")
+				.Append("--consoleLoggerParameters:ErrorsOnly")
 		};
-
+		if (target != Release)
+		{
+			testSettings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
 		DotNetTest(unitTestAssemblies, testSettings);
 
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
+		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
+			.First()
+			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
 
@@ -396,11 +417,15 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 		DotNetTest(acceptanceTestAssemblies, settings);
 	});
@@ -412,11 +437,15 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
+			Framework = "net8.0", // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
-
+		if (target != Release)
+		{
+			settings.Framework = "net8.0"; // .NET 8 SDK only
+		}
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
 		DotNetTest(integrationTestAssemblies, settings);
 	});

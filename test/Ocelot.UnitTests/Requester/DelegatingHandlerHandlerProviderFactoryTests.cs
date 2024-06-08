@@ -10,7 +10,7 @@ using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Requester
 {
-    public class DelegatingHandlerHandlerProviderFactoryTests
+    public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
     {
         private DelegatingHandlerHandlerFactory _factory;
         private readonly Mock<IOcelotLoggerFactory> _loggerFactory;

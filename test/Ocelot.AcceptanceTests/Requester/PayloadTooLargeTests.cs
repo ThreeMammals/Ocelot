@@ -71,13 +71,13 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
     private static FileRoute GivenRoute(int port, string method = null) => new()
     {
         DownstreamPathTemplate = "/",
-        DownstreamHostAndPorts =
-        [
+        DownstreamHostAndPorts = new()
+        {
             new("localhost", port),
-        ],
+        },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [method ?? HttpMethods.Get],
+        UpstreamHttpMethod = new() {method ?? HttpMethods.Get },
     };
 
     private void GivenThereIsAServiceRunningOn(string baseUrl)

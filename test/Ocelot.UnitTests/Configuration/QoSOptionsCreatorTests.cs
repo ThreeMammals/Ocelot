@@ -5,7 +5,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class QoSOptionsCreatorTests
+    public class QoSOptionsCreatorTests : UnitTest
     {
         private readonly QoSOptionsCreator _creator;
         private FileRoute _fileRoute;

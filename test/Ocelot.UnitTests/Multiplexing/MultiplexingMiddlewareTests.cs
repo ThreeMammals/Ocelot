@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing
 {
-    public class MultiplexingMiddlewareTests
+    public class MultiplexingMiddlewareTests : UnitTest
     {
         private MultiplexingMiddleware _middleware;
         private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
@@ -61,14 +61,14 @@ namespace Ocelot.UnitTests.Multiplexing
 
         [Fact]
         [Trait("Bug", "1396")]
-        public void CreateThreadContext_CopyUser_ToTarget()
+        public async Task CreateThreadContextAsync_CopyUser_ToTarget()
         {
             // Arrange
-            GivenUser("test", "Copy", nameof(CreateThreadContext_CopyUser_ToTarget));
+            GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
 
             // Act
-            var method = _middleware.GetType().GetMethod("CreateThreadContext", BindingFlags.NonPublic | BindingFlags.Static);
-            var actual = (HttpContext)method.Invoke(_middleware, [_httpContext]);
+            var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext });
 
             // Assert
             AssertUsers(actual);
@@ -214,6 +214,29 @@ namespace Ocelot.UnitTests.Multiplexing
                 ItExpr.IsAny<List<HttpContext>>());
         }
 
+        [Theory]
+        [Trait("Bug", "2039")]
+        [InlineData(1)] // Times.Never()
+        [InlineData(2)] // Times.Exactly(2)
+        [InlineData(3)] // Times.Exactly(3)
+        [InlineData(4)] // Times.Exactly(4)
+        public async Task Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests(int numberOfRoutes)
+        {
+            // Arrange
+            var mock = MockMiddlewareFactory(null, null);
+            GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
+            GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
+
+            // Act
+            await WhenIMultiplex();
+
+            // Assert
+            mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
+                numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
+                ItExpr.IsAny<HttpRequest>(),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
         [Fact]
         [Trait("PR", "1826")]
         public async Task If_Using_3_Routes_WithAggregator_ProcessSingleRoute_Is_Never_Called_Map_Once_And_Pipeline_3_Times()
@@ -318,13 +341,11 @@ namespace Ocelot.UnitTests.Multiplexing
             b.WithDownstreamRoute(route2);
             b.WithDownstreamRoute(route3);
 
-            b.WithAggregateRouteConfig(
-            [
-                new AggregateRouteConfig
-                    { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-                new AggregateRouteConfig
-                    { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" }
-            ]);
+            b.WithAggregateRouteConfig(new()
+            {
+                new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
+                new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
+            });
 
             b.WithAggregator("TestAggregator");
 

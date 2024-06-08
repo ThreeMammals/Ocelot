@@ -5,7 +5,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Headers
 {
-    public class HttpContextRequestHeaderReplacerTests
+    public class HttpContextRequestHeaderReplacerTests : UnitTest
     {
         private HttpContext _context;
         private List<HeaderFindAndReplace> _fAndRs;

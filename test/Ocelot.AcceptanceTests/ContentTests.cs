@@ -170,20 +170,20 @@ namespace Ocelot.AcceptanceTests
 
         private static FileConfiguration GivenConfiguration(int port, string method = null) => new()
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new FileRoute
                 {
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = Uri.UriSchemeHttp,
-                    DownstreamHostAndPorts =
-                    [
+                    DownstreamHostAndPorts = new()
+                    {
                         new FileHostAndPort("localhost", port),
-                    ],
+                    },
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = [method ?? HttpMethods.Get],
+                    UpstreamHttpMethod = new() {method ?? HttpMethods.Get },
                 },
-            ],
+            },
         };
     }
 }

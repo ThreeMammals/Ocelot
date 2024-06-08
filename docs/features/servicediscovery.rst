@@ -9,28 +9,85 @@ At the moment this is only supported in the **GlobalConfiguration** section, whi
 Consul
 ------
 
-    | **Namespace**: `Ocelot.Provider.Consul <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Consul>`_
+    | **Namespace**: ``Ocelot.Provider.Consul``
 
-The first thing you need to do is install the `Ocelot.Provider.Consul <https://www.nuget.org/packages/Ocelot.Provider.Consul>`__ package that provides `Consul <https://www.consul.io/>`_ support in Ocelot:
+The first thing you need to do is install the `Ocelot.Provider.Consul <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_ package that provides `Consul`_ support in Ocelot:
 
 .. code-block:: powershell
 
     Install-Package Ocelot.Provider.Consul
 
-Then add the following to your ``ConfigureServices`` method:
+To register *Consul* services, you must invoke the ``AddConsul()`` extension using the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_.
+Therefore, include the following in your ``ConfigureServices`` method:
 
 .. code-block:: csharp
 
     services.AddOcelot()
-        .AddConsul();
+        .AddConsul(); // or .AddConsul<T>()
 
-Currently there are 2 types of Consul *service discovery* providers: ``Consul`` and ``PollConsul``.
-The default provider is ``Consul``, which means that if ``ConsulProviderFactory`` cannot read, understand, or parse the **Type** property of the ``ServiceProviderConfiguration`` object, then a ``Consul`` provider instance is created by the factory.
+Currently there are 2 types of *Consul* service discovery providers: ``Consul`` and ``PollConsul``.
+The default provider is ``Consul``, which means that if ``ConsulProviderFactory`` cannot read, understand, or parse the **Type** property of the ``ServiceProviderConfiguration`` object,
+then a :ref:`sd-consul-provider` instance is created by the factory.
 
-Explore these types of providers and understand the differences in the subsections below.
+Explore these types of providers and understand the differences in the subsections: :ref:`sd-consul-provider` and :ref:`sd-pollconsul-provider`.
 
-Consul Provider Type
-^^^^^^^^^^^^^^^^^^^^
+.. _sd-consul-configuration-in-kv:
+
+Configuration in `KV Store`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Add the following when you register your services Ocelot will attempt to store and retrieve its :doc:`../features/configuration` in *Consul* `KV Store`_:
+
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddConsul()
+        .AddConfigStoredInConsul(); // !
+
+You also need to add the following to your `ocelot.json`_.
+This is how Ocelot finds your *Consul* agent and interacts to load and store the configuration from *Consul*.
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Host": "localhost",
+      "Port": 9500
+    }
+  }
+
+The team decided to create this feature after working on the Raft consensus algorithm and finding out its super hard.
+Why not take advantage of the fact Consul already gives you this! 
+We guess it means if you want to use Ocelot to its fullest, you take on Consul as a dependency for now.
+
+    **Note!** This feature has a `3 seconds TTL`_ cache before making a new request to your local *Consul* agent.
+
+.. _sd-consul-configuration-key:
+
+Consul Configuration Key [#f2]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are using *Consul* for :doc:`../features/configuration` (or other providers in the future), you might want to key your configurations: so you can have multiple configurations.
+
+In order to specify the key you need to set the **ConfigurationKey** property in the **ServiceDiscoveryProvider** options of the configuration JSON file e.g.
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Host": "localhost",
+      "Port": 9500,
+      "ConfigurationKey": "Ocelot_A" // !
+    }
+  }
+
+In this example Ocelot will use ``Ocelot_A`` as the key for your configuration when looking it up in *Consul*.
+If you do not set the **ConfigurationKey**, Ocelot will use the string ``InternalConfiguration`` as the key.
+
+.. _sd-consul-provider:
+
+``Consul`` Provider
+^^^^^^^^^^^^^^^^^^^
 
     | **Class**: `Ocelot.Provider.Consul.Consul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+Consul&type=code>`_
 
@@ -67,8 +124,10 @@ If no load balancer is specified, Ocelot will not load balance requests.
 
 When this is set up Ocelot will lookup the downstream host and port from the *service discovery* provider and load balance requests across any available services.
 
-PollConsul Provider Type
-^^^^^^^^^^^^^^^^^^^^^^^^
+.. _sd-pollconsul-provider:
+
+``PollConsul`` Provider
+^^^^^^^^^^^^^^^^^^^^^^^
 
     | **Class**: `Ocelot.Provider.Consul.PollConsul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20PollConsul&type=code>`_
 
@@ -98,7 +157,7 @@ Service Definition
 Your services need to be added to Consul something like below (C# style but hopefully this make sense)...
 The only important thing to note is not to add ``http`` or ``https`` to the ``Address`` field.
 We have been contacted before about not accepting scheme in ``Address``.
-After reading `this <https://developer.hashicorp.com/consul/docs/agent/config>`_ we do not think the scheme should be in there.
+After reading `Agents Overview <https://developer.hashicorp.com/consul/docs/agent>`_ and `Define services <https://developer.hashicorp.com/consul/docs/services/usage/define-services>`_ docs we do not think the **scheme** should be in there.
 
 In C#
 
@@ -139,6 +198,68 @@ In order so this to work you must add the additional property below:
   }
 
 Ocelot will add this token to the Consul client that it uses to make requests and that is then used for every request.
+
+.. _sd-consul-service-builder:
+
+Consul Service Builder [#f3]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    | **Interface**: ``IConsulServiceBuilder``
+    | **Implementation**: ``DefaultConsulServiceBuilder``
+
+The Ocelot community has consistently reported, both in the past and presently, issues with *Consul* services (such as connectivity) due to a variety of *Consul* agent definitions.
+Some DevOps engineers prefer to group services as *Consul* `catalog nodes`_ by customizing the assignment of host names to node names,
+while others focus on defining agent services with pure IP addresses as hosts, which relates to the `954`_ bug dilemma.
+
+Since version `13.5.2`_, the building of service downstream host/port in PR `909`_ has been altered to favor the node name as the host over the agent service address IP.
+
+Version `23.3`_ saw the introduction of a customization feature that allows control over the service building process through the ``DefaultConsulServiceBuilder`` class.
+This class has virtual methods that can be overridden to meet the needs of developers and DevOps.
+
+The present logic in the ``DefaultConsulServiceBuilder`` class is as follows:
+
+.. code-block:: csharp
+
+    protected virtual string GetDownstreamHost(ServiceEntry entry, Node node)
+        => node != null ? node.Name : entry.Service.Address;
+
+Some DevOps engineers choose to ignore node names, opting instead for abstract identifiers rather than actual hostnames.
+Our team, however, advocates for the assignment of real hostnames or IP addresses to node names, upholding this as a best practice.
+If this approach does not align with your needs, or if you prefer not to spend time detailing your nodes for downstream services, you might consider defining agent services without node names.
+In such cases within a *Consul* setup, you would need to override the behavior of the ``DefaultConsulServiceBuilder`` class.
+For further details, refer to the subsequent section below.
+
+.. _sd-addconsul-generic-method:
+
+``AddConsul<T>`` method
+"""""""""""""""""""""""
+
+    | **Signature**: ``IOcelotBuilder AddConsul<TServiceBuilder>(this IOcelotBuilder builder)``
+
+Overriding the ``DefaultConsulServiceBuilder`` behavior involves two steps: defining a new class that inherits from the ``IConsulServiceBuilder`` interface,
+and then injecting this new behavior into DI using the ``AddConsul<TServiceBuilder>`` helper.
+However, the quickest and most streamlined approach is to inherit directly from the ``DefaultConsulServiceBuilder`` class, which offers greater flexibility.
+
+**First**, we need to define a new service building class:
+
+.. code-block:: csharp
+
+    public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
+    {
+        public MyConsulServiceBuilder(Func<ConsulRegistryConfiguration> configurationFactory, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
+            : base(configurationFactory, clientFactory, loggerFactory) { }
+        // I want to use the agent service IP address as the downstream hostname
+        protected override string GetDownstreamHost(ServiceEntry entry, Node node) => entry.Service.Address;
+    }
+
+**Second**, we must inject the new behavior into DI, as demonstrated in the Ocelot versus Consul setup:
+
+.. code-block:: csharp
+
+    services.AddOcelot()
+        .AddConsul<MyConsulServiceBuilder>();
+
+You can refer to `the acceptance test`_ in the repository for an example.
 
 Eureka
 ------
@@ -410,3 +531,22 @@ After this, you need to add the ``IServiceDiscoveryProviderFactory`` interface t
 Note that in this case the Ocelot pipeline will not use ``ServiceDiscoveryProviderFactory`` by default.
 Additionally, you do not need to specify ``"Type": "MyServiceDiscoveryProvider"`` in the **ServiceDiscoveryProvider** properties of the **GlobalConfiguration** settings.
 But you can leave this ``Type`` option for compatibility between both designs.
+
+""""
+
+.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
+.. [#f2] *"Consul Configuration Key"* feature was requested in issue `346`_ as a part of version `7.0.0`_.
+.. [#f3] Customization of *"Consul Service Builder"* was implemented as a part of bug `954`_ fixing and the feature was delivered in version `23.3`_.
+
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
+.. _Consul: https://www.consul.io/
+.. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
+.. _3 seconds TTL: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TimeSpan.FromSeconds%283%29&type=code
+.. _catalog nodes: https://developer.hashicorp.com/consul/api-docs/catalog#list-nodes
+.. _the acceptance test: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+Should_return_service_address_by_overridden_service_builder_when_there_is_a_node&type=code
+.. _346: https://github.com/ThreeMammals/Ocelot/issues/346
+.. _909: https://github.com/ThreeMammals/Ocelot/pull/909
+.. _954: https://github.com/ThreeMammals/Ocelot/issues/954
+.. _7.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/7.0.0
+.. _13.5.2: https://github.com/ThreeMammals/Ocelot/releases/tag/13.5.2
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0

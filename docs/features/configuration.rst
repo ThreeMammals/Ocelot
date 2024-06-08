@@ -19,11 +19,14 @@ Here is an example Route configuration. You don't need to set all of these thing
 .. code-block:: json
 
   {
-    "DownstreamPathTemplate": "/",
     "UpstreamPathTemplate": "/",
+    "UpstreamHeaderTemplates": {}, // dictionary
+    "UpstreamHost": "",
     "UpstreamHttpMethod": [ "Get" ],
+    "DownstreamPathTemplate": "/",
     "DownstreamHttpMethod": "",
     "DownstreamHttpVersion": "",
+    "DownstreamHttpVersionPolicy": "",
     "AddHeadersToRequest": {},
     "AddClaimsToRequest": {},
     "RouteClaimsRequirement": {},
@@ -37,7 +40,7 @@ Here is an example Route configuration. You don't need to set all of these thing
     "ServiceName": "",
     "DownstreamScheme": "http",
     "DownstreamHostAndPorts": [
-      { "Host": "localhost", "Port": 51876 }
+      { "Host": "localhost", "Port": 12345 }
     ],
     "QoSOptions": {
       "ExceptionsAllowedBeforeBreaking": 0,
@@ -67,10 +70,12 @@ Here is an example Route configuration. You don't need to set all of these thing
       "IPAllowedList": [],
       "IPBlockedList": [],
       "ExcludeAllowedFromBlocked": false
-    }
+    },
+    "Metadata": {}
   }
 
-More information on how to use these options is below.
+The actual Route schema for properties can be found in the C# `FileRoute <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileRoute.cs>`_ class.
+If you're interested in learning more about how to utilize these options, read below!
 
 Multiple Environments
 ---------------------
@@ -123,9 +128,16 @@ If you want to set the **GlobalConfiguration** property, you must have a file ca
 The way Ocelot merges the files is basically load them, loop over them, add any **Routes**, add any **AggregateRoutes** and if the file is called ``ocelot.global.json`` add the **GlobalConfiguration** aswell as any **Routes** or **AggregateRoutes**.
 Ocelot will then save the merged configuration to a file called `ocelot.json`_ and this will be used as the source of truth while Ocelot is running.
 
-At the moment there is no validation at this stage it only happens when Ocelot validates the final merged configuration.
-This is something to be aware of when you are investigating problems. 
-We would advise always checking what is in `ocelot.json`_ file if you have any problems.
+  **Note 1**: Currently, validation occurs only during the final merging of configurations in Ocelot.
+  It's essential to be aware of this when troubleshooting issues.
+  We recommend thoroughly inspecting the contents of the ``ocelot.json`` file if you encounter any problems.
+
+  **Note 2**: The Merging feature is operational only during the application's startup.
+  Consequently, the merged configuration in ``ocelot.json`` remains static post-merging and startup.
+  It's important to be aware that the ``ConfigureAppConfiguration`` method is invoked solely during the startup of an ASP.NET web application.
+  Once the Ocelot application has started, you cannot call the ``AddOcelot`` method, nor can you employ the merging feature within ``AddOcelot``.
+  If you still require on-the-fly updating of the primary configuration file, ``ocelot.json``, please refer to the :ref:`config-react-to-changes` section.
+  Additionally, note that merging partial configuration files (such as ``ocelot.*.json``) on the fly using :doc:`../features/administration` API is not currently implemented.
 
 Keep files in a folder
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -204,62 +216,14 @@ For example:
 
 Examining the code within the `ConfigurationBuilderExtensions class <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ would be helpful for gaining a better understanding of the signatures of the overloaded methods [#f2]_.
 
-Store Configuration in Consul
------------------------------
+Store Configuration in `Consul`_
+--------------------------------
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_ that provides `Consul <https://www.consul.io/>`_ support in Ocelot.
+As a developer, if you have enabled :doc:`../features/servicediscovery` with `Consul`_ support in Ocelot, you may choose to manage your configuration saving to the *Consul* `KV store`_.
 
-.. code-block:: powershell
+Beyond the traditional methods of storing configuration in a file vs folder (:ref:`config-merging-files`), or in-memory (:ref:`config-merging-tomemory`), you also have the alternative to utilize the `Consul`_ server's storage capabilities.
 
-    Install-Package Ocelot.Provider.Consul
-
-Then you add the following when you register your services Ocelot will attempt to store and retrieve its configuration in Consul KV store.
-In order to register Consul services we must call the ``AddConsul()`` and ``AddConfigStoredInConsul()`` extensions using the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f3]_ like below:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddConsul()
-        .AddConfigStoredInConsul();
-
-You also need to add the following to your `ocelot.json`_. This is how Ocelot finds your Consul agent and interacts to load and store the configuration from Consul.
-
-.. code-block:: json
-
-  "GlobalConfiguration": {
-    "ServiceDiscoveryProvider": {
-      "Host": "localhost",
-      "Port": 9500
-    }
-  }
-
-The team decided to create this feature after working on the Raft consensus algorithm and finding out its super hard.
-Why not take advantage of the fact Consul already gives you this! 
-We guess it means if you want to use Ocelot to its fullest, you take on Consul as a dependency for now.
-
-This feature has a `3 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TimeSpan.FromSeconds%283%29&type=code>`_ TTL cache before making a new request to your local Consul agent.
-
-.. _config-consul-key:
-
-Consul Configuration Key [#f4]_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you are using Consul for configuration (or other providers in the future), you might want to key your configurations: so you can have multiple configurations.
-
-In order to specify the key you need to set the **ConfigurationKey** property in the **ServiceDiscoveryProvider** options of the configuration JSON file e.g.
-
-.. code-block:: json
-
-  "GlobalConfiguration": {
-    "ServiceDiscoveryProvider": {
-      "Host": "localhost",
-      "Port": 9500,
-      "ConfigurationKey": "Ocelot_A"
-    }
-  }
-
-In this example Ocelot will use ``Ocelot_A`` as the key for your configuration when looking it up in Consul.
-If you do not set the **ConfigurationKey**, Ocelot will use the string ``InternalConfiguration`` as the key.
+For further details on managing Ocelot configurations via a Consul instance, please consult the ":ref:`sd-consul-configuration-in-kv`" section.
 
 Follow Redirects aka HttpHandlerOptions 
 ---------------------------------------
@@ -336,6 +300,8 @@ As a team, we highly recommend following these instructions when developing your
   System administrators or DevOps engineers must create real valid certificates being signed by hosting or cloud providers.
   **Switch off the feature for all routes!** Remove the **DangerousAcceptAnyServerCertificateValidator** property for all routes in production version of `ocelot.json`_ file!
 
+.. _config-react-to-changes:
+
 React to Configuration Changes
 ------------------------------
 
@@ -392,10 +358,75 @@ Registering a callback
         }
     }
 
+.. _config-http-version:
+
 DownstreamHttpVersion
 ---------------------
 
 Ocelot allows you to choose the HTTP version it will use to make the proxy request. It can be set as ``1.0``, ``1.1`` or ``2.0``.
+
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+.. _config-version-policy:
+
+DownstreamHttpVersionPolicy [#f3]_
+----------------------------------
+
+This routing property enables the configuration of the ``VersionPolicy`` property within ``HttpRequestMessage`` objects for downstream HTTP requests.
+For additional details, refer to the following documentation:
+
+* `HttpRequestMessage.VersionPolicy Property <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy>`_
+* `HttpVersionPolicy Enum <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy>`_
+* `HttpVersion Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion>`_
+
+The ``DownstreamHttpVersionPolicy`` option is intricately linked with the :ref:`config-http-version` setting.
+Therefore, merely specifying ``DownstreamHttpVersion`` may sometimes be inadequate, particularly if your downstream services or Ocelot logs report HTTP connection errors such as ``PROTOCOL_ERROR``.
+In these routes, selecting the precise ``DownstreamHttpVersionPolicy`` value is crucial for the ``HttpVersion`` policy to prevent such protocol errors.
+
+HTTP/2 version policy
+^^^^^^^^^^^^^^^^^^^^^
+
+**Given** you aim to ensure a smooth HTTP/2 connection setup for the Ocelot app and downstream services with SSL enabled:
+
+.. code-block:: json
+
+  {
+    "DownstreamScheme": "https",
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamHttpVersionPolicy": "", // empty
+    "DangerousAcceptAnyServerCertificateValidator": true
+  }
+
+**And** you configure global settings to use Kestrel with this snippet:
+
+.. code-block:: csharp
+
+    var builder = WebApplication.CreateBuilder(args);
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.ConfigureEndpointDefaults(listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        });
+    });
+
+**When** all components are set to communicate exclusively via HTTP/2 without TLS (plain HTTP).
+
+**Then** the downstream services may display error messages such as:
+
+.. code-block::
+
+  HTTP/2 connection error (PROTOCOL_ERROR): Invalid HTTP/2 connection preface
+
+To resolve the issue, ensure that ``HttpRequestMessage`` has its ``VersionPolicy`` set to ``RequestVersionOrHigher``.
+Therefore, the ``DownstreamHttpVersionPolicy`` should be defined as follows:
+
+.. code-block:: json
+
+  {
+    "DownstreamHttpVersion": "2.0",
+    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher" // !
+  }
 
 Dependency Injection
 --------------------
@@ -416,14 +447,76 @@ You can utilize these methods in the ``ConfigureAppConfiguration`` method (locat
 
 You can find additional details in the dedicated :ref:`di-configuration-overview` section and in subsequent sections related to the :doc:`../features/dependencyinjection` chapter.
 
+.. _config-route-metadata:
+
+Route Metadata
+--------------
+
+Ocelot provides various features such as routing, authentication, caching, load balancing, and more. However, some users may encounter situations where Ocelot does not meet their specific needs or they want to customize its behavior. In such cases, Ocelot allows users to add metadata to the route configuration. This property can store any arbitrary data that users can access in middlewares or delegating handlers. By using the metadata, users can implement their own logic and extend the functionality of Ocelot.
+
+Here is an example:
+
+.. code-block:: json
+
+    {
+      "Routes": [
+          {
+              "UpstreamHttpMethod": [ "GET" ],
+              "UpstreamPathTemplate": "/posts/{postId}",
+              "DownstreamPathTemplate": "/api/posts/{postId}",
+              "DownstreamHostAndPorts": [
+                  { "Host": "localhost", "Port": 80 }
+              ],
+              "Metadata": {
+                  "api-id": "FindPost",
+                  "my-extension/param1": "overwritten-value",
+                  "other-extension/param1": "value1",
+                  "other-extension/param2": "value2",
+                  "tags": "tag1, tag2, area1, area2, func1",
+                  "json": "[1, 2, 3, 4, 5]"
+              }
+          }
+      ],
+      "GlobalConfiguration": {
+          "Metadata": {
+              "instance_name": "dc-1-54abcz",
+              "my-extension/param1": "default-value"
+          }
+      }
+    }
+
+Now, the route metadata can be accessed through the `DownstreamRoute` object:
+
+.. code-block:: csharp
+
+    public static class OcelotMiddlewares
+    {
+        public static Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
+        {
+            var downstreamRoute = context.Items.DownstreamRoute();
+
+            if(downstreamRoute?.Metadata is {} metadata)
+            {
+                var param1 = metadata.GetValueOrDefault("my-extension/param1") ?? throw new MyExtensionException("Param 1 is null");
+                var param2 = metadata.GetValueOrDefault("my-extension/param2", "custom-value");
+
+                // working with metadata
+            }
+
+            return next();
+        }
+    }
+
 """"
 
 .. [#f1] ":ref:`config-merging-files`" feature was requested in `issue 296 <https://github.com/ThreeMammals/Ocelot/issues/296>`_, since then we extended it in `issue 1216 <https://github.com/ThreeMammals/Ocelot/issues/1216>`_ (PR `1227 <https://github.com/ThreeMammals/Ocelot/pull/1227>`_) as ":ref:`config-merging-tomemory`" subfeature which was released as a part of version `23.2`_.
 .. [#f2] ":ref:`config-merging-tomemory`" subfeature is based on the ``MergeOcelotJson`` enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
-.. [#f3] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
-.. [#f4] ":ref:`config-consul-key`" feature was requested in `issue 346 <https://github.com/ThreeMammals/Ocelot/issues/346>`_ as a part of version `7.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/7.0.0>`_.
+.. [#f3] ":ref:`config-version-policy`" feature was requested in `issue 1672 <https://github.com/ThreeMammals/Ocelot/issues/1672>`_ as a part of version `23.3`_.
 
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
 .. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _Consul: https://www.consul.io/
+.. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv

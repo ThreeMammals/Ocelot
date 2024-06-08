@@ -5,7 +5,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration
 {
-    public class ClaimToThingConfigurationParserTests
+    public class ClaimToThingConfigurationParserTests : UnitTest
     {
         private Dictionary<string, string> _dictionary;
         private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;

@@ -8,7 +8,7 @@ using Ocelot.Responder.Middleware;
 
 namespace Ocelot.UnitTests.Responder
 {
-    public class ResponderMiddlewareTests
+    public class ResponderMiddlewareTests : UnitTest
     {
         private readonly Mock<IHttpResponder> _responder;
         private readonly Mock<IErrorsToHttpStatusCodeMapper> _codeMapper;

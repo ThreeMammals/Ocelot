@@ -86,22 +86,31 @@ public sealed class StreamContentTests : Steps, IDisposable
     {
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts =
-        [
+        DownstreamHostAndPorts = new()
+        {
             new("localhost", port),
-        ],
+        },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [method ?? HttpMethods.Get],
+        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
     };
 }
 
-internal class StreamTestContent(long size, bool sendChunked) : HttpContent
+internal class StreamTestContent : HttpContent
 {
-    private readonly byte[] _dataBuffer = RandomNumberGenerator.GetBytes(8192);
+    private readonly long _size;
+    private readonly bool _sendChunked;
+    private readonly byte[] _dataBuffer;
+
+    public StreamTestContent(long size, bool sendChunked)
+    {
+        _size = size;
+        _sendChunked = sendChunked;
+        _dataBuffer = RandomNumberGenerator.GetBytes(8192);
+    }
 
     protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
-        var remaining = size;
+        var remaining = _size;
         while (remaining > 0)
         {
             var count = (int)Math.Min(remaining, _dataBuffer.Length);
@@ -112,14 +121,14 @@ internal class StreamTestContent(long size, bool sendChunked) : HttpContent
 
     protected override bool TryComputeLength(out long length)
     {
-        if (sendChunked)
+        if (_sendChunked)
         {
             length = -1;
             return false;
         }
         else
         {
-            length = size;
+            length = _size;
             return true;
         }
     }

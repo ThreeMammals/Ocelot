@@ -18,7 +18,7 @@ using System.Text.Encodings.Web;
 
 namespace Ocelot.UnitTests.Configuration.Validation
 {
-    public class FileConfigurationFluentValidatorTests
+    public class FileConfigurationFluentValidatorTests : UnitTest
     {
         private IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;
@@ -33,7 +33,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
             _provider = _services.BuildServiceProvider();
 
-            // Todo - replace with mocks
+            // TODO Replace with mocks
             _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 
@@ -201,19 +201,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var route2 = GivenDefaultRoute("/tom", "/");
             route2.Key = "Tom";
             var configuration = GivenAConfiguration(route, route2);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -229,19 +225,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route2.Key = "Tom";
             route2.UpstreamHost = "localhost";
             var configuration = GivenAConfiguration(route, route2);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/tom",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -256,21 +248,17 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route.Key = "Laura";
             var route2 = GivenDefaultRoute("/tom", "/");
             route2.Key = "Tom";
-            route2.UpstreamHttpMethod = ["Post"];
+            route2.UpstreamHttpMethod = new() { "Post" };
             var configuration = GivenAConfiguration(route, route2);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/tom",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -285,29 +273,21 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var route2 = GivenDefaultRoute("/lol", "/");
             route2.Key = "Tom";
             var configuration = GivenAConfiguration(route, route2);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/tom",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
                 new()
                 {
                     UpstreamPathTemplate = "/tom",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -321,19 +301,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var route = GivenDefaultRoute("/laura", "/");
             route.Key = "Laura";
             var configuration = GivenAConfiguration(route);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -350,19 +326,15 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route2.Key = "Tom";
             route2.RequestIdKey = "should_fail";
             var configuration = GivenAConfiguration(route, route2);
-            configuration.Aggregates =
-            [
+            configuration.Aggregates = new()
+            {
                 new()
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys =
-                    [
-                        "Tom",
-                        "Laura",
-                    ],
+                    RouteKeys = new() { "Tom", "Laura" },
                 },
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -455,7 +427,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route.AuthenticationOptions = new FileAuthenticationOptions()
             {
                 AuthenticationProviderKey = "Test",
-                AuthenticationProviderKeys = ["Test #1", "Test #2"],
+                AuthenticationProviderKeys = new string[] { "Test #1", "Test #2" },
             };
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -495,7 +467,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var route = GivenDefaultRoute();
             var duplicate = GivenDefaultRoute(null, "/www/test/");
-            duplicate.UpstreamHttpMethod = ["Get"];
+            duplicate.UpstreamHttpMethod = new() { "Get" };
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -508,7 +480,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             var route = GivenDefaultRoute(); // "Get" verb is inside
             var duplicate = GivenDefaultRoute(null, "/www/test/");
-            duplicate.UpstreamHttpMethod = ["Post"];
+            duplicate.UpstreamHttpMethod = new() { "Post" };
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -519,11 +491,11 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_not_valid_with_duplicate_routes_with_duplicated_upstreamhosts()
         {
             var route = GivenDefaultRoute();
-            route.UpstreamHttpMethod = [];
+            route.UpstreamHttpMethod = new();
             route.UpstreamHost = "upstreamhost";
 
             var duplicate = GivenDefaultRoute(null, "/www/test/");
-            duplicate.UpstreamHttpMethod = [];
+            duplicate.UpstreamHttpMethod = new();
             duplicate.UpstreamHost = "upstreamhost";
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
@@ -537,11 +509,11 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_valid_with_duplicate_routes_but_different_upstreamhosts()
         {
             var route = GivenDefaultRoute();
-            route.UpstreamHttpMethod = [];
+            route.UpstreamHttpMethod = new();
             route.UpstreamHost = "upstreamhost111";
 
             var duplicate = GivenDefaultRoute(null, "/www/test/");
-            duplicate.UpstreamHttpMethod = [];
+            duplicate.UpstreamHttpMethod = new();
             duplicate.UpstreamHost = "upstreamhost222";
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
@@ -554,11 +526,11 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
         {
             var route = GivenDefaultRoute();
-            route.UpstreamHttpMethod = [];
+            route.UpstreamHttpMethod = new();
             route.UpstreamHost = "upstreamhost";
 
             var duplicate = GivenDefaultRoute(null, "/www/test/");
-            duplicate.UpstreamHttpMethod = [];
+            duplicate.UpstreamHttpMethod = new();
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -697,10 +669,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_valid_when_not_using_service_discovery_and_host_is_set()
         {
             var route = GivenDefaultRoute();
-            route.DownstreamHostAndPorts =
-            [
+            route.DownstreamHostAndPorts = new()
+            {
                 new("bbc.co.uk", 123),
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -711,10 +683,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_valid_when_no_downstream_but_has_host_and_port()
         {
             var route = GivenDefaultRoute();
-            route.DownstreamHostAndPorts =
-            [
+            route.DownstreamHostAndPorts = new()
+            {
                 new("test", 123),
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsValid())
@@ -725,7 +697,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_not_valid_when_no_host_and_port()
         {
             var route = GivenDefaultRoute();
-            route.DownstreamHostAndPorts = [];
+            route.DownstreamHostAndPorts = new();
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
@@ -737,15 +709,111 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_not_valid_when_host_and_port_is_empty()
         {
             var route = GivenDefaultRoute();
-            route.DownstreamHostAndPorts =
-            [
+            route.DownstreamHostAndPorts = new()
+            {
                 new(),
-            ];
+            };
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
                 .BDDfy();
+        }
+
+        [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
+        public void Configuration_is_not_valid_when_upstream_headers_the_same()
+        {
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
+                            {
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
+                            {
+                                { "header2", "value2" },
+                                { "header1", "value1" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsNotValid();
+            ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
+        }
+
+        [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
+        public void Configuration_is_valid_when_upstream_headers_not_the_same()
+        {
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
+                            {
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
+                            {
+                                { "header2", "value2" },
+                                { "header1", "valueDIFFERENT" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
+        }
+
+        [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
+        public void Configuration_is_valid_when_upstream_headers_count_not_the_same()
+        {
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
+                            {
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new()
+                            {
+                                { "header2", "value2" },
+                            });
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
+        }
+
+        [Fact]
+        [Trait("PR", "1312")]
+        [Trait("Feat", "360")]
+        public void Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
+        {
+            // Arrange
+            var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
+                            {
+                                { "header1", "value1" },
+                                { "header2", "value2" },
+                            });
+            var route2 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/www/test/", new());
+            GivenAConfiguration(route1, route2);
+
+            // Act
+            WhenIValidateTheConfiguration();
+
+            // Assert
+            ThenTheResultIsValid();
         }
 
         [Theory]
@@ -815,23 +883,35 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private static FileRoute GivenDefaultRoute(string upstream, string downstream, string host) => new()
         {
-            UpstreamHttpMethod = [HttpMethods.Get],
+            UpstreamHttpMethod = new() { HttpMethods.Get },
             UpstreamPathTemplate = upstream ?? "/asdf/",
             DownstreamPathTemplate = downstream ?? "/api/products/",
-            DownstreamHostAndPorts =
-            [
+            DownstreamHostAndPorts = new()
+            {
                 new(host ?? "bbc.co.uk", 12345),
-            ],
+            },
             DownstreamScheme = Uri.UriSchemeHttp,
         };
 
         private static FileRoute GivenServiceDiscoveryRoute() => new()
         {
-            UpstreamHttpMethod = [HttpMethods.Get],
+            UpstreamHttpMethod = new() { HttpMethods.Get },
             UpstreamPathTemplate = "/laura",
             DownstreamPathTemplate = "/",
             DownstreamScheme = Uri.UriSchemeHttp,
             ServiceName = "test",
+        };
+
+        private static FileRoute GivenRouteWithUpstreamHeaderTemplates(string upstream, string downstream, Dictionary<string, string> templates) => new()
+        {
+            UpstreamPathTemplate = upstream,
+            DownstreamPathTemplate = downstream,
+            DownstreamHostAndPorts = new()
+            {
+                new("bbc.co.uk", 123),
+            },
+            UpstreamHttpMethod = new() { HttpMethods.Get },
+            UpstreamHeaderTemplates = templates,
         };
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration) => _fileConfiguration = fileConfiguration;
@@ -918,7 +998,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
         {
-            public Task<List<Service>> GetAsync() => Task.FromResult<List<Service>>([]);
+            public Task<List<Service>> GetAsync() => Task.FromResult<List<Service>>(new());
         }
 
         private class TestOptions : AuthenticationSchemeOptions { }
@@ -930,12 +1010,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
             // It can be set directly or by registering a provider in the dependency injection container.
 #if NET8_0_OR_GREATER
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
-            {
-            }
+            { }
 #else
             public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
-            {
-            }
+            { }
 #endif
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()

@@ -1,6 +1,7 @@
 ﻿using HTTPlease;
 using KubeClient.Models;
 using KubeClient.ResourceClients;
+using Ocelot.Provider.Kubernetes.Interfaces;
 
 namespace Ocelot.Provider.Kubernetes
 {

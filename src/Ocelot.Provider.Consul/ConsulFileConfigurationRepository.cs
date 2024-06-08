@@ -5,6 +5,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Responses;
 using System.Text;
 
