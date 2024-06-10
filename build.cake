@@ -46,7 +46,7 @@ var releaseNotes = new List<string>();
 
 // stable releases
 var tagsUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/";
-var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUTGET_API_KEY");
+var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_3Mammals");
 var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 
@@ -54,9 +54,9 @@ var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
 int releaseId = 0;
-bool IsTechnicalRelease = false;
-string gitHubUsername = "TomPallister";
-string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
+bool IsTechnicalRelease = true;
+string gitHubUsername = "raman-m";
+string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY_2");
 
 var target = Argument("target", "Default");
 var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
