@@ -52,7 +52,8 @@ Ocelot does not know what models might be used in POST, PUT etc, so it all gets 
 Ocelot's configuration can change during runtime so the Swagger and Ocelot information would not match.
 Unless we rolled our own Swagger implementation. 😋
 
-If the user wants something to easily test against the Ocelot API then I suggest using Postman as a simple way to do this. It might even be possible to write something that maps ocelot.json to the postman json spec. However I don't intend to do this.
+If the developer wants something to easily test against the Ocelot API then we suggest using `Postman <https://www.postman.com/>`_ as a simple way to do this.
+It might even be possible to write something that maps ``ocelot.json`` to the Postman JSON spec. However we don't intend to do this.
 
 Swagger Alternatives
 --------------------
