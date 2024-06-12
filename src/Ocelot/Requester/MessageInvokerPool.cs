@@ -10,7 +10,9 @@ public class MessageInvokerPool : IMessageInvokerPool
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
 
-    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+    public MessageInvokerPool(
+        IDelegatingHandlerHandlerFactory handlerFactory,
+        IOcelotLoggerFactory loggerFactory)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
@@ -32,17 +34,7 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public void Clear() => _handlersPool.Clear();
 
-    /// <summary>
-    /// TODO This should be configurable and available as global config parameter in ocelot.json.
-    /// </summary>
-    public const int DefaultRequestTimeoutSeconds = 90;
-    private int _requestTimeoutSeconds;
-
-    public int RequestTimeoutSeconds
-    {
-        get => _requestTimeoutSeconds > 0 ? _requestTimeoutSeconds : DefaultRequestTimeoutSeconds;
-        set => _requestTimeoutSeconds = value > 0 ? value : DefaultRequestTimeoutSeconds;
-    }
+    private int? _timeoutMilliseconds = null;
 
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)
     {
@@ -56,11 +48,18 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
+        if (!_timeoutMilliseconds.HasValue)
+        {
+            var qosTimeout = downstreamRoute.QosOptions.TimeoutValue;
+            _timeoutMilliseconds = qosTimeout.HasValue && qosTimeout.Value > 0
+                ? qosTimeout.Value
+                : downstreamRoute.Timeout * 1000;
+        }
+
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
-        var timeoutHandler = new TimeoutDelegatingHandler(downstreamRoute.QosOptions.TimeoutValue == 0
-            ? TimeSpan.FromSeconds(RequestTimeoutSeconds)
-            : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue))
+        var timeout = TimeSpan.FromMilliseconds(_timeoutMilliseconds.Value);
+        var timeoutHandler = new TimeoutDelegatingHandler(timeout)
         {
             InnerHandler = baseHandler,
         };

@@ -32,6 +32,6 @@
 
         public int DurationOfBreak { get; set; }
         public int ExceptionsAllowedBeforeBreaking { get; set; }
-        public int TimeoutValue { get; set; }
+        public int? TimeoutValue { get; set; }
     }
 }

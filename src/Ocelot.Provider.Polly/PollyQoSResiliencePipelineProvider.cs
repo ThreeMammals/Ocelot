@@ -1,9 +1,12 @@
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System;
 using System.Net;
 
 namespace Ocelot.Provider.Polly;
@@ -15,13 +18,18 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
+    private readonly FileGlobalConfiguration _global;
+    
+    public const int DefaultQoSTimeoutMilliseconds = 40_000;
 
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
+        IOptions<FileGlobalConfiguration> global)
     {
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
         _registry = registry;
+        _global = global.Value;
     }
 
     protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
@@ -79,14 +87,21 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         var options = route.QosOptions;
         var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
+
+        // Polly constraints
+        int minimumThroughput = options.ExceptionsAllowedBeforeBreaking >= QoSOptions.LowMinimumThroughput
+            ? options.ExceptionsAllowedBeforeBreaking
+            : QoSOptions.DefaultMinimumThroughput;
+        int breakDurationMs = options.DurationOfBreak > QoSOptions.LowBreakDuration
+            ? options.DurationOfBreak
+            : QoSOptions.DefaultBreakDuration;
+
         var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
             FailureRatio = 0.8,
             SamplingDuration = TimeSpan.FromSeconds(10),
-            MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
-            BreakDuration = options.DurationOfBreak > QoSOptions.LowBreakDuration
-                ? TimeSpan.FromMilliseconds(options.DurationOfBreak)
-                : TimeSpan.FromMilliseconds(QoSOptions.DefaultBreakDuration),
+            MinimumThroughput = minimumThroughput,
+            BreakDuration = TimeSpan.FromMilliseconds(breakDurationMs),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                 .HandleResult(message => ServerErrorCodes.Contains(message.StatusCode))
                 .Handle<TimeoutRejectedException>()
@@ -113,18 +128,23 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
-        var options = route.QosOptions;
+        int? timeoutMs = route?.QosOptions?.TimeoutValue
+            ?? _global?.QoSOptions?.TimeoutValue
+            ?? DefaultQoSTimeoutMilliseconds; // TODO Need team's consensus!!! Prefer QoSOptions.DefaultTimeout ?
 
-        // Add Timeout strategy if TimeoutValue is not int.MaxValue and greater than 0
-        // TimeoutValue must be defined in QosOptions!
-        if (options.TimeoutValue == int.MaxValue || options.TimeoutValue <= 0)
+        if (!timeoutMs.HasValue || timeoutMs.Value <= 0) // 0 means No option!
         {
             return builder;
         }
 
+        // Polly constraints
+        timeoutMs = timeoutMs.Value > QoSOptions.LowTimeout && timeoutMs.Value < QoSOptions.HighTimeout
+            ? timeoutMs.Value
+            : QoSOptions.DefaultTimeout;
+
         var strategyOptions = new TimeoutStrategyOptions
         {
-            Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
+            Timeout = TimeSpan.FromMilliseconds(timeoutMs.Value),
             OnTimeout = _ =>
             {
                 _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");

@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File
 {
-    public class FileRoute : IRoute, ICloneable
+    public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
     {
         public FileRoute()
         {
@@ -72,8 +72,12 @@ namespace Ocelot.Configuration.File
         public FileSecurityOptions SecurityOptions { get; set; }
         public string ServiceName { get; set; }
         public string ServiceNamespace { get; set; }
-        public int Timeout { get; set; }
-        public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+
+        /// <summary>The timeout in seconds for requests.</summary>
+        /// <value>A <see cref="Nullable{T}"/> where T is <see cref="int"/> value in seconds.</value>
+        public int? Timeout { get; set; }
+        public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
+
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }
@@ -122,7 +126,7 @@ namespace Ocelot.Configuration.File
             to.ServiceNamespace = from.ServiceNamespace;
             to.Timeout = from.Timeout;
             to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
-            to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
+            to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
             to.UpstreamHost = from.UpstreamHost;
             to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
             to.UpstreamPathTemplate = from.UpstreamPathTemplate;
