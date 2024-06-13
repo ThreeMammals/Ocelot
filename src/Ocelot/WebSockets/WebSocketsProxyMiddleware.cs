@@ -52,14 +52,22 @@ namespace Ocelot.WebSockets
                 }
                 catch (OperationCanceledException)
                 {
-                    await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                    await TryCloseWebSocket(
+                        destination,
+                        WebSocketCloseStatus.EndpointUnavailable,
+                        null,
+                        cancellationToken);
                     return;
                 }
                 catch (WebSocketException e)
                 {
                     if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                     {
-                        await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                        await TryCloseWebSocket(
+                            destination,
+                            WebSocketCloseStatus.EndpointUnavailable,
+                            null,
+                            cancellationToken);
                         return;
                     }
 
@@ -68,11 +76,18 @@ namespace Ocelot.WebSockets
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                    await TryCloseWebSocket(
+                        destination,
+                        source.CloseStatus.Value,
+                        source.CloseStatusDescription,
+                        cancellationToken);
                     return;
                 }
 
-                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+                if (destination.State == WebSocketState.Open)
+                {
+                    await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+                }
             }
         }
 
@@ -153,6 +168,21 @@ namespace Ocelot.WebSockets
                     PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
                     PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
             }
+        }
+
+        private static async Task<bool> TryCloseWebSocket(
+            WebSocket webSocket,
+            WebSocketCloseStatus closeStatus,
+            string statusDescription,
+            CancellationToken cancellationToken)
+        {
+            if (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
+            {
+                await webSocket.CloseOutputAsync(closeStatus, statusDescription, cancellationToken);
+                return true;
+            }
+
+            return false;
         }
     }
 }
