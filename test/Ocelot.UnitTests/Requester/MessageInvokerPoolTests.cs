@@ -87,7 +87,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90), false))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -110,7 +110,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90), false))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -162,7 +162,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenTheCookieIsSet()
     {
-        _response.Headers.TryGetValues("Set-Cookie", out var test).ShouldBeTrue();
+        _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
     }
 
     private void GivenADownstreamService()
@@ -249,8 +249,6 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenTheInvokersShouldNotBeTheSame() => Assert.NotEqual(_firstInvoker, _secondInvoker);
 
-    private void GivenARequest(string url) => GivenARequestWithAUrlAndMethod(_downstreamRoute1, url, HttpMethod.Get);
-
     private void GivenARequest() =>
         GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
 
@@ -317,7 +315,7 @@ public class MessageInvokerPoolTests : UnitTest
             .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
     }
 
-    private Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
+    private static Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
     {
         var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
@@ -325,14 +323,14 @@ public class MessageInvokerPoolTests : UnitTest
         return handlerFactory;
     }
 
-    private DownstreamRoute DownstreamRouteFactory(string path)
+    private static DownstreamRoute DownstreamRouteFactory(string path)
     {
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate(path)
             .WithQosOptions(new QoSOptions(new FileQoSOptions()))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120), false))
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
 
