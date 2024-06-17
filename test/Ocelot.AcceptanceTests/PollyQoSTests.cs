@@ -91,7 +91,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
     {
         int invalidDuration = QoSOptions.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(2, invalidDuration, 100000, null));
+        var route = GivenRoute(port, new QoSOptions(2, invalidDuration, .005,1,100000, null));
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
@@ -101,7 +101,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
+              .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
             .Given(x => GivenIWaitMilliseconds(QoSOptions.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened

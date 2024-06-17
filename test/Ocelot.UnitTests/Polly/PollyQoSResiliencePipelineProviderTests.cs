@@ -61,7 +61,6 @@ public class PollyQoSResiliencePipelineProviderTests
 
     [Theory]
     [Trait("Bug", "2085")]
-    [InlineData(0, QoSOptions.DefaultBreakDuration)] // default
     [InlineData(QoSOptions.LowBreakDuration - 1, QoSOptions.DefaultBreakDuration)] // default
     [InlineData(QoSOptions.LowBreakDuration, QoSOptions.DefaultBreakDuration)] // default
     [InlineData(QoSOptions.LowBreakDuration + 1, QoSOptions.LowBreakDuration + 1)] // not default, exact

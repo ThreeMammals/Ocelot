@@ -65,7 +65,8 @@ namespace Ocelot.Configuration
         /// <summary>How long the circuit should stay open before resetting in milliseconds.</summary>
         /// <remarks>If using Polly version 8 or above, this value must be 500 (0.5 sec) or greater.</remarks>
         /// <value>An <see cref="int"/> value (milliseconds).</value>
-        public int DurationOfBreak { get; } = DefaultBreakDuration;
+        public int DurationOfBreak { get; }
+
         public const int LowBreakDuration = 500; // 0.5 seconds
         public const int DefaultBreakDuration = 5_000; // 5 seconds
 
