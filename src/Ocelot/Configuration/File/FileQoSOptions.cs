@@ -33,5 +33,7 @@
         public int DurationOfBreak { get; set; }
         public int ExceptionsAllowedBeforeBreaking { get; set; }
         public int TimeoutValue { get; set; }
+        public double FailureRatio { get; set; }
+        public int SamplingDuration { get; set; }
     }
 }
