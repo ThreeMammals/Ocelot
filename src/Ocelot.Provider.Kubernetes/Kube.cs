@@ -14,7 +14,6 @@ public class Kube : IServiceDiscoveryProvider
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
     private readonly IKubeServiceBuilder _serviceBuilder;
-    private readonly List<Service> _services;
 
     public Kube(
         KubeRegistryConfiguration configuration,
@@ -26,7 +25,6 @@ public class Kube : IServiceDiscoveryProvider
         _logger = factory.CreateLogger<Kube>();
         _kubeApi = kubeApi;
         _serviceBuilder = serviceBuilder;
-        _services = new();
     }
 
     public virtual async Task<List<Service>> GetAsync()
@@ -35,17 +33,18 @@ public class Kube : IServiceDiscoveryProvider
             .ResourceClient(client => new EndPointClientV1(client))
             .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
 
-        _services.Clear();
+        var services = new List<Service>();
+
         if (endpoint?.Subsets.Count != 0)
         {
-            _services.AddRange(BuildServices(_configuration, endpoint));
+            services.AddRange(BuildServices(_configuration, endpoint));
         }
         else
         {
             _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
         }
 
-        return _services;
+        return services;
     }
 
     protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
