@@ -33,18 +33,14 @@ public class Kube : IServiceDiscoveryProvider
             .ResourceClient(client => new EndPointClientV1(client))
             .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
 
-        var services = new List<Service>();
-
-        if (endpoint?.Subsets.Count != 0)
-        {
-            services.AddRange(BuildServices(_configuration, endpoint));
-        }
-        else
+        if ((endpoint?.Subsets?.Count ?? 0) == 0)
         {
             _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
+            return new(0);
         }
 
-        return services;
+        return BuildServices(_configuration, endpoint)
+            .ToList();
     }
 
     protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
