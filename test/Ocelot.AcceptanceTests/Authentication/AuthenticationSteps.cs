@@ -138,7 +138,7 @@ public class AuthenticationSteps : Steps, IDisposable
         return GivenIHaveATokenWithForm(url, form);
     }
 
-    public static FileRoute GivenDefaultAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null) => new()
+    public static FileRoute GivenDefaultAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null, bool allowAnonymous = false) => new()
     {
         DownstreamPathTemplate = "/",
         DownstreamHostAndPorts = new()
@@ -151,6 +151,15 @@ public class AuthenticationSteps : Steps, IDisposable
         AuthenticationOptions = new()
         {
             AuthenticationProviderKeys = new string[] { authProviderKey ?? "Test" },
+            AllowAnonymous = allowAnonymous,
+        },
+    };
+
+    public static FileGlobalConfiguration GivenGlobalConfig() => new()
+    {
+        AuthenticationOptions = new()
+        {
+            AuthenticationProviderKey = "key",
         },
     };
 

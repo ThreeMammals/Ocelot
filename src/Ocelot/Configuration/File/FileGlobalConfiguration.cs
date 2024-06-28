@@ -13,6 +13,7 @@ namespace Ocelot.Configuration.File
             HttpHandlerOptions = new FileHttpHandlerOptions();
             CacheOptions = new FileCacheOptions();
             MetadataOptions = new FileMetadataOptions();
+            AuthenticationOptions = new FileAuthenticationOptions();
         }
 
         public string RequestIdKey { get; set; }
@@ -48,5 +49,7 @@ namespace Ocelot.Configuration.File
         public FileCacheOptions CacheOptions { get; set; }
 
         public FileMetadataOptions MetadataOptions { get; set; }
+
+        public FileAuthenticationOptions AuthenticationOptions { get; set; }
     }
 }

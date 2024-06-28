@@ -21,7 +21,10 @@ namespace Ocelot.UnitTests.Configuration.Validation
             _serviceProvider = new Mock<IServiceProvider>();
 
             // Todo - replace with mocks
-            _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+            _validator = new RouteFluentValidator(
+                new HostAndPortValidator(),
+                new FileQoSOptionsFluentValidator(_serviceProvider.Object),
+                new FileAuthenticationOptionsValidator(_authProvider.Object));
         }
 
         [Fact]
@@ -234,7 +237,8 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(_ => GivenThe(fileRoute))
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
+                .And(_ => ThenTheErrorsContains($"AuthenticationOptions: AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[]," +
+                    $"AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 

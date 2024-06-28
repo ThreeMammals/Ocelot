@@ -5,10 +5,13 @@ namespace Ocelot.Configuration.Validator
 {
     public class FileGlobalConfigurationFluentValidator : AbstractValidator<FileGlobalConfiguration>
     {
-        public FileGlobalConfigurationFluentValidator(FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
+        public FileGlobalConfigurationFluentValidator(FileQoSOptionsFluentValidator fileQoSOptValidator, FileAuthenticationOptionsValidator fileAuthOptValidator)
         {
             RuleFor(configuration => configuration.QoSOptions)
-                .SetValidator(fileQoSOptionsFluentValidator);
+                .SetValidator(fileQoSOptValidator);
+
+            RuleFor(configuration => configuration.AuthenticationOptions)
+                .SetValidator(fileAuthOptValidator);
         }
     }
 }
