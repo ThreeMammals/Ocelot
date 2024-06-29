@@ -937,6 +937,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
+
         private static FileRoute GivenDefaultRoute(string upstream, string downstream) => GivenDefaultRoute(upstream, downstream, null);
 
         private static FileRoute GivenDefaultRoute(string upstream, string downstream, string host) => new()
@@ -993,6 +994,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                     },
                 },
             });
+
         private void GivenConfigurationWithAuthenticationKeys(string[] keys) =>
             GivenAConfiguration(new FileConfiguration
             {
