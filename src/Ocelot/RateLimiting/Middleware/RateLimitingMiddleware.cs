@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -10,15 +12,18 @@ namespace Ocelot.RateLimiting.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IRateLimiting _limiter;
+        private readonly IServiceProvider _container;
 
         public RateLimitingMiddleware(
             RequestDelegate next,
             IOcelotLoggerFactory factory,
-            IRateLimiting limiter)
+            IRateLimiting limiter,
+            IServiceProvider container)
             : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;
             _limiter = limiter;
+            _container = container;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -71,8 +76,13 @@ namespace Ocelot.RateLimiting.Middleware
             //set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _limiter.GetHeaders(httpContext, identity, options);
-                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                var httpContextAccessor = _container.GetService<IHttpContextAccessor>();
+                if (httpContextAccessor != null)
+                {
+                    var originalHttpContext = httpContextAccessor.HttpContext;
+                    var headers = _limiter.GetHeaders(originalHttpContext, identity, options);
+                    originalHttpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                }
             }
 
             await _next.Invoke(httpContext);
@@ -119,7 +129,8 @@ namespace Ocelot.RateLimiting.Middleware
 
             if (!option.DisableRateLimitHeaders)
             {
-                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter); // in seconds, not date string
+                http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter);        // in seconds, not date string
+                httpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfter;
             }
 
             return new DownstreamResponse(http);

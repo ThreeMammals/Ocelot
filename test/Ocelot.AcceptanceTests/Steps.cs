@@ -42,7 +42,7 @@ public class Steps : IDisposable
 {
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
-    private HttpResponseMessage _response;
+    protected HttpResponseMessage _response;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
@@ -809,7 +809,7 @@ public class Steps : IDisposable
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
         content.Add(dataContent, name);
-        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+        content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
 
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
