@@ -17,10 +17,21 @@
 
         public List<string> AllowedScopes { get; set; }
 
+        /// <summary>
+        /// Allows anonymous authentication for route when global AuthenticationOptions are used.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if it is allowed; otherwise, <see langword="false"/>.
+        /// </value>
+        public bool AllowAnonymous { get; set; }
+
         [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
         public string AuthenticationProviderKey { get; set; }
 
         public string[] AuthenticationProviderKeys { get; set; }
+
+        public bool HasProviderKey() => !string.IsNullOrEmpty(AuthenticationProviderKey)
+                || AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true;
 
         public override string ToString() => new StringBuilder()
             .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")

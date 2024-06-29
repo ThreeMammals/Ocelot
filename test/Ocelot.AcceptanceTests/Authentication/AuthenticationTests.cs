@@ -112,6 +112,40 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .BDDfy();
         }
 
+        [Fact]
+        public void Should_use_global_authentication_and_return_401_when_no_token()
+        {
+            var port = PortFinder.GetRandomPort();
+            var route = GivenDefaultAuthRoute(port);
+            route.AuthenticationOptions.AuthenticationProviderKeys = null;
+            var globalConfig = GivenGlobalConfig();
+            var configuration = GivenConfiguration(globalConfig, route);
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
+                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, string.Empty))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "key"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void Should_allow_anonymous_route_and_return_200_when_global_auth_options_and_no_token()
+        {
+            var port = PortFinder.GetRandomPort();
+            var route = GivenDefaultAuthRoute(port, allowAnonymous: true);
+            route.AuthenticationOptions.AuthenticationProviderKeys = null;
+            var globalConfig = GivenGlobalConfig();
+            var configuration = GivenConfiguration(globalConfig, route);
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
+                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, string.Empty))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunning(_options, "key"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .BDDfy();
+        }
+
         [IgnorePublicMethod]
         public void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {

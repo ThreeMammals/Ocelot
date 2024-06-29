@@ -29,7 +29,6 @@ using Serilog;
 using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
-using System.Security.Policy;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
@@ -69,6 +68,13 @@ public class Steps : IDisposable
     {
         Routes = new(routes),
     };
+
+    protected static FileConfiguration GivenConfiguration(FileGlobalConfiguration globalConfig, params FileRoute[] routes)
+    {
+        var config = GivenConfiguration(routes);
+        config.GlobalConfiguration = globalConfig;
+        return config;
+    }
 
     public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {

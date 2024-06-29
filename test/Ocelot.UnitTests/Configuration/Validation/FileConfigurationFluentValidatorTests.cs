@@ -26,15 +26,23 @@ namespace Ocelot.UnitTests.Configuration.Validation
         private IServiceProvider _provider;
         private readonly ServiceCollection _services;
         private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
+        private readonly FileAuthenticationOptionsValidator _fileAuthOptsValidator;
 
         public FileConfigurationFluentValidatorTests()
         {
             _services = new ServiceCollection();
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
+            _fileAuthOptsValidator = new FileAuthenticationOptionsValidator(_authProvider.Object);
             _provider = _services.BuildServiceProvider();
 
             // TODO Replace with mocks
-            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(
+                _provider,
+                new RouteFluentValidator(
+                    new HostAndPortValidator(), 
+                    new FileQoSOptionsFluentValidator(_provider),
+                    _fileAuthOptsValidator),
+                new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
         }
 
         [Fact]
@@ -432,7 +440,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             this.Given(x => x.GivenAConfiguration(route))
                 .When(x => x.WhenIValidateTheConfiguration())
                 .Then(x => x.ThenTheResultIsNotValid())
-                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider"))
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
         }
 
@@ -878,7 +886,58 @@ namespace Ocelot.UnitTests.Configuration.Validation
             ThenTheErrorMessagesAre(expected);
         }
 
+        [Fact]
+        public void configuration_is_not_valid_if_specified_authentication_provider_is_not_registered()
+        {
+            const string key = "JwtLads";
+
+            this.Given(x => x.GivenConfigurationWithAuthenticationKey(key))
+            .When(x => x.WhenIValidateTheConfiguration())
+            .Then(x => x.ThenTheResultIsNotValid())
+            .And(x => ThenTheErrorMessageAtPositionIs(0, $"AuthenticationOptions: AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[]," +
+                $"AllowedScopes:[] is unsupported authentication provider"))
+            .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_specified_authentication_provider_is_registered()
+        {
+            const string key = "JwtLads";
+
+            this.Given(x => x.GivenConfigurationWithAuthenticationKey(key))
+            .And(_ => GivenTheAuthSchemeExists(key))
+            .When(x => x.WhenIValidateTheConfiguration())
+            .Then(x => x.ThenTheResultIsValid())
+            .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_not_valid_if_one_authentication_provider_is_not_registered()
+        {
+            string[] keys = { "JwtLads", "other" };
+
+            this.Given(x => x.GivenConfigurationWithAuthenticationKeys(keys))
+            .When(x => x.WhenIValidateTheConfiguration())
+            .Then(x => x.ThenTheResultIsNotValid())
+            .And(x => ThenTheErrorMessageAtPositionIs(0, $"AuthenticationOptions: AuthenticationProviderKey:''," +
+                $"AuthenticationProviderKeys:['JwtLads','other'],AllowedScopes:[] is unsupported authentication provider"))
+            .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_all_specified_authentication_provider_are_registered()
+        {
+            string[] keys = { "JwtLads", "other" };
+
+            this.Given(x => x.GivenConfigurationWithAuthenticationKeys(keys))
+            .And(_ => GivenTheAuthSchemesExists(keys))
+            .When(x => x.WhenIValidateTheConfiguration())
+            .Then(x => x.ThenTheResultIsValid())
+            .BDDfy();
+        }
+
         private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
+
         private static FileRoute GivenDefaultRoute(string upstream, string downstream) => GivenDefaultRoute(upstream, downstream, null);
 
         private static FileRoute GivenDefaultRoute(string upstream, string downstream, string host) => new()
@@ -923,6 +982,30 @@ namespace Ocelot.UnitTests.Configuration.Validation
             _fileConfiguration = config;
             return config;
         }
+
+        private void GivenConfigurationWithAuthenticationKey(string key) =>
+            GivenAConfiguration(new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = key,
+                    },
+                },
+            });
+
+        private void GivenConfigurationWithAuthenticationKeys(string[] keys) =>
+            GivenAConfiguration(new FileConfiguration
+            {
+                GlobalConfiguration = new FileGlobalConfiguration
+                {
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKeys = keys,
+                    },
+                },
+            });
 
         private static FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new()
         {
@@ -980,12 +1063,23 @@ namespace Ocelot.UnitTests.Configuration.Validation
             });
         }
 
+        private void GivenTheAuthSchemesExists(string[] names)
+        {
+            _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(names.Select(n => new AuthenticationScheme(n, n, typeof(TestHandler))));
+        }
+
         private void GivenAQoSHandler()
         {
             DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
             _services.AddSingleton((QosDelegatingHandlerDelegate)Del);
             _provider = _services.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(
+                _provider,
+                new RouteFluentValidator(
+                    new HostAndPortValidator(),
+                    new FileQoSOptionsFluentValidator(_provider),
+                    _fileAuthOptsValidator),
+                new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
         }
 
         private void GivenAServiceDiscoveryHandler()
@@ -993,7 +1087,13 @@ namespace Ocelot.UnitTests.Configuration.Validation
             ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
             _services.AddSingleton(del);
             _provider = _services.BuildServiceProvider();
-            _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+            _configurationValidator = new FileConfigurationFluentValidator(
+                _provider,
+                new RouteFluentValidator(
+                    new HostAndPortValidator(),
+                    new FileQoSOptionsFluentValidator(_provider),
+                    _fileAuthOptsValidator),
+                new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
         }
 
         private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
