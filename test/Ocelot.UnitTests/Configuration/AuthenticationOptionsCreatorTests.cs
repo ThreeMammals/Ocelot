@@ -1,7 +1,6 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using System.Security.Permissions;
 
 namespace Ocelot.UnitTests.Configuration;
 

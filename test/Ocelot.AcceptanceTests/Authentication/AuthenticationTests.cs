@@ -2,7 +2,6 @@ using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Steeltoe.Connector;
 
 namespace Ocelot.AcceptanceTests.Authentication
 {

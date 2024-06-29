@@ -24,7 +24,6 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
-using System.Diagnostics.Contracts;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
