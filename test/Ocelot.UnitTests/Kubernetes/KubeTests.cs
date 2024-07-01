@@ -97,6 +97,55 @@ namespace Ocelot.UnitTests.Kubernetes
             ThenTheTokenIs(token);
         }
 
+        [Fact]
+        public async Task Should_return_single_service_from_k8s_during_concurrent_calls()
+        {
+            // Arrange
+            var manualResetEvent = new ManualResetEvent(false);
+            var token = "Bearer txpc696iUhbVoudg164r93CxDTrKRVWG";
+            var endPointEntryOne = new EndpointsV1
+            {
+                Kind = "endpoint",
+                ApiVersion = "1.0",
+                Metadata = new ObjectMetaV1
+                {
+                    Name = nameof(Should_return_service_from_k8s),
+                    Namespace = "dev",
+                },
+            };
+            var endpointSubsetV1 = new EndpointSubsetV1();
+            endpointSubsetV1.Addresses.Add(new EndpointAddressV1
+            {
+                Ip = "127.0.0.1",
+                Hostname = "localhost",
+            });
+            endpointSubsetV1.Ports.Add(new EndpointPortV1
+            {
+                Port = 80,
+            });
+            endPointEntryOne.Subsets.Add(endpointSubsetV1);
+            _serviceBuilder.Setup(x => x.BuildServices(It.IsAny<KubeRegistryConfiguration>(), It.IsAny<EndpointsV1>()))
+               .Returns(() =>
+                {
+                    manualResetEvent.WaitOne();
+                    return new Service[] { new(nameof(Should_return_single_service_from_k8s_during_concurrent_calls), new("localhost", 80), string.Empty, string.Empty, new string[0]) };
+                });
+            GivenThereIsAFakeKubeServiceDiscoveryProvider(_fakekubeServiceDiscoveryUrl, _serviceName, _namespaces);
+            GivenTheServicesAreRegisteredWithKube(endPointEntryOne);
+
+            // Act
+            var getServiceTasks = Task.WhenAll(
+                Task.Run(() => WhenIGetTheServices()),
+                Task.Run(() => WhenIGetTheServices()));
+            manualResetEvent.Set();
+            await getServiceTasks;
+
+            // Assert
+            ThenTheCountIs(1);
+            ThenServicesAreNotContainNull();
+            ThenTheTokenIs(token);
+        }
+
         private void ThenTheTokenIs(string token)
         {
             _receivedToken.ShouldBe(token);
@@ -105,6 +154,11 @@ namespace Ocelot.UnitTests.Kubernetes
         private void ThenTheCountIs(int count)
         {
             _services.Count.ShouldBe(count);
+        }
+
+        private void ThenServicesAreNotContainNull()
+        {
+            _services.ShouldAllBe(s => s != null);
         }
 
         private void WhenIGetTheServices()
