@@ -30,6 +30,17 @@ namespace Ocelot.LoadBalancer.LoadBalancers
                     }
 
                     var next = services[_last++];
+
+                    if (next == null)
+                    {
+                        return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"The service with index {_last} was null in {nameof(RoundRobin)} during the {nameof(Lease)} operation. Total services count: {services.Count}."));
+                    }
+
+                    if (next.HostAndPort == null)
+                    {
+                        return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"The {nameof(next.HostAndPort)} was null in the service with index {_last} in {nameof(RoundRobin)} during the {nameof(Lease)} operation. Total services count: {services.Count}."));
+                    }
+
                     return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
                 }
             }

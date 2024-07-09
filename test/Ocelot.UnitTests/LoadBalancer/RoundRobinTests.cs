@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.LoadBalancer
     public class RoundRobinTests : UnitTest
     {
         private readonly RoundRobin _roundRobin;
-        private readonly List<Service> _services;
+        private List<Service> _services;
         private Response<ServiceHostAndPort> _hostAndPort;
         private readonly HttpContext _httpContext;
 
@@ -54,14 +54,47 @@ namespace Ocelot.UnitTests.LoadBalancer
             }
         }
 
+        [Fact]
+        public void should_return_error_if_selected_service_is_null()
+        {
+            Service invalidService = null;
+
+            this.Given(x => x.GivenServices(new List<Service> { invalidService }))
+               .And(x => x.GivenIGetTheNextAddress())
+               .Then(x => x.ThenServiceAreNullErrorIsReturned())
+               .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_error_if_host_and_port_is_null_in_the_selected_service()
+        {
+            var invalidService = new Service(string.Empty, null, string.Empty, string.Empty, new List<string>());
+
+            this.Given(x => x.GivenServices(new List<Service> { invalidService }))
+               .And(x => x.GivenIGetTheNextAddress())
+               .Then(x => x.ThenServiceAreNullErrorIsReturned())
+               .BDDfy();
+        }
+
         private void GivenIGetTheNextAddress()
         {
             _hostAndPort = _roundRobin.Lease(_httpContext).Result;
         }
 
+        private void GivenServices(List<Service> services)
+        {
+            _services = services;
+        }
+
         private void ThenTheNextAddressIndexIs(int index)
         {
             _hostAndPort.Data.ShouldBe(_services[index].HostAndPort);
+        }
+
+        private void ThenServiceAreNullErrorIsReturned()
+        {
+            _hostAndPort.IsError.ShouldBeTrue();
+            _hostAndPort.Errors[0].ShouldBeOfType<ServicesAreNullError>();
         }
     }
 }
