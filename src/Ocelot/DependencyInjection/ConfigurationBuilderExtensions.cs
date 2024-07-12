@@ -97,8 +97,8 @@ namespace Ocelot.DependencyInjection
         private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
             string primaryConfigFile, bool? optional, bool? reloadOnChange)
         {
-            return mergeTo == MergeOcelotJson.ToMemory ? 
-                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) : 
+            return mergeTo == MergeOcelotJson.ToMemory ?
+                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) :
                 AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 
@@ -106,7 +106,7 @@ namespace Ocelot.DependencyInjection
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
             var envName = string.IsNullOrEmpty(env?.EnvironmentName) ? "Development" : env.EnvironmentName;
-            environmentFile ??= string.Format(EnvironmentConfigFile, envName);
+            environmentFile ??= Path.Join(folder, string.Format(EnvironmentConfigFile, envName));
             var reg = SubConfigRegex();
             var environmentFileInfo = new FileInfo(environmentFile);
             var files = new DirectoryInfo(folder)
@@ -117,8 +117,8 @@ namespace Ocelot.DependencyInjection
                 .ToArray();
 
             fileConfiguration ??= new FileConfiguration();
-            primaryFile ??= PrimaryConfigFile;
-            globalFile ??= GlobalConfigFile;
+            primaryFile ??= Path.Join(folder, PrimaryConfigFile);
+            globalFile ??= Path.Join(folder, GlobalConfigFile);
             var primaryFileInfo = new FileInfo(primaryFile);
             var globalFileInfo = new FileInfo(globalFile);
             foreach (var file in files)
