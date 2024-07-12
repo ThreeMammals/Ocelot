@@ -139,6 +139,20 @@ namespace Ocelot.UnitTests.DependencyInjection
             TheOcelotPrimaryConfigFileExists(false);
         }
 
+        [Fact]
+        [Trait("Issue", "2084")]
+        public void Should_use_relative_path_for_global_config()
+        {
+            // Arrange
+            GivenMultipleConfigurationFiles(TestID);
+
+            // Act
+            WhenIAddOcelotConfigurationWithDefaultFilepaths(TestID);
+
+            // Assert
+            ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
+        }
+
         private void GivenCombinedFileConfigurationObject()
         {
             _combinedFileConfiguration = new FileConfiguration
@@ -246,6 +260,13 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Build();
         }
 
+        private void WhenIAddOcelotConfigurationWithDefaultFilepaths(string folder, MergeOcelotJson mergeOcelotJson = MergeOcelotJson.ToFile)
+        {
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(folder, _hostingEnvironment.Object, mergeOcelotJson, optional: false, reloadOnChange: false)
+                .Build();
+        }
+
         private void ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(bool useCombinedConfig)
         {
             var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
@@ -280,7 +301,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             fc.Routes.ShouldContain(x => x.UpstreamHost == (useCombinedConfig ? _combinedFileConfiguration.Routes[1].UpstreamHost : _routeB.Routes[0].UpstreamHost));
             fc.Routes.ShouldContain(x => x.UpstreamHost == (useCombinedConfig ? _combinedFileConfiguration.Routes[2].UpstreamHost : _routeB.Routes[1].UpstreamHost));
 
-            fc.Aggregates.Count.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.Aggregates.Count :_aggregate.Aggregates.Count);
+            fc.Aggregates.Count.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.Aggregates.Count : _aggregate.Aggregates.Count);
         }
 
         private void NotContainsEnvSpecificConfig()
