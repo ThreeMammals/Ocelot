@@ -140,6 +140,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         }
 
         [Fact]
+        [Trait("PR", "2120")]
         [Trait("Issue", "2084")]
         public void Should_use_relative_path_for_global_config()
         {
