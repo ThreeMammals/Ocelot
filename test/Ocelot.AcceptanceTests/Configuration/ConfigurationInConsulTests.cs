@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Configuration
 {
     public class ConfigurationInConsulTests : IDisposable
     {

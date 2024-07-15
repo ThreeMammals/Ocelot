@@ -4,10 +4,8 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.Configuration;
 
-[Trait("PR", "1227")]
-[Trait("Issue", "1216")]
 public sealed class ConfigurationMergeTests : Steps
 {
     private readonly FileConfiguration _globalConfig;
@@ -22,6 +20,8 @@ public sealed class ConfigurationMergeTests : Steps
     protected override void DeleteOcelotConfig(params string[] files) => base.DeleteOcelotConfig(_globalConfigFileName);
 
     [Fact]
+    [Trait("Bug", "1216")]
+    [Trait("Feat", "1227")]
     public void Should_run_with_global_config_merged_to_memory()
     {
         Arrange();
@@ -35,6 +35,8 @@ public sealed class ConfigurationMergeTests : Steps
     }
 
     [Fact]
+    [Trait("Bug", "1216")]
+    [Trait("Feat", "1227")]
     public void Should_run_with_global_config_merged_to_file()
     {
         Arrange();
