@@ -8,16 +8,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using Ocelot.Administration;
 using Ocelot.Cache;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Ocelot.IntegrationTests;
 
@@ -342,12 +343,12 @@ public class AdministrationTests : IDisposable
     {
         var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
         var resultText = File.ReadAllText(ocelotJsonPath);
-        var expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+        var expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsExtensions.WebWriteIndented);
         resultText.ShouldBe(expectedText);
 
         var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
         resultText = File.ReadAllText(environmentSpecificPath);
-        expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
+        expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsExtensions.WebWriteIndented);
         resultText.ShouldBe(expectedText);
     }
 
@@ -523,7 +524,7 @@ public class AdministrationTests : IDisposable
         var response = await httpClient.PostAsync($"{url}/connect/token", content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsExtensions.Web);
     }
 
     private async Task GivenThereIsAnIdentityServerOn(string url, string apiName)
@@ -640,7 +641,7 @@ public class AdministrationTests : IDisposable
 
     private async Task WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
     {
-        var json = JsonConvert.SerializeObject(updatedConfiguration);
+        var json = JsonSerializer.Serialize(updatedConfiguration, JsonSerializerOptionsExtensions.Web);
         var content = new StringContent(json);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         _response = await _httpClient.PostAsync(url, content);
@@ -654,7 +655,7 @@ public class AdministrationTests : IDisposable
 
     private async Task ThenTheResponseShouldBe(FileConfiguration expecteds)
     {
-        var response = JsonConvert.DeserializeObject<FileConfiguration>(await _response.Content.ReadAsStringAsync());
+        var response = JsonSerializer.Deserialize<FileConfiguration>(await _response.Content.ReadAsStringAsync(), JsonSerializerOptionsExtensions.Web);
 
         response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
         response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -698,7 +699,7 @@ public class AdministrationTests : IDisposable
         var response = await _httpClient.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsExtensions.Web);
         var configPath = $"{adminPath}/.well-known/openid-configuration";
         response = await _httpClient.GetAsync(configPath);
         response.EnsureSuccessStatusCode();
@@ -825,7 +826,7 @@ public class AdministrationTests : IDisposable
     {
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
 
         if (File.Exists(configurationPath))
         {

@@ -226,7 +226,7 @@ public class MessageInvokerPoolTests : UnitTest
     {
         _context.Items.UpsertDownstreamRoute(downstream);
         _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
-            { RequestUri = new Uri(url), Method = method }));
+        { RequestUri = new Uri(url), Method = method }));
     }
 
     private async Task WhenICallTheClient(string url)

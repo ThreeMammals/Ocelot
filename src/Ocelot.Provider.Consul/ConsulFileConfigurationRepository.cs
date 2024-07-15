@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Responses;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.Provider.Consul;
 
@@ -53,14 +54,14 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
 
         var bytes = queryResult.Response.Value;
         var json = Encoding.UTF8.GetString(bytes);
-        var consulConfig = JsonConvert.DeserializeObject<FileConfiguration>(json);
+        var consulConfig = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsExtensions.Web);
 
         return new OkResponse<FileConfiguration>(consulConfig);
     }
 
     public async Task<Response> Set(FileConfiguration ocelotConfiguration)
     {
-        var json = JsonConvert.SerializeObject(ocelotConfiguration, Formatting.Indented);
+        var json = JsonSerializer.Serialize(ocelotConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
         var bytes = Encoding.UTF8.GetBytes(json);
         var kvPair = new KVPair(_configurationKey)
         {

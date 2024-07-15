@@ -183,8 +183,7 @@ public class OcelotBuilder : IOcelotBuilder
         return builder
             .AddApplicationPart(assembly)
             .AddControllersAsServices()
-            .AddAuthorization()
-            .AddNewtonsoftJson();
+            .AddAuthorization();
     }
 
     public IOcelotBuilder AddSingletonDefinedAggregator<T>()

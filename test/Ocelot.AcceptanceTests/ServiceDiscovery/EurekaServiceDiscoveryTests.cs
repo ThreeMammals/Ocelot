@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Steeltoe.Common.Discovery;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -142,7 +144,7 @@ public class EurekaServiceDiscoveryTests : IDisposable
                     },
                 };
 
-                var json = JsonConvert.SerializeObject(applications);
+                var json = JsonSerializer.Serialize(applications, JsonSerializerOptionsExtensions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
@@ -192,28 +194,28 @@ public class FakeEurekaService : IServiceInstance
     public IDictionary<string, string> Metadata { get; }
 }
 
-public class Port
-{
-    [JsonProperty("$")]
-    public int value { get; set; }
+    public class Port
+    {
+        [JsonPropertyName("$")]
+        public int value { get; set; }
 
-    [JsonProperty("@enabled")]
-    public string enabled { get; set; }
-}
+        [JsonPropertyName("@enabled")]
+        public string enabled { get; set; }
+    }
 
-public class SecurePort
-{
-    [JsonProperty("$")]
-    public int value { get; set; }
+    public class SecurePort
+    {
+        [JsonPropertyName("$")]
+        public int value { get; set; }
 
-    [JsonProperty("@enabled")]
-    public string enabled { get; set; }
-}
+        [JsonPropertyName("@enabled")]
+        public string enabled { get; set; }
+    }
 
-public class DataCenterInfo
-{
-    [JsonProperty("@class")]
-    public string value { get; set; }
+    public class DataCenterInfo
+    {
+        [JsonPropertyName("@class")]
+        public string value { get; set; }
 
     public string name { get; set; }
 }
@@ -233,11 +235,11 @@ public class LeaseInfo
     public long serviceUpTimestamp { get; set; }
 }
 
-public class ValueMetadata
-{
-    [JsonProperty("@class")]
-    public string value { get; set; }
-}
+    public class ValueMetadata
+    {
+        [JsonPropertyName("@class")]
+        public string value { get; set; }
+    }
 
 public class Instance
 {

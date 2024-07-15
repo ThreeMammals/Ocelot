@@ -4,15 +4,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
-using Ocelot.Responses;
+using System.Text.Json;
 
 namespace Ocelot.Benchmarks;
 
@@ -222,7 +222,7 @@ public class ResponseBenchmarks : ManualConfig
     public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
     {
         var configurationPath = Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
 
         if (File.Exists(configurationPath))
         {
