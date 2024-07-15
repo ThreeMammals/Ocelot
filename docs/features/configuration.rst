@@ -447,6 +447,8 @@ You can utilize these methods in the ``ConfigureAppConfiguration`` method (locat
 
 You can find additional details in the dedicated :ref:`di-configuration-overview` section and in subsequent sections related to the :doc:`../features/dependencyinjection` chapter.
 
+.. _config-route-metadata:
+
 Route Metadata
 --------------
 

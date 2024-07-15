@@ -12,6 +12,7 @@ jobs:
   release:
     docker:
       - image: ocelot2/circleci-build:latest
+    resource_class: medium+
     steps:
       - checkout
       - run: dotnet dev-certs https && dotnet tool restore && dotnet cake --target=Release
