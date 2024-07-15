@@ -44,17 +44,20 @@
   <!-- Conditionally obtain references for the net 6.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="6.0.25" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.25" />
+    <PackageReference Include="System.Text.Json" Version="6.0.9" />
+    <PackageReference Include="JsonPath.Net" Version="0.7.1" />
   </ItemGroup>
   <!-- Conditionally obtain references for the net 7.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="7.0.14" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.14" />
+	  <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="7.0.14" />
+	  <PackageReference Include="System.Text.Json" Version="7.0.4" />
+	  <PackageReference Include="JsonPath.Net" Version="0.7.1" />
   </ItemGroup>
   <!-- Conditionally obtain references for the net 8.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    <PackageReference Include="JsonPath.Net" Version="1.1.2" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />

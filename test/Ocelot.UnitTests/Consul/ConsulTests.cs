@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
 namespace Ocelot.UnitTests.Consul;
@@ -197,7 +198,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
                             _receivedToken = values.First();
                         }
 
-                        var json = JsonConvert.SerializeObject(_consulServiceEntries);
+                        var json = JsonSerializer.Serialize(_consulServiceEntries, JsonSerializerOptionsExtensions.Web);
                         context.Response.Headers.Append("Content-Type", "application/json");
                         await context.Response.WriteAsync(json);
                     }

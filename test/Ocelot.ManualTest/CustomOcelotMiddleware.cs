@@ -1,4 +1,5 @@
-﻿using Ocelot.Logging;
+﻿using Ocelot.Infrastructure;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ public static class CustomOcelotMiddleware
         {
             logger.LogInformation(() =>
             {
-                var metadataInJson = JsonSerializer.Serialize(metadata);
+                var metadataInJson = JsonSerializer.Serialize(metadata, JsonSerializerOptionsExtensions.Web);
                 var message = $"My custom middleware found some metadata: {metadataInJson}";
                 return message;
             });

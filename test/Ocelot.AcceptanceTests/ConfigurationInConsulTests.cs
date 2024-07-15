@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests
 {
@@ -89,7 +90,7 @@ namespace Ocelot.AcceptanceTests
                                 {
                                     if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                     {
-                                        var json = JsonConvert.SerializeObject(_config);
+                                        var json = JsonSerializer.Serialize(_config, JsonSerializerOptionsExtensions.Web);
 
                                         var bytes = Encoding.UTF8.GetBytes(json);
 
@@ -109,9 +110,9 @@ namespace Ocelot.AcceptanceTests
                                             // var json = reader.ReadToEnd();                                            
                                             var json = await reader.ReadToEndAsync();
 
-                                            _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
+                                            _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsExtensions.Web);
 
-                                            var response = JsonConvert.SerializeObject(true);
+                                            var response = JsonSerializer.Serialize(true, JsonSerializerOptionsExtensions.Web);
 
                                             await context.Response.WriteAsync(response);
                                         }

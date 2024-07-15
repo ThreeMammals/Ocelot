@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -298,7 +299,7 @@ namespace Ocelot.AcceptanceTests.Caching
                 LastName = "Test",
             };
 
-            var testBody1String = JsonSerializer.Serialize(testBody1);
+            var testBody1String = JsonSerializer.Serialize(testBody1, JsonSerializerOptionsExtensions.Web);
 
             var testBody2 = new TestBody
             {
@@ -308,7 +309,7 @@ namespace Ocelot.AcceptanceTests.Caching
                 LastName = "Test",
             };
 
-            var testBody2String = JsonSerializer.Serialize(testBody2);
+            var testBody2String = JsonSerializer.Serialize(testBody2, JsonSerializerOptionsExtensions.Web);
 
             return (testBody1String, testBody2String);
         }

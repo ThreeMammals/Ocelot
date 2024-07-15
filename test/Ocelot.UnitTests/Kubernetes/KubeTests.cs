@@ -3,11 +3,12 @@ using KubeClient.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.Kubernetes
 {
@@ -136,7 +137,7 @@ namespace Ocelot.UnitTests.Kubernetes
                                 _receivedToken = values.First();
                             }
 
-                            var json = JsonConvert.SerializeObject(_endpointEntries);
+                            var json = JsonSerializer.Serialize(_endpointEntries, JsonSerializerOptionsExtensions.Web);
                             context.Response.Headers.Append("Content-Type", "application/json");
                             await context.Response.WriteAsync(json);
                         }

@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Administration;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Ocelot.IntegrationTests
 {
@@ -112,7 +113,7 @@ namespace Ocelot.IntegrationTests
             var response = _httpClient.PostAsync(tokenUrl, content).Result;
             var responseContent = response.Content.ReadAsStringAsync().Result;
             response.EnsureSuccessStatusCode();
-            _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsExtensions.Web);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
             response = _httpClient.GetAsync(configPath).Result;
             response.EnsureSuccessStatusCode();
@@ -165,7 +166,7 @@ namespace Ocelot.IntegrationTests
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
 
             if (File.Exists(configurationPath))
             {

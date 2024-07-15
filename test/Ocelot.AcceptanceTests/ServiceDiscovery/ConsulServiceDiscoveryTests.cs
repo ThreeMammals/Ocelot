@@ -1,14 +1,15 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
@@ -345,6 +346,10 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     {
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
+        DownstreamHostAndPorts = new List<FileHostAndPort>()
+        {
+            new FileHostAndPort("localhost",5000)
+        },
         UpstreamPathTemplate = upstream ?? "/",
         UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : new() { HttpMethods.Get },
         UpstreamHost = upstreamHost,
@@ -426,7 +431,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
                 // Use the parsed service name to filter the registered Consul services
                 var serviceName = pathMatch.Groups["serviceName"].Value;
                 var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
-                var json = JsonConvert.SerializeObject(services);
+                var json = JsonSerializer.Serialize(services, JsonSerializerOptionsExtensions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
                 return;
@@ -435,7 +440,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             if (context.Request.Path.Value == "/v1/catalog/nodes")
             {
                 _counterNodes++;
-                var json = JsonConvert.SerializeObject(_consulNodes);
+                var json = JsonSerializer.Serialize(_consulNodes, JsonSerializerOptionsExtensions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }

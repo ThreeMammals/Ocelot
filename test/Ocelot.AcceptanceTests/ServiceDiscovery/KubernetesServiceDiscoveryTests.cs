@@ -3,12 +3,13 @@ using KubeClient.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Provider.Kubernetes;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -183,7 +184,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                     _receivedToken = values.First();
                 }
 
-                var json = JsonConvert.SerializeObject(endpoints);
+                var json = JsonSerializer.Serialize(endpoints, JsonSerializerOptionsExtensions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }

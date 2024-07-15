@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Ocelot.Authorization;
-using Ocelot.Cache;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
@@ -27,7 +26,6 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
@@ -111,7 +109,7 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
             Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-            
+
             Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
             Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
@@ -157,7 +155,6 @@ namespace Ocelot.DependencyInjection
         /// <summary>
         /// Adds default ASP.NET services which are the minimal part of the gateway core.
         /// <para>
-        /// Finally the builder adds Newtonsoft.Json services via the <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/> extension-method.<br/>
         /// To remove these services, use custom builder in the <see cref="ServiceCollectionExtensions.AddOcelotUsingBuilder(IServiceCollection, Func{IMvcCoreBuilder, Assembly, IMvcCoreBuilder})"/> extension-method.
         /// </para>
         /// </summary>
@@ -171,8 +168,7 @@ namespace Ocelot.DependencyInjection
         /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called:<br/>
         /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
         /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
-        /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
-        /// - <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/>, removable.
+        /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/>
         /// </para>
         /// </remarks>
         /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
@@ -188,8 +184,7 @@ namespace Ocelot.DependencyInjection
             return builder
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
-                .AddAuthorization()
-                .AddNewtonsoftJson();
+                .AddAuthorization();
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()

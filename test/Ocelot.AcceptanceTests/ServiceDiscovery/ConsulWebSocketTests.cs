@@ -1,10 +1,11 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
 {
@@ -125,7 +126,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             {
                 if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                 {
-                    var json = JsonConvert.SerializeObject(_serviceEntries);
+                    var json = JsonSerializer.Serialize(_serviceEntries, JsonSerializerOptionsExtensions.Web);
                     context.Response.Headers.Append("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }
