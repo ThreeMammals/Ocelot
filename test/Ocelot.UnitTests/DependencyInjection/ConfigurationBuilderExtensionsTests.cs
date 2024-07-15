@@ -302,7 +302,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             fc.Routes.ShouldContain(x => x.UpstreamHost == (useCombinedConfig ? _combinedFileConfiguration.Routes[1].UpstreamHost : _routeB.Routes[0].UpstreamHost));
             fc.Routes.ShouldContain(x => x.UpstreamHost == (useCombinedConfig ? _combinedFileConfiguration.Routes[2].UpstreamHost : _routeB.Routes[1].UpstreamHost));
 
-            fc.Aggregates.Count.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.Aggregates.Count : _aggregate.Aggregates.Count);
+            fc.Aggregates.Count.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.Aggregates.Count :_aggregate.Aggregates.Count);
         }
 
         private void NotContainsEnvSpecificConfig()
