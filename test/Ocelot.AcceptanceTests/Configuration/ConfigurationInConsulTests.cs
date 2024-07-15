@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
@@ -15,6 +14,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
@@ -130,7 +130,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                             {
                                 if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                 {
-                                    var json = JsonConvert.SerializeObject(_config);
+                                    var json = JsonSerializer.Serialize(_config, JsonSerializerOptionsExtensions.Web);
 
                                     var bytes = Encoding.UTF8.GetBytes(json);
 
@@ -150,9 +150,9 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                                         // var json = reader.ReadToEnd();                                            
                                         var json = await reader.ReadToEndAsync();
 
-                                        _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
+                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsExtensions.Web);
 
-                                        var response = JsonConvert.SerializeObject(true);
+                                        var response = JsonSerializer.Serialize(true, JsonSerializerOptionsExtensions.Web);
 
                                         await context.Response.WriteAsync(response);
                                     }

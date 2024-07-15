@@ -13,6 +13,7 @@ using Ocelot.Provider.Consul;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -174,7 +175,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
         {
             if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
             {
-                var json = JsonConvert.SerializeObject(_serviceEntries);
+                var json = JsonSerializer.Serialize(_serviceEntries, JsonSerializerOptionsExtensions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }

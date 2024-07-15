@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -259,16 +257,6 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .ShouldNotBeNull()
                 .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
 
-            // .AddNewtonsoftJson()
-            _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
-                .FirstOrDefault(s => s.GetType().Name == "NewtonsoftJsonMvcOptionsSetup")
-                .ShouldNotBeNull();
-            _serviceProvider.GetService<IActionResultExecutor<JsonResult>>()
-                .ShouldNotBeNull()
-                .GetType().Name.ShouldBe("NewtonsoftJsonResultExecutor");
-            _serviceProvider.GetService<IJsonHelper>()
-                .ShouldNotBeNull()
-                .GetType().Name.ShouldBe("NewtonsoftJsonHelper");
         }
 
         [Fact]

@@ -1,13 +1,14 @@
 ﻿using Consul;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Responses;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.Consul
 {
@@ -139,8 +140,8 @@ namespace Ocelot.UnitTests.Consul
 
         private void ThenTheConfigurationIs(FileConfiguration config)
         {
-            var expected = JsonConvert.SerializeObject(config, Formatting.Indented);
-            var result = JsonConvert.SerializeObject(_getResult.Data, Formatting.Indented);
+            var expected = JsonSerializer.Serialize(config, JsonSerializerOptionsExtensions.WebWriteIndented);
+            var result = JsonSerializer.Serialize(_getResult.Data, JsonSerializerOptionsExtensions.WebWriteIndented);
             result.ShouldBe(expected);
         }
 
@@ -176,7 +177,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void GivenFetchFromConsulSucceeds()
         {
-            var json = JsonConvert.SerializeObject(_fileConfiguration, Formatting.Indented);
+            var json = JsonSerializer.Serialize(_fileConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
 
             var bytes = Encoding.UTF8.GetBytes(json);
 
@@ -197,7 +198,7 @@ namespace Ocelot.UnitTests.Consul
 
         private void ThenTheConfigurationIsStoredAs(FileConfiguration config)
         {
-            var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var json = JsonSerializer.Serialize(config, JsonSerializerOptionsExtensions.WebWriteIndented);
 
             var bytes = Encoding.UTF8.GetBytes(json);
 

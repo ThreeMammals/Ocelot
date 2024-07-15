@@ -33,7 +33,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": false,
         "Period": null,
-        "PeriodTimespan": 0.0,
+        "PeriodTimespan": 0,
         "Limit": 0
       }
     }
