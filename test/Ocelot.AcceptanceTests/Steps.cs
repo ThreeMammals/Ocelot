@@ -59,8 +59,12 @@ public class Steps : IDisposable
         _random = new Random();
         _testId = Guid.NewGuid();
         _ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
+        Files = new() { _ocelotConfigFileName };
+        Folders = new();
     }
 
+    protected List<string> Files { get; }
+    protected List<string> Folders { get; }
     protected string TestID { get => _testId.ToString("N"); }
 
     protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
@@ -168,15 +172,19 @@ public class Steps : IDisposable
     }
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
+
+    public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
     {
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-        File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
+        toFile ??= _ocelotConfigFileName;
+        var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
+        File.WriteAllText(toFile, jsonConfiguration);
+        Files.Add(toFile); // register for disposing
     }
 
-    protected virtual void DeleteOcelotConfig(params string[] files)
+    protected virtual void DeleteFiles()
     {
-        var allFiles = files.Append(_ocelotConfigFileName);
-        foreach (var file in allFiles)
+        foreach (var file in Files)
         {
             if (!File.Exists(file))
             {
@@ -186,6 +194,25 @@ public class Steps : IDisposable
             try
             {
                 File.Delete(file);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+    }
+
+    protected virtual void DeleteFolders()
+    {
+        foreach (var folder in Folders)
+        {
+            try
+            {
+                var f = new DirectoryInfo(folder);
+                if (f.Exists && f.FullName != AppContext.BaseDirectory)
+                {
+                    f.Delete(true);
+                }
             }
             catch (Exception e)
             {
@@ -218,7 +245,7 @@ public class Steps : IDisposable
         StartOcelot((_, config) => config.AddJsonFile(_ocelotConfigFileName, false, false));
     }
 
-    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot)
+    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string environmentName = null)
     {
         _webHostBuilder = new WebHostBuilder();
 
@@ -234,7 +261,7 @@ public class Steps : IDisposable
             })
             .ConfigureServices(WithAddOcelot)
             .Configure(WithUseOcelot)
-            .UseEnvironment(nameof(AcceptanceTests));
+            .UseEnvironment(environmentName ?? nameof(AcceptanceTests));
 
         _ocelotServer = new TestServer(_webHostBuilder);
         _ocelotClient = _ocelotServer.CreateClient();
@@ -1166,7 +1193,8 @@ public class Steps : IDisposable
             _ocelotClient?.Dispose();
             _ocelotServer?.Dispose();
             _ocelotHost?.Dispose();
-            DeleteOcelotConfig();
+            DeleteFiles();
+            DeleteFolders();
         }
 
         _disposedValue = true;

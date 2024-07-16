@@ -91,6 +91,7 @@ namespace Ocelot.DependencyInjection
             string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
         {
             var json = GetMergedOcelotJson(folder, env, null, primaryConfigFile, globalConfigFile, environmentConfigFile);
+            primaryConfigFile ??= Path.Join(folder, PrimaryConfigFile); // if not specified, merge & write back to the same folder
             return ApplyMergeOcelotJsonOption(builder, mergeTo, json, primaryConfigFile, optional, reloadOnChange);
         }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using System.Runtime.CompilerServices;
 
@@ -8,63 +9,109 @@ namespace Ocelot.AcceptanceTests.Configuration;
 
 public sealed class ConfigurationMergeTests : Steps
 {
-    private readonly FileConfiguration _globalConfig;
+    private readonly FileConfiguration _initialGlobalConfig;
     private readonly string _globalConfigFileName;
 
     public ConfigurationMergeTests() : base()
     {
-        _globalConfig = new();
+        _initialGlobalConfig = new();
         _globalConfigFileName = $"{TestID}-{ConfigurationBuilderExtensions.GlobalConfigFile}";
+        Files.Add(_globalConfigFileName);
     }
 
-    protected override void DeleteOcelotConfig(params string[] files) => base.DeleteOcelotConfig(_globalConfigFileName);
-
-    [Fact]
+    [Theory]
     [Trait("Bug", "1216")]
     [Trait("Feat", "1227")]
-    public void Should_run_with_global_config_merged_to_memory()
+    [InlineData(MergeOcelotJson.ToFile, true)]
+    [InlineData(MergeOcelotJson.ToMemory, false)]
+    public void ShouldRunWithGlobalConfigMerged_WithExplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
     {
         Arrange();
 
         // Act
-        GivenOcelotIsRunningMergedConfig(MergeOcelotJson.ToMemory);
+        StartOcelot((context, config) => config
+            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, _ocelotConfigFileName, _globalConfigFileName, null, false, false));
+
+        // Assert
+        TheOcelotPrimaryConfigFileExists(fileExist);
+        ThenGlobalConfigurationHasBeenMerged();
+    }
+
+    [Theory]
+    [Trait("Bug", "2084")]
+    [InlineData(MergeOcelotJson.ToFile, true)]
+    [InlineData(MergeOcelotJson.ToMemory, false)]
+    public void ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
+    {
+        Arrange();
+        var globalConfig = _initialGlobalConfig;
+        globalConfig.Routes.Clear();
+        var routeAConfig = GivenConfiguration(GetRoute("A"));
+        var routeBConfig = GivenConfiguration(GetRoute("B"));
+        var environmentConfig = GivenConfiguration(GetRoute("Env"));
+        environmentConfig.GlobalConfiguration = null;
+        var folder = "GatewayConfiguration-" + TestID;
+        Folders.Add(Directory.CreateDirectory(folder).FullName);
+        var globalPath = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        var routeAPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "A"));
+        var routeBPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "B"));
+        var environmentPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "Env"));
+        GivenThereIsAConfiguration(globalConfig, globalPath);
+        GivenThereIsAConfiguration(routeAConfig, routeAPath);
+        GivenThereIsAConfiguration(routeBConfig, routeBPath);
+        GivenThereIsAConfiguration(environmentConfig, environmentPath);
+
+        // Act
+        StartOcelot((context, config) => config
+            .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
+            .AddJsonFile(environmentPath),
+            "Env");
 
         // Assert
         TheOcelotPrimaryConfigFileExists(false);
-        Assert();
+        ThenGlobalConfigurationHasBeenMerged();
+
+        var actualLocation = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        File.Exists(actualLocation).ShouldBe(fileExist);
+
+        var repository = _ocelotServer.Services.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
+        var response = repository.Get().ShouldNotBeNull();
+        response.IsError.ShouldBeFalse();
+        var internalConfig = response.Data.ShouldNotBeNull();
+
+        // Assert Arrange() setup
+        internalConfig.RequestId.ShouldBe(nameof(ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter));
+        internalConfig.ServiceProviderConfiguration.ConfigurationKey.ShouldBe(nameof(ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter));
     }
 
-    [Fact]
-    [Trait("Bug", "1216")]
-    [Trait("Feat", "1227")]
-    public void Should_run_with_global_config_merged_to_file()
+    private void Arrange([CallerMemberName] string testName = null)
     {
-        Arrange();
-
-        // Act
-        GivenOcelotIsRunningMergedConfig(MergeOcelotJson.ToFile);
-
-        // Assert
-        TheOcelotPrimaryConfigFileExists(true);
-        Assert();
+        _initialGlobalConfig.GlobalConfiguration.RequestIdKey = testName;
+        _initialGlobalConfig.GlobalConfiguration.ServiceDiscoveryProvider.ConfigurationKey = testName;
     }
-
-    private void GivenOcelotIsRunningMergedConfig(MergeOcelotJson mergeTo)
-        => StartOcelot((context, config) => config.AddOcelot(_globalConfig, context.HostingEnvironment, mergeTo, _ocelotConfigFileName, _globalConfigFileName, null, false, false));
 
     private void TheOcelotPrimaryConfigFileExists(bool expected)
         => File.Exists(_ocelotConfigFileName).ShouldBe(expected);
 
-    private void Arrange([CallerMemberName] string testName = null)
+    private void ThenGlobalConfigurationHasBeenMerged([CallerMemberName] string testName = null)
     {
-        _globalConfig.GlobalConfiguration.RequestIdKey = testName;
-    }
-
-    private void Assert([CallerMemberName] string testName = null)
-    {
-        var config = _ocelotServer.Services.GetService<IConfiguration>();
-        config.ShouldNotBeNull();
+        var config = _ocelotServer.Services.GetService<IConfiguration>().ShouldNotBeNull();
         var actual = config["GlobalConfiguration:RequestIdKey"];
         actual.ShouldNotBeNull().ShouldBe(testName);
+        actual = config["GlobalConfiguration:ServiceDiscoveryProvider:ConfigurationKey"];
+        actual.ShouldNotBeNull().ShouldBe(testName);
     }
+
+    private static FileRoute GetRoute(string suffix, [CallerMemberName] string testName = null) => new()
+    {
+        DownstreamScheme = nameof(FileRoute.DownstreamScheme) + suffix,
+        DownstreamPathTemplate = "/" + suffix,
+        Key = testName + suffix,
+        UpstreamPathTemplate = "/" + suffix,
+        UpstreamHttpMethod = new() { nameof(FileRoute.UpstreamHttpMethod) + suffix },
+        DownstreamHostAndPorts = new()
+        {
+            new(nameof(FileHostAndPort.Host) + suffix, 80),
+        },
+    };
 }
