@@ -1,24 +1,30 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
+using Ocelot.LoadBalancer.LoadBalancers;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class StickySessionsTests : IDisposable
+    public sealed class StickySessionsTests : Steps, IDisposable
     {
-        private readonly Steps _steps;
         private int _counterOne;
         private int _counterTwo;
         private static readonly object SyncLock = new();
         private readonly ServiceHandler _serviceHandler;
 
-        public StickySessionsTests()
+        public StickySessionsTests() : base()
         {
             _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
+        }
+
+        public override void Dispose()
+        {
+            _serviceHandler?.Dispose();
+            base.Dispose();
         }
 
         [Fact]
-        public void should_use_same_downstream_host()
+        public void Should_use_same_downstream_host()
         {
             var downstreamPortOne = PortFinder.GetRandomPort();
             var downstreamPortTwo = PortFinder.GetRandomPort();
@@ -37,7 +43,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions
                             {
-                                Type = "CookieStickySessions",
+                                Type = nameof(CookieStickySessions),
                                 Key = "sessionid",
                                 Expiry = 300000,
                             },
@@ -60,16 +66,16 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10, "sessionid", "123"))
+                .And(_ => GivenThereIsAConfiguration(configuration))
+                .And(_ => GivenOcelotIsRunning())
+                .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10, "sessionid", "123"))
                 .Then(x => x.ThenTheFirstServiceIsCalled(10))
                 .Then(x => x.ThenTheSecondServiceIsCalled(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_use_different_downstream_host_for_different_re_route()
+        public void Should_use_different_downstream_host_for_different_routes()
         {
             var downstreamPortOne = PortFinder.GetRandomPort();
             var downstreamPortTwo = PortFinder.GetRandomPort();
@@ -88,7 +94,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions
                             {
-                                Type = "CookieStickySessions",
+                                Type = nameof(CookieStickySessions),
                                 Key = "sessionid",
                                 Expiry = 300000,
                             },
@@ -114,7 +120,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions
                             {
-                                Type = "CookieStickySessions",
+                                Type = nameof(CookieStickySessions),
                                 Key = "bestid",
                                 Expiry = 300000,
                             },
@@ -137,17 +143,17 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", "sessionid", "123"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test", "bestid", "123"))
+                .And(_ => GivenThereIsAConfiguration(configuration))
+                .And(_ => GivenOcelotIsRunning())
+                .When(x => x.WhenIGetUrlOnTheApiGatewayWithCookie("/", "sessionid", "123"))
+                .When(x => x.WhenIGetUrlOnTheApiGatewayWithCookie("/test", "bestid", "123"))
                 .Then(x => x.ThenTheFirstServiceIsCalled(1))
                 .Then(x => x.ThenTheSecondServiceIsCalled(1))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_use_same_downstream_host_for_different_re_route()
+        public void Should_use_same_downstream_host_for_different_routes()
         {
             var downstreamPortOne = PortFinder.GetRandomPort();
             var downstreamPortTwo = PortFinder.GetRandomPort();
@@ -166,7 +172,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions
                             {
-                                Type = "CookieStickySessions",
+                                Type = nameof(CookieStickySessions),
                                 Key = "sessionid",
                                 Expiry = 300000,
                             },
@@ -192,7 +198,7 @@ namespace Ocelot.AcceptanceTests
                             UpstreamHttpMethod = new List<string> { "Get" },
                             LoadBalancerOptions = new FileLoadBalancerOptions
                             {
-                                Type = "CookieStickySessions",
+                                Type = nameof(CookieStickySessions),
                                 Key = "sessionid",
                                 Expiry = 300000,
                             },
@@ -215,13 +221,41 @@ namespace Ocelot.AcceptanceTests
 
             this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
                 .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", "sessionid", "123"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test", "sessionid", "123"))
+                .And(_ => GivenThereIsAConfiguration(configuration))
+                .And(_ => GivenOcelotIsRunning())
+                .When(x => x.WhenIGetUrlOnTheApiGatewayWithCookie("/", "sessionid", "123"))
+                .When(x => x.WhenIGetUrlOnTheApiGatewayWithCookie("/test", "sessionid", "123"))
                 .Then(x => x.ThenTheFirstServiceIsCalled(2))
                 .Then(x => x.ThenTheSecondServiceIsCalled(0))
                 .BDDfy();
+        }
+
+        private void WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            requestMessage.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString());
+            _response = _ocelotClient.SendAsync(requestMessage).Result;
+        }
+
+        private void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+        {
+            var tasks = new Task[times];
+            for (var i = 0; i < times; i++)
+            {
+                tasks[i] = GetParallelTask(url, cookie, value);
+            }
+
+            Task.WaitAll(tasks);
+        }
+
+        private async Task GetParallelTask(string url, string cookie, string value)
+        {
+            var request = _ocelotServer.CreateRequest(url);
+            request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
+            var response = await request.GetAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            var count = int.Parse(content);
+            count.ShouldBeGreaterThan(0);
         }
 
         private void ThenTheFirstServiceIsCalled(int expected)
@@ -278,12 +312,6 @@ namespace Ocelot.AcceptanceTests
                     await context.Response.WriteAsync(exception.StackTrace);
                 }
             });
-        }
-
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
         }
     }
 }
