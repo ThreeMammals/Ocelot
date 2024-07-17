@@ -230,12 +230,15 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-        private void WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+        private Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
         {
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
             requestMessage.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString());
-            _response = _ocelotClient.SendAsync(requestMessage).Result;
+            return _ocelotClient.SendAsync(requestMessage);
         }
+
+        private async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+            => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
 
         private void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
         {
@@ -250,9 +253,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task GetParallelTask(string url, string cookie, string value)
         {
-            var request = _ocelotServer.CreateRequest(url);
-            request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
-            var response = await request.GetAsync();
+            var response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
             var content = await response.Content.ReadAsStringAsync();
             var count = int.Parse(content);
             count.ShouldBeGreaterThan(0);
