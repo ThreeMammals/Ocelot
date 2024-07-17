@@ -34,6 +34,8 @@ public class KubeServiceCreator : IKubeServiceCreator
         return new Service[] { instance };
     }
 
+    protected IOcelotLogger Logger => _logger;
+
     protected virtual string GetServiceName(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
         => endpoint.Metadata?.Name;
 

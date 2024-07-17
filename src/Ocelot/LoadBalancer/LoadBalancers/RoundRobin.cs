@@ -7,16 +7,19 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     public class RoundRobin : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _servicesDelegate;
-        private readonly object _lock = new();
-
-        private int _last;
 
         public RoundRobin(Func<Task<List<Service>>> services)
         {
             _servicesDelegate = services;
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+        private static readonly object _lock = new();
+        public static object SyncRoot => _lock;
+
+        private int _last;
+        public int Last => _last;
+
+        public virtual async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
         {
             var services = await _servicesDelegate?.Invoke() ?? new List<Service>();
             if (services.Count == 0)
@@ -48,7 +51,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
         }
 
-        public void Release(ServiceHostAndPort hostAndPort)
+        public virtual void Release(ServiceHostAndPort hostAndPort)
         {
             // TODO Add lease map
         }

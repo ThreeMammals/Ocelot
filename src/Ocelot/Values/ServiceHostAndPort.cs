@@ -16,5 +16,7 @@
         public int DownstreamPort { get; }
 
         public string Scheme { get; }
+
+        public override string ToString() => $"{Scheme}:{DownstreamHost}:{DownstreamPort}";
     }
 }
