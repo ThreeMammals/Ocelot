@@ -31,8 +31,8 @@
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.5" />
-    <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.2.5" />
+    <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.8" />
+    <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.2.8" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
