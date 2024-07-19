@@ -1,0 +1,8 @@
+FOR /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S Packages') DO RMDIR /S /Q "%%G"
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S .vs') DO RMDIR /S /Q "%%G"
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S .vscode') DO RMDIR /S /Q "%%G"
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S TestResults') DO RMDIR /S /Q "%%G"
+FOR /F "tokens=*" %%G IN ('DIR /B /AD /S AppPackages') DO RMDIR /S /Q "%%G"
+DEL /Q /F /S "*.csproj.user"
+DEL /Q /F /S "*.sln.DotSettings.user"

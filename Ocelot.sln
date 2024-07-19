@@ -52,8 +52,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.OpenTracing", "src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj", "{11C622AD-8C0A-4CF4-811B-3DBB76550797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Prometheus", "src\Ocelot.Provider.Prometheus\Ocelot.Provider.Prometheus.csproj", "{4223CD87-C904-4950-B982-0B97361354FC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,10 +118,6 @@ Global
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4223CD87-C904-4950-B982-0B97361354FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4223CD87-C904-4950-B982-0B97361354FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4223CD87-C904-4950-B982-0B97361354FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4223CD87-C904-4950-B982-0B97361354FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,7 +138,6 @@ Global
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
-		{4223CD87-C904-4950-B982-0B97361354FC} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21476EFF-778A-4F97-8A56-D1AF1CEC0C48}
