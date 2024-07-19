@@ -537,10 +537,6 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     {
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = new List<FileHostAndPort>()
-        {
-            new FileHostAndPort("localhost",5000)
-        },
         UpstreamPathTemplate = upstream ?? "/",
         UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : new() { HttpMethods.Get },
         UpstreamHost = upstreamHost,
