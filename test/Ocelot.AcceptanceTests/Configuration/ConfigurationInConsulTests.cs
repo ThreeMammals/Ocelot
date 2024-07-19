@@ -9,7 +9,7 @@ using Ocelot.Infrastructure;
 using System.Text;
 using System.Text.Json;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Configuration
 {
     public class ConfigurationInConsulTests : IDisposable
     {
