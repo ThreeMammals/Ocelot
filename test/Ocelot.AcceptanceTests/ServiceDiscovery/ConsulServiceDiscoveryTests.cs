@@ -432,6 +432,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
                 var serviceName = pathMatch.Groups["serviceName"].Value;
                 var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
                 var json = JsonSerializer.Serialize(services, JsonSerializerOptionsExtensions.Web);
+                json = json.Replace("\"Name\":", "\"Node\":");
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
                 return;
