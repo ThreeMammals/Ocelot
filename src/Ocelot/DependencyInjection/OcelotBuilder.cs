@@ -37,6 +37,9 @@ using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.WebSockets;
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Unicode;
 
 namespace Ocelot.DependencyInjection
 {
@@ -184,7 +187,15 @@ namespace Ocelot.DependencyInjection
             return builder
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
-                .AddAuthorization();
+                .AddAuthorization()
+                .AddJsonOptions(op =>
+                {
+                    op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    op.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+                    op.JsonSerializerOptions.WriteIndented = false;
+                    op.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    op.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                });
         }
 
         public IOcelotBuilder AddSingletonDefinedAggregator<T>()
