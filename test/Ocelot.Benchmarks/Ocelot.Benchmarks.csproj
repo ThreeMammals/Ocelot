@@ -22,9 +22,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.11" />
+    <PackageReference Include="Bogus" Version="35.5.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
 	<!-- Conditionally obtain references for the net 6.0 target -->
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
