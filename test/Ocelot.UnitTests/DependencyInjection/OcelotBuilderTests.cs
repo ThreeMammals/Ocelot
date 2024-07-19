@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -257,6 +258,10 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .ShouldNotBeNull()
                 .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
 
+            // use system text json
+            _serviceProvider.GetServices<IActionResultExecutor<JsonResult>>()
+                .FirstOrDefault(s => s.GetType().Name == "SystemTextJsonResultExecutor")
+                .ShouldNotBeNull();
         }
 
         [Fact]
