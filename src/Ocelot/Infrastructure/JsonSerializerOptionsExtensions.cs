@@ -10,8 +10,6 @@ namespace Ocelot.Infrastructure
         public static readonly JsonSerializerOptions Web = new()
         {
             PropertyNameCaseInsensitive = true,
-            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             WriteIndented = false,
@@ -22,8 +20,6 @@ namespace Ocelot.Infrastructure
         public static readonly JsonSerializerOptions WebWriteIndented = new()
         {
             PropertyNameCaseInsensitive = true,
-            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             WriteIndented = true,
