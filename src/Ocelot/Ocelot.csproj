@@ -1,65 +1,65 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <Description>Ocelot is an API gateway based on .NET stack.</Description>
-    <AssemblyTitle>Ocelot</AssemblyTitle>
-    <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyName>Ocelot</AssemblyName>
-    <PackageId>Ocelot</PackageId>
-    <PackageTags>API Gateway;.NET core</PackageTags>
-    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Authors>Tom Pallister</Authors>
-    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
-  <!-- Project dependencies -->
-  <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="11.8.0" />
-    <PackageReference Include="IPAddressRange" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32">
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-  </ItemGroup>
-  <!-- Conditionally obtain references for the net 6.0 target -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="6.0.25" />
-    <PackageReference Include="System.Text.Json" Version="6.0.9" />
-    <PackageReference Include="JsonPath.Net" Version="0.7.1" />
-  </ItemGroup>
-  <!-- Conditionally obtain references for the net 7.0 target -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-	  <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="7.0.14" />
-	  <PackageReference Include="System.Text.Json" Version="7.0.4" />
-	  <PackageReference Include="JsonPath.Net" Version="0.7.1" />
-  </ItemGroup>
-  <!-- Conditionally obtain references for the net 8.0 target -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="8.0.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0" />
-    <PackageReference Include="JsonPath.Net" Version="1.1.2" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<Description>Ocelot is an API gateway based on .NET stack.</Description>
+		<AssemblyTitle>Ocelot</AssemblyTitle>
+		<VersionPrefix>0.0.0-dev</VersionPrefix>
+		<AssemblyName>Ocelot</AssemblyName>
+		<PackageId>Ocelot</PackageId>
+		<PackageTags>API Gateway;.NET core</PackageTags>
+		<PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+		<PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/develop/images/ocelot_logo.png</PackageIconUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
+		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<Authors>Tom Pallister</Authors>
+		<CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>full</DebugType>
+		<DebugSymbols>True</DebugSymbols>
+	</PropertyGroup>
+	<!-- Project dependencies -->
+	<ItemGroup>
+		<PackageReference Include="FluentValidation" Version="11.8.0" />
+		<PackageReference Include="IPAddressRange" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32">
+			<NoWarn>NU1701</NoWarn>
+		</PackageReference>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+	</ItemGroup>
+	<!-- Conditionally obtain references for the net 6.0 target -->
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+		<PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="6.0.25" />
+		<PackageReference Include="System.Text.Json" Version="6.0.9" />
+		<PackageReference Include="JsonPath.Net" Version="0.7.1" />
+	</ItemGroup>
+	<!-- Conditionally obtain references for the net 7.0 target -->
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
+		<PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="7.0.14" />
+		<PackageReference Include="System.Text.Json" Version="7.0.4" />
+		<PackageReference Include="JsonPath.Net" Version="0.7.1" />
+	</ItemGroup>
+	<!-- Conditionally obtain references for the net 8.0 target -->
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+		<PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="8.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.0" />
+		<PackageReference Include="JsonPath.Net" Version="1.1.2" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 </Project>
