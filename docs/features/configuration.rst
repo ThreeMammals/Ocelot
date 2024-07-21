@@ -238,7 +238,8 @@ Use ``HttpHandlerOptions`` in a Route configuration to set up ``HttpHandler`` be
     "AllowAutoRedirect": false,
     "UseCookieContainer": false,
     "UseTracing": true,
-    "MaxConnectionsPerServer": 100
+    "MaxConnectionsPerServer": 100,
+    "EnableMultipleHttp2Connections": false
   },
 
 * **AllowAutoRedirect** is a value that indicates whether the request should follow redirection responses.
@@ -259,6 +260,9 @@ Use ``HttpHandlerOptions`` in a Route configuration to set up ``HttpHandler`` be
   Just look at your response headers and forward the cookies back with your next request! 
 
 * **MaxConnectionsPerServer** This controls how many connections the internal ``HttpClient`` will open. This can be set at Route or global level.
+
+* **EnableMultipleHttp2Connections** Gets or sets a value that indicates whether additional HTTP/2 connections can be established to the same server. 
+    true if additional HTTP/2 connections are allowed to be created; otherwise, false.
 
 .. _ssl-errors:
 
@@ -394,7 +398,10 @@ HTTP/2 version policy
     "DownstreamScheme": "https",
     "DownstreamHttpVersion": "2.0",
     "DownstreamHttpVersionPolicy": "", // empty
-    "DangerousAcceptAnyServerCertificateValidator": true
+    "DangerousAcceptAnyServerCertificateValidator": true,
+    "HttpHandlerOptions":{
+        "EnableMultipleHttp2Connections": true
+    }
   }
 
 **And** you configure global settings to use Kestrel with this snippet:
@@ -425,7 +432,10 @@ Therefore, the ``DownstreamHttpVersionPolicy`` should be defined as follows:
 
   {
     "DownstreamHttpVersion": "2.0",
-    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher" // !
+    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher", // !
+    "HttpHandlerOptions":{
+        "EnableMultipleHttp2Connections": true
+    }
   }
 
 Dependency Injection
