@@ -6,7 +6,7 @@
     public class HttpHandlerOptions
     {
         public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
-            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
+            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime, bool enableMultipleHttp2Connections)
         {
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
@@ -14,6 +14,7 @@
             UseProxy = useProxy;
             MaxConnectionsPerServer = maxConnectionsPerServer;
             PooledConnectionLifeTime = pooledConnectionLifeTime;
+            EnableMultipleHttp2Connections = enableMultipleHttp2Connections;
         }
 
         /// <summary>
@@ -51,5 +52,11 @@
         /// </summary>
         /// <value>PooledConnectionLifeTime.</value>
         public TimeSpan PooledConnectionLifeTime { get; }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether additional HTTP/2 connections can be established to the same server.
+        /// </summary>
+        /// <value>EnableMultipleHttp2Connections.</value>
+        public bool EnableMultipleHttp2Connections { get; set; }
     }
 }
