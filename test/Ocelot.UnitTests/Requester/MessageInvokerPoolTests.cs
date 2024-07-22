@@ -73,7 +73,7 @@ public class MessageInvokerPoolTests : UnitTest
             .And(x => GivenADownstreamRoute("/super-test"))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest())
-            .When(x => WhenICallTheClient("https://www.google.com"))
+            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
             .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
             .And(x => ThenSomethingIsReturned())
             .BDDfy();
@@ -97,7 +97,7 @@ public class MessageInvokerPoolTests : UnitTest
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .When(x => WhenICallTheClient("https://www.google.com"))
+            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
             .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
             .BDDfy();
     }
@@ -259,7 +259,7 @@ public class MessageInvokerPoolTests : UnitTest
         _context = new DefaultHttpContext();
         _context.Items.UpsertDownstreamRoute(downstream);
         _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
-        { RequestUri = new Uri(url), Method = method }));
+            { RequestUri = new Uri(url), Method = method }));
     }
 
     private void ThenSomethingIsReturned() => _response.ShouldNotBeNull();
