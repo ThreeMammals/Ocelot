@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.ChangeTracking;
@@ -15,7 +16,6 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -27,8 +27,8 @@ using Serilog;
 using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Security.Policy;
 using System.Text;
-using System.Text.Json;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
@@ -618,7 +618,7 @@ public class Steps : IDisposable
         var response = await httpClient.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsExtensions.Web);
+        _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         return _token;
     }
 
@@ -769,7 +769,7 @@ public class Steps : IDisposable
 
     public void GivenThePostHasGzipContent(object input)
     {
-        var json = JsonSerializer.Serialize(input, JsonSerializerOptionsExtensions.Web);
+        var json = JsonConvert.SerializeObject(input);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
         var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))
