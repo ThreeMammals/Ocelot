@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
+using System.Text;
 using System.Text.Json;
 
 namespace Ocelot.DependencyInjection
@@ -99,8 +100,8 @@ namespace Ocelot.DependencyInjection
         private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
             string primaryConfigFile, bool? optional, bool? reloadOnChange)
         {
-            return mergeTo == MergeOcelotJson.ToMemory ?
-                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) :
+            return mergeTo == MergeOcelotJson.ToMemory ? 
+                builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) : 
                 AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 
