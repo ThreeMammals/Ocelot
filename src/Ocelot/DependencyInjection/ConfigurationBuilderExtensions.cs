@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
+using System.Text;
 using System.Text.Json;
 
 namespace Ocelot.DependencyInjection;
