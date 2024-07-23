@@ -16,7 +16,7 @@ namespace Ocelot.Authorization
 
         public Response<bool> Authorize(
             ClaimsPrincipal claimsPrincipal,
-            Dictionary<string, string> routeClaimsRequirement,
+            Dictionary<string, string[]> routeClaimsRequirement,
             List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
         )
         {
@@ -32,7 +32,7 @@ namespace Ocelot.Authorization
                 if (values.Data != null)
                 {
                     // dynamic claim
-                    var match = Regex.Match(required.Value, @"^{(?<variable>.+)}$");
+                    var match = Regex.Match(required.Value!.FirstOrDefault() ?? string.Empty, "^{(?<variable>.+)}$");
                     if (match.Success)
                     {
                         var variableName = match.Captures[0].Value;
@@ -67,7 +67,7 @@ namespace Ocelot.Authorization
                     else
                     {
                         // static claim
-                        var authorized = values.Data.Contains(required.Value);
+                        var authorized = required.Value.Any(x=> values.Data.Contains(x));
                         if (!authorized)
                         {
                             return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
