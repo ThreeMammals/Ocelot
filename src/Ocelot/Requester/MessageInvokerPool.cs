@@ -73,11 +73,11 @@ public class MessageInvokerPool : IMessageInvokerPool
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = downstreamRoute.HttpHandlerOptions.AllowAutoRedirect,
-            UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
-            UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
+            EnableMultipleHttp2Connections = downstreamRoute.HttpHandlerOptions.EnableMultipleHttp2Connections,
             MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
             PooledConnectionLifetime = downstreamRoute.HttpHandlerOptions.PooledConnectionLifeTime,
-            EnableMultipleHttp2Connections = downstreamRoute.HttpHandlerOptions.EnableMultipleHttp2Connections,
+            UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
+            UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
         };
 
         if (downstreamRoute.HttpHandlerOptions.UseCookieContainer)
