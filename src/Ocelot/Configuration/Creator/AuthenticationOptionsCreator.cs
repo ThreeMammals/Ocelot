@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Creator
     {
         public AuthenticationOptions Create(FileAuthenticationOptions routeAuthOptions, FileAuthenticationOptions globalConfAuthOptions)
         {
-            var routeAuthOptionsEmpty = routeAuthOptions?.HasProviderKey() != true;
+            var routeAuthOptionsEmpty = routeAuthOptions?.HasProviderKey != true;
             var resultAuthOptions = routeAuthOptionsEmpty ? globalConfAuthOptions : routeAuthOptions;
             return new(resultAuthOptions ?? new());
         }

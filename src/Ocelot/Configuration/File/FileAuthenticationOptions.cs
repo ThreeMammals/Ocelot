@@ -30,7 +30,7 @@
 
         public string[] AuthenticationProviderKeys { get; set; }
 
-        public bool HasProviderKey() => !string.IsNullOrEmpty(AuthenticationProviderKey)
+        public bool HasProviderKey => !string.IsNullOrEmpty(AuthenticationProviderKey)
                 || AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true;
 
         public override string ToString() => new StringBuilder()

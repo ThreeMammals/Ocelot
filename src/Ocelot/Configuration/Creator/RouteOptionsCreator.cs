@@ -1,6 +1,5 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
-using System.Runtime.CompilerServices;
 
 namespace Ocelot.Configuration.Creator
 {
@@ -13,8 +12,8 @@ namespace Ocelot.Configuration.Creator
                 return new RouteOptionsBuilder().Build();
             }
 
-            var isAuthenticated = !fileRoute.AuthenticationOptions?.AllowAnonymous == true && globalConfiguration?.AuthenticationOptions?.HasProviderKey() == true
-                || fileRoute.AuthenticationOptions?.HasProviderKey() == true;
+            var isAuthenticated = fileRoute.AuthenticationOptions?.AllowAnonymous != true && globalConfiguration?.AuthenticationOptions?.HasProviderKey == true
+                || fileRoute.AuthenticationOptions?.HasProviderKey == true;
                
             var isAuthorized = fileRoute.RouteClaimsRequirement?.Any() == true;
 

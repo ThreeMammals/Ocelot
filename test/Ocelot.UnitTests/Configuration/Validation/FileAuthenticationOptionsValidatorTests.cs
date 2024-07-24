@@ -4,114 +4,99 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 
-namespace Ocelot.UnitTests.Configuration.Validation
+namespace Ocelot.UnitTests.Configuration.Validation;
+
+public class FileAuthenticationOptionsValidatorTests : UnitTest
 {
-    public class FileAuthenticationOptionsValidatorTests
+    private readonly FileAuthenticationOptionsValidator _validator;
+    private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
+    private FileAuthenticationOptions _authenticationOptions;
+    private ValidationResult _result;
+
+    public FileAuthenticationOptionsValidatorTests()
     {
-        private readonly FileAuthenticationOptionsValidator _validator;
-        private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
-        private FileAuthenticationOptions _authenticationOptions;
-        private ValidationResult _result;
+        _authProvider = new Mock<IAuthenticationSchemeProvider>();
+        _validator = new FileAuthenticationOptionsValidator(_authProvider.Object);
+    }
 
-        public FileAuthenticationOptionsValidatorTests()
+    [Fact]
+    public async void Should_be_valid_if_specified_authentication_provider_is_registered()
+    {
+        // Arrange
+        const string key = "JwtLads";
+
+        CreateAuthenticationOptions(key);
+        GivenAnAuthProvider(key);
+
+        // Act
+        await ValidateAsync();
+
+        // Assert
+        _result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async void Should_not_be_valid_if_specified_authentication_provider_is_not_registered()
+    {
+        // Arrange
+        const string key = "JwtLads";
+
+        CreateAuthenticationOptions(key);
+
+        // Act
+        await ValidateAsync();
+
+        // Assert
+        _result.IsValid.ShouldBeFalse();
+        _result.Errors[0].ErrorMessage.ShouldBe($"AuthenticationOptions: AuthenticationProviderKey:'{key}',AuthenticationProviderKeys:[]," +
+            $"AllowedScopes:[] is unsupported authentication provider");
+    }
+
+    private void GivenAnAuthProvider(string key)
+    {
+        var schemes = new List<AuthenticationScheme>
         {
-            _authProvider = new Mock<IAuthenticationSchemeProvider>();
-            _validator = new FileAuthenticationOptionsValidator(_authProvider.Object);
-        }
-
-        [Fact]
-        public void Should_be_valid_if_specified_authentication_provider_is_registered()
-        {
-            const string key = "JwtLads";
-
-            var authenticationOptions = new FileAuthenticationOptions
-            {
-                AuthenticationProviderKey = key,
-            };
-
-            this.Given(_ => GivenThe(authenticationOptions))
-                .And(_ => GivenAnAuthProvider(key))
-                .When(_ => WhenIValidateAsync())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void Should_not_be_valid_if_specified_authentication_provider_is_not_registered()
-        {
-            const string key = "JwtLads";
-
-            var authenticationOptions = new FileAuthenticationOptions
-            {
-                AuthenticationProviderKey = key,
-            };
-
-            this.Given(_ => GivenThe(authenticationOptions))
-                .When(_ => WhenIValidateAsync())
-                .Then(_ => ThenTheResultIsNotValid())
-                .And(_ => ThenTheErrorIs(key))
-                .BDDfy();
-        }
-
-        private void GivenAnAuthProvider(string key)
-        {
-            var schemes = new List<AuthenticationScheme>
-        {
-            new AuthenticationScheme(key, key, typeof(FakeAuthHandler)),
+            new(key, key, typeof(FakeAuthHandler)),
         };
 
-            _authProvider
-                .Setup(x => x.GetAllSchemesAsync())
-                .ReturnsAsync(schemes);
+        _authProvider
+            .Setup(x => x.GetAllSchemesAsync())
+            .ReturnsAsync(schemes);
+    }
+
+    private void CreateAuthenticationOptions(string key)
+    {
+        _authenticationOptions = new FileAuthenticationOptions
+        {
+            AuthenticationProviderKey = key,
+        };
+    }
+
+    private async Task ValidateAsync()
+    {
+        _result = await _validator.ValidateAsync(_authenticationOptions);
+    }
+
+    private class FakeAuthHandler : IAuthenticationHandler
+    {
+        public Task<AuthenticateResult> AuthenticateAsync()
+        {
+            throw new NotImplementedException();
         }
 
-        private void ThenTheErrorIs(string providerKey)
+        public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            _result.Errors[0].ErrorMessage.ShouldBe($"AuthenticationOptions: AuthenticationProviderKey:'{providerKey}',AuthenticationProviderKeys:[]," +
-                $"AllowedScopes:[] is unsupported authentication provider");
+            throw new NotImplementedException();
         }
 
-        private void ThenTheResultIsValid()
+        public Task ForbidAsync(AuthenticationProperties properties)
         {
-            _result.IsValid.ShouldBeTrue();
+            throw new NotImplementedException();
         }
 
-        private void ThenTheResultIsNotValid()
+        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
-            _result.IsValid.ShouldBeFalse();
-        }
-
-        private void GivenThe(FileAuthenticationOptions authenticationOptions)
-        {
-            _authenticationOptions = authenticationOptions;
-        }
-
-        private async Task WhenIValidateAsync()
-        {
-            _result = await _validator.ValidateAsync(_authenticationOptions);
-        }
-
-        private class FakeAuthHandler : IAuthenticationHandler
-        {
-            public Task<AuthenticateResult> AuthenticateAsync()
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task ChallengeAsync(AuthenticationProperties properties)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task ForbidAsync(AuthenticationProperties properties)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }
