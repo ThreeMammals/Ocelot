@@ -16,9 +16,11 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using Shouldly;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
+using TestStack.BDDfy;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -121,7 +123,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     [Trait("Bug", "2110")]
     [InlineData(true)]
     [InlineData(false)]
-    public void ShouldReturnServicesFromK8s_HavingHighLoadOnTheProviderAndRoundRobinBalancer(bool isK8sIntegrationStable)
+    public async Task ShouldReturnServicesFromK8s_HavingHighLoadOnTheProviderAndRoundRobinBalancer(bool isK8sIntegrationStable)
     {
         // Arrange
         const int totalServices = 5, totalRequests = 50;
@@ -151,8 +153,10 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
 
-        // Act
-        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by 50 parallel requests
+        // Act: Wrap by extra thread
+        //Task[] tasks = WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests);
+        await Task.WhenAll(WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests)); // load by 50 parallel requests
+        await Task.Delay(1000);
 
         // Assert
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
@@ -235,6 +239,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         _k8sCounter = 0;
         _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
+            Thread.Sleep(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
                 // Each 20th request to integrated K8s endpoint should fail
@@ -277,8 +282,8 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         .RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory)
         .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
-    private ConcurrentDictionary<int, int> _productServiceCounters;
-    private RoundRobinCounter _roundRobinCounter;
+    private ConcurrentDictionary<int, int> _serviceCounters;
+    //private RoundRobinCounter _roundRobinCounter;
     private int _k8sCounter;
     private int _k8sTotalFailed;
     //private static object _k8sCounterSyncRoot = new();
@@ -286,19 +291,19 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     private void GivenK8sProductServiceIsRunning(string url, string response)
     {
         _serviceHandlers.Add(new()); // allocate single instance
-        _productServiceCounters = new(2, 1); // single counter
+        _serviceCounters = new(2, 1); // single counter
         GivenK8sProductServiceIsRunning(url, response, 0);
-        _productServiceCounters[0] = 0;
+        _serviceCounters[0] = 0;
     }
 
     private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses, int totalThreads)
     {
         urls.ForEach(_ => _serviceHandlers.Add(new())); // allocate multiple instances
-        _productServiceCounters = new(totalThreads, urls.Count); // multiple counters
+        _serviceCounters = new(totalThreads, urls.Count); // multiple counters
         for (int i = 0; i < urls.Count; i++)
         {
             GivenK8sProductServiceIsRunning(urls[i], responses[i], i);
-            _productServiceCounters[i] = 0;
+            _serviceCounters[i] = 0;
         }
     }
 
@@ -308,32 +313,28 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         serviceHandler.GivenThereIsAServiceRunningOn(url,
             async context =>
             {
-                try
-                {
-                    _productServiceCounters[handlerIndex]++;
-                    var threadResponse = string.Concat(_productServiceCounters[handlerIndex], ':', response);
+                await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
+                _serviceCounters[handlerIndex]++;
+                var threadResponse = string.Concat(_serviceCounters[handlerIndex], ':', response);
 
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    await context.Response.WriteAsync(threadResponse ?? ((int)HttpStatusCode.OK).ToString());
-                }
-                catch (Exception exception)
-                {
-                    await context.Response.WriteAsync(exception.StackTrace);
-                }
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await context.Response.WriteAsync(threadResponse ?? ((int)HttpStatusCode.OK).ToString());
             });
     }
 
     private void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
     {
-        var customMessage = $"All values are [{string.Join(',', _productServiceCounters.Values)}]";
-        _productServiceCounters.Values.Sum().ShouldBe(expected, customMessage);
+        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        var customMessage = $"All values are [{string.Join(',', sortedByIndex)}]";
+        _serviceCounters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
         //_roundRobinCounter.Counters.Values.Sum().ShouldBe(expected);
     }
 
     private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
-        var customMessage = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', _productServiceCounters.Values)}]";
-        _productServiceCounters.Values.ShouldAllBe(counter => bottom <= counter && counter <= top, customMessage);
+        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        var customMessage = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', sortedByIndex)}]";
+        _serviceCounters.Values.ShouldAllBe(counter => bottom <= counter && counter <= top, customMessage);
         //_roundRobinCounter.Counters.Values.ShouldAllBe(c => shouldInRange(c));
     }
 }
@@ -353,31 +354,31 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
     }
 }
 
-internal class RoundRobinCounter : RoundRobin, ILoadBalancer
-{
-    public readonly Dictionary<int, int> Counters = new();
+//internal class RoundRobinCounter : RoundRobin, ILoadBalancer
+//{
+//    public readonly Dictionary<int, int> Counters = new();
 
-    public RoundRobinCounter(Func<Task<List<Service>>> services) : base(services) { }
+//    public RoundRobinCounter(Func<Task<List<Service>>> services) : base(services) { }
 
-    public async override Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-    {
-        var response = await base.Lease(httpContext);
-        if (response?.IsError == true)
-        {
-            return response;
-        }
+//    public async override Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+//    {
+//        var response = await base.Lease(httpContext);
+//        if (response?.IsError == true)
+//        {
+//            return response;
+//        }
 
-        lock (SyncRoot)
-        {
-            int key = Last - 1; // real processed index
-            if (!Counters.TryGetValue(key, out int value))
-            {
-                value = 0;
-            }
+//        lock (SyncRoot)
+//        {
+//            int key = RoundRobin.Last - 1; // real processed index
+//            if (!Counters.TryGetValue(key, out int value))
+//            {
+//                value = 0;
+//            }
 
-            Counters[key] = ++value;
-        }
+//            Counters[key] = ++value;
+//        }
 
-        return response;
-    }
-}
+//        return response;
+//    }
+//}

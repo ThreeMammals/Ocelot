@@ -2,7 +2,9 @@
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 
@@ -16,7 +18,7 @@ public class RoundRobinTests : UnitTest
     }
 
     [Fact]
-    public void Should_get_next_address()
+    public void Lease_LoopThroughIndexRangeOnce_ShouldGetNextAddress()
     {
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
@@ -27,7 +29,7 @@ public class RoundRobinTests : UnitTest
 
     [Fact]
     [Trait("Feat", "336")]
-    public void Should_go_back_to_first_address_after_finished_last()
+    public void Lease_LoopThroughIndexRangeIndefinitelyButOneSecond_ShouldGoBackToFirstAddressAfterFinishedLast()
     {
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
@@ -42,7 +44,7 @@ public class RoundRobinTests : UnitTest
 
     [Fact]
     [Trait("Bug", "2110")]
-    public void Should_return_error_if_selected_service_is_null()
+    public void Lease_SelectedServiceIsNull_ShouldReturnError()
     {
         var invalidServices = new List<Service> { null };
         var roundRobin = GivenLoadBalancer(invalidServices);
@@ -52,7 +54,7 @@ public class RoundRobinTests : UnitTest
 
     [Fact]
     [Trait("Bug", "2110")]
-    public void Should_return_error_if_host_and_port_is_null_in_the_selected_service()
+    public void Lease_HostAndPortIsNullInTheSelectedService_ShouldReturnError()
     {
         var invalidService = new Service(string.Empty, null, string.Empty, string.Empty, new List<string>());
         var services = new List<Service> { invalidService };
@@ -61,18 +63,99 @@ public class RoundRobinTests : UnitTest
         ThenServicesAreNullErrorIsReturned(response);
     }
 
-    private static List<Service> GivenServices() => new()
+    //[InlineData(1, 10)]
+    //[InlineData(2, 50)]
+    //[InlineData(3, 50)]
+    //[InlineData(4, 50)]
+    //[InlineData(5, 50)]
+    //[InlineData(3, 100)]
+    //[InlineData(4, 100)]
+    //[InlineData(7, 100)]
+    [InlineData(3, 100)]
+    [Theory]
+    [Trait("Feat", "2110")]
+    public void Lease_LoopThroughIndexRangeIndefinitelyUnderHighLoad_ShouldDistributeIndexValuesUniformly(int totalServices, int totalThreads)
     {
-        new("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, Array.Empty<string>()),
-        new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
-        new("product", new ServiceHostAndPort("127.0.0.1", 5002), string.Empty, string.Empty, Array.Empty<string>()),
-    };
+        // Arrange
+        const bool ReturnServicesNotImmediately = false;
+        var services = GivenServices(totalServices);
+        var roundRobin = GivenLoadBalancer(services, ReturnServicesNotImmediately);
+        int bottom = totalThreads / totalServices,
+            top = totalThreads - (bottom * totalServices) + bottom;
 
-    private static RoundRobin GivenLoadBalancer(List<Service> services = null)
-        => new(() => Task.FromResult(services));
+        // Act
+        var responses = WhenICallLeaseFromMultipleThreads(roundRobin, totalThreads);
+        var counters = CountServices(services, responses);
+
+        // Assert
+        responses.ShouldNotBeNull();
+        responses.Length.ShouldBe(totalThreads);
+
+        var message = $"All values are [{string.Join(',', counters)}]";
+        counters.Sum().ShouldBe(totalThreads, message);
+
+        message = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', counters)}]";
+        counters.ShouldAllBe(counter => bottom <= counter && counter <= top, message);
+    }
+
+    private static int[] CountServices(List<Service> services, Response<ServiceHostAndPort>[] responses)
+    {
+        var counters = new int[services.Count];
+        var firstPort = services[0].HostAndPort.DownstreamPort;
+        foreach (var response in responses)
+        {
+            var idx = response.Data.DownstreamPort - firstPort;
+            counters[idx]++;
+        }
+
+        return counters;
+    }
+
+    private Response<ServiceHostAndPort>[] WhenICallLeaseFromMultipleThreads(RoundRobin roundRobin, int times)
+    {
+        var tasks = new Task[times]; // allocate N-times threads as Task
+        var parallelResponses = new Response<ServiceHostAndPort>[times];
+        for (var i = 0; i < times; i++)
+        {
+            tasks[i] = GetParallelResponse(parallelResponses, roundRobin, i);
+        }
+
+        Task.WaitAll(tasks); // load by N-times threads
+        return parallelResponses;
+    }
+
+    private async Task GetParallelResponse(Response<ServiceHostAndPort>[] responses, RoundRobin roundRobin, int threadIndex)
+    {
+        responses[threadIndex] = await WhenIGetTheNextAddressAsync(roundRobin);
+    }
+
+    private static List<Service> GivenServices(int total = 3, [CallerMemberName] string serviceName = null)
+    {
+        var list = new List<Service>(total);
+        for (int i = 1; i <= total; i++)
+        {
+            list.Add(new(serviceName, new ServiceHostAndPort("127.0.0." + i, 5000 + i), string.Empty, string.Empty, Array.Empty<string>()));
+        }
+
+        return list;
+    }
+
+    private static RoundRobin GivenLoadBalancer(List<Service> services, bool immediately = true, [CallerMemberName] string serviceName = null)
+    {
+        return new(
+            () =>
+            {
+                int leasingDelay = immediately ? 0 : Random.Shared.Next(5, 15);
+                Thread.Sleep(leasingDelay);
+                return Task.FromResult(services);
+            },
+            serviceName);
+    }
 
     private Response<ServiceHostAndPort> WhenIGetTheNextAddress(RoundRobin roundRobin)
         => roundRobin.Lease(_httpContext).Result;
+    private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
+        => roundRobin.Lease(_httpContext);
 
     private static void ThenServicesAreNullErrorIsReturned(Response<ServiceHostAndPort> response)
     {

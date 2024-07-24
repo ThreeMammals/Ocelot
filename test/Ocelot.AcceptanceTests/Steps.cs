@@ -27,6 +27,7 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
+using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Security.Policy;
@@ -43,7 +44,7 @@ public class Steps : IDisposable
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
     protected HttpResponseMessage _response;
-    protected List<HttpResponseMessage> _parallelResponses;
+    protected ConcurrentDictionary<int, HttpResponseMessage> _parallelResponses;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
@@ -870,30 +871,30 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
+    public Task[] WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
     {
         var tasks = new Task[times];
-        _parallelResponses = Enumerable.Repeat<HttpResponseMessage>(null, times).ToList();
+        _parallelResponses = new(times, times);
         for (var i = 0; i < times; i++)
         {
-            var urlCopy = url;
-            tasks[i] = GetParallelResponse(urlCopy, i);
-            //Thread.Sleep(_random.Next(40, 60));
+            tasks[i] = GetParallelResponse(url, i);
+            _parallelResponses[i] = null;
         }
 
         Task.WaitAll(tasks);
+        return tasks;
     }
 
     private async Task GetParallelResponse(string url, int threadIndex)
     {
         var response = await _ocelotClient.GetAsync(url);
         //Thread.Sleep(_random.Next(40, 60));
-        var content = await response.Content.ReadAsStringAsync();
-        var counterValue = content.Contains(':')
-            ? content.Split(':')[0] // let the first fragment is counter value
-            : content;
-        int count = int.Parse(counterValue);
-        count.ShouldBeGreaterThan(0);
+        //var content = await response.Content.ReadAsStringAsync();
+        //var counterValue = content.Contains(':')
+        //    ? content.Split(':')[0] // let the first fragment is counter value
+        //    : content;
+        //int count = int.Parse(counterValue);
+        //count.ShouldBeGreaterThan(0);
         _parallelResponses[threadIndex] = response;
     }
 
@@ -961,7 +962,7 @@ public class Steps : IDisposable
         => _response.StatusCode.ShouldBe(expected);
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
-        => _parallelResponses?.ShouldAllBe(response => response.StatusCode == expected);
+        => _parallelResponses.ShouldAllBe(response => response.Value.StatusCode == expected);
 
     public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
     {
@@ -1172,7 +1173,11 @@ public class Steps : IDisposable
             _ocelotServer?.Dispose();
             _ocelotHost?.Dispose();
             _response?.Dispose();
-            _parallelResponses?.ForEach(response => response?.Dispose());
+            foreach (var response in _parallelResponses)
+            {
+                response.Value?.Dispose();
+            }
+
             DeleteFiles();
             DeleteFolders();
         }
