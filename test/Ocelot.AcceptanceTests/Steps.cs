@@ -2,6 +2,7 @@
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,6 @@ using Serilog.Core;
 using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Net.Http.Headers;
-using System.Security.Policy;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
@@ -70,12 +70,22 @@ public class Steps : IDisposable
     protected List<string> Folders { get; }
     protected string TestID { get => _testId.ToString("N"); }
 
+    protected static FileHostAndPort Localhost(int port) => new("localhost", port);
     protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
     protected static string LoopbackLocalhostUrl(int port, int loopbackIndex = 0) => $"{Uri.UriSchemeHttp}://127.0.0.{++loopbackIndex}:{port}";
 
     protected static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
     {
         Routes = new(routes),
+    };
+
+    protected static FileRoute GivenDefaultRoute(int port) => new()
+    {
+        DownstreamPathTemplate = "/",
+        DownstreamHostAndPorts = new() { Localhost(port) },
+        DownstreamScheme = Uri.UriSchemeHttp,
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod = new() { HttpMethods.Get },
     };
 
     public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
@@ -625,10 +635,28 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    internal void GivenIAddCookieToMyRequest(string cookie)
+    #region Cookies helpers
+
+    public void GivenIAddCookieToMyRequest(string cookie)
+        => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
+
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
     {
-        _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+        var header = new CookieHeaderValue(cookie, value);
+        return WhenIGetUrlOnTheApiGateway(url, header);
     }
+
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
+    {
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+        requestMessage.Headers.Add("Cookie", cookie.ToString());
+        return _ocelotClient.SendAsync(requestMessage);
+    }
+    #endregion
 
     /// <summary>
     /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
@@ -817,14 +845,10 @@ public class Steps : IDisposable
     public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
     public void WhenIGetUrlOnTheApiGateway(string url)
-    {
-        _response = _ocelotClient.GetAsync(url).Result;
-    }
+        => _response = _ocelotClient.GetAsync(url).Result;
 
-    public void WhenIGetUrlOnTheApiGatewayAndDontWait(string url)
-    {
-        _ocelotClient.GetAsync(url);
-    }
+    public Task<HttpResponseMessage> WhenIGetUrl(string url)
+        => _ocelotClient.GetAsync(url);
 
     public void WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
     {
@@ -847,11 +871,6 @@ public class Steps : IDisposable
             Content = content,
         };
         _response = _ocelotClient.SendAsync(request).Result;
-    }
-
-    public void WhenICancelTheRequest()
-    {
-        _ocelotClient.CancelPendingRequests();
     }
 
     public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)

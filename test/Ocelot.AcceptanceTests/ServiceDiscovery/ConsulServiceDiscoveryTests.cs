@@ -1,6 +1,7 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -258,29 +259,32 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         var routeUS = GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS);
         var routeEU = GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU);
         var configuration = GivenServiceDiscovery(consulPort, routeUS, routeEU);
+        bool isStickySession = loadBalancerType == nameof(CookieStickySessions);
+        var sessionCookieUS = isStickySession ? new CookieHeaderValue(routeUS.LoadBalancerOptions.Key, Guid.NewGuid().ToString()) : null;
+        var sessionCookieEU = isStickySession ? new CookieHeaderValue(routeEU.LoadBalancerOptions.Key, Guid.NewGuid().ToString()) : null;
 
         // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
         // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
         this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortUS), "/products", MapGet("/products", responseBodyUS)))
-            .And(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
+            .Given(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
-            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop for the first time")
+            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop for the first time")
+            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
-            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlUS), "When I get US shop again")
-            .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(3))
+            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop again")
+            .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 3)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => WhenIGetUrlOnTheApiGateway(publicUrlEU), "When I get EU shop again")
-            .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(4))
+            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop again")
+            .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 4)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
             .BDDfy();
@@ -347,7 +351,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         },
     };
 
-    private static FileRoute GivenRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
+    private FileRoute GivenRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
     {
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
@@ -355,7 +359,12 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : new() { HttpMethods.Get },
         UpstreamHost = upstreamHost,
         ServiceName = serviceName,
-        LoadBalancerOptions = new() { Type = loadBalancerType ?? nameof(LeastConnection) },
+        LoadBalancerOptions = new()
+        {
+            Type = loadBalancerType ?? nameof(LeastConnection),
+            Key = serviceName,
+            Expiry = 60_000,
+        },
     };
 
     private static FileConfiguration GivenServiceDiscovery(int consulPort, params FileRoute[] routes)
@@ -369,6 +378,14 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             Type = nameof(Provider.Consul.Consul),
         };
         return config;
+    }
+
+    private void WhenIGetUrl(string url, CookieHeaderValue cookie)
+    {
+        var t = cookie != null
+            ? WhenIGetUrlOnTheApiGateway(url, cookie)
+            : WhenIGetUrl(url);
+        _response = t.Result;
     }
 
     private void ThenTheTokenIs(string token)
