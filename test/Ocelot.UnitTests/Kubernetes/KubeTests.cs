@@ -161,7 +161,7 @@ public class KubeTests
                     token = values.First();
                 }
 
-                var json = JsonSerializer.Serialize(_endpointEntries, JsonSerializerOptionsExtensions.Web);
+                var json = JsonSerializer.Serialize(_endpointEntries, JsonSerializerOptionsFactory.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 return context.Response.WriteAsync(json);
             }

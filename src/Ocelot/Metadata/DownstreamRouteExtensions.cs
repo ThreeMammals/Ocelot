@@ -74,7 +74,7 @@ public static class DownstreamRouteExtensions
         }
 
         return (T)ConvertTo(typeof(T), metadataValue, downstreamRoute.MetadataOptions,
-            jsonSerializerOptions ?? JsonSerializerOptionsExtensions.Web);
+            jsonSerializerOptions ?? JsonSerializerOptionsFactory.Web);
     }
 
     /// <summary>

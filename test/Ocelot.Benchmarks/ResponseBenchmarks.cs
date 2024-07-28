@@ -222,7 +222,7 @@ public class ResponseBenchmarks : ManualConfig
     public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
     {
         var configurationPath = Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
 
         if (File.Exists(configurationPath))
         {

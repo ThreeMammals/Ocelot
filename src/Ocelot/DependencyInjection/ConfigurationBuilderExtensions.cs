@@ -134,7 +134,7 @@ namespace Ocelot.DependencyInjection
                 }
 
                 var lines = File.ReadAllText(file.FullName);
-                var config = JsonSerializer.Deserialize<FileConfiguration>(lines, JsonSerializerOptionsExtensions.Web);
+                var config = JsonSerializer.Deserialize<FileConfiguration>(lines, JsonSerializerOptionsFactory.Web);
                 if (file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
                     file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -145,7 +145,7 @@ namespace Ocelot.DependencyInjection
                 fileConfiguration.Routes.AddRange(config.Routes);
             }
 
-            return JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
+            return JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Ocelot.DependencyInjection
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
             string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
         {
-            var json = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
+            var json = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
             return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 

@@ -165,7 +165,7 @@ public class Steps : IDisposable
     {
         toFile ??= _ocelotConfigFileName;
         Files.Add(toFile); // register for disposing
-        return JsonSerializer.Serialize(from, JsonSerializerOptionsExtensions.WebWriteIndented);
+        return JsonSerializer.Serialize(from, JsonSerializerOptionsFactory.WebWriteIndented);
     }
 
     protected virtual void DeleteFiles()
@@ -618,7 +618,7 @@ public class Steps : IDisposable
         var response = await httpClient.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsExtensions.Web);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
         return _token;
     }
 
@@ -769,7 +769,7 @@ public class Steps : IDisposable
 
     public void GivenThePostHasGzipContent(object input)
     {
-        var json = JsonSerializer.Serialize(input, JsonSerializerOptionsExtensions.Web);
+        var json = JsonSerializer.Serialize(input, JsonSerializerOptionsFactory.Web);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
         var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))

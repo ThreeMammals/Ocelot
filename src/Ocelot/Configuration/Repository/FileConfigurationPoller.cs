@@ -96,7 +96,7 @@ namespace Ocelot.Configuration.Repository
         /// <returns>hash of the config.</returns>
         private static string ToJson(FileConfiguration config)
         {
-            var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsExtensions.Web);
+            var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.Web);
             return currentHash;
         }
 

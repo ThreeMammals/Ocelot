@@ -113,7 +113,7 @@ namespace Ocelot.Benchmarks
         {
             var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 
-            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
+            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
 
             if (File.Exists(configurationPath))
             {

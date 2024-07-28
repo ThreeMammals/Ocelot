@@ -144,7 +144,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                         },
                     };
 
-                    var json = JsonSerializer.Serialize(applications, JsonSerializerOptionsExtensions.Web);
+                    var json = JsonSerializer.Serialize(applications, JsonSerializerOptionsFactory.Web);
                     context.Response.Headers.Append("Content-Type", "application/json");
                     await context.Response.WriteAsync(json);
                 }
