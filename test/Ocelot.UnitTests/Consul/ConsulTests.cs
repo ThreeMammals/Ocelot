@@ -205,7 +205,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
                             _receivedToken = values.First();
                         }
 
-                        var json = JsonSerializer.Serialize(_consulServiceEntries, JsonSerializerOptionsExtensions.Web);
+                        var json = JsonSerializer.Serialize(_consulServiceEntries, JsonSerializerOptionsFactory.Web);
                         context.Response.Headers.Append("Content-Type", "application/json");
                         await context.Response.WriteAsync(json);
                     }

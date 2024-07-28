@@ -90,15 +90,15 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         _logger.LogInformation("Finished polling");
     }
 
-    /// <summary>
-    /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
-    /// </summary>
-    /// <returns>hash of the config.</returns>
-    private static string ToJson(FileConfiguration config)
-    {
-        var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsExtensions.Web);
-        return currentHash;
-    }
+        /// <summary>
+        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
+        /// </summary>
+        /// <returns>hash of the config.</returns>
+        private static string ToJson(FileConfiguration config)
+        {
+            var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.Web);
+            return currentHash;
+        }
 
     public void Dispose()
     {

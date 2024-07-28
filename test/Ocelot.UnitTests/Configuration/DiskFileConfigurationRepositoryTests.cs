@@ -157,14 +157,14 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     private static void ThenTheOcelotJsonIsStoredAs(FileInfo ocelotJson, FileConfiguration expecteds)
     {
         var actual = File.ReadAllText(ocelotJson.FullName);
-        var expectedText = JsonSerializer.Serialize(expecteds, JsonSerializerOptionsExtensions.WebWriteIndented);
+        var expectedText = JsonSerializer.Serialize(expecteds, JsonSerializerOptionsFactory.WebWriteIndented);
         actual.ShouldBe(expectedText);
     }
 
     private void GivenTheConfigurationIs(FileConfiguration fileConfiguration, [CallerMemberName] string environmentName = null)
     {
         var environmentSpecificPath = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
         var environmentSpecific = new FileInfo(environmentSpecificPath);
         if (environmentSpecific.Exists)
         {
@@ -179,7 +179,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     {
         var environmentSpecific = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
         var actual = File.ReadAllText(environmentSpecific);
-        var expectedText = JsonSerializer.Serialize(expecteds, JsonSerializerOptionsExtensions.WebWriteIndented);
+        var expectedText = JsonSerializer.Serialize(expecteds, JsonSerializerOptionsFactory.WebWriteIndented);
         actual.ShouldBe(expectedText);
         _files.Add(environmentSpecific);
     }

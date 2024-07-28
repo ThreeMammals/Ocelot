@@ -50,14 +50,14 @@ public class DiskFileConfigurationRepository : IFileConfigurationRepository
             jsonConfiguration = FileSys.ReadAllText(_environmentFile.FullName);
         }
 
-            var fileConfiguration = JsonSerializer.Deserialize<FileConfiguration>(jsonConfiguration, JsonSerializerOptionsExtensions.Web);
+            var fileConfiguration = JsonSerializer.Deserialize<FileConfiguration>(jsonConfiguration, JsonSerializerOptionsFactory.Web);
 
         return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
     }
 
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
-            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
+            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
 
         lock (_lock)
         {

@@ -295,7 +295,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
-                    json = JsonSerializer.Serialize(endpoints, JsonSerializerOptionsExtensions.Web);
+                    json = JsonSerializer.Serialize(endpoints, JsonSerializerOptionsFactory.Web);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))

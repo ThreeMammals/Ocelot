@@ -130,7 +130,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                             {
                                 if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                 {
-                                    var json = JsonSerializer.Serialize(_config, JsonSerializerOptionsExtensions.Web);
+                                    var json = JsonSerializer.Serialize(_config, JsonSerializerOptionsFactory.Web);
 
                                     var bytes = Encoding.UTF8.GetBytes(json);
 
@@ -150,9 +150,9 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                                         // var json = reader.ReadToEnd();                                            
                                         var json = await reader.ReadToEndAsync();
 
-                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsExtensions.Web);
+                                            _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsFactory.Web);
 
-                                        var response = JsonSerializer.Serialize(true, JsonSerializerOptionsExtensions.Web);
+                                            var response = JsonSerializer.Serialize(true, JsonSerializerOptionsFactory.Web);
 
                                         await context.Response.WriteAsync(response);
                                     }

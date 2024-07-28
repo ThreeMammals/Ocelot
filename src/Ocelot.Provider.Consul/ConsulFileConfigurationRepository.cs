@@ -54,14 +54,14 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
 
         var bytes = queryResult.Response.Value;
         var json = Encoding.UTF8.GetString(bytes);
-        var consulConfig = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsExtensions.Web);
+        var consulConfig = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsFactory.Web);
 
         return new OkResponse<FileConfiguration>(consulConfig);
     }
 
     public async Task<Response> Set(FileConfiguration ocelotConfiguration)
     {
-        var json = JsonSerializer.Serialize(ocelotConfiguration, JsonSerializerOptionsExtensions.WebWriteIndented);
+        var json = JsonSerializer.Serialize(ocelotConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
         var bytes = Encoding.UTF8.GetBytes(json);
         var kvPair = new KVPair(_configurationKey)
         {

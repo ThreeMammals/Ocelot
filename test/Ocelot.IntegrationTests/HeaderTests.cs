@@ -123,7 +123,7 @@ public class HeaderTests : IDisposable
     {
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsExtensions.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
 
         if (File.Exists(configurationPath))
         {
