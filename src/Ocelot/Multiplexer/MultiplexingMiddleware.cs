@@ -7,7 +7,6 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Collections;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Route = Ocelot.Configuration.Route;
 
@@ -134,7 +133,6 @@ public class MultiplexingMiddleware : OcelotMiddleware
     {
         var processing = new List<Task<HttpContext>>();
         var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
-        var jObject = JsonDocument.Parse(content);
         var jNode = JsonNode.Parse(content);
 
         foreach (var downstreamRoute in routes.Skip(1))
@@ -142,7 +140,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
             var matchAdvancedAgg = routeKeysConfigs.FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
             if (matchAdvancedAgg != null)
             {
-                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jNode, jObject, context, downstreamRoute));
+                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jNode, context, downstreamRoute));
                 continue;
             }
 
@@ -166,7 +164,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// Processing a route with aggregation.
     /// </summary>
     private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
-        JsonNode jNode, JsonDocument jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
+        JsonNode jNode, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
         var processing = new List<Task<HttpContext>>();
 
