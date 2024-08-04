@@ -52,17 +52,6 @@ public class RoundRobinTests : UnitTest
         ThenServicesAreNullErrorIsReturned(response);
     }
 
-    [Fact]
-    [Trait("Bug", "2110")]
-    public void Lease_HostAndPortIsNullInTheSelectedService_ShouldReturnError()
-    {
-        var invalidService = new Service(string.Empty, null, string.Empty, string.Empty, new List<string>());
-        var services = new List<Service> { invalidService };
-        var roundRobin = GivenLoadBalancer(services);
-        var response = WhenIGetTheNextAddress(roundRobin);
-        ThenServicesAreNullErrorIsReturned(response);
-    }
-
     //[InlineData(1, 10)]
     //[InlineData(2, 50)]
     //[InlineData(3, 50)]

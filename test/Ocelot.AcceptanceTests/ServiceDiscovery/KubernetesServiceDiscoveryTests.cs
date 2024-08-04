@@ -4,14 +4,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
+using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -114,9 +119,11 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
     [Theory]
     [Trait("Bug", "2110")]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ShouldReturnServicesFromK8s_HighlyLoadOnTheProviderAndRoundRobinBalancer(bool isK8sIntegrationStable)
+    [InlineData(true, 0)]
+    [InlineData(false, 1)]
+    //[InlineData(false, 2)]
+    //[InlineData(false, 3)]
+    public void ShouldReturnServicesFromK8s_HighlyLoadOnTheProviderAndRoundRobinBalancer(bool isK8sGenerationStable, int offlineServicesNo)
     {
         // Arrange
         const int totalServices = 5, totalRequests = 50;
@@ -136,24 +143,32 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var subset = new EndpointSubsetV1();
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset); // total 3 service instances with different ports
-        var route = GivenRouteWithServiceName(namespaces, loadBalancerType: nameof(RoundRobin)); // !!!
+        var route = GivenRouteWithServiceName(namespaces, loadBalancerType: nameof(RoundRobinAnalyzer)); // !!!
         var configuration = GivenKubeConfiguration(namespaces, route);
         int bottom = totalRequests / totalServices,
-            top = totalRequests - (bottom * totalServices) + bottom;
+            top = totalRequests - (bottom * totalServices) + bottom,
+            failPerThreads = offlineServicesNo > 0 ? (totalRequests / offlineServicesNo) - 1 : 0;
         GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses, totalRequests);
-        GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, isK8sIntegrationStable); // with stability option
+        GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, isK8sGenerationStable, offlineServicesNo, failPerThreads); // with stability option
         GivenThereIsAConfiguration(configuration);
+
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
 
         // Act
-        await Task.WhenAll(WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests)); // load by 50 parallel requests
-        await Task.Delay(250);
+        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by 50 parallel requests
 
         // Assert
-        _k8sTotalFailed.ShouldBe(isK8sIntegrationStable ? 0 : 2);
-        //ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
-        //ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
-        //ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
+        _k8sCounter.ShouldBe(totalRequests);
+        _k8sServiceGeneration.ShouldBe(isK8sGenerationStable ? 0 : offlineServicesNo);
+        ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
+        ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
+
+        _roundRobinAnalyzer.ShouldNotBeNull().Analyze();
+        _roundRobinAnalyzer.HasManyServiceGenerations(isK8sGenerationStable ? 0 : offlineServicesNo).ShouldBeTrue();
+        ThenAllServicesCalledRealisticAmountOfTimes(
+            isK8sGenerationStable ? bottom : _roundRobinAnalyzer.BottomOfConnections(),
+            isK8sGenerationStable ? top : _roundRobinAnalyzer.TopOfConnections());
+        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
     }
 
     private void ThenTheTokenIs(string token)
@@ -224,9 +239,9 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     }
 
     private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints)
-        => GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, true);
+        => GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, true, 0, 0);
 
-    private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints, bool isStable)
+    private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints, bool isStable, int offlineServicesNo, int offlinePerThreads)
     {
         _k8sCounter = 0;
         _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
@@ -234,22 +249,23 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
-                // Each 20th request to integrated K8s endpoint should fail
-                //lock (_k8sCounterSyncRoot)
-                //{
-                _k8sCounter++;
-                if (!isStable && _k8sCounter % 20 == 0 && _k8sCounter >= 20)
+                // Each offlinePerThreads-th request to integrated K8s endpoint should fail
+                lock (K8sCounterLocker)
                 {
+                    _k8sCounter++;
                     var subset = endpoints.Subsets[0];
-                    var onlineAddress = subset.Addresses[0];
-                    subset.Addresses.Clear(); // all services go offline
-                    subset.Addresses.Add(onlineAddress); // make online the 1st instance only
-                    var onlinePort = subset.Ports[0];
-                    subset.Ports.Clear();
-                    subset.Ports.Add(onlinePort);
-                    _k8sTotalFailed++;
+                    if (!isStable && _k8sCounter % offlinePerThreads == 0 && _k8sCounter >= offlinePerThreads)
+                    {
+                        while (offlineServicesNo-- > 0)
+                        {
+                            int index = subset.Addresses.Count - 1; // Random.Shared.Next(0, subset.Addresses.Count - 1);
+                            subset.Addresses.RemoveAt(index);
+                            subset.Ports.RemoveAt(index);
+                        }
+                        _k8sServiceGeneration++;
+                    }
+                    endpoints.Metadata.Generation = _k8sServiceGeneration;
                 }
-                //}
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
                 {
@@ -269,21 +285,30 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
     private void WithKubernetesAndRoundRobin(IServiceCollection services) => services
         .AddOcelot().AddKubernetes()
-        //.AddCustomLoadBalancer<RoundRobinCounter>((_, _, provider) => _roundRobinCounter = new RoundRobinCounter(provider.GetAsync))
+        .AddCustomLoadBalancer<RoundRobinAnalyzer>(GetRoundRobinAnalyzer)
         .Services
         .RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory)
         .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
-    private ConcurrentDictionary<int, int> _serviceCounters;
-    //private RoundRobinCounter _roundRobinCounter;
-    private int _k8sCounter;
-    private int _k8sTotalFailed;
-    //private static object _k8sCounterSyncRoot = new();
+    private RoundRobinAnalyzer _roundRobinAnalyzer;
+    private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+    {
+        lock (K8sCounterLocker)
+        {
+            return _roundRobinAnalyzer ??= new RoundRobinAnalyzer(provider.GetAsync, route.ServiceName);
+        }
+    }
+
+    private static readonly object ServiceCountersLocker = new();
+    private Dictionary<int, int> _serviceCounters;
+
+    private static readonly object K8sCounterLocker = new();
+    private int _k8sCounter, _k8sServiceGeneration;
 
     private void GivenK8sProductServiceIsRunning(string url, string response)
     {
         _serviceHandlers.Add(new()); // allocate single instance
-        _serviceCounters = new(2, 1); // single counter
+        _serviceCounters = new(); // single counter
         GivenK8sProductServiceIsRunning(url, response, 0);
         _serviceCounters[0] = 0;
     }
@@ -291,7 +316,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses, int totalThreads)
     {
         urls.ForEach(_ => _serviceHandlers.Add(new())); // allocate multiple instances
-        _serviceCounters = new(totalThreads, urls.Count); // multiple counters
+        _serviceCounters = new(urls.Count); // multiple counters
         for (int i = 0; i < urls.Count; i++)
         {
             GivenK8sProductServiceIsRunning(urls[i], responses[i], i);
@@ -305,10 +330,14 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
-            _serviceCounters[handlerIndex]++;
-            var threadResponse = string.Concat(_serviceCounters[handlerIndex], ':', response);
+            int count = 0;
+            lock (ServiceCountersLocker)
+            {
+                count = ++_serviceCounters[handlerIndex];
+            }
 
             context.Response.StatusCode = (int)HttpStatusCode.OK;
+            var threadResponse = string.Concat(count, ':', response);
             await context.Response.WriteAsync(threadResponse ?? ((int)HttpStatusCode.OK).ToString());
         });
     }
@@ -318,7 +347,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"All values are [{string.Join(',', sortedByIndex)}]";
         _serviceCounters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
-        //_roundRobinCounter.Counters.Values.Sum().ShouldBe(expected);
+        _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
     }
 
     private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
@@ -326,7 +355,18 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', sortedByIndex)}]";
         _serviceCounters.Values.ShouldAllBe(counter => bottom <= counter && counter <= top, customMessage);
-        //_roundRobinCounter.Counters.Values.ShouldAllBe(c => shouldInRange(c));
+    }
+
+    private void ThenServiceCountersShouldMatchLeasingCounters(int[] ports)
+    {
+        var leasingCounters = _roundRobinAnalyzer.GetHostCounters();
+        for (int i = 0; i < ports.Length; i++)
+        {
+            int counter1 = _serviceCounters[i];
+            var host = leasingCounters.Keys.Single(k => k.DownstreamPort == ports[i]);
+            int counter2 = leasingCounters[host];
+            counter1.ShouldBe(counter2, $"Port: {ports[i]}\n\tHost: {host}");
+        }
     }
 }
 
@@ -343,33 +383,119 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
         Logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
         return new ServiceHostAndPort(address.Ip, portV1.Port, portV1.Name);
     }
+
+    protected override IEnumerable<string> GetServiceTags(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
+    {
+        var tags = base.GetServiceTags(configuration, endpoint, subset, address)
+            .ToList();
+        long gen = endpoint.Metadata.Generation ?? 0L;
+        tags.Add($"{nameof(endpoint.Metadata.Generation)}:{gen}");
+        return tags;
+    }
 }
 
-//internal class RoundRobinCounter : RoundRobin, ILoadBalancer
-//{
-//    public readonly Dictionary<int, int> Counters = new();
+internal class RoundRobinAnalyzer : RoundRobin, ILoadBalancer
+{
+    public readonly ConcurrentBag<LeaseEventArgs> Events = new();
 
-//    public RoundRobinCounter(Func<Task<List<Service>>> services) : base(services) { }
+    public RoundRobinAnalyzer(Func<Task<List<Service>>> services, string serviceName)
+        : base(services, serviceName)
+    {
+        this.Leased += Me_Leased;
+    }
 
-//    public async override Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-//    {
-//        var response = await base.Lease(httpContext);
-//        if (response?.IsError == true)
-//        {
-//            return response;
-//        }
+    private void Me_Leased(object sender, LeaseEventArgs e) => Events.Add(e);
 
-//        lock (SyncRoot)
-//        {
-//            int key = RoundRobin.Last - 1; // real processed index
-//            if (!Counters.TryGetValue(key, out int value))
-//            {
-//                value = 0;
-//            }
+    public const string GenerationPrefix = nameof(EndpointsV1.Metadata.Generation) + ":";
 
-//            Counters[key] = ++value;
-//        }
+    public object Analyze()
+    {
+        var allGenerations = Events
+            .Select(e => e.Service.Tags.FirstOrDefault(t => t.StartsWith(GenerationPrefix)))
+            .Distinct().ToArray();
+        var allIndices = Events.Select(e => e.ServiceIndex)
+            .Distinct().ToArray();
 
-//        return response;
-//    }
-//}
+        Dictionary<string, List<LeaseEventArgs>> eventsPerGeneration = new();
+        foreach (var generation in allGenerations)
+        {
+            var l = Events.Where(e => e.Service.Tags.Contains(generation)).ToList();
+            eventsPerGeneration.Add(generation, l);
+        }
+
+        Dictionary<string, List<int>> generationIndices = new();
+        foreach (var generation in allGenerations)
+        {
+            var l = eventsPerGeneration[generation].Select(e => e.ServiceIndex).Distinct().ToList();
+            generationIndices.Add(generation, l);
+        }
+
+        Dictionary<string, List<Lease>> generationLeases = new();
+        foreach (var generation in allGenerations)
+        {
+            var l = eventsPerGeneration[generation].Select(e => e.Lease).ToList();
+            generationLeases.Add(generation, l);
+        }
+
+        Dictionary<string, List<ServiceHostAndPort>> generationHosts = new();
+        foreach (var generation in allGenerations)
+        {
+            var l = eventsPerGeneration[generation].Select(e => e.Lease.HostAndPort).Distinct().ToList();
+            generationHosts.Add(generation, l);
+        }
+
+        Dictionary<string, List<Lease>> generationLeasesWithMaxConnections = new();
+        foreach (var generation in allGenerations)
+        {
+            List<Lease> leases = new();
+            var uniqueHosts = generationHosts[generation];
+            foreach (var host in uniqueHosts)
+            {
+                int max = generationLeases[generation].Where(l => l == host).Max(l => l.Connections);
+                Lease wanted = generationLeases[generation].Find(l => l == host && l.Connections == max);
+                leases.Add(wanted);
+            }
+
+            leases = leases.OrderBy(l => l.HostAndPort.DownstreamPort).ToList();
+            generationLeasesWithMaxConnections.Add(generation, leases);
+        }
+
+        return generationLeasesWithMaxConnections;
+    }
+
+    public bool HasManyServiceGenerations(int maxGeneration)
+    {
+        int[] generations = new int[maxGeneration + 1];
+        string[] tags = new string[maxGeneration + 1];
+        for (int i = 0; i < generations.Length; i++)
+        {
+            generations[i] = i;
+            tags[i] = GenerationPrefix + i;
+        }
+
+        var all = Events
+            .Select(e => e.Service.Tags.FirstOrDefault(t => t.StartsWith(GenerationPrefix)))
+            .Distinct().ToArray();
+        return all.All(tags.Contains);
+    }
+
+    public Dictionary<ServiceHostAndPort, int> GetHostCounters()
+    {
+        var hosts = Events.Select(e => e.Lease.HostAndPort).Distinct().ToList();
+        return Events
+            .GroupBy(e => e.Lease.HostAndPort)
+            .ToDictionary(g => g.Key, g => g.Max(e => e.Lease.Connections));
+    }
+
+    public int BottomOfConnections()
+    {
+        var hostCounters = GetHostCounters();
+        return hostCounters.Min(_ => _.Value);
+    }
+
+    public int TopOfConnections()
+    {
+        var hostCounters = GetHostCounters();
+        return hostCounters.Max(_ => _.Value);
+    }
+}

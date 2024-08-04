@@ -24,17 +24,17 @@ public class LeastConnection : ILoadBalancer
 
         if (services == null)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"services were null for {_serviceName}"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
         }
         else if (services.Count == 0)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"services were empty for {_serviceName}"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"Services were empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
         }
 
         lock (SyncLock)
         {
             //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
-            UpdateServices(services);
+            UpdateLeasing(services);
 
             Lease wanted = GetLeaseWithLeastConnections();
             _ = Update(ref wanted, true);
@@ -68,7 +68,7 @@ public class LeastConnection : ILoadBalancer
         return _leases.Find(l => l.Connections == min);
     }
 
-    private void UpdateServices(List<Service> services)
+    private void UpdateLeasing(List<Service> services)
     {
         if (_leases.Count > 0)
         {
@@ -80,7 +80,7 @@ public class LeastConnection : ILoadBalancer
         }
         else
         {
-            services.ForEach(s => _leases.Add(new(s.HostAndPort, 0)));
+            services.ForEach(s => _leases.Add(new(s.HostAndPort)));
         }
     }
 }
