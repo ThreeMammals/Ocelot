@@ -1,4 +1,5 @@
-﻿using KubeClient;
+﻿using Consul;
+using KubeClient;
 using KubeClient.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,14 +12,12 @@ using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
-using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -66,7 +65,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var configuration = GivenKubeConfiguration(namespaces, route);
         var downstreamResponse = serviceName;
         this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, downstreamResponse))
-            .And(x => x.GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints))
+            .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
@@ -105,7 +104,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var configuration = GivenKubeConfiguration(namespaces, route);
 
         this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
-            .And(x => x.GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints))
+            .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
@@ -119,16 +118,55 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
     [Theory]
     [Trait("Bug", "2110")]
-    [InlineData(true, 0)]
-    [InlineData(false, 1)]
-    //[InlineData(false, 2)]
-    //[InlineData(false, 3)]
-    public void ShouldReturnServicesFromK8s_HighlyLoadOnTheProviderAndRoundRobinBalancer(bool isK8sGenerationStable, int offlineServicesNo)
+    [InlineData(1, 30)]
+    [InlineData(2, 50)]
+    [InlineData(3, 50)]
+    [InlineData(4, 50)]
+    [InlineData(5, 50)]
+    [InlineData(6, 99)]
+    [InlineData(7, 99)]
+    [InlineData(8, 99)]
+    [InlineData(9, 999)]
+    [InlineData(10, 999)]
+    public void ShouldReturnServicesFromK8s_HighlyLoadOnStableProvider(int totalServices, int totalRequests)
     {
-        // Arrange
-        const int totalServices = 5, totalRequests = 50;
+        const int ZeroGeneration = 0;
+        var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
+        GivenThereIsAFakeKubernetesProvider(given.Endpoints); // stable, services will not be removed from the list
+
+        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, ZeroGeneration);
+
+        int bottom = totalRequests / totalServices,
+            top = totalRequests - (bottom * totalServices) + bottom;
+        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
+        ThenServiceCountersShouldMatchLeasingCounters(given.ServicePorts);
+    }
+
+    [Theory]
+    [Trait("Bug", "2110")]
+    [InlineData(5, 50, 1)]
+    [InlineData(5, 50, 2)]
+    [InlineData(5, 50, 3)]
+    [InlineData(5, 50, 4)]
+    public void ShouldReturnServicesFromK8s_HighlyLoadOnUnStableProvider(int totalServices, int totalRequests, int k8sGeneration)
+    {
+        int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
+        var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
+        GivenThereIsAFakeKubernetesProvider(given.Endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
+
+        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
+
+        int bottom = _roundRobinAnalyzer.BottomOfConnections(),
+            top = _roundRobinAnalyzer.TopOfConnections();
+        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
+        ThenServiceCountersShouldMatchLeasingCounters(given.ServicePorts);
+    }
+
+    private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
+        int totalServices, int totalRequests,
+        [CallerMemberName] string serviceName = nameof(ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer))
+    {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
-        const string serviceName = nameof(ShouldReturnServicesFromK8s_HighlyLoadOnTheProviderAndRoundRobinBalancer);
         var servicePorts = Enumerable.Repeat(0, totalServices)
             .Select(_ => PortFinder.GetRandomPort())
             .ToArray();
@@ -142,33 +180,27 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             .ToList();
         var subset = new EndpointSubsetV1();
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
-        var endpoints = GivenEndpoints(subset); // total 3 service instances with different ports
-        var route = GivenRouteWithServiceName(namespaces, loadBalancerType: nameof(RoundRobinAnalyzer)); // !!!
+        var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
+        var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
         var configuration = GivenKubeConfiguration(namespaces, route);
-        int bottom = totalRequests / totalServices,
-            top = totalRequests - (bottom * totalServices) + bottom,
-            failPerThreads = offlineServicesNo > 0 ? (totalRequests / offlineServicesNo) - 1 : 0;
         GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses, totalRequests);
-        GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, isK8sGenerationStable, offlineServicesNo, failPerThreads); // with stability option
         GivenThereIsAConfiguration(configuration);
-
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
+        return (endpoints, servicePorts);
+    }
 
+    private void HighlyLoadOnKubeProviderAndRoundRobinBalancer(int totalRequests, int k8sGenerationNo)
+    {
         // Act
-        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by 50 parallel requests
+        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by X parallel requests
 
         // Assert
         _k8sCounter.ShouldBe(totalRequests);
-        _k8sServiceGeneration.ShouldBe(isK8sGenerationStable ? 0 : offlineServicesNo);
+        _k8sServiceGeneration.ShouldBe(k8sGenerationNo);
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
-
         _roundRobinAnalyzer.ShouldNotBeNull().Analyze();
-        _roundRobinAnalyzer.HasManyServiceGenerations(isK8sGenerationStable ? 0 : offlineServicesNo).ShouldBeTrue();
-        ThenAllServicesCalledRealisticAmountOfTimes(
-            isK8sGenerationStable ? bottom : _roundRobinAnalyzer.BottomOfConnections(),
-            isK8sGenerationStable ? top : _roundRobinAnalyzer.TopOfConnections());
-        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
+        _roundRobinAnalyzer.HasManyServiceGenerations(k8sGenerationNo).ShouldBeTrue();
     }
 
     private void ThenTheTokenIs(string token)
@@ -238,10 +270,12 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         return configuration;
     }
 
-    private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints)
-        => GivenThereIsAFakeKubernetesProvider(serviceName, namespaces, endpoints, true, 0, 0);
+    private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints,
+        [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
+        => GivenThereIsAFakeKubernetesProvider(endpoints, true, 0, 0, serviceName, namespaces);
 
-    private void GivenThereIsAFakeKubernetesProvider(string serviceName, string namespaces, EndpointsV1 endpoints, bool isStable, int offlineServicesNo, int offlinePerThreads)
+    private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints, bool isStable, int offlineServicesNo, int offlinePerThreads,
+        [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
     {
         _k8sCounter = 0;
         _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
@@ -262,8 +296,10 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                             subset.Addresses.RemoveAt(index);
                             subset.Ports.RemoveAt(index);
                         }
+
                         _k8sServiceGeneration++;
                     }
+
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
                 }
 

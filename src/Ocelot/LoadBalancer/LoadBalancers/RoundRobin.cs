@@ -17,7 +17,6 @@ public class RoundRobin : ILoadBalancer
         _leasing = new();
     }
 
-    //private int _last;
     private static readonly Dictionary<string, int> LastIndices = new();
     protected static readonly object SyncRoot = new();
 
@@ -64,8 +63,8 @@ public class RoundRobin : ILoadBalancer
             // Happy path: Lease now
             UpdateLeasing(readMe);
             Lease wanted = GetLease(next);
-            int leaseIndex = Update(ref wanted, true); // perform counting based on Connections
-            OnLeased(new(wanted, next, index, leaseIndex));
+            _ = Update(ref wanted, true); // perform counting based on Connections
+            OnLeased(new(wanted, next, index));
             return new OkResponse<ServiceHostAndPort>(next.HostAndPort); // but it should be actually new(wanted.HostAndPort)
         }
     }
@@ -97,17 +96,14 @@ public class RoundRobin : ILoadBalancer
 
 public class LeaseEventArgs : EventArgs
 {
-    public LeaseEventArgs(Lease lease, Service service, int serviceIndex, int leaseIndex)
+    public LeaseEventArgs(Lease lease, Service service, int serviceIndex)
     {
         Lease = lease;
         Service = service;
         ServiceIndex = serviceIndex;
-        LeaseIndex = leaseIndex;
     }
 
     public Lease Lease { get; }
     public Service Service { get; }
-
     public int ServiceIndex { get; }
-    public int LeaseIndex { get; }
 }
