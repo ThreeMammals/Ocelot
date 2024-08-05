@@ -6,9 +6,13 @@ using Ocelot.Values;
 
 namespace Ocelot.Provider.Kubernetes;
 
-/// <summary>
-/// Default Kubernetes service discovery provider.
-/// </summary>
+/// <summary>Default Kubernetes service discovery provider.</summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item>NuGet: <see href="https://www.nuget.org/packages/KubeClient">KubeClient</see></item>
+/// <item>GitHub: <see href="https://github.com/tintoy/dotnet-kube-client">dotnet-kube-client</see></item>
+/// </list>
+/// </remarks>
 public class Kube : IServiceDiscoveryProvider
 {
     private readonly KubeRegistryConfiguration _configuration;
@@ -30,16 +34,8 @@ public class Kube : IServiceDiscoveryProvider
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        //var endpoint = await _kubeApi
-        //    .ResourceClient(client => new EndPointClientV1(client))
-        //    .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
         var endpoint = await Retry.OperationAsync(GetEndpoint, Ensure, logger: _logger);
 
-        //if ((endpoint?.Subsets?.Count ?? 0) == 0)
-        //{
-        //    _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
-        //    return new(0);
-        //}
         if (Ensure(endpoint))
         {
             _logger.LogWarning(() => GetMessage($"Unable to use bad result returned by {nameof(Kube)} integration endpoint because the final result is invalid/unknown after multiple retries!"));

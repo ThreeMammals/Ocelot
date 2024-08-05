@@ -5,5 +5,5 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1132:Do not combine fields", Justification = "Has no much sense in test projects", Scope = "type", Target = "~T:Ocelot.AcceptanceTests.ServiceDiscovery.KubernetesServiceDiscoveryTests")]
-[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1513:Closing brace should be followed by blank line", Justification = "Has no much sense in test projects", Scope = "member", Target = "~M:Ocelot.AcceptanceTests.ServiceDiscovery.KubernetesServiceDiscoveryTests.GivenThereIsAFakeKubernetesProvider(System.String,System.String,KubeClient.Models.EndpointsV1,System.Boolean,System.Int32,System.Int32)")]
+[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1132:Do not combine fields", Justification = "Has no much sense in test projects", Scope = "namespaceanddescendants", Target = "~N:Ocelot.AcceptanceTests")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1513:Closing brace should be followed by blank line", Justification = "Has no much sense in test projects", Scope = "namespaceanddescendants", Target = "~N:Ocelot.AcceptanceTests")]

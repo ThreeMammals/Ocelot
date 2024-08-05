@@ -3,7 +3,6 @@ using KubeClient.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
@@ -15,7 +14,6 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -131,15 +129,15 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests)
     {
         const int ZeroGeneration = 0;
-        var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
-        GivenThereIsAFakeKubernetesProvider(given.Endpoints); // stable, services will not be removed from the list
+        var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
+        GivenThereIsAFakeKubernetesProvider(endpoints); // stable, services will not be removed from the list
 
         HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, ZeroGeneration);
 
         int bottom = totalRequests / totalServices,
             top = totalRequests - (bottom * totalServices) + bottom;
         ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
-        ThenServiceCountersShouldMatchLeasingCounters(given.ServicePorts);
+        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
     }
 
     [Theory]
@@ -151,19 +149,19 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration)
     {
         int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
-        var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
-        GivenThereIsAFakeKubernetesProvider(given.Endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
+        var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
+        GivenThereIsAFakeKubernetesProvider(endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
 
         HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
 
         int bottom = _roundRobinAnalyzer.BottomOfConnections(),
             top = _roundRobinAnalyzer.TopOfConnections();
-        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top, false); // with unstable checkings
-        ThenServiceCountersShouldMatchLeasingCounters(given.ServicePorts);
+        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
+        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
     }
 
     private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
-        int totalServices, int totalRequests,
+        int totalServices,
         [CallerMemberName] string serviceName = nameof(ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer))
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
@@ -183,7 +181,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
         var configuration = GivenKubeConfiguration(namespaces, route);
-        GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses, totalRequests);
+        GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
@@ -349,7 +347,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         _serviceCounters[0] = 0;
     }
 
-    private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses, int totalThreads)
+    private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses)
     {
         urls.ForEach(_ => _serviceHandlers.Add(new())); // allocate multiple instances
         _serviceCounters = new(urls.Count); // multiple counters
@@ -386,7 +384,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
     }
 
-    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top, bool stable = true)
+    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
         var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";

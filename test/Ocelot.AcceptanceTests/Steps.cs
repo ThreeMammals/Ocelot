@@ -490,7 +490,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    internal void GivenIWait(int wait) => Thread.Sleep(wait);
+    public static void GivenIWait(int wait) => Thread.Sleep(wait);
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {
@@ -635,8 +635,9 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    #region Cookies helpers
-
+    // #
+    // # Cookies helpers
+    // #
     public void GivenIAddCookieToMyRequest(string cookie)
         => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
@@ -656,7 +657,8 @@ public class Steps : IDisposable
         requestMessage.Headers.Add("Cookie", cookie.ToString());
         return _ocelotClient.SendAsync(requestMessage);
     }
-    #endregion
+
+    // END of Cookies helpers
 
     /// <summary>
     /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
@@ -907,6 +909,7 @@ public class Steps : IDisposable
     private async Task GetParallelResponse(string url, int threadIndex)
     {
         var response = await _ocelotClient.GetAsync(url);
+
         //Thread.Sleep(_random.Next(40, 60));
         //var content = await response.Content.ReadAsStringAsync();
         //var counterValue = content.Contains(':')

@@ -14,7 +14,10 @@ using System.Text.RegularExpressions;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
+/// <summary>
+/// Tests for the <see cref="Provider.Consul.Consul"/> provider.
+/// </summary>
+public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
 {
     private readonly List<ServiceEntry> _consulServices;
     private readonly List<Node> _consulNodes;
@@ -70,14 +73,17 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             .BDDfy();
     }
 
+    private static readonly string[] VersionV1Tags = new[] { "version-v1" };
+    private static readonly string[] GetVsOptionsMethods = new[] { "Get", "Options" };
+
     [Fact]
     public void Should_handle_request_to_consul_for_downstream_service_and_make_request()
     {
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
+        var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
         var configuration = GivenServiceDiscovery(consulPort, route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
@@ -96,7 +102,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
 
         var configuration = GivenServiceDiscovery(consulPort);
         configuration.GlobalConfiguration.DownstreamScheme = "http";
@@ -153,8 +159,8 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         const string token = "abctoken";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", new[] { "version-v1" }, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
 
         var configuration = GivenServiceDiscovery(consulPort, route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider.Token = token;
@@ -211,8 +217,8 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
-        var serviceEntry = GivenServiceEntry(servicePort, "localhost", $"web_90_0_2_224_{servicePort}", new[] { "version-v1" }, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: new[] { "Get", "Options" });
+        var serviceEntry = GivenServiceEntry(servicePort, "localhost", $"web_90_0_2_224_{servicePort}", VersionV1Tags, serviceName);
+        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
         var configuration = GivenServiceDiscovery(consulPort, route);
 
         var sd = configuration.GlobalConfiguration.ServiceDiscoveryProvider;
@@ -245,6 +251,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         // UpstreamHost is used to determine which ServiceName to use when making a request to Consul (e.g. Host: us-shop goes to product-us) 
         const string serviceNameUS = "product-us";
         const string serviceNameEU = "product-eu";
+        string[] tagsUS = new[] { "US" }, tagsEU = new[] { "EU" };
         var consulPort = PortFinder.GetRandomPort();
         var servicePortUS = PortFinder.GetRandomPort();
         var servicePortEU = PortFinder.GetRandomPort();
@@ -254,8 +261,8 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
         var publicUrlEU = $"http://{upstreamHostEU}";
         const string responseBodyUS = "Phone chargers with US plug";
         const string responseBodyEU = "Phone chargers with EU plug";
-        var serviceEntryUS = GivenServiceEntry(servicePortUS, serviceName: serviceNameUS, tags: new[] { "US" });
-        var serviceEntryEU = GivenServiceEntry(servicePortEU, serviceName: serviceNameEU, tags: new[] { "EU" });
+        var serviceEntryUS = GivenServiceEntry(servicePortUS, serviceName: serviceNameUS, tags: tagsUS);
+        var serviceEntryEU = GivenServiceEntry(servicePortEU, serviceName: serviceNameEU, tags: tagsEU);
         var routeUS = GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS);
         var routeEU = GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU);
         var configuration = GivenServiceDiscovery(consulPort, routeUS, routeEU);
@@ -295,6 +302,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     public void Should_return_service_address_by_overridden_service_builder_when_there_is_a_node()
     {
         const string serviceName = "OpenTestService";
+        string[] methods = new[] { HttpMethods.Post, HttpMethods.Get };
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort(); // 9999
         var serviceEntry = GivenServiceEntry(servicePort,
@@ -303,7 +311,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             tags: new[] { serviceName });
         var serviceNode = new Node() { Name = "n1" }; // cornerstone of the bug
         serviceEntry.Node = serviceNode;
-        var route = GivenRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: new[] { "POST", "GET" });
+        var route = GivenRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: methods);
         var configuration = GivenServiceDiscovery(consulPort, route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Raman"))
@@ -431,6 +439,13 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
     private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries) => _consulServices.AddRange(serviceEntries);
     private void GivenTheServiceNodesAreRegisteredWithConsul(params Node[] nodes) => _consulNodes.AddRange(nodes);
 
+#if NET7_0_OR_GREATER
+    [GeneratedRegex("/v1/health/service/(?<serviceName>[^/]+)")]
+    private static partial Regex ServiceNameRegex();
+#else
+    private static readonly Regex ServiceNameRegexVar = new("/v1/health/service/(?<serviceName>[^/]+)");
+    private static Regex ServiceNameRegex() => ServiceNameRegexVar;
+#endif
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
     {
         _consulHandler.GivenThereIsAServiceRunningOn(url, async context =>
@@ -441,7 +456,7 @@ public sealed class ConsulServiceDiscoveryTests : Steps, IDisposable
             }
 
             // Parse the request path to get the service name
-            var pathMatch = Regex.Match(context.Request.Path.Value, "/v1/health/service/(?<serviceName>[^/]+)");
+            var pathMatch = ServiceNameRegex().Match(context.Request.Path.Value);
             if (pathMatch.Success)
             {
                 _counterConsul++;
