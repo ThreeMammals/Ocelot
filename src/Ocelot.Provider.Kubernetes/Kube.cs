@@ -1,4 +1,5 @@
 ﻿using KubeClient.Models;
+using Ocelot.Infrastructure.DesignPatterns;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
@@ -29,19 +30,42 @@ public class Kube : IServiceDiscoveryProvider
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        var endpoint = await _kubeApi
-            .ResourceClient(client => new EndPointClientV1(client))
-            .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+        //var endpoint = await _kubeApi
+        //    .ResourceClient(client => new EndPointClientV1(client))
+        //    .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+        var endpoint = await Retry.OperationAsync(GetEndpoint, Ensure, logger: _logger);
 
-        if ((endpoint?.Subsets?.Count ?? 0) == 0)
+        //if ((endpoint?.Subsets?.Count ?? 0) == 0)
+        //{
+        //    _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
+        //    return new(0);
+        //}
+        if (Ensure(endpoint))
         {
-            _logger.LogWarning(() => $"K8s Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; Unable to use: it is invalid. Address must contain host only e.g. localhost and port must be greater than 0!");
+            _logger.LogWarning(() => GetMessage($"Unable to use bad result returned by {nameof(Kube)} integration endpoint because the final result is invalid/unknown after multiple retries!"));
             return new(0);
         }
 
         return BuildServices(_configuration, endpoint)
             .ToList();
     }
+
+    private Task<EndpointsV1> GetEndpoint() => _kubeApi
+        .ResourceClient(client => new EndPointClientV1(client))
+        .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+
+    private bool Ensure(EndpointsV1 endpoint)
+    {
+        if ((endpoint?.Subsets?.Count ?? 0) == 0)
+        {
+            _logger.LogWarning(() => GetMessage($"Endpoint ensuring has been failed! Endpoint object is null({endpoint == null}), or its subsets collection lenth is {endpoint?.Subsets?.Count ?? 0}."));
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetMessage(string message) => $"{nameof(Kube)} provider. Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; {message}";
 
     protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
         => _serviceBuilder.BuildServices(configuration, endpoint);

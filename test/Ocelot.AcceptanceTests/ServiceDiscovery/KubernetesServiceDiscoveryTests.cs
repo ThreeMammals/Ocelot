@@ -1,9 +1,9 @@
-﻿using Consul;
-using KubeClient;
+﻿using KubeClient;
 using KubeClient.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
@@ -15,9 +15,9 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Xml.Linq;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -128,7 +128,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     [InlineData(8, 99)]
     [InlineData(9, 999)]
     [InlineData(10, 999)]
-    public void ShouldReturnServicesFromK8s_HighlyLoadOnStableProvider(int totalServices, int totalRequests)
+    public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests)
     {
         const int ZeroGeneration = 0;
         var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
@@ -148,7 +148,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     [InlineData(5, 50, 2)]
     [InlineData(5, 50, 3)]
     [InlineData(5, 50, 4)]
-    public void ShouldReturnServicesFromK8s_HighlyLoadOnUnStableProvider(int totalServices, int totalRequests, int k8sGeneration)
+    public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration)
     {
         int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
         var given = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices, totalRequests);
@@ -158,7 +158,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
         int bottom = _roundRobinAnalyzer.BottomOfConnections(),
             top = _roundRobinAnalyzer.TopOfConnections();
-        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
+        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top, false); // with unstable checkings
         ThenServiceCountersShouldMatchLeasingCounters(given.ServicePorts);
     }
 
@@ -195,7 +195,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by X parallel requests
 
         // Assert
-        _k8sCounter.ShouldBe(totalRequests);
+        _k8sCounter.ShouldBeGreaterThanOrEqualTo(totalRequests); // integration endpoint called times
         _k8sServiceGeneration.ShouldBe(k8sGenerationNo);
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
@@ -386,11 +386,17 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
     }
 
-    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
+    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top, bool stable = true)
     {
         var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', sortedByIndex)}]";
-        _serviceCounters.Values.ShouldAllBe(counter => bottom <= counter && counter <= top, customMessage);
+        var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
+        int sum = 0, totalSum = _serviceCounters.Sum(_ => _.Value);
+        for (int i = 0; i < _serviceCounters.Count && sum < totalSum; i++) // last services cannot be called at all, zero counters
+        {
+            int actual = _serviceCounters[i];
+            actual.ShouldBeInRange(bottom, top, customMessage);
+            sum += actual;
+        }
     }
 
     private void ThenServiceCountersShouldMatchLeasingCounters(int[] ports)
@@ -398,10 +404,13 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var leasingCounters = _roundRobinAnalyzer.GetHostCounters();
         for (int i = 0; i < ports.Length; i++)
         {
-            int counter1 = _serviceCounters[i];
-            var host = leasingCounters.Keys.Single(k => k.DownstreamPort == ports[i]);
-            int counter2 = leasingCounters[host];
-            counter1.ShouldBe(counter2, $"Port: {ports[i]}\n\tHost: {host}");
+            var host = leasingCounters.Keys.FirstOrDefault(k => k.DownstreamPort == ports[i]);
+            if (host != null) // leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
+            {
+                int counter1 = _serviceCounters[i];
+                int counter2 = leasingCounters[host];
+                counter1.ShouldBe(counter2, $"Port: {ports[i]}\n    Host: {host}");
+            }
         }
     }
 }
