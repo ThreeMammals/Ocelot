@@ -389,7 +389,9 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
         int sum = 0, totalSum = _serviceCounters.Sum(_ => _.Value);
-        for (int i = 0; i < _serviceCounters.Count && sum < totalSum; i++) // last services cannot be called at all, zero counters
+
+        // Last services cannot be called at all, zero counters
+        for (int i = 0; i < _serviceCounters.Count && sum < totalSum; i++)
         {
             int actual = _serviceCounters[i];
             actual.ShouldBeInRange(bottom, top, customMessage);
