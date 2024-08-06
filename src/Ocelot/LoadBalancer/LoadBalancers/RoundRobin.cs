@@ -33,44 +33,68 @@ public class RoundRobin : ILoadBalancer
 
         lock (SyncRoot)
         {
-            // Capture the count value because another thread might modify the list
-            int count = services.Count;
-            var readMe = new Service[count];
-            services.CopyTo(readMe);
-
-            LastIndices.TryGetValue(_serviceName, out int last);
-            if (last >= count)
-            {
-                last = 0;
-            }
-
-            Service next = null;
-            int index = last, stop = count;
-
-            // Scan for the next online service instance which must be healthy
-            while (next?.HostAndPort == null && stop-- > 0) // TODO Check real health status
-            {
-                index = last;
-                next = readMe[last];
-                LastIndices[_serviceName] = (++last < count) ? last : 0;
-            }
-
-            if (next == null)
+            var readMe = CaptureState(services, out int count);
+            if (!TryScanNext(readMe, out Service next, out int index))
             {
                 return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"The service at index {index} was null in {nameof(RoundRobin)} for {_serviceName} during the {nameof(Lease)} operation. Total services count: {count}."));
             }
 
-            // Happy path: Lease now
-            UpdateLeasing(readMe);
-            Lease wanted = GetLease(next);
-            _ = Update(ref wanted, true); // perform counting based on Connections
-            OnLeased(new(wanted, next, index));
-            return new OkResponse<ServiceHostAndPort>(next.HostAndPort); // but it should be actually new(wanted.HostAndPort)
+            ProcessLeasing(readMe, next, index); // Happy path: Lease now
+            return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
         }
     }
 
-    public virtual void Release(ServiceHostAndPort hostAndPort)
-    { }
+    public virtual void Release(ServiceHostAndPort hostAndPort) { }
+
+    /// <summary>Capture the count value because another thread might modify the list.</summary>
+    /// <param name="services">Mutable collection of services.</param>
+    /// <param name="count">Captured count value.</param>
+    /// <returns>Captured collection as a <see cref="Array"/> object.</returns>
+    private static Service[] CaptureState(List<Service> services, out int count)
+    {
+        // Capture the count value because another thread might modify the list
+        count = services.Count;
+        var readMe = new Service[count];
+        services.CopyTo(readMe);
+        return readMe;
+    }
+
+    /// <summary>Scan for the next online service instance which must be healthy.</summary>
+    /// <param name="readme">Read-only collection.</param>
+    /// <param name="next">The next online service to return.</param>
+    /// <param name="index">The index of the next service to return.</param>
+    /// <returns><see langword="true"/> if found next online service; otherwise <see langword="false"/>.</returns>
+    private bool TryScanNext(Service[] readme, out Service next, out int index)
+    {
+        int length = readme.Length, stop = length;
+        LastIndices.TryGetValue(_serviceName, out int last);
+        if (last >= length)
+        {
+            last = 0;
+        }
+
+        next = null;
+        index = last;
+
+        // Scan for the next service instance
+        // TODO Check real health status
+        while (next?.HostAndPort == null && stop-- > 0)
+        {
+            index = last;
+            next = readme[last];
+            LastIndices[_serviceName] = (++last < length) ? last : 0;
+        }
+
+        return next != null;
+    }
+
+    private void ProcessLeasing(Service[] readme, Service next, int index)
+    {
+        UpdateLeasing(readme);
+        Lease wanted = GetLease(next);
+        _ = Update(ref wanted, true); // perform counting based on Connections
+        OnLeased(new(wanted, next, index));
+    }
 
     private int Update(ref Lease item, bool increase)
     {

@@ -21,14 +21,9 @@ public class LeastConnection : ILoadBalancer
     public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
     {
         var services = await _services.Invoke();
-
-        if (services == null)
+        if ((services?.Count ?? 0) == 0)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
-        }
-        else if (services.Count == 0)
-        {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"Services were empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
         }
 
         lock (SyncLock)

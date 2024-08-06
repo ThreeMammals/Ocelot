@@ -34,9 +34,9 @@ public class Kube : IServiceDiscoveryProvider
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        var endpoint = await Retry.OperationAsync(GetEndpoint, Ensure, logger: _logger);
+        var endpoint = await Retry.OperationAsync(GetEndpoint, CheckErroneousState, logger: _logger);
 
-        if (Ensure(endpoint))
+        if (CheckErroneousState(endpoint))
         {
             _logger.LogWarning(() => GetMessage($"Unable to use bad result returned by {nameof(Kube)} integration endpoint because the final result is invalid/unknown after multiple retries!"));
             return new(0);
@@ -50,18 +50,11 @@ public class Kube : IServiceDiscoveryProvider
         .ResourceClient(client => new EndPointClientV1(client))
         .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
 
-    private bool Ensure(EndpointsV1 endpoint)
-    {
-        if ((endpoint?.Subsets?.Count ?? 0) == 0)
-        {
-            _logger.LogWarning(() => GetMessage($"Endpoint ensuring has been failed! Endpoint object is null({endpoint == null}), or its subsets collection lenth is {endpoint?.Subsets?.Count ?? 0}."));
-            return true;
-        }
+    private bool CheckErroneousState(EndpointsV1 endpoint)
+        => (endpoint?.Subsets?.Count ?? 0) == 0; // null or count is zero
 
-        return false;
-    }
-
-    private string GetMessage(string message) => $"{nameof(Kube)} provider. Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; {message}";
+    private string GetMessage(string message)
+        => $"{nameof(Kube)} provider. Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; {message}";
 
     protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
         => _serviceBuilder.BuildServices(configuration, endpoint);

@@ -13,8 +13,8 @@ public class CookieStickySessions : ILoadBalancer
     private readonly ILoadBalancer _loadBalancer;
     private readonly IBus<StickySession> _bus;
 
-    private static readonly object _lock = new();
-    private static readonly ConcurrentDictionary<string, StickySession> _stored = new(); // TODO Inject instead of static sharing
+    private static readonly object Locker = new();
+    private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
 
     public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus)
     {
@@ -28,16 +28,15 @@ public class CookieStickySessions : ILoadBalancer
     private void CheckExpiry(StickySession sticky)
     {
         // TODO Get test coverage for this
-        if (_stored.TryGetValue(sticky.Key, out var session))
+        lock (Locker)
         {
-            lock (_lock)
+            if (!Stored.TryGetValue(sticky.Key, out var session) || session.Expiry >= DateTime.UtcNow)
             {
-                if (session.Expiry < DateTime.UtcNow)
-                {
-                    _stored.TryRemove(session.Key, out _);
-                    _loadBalancer.Release(session.HostAndPort);
-                }
+                return;
             }
+
+            Stored.Remove(session.Key);
+            _loadBalancer.Release(session.HostAndPort);
         }
     }
 
@@ -47,9 +46,9 @@ public class CookieStickySessions : ILoadBalancer
         var serviceName = route.LoadBalancerKey;
         var cookie = httpContext.Request.Cookies[_cookieName];
         var key = $"{serviceName}:{cookie}"; // strong key name because of static store
-        lock (_lock)
+        lock (Locker)
         {
-            if (!string.IsNullOrEmpty(key) && _stored.TryGetValue(key, out StickySession cached))
+            if (!string.IsNullOrEmpty(key) && Stored.TryGetValue(key, out StickySession cached))
             {
                 var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
                 Update(key, updated);
@@ -71,8 +70,11 @@ public class CookieStickySessions : ILoadBalancer
 
     protected void Update(string key, StickySession value)
     {
-        _stored[key] = value;
-        _bus.Publish(value, _keyExpiryInMs);
+        lock (Locker)
+        {
+            Stored[key] = value;
+            _bus.Publish(value, _keyExpiryInMs);
+        }
     }
 
     public void Release(ServiceHostAndPort hostAndPort)

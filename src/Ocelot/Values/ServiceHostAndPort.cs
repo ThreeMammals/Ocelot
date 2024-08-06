@@ -44,11 +44,11 @@ public class ServiceHostAndPort : IEquatable<ServiceHostAndPort>
     /// <returns><see langword="true"/> if both operands are equal; otherwise, <see langword="false"/>.</returns>
     public static bool operator ==(ServiceHostAndPort l, ServiceHostAndPort r)
         => (((object)l) == null || ((object)r) == null)
-            ? object.Equals(l, r)
+            ? Equals(l, r)
             : l.DownstreamHost == r.DownstreamHost && l.DownstreamPort == r.DownstreamPort && l.Scheme == r.Scheme;
 
     public static bool operator !=(ServiceHostAndPort l, ServiceHostAndPort r)
         => (((object)l) == null || ((object)r) == null)
-            ? !object.Equals(l, r)
+            ? !Equals(l, r)
             : !(l == r);
 }

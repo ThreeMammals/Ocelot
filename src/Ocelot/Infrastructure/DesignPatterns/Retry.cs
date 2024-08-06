@@ -33,7 +33,7 @@ public static class Retry
     {
         for (int i = 0; i < retryTimes - 1; i++)
         {
-            TResult result = default;
+            TResult result;
             try
             {
                 result = operation.Invoke();
@@ -80,7 +80,7 @@ public static class Retry
     {
         for (int i = 0; i < retryTimes - 1; i++)
         {
-            TResult result = default;
+            TResult result;
             try
             {
                 result = await operation?.Invoke();

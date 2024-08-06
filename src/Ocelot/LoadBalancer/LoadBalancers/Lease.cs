@@ -33,7 +33,7 @@ public struct Lease : IEquatable<Lease>
 
     public static Lease Null => new();
 
-    public override readonly string ToString() => string.Format("({0}+{1})", HostAndPort, Connections);
+    public override readonly string ToString() => $"({HostAndPort}+{Connections})";
     public override readonly int GetHashCode() => HostAndPort.GetHashCode();
     public override readonly bool Equals(object obj) => obj is Lease l && this == l;
     public readonly bool Equals(Lease other) => this == other;

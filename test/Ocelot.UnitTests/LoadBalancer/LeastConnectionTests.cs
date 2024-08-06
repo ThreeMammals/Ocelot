@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -222,7 +223,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreNullErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
@@ -235,20 +236,15 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreEmptyErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
-        private void ThenServiceAreNullErrorIsReturned()
+        private void ThenErrorIsReturned<TError>()
+            where TError : Error
         {
             _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
-        }
-
-        private void ThenServiceAreEmptyErrorIsReturned()
-        {
-            _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreEmptyError>();
+            _result.Errors[0].ShouldBeOfType<TError>();
         }
 
         private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
