@@ -15,6 +15,10 @@ public static class Retry
     public const int DefaultRetryTimes = 3;
     public const int DefaultWaitTimeMilliseconds = 25;
 
+    private static string GetMessage<T>(T operation, int retryNo, string message)
+        where T : Delegate
+        => $"Ocelot {nameof(Retry)} strategy for the operation of '{operation.GetType()}' type -> {nameof(Retry)} No {retryNo}: {message}";
+
     /// <summary>
     /// Retry a synchronous operation when an exception occurs or predicate is true, then delay and retry again.
     /// </summary>
@@ -31,7 +35,7 @@ public static class Retry
         int retryTimes = DefaultRetryTimes, int waitTime = DefaultWaitTimeMilliseconds,
         IOcelotLogger logger = null)
     {
-        for (int i = 0; i < retryTimes - 1; i++)
+        for (int n = 1; n < retryTimes; n++)
         {
             TResult result;
             try
@@ -40,7 +44,7 @@ public static class Retry
             }
             catch (Exception e)
             {
-                logger?.LogWarning(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {i + 1}: Getting exception -> '{e.Message}'");
+                logger?.LogError(() => GetMessage(operation, n, $"Caught exception of the {e.GetType()} type -> Message: {e.Message}."), e);
                 Thread.Sleep(waitTime);
                 continue; // the result is unknown, so continue to retry
             }
@@ -48,7 +52,7 @@ public static class Retry
             // Apply predicate for known result
             if (predicate?.Invoke(result) == true)
             {
-                logger?.LogDebug(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {i + 1}: Operation predicate failed.");
+                logger?.LogWarning(() => GetMessage(operation, n, $"The predicate has identified erroneous state in the returned result. For further details, implement logging of the result's value or properties within the predicate method."));
                 Thread.Sleep(waitTime);
                 continue; // on erroneous state
             }
@@ -58,7 +62,7 @@ public static class Retry
         }
 
         // Last retry should generate native exception or other erroneous state(s)
-        logger?.LogDebug(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {retryTimes}: Retrying lastly...");
+        logger?.LogDebug(() => GetMessage(operation, retryTimes, $"Retrying lastly..."));
         return operation.Invoke(); // also final result must be analyzed in the upper context
     }
 
@@ -78,7 +82,7 @@ public static class Retry
         int retryTimes = DefaultRetryTimes, int waitTime = DefaultWaitTimeMilliseconds, // retrying options
         IOcelotLogger logger = null) // static injections
     {
-        for (int i = 0; i < retryTimes - 1; i++)
+        for (int n = 1; n < retryTimes; n++)
         {
             TResult result;
             try
@@ -87,7 +91,7 @@ public static class Retry
             }
             catch (Exception e)
             {
-                logger?.LogWarning(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {i + 1}: Getting exception -> '{e.Message}'");
+                logger?.LogError(() => GetMessage(operation, n, $"Caught exception of the {e.GetType()} type -> Message: {e.Message}."), e);
                 await Task.Delay(waitTime);
                 continue; // the result is unknown, so continue to retry
             }
@@ -95,7 +99,7 @@ public static class Retry
             // Apply predicate for known result
             if (predicate?.Invoke(result) == true)
             {
-                logger?.LogDebug(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {i + 1}: Operation predicate failed.");
+                logger?.LogWarning(() => GetMessage(operation, n, $"The predicate has identified erroneous state in the returned result. For further details, implement logging of the result's value or properties within the predicate method."));
                 await Task.Delay(waitTime);
                 continue; // on erroneous state
             }
@@ -105,7 +109,7 @@ public static class Retry
         }
 
         // Last retry should generate native exception or other erroneous state(s)
-        logger?.LogDebug(() => $"Ocelot {nameof(Retry)} strategy -> {nameof(Retry)} {retryTimes}: Retrying lastly...");
+        logger?.LogDebug(() => GetMessage(operation, retryTimes, $"Retrying lastly..."));
         return await operation?.Invoke(); // also final result must be analyzed in the upper context
     }
 }
