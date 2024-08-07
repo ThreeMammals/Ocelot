@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -21,7 +22,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_be_able_to_lease_and_release_concurrently()
+        public async Task Should_be_able_to_lease_and_release_concurrently()
         {
             var serviceName = "products";
 
@@ -45,7 +46,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_handle_service_returning_to_available()
+        public async Task Should_handle_service_returning_to_available()
         {
             var serviceName = "products";
 
@@ -98,7 +99,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public void should_get_next_url()
+        public void Should_get_next_url()
         {
             var serviceName = "products";
 
@@ -117,7 +118,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_serve_from_service_with_least_connections()
+        public async Task Should_serve_from_service_with_least_connections()
         {
             var serviceName = "products";
 
@@ -145,7 +146,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_build_connections_per_service()
+        public async Task Should_build_connections_per_service()
         {
             var serviceName = "products";
 
@@ -176,7 +177,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_release_connection()
+        public async Task Should_release_connection()
         {
             var serviceName = "products";
 
@@ -214,7 +215,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public void should_return_error_if_services_are_null()
+        public void Should_return_error_if_services_are_null()
         {
             var serviceName = "products";
 
@@ -222,12 +223,12 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreNullErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
         [Fact]
-        public void should_return_error_if_services_are_empty()
+        public void Should_return_error_if_services_are_empty()
         {
             var serviceName = "products";
 
@@ -235,31 +236,21 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreEmptyErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
-        private void ThenServiceAreNullErrorIsReturned()
+        private void ThenErrorIsReturned<TError>()
+            where TError : Error
         {
             _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
-        }
-
-        private void ThenServiceAreEmptyErrorIsReturned()
-        {
-            _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreEmptyError>();
+            _result.Errors[0].ShouldBeOfType<TError>();
         }
 
         private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
         {
             _services = services;
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
-        }
-
-        private void WhenTheLoadBalancerStarts(List<Service> services, string serviceName)
-        {
-            GivenTheLoadBalancerStarts(services, serviceName);
         }
 
         private void GivenAHostAndPort(ServiceHostAndPort hostAndPort)
