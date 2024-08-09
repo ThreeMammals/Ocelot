@@ -42,7 +42,8 @@ namespace Ocelot.Configuration
             Version downstreamHttpVersion,
             HttpVersionPolicy downstreamHttpVersionPolicy,
             Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
-            MetadataOptions metadataOptions)
+            MetadataOptions metadataOptions,
+            int timeout)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -81,6 +82,7 @@ namespace Ocelot.Configuration
             DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
             UpstreamHeaders = upstreamHeaders ?? new();
             MetadataOptions = metadataOptions;
+            Timeout = timeout;
         }
 
         public string Key { get; }
@@ -131,5 +133,13 @@ namespace Ocelot.Configuration
         public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
         public MetadataOptions MetadataOptions { get; }
+
+        /// <summary>
+        /// The timeout duration for the downstream request in seconds.
+        /// </summary>
+        /// <value>
+        /// The timeout value in seconds.
+        /// </value>
+        public int Timeout { get; }
     }
 }

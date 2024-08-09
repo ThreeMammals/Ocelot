@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Requester;
 using System.Reflection;
@@ -183,25 +184,27 @@ public sealed class PollyQoSTests : Steps, IDisposable
     [Trait("Bug", "1833")]
     public void Should_timeout_per_default_after_90_seconds()
     {
+        var defTimeoutMs = 1_000 * RoutesCreator.DefaultRequestTimeoutSeconds; // original value is 90 seconds
+        defTimeoutMs = 1_000 * 3; // override value
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 3500)) // 3.5s > 3s -> ServiceUnavailable
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500)) // 3.5s > 3s -> ServiceUnavailable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => GivenIHackDefaultTimeoutValue(3)) // after 3 secs -> Timeout exception aka request cancellation
+            .And(x => GivenIHackDefaultTimeoutValue(defTimeoutMs)) // after 3 secs -> Timeout exception aka request cancellation
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .BDDfy();
     }
 
-    private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
-    {
-        var field = typeof(MessageInvokerPool).GetField("_requestTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
-        var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
-        field.SetValue(service, defaultTimeoutSeconds); // hack the value of default 90 seconds
-    }
+        private void GivenIHackDefaultTimeoutValue(int defaultTimeoutMs)
+        {
+            var field = typeof(MessageInvokerPool).GetField("_timeoutMilliseconds", BindingFlags.NonPublic | BindingFlags.Instance);
+            var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
+            field.SetValue(service, defaultTimeoutMs); // hack the value of default 90 seconds
+        }
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 

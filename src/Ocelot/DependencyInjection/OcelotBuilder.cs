@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Ocelot.Authorization;
-using Ocelot.Cache;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
@@ -27,7 +26,6 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
@@ -53,7 +51,8 @@ namespace Ocelot.DependencyInjection
             Configuration = configurationRoot;
             Services = services;
             Services.Configure<FileConfiguration>(configurationRoot);
-
+            Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection("GlobalConfiguration"));
+            
             Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
             Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
             Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();

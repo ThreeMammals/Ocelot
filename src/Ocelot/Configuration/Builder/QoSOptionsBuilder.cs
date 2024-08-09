@@ -6,7 +6,7 @@
 
         private int _durationOfBreak;
 
-        private int _timeoutValue;
+        private int? _timeoutValue;
 
         private string _key;
 
@@ -22,7 +22,7 @@
             return this;
         }
 
-        public QoSOptionsBuilder WithTimeoutValue(int timeoutValue)
+        public QoSOptionsBuilder WithTimeoutValue(int? timeoutValue)
         {
             _timeoutValue = timeoutValue;
             return this;
