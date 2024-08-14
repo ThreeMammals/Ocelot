@@ -405,8 +405,9 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         for (int i = 0; i < ports.Length; i++)
         {
             var host = leasingCounters.Keys.FirstOrDefault(k => k.DownstreamPort == ports[i]);
-            if (host != null) // leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
+            if (host != null)
             {
+                // Leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
                 int counter1 = _serviceCounters[i];
                 int counter2 = leasingCounters[host];
                 counter1.ShouldBe(counter2, $"Port: {ports[i]}\n    Host: {host}");
@@ -421,7 +422,6 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
 
     protected override ServiceHostAndPort GetServiceHostAndPort(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
     {
-        //return base.GetServiceHostAndPort(configuration, endpoint, subset, address);
         var ports = subset.Ports;
         var index = subset.Addresses.IndexOf(address);
         var portV1 = ports[index];

@@ -57,19 +57,17 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
         var port2 = PortFinder.GetRandomPort();
         var serviceEntryOne = GivenServiceEntry(port1, serviceName: serviceName);
         var serviceEntryTwo = GivenServiceEntry(port2, serviceName: serviceName);
-        var route = GivenRoute(serviceName: serviceName);
+        var route = GivenRoute(serviceName: serviceName); // LeastConnection load balancer
         var configuration = GivenServiceDiscovery(consulPort, route);
         this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), 200))
             .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), 200))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) //(24, 26))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
             .BDDfy();
     }
 
@@ -89,7 +87,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGateway("/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -117,7 +115,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -125,7 +123,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_use_consul_service_discovery_and_load_balance_request_no_re_routes()
+    public void Should_use_consul_service_discovery_and_load_balance_request_no_routes()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -143,12 +141,10 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes($"/{serviceName}/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) //(24, 26))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
             .BDDfy();
     }
 
@@ -169,7 +165,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithConsul())
+            .And(_ => GivenOcelotIsRunningWithServices(WithConsul))
             .When(_ => WhenIGetUrlOnTheApiGateway("/home"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -193,7 +189,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
@@ -205,9 +201,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => GivenIResetCounters())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
             .BDDfy();
     }
 
@@ -230,7 +224,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul())
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -277,7 +271,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul)) // GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
             .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -319,7 +313,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => x.GivenTheServiceNodesAreRegisteredWithConsul(serviceNode))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithConsul()) // default services registration results with the bug: "n1" host issue
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul)) // default services registration results with the bug: "n1" host issue
             .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .And(x => ThenTheResponseBodyShouldBe(""))
@@ -336,8 +330,11 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private static void WithOverriddenConsulServiceBuilder(IServiceCollection services)
-        => services.AddOcelot().AddConsul<MyConsulServiceBuilder>();
+    private static void WithConsul(IServiceCollection services) => services
+        .AddOcelot().AddConsul();
+
+    private static void WithOverriddenConsulServiceBuilder(IServiceCollection services) => services
+        .AddOcelot().AddConsul<MyConsulServiceBuilder>();
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
     {

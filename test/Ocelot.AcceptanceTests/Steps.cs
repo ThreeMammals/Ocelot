@@ -310,33 +310,6 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithConsul(params string[] urlsToListenOn)
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        if (urlsToListenOn?.Length > 0)
-        {
-            _webHostBuilder.UseUrls(urlsToListenOn);
-        }
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot().AddConsul(); })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
     public void ThenTheTraceHeaderIsSet(string key)
     {
         var header = _response.Headers.GetValues(key);
