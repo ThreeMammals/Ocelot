@@ -27,7 +27,8 @@ namespace Ocelot.UnitTests.Kubernetes
         }
 
         [Fact]
-        public void should_return_service_from_kube()
+        [Trait("Feat", "345")]
+        public void Should_return_service_from_kube()
         {
             var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
 

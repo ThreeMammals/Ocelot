@@ -49,7 +49,8 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_use_consul_service_discovery_and_load_balance_request()
+    [Trait("Feat", "28")]
+    public void ShouldDiscoverServicesInConsul_LoadBalanceByLeastConnection_InRoutes()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -57,7 +58,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
         var port2 = PortFinder.GetRandomPort();
         var serviceEntryOne = GivenServiceEntry(port1, serviceName: serviceName);
         var serviceEntryTwo = GivenServiceEntry(port2, serviceName: serviceName);
-        var route = GivenRoute(serviceName: serviceName); // LeastConnection load balancer
+        var route = GivenRoute(serviceName: serviceName, loadBalancerType: nameof(LeastConnection));
         var configuration = GivenServiceDiscovery(consulPort, route);
         this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), 200))
             .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), 200))
@@ -75,7 +76,9 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     private static readonly string[] GetVsOptionsMethods = new[] { "Get", "Options" };
 
     [Fact]
-    public void Should_handle_request_to_consul_for_downstream_service_and_make_request()
+    [Trait("Feat", "201")]
+    [Trait("Bug", "213")]
+    public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequest()
     {
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
@@ -95,7 +98,9 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes()
+    [Trait("Bug", "213")]
+    [Trait("Feat", "201 340")]
+    public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequest_DynamicRoutingWithNoRoutes()
     {
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
@@ -123,7 +128,8 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_use_consul_service_discovery_and_load_balance_request_no_routes()
+    [Trait("Feat", "340")]
+    public void ShouldUseConsulServiceDiscovery_LoadBalanceRequest_DynamicRoutingWithNoRoutes()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -149,7 +155,8 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_use_token_to_make_request_to_consul()
+    [Trait("Feat", "295")]
+    public void ShouldUseAclTokenToMakeRequestToConsul()
     {
         const string serviceName = "web";
         const string token = "abctoken";
@@ -174,7 +181,8 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_send_request_to_service_after_it_becomes_available_in_consul()
+    [Trait("Bug", "181")]
+    public void ShouldSendRequestToService_AfterItBecomesAvailableInConsul()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -206,7 +214,8 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
     }
 
     [Fact]
-    public void Should_handle_request_to_poll_consul_for_downstream_service_and_make_request()
+    [Trait("Feat", "374")]
+    public void ShouldPollConsulForDownstreamServiceAndMakeRequest()
     {
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
@@ -216,7 +225,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
         var configuration = GivenServiceDiscovery(consulPort, route);
 
         var sd = configuration.GlobalConfiguration.ServiceDiscoveryProvider;
-        sd.Type = nameof(PollConsul);
+        sd.Type = nameof(PollConsul); // !!!
         sd.PollingInterval = 0;
         sd.Namespace = string.Empty;
 

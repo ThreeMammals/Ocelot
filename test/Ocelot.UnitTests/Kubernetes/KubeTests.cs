@@ -26,6 +26,7 @@ public class KubeTests
     }
 
     [Fact]
+    [Trait("Feat", "345")]
     public async Task Should_return_service_from_k8s()
     {
         // Arrange

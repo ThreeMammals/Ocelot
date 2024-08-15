@@ -20,9 +20,10 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         }
 
         [Theory]
+        [Trait("Feat", "262")]
         [InlineData(true)]
         [InlineData(false)]
-        public void should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
+        public void Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
         {
             Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
             var eurekaPort = 8761;
