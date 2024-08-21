@@ -57,6 +57,6 @@
         /// Gets or sets a value that indicates whether additional HTTP/2 connections can be established to the same server.
         /// </summary>
         /// <value>EnableMultipleHttp2Connections.</value>
-        public bool EnableMultipleHttp2Connections { get; set; }
+        public bool EnableMultipleHttp2Connections { get; }
     }
 }
