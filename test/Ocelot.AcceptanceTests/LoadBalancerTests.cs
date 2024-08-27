@@ -23,6 +23,7 @@ public sealed class LoadBalancerTests : IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "211")]
     public void Should_load_balance_request_with_least_connection()
     {
         var portOne = PortFinder.GetRandomPort();
@@ -74,6 +75,7 @@ public sealed class LoadBalancerTests : IDisposable
     }
 
     [Fact]
+    [Trait("Bug", "365")]
     public void Should_load_balance_request_with_round_robin()
     {
         var downstreamPortOne = PortFinder.GetRandomPort();
@@ -124,6 +126,7 @@ public sealed class LoadBalancerTests : IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "961")]
     public void Should_load_balance_request_with_custom_load_balancer()
     {
         var downstreamPortOne = PortFinder.GetRandomPort();
