@@ -1,85 +1,83 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.LoadBalancer.LoadBalancers;
+
+public class CookieStickySessions : ILoadBalancer
 {
-    public class CookieStickySessions : ILoadBalancer
+    private readonly int _keyExpiryInMs;
+    private readonly string _cookieName;
+    private readonly ILoadBalancer _loadBalancer;
+    private readonly IBus<StickySession> _bus;
+
+    private static readonly object Locker = new();
+    private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
+
+    public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus)
     {
-        private readonly int _keyExpiryInMs;
-        private readonly string _key;
-        private readonly ILoadBalancer _loadBalancer;
-        private readonly ConcurrentDictionary<string, StickySession> _stored;
-        private readonly IBus<StickySession> _bus;
-        private readonly object _lock = new();
+        _bus = bus;
+        _cookieName = cookieName;
+        _keyExpiryInMs = keyExpiryInMs;
+        _loadBalancer = loadBalancer;
+        _bus.Subscribe(CheckExpiry);
+    }
 
-        public CookieStickySessions(ILoadBalancer loadBalancer, string key, int keyExpiryInMs, IBus<StickySession> bus)
+    private void CheckExpiry(StickySession sticky)
+    {
+        // TODO Get test coverage for this
+        lock (Locker)
         {
-            _bus = bus;
-            _key = key;
-            _keyExpiryInMs = keyExpiryInMs;
-            _loadBalancer = loadBalancer;
-            _stored = new ConcurrentDictionary<string, StickySession>();
-            _bus.Subscribe(ss =>
+            if (!Stored.TryGetValue(sticky.Key, out var session) || session.Expiry >= DateTime.UtcNow)
             {
-                //todo - get test coverage for this.
-                if (_stored.TryGetValue(ss.Key, out var stickySession))
-                {
-                    lock (_lock)
-                    {
-                        if (stickySession.Expiry < DateTime.UtcNow)
-                        {
-                            _stored.TryRemove(stickySession.Key, out _);
-                            _loadBalancer.Release(stickySession.HostAndPort);
-                        }
-                    }
-                }
-            });
-        }
-
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-        {
-            var key = httpContext.Request.Cookies[_key];
-
-            lock (_lock)
-            {
-                if (!string.IsNullOrEmpty(key) && _stored.ContainsKey(key))
-                {
-                    var cached = _stored[key];
-
-                    var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
-
-                    _stored[key] = updated;
-
-                    _bus.Publish(updated, _keyExpiryInMs);
-
-                    return new OkResponse<ServiceHostAndPort>(updated.HostAndPort);
-                }
+                return;
             }
 
-            var next = await _loadBalancer.Lease(httpContext);
+            Stored.Remove(session.Key);
+            _loadBalancer.Release(session.HostAndPort);
+        }
+    }
 
+    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+    {
+        var route = httpContext.Items.DownstreamRoute();
+        var serviceName = route.LoadBalancerKey;
+        var cookie = httpContext.Request.Cookies[_cookieName];
+        var key = $"{serviceName}:{cookie}"; // strong key name because of static store
+        lock (Locker)
+        {
+            if (!string.IsNullOrEmpty(key) && Stored.TryGetValue(key, out StickySession cached))
+            {
+                var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
+                Update(key, updated);
+                return Task.FromResult<Response<ServiceHostAndPort>>(new OkResponse<ServiceHostAndPort>(updated.HostAndPort));
+            }
+
+            // There is no value in the store, so lease it now!
+            var next = _loadBalancer.Lease(httpContext).GetAwaiter().GetResult(); // unfortunately the operation must be synchronous
             if (next.IsError)
             {
-                return new ErrorResponse<ServiceHostAndPort>(next.Errors);
+                return Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(next.Errors));
             }
 
-            lock (_lock)
-            {
-                if (!string.IsNullOrEmpty(key) && !_stored.ContainsKey(key))
-                {
-                    var ss = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
-                    _stored[key] = ss;
-                    _bus.Publish(ss, _keyExpiryInMs);
-                }
-            }
-
-            return new OkResponse<ServiceHostAndPort>(next.Data);
+            var ss = new StickySession(next.Data, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
+            Update(key, ss);
+            return Task.FromResult<Response<ServiceHostAndPort>>(new OkResponse<ServiceHostAndPort>(next.Data));
         }
+    }
 
-        public void Release(ServiceHostAndPort hostAndPort)
+    protected void Update(string key, StickySession value)
+    {
+        lock (Locker)
         {
+            Stored[key] = value;
+            _bus.Publish(value, _keyExpiryInMs);
         }
+    }
+
+    public void Release(ServiceHostAndPort hostAndPort)
+    {
     }
 }

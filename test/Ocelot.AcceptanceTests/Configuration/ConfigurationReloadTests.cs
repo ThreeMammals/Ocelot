@@ -47,7 +47,7 @@ namespace Ocelot.AcceptanceTests.Configuration
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken))
+                .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
                 .And(x => _steps.ThenConfigShouldBe(_initialConfig))
                 .BDDfy();
         }
@@ -59,7 +59,7 @@ namespace Ocelot.AcceptanceTests.Configuration
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
                 .And(x => _steps.GivenIHaveAChangeToken())
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken))
+                .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
                 .Then(x => _steps.TheChangeTokenShouldBeActive(true))
                 .BDDfy();
         }
@@ -70,9 +70,9 @@ namespace Ocelot.AcceptanceTests.Configuration
             this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
                 .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
                 .And(x => _steps.GivenIHaveAChangeToken())
-                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
+                .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
                 .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-                .And(x => _steps.GivenIWait(MillisecondsToWaitForChangeToken))
+                .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
                 .Then(x => _steps.TheChangeTokenShouldBeActive(false))
                 .BDDfy();
         }

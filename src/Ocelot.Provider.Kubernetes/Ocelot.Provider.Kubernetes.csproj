@@ -29,8 +29,8 @@
     <Compile Remove="KubeApiClientFactory.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="KubeClient" Version="2.4.10" />
-    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.4.10" />
+    <PackageReference Include="KubeClient" Version="2.5.8" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.5.8" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
