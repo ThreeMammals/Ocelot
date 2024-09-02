@@ -19,7 +19,7 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
+public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
 {
     private readonly string _kubernetesUrl;
     private readonly IKubeApiClient _clientFactory;
@@ -190,7 +190,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     private void HighlyLoadOnKubeProviderAndRoundRobinBalancer(int totalRequests, int k8sGenerationNo)
     {
         // Act
-        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by X parallel requests
+        WhenIGetUrlOnTheApiGatewayConcurrently("/", totalRequests); // load by X parallel requests
 
         // Assert
         _k8sCounter.ShouldBeGreaterThanOrEqualTo(totalRequests); // integration endpoint called times

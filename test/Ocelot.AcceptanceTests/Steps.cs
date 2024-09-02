@@ -28,7 +28,6 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
-using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
@@ -44,7 +43,6 @@ public class Steps : IDisposable
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
     protected HttpResponseMessage _response;
-    protected ConcurrentDictionary<int, HttpResponseMessage> _parallelResponses;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
@@ -63,7 +61,6 @@ public class Steps : IDisposable
         _ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
         Files = new() { _ocelotConfigFileName };
         Folders = new();
-        _parallelResponses = new();
     }
 
     protected List<string> Files { get; }
@@ -865,34 +862,6 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public Task[] WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
-    {
-        var tasks = new Task[times];
-        _parallelResponses = new(times, times);
-        for (var i = 0; i < times; i++)
-        {
-            tasks[i] = GetParallelResponse(url, i);
-            _parallelResponses[i] = null;
-        }
-
-        Task.WaitAll(tasks);
-        return tasks;
-    }
-
-    private async Task GetParallelResponse(string url, int threadIndex)
-    {
-        var response = await _ocelotClient.GetAsync(url);
-
-        //Thread.Sleep(_random.Next(40, 60));
-        //var content = await response.Content.ReadAsStringAsync();
-        //var counterValue = content.Contains(':')
-        //    ? content.Split(':')[0] // let the first fragment is counter value
-        //    : content;
-        //int count = int.Parse(counterValue);
-        //count.ShouldBeGreaterThan(0);
-        _parallelResponses[threadIndex] = response;
-    }
-
     public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
     {
         for (var i = 0; i < times; i++)
@@ -955,9 +924,6 @@ public class Steps : IDisposable
 
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
         => _response.StatusCode.ShouldBe(expected);
-
-    public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
-        => _parallelResponses.ShouldAllBe(response => response.Value.StatusCode == expected);
 
     public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
     {
@@ -1168,11 +1134,6 @@ public class Steps : IDisposable
             _ocelotServer?.Dispose();
             _ocelotHost?.Dispose();
             _response?.Dispose();
-            foreach (var response in _parallelResponses)
-            {
-                response.Value?.Dispose();
-            }
-
             DeleteFiles();
             DeleteFolders();
         }

@@ -8,9 +8,8 @@ using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class LoadBalancerTests : IDisposable
+public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
 {
-    private readonly Steps _steps;
     private int _counterOne;
     private int _counterTwo;
     private static readonly object SyncLock = new();
@@ -19,7 +18,12 @@ public sealed class LoadBalancerTests : IDisposable
     public LoadBalancerTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        base.Dispose();
     }
 
     [Fact]
@@ -63,9 +67,9 @@ public sealed class LoadBalancerTests : IDisposable
 
         this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
@@ -114,9 +118,9 @@ public sealed class LoadBalancerTests : IDisposable
 
         this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
@@ -167,9 +171,9 @@ public sealed class LoadBalancerTests : IDisposable
 
         this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 50))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
@@ -267,11 +271,5 @@ public sealed class LoadBalancerTests : IDisposable
                 await context.Response.WriteAsync(exception.StackTrace);
             }
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
     }
 }
