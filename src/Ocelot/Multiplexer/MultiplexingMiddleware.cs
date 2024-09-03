@@ -276,7 +276,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         }
         else
         {
-            Logger.LogWarning("Aggregation does not support body copy without Content-Length header!");
+            Logger.LogInformation("Aggregation does not support body copy without Content-Length header, skipping body copy.");
         }
 
         return targetBuffer;
