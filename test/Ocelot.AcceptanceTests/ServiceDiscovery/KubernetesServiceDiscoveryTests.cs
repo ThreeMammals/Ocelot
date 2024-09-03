@@ -23,7 +23,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
 {
     private readonly string _kubernetesUrl;
     private readonly IKubeApiClient _clientFactory;
-    private readonly List<ServiceHandler> _serviceHandlers;
     private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
 
@@ -38,13 +37,11 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             AllowInsecure = true,
         };
         _clientFactory = KubeApiClient.Create(option);
-        _serviceHandlers = new();
         _kubernetesHandler = new();
     }
 
     public override void Dispose()
     {
-        _serviceHandlers.ForEach(handler => handler?.Dispose());
         _kubernetesHandler.Dispose();
         base.Dispose();
     }
@@ -62,7 +59,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         var route = GivenRouteWithServiceName(namespaces);
         var configuration = GivenKubeConfiguration(namespaces, route);
         var downstreamResponse = serviceName;
-        this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, downstreamResponse))
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
@@ -101,7 +98,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         route.ServiceName = serviceName; // "example-web"
         var configuration = GivenKubeConfiguration(namespaces, route);
 
-        this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
@@ -170,18 +167,18 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             .ToArray();
         var downstreamUrls = servicePorts
             .Select(port => LoopbackLocalhostUrl(port, Array.IndexOf(servicePorts, port)))
-            .ToList(); // based on localhost aka loopback network interface
+            .ToArray(); // based on localhost aka loopback network interface
         var downstreams = downstreamUrls.Select(url => new Uri(url))
             .ToList();
         var downstreamResponses = downstreams
             .Select(ds => $"{serviceName}:{ds.Host}:{ds.Port}")
-            .ToList();
+            .ToArray();
         var subset = new EndpointSubsetV1();
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
         var configuration = GivenKubeConfiguration(namespaces, route);
-        GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses);
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
@@ -333,67 +330,27 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         }
     }
 
-    private static readonly object ServiceCountersLocker = new();
-    private Dictionary<int, int> _serviceCounters;
-
     private static readonly object K8sCounterLocker = new();
     private int _k8sCounter, _k8sServiceGeneration;
 
-    private void GivenK8sProductServiceIsRunning(string url, string response)
-    {
-        _serviceHandlers.Add(new()); // allocate single instance
-        _serviceCounters = new(); // single counter
-        GivenK8sProductServiceIsRunning(url, response, 0);
-        _serviceCounters[0] = 0;
-    }
-
-    private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses)
-    {
-        urls.ForEach(_ => _serviceHandlers.Add(new())); // allocate multiple instances
-        _serviceCounters = new(urls.Count); // multiple counters
-        for (int i = 0; i < urls.Count; i++)
-        {
-            GivenK8sProductServiceIsRunning(urls[i], responses[i], i);
-            _serviceCounters[i] = 0;
-        }
-    }
-
-    private void GivenK8sProductServiceIsRunning(string url, string response, int handlerIndex)
-    {
-        var serviceHandler = _serviceHandlers[handlerIndex];
-        serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
-            int count = 0;
-            lock (ServiceCountersLocker)
-            {
-                count = ++_serviceCounters[handlerIndex];
-            }
-
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            var threadResponse = string.Concat(count, ':', response);
-            await context.Response.WriteAsync(threadResponse ?? ((int)HttpStatusCode.OK).ToString());
-        });
-    }
-
     private void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
     {
-        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"All values are [{string.Join(',', sortedByIndex)}]";
-        _serviceCounters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
+        _counters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
         _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
     }
 
     private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
-        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
         var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
-        int sum = 0, totalSum = _serviceCounters.Sum(_ => _.Value);
+        int sum = 0, totalSum = _counters.Sum(_ => _.Value);
 
         // Last services cannot be called at all, zero counters
-        for (int i = 0; i < _serviceCounters.Count && sum < totalSum; i++)
+        for (int i = 0; i < _counters.Count && sum < totalSum; i++)
         {
-            int actual = _serviceCounters[i];
+            int actual = _counters[i];
             actual.ShouldBeInRange(bottom, top, customMessage);
             sum += actual;
         }
@@ -408,7 +365,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             if (host != null)
             {
                 // Leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
-                int counter1 = _serviceCounters[i];
+                int counter1 = _counters[i];
                 int counter2 = leasingCounters[host];
                 counter1.ShouldBe(counter2, $"Port: {ports[i]}\n    Host: {host}");
             }

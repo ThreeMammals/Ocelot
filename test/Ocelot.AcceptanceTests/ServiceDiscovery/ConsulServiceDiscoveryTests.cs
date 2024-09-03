@@ -21,30 +21,20 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 {
     private readonly List<ServiceEntry> _consulServices;
     private readonly List<Node> _consulNodes;
-    private int _counterOne;
-    private int _counterTwo;
     private int _counterConsul;
     private int _counterNodes;
-    private static readonly object SyncLock = new();
-    private string _downstreamPath;
     private string _receivedToken;
-    private readonly ServiceHandler _serviceHandler;
-    private readonly ServiceHandler _serviceHandler2;
     private readonly ServiceHandler _consulHandler;
 
     public ConsulServiceDiscoveryTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _serviceHandler2 = new ServiceHandler();
         _consulHandler = new ServiceHandler();
-        _consulServices = new();
-        _consulNodes = new();
+        _consulServices = new List<ServiceEntry>();
+        _consulNodes = new List<Node>();
     }
 
     public override void Dispose()
     {
-        _serviceHandler?.Dispose();
-        _serviceHandler2?.Dispose();
         _consulHandler?.Dispose();
         base.Dispose();
     }
@@ -61,8 +51,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var serviceEntryTwo = GivenServiceEntry(port2, serviceName: serviceName);
         var route = GivenRoute(serviceName: serviceName, loadBalancerType: nameof(LeastConnection));
         var configuration = GivenServiceDiscovery(consulPort, route);
-        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), HttpStatusCode.OK))
-            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), HttpStatusCode.OK))
+        var urls = new string[] { DownstreamUrl(port1) , DownstreamUrl(port2) };
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -87,7 +77,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
         var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
         var configuration = GivenServiceDiscovery(consulPort, route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
+        this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Laura"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -117,7 +107,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             UseTracing = false,
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/something", HttpStatusCode.OK, "Hello from Laura"))
+        this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/something", "Hello from Laura"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -143,8 +133,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         configuration.GlobalConfiguration.LoadBalancerOptions = new() { Type = nameof(LeastConnection) };
         configuration.GlobalConfiguration.DownstreamScheme = "http";
 
-        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), HttpStatusCode.OK))
-            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), HttpStatusCode.OK))
+        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -169,15 +159,15 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var configuration = GivenServiceDiscovery(consulPort, route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider.Token = token;
 
-        this.Given(_ => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
-            .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-            .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntry))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithConsul))
-            .When(_ => WhenIGetUrlOnTheApiGateway("/home"))
-            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(_ => ThenTheTokenIs(token))
+        this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Laura"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
+            .When(x => WhenIGetUrlOnTheApiGateway("/home"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => x.ThenTheTokenIs(token))
             .BDDfy();
     }
 
@@ -193,8 +183,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var serviceEntry2 = GivenServiceEntry(port2, serviceName: serviceName);
         var route = GivenRoute(serviceName: serviceName);
         var configuration = GivenServiceDiscovery(consulPort, route);
-        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), HttpStatusCode.OK))
-            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), HttpStatusCode.OK))
+        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
+        this.Given(_ => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -202,12 +192,12 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
             .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
-            .And(x => WhenIRemoveAService(serviceEntry2))
-            .And(x => GivenIResetCounters())
+            .And(x => x.WhenIRemoveAService(serviceEntry2))
+            .And(x => x.GivenIResetCounters())
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
-            .And(x => ThenOnlyOneServiceHasBeenCalled())
-            .And(x => WhenIAddAServiceBackIn(serviceEntry2))
-            .And(x => GivenIResetCounters())
+            .And(x => x.ThenOnlyOneServiceHasBeenCalled())
+            .And(x => x.WhenIAddAServiceBackIn(serviceEntry2))
+            .And(x => x.GivenIResetCounters())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
             .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
@@ -230,7 +220,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         sd.PollingInterval = 0;
         sd.Namespace = string.Empty;
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Laura"))
+        this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Laura"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -276,12 +266,13 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
         // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
         // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
-        this.Given(x => x._serviceHandler.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortUS), "/products", MapGet("/products", responseBodyUS)))
-            .Given(x => x._serviceHandler2.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
+        _handlers = new ServiceHandler[2] { new(), new() };
+        this.Given(x => _handlers[0].GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortUS), "/products", MapGet("/products", responseBodyUS)))
+            .Given(x => _handlers[1].GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(WithConsul)) // GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -318,7 +309,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var route = GivenRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: methods);
         var configuration = GivenServiceDiscovery(consulPort, route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", HttpStatusCode.OK, "Hello from Raman"))
+        this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Raman"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => x.GivenTheServiceNodesAreRegisteredWithConsul(serviceNode))
@@ -353,8 +344,9 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: "CustomersService", loadBalancerType: nameof(LeastConnection));
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
-        this.Given(x => x.GivenProductServiceOneIsRunning(DownstreamUrl(port1), HttpStatusCode.OK))
-            .And(x => x.GivenProductServiceTwoIsRunning(DownstreamUrl(port2), HttpStatusCode.OK))
+        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
+        var responses = new string[] { "ProjectsService", "CustomersService" };
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, responses))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -440,8 +432,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void ThenOnlyOneServiceHasBeenCalled()
     {
-        _counterOne.ShouldBe(10);
-        _counterTwo.ShouldBe(0);
+        _counters[0].ShouldBe(10);
+        _counters[1].ShouldBe(0);
     }
 
     private void WhenIRemoveAService(ServiceEntry serviceEntry)
@@ -451,20 +443,20 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void GivenIResetCounters()
     {
-        _counterOne = 0;
-        _counterTwo = 0;
+        _counters[0] = 0;
+        _counters[1] = 0;
         _counterConsul = 0;
     }
 
     private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
-        _counterOne.ShouldBeInRange(bottom, top);
-        _counterTwo.ShouldBeInRange(bottom, top);
+        _counters[0].ShouldBeInRange(bottom, top);
+        _counters[1].ShouldBeInRange(bottom, top);
     }
 
     private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
     {
-        var total = _counterOne + _counterTwo;
+        var total = _counters[0] + _counters[1];
         total.ShouldBe(expected);
     }
 
@@ -514,84 +506,4 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void ThenConsulShouldHaveBeenCalledTimes(int expected) => _counterConsul.ShouldBe(expected);
     private void ThenConsulNodesShouldHaveBeenCalledTimes(int expected) => _counterNodes.ShouldBe(expected);
-
-    private void GivenProductServiceOneIsRunning(string url, HttpStatusCode statusCode)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            try
-            {
-                string response;
-                lock (SyncLock)
-                {
-                    _counterOne++;
-                    response = _counterOne.ToString();
-                }
-
-                context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(response);
-            }
-            catch (Exception exception)
-            {
-                await context.Response.WriteAsync(exception.StackTrace);
-            }
-        });
-    }
-
-    private void GivenProductServiceTwoIsRunning(string url, HttpStatusCode statusCode)
-    {
-        _serviceHandler2.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            try
-            {
-                string response;
-                lock (SyncLock)
-                {
-                    _counterTwo++;
-                    response = _counterTwo.ToString();
-                }
-
-                context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(response);
-            }
-            catch (Exception exception)
-            {
-                await context.Response.WriteAsync(exception.StackTrace);
-            }
-        });
-    }
-
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-        {
-            _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-            if (_downstreamPath != basePath)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                await context.Response.WriteAsync("Downstream path doesn't match base path");
-            }
-            else
-            {
-                context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(responseBody);
-            }
-        });
-    }
-
-    private static RequestDelegate MapGet(string path, string responseBody) => async context =>
-    {
-        var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-        if (downstreamPath == path)
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync(responseBody);
-        }
-        else
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            await context.Response.WriteAsync("Not Found");
-        }
-    };
 }

@@ -10,175 +10,73 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
 {
-    private int _counterOne;
-    private int _counterTwo;
-    private static readonly object SyncLock = new();
-    private readonly ServiceHandler _serviceHandler;
-
     public LoadBalancerTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     public override void Dispose()
     {
-        _serviceHandler?.Dispose();
         base.Dispose();
     }
 
     [Fact]
     [Trait("Feat", "211")]
-    public void Should_load_balance_request_with_least_connection()
+    public void ShouldLoadBalanceRequest_WithLeastConnection()
     {
-        var portOne = PortFinder.GetRandomPort();
-        var portTwo = PortFinder.GetRandomPort();
-
-        var downstreamServiceOneUrl = $"http://localhost:{portOne}";
-        var downstreamServiceTwoUrl = $"http://localhost:{portTwo}";
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = portOne,
-                            },
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = portTwo,
-                            },
-                        },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration(),
-        };
-
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => GivenThereIsAConfiguration(configuration))
+        var ports = PortFinder.GetPorts(2);
+        var route = GivenRoute(nameof(LeastConnection), ports);
+        var configuration = GivenConfiguration(route);
+        var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            //.And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
     [Fact]
     [Trait("Bug", "365")]
-    public void Should_load_balance_request_with_round_robin()
+    public void ShouldLoadBalanceRequest_WithRoundRobin()
     {
-        var downstreamPortOne = PortFinder.GetRandomPort();
-        var downstreamPortTwo = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
-        var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(RoundRobin) },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = downstreamPortOne,
-                            },
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = downstreamPortTwo,
-                            },
-                        },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration(),
-        };
-
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
+        var ports = PortFinder.GetPorts(2);
+        var route = GivenRoute(nameof(RoundRobin), ports);
+        var configuration = GivenConfiguration(route);
+        var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            //.And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "961")]
-    public void Should_load_balance_request_with_custom_load_balancer()
+    public void ShouldLoadBalanceRequest_WithCustomLoadBalancer()
     {
-        var downstreamPortOne = PortFinder.GetRandomPort();
-        var downstreamPortTwo = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamPortOne}";
-        var downstreamServiceTwoUrl = $"http://localhost:{downstreamPortTwo}";
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(CustomLoadBalancer) },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = downstreamPortOne,
-                            },
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = downstreamPortTwo,
-                            },
-                        },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration(),
-        };
-
-        Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.GetAsync);
-
-        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, 200))
-            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, 200))
-            .And(x => GivenThereIsAConfiguration(configuration))
+        Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc =
+            (serviceProvider, route, discoveryProvider) => new CustomLoadBalancer(discoveryProvider.GetAsync);
+        var ports = PortFinder.GetPorts(2);
+        var route = GivenRoute(nameof(CustomLoadBalancer), ports);
+        var configuration = GivenConfiguration(route);
+        var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            //.And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49))
+            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
@@ -210,66 +108,28 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
             }
         }
 
-        public void Release(ServiceHostAndPort hostAndPort)
-        {
-        }
+        public void Release(ServiceHostAndPort hostAndPort) { }
     }
 
     private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
-        _counterOne.ShouldBeInRange(bottom, top);
-        _counterTwo.ShouldBeInRange(bottom, top);
+        _counters[0].ShouldBeInRange(bottom, top);
+        _counters[1].ShouldBeInRange(bottom, top);
     }
 
     private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
     {
-        var total = _counterOne + _counterTwo;
+        var total = _counters[0] + _counters[1];
         total.ShouldBe(expected);
     }
 
-    private void GivenProductServiceOneIsRunning(string url, int statusCode)
+    private FileRoute GivenRoute(string loadBalancer, params int[] ports) => new()
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            try
-            {
-                string response;
-                lock (SyncLock)
-                {
-                    _counterOne++;
-                    response = _counterOne.ToString();
-                }
-
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync(response);
-            }
-            catch (Exception exception)
-            {
-                await context.Response.WriteAsync(exception.StackTrace);
-            }
-        });
-    }
-
-    private void GivenProductServiceTwoIsRunning(string url, int statusCode)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            try
-            {
-                string response;
-                lock (SyncLock)
-                {
-                    _counterTwo++;
-                    response = _counterTwo.ToString();
-                }
-
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync(response);
-            }
-            catch (Exception exception)
-            {
-                await context.Response.WriteAsync(exception.StackTrace);
-            }
-        });
-    }
+        DownstreamPathTemplate = "/",
+        DownstreamScheme = Uri.UriSchemeHttp,
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod = new() { HttpMethods.Get },
+        LoadBalancerOptions = new() { Type = loadBalancer ?? nameof(LeastConnection) },
+        DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
+    };
 }
