@@ -71,7 +71,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc))
+            .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc)) // TODO 1 reference, move from Steps
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
 

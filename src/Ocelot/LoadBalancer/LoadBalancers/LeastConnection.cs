@@ -18,6 +18,9 @@ public class LeastConnection : ILoadBalancer
         _leases = new List<Lease>();
     }
 
+    public event EventHandler<LeaseEventArgs> Leased;
+    protected virtual void OnLeased(LeaseEventArgs e) => Leased?.Invoke(this, e);
+
     public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
     {
         var services = await _services.Invoke();
@@ -42,7 +45,7 @@ public class LeastConnection : ILoadBalancer
         lock (SyncLock)
         {
             var matchingLease = _leases.Find(l => l == hostAndPort);
-            if (matchingLease != LoadBalancers.Lease.Null)
+            if (matchingLease != LoadBalancer.Lease.Null)
             {
                 _ = Update(ref matchingLease, false);
             }
