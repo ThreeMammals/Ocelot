@@ -45,21 +45,19 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var serviceEntryOne = GivenServiceEntry(port1, serviceName: serviceName);
-        var serviceEntryTwo = GivenServiceEntry(port2, serviceName: serviceName);
+        var ports = PortFinder.GetPorts(2);
+        var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
         var route = GivenRoute(serviceName: serviceName, loadBalancerType: nameof(LeastConnection));
         var configuration = GivenServiceDiscovery(consulPort, route);
-        var urls = new string[] { DownstreamUrl(port1) , DownstreamUrl(port2) };
+        var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntries))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
             .BDDfy();
     }
 
@@ -124,24 +122,22 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var serviceEntry1 = GivenServiceEntry(port1, serviceName: serviceName);
-        var serviceEntry2 = GivenServiceEntry(port2, serviceName: serviceName);
+        var ports = PortFinder.GetPorts(2);
+        var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
 
         var configuration = GivenServiceDiscovery(consulPort);
         configuration.GlobalConfiguration.LoadBalancerOptions = new() { Type = nameof(LeastConnection) };
         configuration.GlobalConfiguration.DownstreamScheme = "http";
 
-        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
+        var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntries))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
             .BDDfy();
     }
 
@@ -177,30 +173,28 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var serviceEntry1 = GivenServiceEntry(port1, serviceName: serviceName);
-        var serviceEntry2 = GivenServiceEntry(port2, serviceName: serviceName);
+        var ports = PortFinder.GetPorts(2);
+        var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
         var route = GivenRoute(serviceName: serviceName);
         var configuration = GivenServiceDiscovery(consulPort, route);
-        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
+        var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(_ => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
-            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry1, serviceEntry2))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntries))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
-            .And(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
-            .And(x => x.WhenIRemoveAService(serviceEntry2))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
+            .And(x => x.WhenIRemoveAService(serviceEntries[1])) // 2nd entry
             .And(x => x.GivenIResetCounters())
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
-            .And(x => x.ThenOnlyOneServiceHasBeenCalled())
-            .And(x => x.WhenIAddAServiceBackIn(serviceEntry2))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(10, 0)) // 2nd is offline
+            .And(x => x.WhenIAddAServiceBackIn(serviceEntries[1])) // 2nd entry
             .And(x => x.GivenIResetCounters())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(10))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(4, 6))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(4, 6))
             .BDDfy();
     }
 
@@ -335,25 +329,25 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [Trait("Bug", "2119")]
     public void ShouldReturnDifferentServices_ConcurrentRequestsWithDifferentServices()
     {
+        var names = new string[] { "ProjectsService", "CustomersService" };
         var consulPort = PortFinder.GetRandomPort();
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var service1 = GivenServiceEntry(port1, serviceName: "ProjectsService");
-        var service2 = GivenServiceEntry(port2, serviceName: "CustomersService");
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: "ProjectsService", loadBalancerType: nameof(LeastConnection));
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: "CustomersService", loadBalancerType: nameof(LeastConnection));
+        var ports = PortFinder.GetPorts(2);
+        var service1 = GivenServiceEntry(ports[0], serviceName: names[0]);
+        var service2 = GivenServiceEntry(ports[1], serviceName: names[1]);
+        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: nameof(LeastConnection));
+        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: nameof(LeastConnection));
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
-        var urls = new string[] { DownstreamUrl(port1), DownstreamUrl(port2) };
-        var responses = new string[] { "ProjectsService", "CustomersService" };
-        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, responses))
+        var urls = ports.Select(DownstreamUrl).ToArray();
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, names)) // service names as responses
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(50, "/customers/api/customers", "/projects/api/projects"))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(24, 26)) // LeastConnection is unpredictable
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(24, 26)) // LeastConnection is unpredictable
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(25, 25))
             .BDDfy();
     }
 
@@ -430,12 +424,6 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         _consulServices.Add(serviceEntry);
     }
 
-    private void ThenOnlyOneServiceHasBeenCalled()
-    {
-        _counters[0].ShouldBe(10);
-        _counters[1].ShouldBe(0);
-    }
-
     private void WhenIRemoveAService(ServiceEntry serviceEntry)
     {
         _consulServices.Remove(serviceEntry);
@@ -443,21 +431,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void GivenIResetCounters()
     {
-        _counters[0] = 0;
-        _counters[1] = 0;
+        _counters[0] = _counters[1] = 0;
         _counterConsul = 0;
-    }
-
-    private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
-    {
-        _counters[0].ShouldBeInRange(bottom, top);
-        _counters[1].ShouldBeInRange(bottom, top);
-    }
-
-    private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
-    {
-        var total = _counters[0] + _counters[1];
-        total.ShouldBe(expected);
     }
 
     private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries) => _consulServices.AddRange(serviceEntries);

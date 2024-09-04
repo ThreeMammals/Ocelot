@@ -31,10 +31,10 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
@@ -52,10 +52,10 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
@@ -73,10 +73,10 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => x.ThenTheTwoServicesShouldHaveBeenCalledTimes(50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
 
             // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => x.ThenBothServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
             .BDDfy();
     }
 
@@ -109,18 +109,6 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         }
 
         public void Release(ServiceHostAndPort hostAndPort) { }
-    }
-
-    private void ThenBothServicesCalledRealisticAmountOfTimes(int bottom, int top)
-    {
-        _counters[0].ShouldBeInRange(bottom, top);
-        _counters[1].ShouldBeInRange(bottom, top);
-    }
-
-    private void ThenTheTwoServicesShouldHaveBeenCalledTimes(int expected)
-    {
-        var total = _counters[0] + _counters[1];
-        total.ShouldBe(expected);
     }
 
     private FileRoute GivenRoute(string loadBalancer, params int[] ports) => new()

@@ -36,10 +36,10 @@ public static class PortFinder
         var ports = new int[count];
         lock (LockObj)
         {
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++, CurrentPort++)
             {
                 ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
-                ports[i] = UsePort(CurrentPort++);
+                ports[i] = UsePort(CurrentPort);
             }
         }
         return ports;
@@ -63,5 +63,6 @@ public class ExceedingPortRangeException : Exception
     public ExceedingPortRangeException()
         : base("Cannot find available port to bind to!") { }
 
-    public static void ThrowIf(bool condition) => _ = condition ? throw new ExceedingPortRangeException() : 0;
+    public static void ThrowIf(bool condition)
+        => _ = condition ? throw new ExceedingPortRangeException() : 0;
 }

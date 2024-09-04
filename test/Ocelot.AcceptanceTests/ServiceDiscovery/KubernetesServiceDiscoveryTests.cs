@@ -66,6 +66,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
     }
@@ -107,6 +108,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
                     ? "1:" + nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)
                     : string.Empty))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(downstreamScheme == "http" ? 1 : 0))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
     }
@@ -162,9 +164,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         [CallerMemberName] string serviceName = nameof(ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer))
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
-        var servicePorts = Enumerable.Repeat(0, totalServices)
-            .Select(_ => PortFinder.GetRandomPort())
-            .ToArray();
+        var servicePorts = PortFinder.GetPorts(totalServices);
         var downstreamUrls = servicePorts
             .Select(port => LoopbackLocalhostUrl(port, Array.IndexOf(servicePorts, port)))
             .ToArray(); // based on localhost aka loopback network interface
@@ -195,6 +195,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
         _roundRobinAnalyzer.ShouldNotBeNull().Analyze();
+        _roundRobinAnalyzer.Events.Count.ShouldBe(totalRequests);
         _roundRobinAnalyzer.HasManyServiceGenerations(k8sGenerationNo).ShouldBeTrue();
     }
 
@@ -332,29 +333,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
 
     private static readonly object K8sCounterLocker = new();
     private int _k8sCounter, _k8sServiceGeneration;
-
-    private void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
-    {
-        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"All values are [{string.Join(',', sortedByIndex)}]";
-        _counters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
-        _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
-    }
-
-    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
-    {
-        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
-        int sum = 0, totalSum = _counters.Sum(_ => _.Value);
-
-        // Last services cannot be called at all, zero counters
-        for (int i = 0; i < _counters.Count && sum < totalSum; i++)
-        {
-            int actual = _counters[i];
-            actual.ShouldBeInRange(bottom, top, customMessage);
-            sum += actual;
-        }
-    }
 
     private void ThenServiceCountersShouldMatchLeasingCounters(int[] ports)
     {

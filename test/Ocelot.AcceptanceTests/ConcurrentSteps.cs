@@ -151,9 +151,6 @@ public class ConcurrentSteps : Steps, IDisposable
         return _tasks;
     }
 
-    public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
-        => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
-
     private async Task GetParallelResponse(string url, int threadIndex)
     {
         var response = await _ocelotClient.GetAsync(url);
@@ -164,5 +161,43 @@ public class ConcurrentSteps : Steps, IDisposable
         int count = int.Parse(counterString);
         count.ShouldBeGreaterThan(0);
         _responses[threadIndex] = response;
+    }
+
+    public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
+        => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
+
+    private string CalledTimesMessage()
+    {
+        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        return $"All values are [{string.Join(',', sortedByIndex)}]";
+    }
+
+    public void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
+        => _counters.Sum(_ => _.Value).ShouldBe(expected, CalledTimesMessage());
+
+    public void ThenServiceShouldHaveBeenCalledTimes(int index, int expected)
+        => _counters[index].ShouldBe(expected, CalledTimesMessage());
+
+    public void ThenServicesShouldHaveBeenCalledTimes(params int[] expected)
+    {
+        for (int i = 0; i < expected.Length; i++)
+        {
+            _counters[i].ShouldBe(expected[i], CalledTimesMessage());
+        }
+    }
+
+    public void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
+    {
+        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
+        var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
+        int sum = 0, totalSum = _counters.Sum(_ => _.Value);
+
+        // Last offline services cannot be called at all, thus don't assert zero counters
+        for (int i = 0; i < _counters.Count && sum < totalSum; i++)
+        {
+            int actual = _counters[i];
+            actual.ShouldBeInRange(bottom, top, customMessage);
+            sum += actual;
+        }
     }
 }
