@@ -6,7 +6,7 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
 {
