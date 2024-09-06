@@ -183,7 +183,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <returns>The cloned Http context.</returns>
     private async Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route, List<PlaceholderNameAndValue> placeholders = null)
     {
-        var newHttpContext = await CreateThreadContextAsync(sourceContext);
+        var newHttpContext = await CreateThreadContextAsync(sourceContext, route);
         CopyItemsToNewContext(newHttpContext, sourceContext, placeholders);
         newHttpContext.Items.UpsertDownstreamRoute(route);
 
@@ -206,11 +206,12 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// Creates a new HttpContext based on the source.
     /// </summary>
     /// <param name="source">The base http context.</param>
+    /// <param name="route">Downstream route.</param>
     /// <returns>The cloned context.</returns>
-    protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source)
+    protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source, DownstreamRoute route)
     {
         var from = source.Request;
-        var bodyStream = await CloneRequestBodyAsync(from, source.RequestAborted);
+        var bodyStream = await CloneRequestBodyAsync(from, route, source.RequestAborted);
         var target = new DefaultHttpContext
         {
             Request =
@@ -258,12 +259,12 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return aggregator.Aggregate(route, httpContext, contexts);
     }
 
-    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, CancellationToken aborted)
+    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)
     {
         request.EnableBuffering();
         if (request.Body.Position != 0)
         {
-            Logger.LogWarning("Ocelot does not support body copy without stream in initial position 0");
+            Logger.LogWarning($"Ocelot does not support body copy without stream in initial position 0 for route {route.GetRouteName()}");
             return request.Body;
         }
 
@@ -276,7 +277,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         }
         else
         {
-            Logger.LogInformation("Aggregation does not support body copy without Content-Length header, skipping body copy.");
+            Logger.LogInformation($"Aggregation does not support body copy without Content-Length header, skipping body copy for route {route.GetRouteName()}.");
         }
 
         return targetBuffer;

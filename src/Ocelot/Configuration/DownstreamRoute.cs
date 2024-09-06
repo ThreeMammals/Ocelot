@@ -131,5 +131,6 @@ namespace Ocelot.Configuration
         public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
         public MetadataOptions MetadataOptions { get; }
+        public string GetRouteName() => UpstreamPathTemplate?.Template ?? ServiceName ?? string.Empty;
     }
 }
