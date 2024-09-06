@@ -5,11 +5,11 @@ using System.Collections.Concurrent;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-internal sealed class RoundRobinAnalyzer : RoundRobin, ILoadBalancerAnalyzer
+internal sealed class LeastConnectionAnalyzer : LeastConnection, ILoadBalancerAnalyzer
 {
     private readonly LoadBalancerAnalyzer _analyzer;
 
-    public RoundRobinAnalyzer(Func<Task<List<Service>>> services, string serviceName)
+    public LeastConnectionAnalyzer(Func<Task<List<Service>>> services, string serviceName)
         : base(services, serviceName)
     {
         _analyzer = new();

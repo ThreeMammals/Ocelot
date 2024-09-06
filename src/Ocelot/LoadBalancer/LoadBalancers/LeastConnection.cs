@@ -36,6 +36,10 @@ public class LeastConnection : ILoadBalancer
 
             Lease wanted = GetLeaseWithLeastConnections();
             _ = Update(ref wanted, true);
+
+            var index = services.FindIndex(s => s.HostAndPort == wanted);
+            OnLeased(new(wanted, services[index], index));
+
             return new OkResponse<ServiceHostAndPort>(new(wanted.HostAndPort));
         }
     }
