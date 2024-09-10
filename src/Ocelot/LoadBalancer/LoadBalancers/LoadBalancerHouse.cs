@@ -7,30 +7,34 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     public class LoadBalancerHouse : ILoadBalancerHouse
     {
         private readonly ILoadBalancerFactory _factory;
-        private readonly ConcurrentDictionary<string, ILoadBalancer> _loadBalancers;
+        private readonly Dictionary<string, ILoadBalancer> _loadBalancers;
+        private static readonly object SyncRoot = new();
 
         public LoadBalancerHouse(ILoadBalancerFactory factory)
         {
             _factory = factory;
-            _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
+            _loadBalancers = new();
         }
 
         public Response<ILoadBalancer> Get(DownstreamRoute route, ServiceProviderConfiguration config)
         {
             try
             {
-                if (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer))
+                lock (SyncRoot)
                 {
-                    // TODO Fix ugly reflection issue of dymanic detection in favor of static type property
-                    if (route.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
+                    if (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer))
                     {
-                        return GetResponse(route, config);
+                        // TODO Fix ugly reflection issue of dymanic detection in favor of static type property
+                        if (route.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
+                        {
+                            return GetResponse(route, config);
+                        }
+
+                        return new OkResponse<ILoadBalancer>(loadBalancer);
                     }
 
-                    return new OkResponse<ILoadBalancer>(loadBalancer);
+                    return GetResponse(route, config);
                 }
-
-                return GetResponse(route, config);
             }
             catch (Exception ex)
             {
@@ -51,13 +55,8 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             }
 
             var loadBalancer = result.Data;
-            AddLoadBalancer(route.LoadBalancerKey, loadBalancer);
+            _loadBalancers[route.LoadBalancerKey] = loadBalancer; // TODO TryAdd ?
             return new OkResponse<ILoadBalancer>(loadBalancer);
-        }
-
-        private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
-        {
-            _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => loadBalancer);
         }
     }
 }

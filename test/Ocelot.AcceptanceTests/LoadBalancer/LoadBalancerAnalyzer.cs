@@ -1,5 +1,4 @@
-﻿using KubeClient.Models;
-using Ocelot.LoadBalancer;
+﻿using Ocelot.LoadBalancer;
 using Ocelot.Values;
 using System.Collections.Concurrent;
 
@@ -7,16 +6,17 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
 {
-    public const string GenerationPrefix = nameof(EndpointsV1.Metadata.Generation) + ":";
+    public virtual string GenerationPrefix => "Gen:";
     public ConcurrentBag<LeaseEventArgs> Events { get; } = new();
 
-    public object Analyze()
+    public virtual object Analyze()
     {
         var allGenerations = Events
             .Select(e => e.Service.Tags.FirstOrDefault(t => t.StartsWith(GenerationPrefix)))
+            .Where(generation => !string.IsNullOrEmpty(generation))
             .Distinct().ToArray();
         var allIndices = Events.Select(e => e.ServiceIndex)
-            .Distinct().ToArray();
+            .Distinct().OrderBy(index => index).ToArray();
 
         Dictionary<string, List<LeaseEventArgs>> eventsPerGeneration = new();
         foreach (var generation in allGenerations)
@@ -65,7 +65,7 @@ internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
         return generationLeasesWithMaxConnections;
     }
 
-    public bool HasManyServiceGenerations(int maxGeneration)
+    public virtual bool HasManyServiceGenerations(int maxGeneration)
     {
         int[] generations = new int[maxGeneration + 1];
         string[] tags = new string[maxGeneration + 1];
@@ -81,21 +81,25 @@ internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
         return all.All(tags.Contains);
     }
 
-    public Dictionary<ServiceHostAndPort, int> GetHostCounters()
+    public virtual Dictionary<ServiceHostAndPort, int> GetHostCounters()
     {
         var hosts = Events.Select(e => e.Lease.HostAndPort).Distinct().ToList();
-        return Events
+        var grouping = Events
             .GroupBy(e => e.Lease.HostAndPort)
-            .ToDictionary(g => g.Key, g => g.Max(e => e.Lease.Connections));
+            .OrderBy(g => g.Key.DownstreamPort);
+        return ToHostCountersDictionary(grouping);
     }
 
-    public int BottomOfConnections()
+    public virtual Dictionary<ServiceHostAndPort, int> ToHostCountersDictionary(IEnumerable<IGrouping<ServiceHostAndPort, LeaseEventArgs>> grouping)
+        => grouping.ToDictionary(g => g.Key, g => g.Count(e => e.Lease == g.Key));
+
+    public virtual int BottomOfConnections()
     {
         var hostCounters = GetHostCounters();
         return hostCounters.Min(_ => _.Value);
     }
 
-    public int TopOfConnections()
+    public virtual int TopOfConnections()
     {
         var hostCounters = GetHostCounters();
         return hostCounters.Max(_ => _.Value);

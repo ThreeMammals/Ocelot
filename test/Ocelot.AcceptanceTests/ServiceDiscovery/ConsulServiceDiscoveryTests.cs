@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using Ocelot.AcceptanceTests.LoadBalancer;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
+using Ocelot.ServiceDiscovery.Providers;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -41,7 +44,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Feat", "28")]
-    public void ShouldDiscoverServicesInConsul_LoadBalanceByLeastConnection_InRoutes()
+    public void ShouldDiscoverServicesInConsulAndLoadBalanceByLeastConnectionWhenConfigInRoute()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -57,7 +60,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(25, 25))
             .BDDfy();
     }
 
@@ -89,7 +92,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [Fact]
     [Trait("Bug", "213")]
     [Trait("Feat", "201 340")]
-    public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequest_DynamicRoutingWithNoRoutes()
+    public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequestWhenDynamicRoutingWithNoRoutes()
     {
         const string serviceName = "web";
         var consulPort = PortFinder.GetRandomPort();
@@ -118,7 +121,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Feat", "340")]
-    public void ShouldUseConsulServiceDiscovery_LoadBalanceRequest_DynamicRoutingWithNoRoutes()
+    public void ShouldUseConsulServiceDiscoveryAndLoadBalanceRequestWhenDynamicRoutingWithNoRoutes()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -137,7 +140,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // LeastConnection is unpredictable
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(25, 25))
             .BDDfy();
     }
 
@@ -169,7 +172,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Bug", "181")]
-    public void ShouldSendRequestToService_AfterItBecomesAvailableInConsul()
+    public void ShouldSendRequestToServiceAfterItBecomesAvailableInConsul()
     {
         const string serviceName = "product";
         var consulPort = PortFinder.GetRandomPort();
@@ -185,7 +188,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 9)) //(4, 6))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(5, 5))
             .And(x => x.WhenIRemoveAService(serviceEntries[1])) // 2nd entry
             .And(x => x.GivenIResetCounters())
             .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
@@ -194,7 +197,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenIResetCounters())
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(4, 6))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(5, 5))
             .BDDfy();
     }
 
@@ -232,7 +235,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [InlineData(nameof(RoundRobin))]
     [InlineData(nameof(LeastConnection))]
     [InlineData(nameof(CookieStickySessions))]
-    public void ShouldUseConsulServiceDiscovery_BasedOnUpstreamHost(string loadBalancerType)
+    public void ShouldUseConsulServiceDiscoveryWhenThereAreTwoUpstreamHosts(string loadBalancerType)
     {
         // Simulate two DIFFERENT downstream services (e.g. product services for US and EU markets)
         // with different ServiceNames (e.g. product-us and product-eu),
@@ -288,7 +291,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Bug", "954")]
-    public void ShouldReturnServiceAddressByOverriddenServiceBuilder_WhenThereIsANode()
+    public void ShouldReturnServiceAddressByOverriddenServiceBuilderWhenThereIsANode()
     {
         const string serviceName = "OpenTestService";
         string[] methods = new[] { HttpMethods.Post, HttpMethods.Get };
@@ -327,15 +330,15 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Bug", "2119")]
-    public void ShouldReturnDifferentServices_ConcurrentRequestsWithDifferentServices()
+    public void ShouldReturnDifferentServicesWhenConcurrentRequestsWithDifferentServices()
     {
         var names = new string[] { "ProjectsService", "CustomersService" };
         var consulPort = PortFinder.GetRandomPort();
         var ports = PortFinder.GetPorts(2);
         var service1 = GivenServiceEntry(ports[0], serviceName: names[0]);
         var service2 = GivenServiceEntry(ports[1], serviceName: names[1]);
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: nameof(LeastConnection));
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: nameof(LeastConnection));
+        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: nameof(LeastConnectionAnalyzer));
+        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: nameof(LeastConnectionAnalyzer));
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
@@ -343,11 +346,12 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
-            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(50, "/customers/api/customers", "/projects/api/projects"))
-            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(24, 26)) // LeastConnection is unpredictable
-            .And(x => ThenServicesShouldHaveBeenCalledTimes(25, 25))
+            .And(x => GivenOcelotIsRunningWithServices(WithConsulAndLeastConnection))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(100, "/customers/api/customers", "/projects/api/projects"))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(100))
+            .And(x => ThenServiceCountersShouldMatchLeasingCounters(_lbAnalyzer, ports, 100))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(100, 2), Top(100, 2)))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 50)) // strict assertion
             .BDDfy();
     }
 
@@ -356,6 +360,20 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private static void WithOverriddenConsulServiceBuilder(IServiceCollection services) => services
         .AddOcelot().AddConsul<MyConsulServiceBuilder>();
+
+    private void WithConsulAndLeastConnection(IServiceCollection services) => services
+        .AddOcelot().AddConsul()
+        .AddCustomLoadBalancer<LeastConnectionAnalyzer>(GetLeastConnectionAnalyzer);
+
+    private static readonly object ConsulCounterLocker = new();
+    private LeastConnectionAnalyzer _lbAnalyzer;
+    private LeastConnectionAnalyzer GetLeastConnectionAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+    {
+        //lock (ConsulCounterLocker)
+        //{
+        return _lbAnalyzer ??= new LeastConnectionAnalyzer(provider.GetAsync, route.ServiceName);
+        //}
+    }
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
     {
@@ -458,12 +476,17 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             var pathMatch = ServiceNameRegex().Match(context.Request.Path.Value);
             if (pathMatch.Success)
             {
-                _counterConsul++;
+                string json;
+                lock (ConsulCounterLocker)
+                {
+                    _counterConsul++;
 
-                // Use the parsed service name to filter the registered Consul services
-                var serviceName = pathMatch.Groups["serviceName"].Value;
-                var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
-                var json = JsonConvert.SerializeObject(services);
+                    // Use the parsed service name to filter the registered Consul services
+                    var serviceName = pathMatch.Groups["serviceName"].Value;
+                    var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
+                    json = JsonConvert.SerializeObject(services);
+                }
+
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
                 return;

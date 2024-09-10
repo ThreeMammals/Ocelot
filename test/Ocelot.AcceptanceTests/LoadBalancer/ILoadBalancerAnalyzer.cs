@@ -4,11 +4,13 @@ using System.Collections.Concurrent;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-internal interface ILoadBalancerAnalyzer
+public interface ILoadBalancerAnalyzer
 {
+    string GenerationPrefix { get; }
     ConcurrentBag<LeaseEventArgs> Events { get; }
     object Analyze();
     Dictionary<ServiceHostAndPort, int> GetHostCounters();
+    Dictionary<ServiceHostAndPort, int> ToHostCountersDictionary(IEnumerable<IGrouping<ServiceHostAndPort, LeaseEventArgs>> grouping);
     bool HasManyServiceGenerations(int maxGeneration);
     int BottomOfConnections();
     int TopOfConnections();

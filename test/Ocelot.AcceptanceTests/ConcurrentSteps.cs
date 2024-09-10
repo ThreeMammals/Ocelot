@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.AcceptanceTests.LoadBalancer;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -10,15 +12,14 @@ public class ConcurrentSteps : Steps, IDisposable
     protected Task[] _tasks;
     protected ServiceHandler[] _handlers;
     protected ConcurrentDictionary<int, HttpResponseMessage> _responses;
-    protected Dictionary<int, int> _counters;
-    protected static readonly object CountersSyncRoot = new();
+    protected volatile int[] _counters;
 
     public ConcurrentSteps()
     {
         _tasks = Array.Empty<Task>();
         _handlers = Array.Empty<ServiceHandler>();
         _responses = new();
-        _counters = new();
+        _counters = Array.Empty<int>();
     }
 
     public override void Dispose()
@@ -48,7 +49,7 @@ public class ConcurrentSteps : Steps, IDisposable
     protected void GivenServiceInstanceIsRunning(string url, string response, HttpStatusCode statusCode)
     {
         _handlers = new ServiceHandler[1]; // allocate single instance
-        _counters = new(1); // single counter
+        _counters = new int[1]; // single counter
         GivenServiceIsRunning(url, response, 0, statusCode);
         _counters[0] = 0;
     }
@@ -74,7 +75,7 @@ public class ConcurrentSteps : Steps, IDisposable
     {
         Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
         _handlers = new ServiceHandler[urls.Length]; // allocate multiple instances
-        _counters = new(urls.Length); // multiple counters
+        _counters = new int[urls.Length]; // multiple counters
         for (int i = 0; i < urls.Length; i++)
         {
             GivenServiceIsRunning(urls[i], responses[i], i, statusCode);
@@ -109,15 +110,18 @@ public class ConcurrentSteps : Steps, IDisposable
     protected RequestDelegate MapGet(int index, string responseBody) => MapGet(index, responseBody, HttpStatusCode.OK);
     protected RequestDelegate MapGet(int index, string responseBody, HttpStatusCode successCode) => async context =>
     {
-        await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
         string response;
+
+        // Don't delay during the first service call
+        if (Volatile.Read(ref _counters[index]) > 0)
+        {
+            await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
+        }
+
         try
         {
-            lock (CountersSyncRoot)
-            {
-                int count = ++_counters[index];
-                response = string.Concat(count, ':', responseBody);
-            }
+            int count = Interlocked.Increment(ref _counters[index]);
+            response = string.Concat(count, ':', responseBody);
 
             context.Response.StatusCode = (int)successCode;
             await context.Response.WriteAsync(response);
@@ -167,13 +171,10 @@ public class ConcurrentSteps : Steps, IDisposable
         => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
 
     private string CalledTimesMessage()
-    {
-        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        return $"All values are [{string.Join(',', sortedByIndex)}]";
-    }
+        => $"All values are [{string.Join(',', _counters)}]";
 
     public void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
-        => _counters.Sum(_ => _.Value).ShouldBe(expected, CalledTimesMessage());
+        => _counters.Sum().ShouldBe(expected, CalledTimesMessage());
 
     public void ThenServiceShouldHaveBeenCalledTimes(int index, int expected)
         => _counters[index].ShouldBe(expected, CalledTimesMessage());
@@ -186,18 +187,67 @@ public class ConcurrentSteps : Steps, IDisposable
         }
     }
 
+    public static int Bottom(int totalRequests, int totalServices)
+        => totalRequests / totalServices;
+    public static int Top(int totalRequests, int totalServices)
+    {
+        int bottom = Bottom(totalRequests, totalServices);
+        return totalRequests - (bottom * totalServices) + bottom;
+    }
+
     public void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
     {
-        var sortedByIndex = _counters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
-        int sum = 0, totalSum = _counters.Sum(_ => _.Value);
+        var customMessage = new StringBuilder()
+            .AppendLine($"{nameof(bottom)}: {bottom}")
+            .AppendLine($"    {nameof(top)}: {top}")
+            .AppendLine($"    All values are [{string.Join(',', _counters)}]")
+            .ToString();
+        int sum = 0, totalSum = _counters.Sum();
 
         // Last offline services cannot be called at all, thus don't assert zero counters
-        for (int i = 0; i < _counters.Count && sum < totalSum; i++)
+        for (int i = 0; i < _counters.Length && sum < totalSum; i++)
         {
             int actual = _counters[i];
             actual.ShouldBeInRange(bottom, top, customMessage);
             sum += actual;
+        }
+    }
+
+    public void ThenAllServicesCalledOptimisticAmountOfTimes(ILoadBalancerAnalyzer analyzer)
+    {
+        if (analyzer == null) return;
+        int bottom = analyzer.BottomOfConnections(),
+            top = analyzer.TopOfConnections();
+        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
+    }
+
+    public void ThenServiceCountersShouldMatchLeasingCounters(ILoadBalancerAnalyzer analyzer, int[] ports, int totalRequests)
+    {
+        if (analyzer == null || ports == null)
+            return;
+
+        analyzer.ShouldNotBeNull().Analyze();
+        analyzer.Events.Count.ShouldBe(totalRequests);
+
+        var leasingCounters = analyzer?.GetHostCounters() ?? new();
+        var sortedLeasingCountersByPort = ports.Select(port => leasingCounters.FirstOrDefault(kv => kv.Key.DownstreamPort == port).Value).ToArray();
+        for (int i = 0; i < ports.Length; i++)
+        {
+            var host = leasingCounters.Keys.FirstOrDefault(k => k.DownstreamPort == ports[i]);
+
+            // Leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
+            if (host != null)
+            {
+                var customMessage = new StringBuilder()
+                    .AppendLine($"Port: {ports[i]}")
+                    .AppendLine($"    Host: {host}")
+                    .AppendLine($"    Service counters: [{string.Join(',', _counters)}]")
+                    .AppendLine($"    Leasing counters: [{string.Join(',', sortedLeasingCountersByPort)}]") // should have order of _counters
+                    .ToString();
+                int counter1 = _counters[i];
+                int counter2 = leasingCounters[host];
+                counter1.ShouldBe(counter2, customMessage);
+            }
         }
     }
 }

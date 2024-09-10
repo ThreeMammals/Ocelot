@@ -136,7 +136,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         int bottom = totalRequests / totalServices,
             top = totalRequests - (bottom * totalServices) + bottom;
         ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
-        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
+        ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
     [Theory]
@@ -153,10 +153,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
 
         HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
 
-        int bottom = _roundRobinAnalyzer.BottomOfConnections(),
-            top = _roundRobinAnalyzer.TopOfConnections();
-        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
-        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
+        ThenAllServicesCalledOptimisticAmountOfTimes(_roundRobinAnalyzer); // with unstable checkings
+        ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
     private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
@@ -238,8 +236,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
 
     private FileRoute GivenRouteWithServiceName(string serviceNamespace,
         [CallerMemberName] string serviceName = null,
-        string loadBalancerType = nameof(LeastConnection))
-        => new()
+        string loadBalancerType = nameof(LeastConnection)) => new()
         {
             DownstreamPathTemplate = "/",
             DownstreamScheme = null, // the scheme should not be defined in service discovery scenarios by default, only ServiceName
@@ -279,11 +276,13 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
-                // Each offlinePerThreads-th request to integrated K8s endpoint should fail
+                string json;
                 lock (K8sCounterLocker)
                 {
                     _k8sCounter++;
                     var subset = endpoints.Subsets[0];
+
+                    // Each offlinePerThreads-th request to integrated K8s endpoint should fail
                     if (!isStable && _k8sCounter % offlinePerThreads == 0 && _k8sCounter >= offlinePerThreads)
                     {
                         while (offlineServicesNo-- > 0)
@@ -297,6 +296,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
+                    json = JsonConvert.SerializeObject(endpoints);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
@@ -304,7 +304,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     _receivedToken = values.First();
                 }
 
-                var json = JsonConvert.SerializeObject(endpoints);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
@@ -322,31 +321,14 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         .RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory)
         .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
+    private int _k8sCounter, _k8sServiceGeneration;
+    private static readonly object K8sCounterLocker = new();
     private RoundRobinAnalyzer _roundRobinAnalyzer;
     private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
     {
         lock (K8sCounterLocker)
         {
-            return _roundRobinAnalyzer ??= new RoundRobinAnalyzer(provider.GetAsync, route.ServiceName);
-        }
-    }
-
-    private static readonly object K8sCounterLocker = new();
-    private int _k8sCounter, _k8sServiceGeneration;
-
-    private void ThenServiceCountersShouldMatchLeasingCounters(int[] ports)
-    {
-        var leasingCounters = _roundRobinAnalyzer.GetHostCounters();
-        for (int i = 0; i < ports.Length; i++)
-        {
-            var host = leasingCounters.Keys.FirstOrDefault(k => k.DownstreamPort == ports[i]);
-            if (host != null)
-            {
-                // Leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
-                int counter1 = _counters[i];
-                int counter2 = leasingCounters[host];
-                counter1.ShouldBe(counter2, $"Port: {ports[i]}\n    Host: {host}");
-            }
+            return _roundRobinAnalyzer ??= new RoundRobinAnalyzerCreator().Create(route, provider)?.Data as RoundRobinAnalyzer; //??= new RoundRobinAnalyzer(provider.GetAsync, route.ServiceName);
         }
     }
 }

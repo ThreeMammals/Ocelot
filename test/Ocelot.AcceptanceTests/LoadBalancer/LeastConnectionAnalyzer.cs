@@ -1,27 +1,26 @@
-﻿using Ocelot.LoadBalancer;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
 using Ocelot.Values;
-using System.Collections.Concurrent;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-internal sealed class LeastConnectionAnalyzer : LeastConnection, ILoadBalancerAnalyzer
+internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 {
-    private readonly LoadBalancerAnalyzer _analyzer;
+    private readonly LeastConnection loadBalancer;
 
     public LeastConnectionAnalyzer(Func<Task<List<Service>>> services, string serviceName)
-        : base(services, serviceName)
     {
-        _analyzer = new();
-        this.Leased += Me_Leased;
+        loadBalancer = new(services, serviceName);
+        loadBalancer.Leased += Me_Leased;
     }
 
-    private void Me_Leased(object sender, LeaseEventArgs e) => Events.Add(e);
+    private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 
-    public ConcurrentBag<LeaseEventArgs> Events => _analyzer.Events;
-    public object Analyze() => _analyzer.Analyze();
-    public bool HasManyServiceGenerations(int maxGeneration) => _analyzer.HasManyServiceGenerations(maxGeneration);
-    public Dictionary<ServiceHostAndPort, int> GetHostCounters() => _analyzer.GetHostCounters();
-    public int BottomOfConnections() => _analyzer.BottomOfConnections();
-    public int TopOfConnections() => _analyzer.TopOfConnections();
+    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext) => loadBalancer.Lease(httpContext);
+    public void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
+
+    public override Dictionary<ServiceHostAndPort, int> ToHostCountersDictionary(IEnumerable<IGrouping<ServiceHostAndPort, LeaseEventArgs>> grouping)
+        => grouping.ToDictionary(g => g.Key, g => g.Count(e => e.Lease == g.Key));
 }

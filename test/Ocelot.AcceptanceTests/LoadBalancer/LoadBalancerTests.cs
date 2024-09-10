@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
@@ -10,58 +13,69 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
 {
-    public LoadBalancerTests()
-    {
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-    }
-
-    [Fact]
+    [Theory]
     [Trait("Feat", "211")]
-    public void ShouldLoadBalanceRequest_WithLeastConnection()
+    [InlineData(false)] // original scenario, clean config
+    [InlineData(true)] // extended scenario using analyzer
+    public void ShouldLoadBalanceRequestWithLeastConnection(bool withAnalyzer)
     {
         var ports = PortFinder.GetPorts(2);
-        var route = GivenRoute(nameof(LeastConnection), ports);
+        var route = GivenRoute(withAnalyzer ? nameof(LeastConnectionAnalyzer) : nameof(LeastConnection), ports);
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        LeastConnectionAnalyzer lbAnalyzer = null;
+        LeastConnectionAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+        {
+            //lock (LbAnalyzerLocker) Note, synch locking is implemented in LoadBalancerHouse
+            return lbAnalyzer ??= new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
+        }
+        Action<IServiceCollection> withLeastConnectionAnalyzer = (s)
+            => s.AddOcelot().AddCustomLoadBalancer<LeastConnectionAnalyzer>(getAnalyzer);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withLeastConnectionAnalyzer : WithAddOcelot))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
+            .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
+            .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzer, ports, 99))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(99, ports.Length), Top(99, ports.Length)))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion
             .BDDfy();
     }
 
-    [Fact]
+    [Theory]
     [Trait("Bug", "365")]
-    public void ShouldLoadBalanceRequest_WithRoundRobin()
+    [InlineData(false)] // original scenario, clean config
+    [InlineData(true)] // extended scenario using analyzer
+    public void ShouldLoadBalanceRequestWithRoundRobin(bool withAnalyzer)
     {
         var ports = PortFinder.GetPorts(2);
-        var route = GivenRoute(nameof(RoundRobin), ports);
+        var route = GivenRoute(withAnalyzer ? nameof(RoundRobinAnalyzer) : nameof(RoundRobin), ports);
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        RoundRobinAnalyzer lbAnalyzer = null;
+        RoundRobinAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+        {
+            //lock (LbAnalyzerLocker) Note, synch locking is implemented in LoadBalancerHouse
+            return lbAnalyzer ??= new RoundRobinAnalyzerCreator().Create(route, provider)?.Data as RoundRobinAnalyzer;
+        }
+        Action<IServiceCollection> withRoundRobinAnalyzer = (s)
+            => s.AddOcelot().AddCustomLoadBalancer<RoundRobinAnalyzer>(getAnalyzer);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withRoundRobinAnalyzer : WithAddOcelot))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
+            .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
+            .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzer, ports, 99))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(99, ports.Length), Top(99, ports.Length)))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion
             .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "961")]
-    public void ShouldLoadBalanceRequest_WithCustomLoadBalancer()
+    public void ShouldLoadBalanceRequestWithCustomLoadBalancer()
     {
         Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc =
             (serviceProvider, route, discoveryProvider) => new CustomLoadBalancer(discoveryProvider.GetAsync);
@@ -69,21 +83,22 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         var route = GivenRoute(nameof(CustomLoadBalancer), ports);
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
+        Action<IServiceCollection> withCustomLoadBalancer = (s)
+            => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(loadBalancerFactoryFunc);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithCustomLoadBalancer(loadBalancerFactoryFunc)) // TODO 1 reference, move from Steps
+            .And(x => GivenOcelotIsRunningWithServices(withCustomLoadBalancer))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
-
-            // Quite risky assertion because the actual values based on health checks and threading
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(1, 49)) // (24, 26)
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(50, ports.Length), Top(50, ports.Length)))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(25, 25)) // strict assertion
             .BDDfy();
     }
 
-    private class CustomLoadBalancer : ILoadBalancer
+    private sealed class CustomLoadBalancer : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
-        private readonly object _lock = new();
+        private static object _lock = new();
 
         private int _last;
 

@@ -278,35 +278,6 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
-    /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
-    public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
-        where T : ILoadBalancer
-    {
-        _webHostBuilder = new WebHostBuilder()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCustomLoadBalancer(loadBalancerFactoryFunc);
-            })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
     public void ThenTheTraceHeaderIsSet(string key)
     {
         var header = _response.Headers.GetValues(key);

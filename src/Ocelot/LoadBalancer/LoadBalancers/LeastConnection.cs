@@ -9,7 +9,7 @@ public class LeastConnection : ILoadBalancer
     private readonly Func<Task<List<Service>>> _services;
     private readonly List<Lease> _leases;
     private readonly string _serviceName;
-    private static readonly object SyncLock = new();
+    private static readonly object SyncRoot = new();
 
     public LeastConnection(Func<Task<List<Service>>> services, string serviceName)
     {
@@ -29,7 +29,7 @@ public class LeastConnection : ILoadBalancer
             return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
         }
 
-        lock (SyncLock)
+        lock (SyncRoot)
         {
             //todo - maybe this should be moved somewhere else...? Maybe on a repeater on seperate thread? loop every second and update or something?
             UpdateLeasing(services);
@@ -46,7 +46,7 @@ public class LeastConnection : ILoadBalancer
 
     public void Release(ServiceHostAndPort hostAndPort)
     {
-        lock (SyncLock)
+        lock (SyncRoot)
         {
             var matchingLease = _leases.Find(l => l == hostAndPort);
             if (matchingLease != LoadBalancer.Lease.Null)
