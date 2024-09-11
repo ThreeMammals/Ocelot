@@ -534,7 +534,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private class FakeCustomLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
             {
                 // Not relevant for these tests
                 throw new NotImplementedException();

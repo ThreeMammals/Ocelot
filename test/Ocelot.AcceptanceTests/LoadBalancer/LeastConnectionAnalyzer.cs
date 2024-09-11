@@ -18,7 +18,7 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
 
     private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 
-    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext) => loadBalancer.Lease(httpContext);
+    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
     public void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
 
     public override Dictionary<ServiceHostAndPort, int> ToHostCountersDictionary(IEnumerable<IGrouping<ServiceHostAndPort, LeaseEventArgs>> grouping)

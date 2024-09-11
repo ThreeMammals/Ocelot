@@ -21,12 +21,12 @@ public class LeastConnection : ILoadBalancer
     public event EventHandler<LeaseEventArgs> Leased;
     protected virtual void OnLeased(LeaseEventArgs e) => Leased?.Invoke(this, e);
 
-    public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+    public async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
     {
         var services = await _services.Invoke();
         if ((services?.Count ?? 0) == 0)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(Lease)} operation!"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(LeaseAsync)} operation!"));
         }
 
         lock (SyncRoot)

@@ -13,7 +13,7 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _services = services;
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+        public async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
         {
             var services = await _services();
 

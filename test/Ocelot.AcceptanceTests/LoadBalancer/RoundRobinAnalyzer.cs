@@ -19,7 +19,7 @@ internal sealed class RoundRobinAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 
     private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 
-    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext) => loadBalancer.Lease(httpContext);
+    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
     public void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
 
     public override string GenerationPrefix => nameof(EndpointsV1.Metadata.Generation) + ":";

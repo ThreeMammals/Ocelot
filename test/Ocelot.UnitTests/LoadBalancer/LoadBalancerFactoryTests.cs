@@ -219,7 +219,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancerOne : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }
@@ -232,7 +232,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancerTwo : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }
@@ -245,7 +245,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeNoLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }
@@ -258,7 +258,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class BrokenLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

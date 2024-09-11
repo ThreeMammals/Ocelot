@@ -40,7 +40,7 @@ public class CookieStickySessions : ILoadBalancer
         }
     }
 
-    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
     {
         var route = httpContext.Items.DownstreamRoute();
         var serviceName = route.LoadBalancerKey;
@@ -56,7 +56,7 @@ public class CookieStickySessions : ILoadBalancer
             }
 
             // There is no value in the store, so lease it now!
-            var next = _loadBalancer.Lease(httpContext).GetAwaiter().GetResult(); // unfortunately the operation must be synchronous
+            var next = _loadBalancer.LeaseAsync(httpContext).GetAwaiter().GetResult(); // unfortunately the operation must be synchronous
             if (next.IsError)
             {
                 return Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(next.Errors));
