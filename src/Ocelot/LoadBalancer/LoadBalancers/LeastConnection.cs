@@ -11,6 +11,8 @@ public class LeastConnection : ILoadBalancer
     private readonly string _serviceName;
     private static readonly object SyncRoot = new();
 
+    public string Type => nameof(LeastConnection);
+
     public LeastConnection(Func<Task<List<Service>>> services, string serviceName)
     {
         _services = services;
@@ -26,7 +28,7 @@ public class LeastConnection : ILoadBalancer
         var services = await _services.Invoke();
         if ((services?.Count ?? 0) == 0)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {nameof(LeastConnection)} for '{_serviceName}' during {nameof(LeaseAsync)} operation!"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"Services were null/empty in {Type} for '{_serviceName}' during {nameof(LeaseAsync)} operation!"));
         }
 
         lock (SyncRoot)

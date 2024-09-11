@@ -99,8 +99,9 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
     {
         private readonly Func<Task<List<Service>>> _services;
         private static object _lock = new();
-
         private int _last;
+
+        public string Type => nameof(CustomLoadBalancer);
 
         public CustomLoadBalancer(Func<Task<List<Service>>> services)
         {

@@ -16,6 +16,8 @@ public class CookieStickySessions : ILoadBalancer
     private static readonly object Locker = new();
     private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
 
+    public string Type => nameof(CookieStickySessions);
+
     public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus)
     {
         _bus = bus;

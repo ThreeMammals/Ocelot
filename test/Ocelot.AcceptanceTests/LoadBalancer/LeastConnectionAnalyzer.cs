@@ -10,6 +10,8 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
 {
     private readonly LeastConnection loadBalancer;
 
+    public string Type => nameof(LeastConnectionAnalyzer);
+
     public LeastConnectionAnalyzer(Func<Task<List<Service>>> services, string serviceName)
     {
         loadBalancer = new(services, serviceName);

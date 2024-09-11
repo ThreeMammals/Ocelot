@@ -11,6 +11,8 @@ internal sealed class RoundRobinAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 {
     private readonly RoundRobin loadBalancer;
 
+    public string Type => nameof(RoundRobinAnalyzer);
+
     public RoundRobinAnalyzer(Func<Task<List<Service>>> services, string serviceName)
     {
         loadBalancer = new(services, serviceName);

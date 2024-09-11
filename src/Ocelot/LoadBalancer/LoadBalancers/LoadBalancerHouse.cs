@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.LoadBalancers
@@ -22,26 +21,16 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             {
                 lock (SyncRoot)
                 {
-                    if (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer))
-                    {
-                        // TODO Fix ugly reflection issue of dymanic detection in favor of static type property
-                        if (route.LoadBalancerOptions.Type != loadBalancer.GetType().Name)
-                        {
-                            return GetResponse(route, config);
-                        }
-
-                        return new OkResponse<ILoadBalancer>(loadBalancer);
-                    }
-
-                    return GetResponse(route, config);
+                    return (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer) &&
+                            route.LoadBalancerOptions.Type == loadBalancer.Type) // TODO Case insensitive?
+                        ? new OkResponse<ILoadBalancer>(loadBalancer)
+                        : GetResponse(route, config);
                 }
             }
             catch (Exception ex)
             {
-                return new ErrorResponse<ILoadBalancer>(new List<Error>()
-                {
-                    new UnableToFindLoadBalancerError($"Unable to find load balancer for '{route.LoadBalancerKey}'. Exception: {ex};"),
-                });
+                return new ErrorResponse<ILoadBalancer>(
+                    new UnableToFindLoadBalancerError($"Unable to find load balancer for '{route.LoadBalancerKey}'. Exception: {ex};"));
             }
         }
 
