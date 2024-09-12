@@ -124,8 +124,9 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             foreach (var nAndV in templatePlaceholderNameAndValues)
             {
                 var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
+                var value = BuildRegexSafeValue(nAndV.Value);
 
-                var rgx = new Regex($@"\b{name}={nAndV.Value}\b");
+                var rgx = new Regex($@"\b{name}={value}\b");
 
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {
@@ -164,6 +165,14 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
         {
             return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
+        }
+
+        /// <summary>
+        /// Takes in a string value and transforms it, so it can be later used in a Regex constructor.
+        /// </summary>
+        private static string BuildRegexSafeValue(string input)
+        {
+            return Regex.Escape(input);
         }
     }
 }
