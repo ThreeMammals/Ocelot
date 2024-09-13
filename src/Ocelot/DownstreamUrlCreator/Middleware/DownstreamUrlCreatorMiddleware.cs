@@ -170,9 +170,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         /// <summary>
         /// Takes in a string value and transforms it, so it can be later used in a Regex constructor.
         /// </summary>
-        private static string BuildRegexSafeValue(string input)
-        {
-            return Regex.Escape(input);
-        }
+        private static string BuildRegexSafeValue(string input) => Regex.Escape(input);
     }
 }
