@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
@@ -6,36 +7,35 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Provider.Consul;
 
-public static class ConsulProviderFactory
+/// <summary>
+/// TODO It must be refactored converting to real factory-class and add to DI.
+/// </summary>
+/// <remarks>
+/// Must inherit from <see cref="IServiceDiscoveryProviderFactory"/> interface.
+/// Also the <see cref="ServiceDiscoveryFinderDelegate"/> must be removed from the design.
+/// </remarks>
+public static class ConsulProviderFactory // TODO : IServiceDiscoveryProviderFactory
 {
-    /// <summary>
-    /// String constant used for provider type definition.
-    /// </summary>
+    /// <summary>String constant used for provider type definition.</summary>
     public const string PollConsul = nameof(Provider.Consul.PollConsul);
 
-    private static readonly List<PollConsul> ServiceDiscoveryProviders = new();
-    private static readonly object LockObject = new();
+    private static readonly List<PollConsul> ServiceDiscoveryProviders = new(); // TODO It must be scoped service in DI-container
+    private static readonly object SyncRoot = new();
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
-
-    private static ConsulRegistryConfiguration configuration;
-    private static ConsulRegistryConfiguration ConfigurationGetter() => configuration;
-    public static Func<ConsulRegistryConfiguration> GetConfiguration { get; } = ConfigurationGetter;
-
-    private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider,
-        ServiceProviderConfiguration config, DownstreamRoute route)
+    private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
     {
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
-
-        configuration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
+        var configuration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token);
+        var contextAccessor = provider.GetService<IHttpContextAccessor>();
+        contextAccessor.HttpContext.Items[nameof(ConsulRegistryConfiguration)] = configuration;
         var serviceBuilder = provider.GetService<IConsulServiceBuilder>();
-
-        var consulProvider = new Consul(configuration, factory, consulFactory, serviceBuilder);
+        var consulProvider = new Consul(configuration, factory, consulFactory, serviceBuilder); // TODO It must be added to DI-container!
 
         if (PollConsul.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {
-            lock (LockObject)
+            lock (SyncRoot)
             {
                 var discoveryProvider = ServiceDiscoveryProviders.FirstOrDefault(x => x.ServiceName == route.ServiceName);
                 if (discoveryProvider != null)

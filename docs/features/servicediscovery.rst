@@ -246,8 +246,8 @@ However, the quickest and most streamlined approach is to inherit directly from 
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
     {
-        public MyConsulServiceBuilder(Func<ConsulRegistryConfiguration> configurationFactory, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
-            : base(configurationFactory, clientFactory, loggerFactory) { }
+        public MyConsulServiceBuilder(IHttpContextAccessor contextAccessor, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
+            : base(contextAccessor, clientFactory, loggerFactory) { }
 
         // I want to use the agent service IP address as the downstream hostname
         protected override string GetDownstreamHost(ServiceEntry entry, Node node)

@@ -24,9 +24,8 @@ public static class OcelotBuilderExtensions
     {
         builder.Services
             .AddSingleton(ConsulProviderFactory.Get)
-            .AddSingleton(ConsulProviderFactory.GetConfiguration)
             .AddSingleton<IConsulClientFactory, ConsulClientFactory>()
-            .AddSingleton<IConsulServiceBuilder, DefaultConsulServiceBuilder>()
+            .AddScoped<IConsulServiceBuilder, DefaultConsulServiceBuilder>()
             .RemoveAll(typeof(IFileConfigurationPollerOptions))
             .AddSingleton<IFileConfigurationPollerOptions, ConsulFileConfigurationPollerOption>();
         return builder;
@@ -49,7 +48,7 @@ public static class OcelotBuilderExtensions
     {
         AddConsul(builder).Services
             .RemoveAll<IConsulServiceBuilder>()
-            .AddSingleton(typeof(IConsulServiceBuilder), typeof(TServiceBuilder));
+            .AddScoped(typeof(IConsulServiceBuilder), typeof(TServiceBuilder));
         return builder;
     }
 

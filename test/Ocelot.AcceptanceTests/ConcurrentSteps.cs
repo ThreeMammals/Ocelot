@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Ocelot.AcceptanceTests.LoadBalancer;
+using Ocelot.LoadBalancer;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -107,30 +109,43 @@ public class ConcurrentSteps : Steps, IDisposable
         await context.Response.WriteAsync(isMatch ? responseBody : "Not Found");
     };
 
-    protected RequestDelegate MapGet(int index, string responseBody) => MapGet(index, responseBody, HttpStatusCode.OK);
-    protected RequestDelegate MapGet(int index, string responseBody, HttpStatusCode successCode) => async context =>
+    public static class HeaderNames
     {
-        string response;
+        public const string ServiceIndex = nameof(LeaseEventArgs.ServiceIndex);
+        public const string Host = nameof(Uri.Host);
+        public const string Port = nameof(Uri.Port);
+        public const string Counter = nameof(Counter);
+    }
 
+    protected RequestDelegate MapGet(int index, string body) => MapGet(index, body, HttpStatusCode.OK);
+    protected RequestDelegate MapGet(int index, string body, HttpStatusCode successCode) => async context =>
+    {
         // Don't delay during the first service call
         if (Volatile.Read(ref _counters[index]) > 0)
         {
             await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
         }
 
+        string responseBody;
+        var request = context.Request;
+        var response = context.Response;
         try
         {
             int count = Interlocked.Increment(ref _counters[index]);
-            response = string.Concat(count, ':', responseBody);
+            responseBody = string.Concat(count, ':', body);
 
-            context.Response.StatusCode = (int)successCode;
-            await context.Response.WriteAsync(response);
+            response.StatusCode = (int)successCode;
+            response.Headers.Append(HeaderNames.ServiceIndex, new StringValues(index.ToString()));
+            response.Headers.Append(HeaderNames.Host, new StringValues(request.Host.Host));
+            response.Headers.Append(HeaderNames.Port, new StringValues(request.Host.Port.ToString()));
+            response.Headers.Append(HeaderNames.Counter, new StringValues(count.ToString()));
+            await response.WriteAsync(responseBody);
         }
         catch (Exception exception)
         {
-            response = string.Concat(1, ':', exception.StackTrace);
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            await context.Response.WriteAsync(response);
+            responseBody = string.Concat(1, ':', exception.StackTrace);
+            response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            await response.WriteAsync(responseBody);
         }
     };
 
@@ -169,6 +184,8 @@ public class ConcurrentSteps : Steps, IDisposable
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
         => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
+    public void ThenAllResponseBodiesShouldBe(string expectedBody)
+        => _responses.ShouldAllBe(response => response.Value.Content.ReadAsStringAsync().Result == expectedBody);
 
     private string CalledTimesMessage()
         => $"All values are [{string.Join(',', _counters)}]";

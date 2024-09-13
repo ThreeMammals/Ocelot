@@ -1,28 +1,25 @@
-﻿using Castle.Components.DictionaryAdapter.Xml;
-using Consul;
+﻿using Consul;
+using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace Ocelot.UnitTests.Consul;
 
 public sealed class DefaultConsulServiceBuilderTests
 {
     private DefaultConsulServiceBuilder sut;
-    private readonly Func<ConsulRegistryConfiguration> configurationFactory;
+    private readonly Mock<IHttpContextAccessor> contextAccessor;
     private readonly Mock<IConsulClientFactory> clientFactory;
     private readonly Mock<IOcelotLoggerFactory> loggerFactory;
     private readonly Mock<IOcelotLogger> logger;
     private ConsulRegistryConfiguration _configuration;
 
-    private ConsulRegistryConfiguration GetConfiguration() => _configuration;
-
     public DefaultConsulServiceBuilderTests()
     {
-        configurationFactory = GetConfiguration;
+        contextAccessor = new();
         clientFactory = new();
         clientFactory.Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>()))
             .Returns(new ConsulClient());
@@ -35,7 +32,10 @@ public sealed class DefaultConsulServiceBuilderTests
     private void Arrange([CallerMemberName] string testName = null)
     {
         _configuration = new(null, null, 0, testName, null);
-        sut = new DefaultConsulServiceBuilder(configurationFactory, clientFactory.Object, loggerFactory.Object);
+        var context = new DefaultHttpContext();
+        context.Items.Add(nameof(ConsulRegistryConfiguration), _configuration);
+        contextAccessor.SetupGet(x => x.HttpContext).Returns(context);
+        sut = new DefaultConsulServiceBuilder(contextAccessor.Object, clientFactory.Object, loggerFactory.Object);
     }
 
     [Fact]

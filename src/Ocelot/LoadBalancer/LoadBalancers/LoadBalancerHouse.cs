@@ -37,15 +37,14 @@ namespace Ocelot.LoadBalancer.LoadBalancers
         private Response<ILoadBalancer> GetResponse(DownstreamRoute route, ServiceProviderConfiguration config)
         {
             var result = _factory.Get(route, config);
-
             if (result.IsError)
             {
                 return new ErrorResponse<ILoadBalancer>(result.Errors);
             }
 
-            var loadBalancer = result.Data;
-            _loadBalancers[route.LoadBalancerKey] = loadBalancer; // TODO TryAdd ?
-            return new OkResponse<ILoadBalancer>(loadBalancer);
+            var balancer = result.Data;
+            _loadBalancers[route.LoadBalancerKey] = balancer; // TODO TryAdd ?
+            return new OkResponse<ILoadBalancer>(balancer);
         }
     }
 }
