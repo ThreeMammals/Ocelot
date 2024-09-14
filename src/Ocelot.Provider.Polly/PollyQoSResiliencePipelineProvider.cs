@@ -38,11 +38,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     };
 
     protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes;
-
-    protected virtual string GetRouteName(DownstreamRoute route)
-        => string.IsNullOrWhiteSpace(route.ServiceName)
-            ? route.UpstreamPathTemplate?.Template ?? route.DownstreamPathTemplate?.Value ?? string.Empty
-            : route.ServiceName;
+    protected virtual string GetRouteName(DownstreamRoute route) => route.Name();
 
     /// <summary>
     /// Gets Polly V8 resilience pipeline (applies QoS feature) for the route.
@@ -57,9 +53,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
-        var currentRouteName = GetRouteName(route);
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
-            key: new OcelotResiliencePipelineKey(currentRouteName),
+            key: new OcelotResiliencePipelineKey(GetRouteName(route)),
             configure: (builder) => ConfigureStrategies(builder, route));
     }
 
@@ -78,7 +73,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         }
 
         var options = route.QosOptions;
-        var info = $"Circuit Breaker for Route: {GetRouteName(route)}: ";
+        var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
             FailureRatio = 0.8,
@@ -127,7 +122,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             Timeout = TimeSpan.FromMilliseconds(options.TimeoutValue),
             OnTimeout = _ =>
             {
-                _logger.LogInformation($"Timeout for Route: {GetRouteName(route)}");
+                _logger.LogInformation(() => $"Timeout for the route: {GetRouteName(route)}");
                 return ValueTask.CompletedTask;
             },
         };
