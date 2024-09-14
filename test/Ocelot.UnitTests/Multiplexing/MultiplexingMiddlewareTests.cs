@@ -63,12 +63,14 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("Bug", "1396")]
         public async Task CreateThreadContextAsync_CopyUser_ToTarget()
         {
+            var route = new DownstreamRouteBuilder().Build();
+
             // Arrange
             GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
 
             // Act
             var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-            var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext });
+            var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext, route });
 
             // Assert
             AssertUsers(actual);
@@ -234,6 +236,7 @@ namespace Ocelot.UnitTests.Multiplexing
             mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
                 numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
                 ItExpr.IsAny<HttpRequest>(),
+                ItExpr.IsAny<DownstreamRoute>(),
                 ItExpr.IsAny<CancellationToken>());
         }
 
