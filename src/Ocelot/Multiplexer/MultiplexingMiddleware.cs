@@ -264,7 +264,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         request.EnableBuffering();
         if (request.Body.Position != 0)
         {
-            Logger.LogWarning($"Ocelot does not support body copy without stream in initial position 0 for route {route.GetRouteName()}");
+            Logger.LogWarning(() => $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.");
             return request.Body;
         }
 
@@ -277,7 +277,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         }
         else
         {
-            Logger.LogInformation($"Aggregation does not support body copy without Content-Length header, skipping body copy for route {route.GetRouteName()}.");
+            Logger.LogInformation(() => $"Aggregation does not support body copy without Content-Length header, skipping body copy for the route {route.Name()}.");
         }
 
         return targetBuffer;
