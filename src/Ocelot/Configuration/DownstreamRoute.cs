@@ -91,7 +91,6 @@ namespace Ocelot.Configuration
         public string ServiceName { get; }
         public string ServiceNamespace { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
-        public bool UseServiceDiscovery { get; }
         public bool EnableEndpointEndpointRateLimiting { get; }
         public QoSOptions QosOptions { get; }
         public string DownstreamScheme { get; }
@@ -130,6 +129,13 @@ namespace Ocelot.Configuration
         /// </remarks>
         public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
         public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
+        public bool UseServiceDiscovery { get; }
         public MetadataOptions MetadataOptions { get; }
+
+        /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
+        /// <returns>A <see cref="string"/> object with the name.</returns>
+        public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
+            ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
+            : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
     }
 }
