@@ -613,9 +613,9 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Theory]
     [Trait("Bug", "2116")]
-    [InlineData("api/debug)")]
-    [InlineData("api/debug(")]
-    public void Should_not_fail_to_handle_parentheses(string urlPath)
+    [InlineData("api/debug()")] // no query
+    [InlineData("api/debug%28%29")] // debug()
+    public void ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath)
     {
         // Arrange
         var withGetMethod = new List<string> { "Get" };
@@ -645,7 +645,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
-        Assert.True(_httpContext.Response.StatusCode < 500);
+        Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
     private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
