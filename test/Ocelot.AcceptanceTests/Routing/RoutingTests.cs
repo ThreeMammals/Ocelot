@@ -1167,6 +1167,43 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
+        [Fact]
+        [Trait("Bug", "2116")]
+        public void should_change_downstream_path_by_upstream_path_when_path_contains_malicious_characters()
+        {
+            var port = PortFinder.GetRandomPort();
+
+            var configuration = new FileConfiguration
+            {
+                Routes = new List<FileRoute>
+                   {
+                       new()
+                       {
+                           DownstreamPathTemplate = "/routed/api/{path}",
+                           DownstreamHostAndPorts = new List<FileHostAndPort>
+                           {
+                               new()
+                               {
+                                   Host = "localhost",
+                                   Port = port,
+                               },
+                           },
+                           DownstreamScheme = "http",
+                           UpstreamPathTemplate = "/api/{path}",
+                           UpstreamHttpMethod = new List<string> { "Get" },
+                       },
+                   },
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/routed/api/debug(", HttpStatusCode.OK, string.Empty))
+                    .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                    .And(x => _steps.GivenOcelotIsRunning())
+                    .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/debug("))
+                    .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                    .And(x => ThenTheDownstreamUrlPathShouldBe("/routed/api/debug("))
+                    .BDDfy();
+        }
+
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
         {
             _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
