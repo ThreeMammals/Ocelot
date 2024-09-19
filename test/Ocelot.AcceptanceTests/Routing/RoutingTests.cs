@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing
 {
@@ -1167,41 +1168,22 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
-        [Fact]
+        [Theory]
         [Trait("Bug", "2116")]
-        public void should_change_downstream_path_by_upstream_path_when_path_contains_malicious_characters()
+        [InlineData("debug()")] // no query
+        [InlineData("debug%28%29")] // debug()
+        public void Should_change_downstream_path_by_upstream_path_when_path_contains_malicious_characters(string path)
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                   {
-                       new()
-                       {
-                           DownstreamPathTemplate = "/routed/api/{path}",
-                           DownstreamHostAndPorts = new List<FileHostAndPort>
-                           {
-                               new()
-                               {
-                                   Host = "localhost",
-                                   Port = port,
-                               },
-                           },
-                           DownstreamScheme = "http",
-                           UpstreamPathTemplate = "/api/{path}",
-                           UpstreamHttpMethod = new List<string> { "Get" },
-                       },
-                   },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/routed/api/debug(", HttpStatusCode.OK, string.Empty))
-                    .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                    .And(x => _steps.GivenOcelotIsRunning())
-                    .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/debug("))
-                    .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                    .And(x => ThenTheDownstreamUrlPathShouldBe("/routed/api/debug("))
-                    .BDDfy();
+            var configuration = GivenDefaultConfiguration(port, "/api/{path}", "/routed/api/{path}");
+            var decodedDownstreamUrlPath = $"/routed/api/{HttpUtility.UrlDecode(path)}";
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", decodedDownstreamUrlPath, HttpStatusCode.OK, string.Empty))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/{path}")) // should be encoded
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheDownstreamUrlPathShouldBe(decodedDownstreamUrlPath))
+                .BDDfy();
         }
 
         private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
