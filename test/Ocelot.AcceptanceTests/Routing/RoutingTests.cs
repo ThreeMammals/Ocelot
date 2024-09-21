@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing
 {
@@ -1164,6 +1165,24 @@ namespace Ocelot.AcceptanceTests.Routing
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/modules/Test"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Theory]
+        [Trait("Bug", "2116")]
+        [InlineData("debug()")] // no query
+        [InlineData("debug%28%29")] // debug()
+        public void Should_change_downstream_path_by_upstream_path_when_path_contains_malicious_characters(string path)
+        {
+            var port = PortFinder.GetRandomPort();
+            var configuration = GivenDefaultConfiguration(port, "/api/{path}", "/routed/api/{path}");
+            var decodedDownstreamUrlPath = $"/routed/api/{HttpUtility.UrlDecode(path)}";
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", decodedDownstreamUrlPath, HttpStatusCode.OK, string.Empty))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/{path}")) // should be encoded
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheDownstreamUrlPathShouldBe(decodedDownstreamUrlPath))
                 .BDDfy();
         }
 
