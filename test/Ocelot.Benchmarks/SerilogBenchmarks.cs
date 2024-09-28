@@ -136,7 +136,7 @@ public class SerilogBenchmarks : ManualConfig
                 logging.SetMinimumLevel(minLogLevel);
                 logging.AddSerilog(_logger);
             })
-            .Configure(app =>
+            .Configure(async app =>
             {
                 app.Use(async (context, next) =>
                 {
@@ -153,7 +153,7 @@ public class SerilogBenchmarks : ManualConfig
 
                     await next.Invoke();
                 });
-                app.UseOcelot().Wait();
+                await app.UseOcelot();
             })
             .Build();
 
