@@ -393,7 +393,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
         var t = cookie != null
             ? WhenIGetUrlOnTheApiGateway(url, cookie)
             : WhenIGetUrl(url);
-        _response = t.Result;
+        _response = t.GetAwaiter().GetResult();
     }
 
     private void ThenTheTokenIs(string token)

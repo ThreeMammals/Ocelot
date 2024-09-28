@@ -934,7 +934,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
 
         private void WhenIValidateTheConfiguration()
         {
-            _result = _configurationValidator.IsValid(_fileConfiguration).Result;
+            _result = _configurationValidator.IsValid(_fileConfiguration).GetAwaiter().GetResult();
         }
 
         private void ThenTheResultIsValid()

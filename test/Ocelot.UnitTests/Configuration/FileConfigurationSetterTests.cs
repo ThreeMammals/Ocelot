@@ -104,7 +104,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenISetTheConfiguration()
         {
-            _result = _configSetter.Set(_fileConfiguration).Result;
+            _result = _configSetter.Set(_fileConfiguration).GetAwaiter().GetResult();
         }
 
         private void ThenTheConfigurationRepositoryIsCalledCorrectly()

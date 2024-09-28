@@ -443,7 +443,7 @@ public class Steps : IDisposable
         {
             try
             {
-                _response = _ocelotClient.GetAsync(url).Result;
+                _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
                 _response.EnsureSuccessStatusCode();
                 return true;
             }
@@ -847,7 +847,7 @@ public class Steps : IDisposable
     public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
     public void WhenIGetUrlOnTheApiGateway(string url)
-        => _response = _ocelotClient.GetAsync(url).Result;
+        => _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
 
     public Task<HttpResponseMessage> WhenIGetUrl(string url)
         => _ocelotClient.GetAsync(url);
@@ -858,7 +858,7 @@ public class Steps : IDisposable
         {
             Content = new StringContent(body),
         };
-        _response = _ocelotClient.SendAsync(request).Result;
+        _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
     }
 
     public void WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
@@ -872,19 +872,19 @@ public class Steps : IDisposable
         {
             Content = content,
         };
-        _response = _ocelotClient.SendAsync(request).Result;
+        _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
     }
 
     public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        _response = _ocelotClient.SendAsync(httpRequestMessage).GetAwaiter().GetResult();
     }
 
     public void WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
+        _response = _ocelotClient.SendAsync(httpRequestMessage).GetAwaiter().GetResult();
     }
 
     public void GivenIAddAHeader(string key, string value)
@@ -927,7 +927,7 @@ public class Steps : IDisposable
             const string clientId = "ocelotclient1";
             var request = new HttpRequestMessage(new HttpMethod("GET"), url);
             request.Headers.Add("ClientId", clientId);
-            _response = _ocelotClient.SendAsync(request).Result;
+            _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
         }
     }
 
@@ -935,12 +935,12 @@ public class Steps : IDisposable
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
 
-        _response = _ocelotClient.GetAsync(url).Result;
+        _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
     }
 
     public void WhenIPostUrlOnTheApiGateway(string url)
     {
-        _response = _ocelotClient.PostAsync(url, _postContent).Result;
+        _response = _ocelotClient.PostAsync(url, _postContent).GetAwaiter().GetResult();
     }
 
     public void GivenThePostHasContent(string postContent)
@@ -972,7 +972,7 @@ public class Steps : IDisposable
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
     {
-        _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
+        _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
     }
 
     public void ThenTheContentLengthIs(int expected)
