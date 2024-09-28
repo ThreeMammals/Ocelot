@@ -105,7 +105,7 @@ public class MsLoggerBenchmarks : ManualConfig
                 logging.SetMinimumLevel(minLogLevel);
                 logging.AddConsole();
             })
-            .Configure(app =>
+            .Configure(async app =>
             {
                 app.Use(async (context, next) =>
                 {
@@ -122,7 +122,7 @@ public class MsLoggerBenchmarks : ManualConfig
 
                     await next.Invoke();
                 });
-                app.UseOcelot().Wait();
+                await app.UseOcelot();
             })
             .Build();
 

@@ -99,9 +99,9 @@ namespace Ocelot.Benchmarks
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                 })
                 .UseIISIntegration()
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot().Wait();
+                    await app.UseOcelot();
                 })
                 .Build();
 

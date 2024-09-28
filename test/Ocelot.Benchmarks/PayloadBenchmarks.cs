@@ -211,7 +211,7 @@ public class PayloadBenchmarks : ManualConfig
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
             })
-            .Configure(app => { app.UseOcelot().Wait(); })
+            .Configure(async app => { await app.UseOcelot(); })
             .Build();
 
         _ocelot.Start();
