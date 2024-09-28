@@ -51,7 +51,7 @@ public sealed class PollConsul : IServiceDiscoveryProvider
             try
             {
                 _logger.LogInformation(() => $"Retrieving new client information for service: {ServiceName}...");
-                _services = _consulServiceDiscoveryProvider.GetAsync().Result;
+                _services = _consulServiceDiscoveryProvider.GetAsync().GetAwaiter().GetResult();
                 return Task.FromResult(_services);
             }
             finally
