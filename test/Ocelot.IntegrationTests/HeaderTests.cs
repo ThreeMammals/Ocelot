@@ -168,7 +168,7 @@ namespace Ocelot.IntegrationTests
             var windowsOrMac = "::1";
             var linux = "127.0.0.1";
 
-            var header = _response.Content.ReadAsStringAsync().Result;
+            var header = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
             var passed = header == windowsOrMac || header == linux;
 

@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void WhenIPostTheFileConfiguration()
         {
-            _result = _controller.Post(_fileConfiguration).Result;
+            _result = _controller.Post(_fileConfiguration).GetAwaiter().GetResult();
         }
 
         private void GivenTheFileConfiguration(FileConfiguration fileConfiguration)
@@ -110,7 +110,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void WhenIGetTheFileConfiguration()
         {
-            _result = _controller.Get().Result;
+            _result = _controller.Get().GetAwaiter().GetResult();
         }
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()

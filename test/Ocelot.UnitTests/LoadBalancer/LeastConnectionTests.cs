@@ -260,7 +260,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheNextHostAndPort()
         {
-            _result = _leastConnection.LeaseAsync(_httpContext).Result;
+            _result = _leastConnection.LeaseAsync(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheNextHostAndPortIsReturned()

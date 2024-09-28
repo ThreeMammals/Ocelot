@@ -108,12 +108,12 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
+            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).Result;
+            response = _httpClient.GetAsync(configPath).GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
         }
 
@@ -189,7 +189,7 @@ namespace Ocelot.IntegrationTests
 
         private void WhenIDeleteOnTheApiGateway(string url)
         {
-            _response = _httpClient.DeleteAsync(url).Result;
+            _response = _httpClient.DeleteAsync(url).GetAwaiter().GetResult();
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

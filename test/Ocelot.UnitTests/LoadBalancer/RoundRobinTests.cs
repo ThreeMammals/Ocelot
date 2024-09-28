@@ -142,7 +142,7 @@ public class RoundRobinTests : UnitTest
     }
 
     private Response<ServiceHostAndPort> WhenIGetTheNextAddress(RoundRobin roundRobin)
-        => roundRobin.LeaseAsync(_httpContext).Result;
+        => roundRobin.LeaseAsync(_httpContext).GetAwaiter().GetResult();
     private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
         => roundRobin.LeaseAsync(_httpContext);
 

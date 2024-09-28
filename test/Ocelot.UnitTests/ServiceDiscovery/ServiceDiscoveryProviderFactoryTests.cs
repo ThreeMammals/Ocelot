@@ -215,7 +215,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result.Data;
-            var services = result.GetAsync().Result;
+            var services = result.GetAsync().GetAwaiter().GetResult();
 
             for (var i = 0; i < services.Count; i++)
             {

@@ -514,8 +514,8 @@ namespace Ocelot.IntegrationTests
             var content = new FormUrlEncodedContent(formData);
 
             using var httpClient = new HttpClient();
-            var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = httpClient.PostAsync($"{url}/connect/token", content).GetAwaiter().GetResult();
+            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
@@ -580,7 +580,7 @@ namespace Ocelot.IntegrationTests
             _identityServerBuilder.Start();
 
             using var httpClient = new HttpClient();
-            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
         }
 
@@ -629,7 +629,7 @@ namespace Ocelot.IntegrationTests
         private void WhenIGetUrlOnTheSecondOcelot(string url)
         {
             _httpClientTwo.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-            _response = _httpClientTwo.GetAsync(url).Result;
+            _response = _httpClientTwo.GetAsync(url).GetAwaiter().GetResult();
         }
 
         private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
@@ -637,25 +637,25 @@ namespace Ocelot.IntegrationTests
             var json = JsonConvert.SerializeObject(updatedConfiguration);
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = _httpClient.PostAsync(url, content).Result;
+            _response = _httpClient.PostAsync(url, content).GetAwaiter().GetResult();
         }
 
         private void ThenTheResponseShouldBe(List<string> expected)
         {
-            var content = _response.Content.ReadAsStringAsync().Result;
+            var content = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var result = JsonConvert.DeserializeObject<Regions>(content);
             result.Value.ShouldBe(expected);
         }
 
         private void ThenTheResponseBodyShouldBe(string expected)
         {
-            var content = _response.Content.ReadAsStringAsync().Result;
+            var content = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             content.ShouldBe(expected);
         }
 
         private void ThenTheResponseShouldBe(FileConfiguration expecteds)
         {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
+            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
 
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -696,12 +696,12 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
+            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).Result;
+            response = _httpClient.GetAsync(configPath).GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
         }
 
@@ -851,12 +851,12 @@ namespace Ocelot.IntegrationTests
 
         private void WhenIGetUrlOnTheApiGateway(string url)
         {
-            _response = _httpClient.GetAsync(url).Result;
+            _response = _httpClient.GetAsync(url).GetAwaiter().GetResult();
         }
 
         private void WhenIDeleteOnTheApiGateway(string url)
         {
-            _response = _httpClient.DeleteAsync(url).Result;
+            _response = _httpClient.DeleteAsync(url).GetAwaiter().GetResult();
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
@@ -868,7 +868,7 @@ namespace Ocelot.IntegrationTests
         {
             const string indent = "  ";
             const int total = 52, skip = 1;
-            var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
+            var lines = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().Split(Environment.NewLine);
             lines.Length.ShouldBeGreaterThanOrEqualTo(total);
             lines.First().ShouldNotStartWith(indent);
 
