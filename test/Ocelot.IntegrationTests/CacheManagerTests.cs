@@ -149,9 +149,9 @@ namespace Ocelot.IntegrationTests
                 webBuilder.UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot().Wait();
+                    await app.UseOcelot();
                 });
             });
 
