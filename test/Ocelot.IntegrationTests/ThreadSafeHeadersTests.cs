@@ -105,9 +105,9 @@ namespace Ocelot.IntegrationTests
                 {
                     x.AddOcelot();
                 })
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot().Wait();
+                    await app.UseOcelot();
                 });
 
             _builder = _webHostBuilder.Build();

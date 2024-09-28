@@ -624,9 +624,9 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                        .AddAdministration("/administration", "secret");
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 
@@ -744,9 +744,9 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                         .AddAdministration("/administration", configOptions);
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 
@@ -773,9 +773,9 @@ namespace Ocelot.IntegrationTests
                         config.AddEnvironmentVariables();
                     })
                     .ConfigureServices(configureServices) // !!!
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
             _builder = _webHostBuilder.Build();
@@ -826,9 +826,9 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                         .AddAdministration("/administration", "secret");
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 

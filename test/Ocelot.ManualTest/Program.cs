@@ -53,12 +53,12 @@ namespace Ocelot.ManualTest
                     logging.AddConsole();
                 })
                 .UseIISIntegration()
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot(options =>
+                    await app.UseOcelot(options =>
                     {
                         options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
-                    }).Wait();
+                    });
                 })
                 .Build()
                 .Run();
