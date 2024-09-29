@@ -6,6 +6,7 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 public interface ILoadBalancerAnalyzer
 {
+    string ServiceName { get; }
     string GenerationPrefix { get; }
     ConcurrentBag<LeaseEventArgs> Events { get; }
     object Analyze();

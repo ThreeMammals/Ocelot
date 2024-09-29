@@ -6,6 +6,10 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
 {
+    protected readonly string _serviceName;
+    protected LoadBalancerAnalyzer(string serviceName) => _serviceName = serviceName;
+
+    public string ServiceName => _serviceName;
     public virtual string GenerationPrefix => "Gen:";
     public ConcurrentBag<LeaseEventArgs> Events { get; } = new();
 

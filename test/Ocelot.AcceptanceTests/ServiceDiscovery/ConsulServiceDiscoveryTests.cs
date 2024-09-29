@@ -7,7 +7,6 @@ using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
@@ -331,31 +330,145 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .BDDfy();
     }
 
-    [Fact]
+    [Theory]
     [Trait("Bug", "2119")]
-    public void ShouldReturnDifferentServicesWhenConcurrentRequestsWithDifferentServices()
+    [InlineData(nameof(NoLoadBalancer))]
+    [InlineData(nameof(RoundRobin))]
+    [InlineData(nameof(LeastConnection))] // original scenario
+    public void ShouldReturnDifferentServicesWhenThereAre2SequentialRequestsToDifferentServices(string loadBalancer)
     {
         var names = new string[] { "ProjectsService", "CustomersService" };
         var consulPort = PortFinder.GetRandomPort();
-        var ports = PortFinder.GetPorts(2);
+        var ports = PortFinder.GetPorts(names.Length);
         var service1 = GivenServiceEntry(ports[0], serviceName: names[0]);
         var service2 = GivenServiceEntry(ports[1], serviceName: names[1]);
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: nameof(LeastConnectionAnalyzer));
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: nameof(LeastConnectionAnalyzer));
+        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: loadBalancer);
+        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: loadBalancer);
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, names))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithServices(WithConsul))
+
+            // Step 1
+            .When(x => WhenIGetUrlOnTheApiGateway("/projects/api/projects"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 1))
+            .And(x => x.ThenTheResponseBodyShouldBe($"1:{names[0]}")) // !
+
+            // Step 2
+            .When(x => WhenIGetUrlOnTheApiGateway("/customers/api/customers"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 1))
+            .And(x => x.ThenTheResponseBodyShouldBe($"1:{names[1]}")) // !!
+
+            // Finally
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(2))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(1, 1))
+            .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Bug", "2119")]
+    [InlineData(false, nameof(LeastConnection))] // original scenario, clean config
+    [InlineData(true, nameof(LeastConnectionAnalyzer))] // extended scenario using analyzer
+    public void ShouldReturnDifferentServicesWhenSequentiallylyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
+    {
+        var names = new string[] { "ProjectsService", "CustomersService" };
+        var consulPort = PortFinder.GetRandomPort();
+        var ports = PortFinder.GetPorts(names.Length);
+        var service1 = GivenServiceEntry(ports[0], serviceName: names[0]);
+        var service2 = GivenServiceEntry(ports[1], serviceName: names[1]);
+        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: loadBalancer);
+        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: loadBalancer);
+        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+        var configuration = GivenServiceDiscovery(consulPort, route1, route2);
+        var urls = ports.Select(DownstreamUrl).ToArray();
+
+        var lbAnalyzers = new LeastConnectionAnalyzer[names.Length]; // emulate LoadBalancerHouse's collection
+        LeastConnectionAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+        {
+            //lock (LoadBalancerHouse.SyncRoot) // Note, synch locking is implemented in LoadBalancerHouse
+            int index = route.ServiceName == names[1] ? 1 : 0; // LoadBalancerHouse should return different balancers for different service names
+            return lbAnalyzers[index] ??= new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
+        }
+        Action<IServiceCollection> withConsulAndLbAnalyzer = (s)
+            => s.AddOcelot().AddConsul().AddCustomLoadBalancer<LeastConnectionAnalyzer>(getAnalyzer);
+        Action<int> requestToProjectsAndThenRequestToCustomersAndAssert = (i) =>
+        {
+            // Step 1
+            int count = i + 1;
+            WhenIGetUrlOnTheApiGateway("/projects/api/projects");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenServiceShouldHaveBeenCalledTimes(0, count);
+            ThenTheResponseBodyShouldBe($"{count}:{names[0]}", $"i is {i}");
+            _responses[2 * i] = _response;
+
+            // Step 2
+            WhenIGetUrlOnTheApiGateway("/customers/api/customers");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenServiceShouldHaveBeenCalledTimes(1, count);
+            ThenTheResponseBodyShouldBe($"{count}:{names[1]}", $"i is {i}");
+            _responses[(2 * i) + 1] = _response;
+        };
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, names)) // service names as responses
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(WithConsulAndLeastConnection))
-            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(100, "/customers/api/customers", "/projects/api/projects"))
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withConsulAndLbAnalyzer : WithConsul))
+            .When(x => WhenIDoActionMultipleTimes(50, requestToProjectsAndThenRequestToCustomersAndAssert))
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, names))
+            .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, names)) // !!!
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(100))
-            .And(x => ThenServiceCountersShouldMatchLeasingCounters(_lbAnalyzer, ports, 100))
-            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(100, 2), Top(100, 2)))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(50, 50))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 50)) // strict assertion
+            .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Bug", "2119")]
+    [InlineData(false, nameof(LeastConnection))] // original scenario, clean config
+    [InlineData(true, nameof(LeastConnectionAnalyzer))] // extended scenario using analyzer
+    public void ShouldReturnDifferentServicesWhenConcurrentlyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
+    {
+        const int total = 100; // concurrent requests
+        var names = new string[] { "ProjectsService", "CustomersService" };
+        var consulPort = PortFinder.GetRandomPort();
+        var ports = PortFinder.GetPorts(names.Length);
+        var service1 = GivenServiceEntry(ports[0], serviceName: names[0]);
+        var service2 = GivenServiceEntry(ports[1], serviceName: names[1]);
+        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: names[0], loadBalancerType: loadBalancer);
+        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: names[1], loadBalancerType: loadBalancer);
+        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+        var configuration = GivenServiceDiscovery(consulPort, route1, route2);
+        var urls = ports.Select(DownstreamUrl).ToArray();
+
+        var lbAnalyzers = new LeastConnectionAnalyzer[names.Length]; // emulate LoadBalancerHouse's collection
+        LeastConnectionAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
+        {
+            //lock (LoadBalancerHouse.SyncRoot) // Note, synch locking is implemented in LoadBalancerHouse
+            int index = route.ServiceName == names[1] ? 1 : 0; // LoadBalancerHouse should return different balancers for different service names
+            return lbAnalyzers[index] ??= new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
+        }
+        Action<IServiceCollection> withConsulAndLbAnalyzer = (s)
+            => s.AddOcelot().AddConsul().AddCustomLoadBalancer<LeastConnectionAnalyzer>(getAnalyzer);
+
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, names)) // service names as responses
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withConsulAndLbAnalyzer : WithConsul))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(total, "/projects/api/projects", "/customers/api/customers"))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, names)) // !!!
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(total))
+            .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzers[0], ports, 50)) // ProjectsService
+            .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzers[1], ports, 50)) // CustomersService
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(total, ports.Length), Top(total, ports.Length)))
             .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 50)) // strict assertion
             .BDDfy();
     }
@@ -390,20 +503,6 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private static void WithOverriddenConsulServiceBuilder(IServiceCollection services) => services
         .AddOcelot().AddConsul<MyConsulServiceBuilder>();
-
-    private void WithConsulAndLeastConnection(IServiceCollection services) => services
-        .AddOcelot().AddConsul()
-        .AddCustomLoadBalancer<LeastConnectionAnalyzer>(GetLeastConnectionAnalyzer);
-
-    //private static readonly object ConsulCounterLocker = new();
-    private LeastConnectionAnalyzer _lbAnalyzer;
-    private LeastConnectionAnalyzer GetLeastConnectionAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
-    {
-        //lock (ConsulCounterLocker)
-        //return _lbAnalyzer ??= new LeastConnectionAnalyzer(provider.GetAsync, route.ServiceName);
-        //return _lbAnalyzer ??= new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
-        return new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
-    }
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
     {
@@ -509,7 +608,6 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
                 //string json;
                 //lock (ConsulCounterLocker)
                 //{
-
                 //_counterConsul++;
                 int count = Interlocked.Increment(ref _counterConsul);
 
@@ -517,8 +615,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
                 var serviceName = pathMatch.Groups["serviceName"].Value;
                 var services = _consulServices.Where(x => x.Service.Service == serviceName).ToList();
                 var json = JsonConvert.SerializeObject(services);
-                //}
 
+                //}
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
                 return;

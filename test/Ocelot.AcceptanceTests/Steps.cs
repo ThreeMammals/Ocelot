@@ -11,19 +11,16 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.Cache.CacheManager;
-using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
@@ -833,6 +830,17 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
+    public static void WhenIDoActionMultipleTimes(int times, Action action)
+    {
+        for (int i = 0; i < times; i++)
+            action?.Invoke();
+    }
+    public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
+    {
+        for (int i = 0; i < times; i++)
+            action?.Invoke(i);
+    }
+
     public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
     {
         for (var i = 0; i < times; i++)
@@ -884,9 +892,9 @@ public class Steps : IDisposable
     }
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
-    {
-        _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-    }
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
+    public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody, customMessage);
 
     public void ThenTheContentLengthIs(int expected)
     {

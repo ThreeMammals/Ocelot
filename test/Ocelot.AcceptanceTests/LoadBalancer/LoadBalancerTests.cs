@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
@@ -26,7 +25,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         LeastConnectionAnalyzer lbAnalyzer = null;
         LeastConnectionAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
         {
-            //lock (LbAnalyzerLocker) Note, synch locking is implemented in LoadBalancerHouse
+            //lock (LoadBalancerHouse.SyncRoot) // Note, synch locking is implemented in LoadBalancerHouse
             return lbAnalyzer ??= new LeastConnectionAnalyzerCreator().Create(route, provider)?.Data as LeastConnectionAnalyzer;
         }
         Action<IServiceCollection> withLeastConnectionAnalyzer = (s)
@@ -56,7 +55,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         RoundRobinAnalyzer lbAnalyzer = null;
         RoundRobinAnalyzer getAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
         {
-            //lock (LbAnalyzerLocker) Note, synch locking is implemented in LoadBalancerHouse
+            //lock (LoadBalancerHouse.SyncRoot) // Note, synch locking is implemented in LoadBalancerHouse
             return lbAnalyzer ??= new RoundRobinAnalyzerCreator().Create(route, provider)?.Data as RoundRobinAnalyzer;
         }
         Action<IServiceCollection> withRoundRobinAnalyzer = (s)

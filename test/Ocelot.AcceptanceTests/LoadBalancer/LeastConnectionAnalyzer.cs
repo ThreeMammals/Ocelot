@@ -13,6 +13,7 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
     public string Type => nameof(LeastConnectionAnalyzer);
 
     public LeastConnectionAnalyzer(Func<Task<List<Service>>> services, string serviceName)
+        : base(serviceName)
     {
         loadBalancer = new(services, serviceName);
         loadBalancer.Leased += Me_Leased;

@@ -187,7 +187,7 @@ public class ConcurrentSteps : Steps, IDisposable
     public void ThenAllResponseBodiesShouldBe(string expectedBody)
         => _responses.ShouldAllBe(response => response.Value.Content.ReadAsStringAsync().Result == expectedBody);
 
-    private string CalledTimesMessage()
+    protected string CalledTimesMessage()
         => $"All values are [{string.Join(',', _counters)}]";
 
     public void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
@@ -244,7 +244,7 @@ public class ConcurrentSteps : Steps, IDisposable
             return;
 
         analyzer.ShouldNotBeNull().Analyze();
-        analyzer.Events.Count.ShouldBe(totalRequests);
+        analyzer.Events.Count.ShouldBe(totalRequests, $"{nameof(ILoadBalancerAnalyzer.ServiceName)}: {analyzer.ServiceName}");
 
         var leasingCounters = analyzer?.GetHostCounters() ?? new();
         var sortedLeasingCountersByPort = ports.Select(port => leasingCounters.FirstOrDefault(kv => kv.Key.DownstreamPort == port).Value).ToArray();
@@ -256,7 +256,8 @@ public class ConcurrentSteps : Steps, IDisposable
             if (host != null)
             {
                 var customMessage = new StringBuilder()
-                    .AppendLine($"Port: {ports[i]}")
+                    .AppendLine($"{nameof(ILoadBalancerAnalyzer.ServiceName)}: {analyzer.ServiceName}")
+                    .AppendLine($"    Port: {ports[i]}")
                     .AppendLine($"    Host: {host}")
                     .AppendLine($"    Service counters: [{string.Join(',', _counters)}]")
                     .AppendLine($"    Leasing counters: [{string.Join(',', sortedLeasingCountersByPort)}]") // should have order of _counters

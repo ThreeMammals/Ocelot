@@ -51,7 +51,7 @@ public class LeastConnection : ILoadBalancer
         lock (SyncRoot)
         {
             var matchingLease = _leases.Find(l => l == hostAndPort);
-            if (matchingLease != LoadBalancer.Lease.Null)
+            if (matchingLease != Lease.Null)
             {
                 _ = Update(ref matchingLease, false);
             }
