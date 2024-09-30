@@ -10,8 +10,6 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
 {
     private readonly LeastConnection loadBalancer;
 
-    public string Type => nameof(LeastConnectionAnalyzer);
-
     public LeastConnectionAnalyzer(Func<Task<List<Service>>> services, string serviceName)
         : base(serviceName)
     {
@@ -21,8 +19,9 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
 
     private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 
-    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
-    public void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
+    public override string Type => nameof(LeastConnectionAnalyzer);
+    public override Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
+    public override void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
 
     public override Dictionary<ServiceHostAndPort, int> ToHostCountersDictionary(IEnumerable<IGrouping<ServiceHostAndPort, LeaseEventArgs>> grouping)
         => grouping.ToDictionary(g => g.Key, g => g.Count(e => e.Lease == g.Key));

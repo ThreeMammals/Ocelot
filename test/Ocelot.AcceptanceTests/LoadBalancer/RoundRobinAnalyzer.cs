@@ -11,8 +11,6 @@ internal sealed class RoundRobinAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 {
     private readonly RoundRobin loadBalancer;
 
-    public string Type => nameof(RoundRobinAnalyzer);
-
     public RoundRobinAnalyzer(Func<Task<List<Service>>> services, string serviceName)
         : base(serviceName)
     {
@@ -22,8 +20,9 @@ internal sealed class RoundRobinAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 
     private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 
-    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
-    public void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
+    public override string Type => nameof(RoundRobinAnalyzer);
+    public override Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
+    public override void Release(ServiceHostAndPort hostAndPort) => loadBalancer.Release(hostAndPort);
 
     public override string GenerationPrefix => nameof(EndpointsV1.Metadata.Generation) + ":";
 

@@ -1,10 +1,13 @@
-﻿using Ocelot.LoadBalancer;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Responses;
 using Ocelot.Values;
 using System.Collections.Concurrent;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
+internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer, ILoadBalancer
 {
     protected readonly string _serviceName;
     protected LoadBalancerAnalyzer(string serviceName) => _serviceName = serviceName;
@@ -108,4 +111,8 @@ internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer
         var hostCounters = GetHostCounters();
         return hostCounters.Max(_ => _.Value);
     }
+
+    public virtual string Type => nameof(LoadBalancerAnalyzer);
+    public virtual Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(new UnableToFindLoadBalancerError(GetType().Name)));
+    public virtual void Release(ServiceHostAndPort hostAndPort) { }
 }

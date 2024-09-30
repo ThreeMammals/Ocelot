@@ -97,28 +97,19 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
     private sealed class CustomLoadBalancer : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
-        private static object _lock = new();
+        private static readonly object _lock = new();
         private int _last;
 
         public string Type => nameof(CustomLoadBalancer);
-
-        public CustomLoadBalancer(Func<Task<List<Service>>> services)
-        {
-            _services = services;
-        }
+        public CustomLoadBalancer(Func<Task<List<Service>>> services) => _services = services;
 
         public async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
         {
             var services = await _services();
             lock (_lock)
             {
-                if (_last >= services.Count)
-                {
-                    _last = 0;
-                }
-
-                var next = services[_last];
-                _last++;
+                if (_last >= services.Count) _last = 0;
+                var next = services[_last++];
                 return new OkResponse<ServiceHostAndPort>(next.HostAndPort);
             }
         }
