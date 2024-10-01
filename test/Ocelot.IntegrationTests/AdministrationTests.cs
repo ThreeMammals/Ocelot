@@ -500,7 +500,7 @@ namespace Ocelot.IntegrationTests
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
-        private void GivenIHaveAToken(string url)
+        private async Task GivenIHaveATokenAsync(string url)
         {
             var formData = new List<KeyValuePair<string, string>>
             {
@@ -514,13 +514,13 @@ namespace Ocelot.IntegrationTests
             var content = new FormUrlEncodedContent(formData);
 
             using var httpClient = new HttpClient();
-            var response = httpClient.PostAsync($"{url}/connect/token", content).GetAwaiter().GetResult();
-            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var response = await httpClient.PostAsync($"{url}/connect/token", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName)
+        private async Task GivenThereIsAnIdentityServerOnAsync(string url, string apiName)
         {
             _identityServerBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -577,14 +577,14 @@ namespace Ocelot.IntegrationTests
                     );
                 }).Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
             using var httpClient = new HttpClient();
-            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
+            var response = await httpClient.GetAsync($"{url}/.well-known/openid-configuration");
             response.EnsureSuccessStatusCode();
         }
 
-        private void GivenAnotherOcelotIsRunning(string baseUrl)
+        private async Task GivenAnotherOcelotIsRunning(string baseUrl)
         {
             _httpClientTwo.BaseAddress = new Uri(baseUrl);
 
@@ -617,7 +617,7 @@ namespace Ocelot.IntegrationTests
 
             _builderTwo = _webHostBuilderTwo.Build();
 
-            _builderTwo.Start();
+            await _builderTwo.StartAsync();
         }
 
         private static void GivenIdentityServerSigningEnvironmentalVariablesAreSet()
@@ -626,36 +626,36 @@ namespace Ocelot.IntegrationTests
             Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "password");
         }
 
-        private void WhenIGetUrlOnTheSecondOcelot(string url)
+        private async Task WhenIGetUrlOnTheSecondOcelotAsync(string url)
         {
             _httpClientTwo.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-            _response = _httpClientTwo.GetAsync(url).GetAwaiter().GetResult();
+            _response = await _httpClientTwo.GetAsync(url);
         }
 
-        private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
+        private async Task WhenIPostOnTheApiGatewayAsync(string url, FileConfiguration updatedConfiguration)
         {
             var json = JsonConvert.SerializeObject(updatedConfiguration);
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = _httpClient.PostAsync(url, content).GetAwaiter().GetResult();
+            _response = await _httpClient.PostAsync(url, content);
         }
 
-        private void ThenTheResponseShouldBe(List<string> expected)
+        private async Task ThenTheResponseShouldBeAsync(List<string> expected)
         {
-            var content = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var content = await _response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<Regions>(content);
             result.Value.ShouldBe(expected);
         }
 
-        private void ThenTheResponseBodyShouldBe(string expected)
+        private async Task ThenTheResponseBodyShouldBeAsync(string expected)
         {
-            var content = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var content = await _response.Content.ReadAsStringAsync();
             content.ShouldBe(expected);
         }
 
-        private void ThenTheResponseShouldBe(FileConfiguration expecteds)
+        private async Task ThenTheResponseShouldBeAsync(FileConfiguration expecteds)
         {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+            var response = JsonConvert.DeserializeObject<FileConfiguration>(await _response.Content.ReadAsStringAsync());
 
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -684,7 +684,7 @@ namespace Ocelot.IntegrationTests
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
-        private void GivenIHaveAnOcelotToken(string adminPath)
+        private async Task GivenIHaveAnOcelotTokenAsync(string adminPath)
         {
             var tokenUrl = $"{adminPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -696,16 +696,16 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
-            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var response = await _httpClient.PostAsync(tokenUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).GetAwaiter().GetResult();
+            response = await _httpClient.GetAsync(configPath);
             response.EnsureSuccessStatusCode();
         }
 
-        private void GivenOcelotIsRunningWithIdentityServerSettings(Action<JwtBearerOptions> configOptions)
+        private async Task GivenOcelotIsRunningWithIdentityServerSettingsAsync(Action<JwtBearerOptions> configOptions)
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -737,7 +737,7 @@ namespace Ocelot.IntegrationTests
 
             _builder = _webHostBuilder.Build();
 
-            _builder.Start();
+            await _builder.StartAsync();
         }
 
         private void OcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
@@ -787,7 +787,7 @@ namespace Ocelot.IntegrationTests
             });
         }
 
-        private void GivenOcelotIsRunningWithNoWebHostBuilder(string baseUrl)
+        private async Task GivenOcelotIsRunningWithNoWebHostBuilderAsync()
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -819,10 +819,10 @@ namespace Ocelot.IntegrationTests
 
             _builder = _webHostBuilder.Build();
 
-            _builder.Start();
+            await _builder.StartAsync();
         }
 
-        private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        private static async Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
@@ -833,9 +833,9 @@ namespace Ocelot.IntegrationTests
                 File.Delete(configurationPath);
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            await File.WriteAllTextAsync(configurationPath, jsonConfiguration);
 
-            _ = File.ReadAllText(configurationPath);
+            _ = await File.ReadAllTextAsync(configurationPath);
 
             configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
@@ -844,19 +844,19 @@ namespace Ocelot.IntegrationTests
                 File.Delete(configurationPath);
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            await File.WriteAllTextAsync(configurationPath, jsonConfiguration);
 
-            _ = File.ReadAllText(configurationPath);
+            _ = await File.ReadAllTextAsync(configurationPath);
         }
 
-        private void WhenIGetUrlOnTheApiGateway(string url)
+        private async Task WhenIGetUrlOnTheApiGatewayAsync(string url)
         {
-            _response = _httpClient.GetAsync(url).GetAwaiter().GetResult();
+            _response = await _httpClient.GetAsync(url);
         }
 
-        private void WhenIDeleteOnTheApiGateway(string url)
+        private async Task WhenIDeleteOnTheApiGatewayAsync(string url)
         {
-            _response = _httpClient.DeleteAsync(url).GetAwaiter().GetResult();
+            _response = await _httpClient.DeleteAsync(url);
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
@@ -864,11 +864,12 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
-        private void ThenTheResultHaveMultiLineIndentedJson()
+        private async Task ThenTheResultHaveMultiLineIndentedJsonAsync()
         {
             const string indent = "  ";
             const int total = 52, skip = 1;
-            var lines = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().Split(Environment.NewLine);
+            var contentAsString = await _response.Content.ReadAsStringAsync();
+            string[] lines = contentAsString.Split(Environment.NewLine);
             lines.Length.ShouldBeGreaterThanOrEqualTo(total);
             lines.First().ShouldNotStartWith(indent);
 
