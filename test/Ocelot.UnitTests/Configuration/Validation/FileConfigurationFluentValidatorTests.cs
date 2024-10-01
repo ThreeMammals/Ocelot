@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var configuration = GivenAConfiguration(route);
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAServiceDiscoveryHandler())
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAServiceDiscoveryHandler())
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
@@ -98,7 +98,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "FakeServiceDiscoveryProvider";
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?"))
@@ -113,7 +113,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             configuration.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             configuration.GlobalConfiguration.ServiceDiscoveryProvider.Type = "consul";
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .And(x => x.GivenAServiceDiscoveryHandler())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
@@ -133,7 +133,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             };
             this.Given(x => x.GivenAConfiguration(route))
                 .And(x => x.GivenAQoSHandler())
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -151,7 +151,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             };
             this.Given(x => x.GivenAConfiguration(configuration))
                 .And(x => x.GivenAQoSHandler())
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -167,7 +167,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 ExceptionsAllowedBeforeBreaking = 1,
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?"))
@@ -186,7 +186,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 ExceptionsAllowedBeforeBreaking = 1,
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?"))
@@ -211,7 +211,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -235,7 +235,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /tom has duplicate aggregate"))
                 .BDDfy();
@@ -260,7 +260,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -289,7 +289,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "aggregate /tom has duplicate aggregate"))
                 .BDDfy();
@@ -311,7 +311,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Routes for aggregateRoute / either do not exist or do not have correct ServiceName property"))
                 .BDDfy();
@@ -336,7 +336,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 },
             };
             this.Given(x => x.GivenAConfiguration(configuration))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "aggregateRoute / contains Route with specific RequestIdKey, this is not possible with Aggregates"))
                 .BDDfy();
@@ -346,7 +346,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_invalid_if_scheme_in_downstream_or_upstream_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("http://asdf.com", "http://www.bbc.co.uk/api/products/{productId}")))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .Then(x => x.ThenTheErrorIs<FileValidationFailedError>())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template http://www.bbc.co.uk/api/products/{productId} doesnt start with forward slash"))
@@ -363,7 +363,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_valid_with_one_route()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute()))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -372,7 +372,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_invalid_without_slash_prefix_downstream_path_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/asdf/", "api/products/")))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template api/products/ doesnt start with forward slash"))
                 .BDDfy();
@@ -382,7 +382,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_invalid_without_slash_prefix_upstream_path_template()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("api/prod/", "/api/products/")))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template api/prod/ doesnt start with forward slash"))
                 .BDDfy();
@@ -392,7 +392,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_invalid_if_upstream_url_contains_forward_slash_then_another_forward_slash()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("//api/prod/", "/api/products/")))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Upstream Path Template //api/prod/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
                 .BDDfy();
@@ -402,7 +402,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public void Configuration_is_invalid_if_downstream_url_contains_forward_slash_then_another_forward_slash()
         {
             this.Given(x => x.GivenAConfiguration(GivenDefaultRoute("/api/prod/", "//api/products/")))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Downstream Path Template //api/products/ contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
                 .BDDfy();
@@ -415,7 +415,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             route.AuthenticationOptions.AuthenticationProviderKey = "Test";
             this.Given(x => x.GivenAConfiguration(route))
                 .And(x => x.GivenTheAuthSchemeExists("Test"))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -430,7 +430,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 AuthenticationProviderKeys = new string[] { "Test #1", "Test #2" },
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider"))
                 .BDDfy();
@@ -443,7 +443,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var duplicate = GivenDefaultRoute();
             duplicate.DownstreamPathTemplate = "/www/test/";
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
                 .BDDfy();
@@ -457,7 +457,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var duplicate = GivenDefaultRoute(null, "/www/test/");
             duplicate.UpstreamHost = "host2";
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -469,7 +469,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var duplicate = GivenDefaultRoute(null, "/www/test/");
             duplicate.UpstreamHttpMethod = new() { "Get" };
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
                 .BDDfy();
@@ -482,7 +482,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var duplicate = GivenDefaultRoute(null, "/www/test/");
             duplicate.UpstreamHttpMethod = new() { "Post" };
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -499,7 +499,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             duplicate.UpstreamHost = "upstreamhost";
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate"))
                 .BDDfy();
@@ -517,7 +517,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             duplicate.UpstreamHost = "upstreamhost222";
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -533,7 +533,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             duplicate.UpstreamHttpMethod = new();
 
             this.Given(x => x.GivenAConfiguration(route, duplicate))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -548,7 +548,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 EnableRateLimiting = true,
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
                 .BDDfy();
@@ -564,7 +564,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 EnableRateLimiting = true,
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -576,7 +576,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var config = GivenAConfiguration(route);
             config.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
             this.Given(x => x.GivenAConfiguration(config))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -591,7 +591,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts[0].Host = downstreamHost;
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
                 .BDDfy();
@@ -601,7 +601,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData(null, true)]
         [InlineData(Empty, true)]
         [InlineData("Test", false)]
-        public void HaveServiceDiscoveryProviderRegistered_RouteServiceName_Validated(string serviceName, bool valid)
+        public async Task HaveServiceDiscoveryProviderRegistered_RouteServiceName_Validated(string serviceName, bool valid)
         {
             // Arrange
             var route = GivenDefaultRoute();
@@ -610,7 +610,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             config.GlobalConfiguration.ServiceDiscoveryProvider = null;
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -622,7 +622,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData(true, null, false)]
         [InlineData(true, "type", false)]
         [InlineData(true, "servicefabric", true)]
-        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
+        public async Task HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
         {
             // Arrange
             var route = GivenServiceDiscoveryRoute();
@@ -635,7 +635,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             }
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -645,7 +645,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryFinderDelegates_Validated(bool hasDelegate)
+        public async Task HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryFinderDelegates_Validated(bool hasDelegate)
         {
             // Arrange
             var valid = hasDelegate;
@@ -658,7 +658,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             }
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -674,7 +674,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 new("bbc.co.uk", 123),
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -688,7 +688,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 new("test", 123),
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsValid())
                 .BDDfy();
         }
@@ -699,7 +699,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             var route = GivenDefaultRoute();
             route.DownstreamHostAndPorts = new();
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
                 .BDDfy();
@@ -714,7 +714,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 new(),
             };
             this.Given(x => x.GivenAConfiguration(route))
-                .When(x => x.WhenIValidateTheConfiguration())
+                .When(x => x.WhenIValidateTheConfigurationAsync())
                 .Then(x => x.ThenTheResultIsNotValid())
                 .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!"))
                 .BDDfy();
@@ -723,7 +723,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_not_valid_when_upstream_headers_the_same()
+        public async Task Configuration_is_not_valid_when_upstream_headers_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -739,7 +739,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -749,7 +749,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_upstream_headers_not_the_same()
+        public async Task Configuration_is_valid_when_upstream_headers_not_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -765,7 +765,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsValid();
@@ -774,7 +774,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_upstream_headers_count_not_the_same()
+        public async Task Configuration_is_valid_when_upstream_headers_count_not_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -789,7 +789,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsValid();
@@ -798,7 +798,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
+        public async Task Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -810,7 +810,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsValid();
@@ -826,14 +826,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
         [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
         [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
-        public void IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
+        public async Task IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenThereAreErrors(expected.Length > 0);
@@ -845,14 +845,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Trait("Bug", "683")]
         [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}",              "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder")]
         [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template(string upstream, string downstream, string host, params string[] expected)
+        public async Task Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template(string upstream, string downstream, string host, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream, host);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -864,14 +864,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Trait("Bug", "683")]
         [InlineData("/foo/bar/{everything}",              "/bar/{everything}/{everything}", "foo", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
         [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template(string upstream, string downstream, string host, params string[] expected)
+        public async Task Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template(string upstream, string downstream, string host, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream, host);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfigurationAsync();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -932,9 +932,9 @@ namespace Ocelot.UnitTests.Configuration.Validation
             Port = 8500,
         };
 
-        private void WhenIValidateTheConfiguration()
+        private async Task WhenIValidateTheConfigurationAsync()
         {
-            _result = _configurationValidator.IsValid(_fileConfiguration).GetAwaiter().GetResult();
+            _result = await _configurationValidator.IsValid(_fileConfiguration);
         }
 
         private void ThenTheResultIsValid()

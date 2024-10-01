@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Cache
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheCacheGetIsCalledCorrectly())
                 .BDDfy();
         }
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Cache
             var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), string.Empty, contentHeaders, "some reason");
             this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheCacheGetIsCalledCorrectly())
                 .BDDfy();
         }
@@ -77,15 +77,15 @@ namespace Ocelot.UnitTests.Cache
         {
             this.Given(x => x.GivenResponseIsNotCached(new HttpResponseMessage()))
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheCacheAddIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
             _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenThereIsACachedResponse(CachedResponse response)

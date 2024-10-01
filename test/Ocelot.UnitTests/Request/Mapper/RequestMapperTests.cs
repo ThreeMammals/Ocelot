@@ -121,7 +121,7 @@ public class RequestMapperTests : UnitTest
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent("This is my content"))
+            .And(_ => ThenTheMappedRequestHasContentAsync("This is my content"))
             .And(_ => ThenTheMappedRequestHasContentLength("This is my content".Length))
             .BDDfy();
     }
@@ -135,7 +135,7 @@ public class RequestMapperTests : UnitTest
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent("This is my content"))
+            .And(_ => ThenTheMappedRequestHasContentAsync("This is my content"))
             .And(_ => ThenTheMappedRequestHasNoContentLength())
             .BDDfy();
     }
@@ -149,7 +149,7 @@ public class RequestMapperTests : UnitTest
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent(""))
+            .And(_ => ThenTheMappedRequestHasContentAsync(""))
             .And(_ => ThenTheMappedRequestHasContentLength(0))
             .BDDfy();
     }
@@ -163,7 +163,7 @@ public class RequestMapperTests : UnitTest
             .And(_ => GivenTheInputRequestHasAValidUri())
             .And(_ => GivenTheDownstreamRoute())
             .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent(""))
+            .And(_ => ThenTheMappedRequestHasContentAsync(""))
             .And(_ => ThenTheMappedRequestHasNoContentLength())
             .BDDfy();
     }
@@ -499,10 +499,11 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Headers.Count().ShouldBe(0);
     }
 
-    private void ThenTheMappedRequestHasContent(string expectedContent)
+    private async Task ThenTheMappedRequestHasContentAsync(string expectedContent)
     {
         Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedContent);
+        var contentAsString = await _mappedRequest.Content.ReadAsStringAsync();
+        contentAsString.ShouldBe(expectedContent);
     }
 
     private void ThenTheMappedRequestHasContentLength(long expectedLength)

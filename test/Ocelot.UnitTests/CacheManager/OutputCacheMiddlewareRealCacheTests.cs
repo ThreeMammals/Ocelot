@@ -50,14 +50,14 @@ namespace Ocelot.UnitTests.CacheManager
 
             this.Given(x => x.GivenResponseIsNotCached(response))
                 .And(x => x.GivenTheDownstreamRouteIs())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheContentTypeHeaderIsCached())
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void ThenTheContentTypeHeaderIsCached()

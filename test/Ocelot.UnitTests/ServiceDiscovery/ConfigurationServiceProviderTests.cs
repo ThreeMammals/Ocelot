@@ -20,7 +20,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             };
 
             this.Given(x => x.GivenServices(services))
-                .When(x => x.WhenIGetTheService())
+                .When(x => x.WhenIGetTheServiceAsync())
                 .Then(x => x.ThenTheFollowingIsReturned(services))
                 .BDDfy();
         }
@@ -30,10 +30,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _expected = services;
         }
 
-        private void WhenIGetTheService()
+        private async Task WhenIGetTheServiceAsync()
         {
             _serviceProvider = new ConfigurationServiceProvider(_expected);
-            _result = _serviceProvider.GetAsync().GetAwaiter().GetResult();
+            _result = await _serviceProvider.GetAsync();
         }
 
         private void ThenTheFollowingIsReturned(List<Service> services)

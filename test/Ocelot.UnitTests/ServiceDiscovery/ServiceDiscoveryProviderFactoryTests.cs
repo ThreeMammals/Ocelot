@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             this.Given(x => x.GivenTheRoute(serviceConfig, route))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
-                .Then(x => ThenTheFollowingServicesAreReturned(downstreamAddresses))
+                .Then(x => ThenTheFollowingServicesAreReturnedAsync(downstreamAddresses))
                 .BDDfy();
         }
 
@@ -212,10 +212,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 Times.Once());
         }
 
-        private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
+        private async Task ThenTheFollowingServicesAreReturnedAsync(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result.Data;
-            var services = result.GetAsync().GetAwaiter().GetResult();
+            var services = await result.GetAsync();
 
             for (var i = 0; i < services.Count; i++)
             {
