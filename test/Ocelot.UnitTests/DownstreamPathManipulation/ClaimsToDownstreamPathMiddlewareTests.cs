@@ -52,14 +52,14 @@ namespace Ocelot.UnitTests.DownstreamPathManipulation
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                .And(x => x.GivenTheChangeDownstreamPathReturnsOk())
-               .When(x => x.WhenICallTheMiddleware())
+               .When(x => x.WhenICallTheMiddlewareAsync())
                .Then(x => x.ThenChangeDownstreamPathIsCalledCorrectly())
                .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheChangeDownstreamPathReturnsOk()

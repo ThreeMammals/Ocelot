@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.Errors
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenICallTheMiddleware())
+                .When(_ => WhenICallTheMiddlewareAsync())
                 .Then(_ => ThenTheResponseIsOk())
                 .And(_ => TheAspDotnetRequestIdIsSet())
                 .BDDfy();
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Errors
 
             this.Given(_ => GivenAnExceptionWillBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenICallTheMiddleware())
+                .When(_ => WhenICallTheMiddlewareAsync())
                 .Then(_ => ThenTheResponseIsError())
                 .BDDfy();
         }
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Errors
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKeyAsync("requestidkey", "1234"))
                 .Then(_ => ThenTheResponseIsOk())
                 .And(_ => TheRequestIdIsSet("RequestId", "1234"))
                 .BDDfy();
@@ -84,7 +84,7 @@ namespace Ocelot.UnitTests.Errors
 
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                 .And(_ => GivenTheConfigurationIs(config))
-                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+                .When(_ => WhenICallTheMiddlewareWithTheRequestIdKeyAsync("requestidkey", "1234"))
                 .Then(_ => ThenTheResponseIsOk())
                 .And(_ => TheAspDotnetRequestIdIsSet())
                 .BDDfy();
@@ -95,23 +95,20 @@ namespace Ocelot.UnitTests.Errors
         {
             this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
                .And(_ => GivenTheConfigThrows())
-               .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
+               .When(_ => WhenICallTheMiddlewareWithTheRequestIdKeyAsync("requestidkey", "1234"))
                .Then(_ => ThenAnExceptionIsThrown())
                .BDDfy();
         }
 
-        private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
+        private async Task WhenICallTheMiddlewareWithTheRequestIdKeyAsync(string key, string value)
         {
             _httpContext.Request.Headers.Append(key, value);
-            /*
-            _httpContext.Setup(x => x.Request.Headers).Returns(new HeaderDictionary() { { key, value } });
-            */
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheConfigThrows()

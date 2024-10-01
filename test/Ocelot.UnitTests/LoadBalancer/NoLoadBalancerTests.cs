@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             this.Given(x => x.GivenServices(services))
-                .When(x => x.WhenIGetTheNextHostAndPort())
+                .When(x => x.WhenIGetTheNextHostAndPortAsync())
                 .Then(x => x.ThenTheHostAndPortIs(hostAndPort))
                 .BDDfy();
         }
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_return_error_if_no_services()
         {
-            this.When(x => x.WhenIGetTheNextHostAndPort())
+            this.When(x => x.WhenIGetTheNextHostAndPortAsync())
                 .Then(x => x.ThenThereIsAnError())
                 .BDDfy();
         }
@@ -51,10 +51,10 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
-            this.Given(_ => WhenIGetTheNextHostAndPort())
+            this.Given(_ => WhenIGetTheNextHostAndPortAsync())
                 .And(_ => ThenThereIsAnError())
                 .And(_ => GivenServices(services))
-                .When(_ => WhenIGetTheNextHostAndPort())
+                .When(_ => WhenIGetTheNextHostAndPortAsync())
                 .Then(_ => ThenTheHostAndPortIs(hostAndPort))
                 .BDDfy();
         }
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_return_error_if_null_services()
         {
             this.Given(x => x.GivenServicesAreNull())
-                .When(x => x.WhenIGetTheNextHostAndPort())
+                .When(x => x.WhenIGetTheNextHostAndPortAsync())
                 .Then(x => x.ThenThereIsAnError())
                 .BDDfy();
         }
@@ -83,9 +83,9 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services.AddRange(services);
         }
 
-        private void WhenIGetTheNextHostAndPort()
+        private async Task WhenIGetTheNextHostAndPortAsync()
         {
-            _result = _loadBalancer.LeaseAsync(new DefaultHttpContext()).GetAwaiter().GetResult();
+            _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
         }
 
         private void ThenTheHostAndPortIs(ServiceHostAndPort expected)

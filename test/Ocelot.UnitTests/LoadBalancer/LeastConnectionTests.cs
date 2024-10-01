@@ -112,7 +112,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
             .And(x => x.GivenTheLoadBalancerStarts(availableServices, serviceName))
-            .When(x => x.WhenIGetTheNextHostAndPort())
+            .When(x => x.WhenIGetTheNextHostAndPortAsync())
             .Then(x => x.ThenTheNextHostAndPortIsReturned())
             .BDDfy();
         }
@@ -222,7 +222,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             var hostAndPort = new ServiceHostAndPort("localhost", 80);
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
-             .When(x => x.WhenIGetTheNextHostAndPort())
+             .When(x => x.WhenIGetTheNextHostAndPortAsync())
              .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
@@ -235,7 +235,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             var hostAndPort = new ServiceHostAndPort("localhost", 80);
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
-             .When(x => x.WhenIGetTheNextHostAndPort())
+             .When(x => x.WhenIGetTheNextHostAndPortAsync())
              .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
@@ -258,9 +258,9 @@ namespace Ocelot.UnitTests.LoadBalancer
             _hostAndPort = hostAndPort;
         }
 
-        private void WhenIGetTheNextHostAndPort()
+        private async Task WhenIGetTheNextHostAndPortAsync()
         {
-            _result = _leastConnection.LeaseAsync(_httpContext).GetAwaiter().GetResult();
+            _result = await _leastConnection.LeaseAsync(_httpContext);
         }
 
         private void ThenTheNextHostAndPortIsReturned()

@@ -54,14 +54,14 @@ namespace Ocelot.UnitTests.QueryStrings
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheAddHeadersToRequestReturnsOk())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheAddQueriesToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheAddHeadersToRequestReturnsOk()

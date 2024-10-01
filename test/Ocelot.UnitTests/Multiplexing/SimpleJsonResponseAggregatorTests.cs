@@ -64,8 +64,8 @@ namespace Ocelot.UnitTests.Multiplexing
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
                 .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
+                .When(x => WhenIAggregateAsync())
+                .Then(x => ThenTheContentIsAsync(expected))
                 .And(x => ThenTheContentTypeIs("application/json"))
                 .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
                 .BDDfy();
@@ -103,8 +103,8 @@ namespace Ocelot.UnitTests.Multiplexing
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
                 .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
+                .When(x => WhenIAggregateAsync())
+                .Then(x => ThenTheContentIsAsync(expected))
                 .And(x => ThenTheContentTypeIs("application/json"))
                 .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
                 .BDDfy();
@@ -144,8 +144,8 @@ namespace Ocelot.UnitTests.Multiplexing
             this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
                 .And(x => GivenTheRoute(route))
                 .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
+                .When(x => WhenIAggregateAsync())
+                .Then(x => ThenTheContentIsAsync(expected))
                 .And(x => ThenTheErrorIsMapped())
                 .BDDfy();
         }
@@ -176,17 +176,14 @@ namespace Ocelot.UnitTests.Multiplexing
             _downstreamContexts = downstreamContexts;
         }
 
-        private void WhenIAggregate()
+        private async Task WhenIAggregateAsync()
         {
-            _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts).GetAwaiter().GetResult();
+            await _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts);
         }
 
-        private void ThenTheContentIs(string expected)
+        private async Task ThenTheContentIsAsync(string expected)
         {
-            var content = _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync()
-                .GetAwaiter()
-                .GetResult();
-
+            var content = await _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
             content.ShouldBe(expected);
         }
 

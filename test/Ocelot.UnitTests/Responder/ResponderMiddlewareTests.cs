@@ -34,7 +34,7 @@ namespace Ocelot.UnitTests.Responder
         public void should_not_return_any_errors()
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
         }
@@ -44,7 +44,7 @@ namespace Ocelot.UnitTests.Responder
         {
             this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
                 .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError("/path", "GET")))
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenThereAreNoErrors())
                 .BDDfy();
         }
@@ -54,15 +54,15 @@ namespace Ocelot.UnitTests.Responder
         {
             this._responder.Reset();
             this.Given(x => x.GivenTheHttpResponseMessageIs(null))
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenThereAreNoErrors())
                 .Then(x => x._responder.VerifyNoOtherCalls())
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheHttpResponseMessageIs(DownstreamResponse response)

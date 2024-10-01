@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))
                 .And(x => GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config)))
-                .When(x => WhenISetTheConfiguration())
+                .When(x => WhenISetTheConfigurationAsync())
                 .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
                 .BDDfy();
         }
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Configuration
 
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>())))
-                .When(x => WhenISetTheConfiguration())
+                .When(x => WhenISetTheConfigurationAsync())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
         }
@@ -72,7 +72,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => GivenTheFollowingConfiguration(fileConfig))
                 .And(x => GivenTheRepoReturns(new OkResponse()))
                 .And(x => GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>())))
-                .When(x => WhenISetTheConfiguration())
+                .When(x => WhenISetTheConfigurationAsync())
                 .And(x => ThenAnErrorResponseIsReturned())
                 .BDDfy();
         }
@@ -102,9 +102,9 @@ namespace Ocelot.UnitTests.Configuration
             _fileConfiguration = fileConfiguration;
         }
 
-        private void WhenISetTheConfiguration()
+        private async Task WhenISetTheConfigurationAsync()
         {
-            _result = _configSetter.Set(_fileConfiguration).GetAwaiter().GetResult();
+            _result = await _configSetter.Set(_fileConfiguration);
         }
 
         private void ThenTheConfigurationRepositoryIsCalledCorrectly()

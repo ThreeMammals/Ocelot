@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         public void should_return_service_fabric_naming_service()
         {
             this.Given(x => GivenTheFollowing())
-                .When(x => WhenIGet())
+                .When(x => WhenIGetAsync())
                 .Then(x => ThenTheServiceFabricNamingServiceIsRetured())
                 .BDDfy();
         }
@@ -29,11 +29,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _port = 19081;
         }
 
-        private void WhenIGet()
+        private async Task WhenIGetAsync()
         {
             _config = new ServiceFabricConfiguration(_host, _port, _serviceName);
             _provider = new ServiceFabricServiceDiscoveryProvider(_config);
-            _services = _provider.GetAsync().GetAwaiter().GetResult();
+            _services = await _provider.GetAsync();
         }
 
         private void ThenTheServiceFabricNamingServiceIsRetured()
