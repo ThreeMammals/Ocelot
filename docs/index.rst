@@ -12,9 +12,11 @@
 .. _@thiagoloureiro: https://github.com/thiagoloureiro
 .. _@bbenameur: https://github.com/bbenameur
 
-.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _23.2.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
+.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
+.. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
 
 .. _954: https://github.com/ThreeMammals/Ocelot/issues/954
 .. _957: https://github.com/ThreeMammals/Ocelot/issues/957
@@ -53,12 +55,24 @@ The main features are :doc:`../features/configuration` and :doc:`../features/rou
 
 We **do** follow development process which is described in :doc:`../building/releaseprocess`.
 
+Patches
+-------
+
+- `23.3.3`_: Technical release with DevOps patch.
+- `23.3.4`_: Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release,
+  with codename decoding links:
+
+  - **for men** :htm:`&rarr;` naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
+  - **for women** :htm:`&rarr;` not a well-dressed woman sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
+  - **for black men** :htm:`&rarr;` don't care about White movements, so enjoy `Black Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_:
+    be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
+
 Release Notes
 -------------
 
 | Release Tag: `23.3.0`_
-| Release Codename: **Twilight Texas**
-  :htm:`&rarr;` `for men <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_
+| Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_, with codename decoding links:
+  :htm:`&rarr;` `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_
   :htm:`&rarr;` `for women <https://www.goodreads.com/series/50439-twilight-texas>`_
   :htm:`&rarr;` `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_
 
@@ -133,8 +147,8 @@ Ocelot extra packages
     If both `Circuit Breaker`_ and `Timeout`_ have :ref:`qos-configuration` with their respective properties in the ``QoSOptions`` of the route JSON, then the :ref:`qos-circuit-breaker-strategy` will take precedence in the constructed resilience pipeline.
     For more details, refer to PR `2086`_.
 
-Stabilization aka bug fixing
-""""""""""""""""""""""""""""
+Stabilization (bug fixing)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Fixed `2034`_ in PR `2045`_ by `@raman-m`_
 - Fixed `2039`_ in PR `2050`_ by `@PaulARoy`_
@@ -146,8 +160,8 @@ Stabilization aka bug fixing
 
 See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milestone%3ASpring%2724+is%3Aclosed+label%3Abug>`_ of the `Spring'24 <https://github.com/ThreeMammals/Ocelot/milestone/6>`_ milestone
 
-Documentation for version `23.3`_
-"""""""""""""""""""""""""""""""""
+Documentation Summary
+^^^^^^^^^^^^^^^^^^^^^
 
 - :doc:`../features/caching`: New :ref:`cch-enablecontenthashing-option` and :ref:`cch-global-configuration` sections
 - :doc:`../features/configuration`: New :ref:`config-version-policy` and :ref:`config-route-metadata` sections
