@@ -49,9 +49,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/a?b=c"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/a?b=c"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -87,9 +87,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/EquipmentInterfaces?test=best"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -125,9 +125,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -167,9 +167,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamUrl, 200, "Hello from Felix Boers", query))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(url))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Felix Boers"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Felix Boers"))
                 .BDDfy();
         }
 

@@ -63,9 +63,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithEureka())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests)))
+                .And(_ => _steps.ThenTheResponseBodyShouldBeAsync(nameof(EurekaServiceDiscoveryTests)))
                 .BDDfy();
         }
 

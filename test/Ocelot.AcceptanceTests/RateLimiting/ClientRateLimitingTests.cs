@@ -32,11 +32,11 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/api/ClientRateLimit", 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/api/ClientRateLimit", 2))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/api/ClientRateLimit", 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .BDDfy();
     }
@@ -52,19 +52,19 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 2))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 2))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .And(x => GivenIWait(1000))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .And(x => GivenIWait(1000))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .And(x => ThenTheResponseBodyShouldBe("4")) // total 4 OK responses
+            .And(x => ThenTheResponseBodyShouldBeAsync("4")) // total 4 OK responses
             .BDDfy();
     }
 
@@ -72,12 +72,12 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
     private int Count() => ++_count;
     private string Url() => $"/ClientRateLimit/?{Count()}";
 
-    private void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Func<string> urlDelegate, long times)
+    private async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Func<string> urlDelegate, long times)
     {
         for (long i = 0; i < times; i++)
         {
             var url = urlDelegate.Invoke();
-            WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
+            await WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(url, 1);
         }
     }
 
@@ -91,7 +91,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/api/ClientRateLimit", 4))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
             .BDDfy();
     }
@@ -116,17 +116,17 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunning())
 
             // main scenario
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, route.RateLimitOptions.Limit)) // 100 times to reach the limit
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, route.RateLimitOptions.Limit)) // 100 times to reach the limit
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .And(x => ThenTheResponseBodyShouldBe(route.RateLimitOptions.Limit.ToString())) // total 100 OK responses
+            .And(x => ThenTheResponseBodyShouldBeAsync(route.RateLimitOptions.Limit.ToString())) // total 100 OK responses
 
             // extra scenario
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1)) // 101st request should fail
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1)) // 101st request should fail
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .And(x => GivenIWait((int)TimeSpan.FromSeconds(route.RateLimitOptions.PeriodTimespan).TotalMilliseconds)) // in 3 secs PeriodTimespan will elapse
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .And(x => ThenTheResponseBodyShouldBe("101")) // total 101 OK responses
+            .And(x => ThenTheResponseBodyShouldBeAsync("101")) // total 101 OK responses
             .BDDfy();
     }
 

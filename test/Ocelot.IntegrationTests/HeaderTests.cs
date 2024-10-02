@@ -163,12 +163,12 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(code);
         }
 
-        private void ThenXForwardedForIsSet()
+        private async Task ThenXForwardedForIsSetAsync()
         {
             var windowsOrMac = "::1";
             var linux = "127.0.0.1";
 
-            var header = _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var header = await _response.Content.ReadAsStringAsync();
 
             var passed = header == windowsOrMac || header == linux;
 

@@ -81,15 +81,15 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -140,13 +140,13 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
                 .BDDfy();
         }
@@ -183,13 +183,13 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
@@ -226,13 +226,13 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
                 .BDDfy();
         }
@@ -287,15 +287,15 @@ namespace Ocelot.AcceptanceTests
                 },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
+            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -308,7 +308,7 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
+        private async Task GivenThereIsAnIdentityServerOnAsync(string url, string apiName, AccessTokenType tokenType)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -390,12 +390,12 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
-            Steps.VerifyIdentityServerStarted(url);
+            await Steps.VerifyIdentityServerStartedAsync(url);
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
+        private async Task GivenThereIsAnIdentityServerOnAsync(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -461,9 +461,9 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
-            Steps.VerifyIdentityServerStarted(url);
+            await Steps.VerifyIdentityServerStartedAsync(url);
         }
 
         private async Task GivenIHaveATokenForApiReadOnlyScope(string url)

@@ -96,7 +96,7 @@ namespace Ocelot.IntegrationTests
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
-        private void GivenIHaveAnOcelotToken(string adminPath)
+        private async Task GivenIHaveAnOcelotToken(string adminPath)
         {
             var tokenUrl = $"{adminPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -108,12 +108,12 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).GetAwaiter().GetResult();
-            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var response = await _httpClient.PostAsync(tokenUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).GetAwaiter().GetResult();
+            response = await _httpClient.GetAsync(configPath);
             response.EnsureSuccessStatusCode();
         }
 
@@ -162,6 +162,7 @@ namespace Ocelot.IntegrationTests
 
         private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
+            // TODO: Turn method as async
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
@@ -187,9 +188,9 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        private void WhenIDeleteOnTheApiGateway(string url)
+        private async Task WhenIDeleteOnTheApiGatewayAsync(string url)
         {
-            _response = _httpClient.DeleteAsync(url).GetAwaiter().GetResult();
+            _response = await _httpClient.DeleteAsync(url);
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

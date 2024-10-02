@@ -37,9 +37,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 
@@ -60,9 +60,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("other", "otherValue"))
             .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 
@@ -87,9 +87,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
             .And(x => GivenIAddAHeader("other", "otherValue"))
             .And(x => GivenIAddAHeader(headerName2, headerValue2))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 
@@ -110,7 +110,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, anotherHeaderValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -130,7 +130,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -156,7 +156,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
             .And(x => GivenIAddAHeader("other", "otherValue"))
             .And(x => GivenIAddAHeader(headerName2, "anothervalue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -181,7 +181,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
             .And(x => GivenIAddAHeader("other", "otherValue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -203,7 +203,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
             .And(x => GivenIAddAHeader(headerName, "othervalue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -229,7 +229,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -254,7 +254,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -275,9 +275,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "uk"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("UK")))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello("UK")))
             .BDDfy();
     }
 
@@ -297,9 +297,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "product-Camera"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("products")))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello("products")))
             .BDDfy();
     }
 
@@ -320,9 +320,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "admin.xxx.com"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("products admin")))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello("products admin")))
             .BDDfy();
     }
 
@@ -342,9 +342,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "start_pl_version_v1_end"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/bb"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/bb"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 
@@ -364,9 +364,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "my_{header}"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 
@@ -389,9 +389,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue1))
             .And(x => GivenIAddAHeader(headerName, headerValue2))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+            .And(x => ThenTheResponseBodyShouldBeAsync(Hello()))
             .BDDfy();
     }
 

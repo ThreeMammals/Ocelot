@@ -729,11 +729,11 @@ public class Steps : IDisposable
         return _token;
     }
 
-    public static void VerifyIdentityServerStarted(string url)
+    public static async Task VerifyIdentityServerStartedAsync(string url)
     {
         using var httpClient = new HttpClient();
-        var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").GetAwaiter().GetResult();
-        response.Content.ReadAsStringAsync().GetAwaiter();
+        var response = await httpClient.GetAsync($"{url}/.well-known/openid-configuration");
+        await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
     }
 
@@ -784,19 +784,19 @@ public class Steps : IDisposable
     public void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunningWithServices(WithPolly);
     public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
-    public void WhenIGetUrlOnTheApiGateway(string url)
-        => _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
+    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url)
+        => _response = await _ocelotClient.GetAsync(url);
 
     public Task<HttpResponseMessage> WhenIGetUrl(string url)
         => _ocelotClient.GetAsync(url);
 
-    public void WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
+    public async Task WhenIGetUrlWithBodyOnTheApiGatewayAsync(string url, string body)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = new StringContent(body),
         };
-        _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
+        _response = await _ocelotClient.SendAsync(request);
     }
 
     public void WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
@@ -813,16 +813,16 @@ public class Steps : IDisposable
         _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
     }
 
-    public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        _response = _ocelotClient.SendAsync(httpRequestMessage).GetAwaiter().GetResult();
+        _response = await _ocelotClient.SendAsync(httpRequestMessage);
     }
 
-    public void WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
+    public async Task WhenIPostUrlOnTheApiGatewayAsync(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        _response = _ocelotClient.SendAsync(httpRequestMessage).GetAwaiter().GetResult();
+        _response = await _ocelotClient.SendAsync(httpRequestMessage);
     }
 
     public void GivenIAddAHeader(string key, string value)
@@ -841,27 +841,27 @@ public class Steps : IDisposable
             action?.Invoke(i);
     }
 
-    public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
+    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(string url, int times)
     {
         for (var i = 0; i < times; i++)
         {
             const string clientId = "ocelotclient1";
             var request = new HttpRequestMessage(new HttpMethod("GET"), url);
             request.Headers.Add("ClientId", clientId);
-            _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
+            _response = await _ocelotClient.SendAsync(request);
         }
     }
 
-    public void WhenIGetUrlOnTheApiGateway(string url, string requestId)
+    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url, string requestId)
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
 
-        _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
+        _response = await _ocelotClient.GetAsync(url);
     }
 
-    public void WhenIPostUrlOnTheApiGateway(string url)
+    public async Task WhenIPostUrlOnTheApiGatewayAsync(string url)
     {
-        _response = _ocelotClient.PostAsync(url, _postContent).GetAwaiter().GetResult();
+        _response = await _ocelotClient.PostAsync(url, _postContent);
     }
 
     public void GivenThePostHasContent(string postContent)
@@ -891,9 +891,10 @@ public class Steps : IDisposable
         _postContent = content;
     }
 
-    public void ThenTheResponseBodyShouldBe(string expectedBody)
+    public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody)
     {
-        _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
+        var result = await _response.Content.ReadAsStringAsync();
+        result.ShouldBe(expectedBody);
     }
 
     public void ThenTheContentLengthIs(int expected)

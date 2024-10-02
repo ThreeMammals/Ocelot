@@ -65,9 +65,9 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithIdentityServerAuthSchemes("api2", authSchemes))
             .And(x => GivenIHaveAddedAllAuthHeaders(authSchemes))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(responseBody))
+            .And(x => ThenTheResponseBodyShouldBeAsync(responseBody))
             .BDDfy();
     }
 
@@ -80,7 +80,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
 
         var server = _identityServers[index] = builder.Build();
         server.Start();
-        VerifyIdentityServerStarted(url);
+        VerifyIdentityServerStartedAsync(url).GetAwaiter().GetResult();
         return this;
     }
 
