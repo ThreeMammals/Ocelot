@@ -117,10 +117,8 @@ namespace Ocelot.DependencyInjection
             Services.AddOcelotMetadata();
             Services.AddOcelotMessageInvokerPool();
 
-            // See this for why we register this as singleton:
-            // http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
-            // Could maybe use a scoped data repository
-            Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
+            Services.AddHttpContextAccessor();
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
             Services.TryAddSingleton<OcelotDiagnosticListener>();

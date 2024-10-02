@@ -26,7 +26,9 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
         _loggerFactory = loggerFactory;
     }
 
-    public ConsulRegistryConfiguration Configuration => _configuration
+    // TODO See comment in the interface about the privacy. The goal is to eliminate IBC!
+    // So, we need more abstract type, and ServiceProviderConfiguration is a good choice. The rest of props can be obtained from HttpContext
+    protected /*public*/ ConsulRegistryConfiguration Configuration => _configuration
         ??= _context.Items.TryGetValue(nameof(ConsulRegistryConfiguration), out var value)
             ? value as ConsulRegistryConfiguration : default;
     protected IConsulClient Client => _client ??= _clientFactory.Get(Configuration);

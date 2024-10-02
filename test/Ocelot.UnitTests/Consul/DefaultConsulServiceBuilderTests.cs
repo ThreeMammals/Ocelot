@@ -42,13 +42,15 @@ public sealed class DefaultConsulServiceBuilderTests
     public void Ctor_PrivateMembers_PropertiesAreInitialized()
     {
         Arrange();
-        var methodClient = sut.GetType().GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance);
-        var methodLogger = sut.GetType().GetProperty("Logger", BindingFlags.NonPublic | BindingFlags.Instance);
+        var propClient = sut.GetType().GetProperty("Client", BindingFlags.NonPublic | BindingFlags.Instance);
+        var propLogger = sut.GetType().GetProperty("Logger", BindingFlags.NonPublic | BindingFlags.Instance);
+        var propConfiguration = sut.GetType().GetProperty("Configuration", BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
-        var actualConfiguration = sut.Configuration;
-        var actualClient = methodClient.GetValue(sut);
-        var actualLogger = methodLogger.GetValue(sut);
+        //var actualConfiguration = sut.Configuration;
+        var actualConfiguration = propConfiguration.GetValue(sut);
+        var actualClient = propClient.GetValue(sut);
+        var actualLogger = propLogger.GetValue(sut);
 
         // Assert
         actualConfiguration.ShouldNotBeNull().ShouldBe(_configuration);
