@@ -188,6 +188,17 @@ public class Steps : IDisposable
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
 
+    public async Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
+        => await GivenThereIsAConfigurationAsync(fileConfiguration, _ocelotConfigFileName);
+
+    public async Task GivenThereIsAConfigurationAsync(FileConfiguration from, string toFile)
+    {
+        toFile ??= _ocelotConfigFileName;
+        var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
+        await File.WriteAllTextAsync(toFile, jsonConfiguration);
+        Files.Add(toFile); // register for disposing
+    }
+
     public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
     {
         toFile ??= _ocelotConfigFileName;
@@ -407,7 +418,11 @@ public class Steps : IDisposable
                     .AddConsul()
                     .AddConfigStoredInConsul();
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(app => 
+            {
+                // Turning as async/await some tests got broken
+                app.UseOcelot().GetAwaiter().GetResult(); 
+            });
 
         _ocelotServer = new TestServer(_webHostBuilder);
 
@@ -981,17 +996,18 @@ public class Steps : IDisposable
         _response.Content.Headers.ContentLength.ShouldBe(expected);
     }
 
+    public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
+    {
+        var responseStatusCode = (int)_response.StatusCode;
+        responseStatusCode.ShouldBe(expectedHttpStatusCode);
+    }
+
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
         => _response.StatusCode.ShouldBe(expected);
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
         => _parallelResponses.ShouldAllBe(response => response.Value.StatusCode == expected);
 
-    public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
-    {
-        var responseStatusCode = (int)_response.StatusCode;
-        responseStatusCode.ShouldBe(expectedHttpStatusCode);
-    }
 
     public void ThenTheRequestIdIsReturned()
     {
