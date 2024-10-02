@@ -45,7 +45,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -61,7 +61,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .BDDfy();
     }
@@ -76,11 +76,11 @@ public sealed class PollyQoSTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
             .BDDfy();
     }
@@ -97,20 +97,20 @@ public sealed class PollyQoSTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
             .Given(x => GivenIWaitMilliseconds(QoSOptions.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // still opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // still opened
             .Given(x => GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound))
             .Given(x => GivenIWaitMilliseconds(500)) // BreakDuration should elapse now
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // closed, service online
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // closed, service online
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound)) // closed, service online
-            .And(x => ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.NotFound)))
+            .And(x => ThenTheResponseBodyShouldBeAsync(nameof(HttpStatusCode.NotFound)))
             .BDDfy();
     }
 
@@ -124,22 +124,22 @@ public sealed class PollyQoSTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
             .Given(x => GivenThereIsAConfiguration(configuration))
             .Given(x => GivenOcelotIsRunningWithPolly())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .Given(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Given(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Given(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .Given(x => GivenIWaitMilliseconds(3000))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
     }
 
@@ -157,25 +157,25 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, "Hello from Tom", 0))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/working"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/working"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Tom"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .And(x => GivenIWaitMilliseconds(3000))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
     }
 
@@ -191,7 +191,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => GivenIHackDefaultTimeoutValue(3)) // after 3 secs -> Timeout exception aka request cancellation
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .BDDfy();
     }

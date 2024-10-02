@@ -45,7 +45,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .And(_ => _steps.ThenTheReasonPhraseIs("some reason"))
                 .BDDfy();
         }

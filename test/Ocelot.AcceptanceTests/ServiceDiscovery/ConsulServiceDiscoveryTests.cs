@@ -90,9 +90,9 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul())
-            .When(x => WhenIGetUrlOnTheApiGateway("/home"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
     }
 
@@ -118,9 +118,9 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul())
-            .When(x => WhenIGetUrlOnTheApiGateway("/web/something"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/web/something"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
     }
 
@@ -170,9 +170,9 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithConsul())
-            .When(_ => WhenIGetUrlOnTheApiGateway("/home"))
+            .When(_ => WhenIGetUrlOnTheApiGatewayAsync("/home"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(_ => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .And(_ => ThenTheTokenIs(token))
             .BDDfy();
     }
@@ -233,7 +233,7 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => GivenOcelotIsRunningWithConsul())
             .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
     }
 
@@ -278,22 +278,22 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul(publicUrlUS, publicUrlEU))
-            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
+            .When(x => x.WhenIGetUrlAsync(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
+            .And(x => ThenTheResponseBodyShouldBeAsync(responseBodyUS))
+            .When(x => x.WhenIGetUrlAsync(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
-            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop again")
+            .And(x => ThenTheResponseBodyShouldBeAsync(responseBodyEU))
+            .When(x => x.WhenIGetUrlAsync(publicUrlUS, sessionCookieUS), "When I get US shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 3)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop again")
+            .And(x => ThenTheResponseBodyShouldBeAsync(responseBodyUS))
+            .When(x => x.WhenIGetUrlAsync(publicUrlEU, sessionCookieEU), "When I get EU shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 4)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
+            .And(x => ThenTheResponseBodyShouldBeAsync(responseBodyEU))
             .BDDfy();
     }
 
@@ -320,17 +320,17 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
             .And(x => x.GivenTheServiceNodesAreRegisteredWithConsul(serviceNode))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithConsul()) // default services registration results with the bug: "n1" host issue
-            .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/open/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-            .And(x => ThenTheResponseBodyShouldBe(""))
+            .And(x => ThenTheResponseBodyShouldBeAsync(""))
             .And(x => ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenConsulNodesShouldHaveBeenCalledTimes(1))
 
             // Override default service builder
             .Given(x => GivenOcelotIsRunningWithServices(WithOverriddenConsulServiceBuilder))
-            .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
+            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/open/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Raman"))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Raman"))
             .And(x => ThenConsulShouldHaveBeenCalledTimes(2))
             .And(x => ThenConsulNodesShouldHaveBeenCalledTimes(2))
             .BDDfy();
@@ -388,12 +388,12 @@ public sealed partial class ConsulServiceDiscoveryTests : Steps, IDisposable
         return config;
     }
 
-    private void WhenIGetUrl(string url, CookieHeaderValue cookie)
+    private async Task WhenIGetUrlAsync(string url, CookieHeaderValue cookie)
     {
         var t = cookie != null
             ? WhenIGetUrlOnTheApiGateway(url, cookie)
             : WhenIGetUrl(url);
-        _response = t.GetAwaiter().GetResult();
+        _response = await t;
     }
 
     private void ThenTheTokenIs(string token)

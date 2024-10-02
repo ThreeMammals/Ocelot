@@ -67,9 +67,9 @@ namespace Ocelot.AcceptanceTests.Configuration
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 

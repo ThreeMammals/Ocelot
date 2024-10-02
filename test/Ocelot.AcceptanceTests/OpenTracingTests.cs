@@ -87,12 +87,12 @@ namespace Ocelot.AcceptanceTests
                 .And(_ => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", tracingUrl))
                 .And(_ => _steps.GivenThereIsAConfiguration(configuration))
                 .And(_ => _steps.GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
-                .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
+                .When(_ => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api001/values"))
                 .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
+                .And(_ => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .When(_ => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api002/values"))
                 .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .And(_ => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Tom"))
                 .And(_ => ThenTheTracerIsCalled(fakeTracer))
                 .BDDfy();
         }
@@ -142,9 +142,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api001/values"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
                 .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
                 .BDDfy();

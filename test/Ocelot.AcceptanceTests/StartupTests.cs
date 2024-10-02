@@ -49,7 +49,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
