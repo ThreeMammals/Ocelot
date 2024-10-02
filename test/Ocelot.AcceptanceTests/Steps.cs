@@ -382,7 +382,11 @@ public class Steps : IDisposable
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(app => 
+            {
+                // Turning as async/await some tests got broken
+                app.UseOcelot().Wait(); 
+            });
 
         _ocelotServer = new TestServer(_webHostBuilder);
 
