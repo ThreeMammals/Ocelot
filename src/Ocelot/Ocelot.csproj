@@ -32,7 +32,6 @@
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="IPAddressRange" Version="6.1.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
-    <PackageReference Include="JsonPath.Net" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
