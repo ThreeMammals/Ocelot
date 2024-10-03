@@ -83,13 +83,12 @@ namespace Ocelot.IntegrationTests
 
             var regionToClear = "gettest";
 
-            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent))
-                .BDDfy();
+            GivenThereIsAConfiguration(initialConfiguration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
         private void GivenIHaveAddedATokenToMyRequest()
