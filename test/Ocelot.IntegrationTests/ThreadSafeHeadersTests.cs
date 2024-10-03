@@ -55,12 +55,11 @@ namespace Ocelot.IntegrationTests
                     },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300))
-                .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenThereIsAServiceRunningOn($"http://localhost:{port}");
+            GivenOcelotIsRunning();
+            WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300);
+            ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
         }
 
         private void GivenThereIsAServiceRunningOn(string url)
