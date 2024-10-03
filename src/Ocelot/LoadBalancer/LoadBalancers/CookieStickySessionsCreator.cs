@@ -9,10 +9,11 @@ namespace Ocelot.LoadBalancer.LoadBalancers
     {
         public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
         {
-            var loadBalancer = new RoundRobin(async () => await serviceProvider.GetAsync());
+            var options = route.LoadBalancerOptions;
+            var loadBalancer = new RoundRobin(serviceProvider.GetAsync, route.LoadBalancerKey);
             var bus = new InMemoryBus<StickySession>();
-            return new OkResponse<ILoadBalancer>(new CookieStickySessions(loadBalancer, route.LoadBalancerOptions.Key,
-                route.LoadBalancerOptions.ExpiryInMs, bus));
+            return new OkResponse<ILoadBalancer>(
+                new CookieStickySessions(loadBalancer, options.Key, options.ExpiryInMs, bus));
         }
 
         public string Type => nameof(CookieStickySessions);

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -21,7 +22,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_be_able_to_lease_and_release_concurrently()
+        public async Task Should_be_able_to_lease_and_release_concurrently()
         {
             var serviceName = "products";
 
@@ -45,7 +46,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_handle_service_returning_to_available()
+        public async Task Should_handle_service_returning_to_available()
         {
             var serviceName = "products";
 
@@ -57,9 +58,9 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), serviceName);
 
-            var hostAndPortOne = await _leastConnection.Lease(_httpContext);
+            var hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
-            var hostAndPortTwo = await _leastConnection.Lease(_httpContext);
+            var hostAndPortTwo = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.2");
             _leastConnection.Release(hostAndPortOne.Data);
             _leastConnection.Release(hostAndPortTwo.Data);
@@ -69,9 +70,9 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
             };
 
-            hostAndPortOne = await _leastConnection.Lease(_httpContext);
+            hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
-            hostAndPortTwo = await _leastConnection.Lease(_httpContext);
+            hostAndPortTwo = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.1");
             _leastConnection.Release(hostAndPortOne.Data);
             _leastConnection.Release(hostAndPortTwo.Data);
@@ -82,9 +83,9 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
             };
 
-            hostAndPortOne = await _leastConnection.Lease(_httpContext);
+            hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
-            hostAndPortTwo = await _leastConnection.Lease(_httpContext);
+            hostAndPortTwo = await _leastConnection.LeaseAsync(_httpContext);
             hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.2");
             _leastConnection.Release(hostAndPortOne.Data);
             _leastConnection.Release(hostAndPortTwo.Data);
@@ -92,13 +93,13 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private async Task LeaseDelayAndRelease()
         {
-            var hostAndPort = await _leastConnection.Lease(_httpContext);
+            var hostAndPort = await _leastConnection.LeaseAsync(_httpContext);
             await Task.Delay(_random.Next(1, 100));
             _leastConnection.Release(hostAndPort.Data);
         }
 
         [Fact]
-        public void should_get_next_url()
+        public void Should_get_next_url()
         {
             var serviceName = "products";
 
@@ -117,7 +118,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         }
 
         [Fact]
-        public async Task should_serve_from_service_with_least_connections()
+        public async Task Should_serve_from_service_with_least_connections()
         {
             var serviceName = "products";
 
@@ -131,21 +132,21 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services = availableServices;
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
-            var response = await _leastConnection.Lease(_httpContext);
+            var response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[2].HostAndPort.DownstreamHost);
         }
 
         [Fact]
-        public async Task should_build_connections_per_service()
+        public async Task Should_build_connections_per_service()
         {
             var serviceName = "products";
 
@@ -158,25 +159,25 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services = availableServices;
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
-            var response = await _leastConnection.Lease(_httpContext);
+            var response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
         }
 
         [Fact]
-        public async Task should_release_connection()
+        public async Task Should_release_connection()
         {
             var serviceName = "products";
 
@@ -189,32 +190,32 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services = availableServices;
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
 
-            var response = await _leastConnection.Lease(_httpContext);
+            var response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[0].HostAndPort.DownstreamHost);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
 
             //release this so 2 should have 1 connection and we should get 2 back as our next host and port
             _leastConnection.Release(availableServices[1].HostAndPort);
 
-            response = await _leastConnection.Lease(_httpContext);
+            response = await _leastConnection.LeaseAsync(_httpContext);
 
             response.Data.DownstreamHost.ShouldBe(availableServices[1].HostAndPort.DownstreamHost);
         }
 
         [Fact]
-        public void should_return_error_if_services_are_null()
+        public void Should_return_error_if_services_are_null()
         {
             var serviceName = "products";
 
@@ -222,12 +223,12 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreNullErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
         [Fact]
-        public void should_return_error_if_services_are_empty()
+        public void Should_return_error_if_services_are_empty()
         {
             var serviceName = "products";
 
@@ -235,31 +236,21 @@ namespace Ocelot.UnitTests.LoadBalancer
             this.Given(x => x.GivenAHostAndPort(hostAndPort))
              .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
              .When(x => x.WhenIGetTheNextHostAndPort())
-             .Then(x => x.ThenServiceAreEmptyErrorIsReturned())
+             .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
              .BDDfy();
         }
 
-        private void ThenServiceAreNullErrorIsReturned()
+        private void ThenErrorIsReturned<TError>()
+            where TError : Error
         {
             _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
-        }
-
-        private void ThenServiceAreEmptyErrorIsReturned()
-        {
-            _result.IsError.ShouldBeTrue();
-            _result.Errors[0].ShouldBeOfType<ServicesAreEmptyError>();
+            _result.Errors[0].ShouldBeOfType<TError>();
         }
 
         private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
         {
             _services = services;
             _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
-        }
-
-        private void WhenTheLoadBalancerStarts(List<Service> services, string serviceName)
-        {
-            GivenTheLoadBalancerStarts(services, serviceName);
         }
 
         private void GivenAHostAndPort(ServiceHostAndPort hostAndPort)
@@ -269,7 +260,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void WhenIGetTheNextHostAndPort()
         {
-            _result = _leastConnection.Lease(_httpContext).Result;
+            _result = _leastConnection.LeaseAsync(_httpContext).Result;
         }
 
         private void ThenTheNextHostAndPortIsReturned()

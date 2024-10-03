@@ -5,18 +5,18 @@ namespace Ocelot.Infrastructure.RequestData
 {
     public class HttpDataRepository : IRequestScopedDataRepository
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public HttpDataRepository(IHttpContextAccessor httpContextAccessor)
+        public HttpDataRepository(IHttpContextAccessor contextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _contextAccessor = contextAccessor;
         }
 
         public Response Add<T>(string key, T value)
         {
             try
             {
-                _httpContextAccessor.HttpContext.Items.Add(key, value);
+                _contextAccessor.HttpContext.Items.Add(key, value);
                 return new OkResponse();
             }
             catch (Exception exception)
@@ -29,7 +29,7 @@ namespace Ocelot.Infrastructure.RequestData
         {
             try
             {
-                _httpContextAccessor.HttpContext.Items[key] = value;
+                _contextAccessor.HttpContext.Items[key] = value;
                 return new OkResponse();
             }
             catch (Exception exception)
@@ -40,18 +40,14 @@ namespace Ocelot.Infrastructure.RequestData
 
         public Response<T> Get<T>(string key)
         {
-            if (_httpContextAccessor.HttpContext == null || _httpContextAccessor.HttpContext.Items == null)
+            if (_contextAccessor?.HttpContext?.Items == null)
             {
                 return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null"));
             }
 
-            if (_httpContextAccessor.HttpContext.Items.TryGetValue(key, out var obj))
-            {
-                var data = (T)obj;
-                return new OkResponse<T>(data);
-            }
-
-            return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key}"));
+            return _contextAccessor.HttpContext.Items.TryGetValue(key, out var item)
+                ? new OkResponse<T>((T)item)
+                : new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key}"));
         }
     }
 }

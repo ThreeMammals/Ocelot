@@ -7,12 +7,10 @@ namespace Ocelot.Provider.Kubernetes;
 
 public class KubeServiceCreator : IKubeServiceCreator
 {
-    private readonly IOcelotLogger _logger;
-
     public KubeServiceCreator(IOcelotLoggerFactory factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
-        _logger = factory.CreateLogger<KubeServiceCreator>();
+        Logger = factory.CreateLogger<KubeServiceCreator>();
     }
 
     public virtual IEnumerable<Service> Create(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset)
@@ -34,6 +32,8 @@ public class KubeServiceCreator : IKubeServiceCreator
         return new Service[] { instance };
     }
 
+    protected IOcelotLogger Logger { get; }
+
     protected virtual string GetServiceName(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
         => endpoint.Metadata?.Name;
 
@@ -46,7 +46,7 @@ public class KubeServiceCreator : IKubeServiceCreator
             : ports.FirstOrDefault(portNameToScheme);
         portV1 ??= new();
         portV1.Name ??= configuration.Scheme ?? string.Empty;
-        _logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
+        Logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
         return new ServiceHostAndPort(address.Ip, portV1.Port, portV1.Name);
     }
 

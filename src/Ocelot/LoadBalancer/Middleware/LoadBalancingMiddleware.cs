@@ -34,7 +34,7 @@ namespace Ocelot.LoadBalancer.Middleware
                 return;
             }
 
-            var hostAndPort = await loadBalancer.Data.Lease(httpContext);
+            var hostAndPort = await loadBalancer.Data.LeaseAsync(httpContext);
             if (hostAndPort.IsError)
             {
                 Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");

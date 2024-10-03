@@ -12,7 +12,7 @@ We wanted to show how easy it is to integrate the `GraphQL for .NET <https://git
 Please see the sample project `OcelotGraphQL <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotGraphQL>`_.
 Using a combination of the `graphql-dotnet <https://github.com/graphql-dotnet/graphql-dotnet>`_ project and Ocelot :doc:`../features/delegatinghandlers` features, this is pretty easy to do. 
 However we do not intend to integrate more closely with **GraphQL** at the moment.
-Check out the samples `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/OcelotGraphQL/README.md>`_ and that should give you enough instruction on how to do this!
+Check out the samples `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/GraphQL/README.md>`_ and that should give you enough instruction on how to do this!
 
 Future
 ------

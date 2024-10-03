@@ -12,24 +12,24 @@ namespace Ocelot.Infrastructure
         private readonly Dictionary<string, Func<DownstreamRequest, string>> _requestPlaceholders;
         private readonly IBaseUrlFinder _finder;
         private readonly IRequestScopedDataRepository _repo;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public Placeholders(IBaseUrlFinder finder, IRequestScopedDataRepository repo, IHttpContextAccessor httpContextAccessor)
+        public Placeholders(IBaseUrlFinder finder, IRequestScopedDataRepository repo, IHttpContextAccessor contextAccessor)
         {
             _repo = repo;
-            _httpContextAccessor = httpContextAccessor;
+            _contextAccessor = contextAccessor;
             _finder = finder;
             _placeholders = new Dictionary<string, Func<Response<string>>>
             {
-                { "{BaseUrl}", GetBaseUrl() },
-                { "{TraceId}", GetTraceId() },
-                { "{RemoteIpAddress}", GetRemoteIpAddress() },
-                { "{UpstreamHost}", GetUpstreamHost() },
+                { "{BaseUrl}", GetBaseUrl },
+                { "{TraceId}", GetTraceId },
+                { "{RemoteIpAddress}", GetRemoteIpAddress },
+                { "{UpstreamHost}", GetUpstreamHost },
             };
 
             _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>
             {
-                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl() },
+                { "{DownstreamBaseUrl}", GetDownstreamBaseUrl },
             };
         }
 
@@ -49,23 +49,16 @@ namespace Ocelot.Infrastructure
 
         public Response<string> Get(string key, DownstreamRequest request)
         {
-            if (_requestPlaceholders.ContainsKey(key))
-            {
-                return new OkResponse<string>(_requestPlaceholders[key].Invoke(request));
-            }
-
-            return new ErrorResponse<string>(new CouldNotFindPlaceholderError(key));
+            return _requestPlaceholders.TryGetValue(key, out var func)
+                ? new OkResponse<string>(func.Invoke(request))
+                : new ErrorResponse<string>(new CouldNotFindPlaceholderError(key));
         }
 
         public Response Add(string key, Func<Response<string>> func)
         {
-            if (_placeholders.ContainsKey(key))
-            {
-                return new ErrorResponse(new CannotAddPlaceholderError($"Unable to add placeholder: {key}, placeholder already exists"));
-            }
-
-            _placeholders.Add(key, func);
-            return new OkResponse();
+            return _placeholders.TryAdd(key, func)
+                ? new OkResponse()
+                : new ErrorResponse(new CannotAddPlaceholderError($"Unable to add placeholder: {key}, placeholder already exists"));
         }
 
         public Response Remove(string key)
@@ -79,75 +72,53 @@ namespace Ocelot.Infrastructure
             return new OkResponse();
         }
 
-        private Func<Response<string>> GetRemoteIpAddress()
+        private Response<string> GetRemoteIpAddress()
         {
-            return () =>
+            // this can blow up so adding try catch and return error
+            try
             {
-                // this can blow up so adding try catch and return error
-                try
-                {
-                    var remoteIdAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                    return new OkResponse<string>(remoteIdAddress);
-                }
-                catch
-                {
-                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{RemoteIpAddress}"));
-                }
-            };
+                var remoteIdAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                return new OkResponse<string>(remoteIdAddress);
+            }
+            catch
+            {
+                return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{RemoteIpAddress}"));
+            }
         }
 
-        private static Func<DownstreamRequest, string> GetDownstreamBaseUrl()
+        private static string GetDownstreamBaseUrl(DownstreamRequest x)
         {
-            return x =>
+            var downstreamUrl = $"{x.Scheme}://{x.Host}";
+            if (x.Port != 80 && x.Port != 443)
             {
-                var downstreamUrl = $"{x.Scheme}://{x.Host}";
+                downstreamUrl = $"{downstreamUrl}:{x.Port}";
+            }
 
-                if (x.Port != 80 && x.Port != 443)
-                {
-                    downstreamUrl = $"{downstreamUrl}:{x.Port}";
-                }
-
-                return $"{downstreamUrl}/";
-            };
+            return $"{downstreamUrl}/";
         }
 
-        private Func<Response<string>> GetTraceId()
+        private Response<string> GetTraceId()
         {
-            return () =>
-            {
-                var traceId = _repo.Get<string>("TraceId");
-                if (traceId.IsError)
-                {
-                    return new ErrorResponse<string>(traceId.Errors);
-                }
-
-                return new OkResponse<string>(traceId.Data);
-            };
+            var traceId = _repo.Get<string>("TraceId");
+            return traceId.IsError
+                ? new ErrorResponse<string>(traceId.Errors)
+                : new OkResponse<string>(traceId.Data);
         }
 
-        private Func<Response<string>> GetBaseUrl()
-        {
-            return () => new OkResponse<string>(_finder.Find());
-        }
+        private Response<string> GetBaseUrl() => new OkResponse<string>(_finder.Find());
 
-        private Func<Response<string>> GetUpstreamHost()
+        private Response<string> GetUpstreamHost()
         {
-            return () =>
+            try
             {
-                try
-                {
-                    if (_httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Host", out var upstreamHost))
-                    {
-                        return new OkResponse<string>(upstreamHost.First());
-                    }
-
-                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
-                }
-                catch
-                {
-                    return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
-                }
-            };
+                return _contextAccessor.HttpContext.Request.Headers.TryGetValue("Host", out var upstreamHost)
+                    ? new OkResponse<string>(upstreamHost.First())
+                    : new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
+            }
+            catch
+            {
+                return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
+            }
         }
     }
 }
