@@ -3,6 +3,7 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Collections;
@@ -132,14 +133,14 @@ public class MultiplexingMiddleware : OcelotMiddleware
     {
         var processing = new List<Task<HttpContext>>();
         var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
-
+        using var document = JsonDocument.Parse(content);
 
         foreach (var downstreamRoute in routes.Skip(1))
         {
             var matchAdvancedAgg = routeKeysConfigs.FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
             if (matchAdvancedAgg != null)
             {
-                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, content, context, downstreamRoute));
+                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, document, context, downstreamRoute));
                 continue;
             }
 
@@ -162,13 +163,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <summary>
     /// Processing a route with aggregation.
     /// </summary>
-    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg
-        , string content
-        , HttpContext httpContext, DownstreamRoute downstreamRoute)
+    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
+        JsonDocument document, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
         var processing = new List<Task<HttpContext>>();
 
-        var values = ExtractValuesFromJsonPath(content, matchAdvancedAgg.JsonPath).Distinct();
+        var values = document.ExtractValuesFromJsonPath(matchAdvancedAgg.JsonPath)
+            .Distinct();
 
         foreach (var value in values)
         {
@@ -180,95 +181,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return processing;
     }
 
-    //public static IEnumerable<string> ExtractValuesFromJsonPath(string jsonContent, string jsonPath)
-    //{
-    //    using (JsonDocument document = JsonDocument.Parse(jsonContent))
-    //    {
-    //        var root = document.RootElement;
 
-    //        // حذف '$' از مسیر و تقسیم آن بر اساس '.'
-    //        var pathParts = jsonPath.Trim('$', '.').Split('.');
-
-    //        var elements = new List<string>();
-
-    //        // فراخوانی تابع بازگشتی برای پیمایش مسیر
-    //        TraverseJsonPath(root, pathParts, 0, elements);
-
-    //        return elements;
-    //    }
-    //}
-
-    //// تابع بازگشتی برای پیمایش مسیر JSONPath
-    //public static void TraverseJsonPath(JsonElement currentElement, string[] pathParts, int index, List<string> elements)
-    //{
-    //    if (index >= pathParts.Length) return;  // در صورت اتمام مسیر، از تابع خارج می‌شویم
-
-    //    var part = pathParts[index];
-
-    //    if (currentElement.ValueKind == JsonValueKind.Array)
-    //    {
-    //        // اگر آرایه باشد، برای هر عنصر در آرایه پیمایش می‌کنیم
-    //        foreach (var element in currentElement.EnumerateArray())
-    //        {
-    //            TraverseJsonPath(element, pathParts, index + 1, elements);
-    //        }
-    //    }
-    //    else if (currentElement.ValueKind == JsonValueKind.Object)
-    //    {
-    //        // اگر شیء باشد، ویژگی مورد نظر را می‌یابیم
-    //        if (currentElement.TryGetProperty(part, out JsonElement nextElement))
-    //        {
-    //            TraverseJsonPath(nextElement, pathParts, index + 1, elements);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        // اگر عنصر از نوع دیگری باشد (مثلاً رشته یا عدد)، به نتیجه اضافه می‌کنیم
-    //        elements.Add(currentElement.ToString());
-    //    }
-    //}
-
-    public static IEnumerable<string> ExtractValuesFromJsonPathOld(string jsonContent, string jsonPath)
-    {
-        using (JsonDocument document = JsonDocument.Parse(jsonContent))
-        {
-            var root = document.RootElement;
-
-            var pathParts = jsonPath.Trim('$', '.').Split('.');
-
-            var elements = new List<string>();
-
-            foreach (var part in pathParts)
-            {
-                if (root.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var element in root.EnumerateArray())
-                    {
-                        if (element.ValueKind == JsonValueKind.Object)
-                        {
-                            if (element.TryGetProperty(part, out JsonElement property))
-                            {
-                                elements.Add(property.ToString());
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (root.TryGetProperty(part, out JsonElement nextElement))
-                    {
-                        elements.Add(nextElement.ToString());
-                    }
-                    else
-                    {
-                        return Enumerable.Empty<string>();
-                    }
-                }
-            }
-
-            return elements;
-        }
-    }
 
     /// <summary>
     /// Process a downstream route asynchronously.
