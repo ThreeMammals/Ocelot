@@ -313,7 +313,6 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-
         /// <summary>For local implementation purposes, so it MUST NOT be public!..</summary>
         private IServiceProvider _serviceProvider; // TODO Reuse ActivatorUtilities factories?
 
