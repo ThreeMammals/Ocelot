@@ -1,16 +1,6 @@
-Technical release, version {0}
-
-### Breaking changes
-
-- The `ILoadBalancer` interface: The `Lease` method was renamed to `LeaseAsync`.
-  Interface FQN: `Ocelot.LoadBalancer.LoadBalancers.ILoadBalancer`
-  Method FQN:  `Ocelot.LoadBalancer.LoadBalancers.ILoadBalancer.LeaseAsync`
-- TO BE Written
-
-
-## 🔥Hot fixing v[23.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0) (version 23.3.4) aka [Blue Olympic Balumbes](https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518) release
+## 🔥 Hot fixing v[23.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0) (version {0}) aka [Blue Olympic Balumbes](https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518) release
 > Codenamed: **[Blue Olympic Fiend](https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518)**
-> Read the Docs: [Ocelot 23.3](https://ocelot.readthedocs.io/en/23.3.4/)
+> Read the Docs: [Ocelot 23.3](https://ocelot.readthedocs.io/en/{0}/)
 > Hot fixed versions: [23.3.0](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0), [23.3.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3)
 > Milestone: [v23.3 Hotfixes](https://github.com/ThreeMammals/Ocelot/milestone/8)
 
