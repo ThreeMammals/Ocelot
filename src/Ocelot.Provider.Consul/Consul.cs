@@ -33,21 +33,16 @@ public class Consul : IServiceDiscoveryProvider
 
         var entries = entriesTask.Result.Response ?? Array.Empty<ServiceEntry>();
         var nodes = nodesTask.Result.Response ?? Array.Empty<Node>();
-        var services = new List<Service>();
-
-        if (entries.Length != 0)
-        {
-            _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {entries.Length} service entries for '{_configuration.KeyOfServiceInConsul}' service.");
-            _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {nodes.Length} catalog nodes.");
-            var collection = BuildServices(entries, nodes);
-            services.AddRange(collection);
-        }
-        else
+        if (entries.Length == 0)
         {
             _logger.LogWarning(() => $"{nameof(Consul)} Provider: No service entries found for '{_configuration.KeyOfServiceInConsul}' service!");
+            return new();
         }
 
-        return services;
+        _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {entries.Length} service entries for '{_configuration.KeyOfServiceInConsul}' service.");
+        _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {nodes.Length} catalog nodes.");
+        return BuildServices(entries, nodes)
+            .ToList();
     }
 
     protected virtual IEnumerable<Service> BuildServices(ServiceEntry[] entries, Node[] nodes)

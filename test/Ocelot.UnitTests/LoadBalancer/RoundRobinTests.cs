@@ -142,9 +142,9 @@ public class RoundRobinTests : UnitTest
     }
 
     private Response<ServiceHostAndPort> WhenIGetTheNextAddress(RoundRobin roundRobin)
-        => roundRobin.Lease(_httpContext).Result;
+        => roundRobin.LeaseAsync(_httpContext).Result;
     private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
-        => roundRobin.Lease(_httpContext);
+        => roundRobin.LeaseAsync(_httpContext);
 
     private static void ThenServicesAreNullErrorIsReturned(Response<ServiceHostAndPort> response)
     {

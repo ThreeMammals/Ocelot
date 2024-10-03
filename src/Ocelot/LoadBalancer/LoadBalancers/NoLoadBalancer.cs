@@ -13,13 +13,15 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _services = services;
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+        public string Type => nameof(NoLoadBalancer);
+
+        public async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
         {
             var services = await _services();
 
             if (services == null || services.Count == 0)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError("There were no services in NoLoadBalancer"));
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {Type}!"));
             }
 
             var service = await Task.FromResult(services.FirstOrDefault());

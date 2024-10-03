@@ -12,7 +12,7 @@ namespace Ocelot.AcceptanceTests
     {
         private IWebHost _builder;
 
-        public void GivenThereIsAServiceRunningOn(string baseUrl, RequestDelegate del)
+        public void GivenThereIsAServiceRunningOn(string baseUrl, RequestDelegate handler)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -21,14 +21,14 @@ namespace Ocelot.AcceptanceTests
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    app.Run(del);
+                    app.Run(handler);
                 })
                 .Build();
 
             _builder.Start();
         }
 
-        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate del)
+        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate handler)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -38,14 +38,14 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(del);
+                    app.Run(handler);
                 })
                 .Build();
 
             _builder.Start();
         }
 
-        public void GivenThereIsAServiceRunningOnWithKestrelOptions(string baseUrl, string basePath, Action<KestrelServerOptions> options, RequestDelegate del)
+        public void GivenThereIsAServiceRunningOnWithKestrelOptions(string baseUrl, string basePath, Action<KestrelServerOptions> options, RequestDelegate handler)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -56,7 +56,7 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(del);
+                    app.Run(handler);
                 })
                 .Build();
 
@@ -67,7 +67,7 @@ namespace Ocelot.AcceptanceTests
         {
         }
 
-        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string fileName, string password, int port, RequestDelegate del)
+        public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string fileName, string password, int port, RequestDelegate handler)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(baseUrl)
@@ -82,7 +82,7 @@ namespace Ocelot.AcceptanceTests
                 .Configure(app =>
                 {
                     app.UsePathBase(basePath);
-                    app.Run(del);
+                    app.Run(handler);
                 })
                 .Build();
 

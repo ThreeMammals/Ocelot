@@ -28,6 +28,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "336")]
     public void ShouldUseSameDownstreamHost_ForSingleRouteWithHighLoad()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -48,6 +49,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "336")]
     public void ShouldUseDifferentDownstreamHost_ForDoubleRoutesWithDifferentCookies()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -71,6 +73,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "336")]
     public void ShouldUseSameDownstreamHost_ForDifferentRoutesWithSameCookie()
     {
         var port1 = PortFinder.GetRandomPort();

@@ -1,4 +1,5 @@
-﻿using Ocelot.Infrastructure.Extensions;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Values;
@@ -7,23 +8,31 @@ namespace Ocelot.Provider.Consul;
 
 public class DefaultConsulServiceBuilder : IConsulServiceBuilder
 {
-    private readonly ConsulRegistryConfiguration _configuration;
-    private readonly IConsulClient _client;
-    private readonly IOcelotLogger _logger;
+    private readonly HttpContext _context;
+    private readonly IConsulClientFactory _clientFactory;
+    private readonly IOcelotLoggerFactory _loggerFactory;
+
+    private ConsulRegistryConfiguration _configuration;
+    private IConsulClient _client;
+    private IOcelotLogger _logger;
 
     public DefaultConsulServiceBuilder(
-        Func<ConsulRegistryConfiguration> configurationFactory,
+        IHttpContextAccessor contextAccessor,
         IConsulClientFactory clientFactory,
         IOcelotLoggerFactory loggerFactory)
     {
-        _configuration = configurationFactory.Invoke();
-        _client = clientFactory.Get(_configuration);
-        _logger = loggerFactory.CreateLogger<DefaultConsulServiceBuilder>();
+        _context = contextAccessor.HttpContext;
+        _clientFactory = clientFactory;
+        _loggerFactory = loggerFactory;
     }
 
-    public ConsulRegistryConfiguration Configuration => _configuration;
-    protected IConsulClient Client => _client;
-    protected IOcelotLogger Logger => _logger;
+    // TODO See comment in the interface about the privacy. The goal is to eliminate IBC!
+    // So, we need more abstract type, and ServiceProviderConfiguration is a good choice. The rest of props can be obtained from HttpContext
+    protected /*public*/ ConsulRegistryConfiguration Configuration => _configuration
+        ??= _context.Items.TryGetValue(nameof(ConsulRegistryConfiguration), out var value)
+            ? value as ConsulRegistryConfiguration : default;
+    protected IConsulClient Client => _client ??= _clientFactory.Get(Configuration);
+    protected IOcelotLogger Logger => _logger ??= _loggerFactory.CreateLogger<DefaultConsulServiceBuilder>();
 
     public virtual bool IsValid(ServiceEntry entry)
     {
@@ -36,7 +45,7 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
 
         if (!valid)
         {
-            _logger.LogWarning(
+            Logger.LogWarning(
                 () => $"Unable to use service address: '{service.Address}' and port: {service.Port} as it is invalid for the service: '{service.Service}'. Address must contain host only e.g. 'localhost', and port must be greater than 0.");
         }
 

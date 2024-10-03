@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -14,12 +15,20 @@ public class ProviderFactoryTests
 
     public ProviderFactoryTests()
     {
-        var services = new ServiceCollection();
+        var contextAccessor = new Mock<IHttpContextAccessor>();
+        var context = new DefaultHttpContext();
+        context.Items.Add(nameof(ConsulRegistryConfiguration), new ConsulRegistryConfiguration(null, null, 0, null, null));
+        contextAccessor.SetupGet(x => x.HttpContext).Returns(context);
+
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         var logger = new Mock<IOcelotLogger>();
         loggerFactory.Setup(x => x.CreateLogger<Provider.Consul.Consul>()).Returns(logger.Object);
         loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
+
         var consulFactory = new Mock<IConsulClientFactory>();
+
+        var services = new ServiceCollection();
+        services.AddSingleton(contextAccessor.Object);
         services.AddSingleton(consulFactory.Object);
         services.AddSingleton(loggerFactory.Object);
         _provider = services.BuildServiceProvider();

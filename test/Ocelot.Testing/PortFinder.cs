@@ -12,26 +12,42 @@ public static class PortFinder
     private static readonly ConcurrentBag<int> UsedPorts = new();
 
     /// <summary>
-    /// Gets a pseudo-random port from the range [<see cref="CurrentPort"/>, <see cref="EndPortRange"/>].
+    /// Gets a pseudo-random port from the range [<see cref="CurrentPort"/>, <see cref="EndPortRange"/>] for one testing scenario.
     /// </summary>
-    /// <returns>New allocated port for testing scenario.</returns>
+    /// <returns>New allocated port.</returns>
     /// <exception cref="ExceedingPortRangeException">Critical situation where available ports range has been exceeded.</exception>
     public static int GetRandomPort()
     {
         lock (LockObj)
         {
-            if (CurrentPort > EndPortRange)
-            {
-                throw new ExceedingPortRangeException();
-            }
-
+            ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
             return UsePort(CurrentPort++);
         }
     }
 
+    /// <summary>
+    /// Gets the exact number of ports from the range [<see cref="CurrentPort"/>, <see cref="EndPortRange"/>] for one testing scenario.
+    /// </summary>
+    /// <param name="count">The number of wanted ports.</param>
+    /// <returns>Array of allocated ports.</returns>
+    /// <exception cref="ExceedingPortRangeException">Critical situation where available ports range has been exceeded.</exception>
+    public static int[] GetPorts(int count)
+    {
+        var ports = new int[count];
+        lock (LockObj)
+        {
+            for (int i = 0; i < count; i++, CurrentPort++)
+            {
+                ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
+                ports[i] = UsePort(CurrentPort);
+            }
+        }
+        return ports;
+    }
+
     private static int UsePort(int port)
     {
-        UsedPorts.Add(port);
+        UsedPorts.Add(port); // TODO Review or remove, now useless
 
         var ipe = new IPEndPoint(IPAddress.Loopback, port);
 
@@ -46,4 +62,7 @@ public class ExceedingPortRangeException : Exception
 {
     public ExceedingPortRangeException()
         : base("Cannot find available port to bind to!") { }
+
+    public static void ThrowIf(bool condition)
+        => _ = condition ? throw new ExceedingPortRangeException() : 0;
 }

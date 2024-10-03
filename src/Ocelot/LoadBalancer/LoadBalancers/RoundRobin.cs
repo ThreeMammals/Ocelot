@@ -10,6 +10,8 @@ public class RoundRobin : ILoadBalancer
     private readonly string _serviceName;
     private readonly List<Lease> _leasing;
 
+    public string Type => nameof(RoundRobin);
+
     public RoundRobin(Func<Task<List<Service>>> services, string serviceName)
     {
         _servicesDelegate = services;
@@ -23,12 +25,12 @@ public class RoundRobin : ILoadBalancer
     public event EventHandler<LeaseEventArgs> Leased;
     protected virtual void OnLeased(LeaseEventArgs e) => Leased?.Invoke(this, e);
 
-    public virtual async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+    public virtual async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
     {
         var services = await _servicesDelegate?.Invoke() ?? new List<Service>();
         if (services.Count == 0)
         {
-            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {nameof(RoundRobin)} for '{_serviceName}' during {nameof(Lease)} operation!"));
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {Type} for '{_serviceName}' during {nameof(LeaseAsync)} operation!"));
         }
 
         lock (SyncRoot)
@@ -36,7 +38,7 @@ public class RoundRobin : ILoadBalancer
             var readMe = CaptureState(services, out int count);
             if (!TryScanNext(readMe, out Service next, out int index))
             {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"The service at index {index} was null in {nameof(RoundRobin)} for {_serviceName} during the {nameof(Lease)} operation. Total services count: {count}."));
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"The service at index {index} was null in {Type} for {_serviceName} during the {nameof(LeaseAsync)} operation. Total services count: {count}."));
             }
 
             ProcessLeasing(readMe, next, index); // Happy path: Lease now
@@ -116,18 +118,4 @@ public class RoundRobin : ILoadBalancer
             .ToArray(); // capture leasing state and produce new collection
         _leasing.AddRange(newLeases);
     }
-}
-
-public class LeaseEventArgs : EventArgs
-{
-    public LeaseEventArgs(Lease lease, Service service, int serviceIndex)
-    {
-        Lease = lease;
-        Service = service;
-        ServiceIndex = serviceIndex;
-    }
-
-    public Lease Lease { get; }
-    public Service Service { get; }
-    public int ServiceIndex { get; }
 }

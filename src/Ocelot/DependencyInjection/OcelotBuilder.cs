@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Ocelot.Authorization;
-using Ocelot.Cache;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
@@ -27,7 +26,6 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
 using Ocelot.QueryStrings;
-using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
@@ -119,10 +117,8 @@ namespace Ocelot.DependencyInjection
             Services.AddOcelotMetadata();
             Services.AddOcelotMessageInvokerPool();
 
-            // See this for why we register this as singleton:
-            // http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
-            // Could maybe use a scoped data repository
-            Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
+            Services.AddHttpContextAccessor();
             Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
             Services.AddMemoryCache();
             Services.TryAddSingleton<OcelotDiagnosticListener>();
@@ -206,44 +202,50 @@ namespace Ocelot.DependencyInjection
             return this;
         }
 
-        public IOcelotBuilder AddCustomLoadBalancer<T>()
-            where T : ILoadBalancer, new()
+        public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>()
+            where TLoadBalancer : ILoadBalancer, new()
         {
-            AddCustomLoadBalancer((provider, route, serviceDiscoveryProvider) => new T());
-            return this;
+            TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+                => new();
+            return AddCustomLoadBalancer<TLoadBalancer>(Create);
         }
 
-        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<T> loadBalancerFactoryFunc)
-            where T : ILoadBalancer
+        public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>(Func<TLoadBalancer> loadBalancerFactoryFunc)
+            where TLoadBalancer : ILoadBalancer
         {
-            AddCustomLoadBalancer((provider, route, serviceDiscoveryProvider) =>
-                loadBalancerFactoryFunc());
-            return this;
+            TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+                => loadBalancerFactoryFunc();
+            return AddCustomLoadBalancer<TLoadBalancer>(Create);
         }
 
-        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, T> loadBalancerFactoryFunc)
-            where T : ILoadBalancer
+        public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>(Func<IServiceProvider, TLoadBalancer> loadBalancerFactoryFunc)
+            where TLoadBalancer : ILoadBalancer
         {
-            AddCustomLoadBalancer((provider, route, serviceDiscoveryProvider) =>
-                loadBalancerFactoryFunc(provider));
-            return this;
+            TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+                => loadBalancerFactoryFunc(provider);
+            return AddCustomLoadBalancer<TLoadBalancer>(Create);
         }
 
-        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
-            where T : ILoadBalancer
+        public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>(Func<DownstreamRoute, IServiceDiscoveryProvider, TLoadBalancer> loadBalancerFactoryFunc)
+            where TLoadBalancer : ILoadBalancer
         {
-            AddCustomLoadBalancer((provider, route, serviceDiscoveryProvider) =>
-                loadBalancerFactoryFunc(route, serviceDiscoveryProvider));
-            return this;
+            TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+                => loadBalancerFactoryFunc(route, discoveryProvider);
+            return AddCustomLoadBalancer<TLoadBalancer>(Create);
         }
 
-        public IOcelotBuilder AddCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
-            where T : ILoadBalancer
+        public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, TLoadBalancer> loadBalancerFactoryFunc)
+            where TLoadBalancer : ILoadBalancer
         {
-            Services.AddSingleton<ILoadBalancerCreator>(provider =>
-                new DelegateInvokingLoadBalancerCreator<T>(
-                    (route, serviceDiscoveryProvider) =>
-                        loadBalancerFactoryFunc(provider, route, serviceDiscoveryProvider)));
+            ILoadBalancer Create(DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+                => loadBalancerFactoryFunc(_serviceProvider, route, discoveryProvider);
+            ILoadBalancerCreator implementationFactory(IServiceProvider provider)
+            {
+                _serviceProvider = provider;
+                return new DelegateInvokingLoadBalancerCreator<TLoadBalancer>(Create);
+            }
+
+            Services.AddSingleton<ILoadBalancerCreator>(implementationFactory);
             return this;
         }
 
@@ -257,9 +259,9 @@ namespace Ocelot.DependencyInjection
             if (global)
             {
                 Services.AddTransient(delegateType);
-                Services.AddTransient(s =>
+                Services.AddTransient(provider =>
                 {
-                    var service = s.GetService(delegateType) as DelegatingHandler;
+                    var service = provider.GetService(delegateType) as DelegatingHandler;
                     return new GlobalDelegatingHandler(service);
                 });
             }
@@ -277,9 +279,9 @@ namespace Ocelot.DependencyInjection
             if (global)
             {
                 Services.AddTransient<THandler>();
-                Services.AddTransient(s =>
+                Services.AddTransient(provider =>
                 {
-                    var service = s.GetService<THandler>();
+                    var service = provider.GetService<THandler>();
                     return new GlobalDelegatingHandler(service);
                 });
             }
@@ -302,15 +304,20 @@ namespace Ocelot.DependencyInjection
 
             Services.Replace(ServiceDescriptor.Describe(
                 typeof(IPlaceholders),
-                s => (IPlaceholders)objectFactory(s,
-                    new[] { CreateInstance(s, wrappedDescriptor) }),
+                provider => (IPlaceholders)objectFactory(
+                    provider,
+                    new[] { CreateInstance(provider, wrappedDescriptor) }),
                 wrappedDescriptor.Lifetime
             ));
 
             return this;
         }
 
-        private static object CreateInstance(IServiceProvider services, ServiceDescriptor descriptor)
+
+        /// <summary>For local implementation purposes, so it MUST NOT be public!..</summary>
+        private IServiceProvider _serviceProvider; // TODO Reuse ActivatorUtilities factories?
+
+        private static object CreateInstance(IServiceProvider provider, ServiceDescriptor descriptor)
         {
             if (descriptor.ImplementationInstance != null)
             {
@@ -319,10 +326,10 @@ namespace Ocelot.DependencyInjection
 
             if (descriptor.ImplementationFactory != null)
             {
-                return descriptor.ImplementationFactory(services);
+                return descriptor.ImplementationFactory(provider);
             }
 
-            return ActivatorUtilities.GetServiceOrCreateInstance(services, descriptor.ImplementationType);
+            return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
         }
     }
 }

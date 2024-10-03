@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
+using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -13,17 +14,15 @@ using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
+public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
 {
     private readonly string _kubernetesUrl;
     private readonly IKubeApiClient _clientFactory;
-    private readonly List<ServiceHandler> _serviceHandlers;
     private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
 
@@ -38,13 +37,11 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             AllowInsecure = true,
         };
         _clientFactory = KubeApiClient.Create(option);
-        _serviceHandlers = new();
         _kubernetesHandler = new();
     }
 
     public override void Dispose()
     {
-        _serviceHandlers.ForEach(handler => handler?.Dispose());
         _kubernetesHandler.Dispose();
         base.Dispose();
     }
@@ -62,13 +59,14 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         var route = GivenRouteWithServiceName(namespaces);
         var configuration = GivenKubeConfiguration(namespaces, route);
         var downstreamResponse = serviceName;
-        this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, downstreamResponse))
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
     }
@@ -101,7 +99,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         route.ServiceName = serviceName; // "example-web"
         var configuration = GivenKubeConfiguration(namespaces, route);
 
-        this.Given(x => x.GivenK8sProductServiceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
@@ -110,6 +108,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
                     ? "1:" + nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)
                     : string.Empty))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(downstreamScheme == "http" ? 1 : 0))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
     }
@@ -137,7 +136,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         int bottom = totalRequests / totalServices,
             top = totalRequests - (bottom * totalServices) + bottom;
         ThenAllServicesCalledRealisticAmountOfTimes(bottom, top);
-        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
+        ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
     [Theory]
@@ -154,10 +153,8 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
         HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
 
-        int bottom = _roundRobinAnalyzer.BottomOfConnections(),
-            top = _roundRobinAnalyzer.TopOfConnections();
-        ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
-        ThenServiceCountersShouldMatchLeasingCounters(servicePorts);
+        ThenAllServicesCalledOptimisticAmountOfTimes(_roundRobinAnalyzer); // with unstable checkings
+        ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
     private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
@@ -165,23 +162,21 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         [CallerMemberName] string serviceName = nameof(ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer))
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
-        var servicePorts = Enumerable.Repeat(0, totalServices)
-            .Select(_ => PortFinder.GetRandomPort())
-            .ToArray();
+        var servicePorts = PortFinder.GetPorts(totalServices);
         var downstreamUrls = servicePorts
             .Select(port => LoopbackLocalhostUrl(port, Array.IndexOf(servicePorts, port)))
-            .ToList(); // based on localhost aka loopback network interface
+            .ToArray(); // based on localhost aka loopback network interface
         var downstreams = downstreamUrls.Select(url => new Uri(url))
             .ToList();
         var downstreamResponses = downstreams
             .Select(ds => $"{serviceName}:{ds.Host}:{ds.Port}")
-            .ToList();
+            .ToArray();
         var subset = new EndpointSubsetV1();
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
         var configuration = GivenKubeConfiguration(namespaces, route);
-        GivenMultipleK8sProductServicesAreRunning(downstreamUrls, downstreamResponses);
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
@@ -190,7 +185,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
     private void HighlyLoadOnKubeProviderAndRoundRobinBalancer(int totalRequests, int k8sGenerationNo)
     {
         // Act
-        WhenIGetUrlOnTheApiGatewayMultipleTimes("/", totalRequests); // load by X parallel requests
+        WhenIGetUrlOnTheApiGatewayConcurrently("/", totalRequests); // load by X parallel requests
 
         // Assert
         _k8sCounter.ShouldBeGreaterThanOrEqualTo(totalRequests); // integration endpoint called times
@@ -198,6 +193,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
         _roundRobinAnalyzer.ShouldNotBeNull().Analyze();
+        _roundRobinAnalyzer.Events.Count.ShouldBe(totalRequests);
         _roundRobinAnalyzer.HasManyServiceGenerations(k8sGenerationNo).ShouldBeTrue();
     }
 
@@ -240,8 +236,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
 
     private FileRoute GivenRouteWithServiceName(string serviceNamespace,
         [CallerMemberName] string serviceName = null,
-        string loadBalancerType = nameof(LeastConnection))
-        => new()
+        string loadBalancerType = nameof(LeastConnection)) => new()
         {
             DownstreamPathTemplate = "/",
             DownstreamScheme = null, // the scheme should not be defined in service discovery scenarios by default, only ServiceName
@@ -281,11 +276,13 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
-                // Each offlinePerThreads-th request to integrated K8s endpoint should fail
+                string json;
                 lock (K8sCounterLocker)
                 {
                     _k8sCounter++;
                     var subset = endpoints.Subsets[0];
+
+                    // Each offlinePerThreads-th request to integrated K8s endpoint should fail
                     if (!isStable && _k8sCounter % offlinePerThreads == 0 && _k8sCounter >= offlinePerThreads)
                     {
                         while (offlineServicesNo-- > 0)
@@ -299,6 +296,7 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
+                    json = JsonConvert.SerializeObject(endpoints);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
@@ -306,7 +304,6 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
                     _receivedToken = values.First();
                 }
 
-                var json = JsonConvert.SerializeObject(endpoints);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
@@ -324,93 +321,14 @@ public sealed class KubernetesServiceDiscoveryTests : Steps, IDisposable
         .RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory)
         .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
+    private int _k8sCounter, _k8sServiceGeneration;
+    private static readonly object K8sCounterLocker = new();
     private RoundRobinAnalyzer _roundRobinAnalyzer;
     private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
     {
         lock (K8sCounterLocker)
         {
-            return _roundRobinAnalyzer ??= new RoundRobinAnalyzer(provider.GetAsync, route.ServiceName);
-        }
-    }
-
-    private static readonly object ServiceCountersLocker = new();
-    private Dictionary<int, int> _serviceCounters;
-
-    private static readonly object K8sCounterLocker = new();
-    private int _k8sCounter, _k8sServiceGeneration;
-
-    private void GivenK8sProductServiceIsRunning(string url, string response)
-    {
-        _serviceHandlers.Add(new()); // allocate single instance
-        _serviceCounters = new(); // single counter
-        GivenK8sProductServiceIsRunning(url, response, 0);
-        _serviceCounters[0] = 0;
-    }
-
-    private void GivenMultipleK8sProductServicesAreRunning(List<string> urls, List<string> responses)
-    {
-        urls.ForEach(_ => _serviceHandlers.Add(new())); // allocate multiple instances
-        _serviceCounters = new(urls.Count); // multiple counters
-        for (int i = 0; i < urls.Count; i++)
-        {
-            GivenK8sProductServiceIsRunning(urls[i], responses[i], i);
-            _serviceCounters[i] = 0;
-        }
-    }
-
-    private void GivenK8sProductServiceIsRunning(string url, string response, int handlerIndex)
-    {
-        var serviceHandler = _serviceHandlers[handlerIndex];
-        serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
-            int count = 0;
-            lock (ServiceCountersLocker)
-            {
-                count = ++_serviceCounters[handlerIndex];
-            }
-
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            var threadResponse = string.Concat(count, ':', response);
-            await context.Response.WriteAsync(threadResponse ?? ((int)HttpStatusCode.OK).ToString());
-        });
-    }
-
-    private void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
-    {
-        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"All values are [{string.Join(',', sortedByIndex)}]";
-        _serviceCounters.Sum(_ => _.Value).ShouldBe(expected, customMessage);
-        _roundRobinAnalyzer.Events.Count.ShouldBe(expected);
-    }
-
-    private void ThenAllServicesCalledRealisticAmountOfTimes(int bottom, int top)
-    {
-        var sortedByIndex = _serviceCounters.OrderBy(_ => _.Key).Select(_ => _.Value).ToArray();
-        var customMessage = $"{nameof(bottom)}: {bottom}\n    {nameof(top)}: {top}\n    All values are [{string.Join(',', sortedByIndex)}]";
-        int sum = 0, totalSum = _serviceCounters.Sum(_ => _.Value);
-
-        // Last services cannot be called at all, zero counters
-        for (int i = 0; i < _serviceCounters.Count && sum < totalSum; i++)
-        {
-            int actual = _serviceCounters[i];
-            actual.ShouldBeInRange(bottom, top, customMessage);
-            sum += actual;
-        }
-    }
-
-    private void ThenServiceCountersShouldMatchLeasingCounters(int[] ports)
-    {
-        var leasingCounters = _roundRobinAnalyzer.GetHostCounters();
-        for (int i = 0; i < ports.Length; i++)
-        {
-            var host = leasingCounters.Keys.FirstOrDefault(k => k.DownstreamPort == ports[i]);
-            if (host != null) // leasing info/counters can be absent because of offline service instance with exact port in unstable scenario
-            {
-                int counter1 = _serviceCounters[i];
-                int counter2 = leasingCounters[host];
-                counter1.ShouldBe(counter2, $"Port: {ports[i]}\n    Host: {host}");
-            }
+            return _roundRobinAnalyzer ??= new RoundRobinAnalyzerCreator().Create(route, provider)?.Data as RoundRobinAnalyzer; //??= new RoundRobinAnalyzer(provider.GetAsync, route.ServiceName);
         }
     }
 }
@@ -421,7 +339,6 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
 
     protected override ServiceHostAndPort GetServiceHostAndPort(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
     {
-        //return base.GetServiceHostAndPort(configuration, endpoint, subset, address);
         var ports = subset.Ports;
         var index = subset.Addresses.IndexOf(address);
         var portV1 = ports[index];
@@ -436,111 +353,5 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
         long gen = endpoint.Metadata.Generation ?? 0L;
         tags.Add($"{nameof(endpoint.Metadata.Generation)}:{gen}");
         return tags;
-    }
-}
-
-internal class RoundRobinAnalyzer : RoundRobin, ILoadBalancer
-{
-    public readonly ConcurrentBag<LeaseEventArgs> Events = new();
-
-    public RoundRobinAnalyzer(Func<Task<List<Service>>> services, string serviceName)
-        : base(services, serviceName)
-    {
-        this.Leased += Me_Leased;
-    }
-
-    private void Me_Leased(object sender, LeaseEventArgs e) => Events.Add(e);
-
-    public const string GenerationPrefix = nameof(EndpointsV1.Metadata.Generation) + ":";
-
-    public object Analyze()
-    {
-        var allGenerations = Events
-            .Select(e => e.Service.Tags.FirstOrDefault(t => t.StartsWith(GenerationPrefix)))
-            .Distinct().ToArray();
-        var allIndices = Events.Select(e => e.ServiceIndex)
-            .Distinct().ToArray();
-
-        Dictionary<string, List<LeaseEventArgs>> eventsPerGeneration = new();
-        foreach (var generation in allGenerations)
-        {
-            var l = Events.Where(e => e.Service.Tags.Contains(generation)).ToList();
-            eventsPerGeneration.Add(generation, l);
-        }
-
-        Dictionary<string, List<int>> generationIndices = new();
-        foreach (var generation in allGenerations)
-        {
-            var l = eventsPerGeneration[generation].Select(e => e.ServiceIndex).Distinct().ToList();
-            generationIndices.Add(generation, l);
-        }
-
-        Dictionary<string, List<Lease>> generationLeases = new();
-        foreach (var generation in allGenerations)
-        {
-            var l = eventsPerGeneration[generation].Select(e => e.Lease).ToList();
-            generationLeases.Add(generation, l);
-        }
-
-        Dictionary<string, List<ServiceHostAndPort>> generationHosts = new();
-        foreach (var generation in allGenerations)
-        {
-            var l = eventsPerGeneration[generation].Select(e => e.Lease.HostAndPort).Distinct().ToList();
-            generationHosts.Add(generation, l);
-        }
-
-        Dictionary<string, List<Lease>> generationLeasesWithMaxConnections = new();
-        foreach (var generation in allGenerations)
-        {
-            List<Lease> leases = new();
-            var uniqueHosts = generationHosts[generation];
-            foreach (var host in uniqueHosts)
-            {
-                int max = generationLeases[generation].Where(l => l == host).Max(l => l.Connections);
-                Lease wanted = generationLeases[generation].Find(l => l == host && l.Connections == max);
-                leases.Add(wanted);
-            }
-
-            leases = leases.OrderBy(l => l.HostAndPort.DownstreamPort).ToList();
-            generationLeasesWithMaxConnections.Add(generation, leases);
-        }
-
-        return generationLeasesWithMaxConnections;
-    }
-
-    public bool HasManyServiceGenerations(int maxGeneration)
-    {
-        int[] generations = new int[maxGeneration + 1];
-        string[] tags = new string[maxGeneration + 1];
-        for (int i = 0; i < generations.Length; i++)
-        {
-            generations[i] = i;
-            tags[i] = GenerationPrefix + i;
-        }
-
-        var all = Events
-            .Select(e => e.Service.Tags.FirstOrDefault(t => t.StartsWith(GenerationPrefix)))
-            .Distinct().ToArray();
-        return all.All(tags.Contains);
-    }
-
-    public Dictionary<ServiceHostAndPort, int> GetHostCounters()
-    {
-        var hosts = Events.Select(e => e.Lease.HostAndPort).Distinct().ToList();
-        return Events
-            .GroupBy(e => e.Lease.HostAndPort)
-            .ToDictionary(g => g.Key, g => g.Max(e => e.Lease.Connections));
-    }
-
-    public int BottomOfConnections()
-    {
-        var hostCounters = GetHostCounters();
-        return hostCounters.Min(_ => _.Value);
-    }
-
-    public int TopOfConnections()
-    {
-        var hostCounters = GetHostCounters();
-        return hostCounters.Max(_ => _.Value);
     }
 }

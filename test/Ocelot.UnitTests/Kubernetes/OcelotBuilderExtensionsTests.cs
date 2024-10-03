@@ -33,7 +33,8 @@ namespace Ocelot.UnitTests.Kubernetes
         }
 
         [Fact]
-        public void should_set_up_kubernetes()
+        [Trait("Feat", "345")]
+        public void Should_set_up_kubernetes()
         {
             this.Given(x => WhenISetUpOcelotServices())
                 .When(x => WhenISetUpKubernetes())
