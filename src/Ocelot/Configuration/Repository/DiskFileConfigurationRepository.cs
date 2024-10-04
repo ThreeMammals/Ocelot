@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Responses;
+using System.Text.Json;
 using FileSys = System.IO.File;
 
 namespace Ocelot.Configuration.Repository
@@ -49,14 +50,14 @@ namespace Ocelot.Configuration.Repository
                 jsonConfiguration = FileSys.ReadAllText(_environmentFile.FullName);
             }
 
-            var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
+            var fileConfiguration = JsonSerializer.Deserialize<FileConfiguration>(jsonConfiguration, JsonSerializerOptionsFactory.Web);
 
             return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
-            var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
 
             lock (_lock)
             {
