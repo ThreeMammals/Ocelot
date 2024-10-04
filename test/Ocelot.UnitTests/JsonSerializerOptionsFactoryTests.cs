@@ -9,6 +9,21 @@ namespace Ocelot.UnitTests
         public void should_json_path()
         {
             //Arrange
+            var json = "{\"id\":1,\"writerId\":1,\"postId\":2,\"text\":\"text1\"}";
+            var path = "$writerId";
+            var document = JsonDocument.Parse(json);
+
+            //Act
+            var result = document.ExtractValuesFromJsonPath(path);
+
+            //Assert
+            result.ShouldBeEquivalentTo(new List<string> { "1" });
+        }
+
+        [Fact]
+        public void should_json_path_array()
+        {
+            //Arrange
             var json =
                 "[{\"id\":1,\"writerId\":1,\"postId\":2,\"text\":\"text1\"},{\"id\":2,\"writerId\":1,\"postId\":2,\"text\":\"text2\"}]";
             var path = "$[*].writerId";
