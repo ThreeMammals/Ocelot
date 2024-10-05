@@ -407,7 +407,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
-        Action<int> requestToProjectsAndThenRequestToCustomersAndAssert = async (i) =>
+        Func<int, Task> requestToProjectsAndThenRequestToCustomersAndAssert = async (i) =>
         {
             // Step 1
             int count = i + 1;
@@ -424,12 +424,13 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[1]}", $"i is {i}");
             _responses[(2 * i) + 1] = _response;
         };
+
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? WithLbAnalyzer(loadBalancer) : WithConsul))
-            .When(x => WhenIDoActionMultipleTimes(50, requestToProjectsAndThenRequestToCustomersAndAssert))
+            .When(x => WhenIDoActionMultipleTimesAsync(50, requestToProjectsAndThenRequestToCustomersAndAssert))
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, Bug2119ServiceNames)) // !!!
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(100))
