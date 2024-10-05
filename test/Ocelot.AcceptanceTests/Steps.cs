@@ -849,11 +849,12 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public static void WhenIDoActionMultipleTimes(int times, Action action)
+    public static async Task WhenIDoActionMultipleTimesAsync(int times, Func<int, Task> action)
     {
         for (int i = 0; i < times; i++)
-            action?.Invoke();
+            await action.Invoke(i);
     }
+
     public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
     {
         for (int i = 0; i < times; i++)

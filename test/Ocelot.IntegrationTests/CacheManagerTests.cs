@@ -33,7 +33,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_clear_region()
+        public async Task should_clear_region()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -85,9 +85,9 @@ namespace Ocelot.IntegrationTests
 
             GivenThereIsAConfiguration(initialConfiguration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotToken("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
+            await WhenIDeleteOnTheApiGatewayAsync($"/administration/outputcache/{regionToClear}");
             ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
