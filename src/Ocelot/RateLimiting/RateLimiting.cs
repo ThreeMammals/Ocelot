@@ -65,15 +65,18 @@ public class RateLimiting : IRateLimiting
     public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule)
     {
         var now = DateTime.UtcNow;
-        if (!entry.HasValue) // no entry, start counting
+        if (!entry.HasValue)
         {
+            // no entry, start counting
             return new RateLimitCounter(now, null, 1); // current request is the 1st one
         }
 
         var counter = entry.Value;
         var total = counter.TotalRequests + 1; // increment request count
         var startedAt = counter.StartedAt;
-        if (startedAt + ToTimespan(rule.Period) >= now) // counting Period is active
+
+        // Counting Period is active
+        if (startedAt + ToTimespan(rule.Period) >= now)
         {
             var exceededAt = total >= rule.Limit && !counter.ExceededAt.HasValue // current request number equals to the limit
                 ? now // the exceeding moment is now, the next request will fail but the current one doesn't
@@ -144,7 +147,9 @@ public class RateLimiting : IRateLimiting
             ? defaultSeconds // allow values which are greater or equal to 1 second
             : rule.PeriodTimespan; // good value
         var now = DateTime.UtcNow;
-        if (counter.StartedAt + ToTimespan(rule.Period) >= now) // counting Period is active
+
+        // Counting Period is active
+        if (counter.StartedAt + ToTimespan(rule.Period) >= now)
         {
             return counter.TotalRequests < rule.Limit
                 ? 0.0D // happy path, no need to retry, current request is valid
@@ -153,8 +158,8 @@ public class RateLimiting : IRateLimiting
                     : periodTimespan; // exceeding not yet detected -> let's ban for whole period
         }
 
-        if (counter.ExceededAt.HasValue && // limit exceeding was happen
-            counter.ExceededAt + TimeSpan.FromSeconds(periodTimespan) >= now) // ban PeriodTimespan is active
+        // Limit exceeding was happen && ban PeriodTimespan is active
+        if (counter.ExceededAt.HasValue && counter.ExceededAt + TimeSpan.FromSeconds(periodTimespan) >= now)
         {
             var startedAt = counter.ExceededAt.Value; // ban period was started at
             double secondsPast = (now - startedAt).TotalSeconds;

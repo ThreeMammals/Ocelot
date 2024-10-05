@@ -33,7 +33,7 @@ public class PollyResiliencePipelineDelegatingHandlerTests
     }
 
     [Fact]
-    public async void SendAsync_OnePolicy()
+    public async Task SendAsync_OnePolicy()
     {
         // Arrange
         var fakeResponse = new HttpResponseMessage(HttpStatusCode.NoContent);

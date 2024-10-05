@@ -16,6 +16,8 @@ public class CookieStickySessions : ILoadBalancer
     private static readonly object Locker = new();
     private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
 
+    public string Type => nameof(CookieStickySessions);
+
     public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus)
     {
         _bus = bus;
@@ -40,7 +42,7 @@ public class CookieStickySessions : ILoadBalancer
         }
     }
 
-    public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
+    public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
     {
         var route = httpContext.Items.DownstreamRoute();
         var serviceName = route.LoadBalancerKey;
@@ -56,7 +58,7 @@ public class CookieStickySessions : ILoadBalancer
             }
 
             // There is no value in the store, so lease it now!
-            var next = _loadBalancer.Lease(httpContext).GetAwaiter().GetResult(); // unfortunately the operation must be synchronous
+            var next = _loadBalancer.LeaseAsync(httpContext).GetAwaiter().GetResult(); // unfortunately the operation must be synchronous
             if (next.IsError)
             {
                 return Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(next.Errors));

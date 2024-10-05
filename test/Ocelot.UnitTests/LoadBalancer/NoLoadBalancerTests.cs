@@ -85,7 +85,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private async Task WhenIGetTheNextHostAndPortAsync()
         {
-            _result = await _loadBalancer.Lease(new DefaultHttpContext());
+            _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
         }
 
         private void ThenTheHostAndPortIs(ServiceHostAndPort expected)

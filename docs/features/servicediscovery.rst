@@ -246,10 +246,12 @@ However, the quickest and most streamlined approach is to inherit directly from 
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
     {
-        public MyConsulServiceBuilder(Func<ConsulRegistryConfiguration> configurationFactory, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
-            : base(configurationFactory, clientFactory, loggerFactory) { }
+        public MyConsulServiceBuilder(IHttpContextAccessor contextAccessor, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
+            : base(contextAccessor, clientFactory, loggerFactory) { }
+
         // I want to use the agent service IP address as the downstream hostname
-        protected override string GetDownstreamHost(ServiceEntry entry, Node node) => entry.Service.Address;
+        protected override string GetDownstreamHost(ServiceEntry entry, Node node)
+            => entry.Service.Address;
     }
 
 **Second**, we must inject the new behavior into DI, as demonstrated in the Ocelot versus Consul setup:
@@ -543,7 +545,7 @@ But you can leave this ``Type`` option for compatibility between both designs.
 .. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
 .. _3 seconds TTL: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TimeSpan.FromSeconds%283%29&type=code
 .. _catalog nodes: https://developer.hashicorp.com/consul/api-docs/catalog#list-nodes
-.. _the acceptance test: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+Should_return_service_address_by_overridden_service_builder_when_there_is_a_node&type=code
+.. _the acceptance test: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+ShouldReturnServiceAddressByOverriddenServiceBuilderWhenThereIsANode&type=code
 .. _346: https://github.com/ThreeMammals/Ocelot/issues/346
 .. _909: https://github.com/ThreeMammals/Ocelot/pull/909
 .. _954: https://github.com/ThreeMammals/Ocelot/issues/954

@@ -107,15 +107,9 @@ namespace Ocelot.UnitTests.LoadBalancer
             public DownstreamRoute DownstreamRoute { get; }
             public IServiceDiscoveryProvider ServiceDiscoveryProvider { get; }
 
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-                throw new NotImplementedException();
-            }
+            public string Type => nameof(FakeLoadBalancer);
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
         }
     }
 }

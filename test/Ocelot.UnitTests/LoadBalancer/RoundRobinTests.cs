@@ -150,7 +150,7 @@ public class RoundRobinTests : UnitTest
     }
 
     private async Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
-        => await roundRobin.Lease(_httpContext);
+        => await roundRobin.LeaseAsync(_httpContext);
 
     private static void ThenServicesAreNullErrorIsReturned(Response<ServiceHostAndPort> response)
     {

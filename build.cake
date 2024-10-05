@@ -3,7 +3,7 @@
 #tool nuget:?package=ReportGenerator&version=5.2.4
 #addin nuget:?package=Newtonsoft.Json&version=13.0.3
 #addin nuget:?package=System.Text.Encodings.Web&version=8.0.0
-#addin nuget:?package=Cake.Coveralls&version=1.1.0
+#addin nuget:?package=Cake.Coveralls&version=4.0.0
 
 #r "Spectre.Console"
 using Spectre.Console

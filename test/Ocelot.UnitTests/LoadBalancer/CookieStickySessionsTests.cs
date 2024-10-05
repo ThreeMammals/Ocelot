@@ -120,7 +120,7 @@ public sealed class CookieStickySessionsTests : UnitTest
     private void GivenTheLoadBalancerReturnsError()
     {
         _loadBalancer
-            .Setup(x => x.Lease(It.IsAny<HttpContext>()))
+            .Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
             .ReturnsAsync(new ErrorResponse<ServiceHostAndPort>(new AnyError()));
     }
 
@@ -149,14 +149,14 @@ public sealed class CookieStickySessionsTests : UnitTest
         contextTwo.Request.Cookies = cookiesTwo;
         contextTwo.Items.UpsertDownstreamRoute(route);
 
-        _firstHostAndPort = await _stickySessions.Lease(contextOne);
-        _secondHostAndPort = await _stickySessions.Lease(contextTwo);
+        _firstHostAndPort = await _stickySessions.LeaseAsync(contextOne);
+        _secondHostAndPort = await _stickySessions.LeaseAsync(contextTwo);
     }
 
     private void GivenTheLoadBalancerReturnsSequence()
     {
         _loadBalancer
-            .SetupSequence(x => x.Lease(It.IsAny<HttpContext>()))
+            .SetupSequence(x => x.LeaseAsync(It.IsAny<HttpContext>()))
             .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("one", 80)))
             .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("two", 80)));
     }
@@ -169,8 +169,8 @@ public sealed class CookieStickySessionsTests : UnitTest
 
     private async Task WhenILeaseTwiceInARow()
     {
-        _firstHostAndPort = await _stickySessions.Lease(_httpContext);
-        _secondHostAndPort = await _stickySessions.Lease(_httpContext);
+        _firstHostAndPort = await _stickySessions.LeaseAsync(_httpContext);
+        _secondHostAndPort = await _stickySessions.LeaseAsync(_httpContext);
     }
 
     private void GivenTheDownstreamRequestHasSessionId(string value)
@@ -183,13 +183,13 @@ public sealed class CookieStickySessionsTests : UnitTest
     private void GivenTheLoadBalancerReturns()
     {
         _loadBalancer
-            .Setup(x => x.Lease(It.IsAny<HttpContext>()))
+            .Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
             .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort(string.Empty, 80)));
     }
 
     private async Task WhenILease()
     {
-        _result = await _stickySessions.Lease(_httpContext);
+        _result = await _stickySessions.LeaseAsync(_httpContext);
     }
 
     private void ThenTheHostAndPortIsNotNull()
