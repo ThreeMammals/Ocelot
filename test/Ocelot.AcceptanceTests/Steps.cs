@@ -988,15 +988,14 @@ public class Steps : IDisposable
         _response.Content.Headers.ContentLength.ShouldBe(expected);
     }
 
+    public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
+        => _response.StatusCode.ShouldBe(expected);
+
     public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
     {
         var responseStatusCode = (int)_response.StatusCode;
         responseStatusCode.ShouldBe(expectedHttpStatusCode);
     }
-
-    public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
-        => _response.StatusCode.ShouldBe(expected);
-
 
     public void ThenTheRequestIdIsReturned()
     {
