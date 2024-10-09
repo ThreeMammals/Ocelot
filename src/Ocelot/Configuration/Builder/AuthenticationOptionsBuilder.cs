@@ -3,8 +3,11 @@ namespace Ocelot.Configuration.Builder
     public class AuthenticationOptionsBuilder
     {
         private List<string> _allowedScopes = new();
-        private string _authenticationProviderKey;
+        private List<string> _requiredRole = new();
         private string[] _authenticationProviderKeys = Array.Empty<string>();
+        private string _roleKey;
+        private string _scopeKey;
+        private string _policyName;
 
         public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
@@ -12,22 +15,43 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        [Obsolete("Use the " + nameof(WithAuthenticationProviderKeys) + " property!")]
-        public AuthenticationOptionsBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
+        public AuthenticationOptionsBuilder WithRequiredRole(List<string> requiredRole)
         {
-            _authenticationProviderKey = authenticationProviderKey;
+            _requiredRole = requiredRole;
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(string[] authenticationProviderKeys)
+        [Obsolete("Use the " + nameof(WithAuthenticationProviderKeys) + " property!")]
+        public AuthenticationOptionsBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
+            => WithAuthenticationProviderKeys(authenticationProviderKey);
+
+        public AuthenticationOptionsBuilder WithAuthenticationProviderKeys(params string[] authenticationProviderKeys)
         {
             _authenticationProviderKeys = authenticationProviderKeys;
             return this;
         }
 
+        public AuthenticationOptionsBuilder WithRoleKey(string roleKey)
+        {
+            _roleKey = roleKey;
+            return this;
+        }
+
+        public AuthenticationOptionsBuilder WithScopeKey(string scopeKey)
+        {
+            _scopeKey = scopeKey;
+            return this;
+        }
+
+        public AuthenticationOptionsBuilder WithPolicyName(string policyName)
+        {
+            _policyName = policyName;
+            return this;
+        }
+
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_allowedScopes, _authenticationProviderKey, _authenticationProviderKeys);
+            return new AuthenticationOptions(_allowedScopes, _authenticationProviderKeys, _requiredRole, _scopeKey, _roleKey, _policyName);
         }
     }
 }
