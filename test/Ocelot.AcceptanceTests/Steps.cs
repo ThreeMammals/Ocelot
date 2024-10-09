@@ -185,15 +185,15 @@ public class Steps : IDisposable
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
 
-    public async Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
-        => await GivenThereIsAConfigurationAsync(fileConfiguration, _ocelotConfigFileName);
+    public Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
+        => GivenThereIsAConfigurationAsync(fileConfiguration, _ocelotConfigFileName);
 
-    public async Task GivenThereIsAConfigurationAsync(FileConfiguration from, string toFile)
+    public Task GivenThereIsAConfigurationAsync(FileConfiguration from, string toFile)
     {
         toFile ??= _ocelotConfigFileName;
         var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
-        await File.WriteAllTextAsync(toFile, jsonConfiguration);
         Files.Add(toFile); // register for disposing
+        return File.WriteAllTextAsync(toFile, jsonConfiguration);
     }
 
     public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
@@ -455,6 +455,7 @@ public class Steps : IDisposable
 
     public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
     {
+        // TODO: Turn as async
         var result = Wait.WaitFor(2000).Until(() =>
         {
             try
@@ -661,17 +662,17 @@ public class Steps : IDisposable
     public async Task WhenIGetUrlOnTheApiGatewayWithCookieAsync(string url, CookieHeaderValue cookie)
         => _response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie);
 
-    public async Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, string cookie, string value)
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, string cookie, string value)
     {
         var header = new CookieHeaderValue(cookie, value);
-        return await WhenIGetUrlOnTheApiGatewayAsync(url, header);
+        return WhenIGetUrlOnTheApiGatewayAsync(url, header);
     }
 
-    public async Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, CookieHeaderValue cookie)
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Add("Cookie", cookie.ToString());
-        return await _ocelotClient.SendAsync(requestMessage);
+        return _ocelotClient.SendAsync(requestMessage);
     }
 
     // END of Cookies helpers
