@@ -877,7 +877,7 @@ public class Steps : IDisposable
         _response = await _ocelotClient.SendAsync(request);
     }
 
-    public void WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
+    public async Task WhenIGetUrlWithFormOnTheApiGatewayAsync(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
     {
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
@@ -888,7 +888,7 @@ public class Steps : IDisposable
         {
             Content = content,
         };
-        _response = _ocelotClient.SendAsync(request).GetAwaiter().GetResult();
+        _response = await _ocelotClient.SendAsync(request);
     }
 
     public async Task WhenIGetUrlOnTheApiGatewayAsync(string url, HttpContent content)

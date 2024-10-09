@@ -647,7 +647,7 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
+                .When(x => WhenIGetUrlWithFormOnTheApiGatewayAsync("/", "key", formValues))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseBodyShouldBeAsync(expected))
                 .BDDfy();
