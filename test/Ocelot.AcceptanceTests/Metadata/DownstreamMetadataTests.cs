@@ -72,7 +72,7 @@ public class DownstreamMetadataTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(currentType))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync($"/"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -147,7 +147,7 @@ public class DownstreamMetadataTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler)))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync($"/"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -194,7 +194,7 @@ public class DownstreamMetadataTests : IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync($"/"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }

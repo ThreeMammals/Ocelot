@@ -45,30 +45,30 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void Should_return_response_401_with_call_re_routes_controller()
+        public async Task Should_return_response_401_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenOcelotIsRunning();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized);
         }
 
         //this seems to be be answer https://github.com/IdentityServer/IdentityServer4/issues/4914
         [Fact]
-        public void Should_return_response_200_with_call_re_routes_controller()
+        public async Task Should_return_response_200_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
-        public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
+        public async Task Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
             var port = PortFinder.GetRandomPort();
@@ -83,16 +83,16 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            GivenThereIsAConfiguration(configuration);
-            GivenOcelotIsRunningWithNoWebHostBuilder(_ocelotBaseUrl);
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenThereIsAConfigurationAsync(configuration);
+            await GivenOcelotIsRunningWithNoWebHostBuilderAsync();
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
-        public void Should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
+        public async Task Should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
         {
             var configuration = new FileConfiguration();
 
@@ -104,31 +104,31 @@ namespace Ocelot.IntegrationTests
                     .AddJsonOptions(options => { options.JsonSerializerOptions.WriteIndented = true; });
             };
 
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenOcelotUsingBuilderIsRunning(customBuilder);
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenTheResultHaveMultiLineIndentedJson();
+            await ThenTheResultHaveMultiLineIndentedJsonAsync();
         }
 
         [Fact]
-        public void Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
+        public async Task Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
             var configuration = new FileConfiguration();
             var port = PortFinder.GetRandomPort();
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenIdentityServerSigningEnvironmentalVariablesAreSet();
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
-            GivenAnotherOcelotIsRunning($"http://localhost:{port}");
-            WhenIGetUrlOnTheSecondOcelot("/administration/configuration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
+            await GivenAnotherOcelotIsRunning($"http://localhost:{port}");
+            await WhenIGetUrlOnTheSecondOcelotAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
-        public void Should_return_file_configuration()
+        public async Task Should_return_file_configuration()
         {
             var configuration = new FileConfiguration
             {
@@ -186,17 +186,17 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenTheResponseShouldBe(configuration);
+            await ThenTheResponseShouldBeAsync(configuration);
         }
 
         [Fact]
-        public void Should_get_file_configuration_edit_and_post_updated_version()
+        public async Task Should_get_file_configuration_edit_and_post_updated_version()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -274,21 +274,21 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            GivenThereIsAConfiguration(initialConfiguration);
+            await GivenThereIsAConfigurationAsync(initialConfiguration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
-            WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
+            await WhenIPostOnTheApiGatewayAsync("/administration/configuration", updatedConfiguration);
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenTheResponseShouldBe(updatedConfiguration);
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
-            ThenTheResponseShouldBe(updatedConfiguration);
+            await ThenTheResponseShouldBeAsync(updatedConfiguration);
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
+            await ThenTheResponseShouldBeAsync(updatedConfiguration);
             ThenTheConfigurationIsSavedCorrectly(updatedConfiguration);
         }
 
         [Fact]
-        public void Should_activate_change_token_when_configuration_is_updated()
+        public async Task Should_activate_change_token_when_configuration_is_updated()
         {
             var configuration = new FileConfiguration
             {
@@ -313,16 +313,16 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            GivenThereIsAConfiguration(configuration);
+            await GivenThereIsAConfigurationAsync(configuration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIPostOnTheApiGateway("/administration/configuration", configuration);
+            await WhenIPostOnTheApiGatewayAsync("/administration/configuration", configuration);
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             TheChangeTokenShouldBeActive();
-            ThenTheResponseShouldBe(configuration);
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
-            ThenTheResponseShouldBe(configuration);
+            await ThenTheResponseShouldBeAsync(configuration);
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
+            await ThenTheResponseShouldBeAsync(configuration);
             ThenTheConfigurationIsSavedCorrectly(configuration);
         }
 
@@ -339,13 +339,14 @@ namespace Ocelot.IntegrationTests
             resultText.ShouldBe(expectedText);
 
             var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
+            // TODO Turn as async
             resultText = File.ReadAllText(environmentSpecificPath);
             expectedText = JsonConvert.SerializeObject(expected, Formatting.Indented);
             resultText.ShouldBe(expectedText);
         }
 
         [Fact]
-        public void Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
+        public async Task Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
         {
             var fooPort = PortFinder.GetRandomPort();
             var barPort = PortFinder.GetRandomPort();
@@ -395,28 +396,28 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            GivenThereIsAConfiguration(initialConfiguration);
+            await GivenThereIsAConfigurationAsync(initialConfiguration);
             GivenThereIsAFooServiceRunningOn($"http://localhost:{fooPort}");
             GivenThereIsABarServiceRunningOn($"http://localhost:{barPort}");
             GivenOcelotIsRunning();
-            WhenIGetUrlOnTheApiGateway("/foo");
-            ThenTheResponseBodyShouldBe("foo");
-            GivenIHaveAnOcelotToken("/administration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/foo");
+            await ThenTheResponseBodyShouldBeAsync("foo");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
+            await WhenIPostOnTheApiGatewayAsync("/administration/configuration", updatedConfiguration);
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenTheResponseShouldBe(updatedConfiguration);
-            WhenIGetUrlOnTheApiGateway("/foo");
-            ThenTheResponseBodyShouldBe("bar");
-            WhenIPostOnTheApiGateway("/administration/configuration", initialConfiguration);
+            await ThenTheResponseShouldBeAsync(updatedConfiguration);
+            await WhenIGetUrlOnTheApiGatewayAsync("/foo");
+            await ThenTheResponseBodyShouldBeAsync("bar");
+            await WhenIPostOnTheApiGatewayAsync("/administration/configuration", initialConfiguration);
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenTheResponseShouldBe(initialConfiguration);
-            WhenIGetUrlOnTheApiGateway("/foo");
-            ThenTheResponseBodyShouldBe("foo");
+            await ThenTheResponseShouldBeAsync(initialConfiguration);
+            await WhenIGetUrlOnTheApiGatewayAsync("/foo");
+            await ThenTheResponseBodyShouldBeAsync("foo");
         }
 
         [Fact]
-        public void Should_clear_region()
+        public async Task Should_clear_region()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -465,16 +466,16 @@ namespace Ocelot.IntegrationTests
             };
 
             var regionToClear = "gettest";
-            GivenThereIsAConfiguration(initialConfiguration);
+            await GivenThereIsAConfigurationAsync(initialConfiguration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotTokenAsync("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
+            await WhenIDeleteOnTheApiGatewayAsync($"/administration/outputcache/{regionToClear}");
             ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
         [Fact]
-        public void Should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
+        public async Task Should_return_response_200_with_call_re_routes_controller_when_using_own_identity_server_to_secure_admin_area()
         {
             var configuration = new FileConfiguration();
 
@@ -491,16 +492,16 @@ namespace Ocelot.IntegrationTests
                 };
             };
 
-            GivenThereIsAConfiguration(configuration);
-            GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api");
-            GivenOcelotIsRunningWithIdentityServerSettings(options);
-            GivenIHaveAToken(identityServerRootUrl);
+            await GivenThereIsAConfigurationAsync(configuration);
+            await GivenThereIsAnIdentityServerOnAsync(identityServerRootUrl, "api");
+            await GivenOcelotIsRunningWithIdentityServerSettingsAsync(options);
+            await GivenIHaveATokenAsync(identityServerRootUrl);
             GivenIHaveAddedATokenToMyRequest();
-            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            await WhenIGetUrlOnTheApiGatewayAsync("/administration/configuration");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
-        private void GivenIHaveAToken(string url)
+        private async Task GivenIHaveATokenAsync(string url)
         {
             var formData = new List<KeyValuePair<string, string>>
             {
@@ -514,13 +515,13 @@ namespace Ocelot.IntegrationTests
             var content = new FormUrlEncodedContent(formData);
 
             using var httpClient = new HttpClient();
-            var response = httpClient.PostAsync($"{url}/connect/token", content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = await httpClient.PostAsync($"{url}/connect/token", content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName)
+        private async Task GivenThereIsAnIdentityServerOnAsync(string url, string apiName)
         {
             _identityServerBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -577,14 +578,14 @@ namespace Ocelot.IntegrationTests
                     );
                 }).Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
             using var httpClient = new HttpClient();
-            var response = httpClient.GetAsync($"{url}/.well-known/openid-configuration").Result;
+            var response = await httpClient.GetAsync($"{url}/.well-known/openid-configuration");
             response.EnsureSuccessStatusCode();
         }
 
-        private void GivenAnotherOcelotIsRunning(string baseUrl)
+        private async Task GivenAnotherOcelotIsRunning(string baseUrl)
         {
             _httpClientTwo.BaseAddress = new Uri(baseUrl);
 
@@ -609,15 +610,15 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                        .AddAdministration("/administration", "secret");
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 
             _builderTwo = _webHostBuilderTwo.Build();
 
-            _builderTwo.Start();
+            await _builderTwo.StartAsync();
         }
 
         private static void GivenIdentityServerSigningEnvironmentalVariablesAreSet()
@@ -626,36 +627,36 @@ namespace Ocelot.IntegrationTests
             Environment.SetEnvironmentVariable("OCELOT_CERTIFICATE_PASSWORD", "password");
         }
 
-        private void WhenIGetUrlOnTheSecondOcelot(string url)
+        private async Task WhenIGetUrlOnTheSecondOcelotAsync(string url)
         {
             _httpClientTwo.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-            _response = _httpClientTwo.GetAsync(url).Result;
+            _response = await _httpClientTwo.GetAsync(url);
         }
 
-        private void WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
+        private async Task WhenIPostOnTheApiGatewayAsync(string url, FileConfiguration updatedConfiguration)
         {
             var json = JsonConvert.SerializeObject(updatedConfiguration);
             var content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = _httpClient.PostAsync(url, content).Result;
+            _response = await _httpClient.PostAsync(url, content);
         }
 
-        private void ThenTheResponseShouldBe(List<string> expected)
+        private async Task ThenTheResponseShouldBeAsync(List<string> expected)
         {
-            var content = _response.Content.ReadAsStringAsync().Result;
+            var content = await _response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<Regions>(content);
             result.Value.ShouldBe(expected);
         }
 
-        private void ThenTheResponseBodyShouldBe(string expected)
+        private async Task ThenTheResponseBodyShouldBeAsync(string expected)
         {
-            var content = _response.Content.ReadAsStringAsync().Result;
+            var content = await _response.Content.ReadAsStringAsync();
             content.ShouldBe(expected);
         }
 
-        private void ThenTheResponseShouldBe(FileConfiguration expecteds)
+        private async Task ThenTheResponseShouldBeAsync(FileConfiguration expecteds)
         {
-            var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
+            var response = JsonConvert.DeserializeObject<FileConfiguration>(await _response.Content.ReadAsStringAsync());
 
             response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
             response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -684,7 +685,7 @@ namespace Ocelot.IntegrationTests
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
-        private void GivenIHaveAnOcelotToken(string adminPath)
+        private async Task GivenIHaveAnOcelotTokenAsync(string adminPath)
         {
             var tokenUrl = $"{adminPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -696,16 +697,16 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = await _httpClient.PostAsync(tokenUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).Result;
+            response = await _httpClient.GetAsync(configPath);
             response.EnsureSuccessStatusCode();
         }
 
-        private void GivenOcelotIsRunningWithIdentityServerSettings(Action<JwtBearerOptions> configOptions)
+        private async Task GivenOcelotIsRunningWithIdentityServerSettingsAsync(Action<JwtBearerOptions> configOptions)
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -729,15 +730,15 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                         .AddAdministration("/administration", configOptions);
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 
             _builder = _webHostBuilder.Build();
 
-            _builder.Start();
+            await _builder.StartAsync();
         }
 
         private void OcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
@@ -758,9 +759,9 @@ namespace Ocelot.IntegrationTests
                         config.AddEnvironmentVariables();
                     })
                     .ConfigureServices(configureServices) // !!!
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
             _builder = _webHostBuilder.Build();
@@ -787,7 +788,7 @@ namespace Ocelot.IntegrationTests
             });
         }
 
-        private void GivenOcelotIsRunningWithNoWebHostBuilder(string baseUrl)
+        private async Task GivenOcelotIsRunningWithNoWebHostBuilderAsync()
         {
             _webHostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -811,18 +812,18 @@ namespace Ocelot.IntegrationTests
                         x.AddOcelot()
                         .AddAdministration("/administration", "secret");
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     });
                 });
 
             _builder = _webHostBuilder.Build();
 
-            _builder.Start();
+            await _builder.StartAsync();
         }
 
-        private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        private static async Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
         {
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
@@ -833,9 +834,9 @@ namespace Ocelot.IntegrationTests
                 File.Delete(configurationPath);
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            await File.WriteAllTextAsync(configurationPath, jsonConfiguration);
 
-            _ = File.ReadAllText(configurationPath);
+            _ = await File.ReadAllTextAsync(configurationPath);
 
             configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
 
@@ -844,19 +845,19 @@ namespace Ocelot.IntegrationTests
                 File.Delete(configurationPath);
             }
 
-            File.WriteAllText(configurationPath, jsonConfiguration);
+            await File.WriteAllTextAsync(configurationPath, jsonConfiguration);
 
-            _ = File.ReadAllText(configurationPath);
+            _ = await File.ReadAllTextAsync(configurationPath);
         }
 
-        private void WhenIGetUrlOnTheApiGateway(string url)
+        private async Task WhenIGetUrlOnTheApiGatewayAsync(string url)
         {
-            _response = _httpClient.GetAsync(url).Result;
+            _response = await _httpClient.GetAsync(url);
         }
 
-        private void WhenIDeleteOnTheApiGateway(string url)
+        private async Task WhenIDeleteOnTheApiGatewayAsync(string url)
         {
-            _response = _httpClient.DeleteAsync(url).Result;
+            _response = await _httpClient.DeleteAsync(url);
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
@@ -864,11 +865,12 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(expectedHttpStatusCode);
         }
 
-        private void ThenTheResultHaveMultiLineIndentedJson()
+        private async Task ThenTheResultHaveMultiLineIndentedJsonAsync()
         {
             const string indent = "  ";
             const int total = 52, skip = 1;
-            var lines = _response.Content.ReadAsStringAsync().Result.Split(Environment.NewLine);
+            var contentAsString = await _response.Content.ReadAsStringAsync();
+            string[] lines = contentAsString.Split(Environment.NewLine);
             lines.Length.ShouldBeGreaterThanOrEqualTo(total);
             lines.First().ShouldNotStartWith(indent);
 

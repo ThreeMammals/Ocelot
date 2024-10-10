@@ -2,7 +2,6 @@
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -18,37 +17,46 @@ public class RoundRobinTests : UnitTest
     }
 
     [Fact]
-    public void Lease_LoopThroughIndexRangeOnce_ShouldGetNextAddress()
+    public async Task Lease_LoopThroughIndexRangeOnce_ShouldGetNextAddress()
     {
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
-        WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
-        WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
-        WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
+
+        var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
+        var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
+        var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+
+        response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
+        response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
+        response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
     }
 
     [Fact]
     [Trait("Feat", "336")]
-    public void Lease_LoopThroughIndexRangeIndefinitelyButOneSecond_ShouldGoBackToFirstAddressAfterFinishedLast()
+    public async Task Lease_LoopThroughIndexRangeIndefinitelyButOneSecond_ShouldGoBackToFirstAddressAfterFinishedLast()
     {
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
         var stopWatch = Stopwatch.StartNew();
         while (stopWatch.ElapsedMilliseconds < 1000)
         {
-            WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
-            WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
-            WhenIGetTheNextAddress(roundRobin).Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
+            var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
+            var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
+            var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+
+            response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
+            response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
+            response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
         }
     }
 
     [Fact]
     [Trait("Bug", "2110")]
-    public void Lease_SelectedServiceIsNull_ShouldReturnError()
+    public async Task Lease_SelectedServiceIsNull_ShouldReturnError()
     {
         var invalidServices = new List<Service> { null };
         var roundRobin = GivenLoadBalancer(invalidServices);
-        var response = WhenIGetTheNextAddress(roundRobin);
+        var response = await WhenIGetTheNextAddressAsync(roundRobin);
         ThenServicesAreNullErrorIsReturned(response);
     }
 
@@ -141,8 +149,6 @@ public class RoundRobinTests : UnitTest
             serviceName);
     }
 
-    private Response<ServiceHostAndPort> WhenIGetTheNextAddress(RoundRobin roundRobin)
-        => roundRobin.LeaseAsync(_httpContext).Result;
     private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
         => roundRobin.LeaseAsync(_httpContext);
 

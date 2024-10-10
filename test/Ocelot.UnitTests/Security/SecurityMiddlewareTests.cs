@@ -38,7 +38,7 @@ namespace Ocelot.UnitTests.Security
         public void should_legal_request()
         {
             this.Given(x => x.GivenPassingSecurityVerification())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheRequestIsPassingSecurity())
                 .BDDfy();
         }
@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.Security
         public void should_verification_failed_request()
         {
             this.Given(x => x.GivenNotPassingSecurityVerification())
-                .When(x => x.WhenICallTheMiddleware())
+                .When(x => x.WhenICallTheMiddlewareAsync())
                 .Then(x => x.ThenTheRequestIsNotPassingSecurity())
                 .BDDfy();
         }
@@ -80,9 +80,9 @@ namespace Ocelot.UnitTests.Security
             }
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddlewareAsync()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void ThenTheRequestIsPassingSecurity()

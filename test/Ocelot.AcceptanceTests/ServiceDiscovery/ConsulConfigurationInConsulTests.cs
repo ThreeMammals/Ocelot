@@ -62,13 +62,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -125,13 +125,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -219,15 +219,15 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
-                .Then(x => ThenTheConfigIsUpdatedInOcelot())
+                .Then(x => ThenTheConfigIsUpdatedInOcelotAsync())
                 .BDDfy();
         }
 
@@ -301,30 +301,30 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 },
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOnAsync(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
             .And(x => GivenTheConsulConfigurationIs(consulConfig))
-            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(fakeConsulServiceDiscoveryUrl, serviceName))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 1))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 2))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 1))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
             .BDDfy();
         }
 
-        private void ThenTheConfigIsUpdatedInOcelot()
+        private async Task ThenTheConfigIsUpdatedInOcelotAsync()
         {
-            var result = Wait.WaitFor(20000).Until(() =>
+            var result = await Wait.WaitFor(20000).UntilAsync(async () =>
             {
                 try
                 {
-                    _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
+                    await _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status/awesome");
                     _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-                    _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
+                    await _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura");
                     return true;
                 }
                 catch (Exception)
@@ -348,7 +348,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             }
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+        private async Task GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(string url, string serviceName)
         {
             _fakeConsulBuilder = new WebHostBuilder()
                             .UseUrls(url)
@@ -405,7 +405,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                             })
                             .Build();
 
-            _fakeConsulBuilder.Start();
+            await _fakeConsulBuilder.StartAsync();
         }
 
         public class FakeConsulGetResponse
@@ -424,7 +424,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
+        private async Task GivenThereIsAServiceRunningOnAsync(string url, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(url)
@@ -444,7 +444,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 })
                 .Build();
 
-            _builder.Start();
+            await _builder.StartAsync();
         }
 
         public void Dispose()

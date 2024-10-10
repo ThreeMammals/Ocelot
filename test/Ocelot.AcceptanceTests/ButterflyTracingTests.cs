@@ -82,12 +82,12 @@ namespace Ocelot.AcceptanceTests
                 .And(x => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", butterflyUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api001/values"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api002/values"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Tom"))
                 .BDDfy();
 
             var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => _butterflyCalled >= 4);
@@ -139,9 +139,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api001/values"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
                 .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
                 .BDDfy();

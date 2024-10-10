@@ -65,8 +65,8 @@ public sealed class StickySessionsTests : Steps, IDisposable
             .Given(x => x.GivenProductServiceIsRunning(1, DownstreamUrl(port2)))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123")) // both cookies should have different values
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName + "bestid", "123")) // stick by cookie value
+            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookieAsync("/", cookieName, "123")) // both cookies should have different values
+            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookieAsync("/test", cookieName + "bestid", "123")) // stick by cookie value
             .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(0, 1))
             .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 1))
             .BDDfy();
@@ -89,8 +89,8 @@ public sealed class StickySessionsTests : Steps, IDisposable
             .Given(x => x.GivenProductServiceIsRunning(1, DownstreamUrl(port2)))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123"))
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName, "123"))
+            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookieAsync("/", cookieName, "123"))
+            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookieAsync("/test", cookieName, "123"))
             .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(0, 2))
             .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 0))
             .BDDfy();
@@ -123,7 +123,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
 
     private async Task GetParallelTask(string url, string cookie, string value)
     {
-        var response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
+        var response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie, value);
         var content = await response.Content.ReadAsStringAsync();
         var count = int.Parse(content);
         count.ShouldBeGreaterThan(0);

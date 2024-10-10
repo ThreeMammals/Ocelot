@@ -56,7 +56,7 @@ public class StreamHttpContent : HttpContent
                 if (zeroByteReadTask.IsCompletedSuccessfully)
                 {
                     // Consume the ValueTask's result in case it is backed by an IValueTaskSource
-                    _ = zeroByteReadTask.Result;
+                    _ = zeroByteReadTask.GetAwaiter().GetResult();
                 }
                 else
                 {

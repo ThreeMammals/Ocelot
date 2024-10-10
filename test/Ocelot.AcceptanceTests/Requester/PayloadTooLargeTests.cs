@@ -46,7 +46,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(1024))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
+            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
             .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
             .BDDfy();
     }
@@ -63,7 +63,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnHttpSysWithCustomBodyMaxSize(1024))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
+            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
             .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
             .BDDfy();
     }
@@ -112,9 +112,9 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                     {
                         s.AddOcelot();
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     })
                     .UseUrls("http://localhost:5001");
             }).Build();
@@ -150,9 +150,9 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                 {
                     s.AddOcelot();
                 })
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot().Wait();
+                    await app.UseOcelot();
                 })
                 .UseUrls("http://localhost:5001");
             }).Build();
