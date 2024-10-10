@@ -227,7 +227,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
-                .Then(x => ThenTheConfigIsUpdatedInOcelot())
+                .Then(x => ThenTheConfigIsUpdatedInOcelotAsync())
                 .BDDfy();
         }
 
@@ -316,15 +316,15 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .BDDfy();
         }
 
-        private void ThenTheConfigIsUpdatedInOcelot()
+        private async Task ThenTheConfigIsUpdatedInOcelotAsync()
         {
-            var result = Wait.WaitFor(20000).Until(() =>
+            var result = await Wait.WaitFor(20000).UntilAsync(async () =>
             {
                 try
                 {
-                    _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status/awesome").GetAwaiter().GetResult();
+                    await _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status/awesome");
                     _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-                    _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura").GetAwaiter().GetResult();
+                    await _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura");
                     return true;
                 }
                 catch (Exception)
