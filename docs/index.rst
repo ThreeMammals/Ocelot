@@ -178,9 +178,9 @@ See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milest
 
 .. toctree::
    :maxdepth: 2
-   :hidden:
    :caption: Introduction
 
+   introduction/welcome
    introduction/bigpicture
    introduction/gettingstarted
    introduction/contributing
@@ -189,7 +189,6 @@ See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milest
 
 .. toctree::
    :maxdepth: 2
-   :hidden:
    :caption: Features
 
    features/administration
@@ -221,7 +220,6 @@ See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milest
 
 .. toctree::
    :maxdepth: 2
-   :hidden:
    :caption: Building Ocelot
 
    building/overview
