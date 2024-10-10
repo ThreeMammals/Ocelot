@@ -556,6 +556,22 @@ namespace Ocelot.AcceptanceTests
             return passed;
         }
 
+        public async Task<bool> UntilAsync(Func<Task<bool>> condition)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var passed = false;
+            while (stopwatch.ElapsedMilliseconds < _milliSeconds)
+            {
+                if (await condition.Invoke())
+                {
+                    passed = true;
+                    break;
+                }
+            }
+
+            return passed;
+        }
+
         public bool Until<T>(Func<bool> condition)
         {
             var stopwatch = Stopwatch.StartNew();

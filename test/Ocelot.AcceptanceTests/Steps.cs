@@ -394,14 +394,13 @@ public class Steps : IDisposable
         Thread.Sleep(1000);
     }
 
-    public void WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
+    public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOkAsync(string url)
     {
-        // TODO: Turn as async
-        var result = Wait.WaitFor(2000).Until(() =>
+        var result = await Wait.WaitFor(2000).UntilAsync(async () =>
         {
             try
             {
-                _response = _ocelotClient.GetAsync(url).GetAwaiter().GetResult();
+                _response = await _ocelotClient.GetAsync(url);
                 _response.EnsureSuccessStatusCode();
                 return true;
             }

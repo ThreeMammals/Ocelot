@@ -224,7 +224,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntry))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithServices(WithConsul))
-            .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk("/home"))
+            .When(x => WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOkAsync("/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
             .BDDfy();
