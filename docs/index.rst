@@ -44,19 +44,22 @@
 .. role::  htm(raw)
     :format: html
 
-Welcome to Ocelot `23.3`_
-=========================
+############################
+Ocelot `23.3`_ Documentation
+############################
 
-Thanks for taking a look at the Ocelot documentation! Please use the left hand navigation to get around.
-The team would suggest taking a look at the **Introduction** chapter first.
+Thanks for taking a look at the Ocelot documentation!
 
-All **Features** are arranged in alphabetical order.
-The main features are :doc:`../features/configuration` and :doc:`../features/routing`.
+Please use the left hand **Navigation** bar to get around.
+The team would suggest taking a look at the **Introduction** chapters first.
 
-We **do** follow development process which is described in :doc:`../building/releaseprocess`.
+All **Features** are listed in alphabetical order.
+The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.
 
-Patches
--------
+*We adhere to a development process* outlined in :doc:`../building/releaseprocess`.
+Additional tips for building Ocelot can be found in the **Building Ocelot** section.
+
+:htm:`<h2>Patches</h2>`
 
 - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
 - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release.
@@ -70,8 +73,7 @@ Patches
 
   :htm:`</details>`
 
-Release Notes
--------------
+:htm:`<h2>Release Notes</h2>`
 
 | Release Tag: `23.3.0`_
 | Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_
@@ -84,8 +86,7 @@ Release Notes
 
   :htm:`</details>`
 
-What's new?
-^^^^^^^^^^^
+:htm:`<h3>What's new?</h3>`
 
 - :doc:`../features/servicediscovery`: Introducing a new feature for "*Customization of services creation*" in two primary service discovery providers: ``Consul`` (:ref:`sd-consul-service-builder`) and ``Kubernetes`` (:ref:`k8s-downstream-scheme-vs-port-names`), developed by `@raman-m`_.
 
@@ -127,11 +128,7 @@ What's new?
   | Now, :doc:`../features/metadata` can be directly accessed in the ``DownstreamRoute`` object. Furthermore, metadata can also be retrieved from the global JSON section via the ``FileConfiguration.GlobalConfiguration`` property.
   | For more information, see the details in PR `1843`_ on this remarkable feature.
 
-Focus On
-^^^^^^^^
-
-Updates of the features
-"""""""""""""""""""""""
+:htm:`<h3>Updates of the features</h3>`
 
 - :doc:`../features/configuration`: New features are ":ref:`config-version-policy`" by `@ibnuda`_ and ":ref:`config-route-metadata`" by `@vantm`_.
 - :doc:`../features/servicediscovery`: New feature is "*Customization of services creation*" aka :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` by `@raman-m`_.
@@ -141,8 +138,7 @@ Updates of the features
   | Furthermore, the Polly V8 Circuit Breaker has been mandated as the primary strategy (as per PR `2086`_).
   | See more detaild below in "**Ocelot extra packages**" paragraph.
 
-Ocelot extra packages
-"""""""""""""""""""""
+:htm:`<h3>Ocelot extra packages</h3>`
 
 - `Ocelot.Provider.Polly <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_
 
@@ -155,8 +151,7 @@ Ocelot extra packages
     If both `Circuit Breaker`_ and `Timeout`_ have :ref:`qos-configuration` with their respective properties in the ``QoSOptions`` of the route JSON, then the :ref:`qos-circuit-breaker-strategy` will take precedence in the constructed resilience pipeline.
     For more details, refer to PR `2086`_.
 
-Stabilization (bug fixing)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+:htm:`<h3>Stabilization (bug fixing)</h3>`
 
 - Fixed `2034`_ in PR `2045`_ by `@raman-m`_
 - Fixed `2039`_ in PR `2050`_ by `@PaulARoy`_
@@ -168,8 +163,7 @@ Stabilization (bug fixing)
 
 See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milestone%3ASpring%2724+is%3Aclosed+label%3Abug>`_ of the `Spring'24 <https://github.com/ThreeMammals/Ocelot/milestone/6>`_ milestone
 
-Documentation Summary
-^^^^^^^^^^^^^^^^^^^^^
+:htm:`<h3>Documentation Summary</h3>`
 
 - :doc:`../features/caching`: New :ref:`cch-enablecontenthashing-option` and :ref:`cch-global-configuration` sections
 - :doc:`../features/configuration`: New :ref:`config-version-policy` and :ref:`config-route-metadata` sections
