@@ -598,10 +598,10 @@ public class Steps : IDisposable
     // #
     public void GivenIAddCookieToMyRequest(string cookie)
         => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
-    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
-        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
-    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
-        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookieAsync(string url, string cookie, string value)
+        => _response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie, value);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookieAsync(string url, CookieHeaderValue cookie)
+        => _response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie);
 
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, string cookie, string value)
     {
@@ -917,6 +917,12 @@ public class Steps : IDisposable
         var result = await _response.Content.ReadAsStringAsync();
         result.ShouldBe(expectedBody);
     }
+
+    public void ThenTheResponseBodyShouldBe(string expectedBody)
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
+
+    public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody, customMessage);
 
     public void ThenTheContentLengthIs(int expected)
     {
