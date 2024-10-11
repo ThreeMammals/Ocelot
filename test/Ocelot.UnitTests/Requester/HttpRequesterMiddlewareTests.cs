@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenTheRequestIs())
                 .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.OK))))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamResponseIsSet())
                 .Then(x => InformationIsLogged())
                 .BDDfy();
@@ -46,7 +46,7 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenTheRequestIs())
                 .And(x => x.GivenTheRequesterReturns(new ErrorResponse<HttpResponseMessage>(new AnyError())))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheErrorIsSet())
                 .BDDfy();
         }
@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Requester
             this.Given(x => x.GivenTheRequestIs())
                     .And(x => x.GivenTheRequesterReturns(
                         new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.InternalServerError))))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.WarningIsLogged())
                 .BDDfy();
         }
@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenTheRequestIs())
                 .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status))))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.InformationIsLogged())
                 .BDDfy();
         }
@@ -83,7 +83,7 @@ namespace Ocelot.UnitTests.Requester
         {
             this.Given(x => x.GivenTheRequestIs())
                 .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status))))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.WarningIsLogged())
                 .BDDfy();
         }
@@ -93,7 +93,7 @@ namespace Ocelot.UnitTests.Requester
             _httpContext.Items.Errors().Count.ShouldBeGreaterThan(0);
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

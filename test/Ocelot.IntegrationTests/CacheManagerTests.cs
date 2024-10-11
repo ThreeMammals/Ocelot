@@ -87,7 +87,7 @@ namespace Ocelot.IntegrationTests
             GivenOcelotIsRunning();
             await GivenIHaveAnOcelotToken("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            await WhenIDeleteOnTheApiGatewayAsync($"/administration/outputcache/{regionToClear}");
+            await WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
             ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
@@ -188,7 +188,7 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        private async Task WhenIDeleteOnTheApiGatewayAsync(string url)
+        private async Task WhenIDeleteOnTheApiGateway(string url)
         {
             _response = await _httpClient.DeleteAsync(url);
         }

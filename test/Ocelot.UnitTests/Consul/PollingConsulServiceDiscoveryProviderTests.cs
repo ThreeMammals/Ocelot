@@ -42,7 +42,7 @@ namespace Ocelot.UnitTests.Consul
             var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
 
             this.Given(x => GivenConsulReturns(service))
-                .When(x => WhenIGetTheServicesWithoutDelayAsync(1))
+                .When(x => WhenIGetTheServicesWithoutDelay(1))
                 .Then(x => ThenTheCountIs(1))
                 .BDDfy();
         }
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.Consul
             result.ShouldBeTrue();
         }
 
-        private async Task WhenIGetTheServicesWithoutDelayAsync(int expected)
+        private async Task WhenIGetTheServicesWithoutDelay(int expected)
         {
             var provider = new PollConsul(_delay, "test2", _factory.Object, _consulServiceDiscoveryProvider.Object);
             bool result;

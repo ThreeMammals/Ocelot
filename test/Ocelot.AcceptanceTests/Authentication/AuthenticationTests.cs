@@ -31,7 +31,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
                .And(x => GivenThereIsAConfiguration(configuration))
                .And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -47,7 +47,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultAuthRoute(port);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -65,7 +65,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultAuthRoute(port);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => GivenAuthToken(_identityServerRootUrl, "api2"))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -82,7 +82,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, AccessTokenType.Jwt))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -100,7 +100,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             var port = PortFinder.GetRandomPort();
             var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, AccessTokenType.Reference))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
                 .And(x => GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => GivenThereIsAConfiguration(configuration))
@@ -113,7 +113,7 @@ namespace Ocelot.AcceptanceTests.Authentication
         }
 
         [IgnorePublicMethod]
-        public async Task GivenThereIsAnIdentityServerOnAsync(string url, AccessTokenType tokenType)
+        public async Task GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
             var scopes = new string[] { "api", "api2" };
             _identityServerBuilder = CreateIdentityServer(url, tokenType, scopes, null)

@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             };
 
             this.Given(x => x.GivenServices(services))
-                .When(x => x.WhenIGetTheNextHostAndPortAsync())
+                .When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenTheHostAndPortIs(hostAndPort))
                 .BDDfy();
         }
@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_return_error_if_no_services()
         {
-            this.When(x => x.WhenIGetTheNextHostAndPortAsync())
+            this.When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenThereIsAnError())
                 .BDDfy();
         }
@@ -51,10 +51,10 @@ namespace Ocelot.UnitTests.LoadBalancer
                 new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
             };
 
-            this.Given(_ => WhenIGetTheNextHostAndPortAsync())
+            this.Given(_ => WhenIGetTheNextHostAndPort())
                 .And(_ => ThenThereIsAnError())
                 .And(_ => GivenServices(services))
-                .When(_ => WhenIGetTheNextHostAndPortAsync())
+                .When(_ => WhenIGetTheNextHostAndPort())
                 .Then(_ => ThenTheHostAndPortIs(hostAndPort))
                 .BDDfy();
         }
@@ -63,7 +63,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         public void should_return_error_if_null_services()
         {
             this.Given(x => x.GivenServicesAreNull())
-                .When(x => x.WhenIGetTheNextHostAndPortAsync())
+                .When(x => x.WhenIGetTheNextHostAndPort())
                 .Then(x => x.ThenThereIsAnError())
                 .BDDfy();
         }
@@ -83,7 +83,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services.AddRange(services);
         }
 
-        private async Task WhenIGetTheNextHostAndPortAsync()
+        private async Task WhenIGetTheNextHostAndPort()
         {
             _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
         }

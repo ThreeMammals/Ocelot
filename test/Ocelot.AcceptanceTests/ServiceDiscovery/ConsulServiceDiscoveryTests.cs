@@ -276,15 +276,15 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrlAsync(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
+            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
-            .When(x => x.WhenIGetUrlAsync(publicUrlUS, sessionCookieUS), "When I get US shop again")
+            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 3)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrlAsync(publicUrlEU, sessionCookieEU), "When I get EU shop again")
+            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 4)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
@@ -561,7 +561,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         return config;
     }
 
-    private async Task WhenIGetUrlAsync(string url, CookieHeaderValue cookie)
+    private async Task WhenIGetUrl(string url, CookieHeaderValue cookie)
     {
         var t = cookie != null
             ? WhenIGetUrlOnTheApiGateway(url, cookie)

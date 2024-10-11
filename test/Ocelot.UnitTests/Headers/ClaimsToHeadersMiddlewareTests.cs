@@ -51,12 +51,12 @@ namespace Ocelot.UnitTests.Headers
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheAddHeadersToDownstreamRequestReturnsOk())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAddHeadersToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

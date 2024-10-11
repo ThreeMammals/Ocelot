@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.RequestId
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenThereIsNoGlobalRequestId())
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
                 .BDDfy();
         }
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.RequestId
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenThereIsNoGlobalRequestId())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIsAnything())
                 .BDDfy();
         }
@@ -100,7 +100,7 @@ namespace Ocelot.UnitTests.RequestId
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenThereIsNoGlobalRequestId())
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
                 .And(x => ThenTheRequestIdIsSaved())
                 .BDDfy();
@@ -124,7 +124,7 @@ namespace Ocelot.UnitTests.RequestId
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenTheRequestIdWasSetGlobally())
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
                 .And(x => ThenTheRequestIdIsUpdated())
                 .BDDfy();
@@ -148,13 +148,13 @@ namespace Ocelot.UnitTests.RequestId
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => GivenTheRequestIdWasSetGlobally())
                 .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheTraceIdIs(requestId))
                 .And(x => ThenTheRequestIdIsNotUpdated())
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

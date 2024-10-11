@@ -68,7 +68,7 @@ namespace Ocelot.IntegrationTests
             GivenOcelotIsRunning();
             await WhenIGetUrlOnTheApiGateway("/");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenXForwardedForIsSet();
+            await ThenXForwardedForIsSet();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string headerKey)
@@ -163,7 +163,7 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(code);
         }
 
-        private async Task ThenXForwardedForIsSetAsync()
+        private async Task ThenXForwardedForIsSet()
         {
             var windowsOrMac = "::1";
             var linux = "127.0.0.1";

@@ -55,7 +55,7 @@ namespace Ocelot.UnitTests.Controllers
 
             this.Given(x => GivenTheFileConfiguration(expected))
                 .And(x => GivenTheConfigSetterReturns(new OkResponse()))
-                .When(x => WhenIPostTheFileConfigurationAsync())
+                .When(x => WhenIPostTheFileConfiguration())
                 .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
                 .BDDfy();
         }
@@ -67,7 +67,7 @@ namespace Ocelot.UnitTests.Controllers
 
             this.Given(x => GivenTheFileConfiguration(expected))
                 .And(x => GivenTheConfigSetterReturns(new ErrorResponse(new FakeError())))
-                .When(x => WhenIPostTheFileConfigurationAsync())
+                .When(x => WhenIPostTheFileConfiguration())
                 .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
                 .And(x => ThenTheResponseIs<BadRequestObjectResult>())
                 .BDDfy();
@@ -86,7 +86,7 @@ namespace Ocelot.UnitTests.Controllers
                 .Verify(x => x.Set(_fileConfiguration), Times.Once);
         }
 
-        private async Task WhenIPostTheFileConfigurationAsync()
+        private async Task WhenIPostTheFileConfiguration()
         {
             _result = await _controller.Post(_fileConfiguration);
         }

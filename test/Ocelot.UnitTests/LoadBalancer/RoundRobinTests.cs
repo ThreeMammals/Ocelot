@@ -22,9 +22,9 @@ public class RoundRobinTests : UnitTest
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
 
-        var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
-        var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
-        var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+        var response0 = await WhenIGetTheNextAddress(roundRobin);
+        var response1 = await WhenIGetTheNextAddress(roundRobin);
+        var response2 = await WhenIGetTheNextAddress(roundRobin);
 
         response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
         response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
@@ -40,9 +40,9 @@ public class RoundRobinTests : UnitTest
         var stopWatch = Stopwatch.StartNew();
         while (stopWatch.ElapsedMilliseconds < 1000)
         {
-            var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
-            var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
-            var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+            var response0 = await WhenIGetTheNextAddress(roundRobin);
+            var response1 = await WhenIGetTheNextAddress(roundRobin);
+            var response2 = await WhenIGetTheNextAddress(roundRobin);
 
             response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
             response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
@@ -56,7 +56,7 @@ public class RoundRobinTests : UnitTest
     {
         var invalidServices = new List<Service> { null };
         var roundRobin = GivenLoadBalancer(invalidServices);
-        var response = await WhenIGetTheNextAddressAsync(roundRobin);
+        var response = await WhenIGetTheNextAddress(roundRobin);
         ThenServicesAreNullErrorIsReturned(response);
     }
 
@@ -123,7 +123,7 @@ public class RoundRobinTests : UnitTest
 
     private async Task GetParallelResponse(Response<ServiceHostAndPort>[] responses, RoundRobin roundRobin, int threadIndex)
     {
-        responses[threadIndex] = await WhenIGetTheNextAddressAsync(roundRobin);
+        responses[threadIndex] = await WhenIGetTheNextAddress(roundRobin);
     }
 
     private static List<Service> GivenServices(int total = 3, [CallerMemberName] string serviceName = null)
@@ -149,10 +149,8 @@ public class RoundRobinTests : UnitTest
             serviceName);
     }
 
-    private Response<ServiceHostAndPort> WhenIGetTheNextAddress(RoundRobin roundRobin)
-        => roundRobin.LeaseAsync(_httpContext).GetAwaiter().GetResult();
-    private async Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
-        => await roundRobin.LeaseAsync(_httpContext);
+    private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddress(RoundRobin roundRobin)
+        => roundRobin.LeaseAsync(_httpContext);
 
     private static void ThenServicesAreNullErrorIsReturned(Response<ServiceHostAndPort> response)
     {

@@ -818,7 +818,7 @@ public class Steps : IDisposable
         _response = await _ocelotClient.SendAsync(request);
     }
 
-    public async Task WhenIGetUrlWithFormOnTheApiGatewayAsync(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
+    public async Task WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
     {
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
@@ -849,7 +849,7 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public static async Task WhenIDoActionMultipleTimesAsync(int times, Func<int, Task> action)
+    public static async Task WhenIDoActionMultipleTimes(int times, Func<int, Task> action)
     {
         for (int i = 0; i < times; i++)
             await action.Invoke(i);

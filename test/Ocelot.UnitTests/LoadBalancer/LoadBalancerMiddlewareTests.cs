@@ -58,7 +58,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturns())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheDownstreamUrlIsReplacedWith("http://127.0.0.1:80/abc?q=123"))
                 .BDDfy();
         }
@@ -77,7 +77,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => GivenTheConfigurationIs(serviceProviderConfig))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheLoadBalancerHouseReturnsAnError())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline())
                 .BDDfy();
         }
@@ -97,7 +97,7 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturnsAnError())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline())
                 .BDDfy();
         }
@@ -117,12 +117,12 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
                 .And(x => x.GivenTheLoadBalancerHouseReturns())
                 .And(x => x.GivenTheLoadBalancerReturnsOk())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenAnHostAndPortIsSetOnPipeline())
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
             await _middleware.Invoke(_httpContext);

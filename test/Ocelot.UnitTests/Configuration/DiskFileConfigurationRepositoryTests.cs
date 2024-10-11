@@ -36,7 +36,7 @@ namespace Ocelot.UnitTests.Configuration
             GivenTheConfigurationIs(config);
 
             // Act
-            await WhenIGetTheRoutesAsync();
+            await WhenIGetTheRoutes();
 
             // Assert
             ThenTheFollowingIsReturned(config);
@@ -51,7 +51,7 @@ namespace Ocelot.UnitTests.Configuration
             GivenTheConfigurationIs(config);
 
             // Act
-            await WhenIGetTheRoutesAsync();
+            await WhenIGetTheRoutes();
 
             // Assert
             ThenTheFollowingIsReturned(config);
@@ -64,7 +64,7 @@ namespace Ocelot.UnitTests.Configuration
             var config = FakeFileConfigurationForSet();
 
             // Act
-            await WhenISetTheConfigurationAsync(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Configuration
             GivenTheEnvironmentNameIsUnavailable();
 
             // Act
-            await WhenISetTheConfigurationAsync(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.Configuration
             var ocelotJson = GivenTheUserAddedOcelotJson();
 
             // Act
-            await WhenISetTheConfigurationAsync(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -123,7 +123,7 @@ namespace Ocelot.UnitTests.Configuration
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns((string)null);
         }
 
-        private async Task WhenISetTheConfigurationAsync(FileConfiguration fileConfiguration)
+        private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)
         {
             await _repo.Set(fileConfiguration);
             var response = await _repo.Get();
@@ -183,7 +183,7 @@ namespace Ocelot.UnitTests.Configuration
             _files.Add(environmentSpecific);
         }
 
-        private async Task WhenIGetTheRoutesAsync()
+        private async Task WhenIGetTheRoutes()
         {
             var response = await _repo.Get();
             _result = response.Data;

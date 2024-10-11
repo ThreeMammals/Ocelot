@@ -64,7 +64,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
@@ -98,7 +98,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates");
@@ -132,7 +132,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -166,7 +166,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -201,7 +201,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates/3");
@@ -234,7 +234,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
@@ -263,7 +263,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1");
@@ -292,7 +292,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1");
@@ -321,7 +321,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
@@ -350,7 +350,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/products", "Service_1.0/Api");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Service_1.0/Api/products?PartitionKind=test&PartitionKey=1");
@@ -384,7 +384,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/Authorized/1?server=2");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=123456789");
@@ -416,7 +416,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
@@ -449,7 +449,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley");
@@ -483,7 +483,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley&userId=webley");
@@ -519,7 +519,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         var query = everythingelse;
@@ -562,7 +562,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn(downstreamURI);
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000" + downstreamURI);
@@ -604,7 +604,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
@@ -641,7 +641,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"routed/{urlPath}");
 
         // Act
-        await WhenICallTheMiddlewareAsync();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
@@ -654,7 +654,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _httpContext.Items.SetIInternalConfiguration(configuration);
     }
 
-    private async Task WhenICallTheMiddlewareAsync()
+    private async Task WhenICallTheMiddleware()
     {
         _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object);
         await _middleware.Invoke(_httpContext);

@@ -43,12 +43,12 @@ namespace Ocelot.UnitTests.Authorization
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build()))
                 .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

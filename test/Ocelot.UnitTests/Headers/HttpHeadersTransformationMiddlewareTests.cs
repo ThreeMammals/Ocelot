@@ -45,7 +45,7 @@ namespace Ocelot.UnitTests.Headers
                 .And(x => GivenTheDownstreamRequestIs())
                 .And(x => GivenTheRouteHasPreFindAndReplaceSetUp())
                 .And(x => GivenTheHttpResponseMessageIs())
-                .When(x => WhenICallTheMiddlewareAsync())
+                .When(x => WhenICallTheMiddleware())
                 .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
                 .Then(x => ThenAddHeadersToRequestIsCalledCorrectly())
                 .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Headers
                 .Verify(x => x.SetHeadersOnDownstreamRequest(_httpContext.Items.DownstreamRoute().AddHeadersToUpstream, _httpContext), Times.Once);
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

@@ -573,7 +573,7 @@ namespace Ocelot.AcceptanceTests
             };
             using (var auth = new AuthenticationTests())
             {
-                this.Given(x => auth.GivenThereIsAnIdentityServerOnAsync(identityServerUrl, AccessTokenType.Jwt))
+                this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
                     .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
                     .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                     .And(x => auth.GivenIHaveAToken(identityServerUrl))
@@ -647,7 +647,7 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlWithFormOnTheApiGatewayAsync("/", "key", formValues))
+                .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();

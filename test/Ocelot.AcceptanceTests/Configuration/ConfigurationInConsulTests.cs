@@ -63,8 +63,8 @@ namespace Ocelot.AcceptanceTests.Configuration
 
             var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
-            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
+            this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfigurationAsync(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway(""))
@@ -73,7 +73,7 @@ namespace Ocelot.AcceptanceTests.Configuration
                 .BDDfy();
         }
 
-        private async Task GivenThereIsAFakeConsulServiceDiscoveryProviderAsync(string url, string serviceName)
+        private async Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
             _fakeConsulBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -148,7 +148,7 @@ namespace Ocelot.AcceptanceTests.Configuration
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 
-        private async Task GivenThereIsAServiceRunningOnAsync(string url, string basePath, int statusCode, string responseBody)
+        private async Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
             _builder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>

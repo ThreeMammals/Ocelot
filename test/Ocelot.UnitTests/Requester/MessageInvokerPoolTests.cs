@@ -73,7 +73,7 @@ public class MessageInvokerPoolTests : UnitTest
             .And(x => GivenADownstreamRoute("/super-test"))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest())
-            .When(x => WhenICallTheClientAsync("http://www.bbc.co.uk"))
+            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
             .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
             .And(x => ThenSomethingIsReturned())
             .BDDfy();
@@ -97,7 +97,7 @@ public class MessageInvokerPoolTests : UnitTest
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .When(x => WhenICallTheClientAsync("http://www.bbc.co.uk"))
+            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
             .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
             .BDDfy();
     }
@@ -120,9 +120,9 @@ public class MessageInvokerPoolTests : UnitTest
             .And(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .And(_ => WhenICallTheClientAsync("http://localhost:5003"))
+            .And(_ => WhenICallTheClient("http://localhost:5003"))
             .And(_ => ThenTheCookieIsSet())
-            .When(_ => WhenICallTheClientAsync("http://localhost:5003"))
+            .When(_ => WhenICallTheClient("http://localhost:5003"))
             .Then(_ => ThenTheResponseIsOk())
             .BDDfy();
     }
@@ -149,7 +149,7 @@ public class MessageInvokerPoolTests : UnitTest
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .Then(x => WhenICallTheClientWillThrowAfterTimeoutAsync(TimeSpan.FromSeconds(expectedSeconds)))
+            .Then(x => WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds)))
             .BDDfy();
     }
 
@@ -264,14 +264,14 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenSomethingIsReturned() => _response.ShouldNotBeNull();
 
-    private async Task WhenICallTheClientAsync(string url)
+    private async Task WhenICallTheClient(string url)
     {
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         _response = await messageInvoker
             .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None);
     }
 
-    private async Task WhenICallTheClientWillThrowAfterTimeoutAsync(TimeSpan timeout)
+    private async Task WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
     {
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         var stopwatch = new Stopwatch();

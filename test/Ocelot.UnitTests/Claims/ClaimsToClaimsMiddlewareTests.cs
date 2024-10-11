@@ -48,12 +48,12 @@ namespace Ocelot.UnitTests.Claims
 
             this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
                 .And(x => x.GivenTheAddClaimsToRequestReturns())
-                .When(x => x.WhenICallTheMiddlewareAsync())
+                .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddlewareAsync()
+        private async Task WhenICallTheMiddleware()
         {
             await _middleware.Invoke(_httpContext);
         }

@@ -32,7 +32,7 @@ namespace Ocelot.UnitTests.Security
         public void should_No_blocked_Ip_and_allowed_Ip()
         {
             this.Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -43,7 +43,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -54,7 +54,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -65,7 +65,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -76,7 +76,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -87,7 +87,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.5")[0];
             this.Given(x => x.GivenCidr24AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -98,7 +98,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenCidr24AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -109,7 +109,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenCidr29AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -120,7 +120,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenCidr24BlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -131,7 +131,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
             this.Given(x => x.GivenCidr24BlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -142,7 +142,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -153,7 +153,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
             this.Given(x => x.GivenRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -164,7 +164,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -175,7 +175,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -186,7 +186,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenShortRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -197,7 +197,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
             this.Given(x => x.GivenShortRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -208,7 +208,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenShortRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -219,7 +219,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenShortRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -230,7 +230,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.15")[0];
             this.Given(x => x.GivenIpSubnetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -241,7 +241,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenIpSubnetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -252,7 +252,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenIpSubnetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -263,7 +263,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
             this.Given(x => x.GivenIpSubnetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -274,7 +274,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
             this.Given(x => x.GivenIpMoreAllowedThanBlocked(false))
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -285,7 +285,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
             this.Given(x => x.GivenIpMoreAllowedThanBlocked(true))
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -296,7 +296,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenIpMoreBlockedThanAllowed(false))
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenNotSecurityPassing())
                 .BDDfy();
         }
@@ -307,7 +307,7 @@ namespace Ocelot.UnitTests.Security
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenIpMoreBlockedThanAllowed(true))
                 .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicyAsync())
+                .When(x => x.WhenTheSecurityPolicy())
                 .Then(x => x.ThenSecurityPassing())
                 .BDDfy();
         }
@@ -393,7 +393,7 @@ namespace Ocelot.UnitTests.Security
             _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
         }
 
-        private async Task WhenTheSecurityPolicyAsync()
+        private async Task WhenTheSecurityPolicy()
         {
             response = await _ipSecurityPolicy.Security(_httpContext.Items.DownstreamRoute(), _httpContext);
         }
