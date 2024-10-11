@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Ocelot Gateway'
-copyright = ' 2016-%Y, ThreeMammals Ocelot team'
+copyright = ' 2016-2024, ThreeMammals Ocelot team'
 author = 'Tom Pallister, Raman Maksimchuk'
 release = '23.3'
 
@@ -15,16 +15,6 @@ release = '23.3'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.todo',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.inheritance_diagram',
-    'sphinx.ext.coverage',
-    'sphinx.ext.graphviz',
 ]
 
 templates_path = ['_templates']
