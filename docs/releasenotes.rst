@@ -16,6 +16,7 @@
 .. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
 .. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
+.. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
 
 .. _954: https://github.com/ThreeMammals/Ocelot/issues/954
@@ -55,6 +56,7 @@ Patches
 
 - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
 - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release.
+- `23.3.5`_, on Oct 11, 2024. Documentation patch: Html and Pdf doc layouts.
 
   :htm:`<details><summary>Codename decoding links</summary>`
 
