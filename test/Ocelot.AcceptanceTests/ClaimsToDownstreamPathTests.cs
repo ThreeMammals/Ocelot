@@ -79,15 +79,15 @@ namespace Ocelot.AcceptanceTests
                    },
             };
 
-            this.Given(x => x.GivenThereIsAnIdentityServerOnAsync(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+            this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
                 .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
                 .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/users"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("UserId: 1231231"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("UserId: 1231231"))
                 .And(x => ThenTheDownstreamPathIs("/users/1231231"))
                 .BDDfy();
         }
@@ -123,7 +123,7 @@ namespace Ocelot.AcceptanceTests
             _servicebuilder.Start();
         }
 
-        private async Task GivenThereIsAnIdentityServerOnAsync(string url, string apiName, AccessTokenType tokenType, TestUser user)
+        private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -196,7 +196,7 @@ namespace Ocelot.AcceptanceTests
 
             await _identityServerBuilder.StartAsync();
 
-            await Steps.VerifyIdentityServerStartedAsync(url);
+            await Steps.VerifyIdentityServerStarted(url);
         }
 
         public void Dispose()

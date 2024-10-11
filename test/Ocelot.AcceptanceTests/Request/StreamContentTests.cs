@@ -32,9 +32,9 @@ public sealed class StreamContentTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new StreamTestContent(contentSize, false)))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, false)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync(contentSize + ";;" + contentSize))
+            .And(x => ThenTheResponseBodyShouldBe(contentSize + ";;" + contentSize))
             .BDDfy();
     }
 
@@ -49,9 +49,9 @@ public sealed class StreamContentTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new StreamTestContent(contentSize, true)))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, true)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync(";chunked;" + contentSize))
+            .And(x => ThenTheResponseBodyShouldBe(";chunked;" + contentSize))
             .BDDfy();
     }
 

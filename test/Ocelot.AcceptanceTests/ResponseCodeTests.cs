@@ -43,7 +43,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/inline.132.bundle.js", 304))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/inline.132.bundle.js"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified))
                 .BDDfy();
         }

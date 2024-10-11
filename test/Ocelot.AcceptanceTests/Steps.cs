@@ -394,7 +394,7 @@ public class Steps : IDisposable
         Thread.Sleep(1000);
     }
 
-    public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOkAsync(string url)
+    public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
     {
         var result = await Wait.WaitFor(2000).UntilAsync(async () =>
         {
@@ -597,18 +597,18 @@ public class Steps : IDisposable
     // #
     public void GivenIAddCookieToMyRequest(string cookie)
         => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
-    public async Task WhenIGetUrlOnTheApiGatewayWithCookieAsync(string url, string cookie, string value)
-        => _response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie, value);
-    public async Task WhenIGetUrlOnTheApiGatewayWithCookieAsync(string url, CookieHeaderValue cookie)
-        => _response = await WhenIGetUrlOnTheApiGatewayAsync(url, cookie);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
 
-    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, string cookie, string value)
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
     {
         var header = new CookieHeaderValue(cookie, value);
-        return WhenIGetUrlOnTheApiGatewayAsync(url, header);
+        return WhenIGetUrlOnTheApiGateway(url, header);
     }
 
-    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGatewayAsync(string url, CookieHeaderValue cookie)
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Add("Cookie", cookie.ToString());
@@ -748,7 +748,7 @@ public class Steps : IDisposable
         return _token;
     }
 
-    public static async Task VerifyIdentityServerStartedAsync(string url)
+    public static async Task VerifyIdentityServerStarted(string url)
     {
         using var httpClient = new HttpClient();
         var response = await httpClient.GetAsync($"{url}/.well-known/openid-configuration");
@@ -803,13 +803,13 @@ public class Steps : IDisposable
     public void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunningWithServices(WithPolly);
     public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
-    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url)
+    public async Task WhenIGetUrlOnTheApiGateway(string url)
         => _response = await _ocelotClient.GetAsync(url);
 
     public Task<HttpResponseMessage> WhenIGetUrl(string url)
         => _ocelotClient.GetAsync(url);
 
-    public async Task WhenIGetUrlWithBodyOnTheApiGatewayAsync(string url, string body)
+    public async Task WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
@@ -832,13 +832,13 @@ public class Steps : IDisposable
         _response = await _ocelotClient.SendAsync(request);
     }
 
-    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url, HttpContent content)
+    public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
         _response = await _ocelotClient.SendAsync(httpRequestMessage);
     }
 
-    public async Task WhenIPostUrlOnTheApiGatewayAsync(string url, HttpContent content)
+    public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         _response = await _ocelotClient.SendAsync(httpRequestMessage);
@@ -861,7 +861,7 @@ public class Steps : IDisposable
             action?.Invoke(i);
     }
 
-    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync(string url, int times)
+    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
     {
         for (var i = 0; i < times; i++)
         {
@@ -872,14 +872,14 @@ public class Steps : IDisposable
         }
     }
 
-    public async Task WhenIGetUrlOnTheApiGatewayAsync(string url, string requestId)
+    public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
 
         _response = await _ocelotClient.GetAsync(url);
     }
 
-    public async Task WhenIPostUrlOnTheApiGatewayAsync(string url)
+    public async Task WhenIPostUrlOnTheApiGateway(string url)
     {
         _response = await _ocelotClient.PostAsync(url, _postContent);
     }
@@ -911,14 +911,11 @@ public class Steps : IDisposable
         _postContent = content;
     }
 
-    public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody)
+    public async Task ThenTheResponseBodyShouldBe(string expectedBody)
     {
         var result = await _response.Content.ReadAsStringAsync();
         result.ShouldBe(expectedBody);
     }
-
-    public void ThenTheResponseBodyShouldBe(string expectedBody)
-        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
 
     public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
         => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody, customMessage);

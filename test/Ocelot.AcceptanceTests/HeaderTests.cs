@@ -50,9 +50,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIAddAHeader("Laz", "D"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("GP"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("GP"))
                 .BDDfy();
         }
 
@@ -90,7 +90,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Location", "http://www.bbc.co.uk/"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://ocelot.com/"))
                 .BDDfy();
@@ -134,7 +134,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
                 .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
                 .BDDfy();
@@ -178,7 +178,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
                 .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
                 .BDDfy();
@@ -226,7 +226,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
                 .And(x => _steps.ThenTheResponseHeaderIs("Location", "http://anotherapp.azurewebsites.net/pay/Receive"))
                 .BDDfy();
@@ -266,11 +266,11 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/sso/test", 200))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/sso/test"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseHeaderIs("Set-Cookie", "test=0; path=/"))
                 .And(x => _steps.GivenIAddCookieToMyRequest("test=1; path=/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/sso/test"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
@@ -309,11 +309,11 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/sso/test", 200))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .And(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/sso/test"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseHeaderIs("Set-Cookie", "test=0; path=/"))
                 .And(x => _steps.GivenIAddCookieToMyRequest("test=1; path=/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/sso/test"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/sso/test"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .BDDfy();
         }
@@ -349,9 +349,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("text/html,application/xhtml+xml,application/xml;"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("text/html,application/xhtml+xml,application/xml;"))
                 .BDDfy();
         }
 
@@ -388,9 +388,9 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.GivenIAddAHeader("Accept", "text/html"))
                 .And(x => _steps.GivenIAddAHeader("Accept", "application/xhtml+xml"))
                 .And(x => _steps.GivenIAddAHeader("Accept", "application/xml"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("text/html, application/xhtml+xml, application/xml"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("text/html, application/xhtml+xml, application/xml"))
                 .BDDfy();
         }
 

@@ -134,9 +134,9 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenServiceIsRunning($"http://localhost:{port}", 200, "some_data"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/EmpDetail/US/1"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 
@@ -228,9 +228,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 
@@ -295,9 +295,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -315,9 +315,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+                .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -381,9 +381,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -447,9 +447,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
                 .BDDfy();
         }
@@ -580,9 +580,9 @@ namespace Ocelot.AcceptanceTests
                     .And(x => auth.GivenThereIsAConfiguration(configuration))
                     .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
                     .And(x => auth.GivenIHaveAddedATokenToMyRequest())
-                    .When(x => auth.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                    .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
                     .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                    .And(x => auth.ThenTheResponseBodyShouldBeAsync("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+                    .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
                     .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
                     .BDDfy();
             }
@@ -617,9 +617,9 @@ namespace Ocelot.AcceptanceTests
                 .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlWithBodyOnTheApiGatewayAsync("/", requestBody))
+                .When(x => WhenIGetUrlWithBodyOnTheApiGateway("/", requestBody))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 
@@ -649,7 +649,7 @@ namespace Ocelot.AcceptanceTests
                 .And(x => GivenOcelotIsRunning())
                 .When(x => WhenIGetUrlWithFormOnTheApiGatewayAsync("/", "key", formValues))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync(expected))
+                .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
         }
 

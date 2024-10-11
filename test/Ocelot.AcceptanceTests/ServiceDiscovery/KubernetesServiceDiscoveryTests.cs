@@ -63,7 +63,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
-            .When(_ => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
@@ -103,9 +103,9 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
-            .When(_ => WhenIGetUrlOnTheApiGatewayAsync("/api/example/1"))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
-            .And(_ => ThenTheResponseBodyShouldBeAsync(downstreamScheme == "http"
+            .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
                     ? "1:" + nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)
                     : string.Empty))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(downstreamScheme == "http" ? 1 : 0))

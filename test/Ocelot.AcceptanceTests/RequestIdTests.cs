@@ -44,7 +44,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheRequestIdIsReturned())
                 .BDDfy();
         }
@@ -81,7 +81,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/", requestId))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
                 .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
                 .BDDfy();
         }
@@ -122,7 +122,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/", requestId))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
                 .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
                 .BDDfy();
         }
@@ -161,7 +161,7 @@ namespace Ocelot.AcceptanceTests
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheRequestIdIsReturned())
                 .BDDfy();
         }

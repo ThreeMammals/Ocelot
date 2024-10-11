@@ -81,12 +81,12 @@ namespace Ocelot.AcceptanceTests
                 .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api/user/info?id=1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/user/info?id=1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("user"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api/product/info?id=1"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("user"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/product/info?id=1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("product"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("product"))
                 .BDDfy();
         }
 

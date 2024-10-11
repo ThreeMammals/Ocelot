@@ -32,9 +32,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/units/{subscriptionId}/{unitId}/updates"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -55,9 +55,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -75,9 +75,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userId}", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/users?userId={userId}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from @webley"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .BDDfy();
     }
 
@@ -95,9 +95,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/users?userId={uid}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from @webley"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .BDDfy();
     }
 
@@ -115,9 +115,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userid}&userId={userid}", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/users?userId={userid}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userid}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from @webley"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .BDDfy();
     }
 
@@ -136,9 +136,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", $"?{expected}", "Hello from @sunilk3"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/contracts?{everythingelse}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from @sunilk3"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from @sunilk3"))
             .BDDfy();
     }
 
@@ -154,9 +154,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/odata/customers?$filter=Name eq 'Sam' "))
+            .When(x => WhenIGetUrlOnTheApiGateway("/odata/customers?$filter=Name eq 'Sam' "))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -174,9 +174,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -194,7 +194,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/subscriptions/{subscriptionId}/updates"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -213,7 +213,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/subscriptions/{subscriptionId}/updates?test=1"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
@@ -232,9 +232,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -258,9 +258,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
                 "Hello from Béchir"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Béchir"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Béchir"))
             .BDDfy();
     }
 
@@ -284,9 +284,9 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync($"/safe/{idValue}?{queryName}={queryValue}"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/safe/{idValue}?{queryName}={queryValue}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 

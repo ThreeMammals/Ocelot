@@ -66,9 +66,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -129,9 +129,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -223,9 +223,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => x.GivenThereIsAServiceRunningOnAsync($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .And(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status"))
+                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
                 .Then(x => ThenTheConfigIsUpdatedInOcelotAsync())
                 .BDDfy();
@@ -307,11 +307,11 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
             .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 1))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 2))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimitAsync("/web/something", 1))
+            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
             .BDDfy();
         }
@@ -322,9 +322,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             {
                 try
                 {
-                    await _steps.WhenIGetUrlOnTheApiGatewayAsync("/cs/status/awesome");
+                    await _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
                     _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-                    await _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+                    await _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
                     return true;
                 }
                 catch (Exception)

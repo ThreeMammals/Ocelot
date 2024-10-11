@@ -25,7 +25,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
@@ -39,7 +39,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
@@ -53,7 +53,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
@@ -67,7 +67,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -81,7 +81,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -95,7 +95,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -109,7 +109,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -123,7 +123,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }

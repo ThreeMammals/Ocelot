@@ -53,7 +53,7 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/aaaaaaaaa/cards", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api/v1/aaaaaaaaa/cards"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/aaaaaaaaa/cards"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
@@ -63,7 +63,7 @@ namespace Ocelot.AcceptanceTests.Routing
         {
             this.Given(x => _steps.GivenThereIsAConfiguration(new FileConfiguration()))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
@@ -98,9 +98,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -149,9 +149,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/test", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/test"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -199,9 +199,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -250,9 +250,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -286,9 +286,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(string.Empty))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(string.Empty))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -322,9 +322,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -376,9 +376,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/v1/vacancy/1", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/vacancy/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -412,9 +412,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -448,9 +448,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -486,9 +486,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamBasePath, HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(url))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -525,9 +525,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn(baseUrl, "/authenticate", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(url))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -561,7 +561,7 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/products", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/products/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
@@ -594,9 +594,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", requestURL, HttpStatusCode.OK, "Hello from Aly"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(requestURL))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Aly"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Aly"))
                 .BDDfy();
         }
 
@@ -630,9 +630,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", HttpStatusCode.OK, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/products/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Some Product"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
 
@@ -666,9 +666,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/23/products/1", HttpStatusCode.OK, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("23/products/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("23/products/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Some Product"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
 
@@ -702,7 +702,7 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", HttpStatusCode.OK, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/products/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/products/1"))
                 .Then(x => ThenTheDownstreamUrlPathShouldBe("/api/products/1"))
                 .BDDfy();
         }
@@ -738,7 +738,7 @@ namespace Ocelot.AcceptanceTests.Routing
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
@@ -773,9 +773,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/newThing", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/newThing?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/newThing?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -809,9 +809,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", HttpStatusCode.OK, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/myApp1Name/api/products/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/myApp1Name/api/products/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Some Product"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
 
@@ -831,13 +831,13 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Aly"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(requestURL))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamURL))
 
                 // Now check the same URL but with query string
                 // Catch-All placeholder should forward any path + query string combinations to the downstream service
                 // More: https://ocelot.readthedocs.io/en/latest/features/routing.html#placeholders:~:text=This%20will%20forward%20any%20path%20%2B%20query%20string%20combinations%20to%20the%20downstream%20service%20after%20the%20path%20%2Fapi.
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(requestURL + queryString))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL + queryString))
                 .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamURL))
                 .And(x => x.ThenTheDownstreamUrlQueryStringShouldBe(queryString))
                 .BDDfy();
@@ -859,11 +859,11 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamPath, HttpStatusCode.OK, "Hello from Raman"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync(requestURL))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath)) // !
                 .And(x => x.ThenTheDownstreamUrlQueryStringShouldBe(queryString)) // !!
                 .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Raman"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Raman"))
                 .BDDfy();
         }
 
@@ -898,9 +898,9 @@ namespace Ocelot.AcceptanceTests.Routing
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync(nameof(HttpStatusCode.Created)))
+                .And(x => _steps.ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.Created)))
                 .BDDfy();
         }
 
@@ -934,9 +934,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -987,7 +987,7 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/v1/vacancy/1", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("api/vacancy/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("api/vacancy/1"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
@@ -1022,9 +1022,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/swagger/lib/backbone-min.js", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/platform/swagger/lib/backbone-min.js"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/platform/swagger/lib/backbone-min.js"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/api/swagger/lib/backbone-min.js"))
                 .BDDfy();
         }
@@ -1075,9 +1075,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/goods/delete", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/goods/delete"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/goods/delete"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -1111,9 +1111,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/test/toot", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/test/toot"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/test/toot"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -1162,9 +1162,9 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/api/v1/modules/Test", HttpStatusCode.OK, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync("/api/v1/modules/Test"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/modules/Test"))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -1180,7 +1180,7 @@ namespace Ocelot.AcceptanceTests.Routing
             this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", decodedDownstreamUrlPath, HttpStatusCode.OK, string.Empty))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGatewayAsync($"/api/{path}")) // should be encoded
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/api/{path}")) // should be encoded
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheDownstreamUrlPathShouldBe(decodedDownstreamUrlPath))
                 .BDDfy();

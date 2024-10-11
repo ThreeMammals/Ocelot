@@ -36,7 +36,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                .And(x => GivenThereIsAConfiguration(configuration))
                .And(x => GivenOcelotIsRunning(_options, "Test"))
                .And(x => GivenThePostHasContent("postContent"))
-               .When(x => WhenIPostUrlOnTheApiGatewayAsync("/"))
+               .When(x => WhenIPostUrlOnTheApiGateway("/"))
                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
                .BDDfy();
         }
@@ -53,9 +53,9 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -71,7 +71,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
                 .BDDfy();
         }
@@ -89,7 +89,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
                 .And(x => GivenThePostHasContent("postContent"))
-                .When(x => WhenIPostUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
@@ -107,7 +107,7 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .And(x => GivenOcelotIsRunning(_options, "Test"))
                 .And(x => GivenIHaveAddedATokenToMyRequest())
                 .And(x => GivenThePostHasContent("postContent"))
-                .When(x => WhenIPostUrlOnTheApiGatewayAsync("/"))
+                .When(x => WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
         }
@@ -119,7 +119,7 @@ namespace Ocelot.AcceptanceTests.Authentication
             _identityServerBuilder = CreateIdentityServer(url, tokenType, scopes, null)
                 .Build();
             await _identityServerBuilder.StartAsync();
-            await VerifyIdentityServerStartedAsync(url);
+            await VerifyIdentityServerStarted(url);
         }
 
         public override void Dispose()

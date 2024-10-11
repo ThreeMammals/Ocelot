@@ -30,9 +30,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayAsync("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync(";;"))
+            .And(x => ThenTheResponseBodyShouldBe(";;"))
             .BDDfy();
     }
 
@@ -46,9 +46,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new StringContent("This is some content")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("20;;This is some content"))
+            .And(x => ThenTheResponseBodyShouldBe("20;;This is some content"))
             .BDDfy();
     }
 
@@ -62,9 +62,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new StringContent("")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync("0;;"))
+            .And(x => ThenTheResponseBodyShouldBe("0;;"))
             .BDDfy();
     }
 
@@ -78,9 +78,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new ChunkedContent("This ", "is some content")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync(";chunked;This is some content"))
+            .And(x => ThenTheResponseBodyShouldBe(";chunked;This is some content"))
             .BDDfy();
     }
 
@@ -94,9 +94,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGatewayAsync("/", new ChunkedContent()))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBeAsync(";chunked;"))
+            .And(x => ThenTheResponseBodyShouldBe(";chunked;"))
             .BDDfy();
     }
 
