@@ -5,28 +5,20 @@ namespace Ocelot.Configuration.Creator
 {
     public class SecurityOptionsCreator : ISecurityOptionsCreator
     {
-        public SecurityOptions Create(FileSecurityOptions securityOptions)
+        public SecurityOptions Create(FileSecurityOptions securityOptions, FileGlobalConfiguration globalConfiguration)
         {
-            var ipAllowedList = new List<string>();
-            var ipBlockedList = new List<string>();
-
-            foreach (var allowed in securityOptions.IPAllowedList)
+            if (securityOptions.IsFullFilled())
             {
-                if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
-                {
-                    var allowedIps = allowedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
-                    ipAllowedList.AddRange(allowedIps);
-                }
+                return Create(securityOptions);
             }
 
-            foreach (var blocked in securityOptions.IPBlockedList)
-            {
-                if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
-                {
-                    var blockedIps = blockedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
-                    ipBlockedList.AddRange(blockedIps);
-                }
-            }
+            return Create(globalConfiguration.SecurityOptions);
+        }
+
+        private static SecurityOptions Create(FileSecurityOptions securityOptions)
+        {
+            var ipAllowedList = SetIpAddressList(securityOptions.IPAllowedList);
+            var ipBlockedList = SetIpAddressList(securityOptions.IPBlockedList);
 
             if (securityOptions.ExcludeAllowedFromBlocked)
             {
@@ -34,6 +26,22 @@ namespace Ocelot.Configuration.Creator
             }
 
             return new SecurityOptions(ipAllowedList, ipBlockedList);
+        }
+
+        private static List<string> SetIpAddressList(List<string> ipValueList)
+        {
+            var ipList = new List<string>();
+
+            foreach (var ipValue in ipValueList)
+            {
+                if (IPAddressRange.TryParse(ipValue, out var ipAddressRange))
+                {
+                    var ips = ipAddressRange.Select<IPAddress, string>(x => x.ToString());
+                    ipList.AddRange(ips);
+                }
+            }
+
+            return ipList;
         }
     }
 }
