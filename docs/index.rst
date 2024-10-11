@@ -5,12 +5,12 @@
 .. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
 
-============================
+############################
 Ocelot `23.3`_ Documentation
-============================
+############################
 
 Thanks for taking a look at the Ocelot documentation!
-Please use the left hand **Navigation** sidebar to get around, or see Table of Contents below.
+Please use the left hand **Navigation** sidebar to get around, or see **Table of Contents** below.
 
 The team would suggest taking a look at the **Introduction** chapters first.
 
@@ -19,12 +19,6 @@ The primary features include :doc:`../features/configuration` and :doc:`../featu
 
 Additional tips for building Ocelot can be found in the **Building Ocelot** section.
 We adhere to a development process outlined in :doc:`../building/releaseprocess`.
-
-.. admonition:: Patches
-
-  - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
-  - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release.
-  - `23.3.5`_, on Oct 11, 2024. Documentation patch: Html and Pdf doc layouts.
 
 .. admonition:: Table of Contents
 

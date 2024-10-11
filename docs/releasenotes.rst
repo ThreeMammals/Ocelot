@@ -45,27 +45,29 @@
 .. role::  htm(raw)
     :format: html
 
-=======
+.. _welcome:
+
+#######
 Welcome
-=======
+#######
 
 Abc...
+
+.. .. admonition:: Patches
 
 Patches
 -------
 
 - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
 - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release.
-- `23.3.5`_, on Oct 11, 2024. Documentation patch: Html and Pdf doc layouts.
-
-  :htm:`<details><summary>Codename decoding links</summary>`
+  Codename decoding links
 
   - **for men** :htm:`&rarr;` naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
   - **for women** :htm:`&rarr;` not a well-dressed woman sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
   - **for black men** :htm:`&rarr;` don't care about White movements, so enjoy `Black Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_:
     be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
 
-  :htm:`</details>`
+- `23.3.5`_, on Oct 11, 2024. Documentation patch: Html and Pdf doc layouts.
 
 Release Notes
 -------------
