@@ -93,9 +93,9 @@ namespace Ocelot.UnitTests.Requester
             _httpContext.Items.Errors().Count.ShouldBeGreaterThan(0);
         }
 
-        private async Task WhenICallTheMiddleware()
+        private Task WhenICallTheMiddleware()
         {
-            await _middleware.Invoke(_httpContext);
+            return _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheRequestIs()

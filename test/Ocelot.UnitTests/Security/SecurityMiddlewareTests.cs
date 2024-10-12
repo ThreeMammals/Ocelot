@@ -80,9 +80,9 @@ namespace Ocelot.UnitTests.Security
             }
         }
 
-        private async Task WhenICallTheMiddleware()
+        private Task WhenICallTheMiddleware()
         {
-            await _middleware.Invoke(_httpContext);
+            return _middleware.Invoke(_httpContext);
         }
 
         private void ThenTheRequestIsPassingSecurity()
