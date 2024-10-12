@@ -63,6 +63,7 @@ You can set the following in the ``GlobalConfiguration`` section of `ocelot.json
 
 .. list-table::
     :widths: 35 65
+    :header-rows: 1
 
     * - *Property*
       - *Description*
