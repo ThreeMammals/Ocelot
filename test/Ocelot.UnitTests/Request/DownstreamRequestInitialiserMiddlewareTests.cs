@@ -44,7 +44,7 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
     {
         this.Given(_ => GivenTheHttpContextContainsARequest())
             .And(_ => GivenTheMapperWillReturnAMappedRequest())
-            .When(_ => WhenTheMiddlewareIsInvoke())
+            .When(_ => WhenTheMiddlewareIsInvoked())
             .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
             .And(_ => ThenTheDownstreamRequestIsStored())
             .And(_ => ThenTheNextMiddlewareIsInvoked())
@@ -57,7 +57,7 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
     {
         this.Given(_ => GivenTheHttpContextContainsARequest())
             .And(_ => GivenTheMapperWillReturnAMappedRequest())
-            .When(_ => WhenTheMiddlewareIsInvoke())
+            .When(_ => WhenTheMiddlewareIsInvoked())
             .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
             .And(_ => ThenTheDownstreamRequestIsStored())
             .And(_ => ThenTheNextMiddlewareIsInvoked())
@@ -70,7 +70,7 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
     {
         this.Given(_ => GivenTheHttpContextContainsARequest())
             .And(_ => GivenTheMapperWillReturnAnError())
-            .When(_ => WhenTheMiddlewareIsInvoke())
+            .When(_ => WhenTheMiddlewareIsInvoked())
             .And(_ => ThenTheDownstreamRequestIsNotStored())
             .And(_ => ThenAPipelineErrorIsStored())
             .And(_ => ThenTheNextMiddlewareIsNotInvoked())
@@ -103,7 +103,7 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
             .Throws(_testException);
     }
 
-    private async Task WhenTheMiddlewareIsInvoke()
+    private async Task WhenTheMiddlewareIsInvoked()
     {
         await _middleware.Invoke(_httpContext);
     }
