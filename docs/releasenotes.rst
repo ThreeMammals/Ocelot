@@ -51,37 +51,34 @@
 Welcome
 #######
 
-Abc...
+Welcome to the Ocelot `23.3`_ documentation!
+It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
 
-.. .. admonition:: Patches
+The major version `23.3.0`_ includes several patches, the history of which is provided below.
 
-Patches
--------
+.. admonition:: Patches
 
-- `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
-- `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release.
-  Codename decoding links
+  - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
+  - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release,
+    with codename decoding links:
 
-  - **for men** :htm:`&rarr;` naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
-  - **for women** :htm:`&rarr;` not a well-dressed woman sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
-  - **for black men** :htm:`&rarr;` don't care about White movements, so enjoy `Black Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_:
-    be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
+    - **for men**: naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
+    - **for women**: `not a well-dressed woman <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
+    - **for black men**: enjoy `Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_.
+      Be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
 
-- `23.3.5`_, on Oct 11, 2024. Documentation patch: Html and Pdf doc layouts.
+  - `23.3.5`_, on Oct 12, 2024. Documentation patch: Html and Pdf doc layouts.
+
+.. _release-notes:
 
 Release Notes
 -------------
 
 | Release Tag: `23.3.0`_
-| Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_
-
-  :htm:`<details><summary>Codename decoding links</summary>`
-
-  - `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_
-  - `for women <https://www.goodreads.com/series/50439-twilight-texas>`_
-  - `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_
-
-  :htm:`</details>`
+| Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_, with codename decoding links:
+  `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_,
+  `for women <https://www.goodreads.com/series/50439-twilight-texas>`_,
+  `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_.
 
 What's new?
 ^^^^^^^^^^^
@@ -96,10 +93,7 @@ What's new?
   - The overriding of the default behavior of classes.
 
   | Ultimately, customization relies on the virtual methods within the default implementation classes, providing developers the flexibility to override them as necessary for highly tailored Consul/K8s configurations in their specific environments.
-  | For further details, refer to the respective pull requests for both providers:
-
-  - ``Kube`` :htm:`&rarr;` PR `2052`_
-  - ``Consul`` :htm:`&rarr;` PR `2067`_
+  | For further details, refer to the respective pull requests for both providers: ``Kube`` (PR `2052`_), ``Consul`` (PR `2067`_).
 
 - :doc:`../features/routing`: Introducing the new ":ref:`routing-upstream-headers`" feature by `@jlukawska`_.
 
