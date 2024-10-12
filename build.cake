@@ -14,6 +14,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 const string Release = "Release"; // task name, target, and Release config name
+const string AllFrameworks = "net6.0;net7.0;net8.0";
+const string LatestFramework = "net8.0";
+
 var compileConfig = Argument("configuration", Release); // compile
 
 // build artifacts
@@ -47,7 +50,7 @@ var releaseNotes = new List<string>();
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
-bool IsTechnicalRelease = false;
+bool IsTechnicalRelease = true;
 
 var target = Argument("target", "Default");
 var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
@@ -93,9 +96,10 @@ Task("Compile")
 		};
 		if (target != Release)
 		{
-			settings.Framework = "net8.0"; // build using .NET 8 SDK only
+			settings.Framework = LatestFramework; // build using .NET 8 SDK only
 		}
-		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {settings.Framework}");
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
 		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
@@ -344,7 +348,7 @@ Task("RunUnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var testSettings = new DotNetTestSettings
+		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
 			ResultsDirectory = artifactsForUnitTestsDir,
@@ -357,10 +361,12 @@ Task("RunUnitTests")
 		};
 		if (target != Release)
 		{
-			testSettings.Framework = "net8.0"; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 8 SDK only
 		}
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
 		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetTest(unitTestAssemblies, testSettings);
+		DotNetTest(unitTestAssemblies, settings);
 
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
 			.First()
@@ -408,15 +414,17 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			Framework = "net8.0", // .NET 8 SDK only
+			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = "net8.0"; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 8 SDK only
 		}
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
 		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 		DotNetTest(acceptanceTestAssemblies, settings);
 	});
@@ -428,15 +436,17 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			Framework = "net8.0", // .NET 8 SDK only
+			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = "net8.0"; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 8 SDK only
 		}
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
 		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
 		DotNetTest(integrationTestAssemblies, settings);
 	});
