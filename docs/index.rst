@@ -13,7 +13,7 @@ Thanks for taking a look at the Ocelot documentation!
 Please use the left hand **Navigation** sidebar to get around, or see the **Table of Contents** below (above).
 
 The team recommends that newcomers to Ocelot's world start with the **Introduction** chapters.
-For seasoned fans of Ocelot with a Production environment, it is advised to always consult the **Release Notes** in the **Welcome** section before upgrading the app to the latest `23.3`_ version.
+For seasoned fans of Ocelot with a Production environment, it is advised to always consult the :ref:`release-notes` in the **Welcome** section before upgrading the app to the latest `23.3`_ version.
 
 All **Features** are listed in alphabetical order.
 The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.
@@ -28,7 +28,6 @@ We adhere to a development process outlined in :doc:`../building/releaseprocess`
     :caption: Welcome
 
     releasenotes
-    introduction/contributing
 
   .. toctree::
     :maxdepth: 3

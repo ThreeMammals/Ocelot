@@ -52,6 +52,7 @@ Welcome
 #######
 
 Welcome to the Ocelot `23.3`_ documentation!
+
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
 
 The major version `23.3.0`_ includes several patches, the history of which is provided below.
@@ -170,3 +171,12 @@ Documentation Summary
 - :doc:`../features/requestaggregation`
 - :doc:`../features/routing`: New :ref:`routing-upstream-headers` section
 - :doc:`../features/servicediscovery`: New :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` sections
+
+Contributing
+------------
+
+`Pull requests <https://github.com/ThreeMammals/Ocelot/pulls>`_, `issues <https://github.com/ThreeMammals/Ocelot/issues>`_, and commentary are welcome at the `Ocelot GitHub repository <https://github.com/ThreeMammals/Ocelot/>`_.
+
+For `ideas <https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas>`_ and `questions <https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a>`_, please post them in the `Ocelot Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space.
+
+Our development process is detailed in the :doc:`../building/releaseprocess` documentation.
