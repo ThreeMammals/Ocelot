@@ -12,6 +12,8 @@ namespace Ocelot.Provider.Kubernetes
         /// </summary>
         public const string PollKube = nameof(Kubernetes.PollKube);
 
+        public const string WatchKube = nameof(Kubernetes.WatchKube);
+
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
         private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
@@ -26,6 +28,11 @@ namespace Ocelot.Provider.Kubernetes
                 KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
                 Scheme = route.DownstreamScheme,
             };
+
+            if (WatchKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                return new WatchKube(configuration, factory, kubeClient, serviceBuilder);
+            }
 
             var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
  
