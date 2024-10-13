@@ -18,7 +18,7 @@
         {
             var delay = 1000;
 
-            var fileConfig = Task.Run(async () => await _fileConfigurationRepository.Get()).GetAwaiter().GetResult();
+            var fileConfig = _fileConfigurationRepository.Get().GetAwaiter().GetResult();
             if (fileConfig?.Data?.GlobalConfiguration?.ServiceDiscoveryProvider != null &&
                     !fileConfig.IsError &&
                     fileConfig.Data.GlobalConfiguration.ServiceDiscoveryProvider.PollingInterval > 0)
