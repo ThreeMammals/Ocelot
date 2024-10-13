@@ -55,9 +55,9 @@ namespace Ocelot.UnitTests.CacheManager
                 .BDDfy();
         }
 
-        private async Task WhenICallTheMiddleware()
+        private void WhenICallTheMiddleware()
         {
-            await _middleware.Invoke(_httpContext);
+            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
         }
 
         private void ThenTheContentTypeHeaderIsCached()
