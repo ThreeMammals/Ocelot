@@ -182,7 +182,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         // Act, Assert
         var expected = TimeSpan.FromSeconds(expectedSeconds);
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected);
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
         Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
     }
 
@@ -211,7 +211,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         // Act, Assert
         var expected = TimeSpan.FromSeconds(timeoutSeconds);
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected);
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
         Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
     }
 
@@ -239,7 +239,7 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout));
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout), 100);
         watcher.Elapsed.ShouldBeGreaterThan(TimeSpan.FromSeconds(qosTimeout));
         watcher.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(routeTimeout));
     }
@@ -362,7 +362,7 @@ public class MessageInvokerPoolTests : UnitTest
             .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None);
     }
 
-    private async Task<Stopwatch> WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
+    private async Task<Stopwatch> WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout, int marginMilliseconds)
     {
         Exception ex = null;
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
@@ -385,8 +385,9 @@ public class MessageInvokerPoolTests : UnitTest
         // You can use elapsed.CompareTo(timeout) or simply check if elapsed > timeout, based on your requirement
         stopwatch.Stop();
         var elapsed = stopwatch.Elapsed;
-        Assert.True(elapsed >= timeout.Subtract(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - 500 ms");
-        Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + 500 ms");
+        var margin = TimeSpan.FromMilliseconds(marginMilliseconds);
+        Assert.True(elapsed >= timeout.Subtract(margin), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - {marginMilliseconds}ms");
+        Assert.True(elapsed < timeout.Add(margin), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + {marginMilliseconds}ms");
         return stopwatch;
     }
 
