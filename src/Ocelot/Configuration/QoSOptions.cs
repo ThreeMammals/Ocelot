@@ -52,9 +52,9 @@ public class QoSOptions
     /// <remarks>If using Polly version 8 or above, this value must be 1000 (1 sec) or greater.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? TimeoutValue { get; }
-    public const int LowTimeout = 10; // 10 ms
+    public const int LowTimeout = 10; // 10 ms // TODO Double check the Polly docs
     public const int HighTimeout = 86_400_000; // 24 hours in milliseconds
     public const int DefaultTimeout = 30_000; // 30 seconds
 
-    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
+    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
 }

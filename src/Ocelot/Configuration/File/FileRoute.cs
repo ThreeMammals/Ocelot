@@ -73,11 +73,18 @@ namespace Ocelot.Configuration.File
         public string ServiceName { get; set; }
         public string ServiceNamespace { get; set; }
 
-        /// <summary>The timeout in seconds for requests.</summary>
-        /// <value>A <see cref="Nullable{T}"/> where T is <see cref="int"/> value in seconds.</value>
+        /// <summary>Explicit timeout value which overrides default one.</summary>
+        /// <remarks>Reused in, or ignored in favor of implicit default value:
+        /// <list type="bullet">
+        ///   <item><see cref="DownstreamRoute.Timeout"/></item>
+        ///   <item><see cref="DownstreamRoute.TimeoutMilliseconds"/></item>
+        ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/></item>
+        /// </list>
+        /// </remarks>
+        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
         public int? Timeout { get; set; }
-        public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
 
+        public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
         public string UpstreamHost { get; set; }
         public List<string> UpstreamHttpMethod { get; set; }
         public string UpstreamPathTemplate { get; set; }

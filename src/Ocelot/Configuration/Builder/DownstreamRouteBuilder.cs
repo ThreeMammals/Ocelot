@@ -43,7 +43,7 @@ public class DownstreamRouteBuilder
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
-    private int _timeout;
+    private int? _timeout;
 
     public DownstreamRouteBuilder()
     {
@@ -283,7 +283,7 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithTimeout(int timeout)
+    public DownstreamRouteBuilder WithTimeout(int? timeout)
     {
         _timeout = timeout;
         return this;

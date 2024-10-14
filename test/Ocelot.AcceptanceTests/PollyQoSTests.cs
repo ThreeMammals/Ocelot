@@ -184,7 +184,7 @@ public sealed class PollyQoSTests : Steps, IDisposable
     [Trait("Bug", "1833")]
     public void Should_timeout_per_default_after_90_seconds()
     {
-        var defTimeoutMs = 1_000 * RoutesCreator.DefaultRequestTimeoutSeconds; // original value is 90 seconds
+        var defTimeoutMs = 1_000 * DownstreamRoute.DefaultTimeoutSeconds; // original value is 90 seconds
         defTimeoutMs = 1_000 * 3; // override value
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);

@@ -10,9 +10,7 @@ public class MessageInvokerPool : IMessageInvokerPool
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
 
-    public MessageInvokerPool(
-        IDelegatingHandlerHandlerFactory handlerFactory,
-        IOcelotLoggerFactory loggerFactory)
+    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
@@ -48,17 +46,12 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
-        if (!_timeoutMilliseconds.HasValue)
-        {
-            var qosTimeout = downstreamRoute.QosOptions.TimeoutValue;
-            _timeoutMilliseconds = qosTimeout.HasValue && qosTimeout.Value > 0
-                ? qosTimeout.Value
-                : downstreamRoute.Timeout * 1000;
-        }
+        _timeoutMilliseconds ??= downstreamRoute.TimeoutMilliseconds();
+        var timeout = TimeSpan.FromMilliseconds(
+            _timeoutMilliseconds < QoSOptions.LowTimeout ? QoSOptions.DefaultTimeout : _timeoutMilliseconds.Value);
 
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
-        var timeout = TimeSpan.FromMilliseconds(_timeoutMilliseconds.Value);
         var timeoutHandler = new TimeoutDelegatingHandler(timeout)
         {
             InnerHandler = baseHandler,

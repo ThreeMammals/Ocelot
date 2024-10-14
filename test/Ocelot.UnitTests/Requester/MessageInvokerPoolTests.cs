@@ -109,8 +109,11 @@ public class MessageInvokerPoolTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
-            .WithTimeout(RoutesCreator.DefaultRequestTimeoutSeconds)
+
+            // The test should pass without timeout definition -> implicit default timeout
+            //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
             .Build();
+
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
@@ -135,8 +138,11 @@ public class MessageInvokerPoolTests : UnitTest
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
-            .WithTimeout(RoutesCreator.DefaultRequestTimeoutSeconds)
+
+            // The test should pass without timeout definition -> implicit default timeout
+            //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
             .Build();
+
         GivenADownstreamService();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();

@@ -10,6 +10,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
+using System.Net;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
@@ -70,10 +71,10 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 },
             };
 
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var fakeConsulServiceDiscoveryUrl = DownstreamUrl(consulPort);
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), string.Empty, 200, "Hello from Laura"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -101,14 +102,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 },
             };
 
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
-            var consulConfig = new FileConfiguration
+        var fakeConsulServiceDiscoveryUrl = DownstreamUrl(consulPort);
+        var consulConfig = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
-                    {
+                    DownstreamPathTemplate = "/status",
                         DownstreamPathTemplate = "/status",
                         DownstreamScheme = "http",
                         DownstreamHostAndPorts = new List<FileHostAndPort>
@@ -141,7 +142,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
@@ -164,7 +165,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 },
             };
 
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             var consulConfig = new FileConfiguration
             {
@@ -228,14 +229,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 },
             };
 
-            this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
-                .And(x => GivenThereIsAConfiguration(configuration))
-                .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .And(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
-                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
+            .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
+            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/status", 200, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningUsingConsulToStoreConfig())
+            .And(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
                 .Then(x => ThenTheConfigIsUpdatedInOcelot())
                 .BDDfy();
@@ -247,8 +248,8 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             var consulPort = PortFinder.GetRandomPort();
             const string serviceName = "web";
             var downstreamServicePort = PortFinder.GetRandomPort();
-            var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+            var downstreamServiceOneUrl = DownstreamUrl(downstreamServicePort);
+            var fakeConsulServiceDiscoveryUrl = DownstreamUrl(consulPort);
             var serviceEntryOne = new ServiceEntry
             {
                 Service = new AgentService
@@ -268,7 +269,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                     new()
                     {
                         ServiceName = serviceName,
-                        RateLimitRule = new FileRateLimitRule
+                    RateLimitRule = new FileRateLimitRule
                         {
                             EnableRateLimiting = true,
                             ClientWhitelist = new List<string>(),
@@ -292,7 +293,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                         DisableRateLimitHeaders = false,
                         QuotaExceededMessage = string.Empty,
                         RateLimitCounterPrefix = string.Empty,
-                        HttpStatusCode = 428,
+                        HttpStatusCode = (int)HttpStatusCode.PreconditionRequired,
                     },
                     DownstreamScheme = "http",
                 },
@@ -318,11 +319,11 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
-            .Then(x => ThenTheStatusCodeShouldBe(200))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
-            .Then(x => ThenTheStatusCodeShouldBe(200))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
-            .Then(x => ThenTheStatusCodeShouldBe(428))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.PreconditionRequired))
             .BDDfy();
         }
 
@@ -378,14 +379,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             Thread.Sleep(1000);
         }
 
-        private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
-        {
-            _fakeConsulBuilder = TestHostBuilder.Create()
-                            .UseUrls(url)
-                            .UseKestrel()
-                            .UseContentRoot(Directory.GetCurrentDirectory())
-                            .UseIISIntegration()
-                            .UseUrls(url)
+    private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+    {
+        _fakeConsulBuilder = new WebHostBuilder()
+                        .UseUrls(url)
+                        .UseKestrel()
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseIISIntegration()
+                        .UseUrls(url)
                             .Configure(app =>
                             {
                                 app.Run(async context =>

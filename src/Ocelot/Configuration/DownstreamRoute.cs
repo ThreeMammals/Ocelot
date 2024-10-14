@@ -43,7 +43,7 @@ namespace Ocelot.Configuration
             HttpVersionPolicy downstreamHttpVersionPolicy,
             Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
             MetadataOptions metadataOptions,
-            int timeout)
+            int? timeout)
         {
             DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
             AddHeadersToDownstream = addHeadersToDownstream;
@@ -138,14 +138,21 @@ namespace Ocelot.Configuration
         /// <returns>A <see cref="string"/> object with the name.</returns>
         public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
             ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
-            : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);        
+            : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
+
+        /// <summary>The timeout duration for the downstream request in seconds.</summary>
+        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
+        public int? Timeout { get; }
+
+        /// <summary>Defines the default timeout in seconds for all routes, applicable at both the Route-level and globally.</summary>
+        public const int DefaultTimeoutSeconds = 90;
 
         /// <summary>
-        /// The timeout duration for the downstream request in seconds.
+        /// Calculates timeout in milliseconds based on QoS options with applying default timeout values.
         /// </summary>
-        /// <value>
-        /// The timeout value in seconds.
-        /// </value>
-        public int Timeout { get; }
+        /// <returns>An <see cref="int"/> value in milliseconds.</returns>
+        public int TimeoutMilliseconds() => QosOptions.UseQos
+            ? QosOptions.TimeoutValue ?? QoSOptions.DefaultTimeout
+            : 1000 * (Timeout ?? DefaultTimeoutSeconds);
     }
 }
