@@ -181,8 +181,9 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
-        Assert.True(watcher.Elapsed > TimeSpan.FromSeconds(expectedSeconds));
+        var expected = TimeSpan.FromSeconds(expectedSeconds);
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected);
+        Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
     }
 
     [Theory]
@@ -209,8 +210,9 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(timeoutSeconds));
-        Assert.True(watcher.Elapsed > TimeSpan.FromSeconds(timeoutSeconds));
+        var expected = TimeSpan.FromSeconds(timeoutSeconds);
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected);
+        Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
     }
 
     [Theory]
