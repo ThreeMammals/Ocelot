@@ -26,6 +26,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             _consulServices = new List<ServiceEntry>();
         }
 
+        public override void Dispose()
+        {
+            _builder?.Dispose();
+            _fakeConsulBuilder?.Dispose();
+            base.Dispose();
+        }
+
         [Fact]
         public void Should_return_response_200_with_simple_url()
         {
