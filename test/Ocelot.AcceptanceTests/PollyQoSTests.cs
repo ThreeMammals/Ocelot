@@ -199,12 +199,12 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .BDDfy();
     }
 
-        private void GivenIHackDefaultTimeoutValue(int defaultTimeoutMs)
-        {
-            var field = typeof(MessageInvokerPool).GetField("_timeoutMilliseconds", BindingFlags.NonPublic | BindingFlags.Instance);
-            var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
-            field.SetValue(service, defaultTimeoutMs); // hack the value of default 90 seconds
-        }
+    private void GivenIHackDefaultTimeoutValue(int defaultTimeoutMs)
+    {
+        var field = typeof(MessageInvokerPool).GetField("_timeoutMilliseconds", BindingFlags.NonPublic | BindingFlags.Instance);
+        var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
+        field.SetValue(service, defaultTimeoutMs); // hack the value of default 90 seconds
+    }
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 

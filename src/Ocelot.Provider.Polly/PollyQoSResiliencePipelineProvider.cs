@@ -127,7 +127,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             ?? _global?.QoSOptions?.TimeoutValue
             ?? DefaultQoSTimeoutMilliseconds; // TODO Need team's consensus!!! Prefer QoSOptions.DefaultTimeout ?
 
-        if (!timeoutMs.HasValue || timeoutMs.Value <= 0) // 0 means No option!
+        // 0 means No option!
+        if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             return builder;
         }
