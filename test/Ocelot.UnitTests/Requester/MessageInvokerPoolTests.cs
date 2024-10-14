@@ -364,26 +364,29 @@ public class MessageInvokerPoolTests : UnitTest
 
     private async Task<Stopwatch> WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
     {
+        Exception ex = null;
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         var stopwatch = new Stopwatch();
+        stopwatch.Start();
         try
         {
-            stopwatch.Start();
             _response = await messageInvoker
                 .SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://test.com"), CancellationToken.None);
         }
         catch (Exception e)
         {
-            stopwatch.Stop();
-            var elapsed = stopwatch.Elapsed;
-
-            // Compare the elapsed time with the given timeout
-            // You can use elapsed.CompareTo(timeout) or simply check if elapsed > timeout, based on your requirement
-            Assert.IsType<TimeoutException>(e);
-            Assert.True(elapsed >= timeout.Subtract(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - 500 ms");
-            Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + 500 ms");
+            ex = e;
         }
 
+        Assert.NotNull(ex);
+        Assert.IsType<TimeoutException>(ex);
+
+        // Compare the elapsed time with the given timeout
+        // You can use elapsed.CompareTo(timeout) or simply check if elapsed > timeout, based on your requirement
+        stopwatch.Stop();
+        var elapsed = stopwatch.Elapsed;
+        Assert.True(elapsed >= timeout.Subtract(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - 500 ms");
+        Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + 500 ms");
         return stopwatch;
     }
 
