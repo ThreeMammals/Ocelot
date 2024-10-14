@@ -11,6 +11,7 @@ using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Ocelot.UnitTests.Requester;
 
@@ -159,8 +160,8 @@ public class MessageInvokerPoolTests : UnitTest
 
     [Theory]
     [Trait("Bug", "1833")]
-    [InlineData(5, 5)]
-    [InlineData(10, 10)]
+    [InlineData(1, 1)]
+    [InlineData(3, 3)]
     public void SendAsync_TimeoutValueInQosOptions_ThrowTimeoutException(int qosTimeout, int expectedSeconds)
     {
         // Arrange
@@ -180,14 +181,15 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
+        Assert.True(watcher.Elapsed > TimeSpan.FromSeconds(expectedSeconds));
     }
-    
+
     [Theory]
     [Trait("PR", "2073")]
     [Trait("Feat", "1314 1869")]
-    [InlineData(5)]
-    [InlineData(10)]
+    [InlineData(1)]
+    [InlineData(3)]
     public void SendAsync_TimeoutValueInRoute_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
     {
         // Arrange
@@ -207,14 +209,15 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(timeoutSeconds));
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(timeoutSeconds));
+        Assert.True(watcher.Elapsed > TimeSpan.FromSeconds(timeoutSeconds));
     }
 
     [Theory]
     [Trait("PR", "2073")]
     [Trait("Feat", "1314 1869")]
-    [InlineData(5, 6)]
-    [InlineData(10, 12)]
+    [InlineData(1, 2)]
+    [InlineData(3, 4)]
     public void SendAsync_TimeoutValueInQosOptionsIsLessThanRouteTimeout_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
     {
         // Arrange
@@ -234,7 +237,9 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout));
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout));
+        watcher.Elapsed.ShouldBeGreaterThan(TimeSpan.FromSeconds(qosTimeout));
+        watcher.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(routeTimeout));
     }
 
     private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
@@ -355,7 +360,7 @@ public class MessageInvokerPoolTests : UnitTest
             .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None);
     }
 
-    private async Task WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
+    private async Task<Stopwatch> WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
     {
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         var stopwatch = new Stopwatch();
@@ -376,6 +381,8 @@ public class MessageInvokerPoolTests : UnitTest
             Assert.True(elapsed >= timeout.Subtract(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is smaller than expected timeout {timeout} - 500 ms");
             Assert.True(elapsed < timeout.Add(TimeSpan.FromMilliseconds(500)), $"Elapsed time {elapsed} is bigger than expected timeout {timeout} + 500 ms");
         }
+
+        return stopwatch;
     }
 
     private static void ThenTheFakeAreHandledInOrder(FakeDelegatingHandler fakeOne, FakeDelegatingHandler fakeTwo) =>
