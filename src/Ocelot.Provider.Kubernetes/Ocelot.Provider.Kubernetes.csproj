@@ -25,10 +25,6 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="IKubeApiClientFactory.cs" />
-    <Compile Remove="KubeApiClientFactory.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="KubeClient" Version="2.5.10" />
     <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="2.5.10" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">

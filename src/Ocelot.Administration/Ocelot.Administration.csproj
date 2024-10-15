@@ -42,7 +42,7 @@
   </ItemGroup>
   <!-- Conditionally obtain references for the net 6.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.33" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.35" />
     <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
   </ItemGroup>
   <!-- Conditionally obtain references for the net 7.0 target -->
@@ -52,7 +52,7 @@
   </ItemGroup>
   <!-- Conditionally obtain references for the net 8.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
   </ItemGroup>
 </Project>
