@@ -12,6 +12,7 @@ using Ocelot.Requester;
 using Ocelot.Responses;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Xunit.Sdk;
 
 namespace Ocelot.UnitTests.Requester;
 
@@ -158,6 +159,22 @@ public class MessageInvokerPoolTests : UnitTest
         ThenTheResponseIsOk();
     }
 
+    private static TimeSpan C10ms => TimeSpan.FromMilliseconds(10);
+    private static void AssertTimeoutPrecisely(Stopwatch watcher, TimeSpan expected, TimeSpan? precision = null)
+    {
+        precision ??= C10ms;
+        TimeSpan elapsed = watcher.Elapsed, margin = elapsed - expected;
+        try
+        {
+            Assert.True(elapsed >= expected, $"Elapsed time {elapsed} is less than expected timeout {expected} with margin {margin}.");
+        }
+        catch (TrueException)
+        {
+            // The elapsed time is approximately 0.998xxx or 2.99xxx, with a 10ms margin of precision accepted.
+            Assert.True(elapsed.Add(precision.Value) >= expected, $"Elapsed time {elapsed} is less than expected timeout {expected} with margin {margin} which module is >= {precision.Value.Milliseconds}ms.");
+        }
+    }
+
     [Theory]
     [Trait("Bug", "1833")]
     [InlineData(1, 1)]
@@ -183,7 +200,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         var expected = TimeSpan.FromSeconds(expectedSeconds);
         var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
-        Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
+        AssertTimeoutPrecisely(watcher, expected);
     }
 
     [Theory]
@@ -212,7 +229,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         var expected = TimeSpan.FromSeconds(timeoutSeconds);
         var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
-        Assert.True(watcher.Elapsed > expected, $"Elapsed time {watcher.Elapsed} is less than expected timeout {expected} with margin {watcher.Elapsed - expected}.");
+        AssertTimeoutPrecisely(watcher, expected);
     }
 
     [Theory]
@@ -239,9 +256,10 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(qosTimeout), 100);
-        watcher.Elapsed.ShouldBeGreaterThan(TimeSpan.FromSeconds(qosTimeout));
+        var expected = TimeSpan.FromSeconds(qosTimeout);
+        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
         watcher.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(routeTimeout));
+        AssertTimeoutPrecisely(watcher, expected);
     }
 
     private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
@@ -364,7 +382,6 @@ public class MessageInvokerPoolTests : UnitTest
 
     private async Task<Stopwatch> WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout, int marginMilliseconds)
     {
-        Exception ex = null;
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -375,11 +392,8 @@ public class MessageInvokerPoolTests : UnitTest
         }
         catch (Exception e)
         {
-            ex = e;
+            Assert.IsType<TimeoutException>(e);
         }
-
-        Assert.NotNull(ex);
-        Assert.IsType<TimeoutException>(ex);
 
         // Compare the elapsed time with the given timeout
         // You can use elapsed.CompareTo(timeout) or simply check if elapsed > timeout, based on your requirement
