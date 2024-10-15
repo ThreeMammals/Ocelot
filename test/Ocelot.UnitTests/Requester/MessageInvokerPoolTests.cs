@@ -10,6 +10,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.Testing;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit.Sdk;
@@ -198,8 +199,10 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
+        int marginMs = 50;
         var expected = TimeSpan.FromSeconds(expectedSeconds);
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
+        var watcher = TestRetry.NoWait(
+            () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         AssertTimeoutPrecisely(watcher, expected);
     }
 
@@ -227,8 +230,10 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
+        int marginMs = 50;
         var expected = TimeSpan.FromSeconds(timeoutSeconds);
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
+        var watcher = TestRetry.NoWait(
+            () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         AssertTimeoutPrecisely(watcher, expected);
     }
 
@@ -256,8 +261,10 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert
+        int marginMs = 50;
         var expected = TimeSpan.FromSeconds(qosTimeout);
-        var watcher = WhenICallTheClientWillThrowAfterTimeout(expected, 100);
+        var watcher = TestRetry.NoWait(
+            () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         watcher.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(routeTimeout));
         AssertTimeoutPrecisely(watcher, expected);
     }
