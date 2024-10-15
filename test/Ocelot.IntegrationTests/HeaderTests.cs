@@ -30,7 +30,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
+        public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
         {
             var port = PortFinder.GetRandomPort();
             var configuration = new FileConfiguration
@@ -63,13 +63,12 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "X-Forwarded-For"))
-                .And(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenXForwardedForIsSet())
-                .BDDfy();
+            GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "X-Forwarded-For");
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenXForwardedForIsSet();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string headerKey)

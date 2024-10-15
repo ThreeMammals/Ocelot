@@ -2,6 +2,7 @@
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,26 +11,22 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.Cache.CacheManager;
-using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
 using System.IO.Compression;
 using System.Net.Http.Headers;
-using System.Security.Policy;
 using System.Text;
 using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
@@ -42,7 +39,7 @@ public class Steps : IDisposable
 {
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
-    private HttpResponseMessage _response;
+    protected HttpResponseMessage _response;
     private HttpContent _postContent;
     private BearerToken _token;
     public string RequestIdKey = "OcRequestId";
@@ -59,15 +56,30 @@ public class Steps : IDisposable
         _random = new Random();
         _testId = Guid.NewGuid();
         _ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
+        Files = new() { _ocelotConfigFileName };
+        Folders = new();
     }
 
+    protected List<string> Files { get; }
+    protected List<string> Folders { get; }
     protected string TestID { get => _testId.ToString("N"); }
 
+    protected static FileHostAndPort Localhost(int port) => new("localhost", port);
     protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
+    protected static string LoopbackLocalhostUrl(int port, int loopbackIndex = 0) => $"{Uri.UriSchemeHttp}://127.0.0.{++loopbackIndex}:{port}";
 
     protected static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
     {
         Routes = new(routes),
+    };
+
+    protected static FileRoute GivenDefaultRoute(int port) => new()
+    {
+        DownstreamPathTemplate = "/",
+        DownstreamHostAndPorts = new() { Localhost(port) },
+        DownstreamScheme = Uri.UriSchemeHttp,
+        UpstreamPathTemplate = "/",
+        UpstreamHttpMethod = new() { HttpMethods.Get },
     };
 
     public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
@@ -168,15 +180,19 @@ public class Steps : IDisposable
     }
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
+        => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
+
+    public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
     {
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-        File.WriteAllText(_ocelotConfigFileName, jsonConfiguration);
+        toFile ??= _ocelotConfigFileName;
+        var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
+        File.WriteAllText(toFile, jsonConfiguration);
+        Files.Add(toFile); // register for disposing
     }
 
-    protected virtual void DeleteOcelotConfig(params string[] files)
+    protected virtual void DeleteFiles()
     {
-        var allFiles = files.Append(_ocelotConfigFileName);
-        foreach (var file in allFiles)
+        foreach (var file in Files)
         {
             if (!File.Exists(file))
             {
@@ -186,6 +202,25 @@ public class Steps : IDisposable
             try
             {
                 File.Delete(file);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+    }
+
+    protected virtual void DeleteFolders()
+    {
+        foreach (var folder in Folders)
+        {
+            try
+            {
+                var f = new DirectoryInfo(folder);
+                if (f.Exists && f.FullName != AppContext.BaseDirectory)
+                {
+                    f.Delete(true);
+                }
             }
             catch (Exception e)
             {
@@ -218,7 +253,7 @@ public class Steps : IDisposable
         StartOcelot((_, config) => config.AddJsonFile(_ocelotConfigFileName, false, false));
     }
 
-    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot)
+    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string environmentName = null)
     {
         _webHostBuilder = new WebHostBuilder();
 
@@ -234,65 +269,9 @@ public class Steps : IDisposable
             })
             .ConfigureServices(WithAddOcelot)
             .Configure(WithUseOcelot)
-            .UseEnvironment(nameof(AcceptanceTests));
+            .UseEnvironment(environmentName ?? nameof(AcceptanceTests));
 
         _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    /// <typeparam name="T">The <see cref="ILoadBalancer"/> type.</typeparam>
-    /// <param name="loadBalancerFactoryFunc">The delegate object to load balancer factory.</param>
-    public void GivenOcelotIsRunningWithCustomLoadBalancer<T>(Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, T> loadBalancerFactoryFunc)
-        where T : ILoadBalancer
-    {
-        _webHostBuilder = new WebHostBuilder()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCustomLoadBalancer(loadBalancerFactoryFunc);
-            })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithConsul(params string[] urlsToListenOn)
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        if (urlsToListenOn?.Length > 0)
-        {
-            _webHostBuilder.UseUrls(urlsToListenOn);
-        }
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot().AddConsul(); })
-            .Configure(app => { app.UseOcelot().Wait(); });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -449,7 +428,7 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    internal void GivenIWait(int wait) => Thread.Sleep(wait);
+    public static void GivenIWait(int wait) => Thread.Sleep(wait);
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {
@@ -594,10 +573,30 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    internal void GivenIAddCookieToMyRequest(string cookie)
+    // #
+    // # Cookies helpers
+    // #
+    public void GivenIAddCookieToMyRequest(string cookie)
+        => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
+    public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
+        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
+
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
     {
-        _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+        var header = new CookieHeaderValue(cookie, value);
+        return WhenIGetUrlOnTheApiGateway(url, header);
     }
+
+    public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
+    {
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+        requestMessage.Headers.Add("Cookie", cookie.ToString());
+        return _ocelotClient.SendAsync(requestMessage);
+    }
+
+    // END of Cookies helpers
 
     /// <summary>
     /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
@@ -786,14 +785,10 @@ public class Steps : IDisposable
     public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
     public void WhenIGetUrlOnTheApiGateway(string url)
-    {
-        _response = _ocelotClient.GetAsync(url).Result;
-    }
+        => _response = _ocelotClient.GetAsync(url).Result;
 
-    public void WhenIGetUrlOnTheApiGatewayAndDontWait(string url)
-    {
-        _ocelotClient.GetAsync(url);
-    }
+    public Task<HttpResponseMessage> WhenIGetUrl(string url)
+        => _ocelotClient.GetAsync(url);
 
     public void WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
     {
@@ -818,11 +813,6 @@ public class Steps : IDisposable
         _response = _ocelotClient.SendAsync(request).Result;
     }
 
-    public void WhenICancelTheRequest()
-    {
-        _ocelotClient.CancelPendingRequests();
-    }
-
     public void WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
@@ -835,62 +825,20 @@ public class Steps : IDisposable
         _response = _ocelotClient.SendAsync(httpRequestMessage).Result;
     }
 
-    public void WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
-    {
-        var request = _ocelotServer.CreateRequest(url);
-        request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
-        var response = request.GetAsync().Result;
-        _response = response;
-    }
-
     public void GivenIAddAHeader(string key, string value)
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
+    public static void WhenIDoActionMultipleTimes(int times, Action action)
     {
-        var tasks = new Task[times];
-
-        for (var i = 0; i < times; i++)
-        {
-            var urlCopy = url;
-            tasks[i] = GetForServiceDiscoveryTest(urlCopy);
-            Thread.Sleep(_random.Next(40, 60));
-        }
-
-        Task.WaitAll(tasks);
+        for (int i = 0; i < times; i++)
+            action?.Invoke();
     }
-
-    public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times, string cookie, string value)
+    public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
     {
-        var tasks = new Task[times];
-
-        for (var i = 0; i < times; i++)
-        {
-            tasks[i] = GetForServiceDiscoveryTest(url, cookie, value);
-            Thread.Sleep(_random.Next(40, 60));
-        }
-
-        Task.WaitAll(tasks);
-    }
-
-    private async Task GetForServiceDiscoveryTest(string url, string cookie, string value)
-    {
-        var request = _ocelotServer.CreateRequest(url);
-        request.And(x => { x.Headers.Add("Cookie", new CookieHeaderValue(cookie, value).ToString()); });
-        var response = await request.GetAsync();
-        var content = await response.Content.ReadAsStringAsync();
-        var count = int.Parse(content);
-        count.ShouldBeGreaterThan(0);
-    }
-
-    private async Task GetForServiceDiscoveryTest(string url)
-    {
-        var response = await _ocelotClient.GetAsync(url);
-        var content = await response.Content.ReadAsStringAsync();
-        var count = int.Parse(content);
-        count.ShouldBeGreaterThan(0);
+        for (int i = 0; i < times; i++)
+            action?.Invoke(i);
     }
 
     public void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
@@ -944,19 +892,17 @@ public class Steps : IDisposable
     }
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
-    {
-        _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
-    }
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody);
+    public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
+        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody, customMessage);
 
     public void ThenTheContentLengthIs(int expected)
     {
         _response.Content.Headers.ContentLength.ShouldBe(expected);
     }
 
-    public void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)
-    {
-        _response.StatusCode.ShouldBe(expectedHttpStatusCode);
-    }
+    public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
+        => _response.StatusCode.ShouldBe(expected);
 
     public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
     {
@@ -1166,7 +1112,9 @@ public class Steps : IDisposable
             _ocelotClient?.Dispose();
             _ocelotServer?.Dispose();
             _ocelotHost?.Dispose();
-            DeleteOcelotConfig();
+            _response?.Dispose();
+            DeleteFiles();
+            DeleteFolders();
         }
 
         _disposedValue = true;

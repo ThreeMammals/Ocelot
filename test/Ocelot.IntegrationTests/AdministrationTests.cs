@@ -48,12 +48,10 @@ namespace Ocelot.IntegrationTests
         public void Should_return_response_401_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
-
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunning())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized);
         }
 
         //this seems to be be answer https://github.com/IdentityServer/IdentityServer4/issues/4914
@@ -61,14 +59,12 @@ namespace Ocelot.IntegrationTests
         public void Should_return_response_200_with_call_re_routes_controller()
         {
             var configuration = new FileConfiguration();
-
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -87,13 +83,12 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunningWithNoWebHostBuilder(_ocelotBaseUrl))
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunningWithNoWebHostBuilder(_ocelotBaseUrl);
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -109,14 +104,13 @@ namespace Ocelot.IntegrationTests
                     .AddJsonOptions(options => { options.JsonSerializerOptions.WriteIndented = true; });
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotUsingBuilderIsRunning(customBuilder))
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .Then(x => ThenTheResultHaveMultiLineIndentedJson())
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotUsingBuilderIsRunning(customBuilder);
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenTheResultHaveMultiLineIndentedJson();
         }
 
         [Fact]
@@ -124,15 +118,13 @@ namespace Ocelot.IntegrationTests
         {
             var configuration = new FileConfiguration();
             var port = PortFinder.GetRandomPort();
-
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenAnotherOcelotIsRunning($"http://localhost:{port}"))
-                .When(x => WhenIGetUrlOnTheSecondOcelot("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenIdentityServerSigningEnvironmentalVariablesAreSet();
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenAnotherOcelotIsRunning($"http://localhost:{port}");
+            WhenIGetUrlOnTheSecondOcelot("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -194,14 +186,13 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseShouldBe(configuration))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenTheResponseShouldBe(configuration);
         }
 
         [Fact]
@@ -283,18 +274,17 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
-                .And(_ => ThenTheConfigurationIsSavedCorrectly(updatedConfiguration))
-                .BDDfy();
+            GivenThereIsAConfiguration(initialConfiguration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenTheResponseShouldBe(updatedConfiguration);
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheResponseShouldBe(updatedConfiguration);
+            ThenTheConfigurationIsSavedCorrectly(updatedConfiguration);
         }
 
         [Fact]
@@ -323,18 +313,17 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", configuration))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => TheChangeTokenShouldBeActive())
-                .And(x => ThenTheResponseShouldBe(configuration))
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .And(x => ThenTheResponseShouldBe(configuration))
-                .And(_ => ThenTheConfigurationIsSavedCorrectly(configuration))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIPostOnTheApiGateway("/administration/configuration", configuration);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            TheChangeTokenShouldBeActive();
+            ThenTheResponseShouldBe(configuration);
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheResponseShouldBe(configuration);
+            ThenTheConfigurationIsSavedCorrectly(configuration);
         }
 
         private void TheChangeTokenShouldBeActive()
@@ -406,25 +395,24 @@ namespace Ocelot.IntegrationTests
                 },
             };
 
-            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
-                .And(x => GivenThereIsAFooServiceRunningOn($"http://localhost:{fooPort}"))
-                .And(x => GivenThereIsABarServiceRunningOn($"http://localhost:{barPort}"))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
-                .Then(x => ThenTheResponseBodyShouldBe("foo"))
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseShouldBe(updatedConfiguration))
-                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
-                .Then(x => ThenTheResponseBodyShouldBe("bar"))
-                .When(x => WhenIPostOnTheApiGateway("/administration/configuration", initialConfiguration))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => ThenTheResponseShouldBe(initialConfiguration))
-                .And(x => WhenIGetUrlOnTheApiGateway("/foo"))
-                .Then(x => ThenTheResponseBodyShouldBe("foo"))
-                .BDDfy();
+            GivenThereIsAConfiguration(initialConfiguration);
+            GivenThereIsAFooServiceRunningOn($"http://localhost:{fooPort}");
+            GivenThereIsABarServiceRunningOn($"http://localhost:{barPort}");
+            GivenOcelotIsRunning();
+            WhenIGetUrlOnTheApiGateway("/foo");
+            ThenTheResponseBodyShouldBe("foo");
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIPostOnTheApiGateway("/administration/configuration", updatedConfiguration);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenTheResponseShouldBe(updatedConfiguration);
+            WhenIGetUrlOnTheApiGateway("/foo");
+            ThenTheResponseBodyShouldBe("bar");
+            WhenIPostOnTheApiGateway("/administration/configuration", initialConfiguration);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+            ThenTheResponseShouldBe(initialConfiguration);
+            WhenIGetUrlOnTheApiGateway("/foo");
+            ThenTheResponseBodyShouldBe("foo");
         }
 
         [Fact]
@@ -477,14 +465,12 @@ namespace Ocelot.IntegrationTests
             };
 
             var regionToClear = "gettest";
-
-            this.Given(x => GivenThereIsAConfiguration(initialConfiguration))
-                .And(x => GivenOcelotIsRunning())
-                .And(x => GivenIHaveAnOcelotToken("/administration"))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent))
-                .BDDfy();
+            GivenThereIsAConfiguration(initialConfiguration);
+            GivenOcelotIsRunning();
+            GivenIHaveAnOcelotToken("/administration");
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
         [Fact]
@@ -505,14 +491,13 @@ namespace Ocelot.IntegrationTests
                 };
             };
 
-            this.Given(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api"))
-                .And(x => GivenOcelotIsRunningWithIdentityServerSettings(options))
-                .And(x => GivenIHaveAToken(identityServerRootUrl))
-                .And(x => GivenIHaveAddedATokenToMyRequest())
-                .When(x => WhenIGetUrlOnTheApiGateway("/administration/configuration"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
+            GivenThereIsAConfiguration(configuration);
+            GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api");
+            GivenOcelotIsRunningWithIdentityServerSettings(options);
+            GivenIHaveAToken(identityServerRootUrl);
+            GivenIHaveAddedATokenToMyRequest();
+            WhenIGetUrlOnTheApiGateway("/administration/configuration");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         }
 
         private void GivenIHaveAToken(string url)

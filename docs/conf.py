@@ -6,15 +6,16 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Ocelot'
-copyright = ' 2016-2024 ThreeMammals Ocelot team'
-author = 'Tom Pallister, Raman Maksimchuk and Ocelot Core team at ThreeMammals'
+project = 'Ocelot Gateway'
+copyright = ' 2016-2024, ThreeMammals Ocelot team'
+author = 'Tom Pallister, Raman Maksimchuk'
 release = '23.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = [
+]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

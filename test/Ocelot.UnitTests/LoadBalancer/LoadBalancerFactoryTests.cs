@@ -219,54 +219,30 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private class FakeLoadBalancerOne : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-                throw new NotImplementedException();
-            }
+            public string Type => nameof(FakeLoadBalancerOne);
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
         }
 
         private class FakeLoadBalancerTwo : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-                throw new NotImplementedException();
-            }
+            public string Type => nameof(FakeLoadBalancerTwo);
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
         }
 
         private class FakeNoLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-                throw new NotImplementedException();
-            }
+            public string Type => nameof(FakeNoLoadBalancer);
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
         }
 
         private class BrokenLoadBalancer : ILoadBalancer
         {
-            public Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Release(ServiceHostAndPort hostAndPort)
-            {
-                throw new NotImplementedException();
-            }
+            public string Type => nameof(BrokenLoadBalancer);
+            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
         }
     }
 }

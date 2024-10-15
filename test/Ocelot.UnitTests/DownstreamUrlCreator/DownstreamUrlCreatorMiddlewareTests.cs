@@ -611,6 +611,43 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         ThenTheQueryStringIs($"?roleId={roleid}&{everything}");
     }
 
+    [Theory]
+    [Trait("Bug", "2116")]
+    [InlineData("api/debug()")] // no query
+    [InlineData("api/debug%28%29")] // debug()
+    public void ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath)
+    {
+        // Arrange
+        var withGetMethod = new List<string> { "Get" };
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                .WithOriginalValue("/routed/api/{path}")
+                .Build())
+            .WithDownstreamPathTemplate("/api/{path}")
+            .WithUpstreamHttpMethod(withGetMethod)
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>
+            {
+                new("{path}", urlPath),
+            },
+            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
+                .WithUpstreamHttpMethod(withGetMethod)
+                .Build()
+        ));
+        GivenTheDownstreamRequestUriIs($"http://localhost:5000/{urlPath}");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn($"routed/{urlPath}");
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
+        Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
+    }
+
     private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
     {
         var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null, null);

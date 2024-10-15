@@ -139,19 +139,34 @@ namespace Ocelot.UnitTests.DependencyInjection
             TheOcelotPrimaryConfigFileExists(false);
         }
 
-        private void GivenCombinedFileConfigurationObject()
+        [Fact]
+        [Trait("Bug", "2084")]
+        public void Should_use_relative_path_for_global_config()
+        {
+            // Arrange
+            GivenMultipleConfigurationFiles(TestID);
+
+            // Act
+            WhenIAddOcelotConfigurationWithDefaultFilePaths(TestID);
+
+            // Assert
+            var config = ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
+            config.ShouldNotBeNull().GlobalConfiguration.RequestIdKey.ShouldBe(nameof(Should_use_relative_path_for_global_config));
+        }
+
+        private void GivenCombinedFileConfigurationObject([CallerMemberName] string testName = null)
         {
             _combinedFileConfiguration = new FileConfiguration
             {
-                GlobalConfiguration = GetFileGlobalConfigurationData(),
+                GlobalConfiguration = GetFileGlobalConfigurationData(testName),
                 Routes = GetServiceARoutes().Concat(GetServiceBRoutes()).Concat(GetEnvironmentSpecificRoutes()).ToList(),
                 Aggregates = GetFileAggregatesRouteData(),
             };
         }
 
-        private void GivenMultipleConfigurationFiles(string folder, bool withEnvironment = false)
+        private void GivenMultipleConfigurationFiles(string folder, bool withEnvironment = false, [CallerMemberName] string testName = null)
         {
-            _globalConfig = new() { GlobalConfiguration = GetFileGlobalConfigurationData() };
+            _globalConfig = new() { GlobalConfiguration = GetFileGlobalConfigurationData(testName) };
             _routeA = new() { Routes = GetServiceARoutes() };
             _routeB = new() { Routes = GetServiceBRoutes() };
             _aggregate = new() { Aggregates = GetFileAggregatesRouteData() };
@@ -178,7 +193,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             }
         }
 
-        private static FileGlobalConfiguration GetFileGlobalConfigurationData() => new()
+        private static FileGlobalConfiguration GetFileGlobalConfigurationData(string requestIdKey = null) => new()
         {
             BaseUrl = "BaseUrl",
             RateLimitOptions = new()
@@ -196,7 +211,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 Port = 80,
                 Type = "Type",
             },
-            RequestIdKey = "RequestIdKey",
+            RequestIdKey = requestIdKey ?? "RequestIdKey",
         };
 
         private static List<FileAggregateRoute> GetFileAggregatesRouteData() => new()
@@ -246,7 +261,14 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .Build();
         }
 
-        private void ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(bool useCombinedConfig)
+        private void WhenIAddOcelotConfigurationWithDefaultFilePaths(string folder, MergeOcelotJson mergeOcelotJson = MergeOcelotJson.ToFile)
+        {
+            _configRoot = new ConfigurationBuilder()
+                .AddOcelot(folder, _hostingEnvironment.Object, mergeOcelotJson, optional: false, reloadOnChange: false)
+                .Build();
+        }
+
+        private FileConfiguration ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(bool useCombinedConfig)
         {
             var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
 
@@ -281,6 +303,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             fc.Routes.ShouldContain(x => x.UpstreamHost == (useCombinedConfig ? _combinedFileConfiguration.Routes[2].UpstreamHost : _routeB.Routes[1].UpstreamHost));
 
             fc.Aggregates.Count.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.Aggregates.Count :_aggregate.Aggregates.Count);
+            return fc;
         }
 
         private void NotContainsEnvSpecificConfig()

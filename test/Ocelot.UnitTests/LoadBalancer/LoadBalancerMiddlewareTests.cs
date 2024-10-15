@@ -145,14 +145,14 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error> { new ServicesAreNullError("services were null for bah") });
             _loadBalancer
-               .Setup(x => x.Lease(It.IsAny<HttpContext>()))
+               .Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
                .ReturnsAsync(_getHostAndPortError);
         }
 
         private void GivenTheLoadBalancerReturnsOk()
         {
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<HttpContext>()))
+                .Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("abc", 123, "https")));
         }
 
@@ -160,7 +160,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             _hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
             _loadBalancer
-                .Setup(x => x.Lease(It.IsAny<HttpContext>()))
+                .Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
                 .ReturnsAsync(new OkResponse<ServiceHostAndPort>(_hostAndPort));
         }
 

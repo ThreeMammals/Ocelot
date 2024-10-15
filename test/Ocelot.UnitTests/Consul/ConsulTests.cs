@@ -20,6 +20,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
     private readonly List<ServiceEntry> _consulServiceEntries;
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
+    private readonly Mock<IHttpContextAccessor> _contextAccessor;
     private IConsulClientFactory _clientFactory;
     private IConsulServiceBuilder _serviceBuilder;
     private ConsulRegistryConfiguration _config;
@@ -36,6 +37,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
         _consulServiceEntries = new List<ServiceEntry>();
         _factory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
+        _contextAccessor = new Mock<IHttpContextAccessor>();
         _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
         _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
         _factory.Setup(x => x.CreateLogger<DefaultConsulServiceBuilder>()).Returns(_logger.Object);
@@ -49,8 +51,11 @@ public sealed class ConsulTests : UnitTest, IDisposable
     private void Arrange([CallerMemberName] string serviceName = null)
     {
         _config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, serviceName, null);
+        var context = new DefaultHttpContext();
+        context.Items.Add(nameof(ConsulRegistryConfiguration), _config);
+        _contextAccessor.SetupGet(x => x.HttpContext).Returns(context);
         _clientFactory = new ConsulClientFactory();
-        _serviceBuilder = new DefaultConsulServiceBuilder(() => _config, _clientFactory, _factory.Object);
+        _serviceBuilder = new DefaultConsulServiceBuilder(_contextAccessor.Object, _clientFactory, _factory.Object);
         _provider = new ConsulProvider(_config, _factory.Object, _clientFactory, _serviceBuilder);
     }
 
