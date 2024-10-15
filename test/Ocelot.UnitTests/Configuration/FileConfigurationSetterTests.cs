@@ -102,9 +102,9 @@ namespace Ocelot.UnitTests.Configuration
             _fileConfiguration = fileConfiguration;
         }
 
-        private async Task WhenISetTheConfiguration()
+        private void WhenISetTheConfiguration()
         {
-            _result = await _configSetter.Set(_fileConfiguration);
+            _result = _configSetter.Set(_fileConfiguration).Result;
         }
 
         private void ThenTheConfigurationRepositoryIsCalledCorrectly()
