@@ -12,7 +12,6 @@ using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.Testing;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Xunit.Sdk;
 
 namespace Ocelot.UnitTests.Requester;
@@ -72,7 +71,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     [Fact]
     [Trait("PR", "1824")]
-    public void If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
+    public async Task If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
     {
         // Arrange
         var fakeOne = new FakeDelegatingHandler();
@@ -88,7 +87,7 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest();
 
         // Act
-        WhenICallTheClient("http://www.bbc.co.uk");
+        await WhenICallTheClient("http://www.bbc.co.uk");
 
         // Assert
         ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo);
@@ -100,7 +99,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     [Fact]
     [Trait("PR", "1824")]
-    public void Should_log_if_ignoring_ssl_errors()
+    public async Task Should_log_if_ignoring_ssl_errors()
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -122,7 +121,7 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act
-        WhenICallTheClient("http://www.bbc.co.uk");
+        await WhenICallTheClient("http://www.bbc.co.uk");
 
         // Assert
         ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged();
@@ -130,7 +129,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     [Fact]
     [Trait("PR", "1824")]
-    public void Should_re_use_cookies_from_container()
+    public async Task Should_re_use_cookies_from_container()
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -152,11 +151,11 @@ public class MessageInvokerPoolTests : UnitTest
         GivenARequest(route);
 
         // Act, Assert 1
-        WhenICallTheClient("http://localhost:5003");
+        await WhenICallTheClient("http://localhost:5003");
         ThenTheCookieIsSet();
 
         // Act, Assert 2
-        WhenICallTheClient("http://localhost:5003");
+        await WhenICallTheClient("http://localhost:5003");
         ThenTheResponseIsOk();
     }
 
@@ -180,7 +179,7 @@ public class MessageInvokerPoolTests : UnitTest
     [Trait("Bug", "1833")]
     [InlineData(1, 1)]
     [InlineData(3, 3)]
-    public void SendAsync_TimeoutValueInQosOptions_ThrowTimeoutException(int qosTimeout, int expectedSeconds)
+    public async Task SendAsync_TimeoutValueInQosOptions_ThrowTimeoutException(int qosTimeout, int expectedSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -201,7 +200,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         int marginMs = 50;
         var expected = TimeSpan.FromSeconds(expectedSeconds);
-        var watcher = TestRetry.NoWait(
+        var watcher = await TestRetry.NoWaitAsync(
             () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         AssertTimeoutPrecisely(watcher, expected);
     }
@@ -211,7 +210,7 @@ public class MessageInvokerPoolTests : UnitTest
     [Trait("Feat", "1314 1869")]
     [InlineData(1)]
     [InlineData(3)]
-    public void SendAsync_TimeoutValueInRoute_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
+    public async Task SendAsync_TimeoutValueInRoute_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -232,7 +231,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         int marginMs = 50;
         var expected = TimeSpan.FromSeconds(timeoutSeconds);
-        var watcher = TestRetry.NoWait(
+        var watcher = await TestRetry.NoWaitAsync(
             () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         AssertTimeoutPrecisely(watcher, expected);
     }
@@ -242,7 +241,7 @@ public class MessageInvokerPoolTests : UnitTest
     [Trait("Feat", "1314 1869")]
     [InlineData(1, 2)]
     [InlineData(3, 4)]
-    public void SendAsync_TimeoutValueInQosOptionsIsLessThanRouteTimeout_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
+    public async Task SendAsync_TimeoutValueInQosOptionsIsLessThanRouteTimeout_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -263,7 +262,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         int marginMs = 50;
         var expected = TimeSpan.FromSeconds(qosTimeout);
-        var watcher = TestRetry.NoWait(
+        var watcher = await TestRetry.NoWaitAsync(
             () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
         watcher.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(routeTimeout));
         AssertTimeoutPrecisely(watcher, expected);
@@ -367,8 +366,7 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void GivenARequest(string url) => GivenARequestWithAUrlAndMethod(_downstreamRoute1, url, HttpMethod.Get);
 
-    private void GivenARequest() =>
-        GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
+    private void GivenARequest() => GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
 
     private void GivenARequestWithAUrlAndMethod(DownstreamRoute downstream, string url, HttpMethod method)
     {
