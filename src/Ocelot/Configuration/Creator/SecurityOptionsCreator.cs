@@ -22,26 +22,16 @@ namespace Ocelot.Configuration.Creator
 
             if (securityOptions.ExcludeAllowedFromBlocked)
             {
-                ipBlockedList = ipBlockedList.Except(ipAllowedList).ToList();
+                ipBlockedList = ipBlockedList.Except(ipAllowedList).ToArray();
             }
 
             return new SecurityOptions(ipAllowedList, ipBlockedList);
         }
 
-        private static List<string> SetIpAddressList(List<string> ipValueList)
-        {
-            var ipList = new List<string>();
-
-            foreach (var ipValue in ipValueList)
-            {
-                if (IPAddressRange.TryParse(ipValue, out var ipAddressRange))
-                {
-                    var ips = ipAddressRange.Select<IPAddress, string>(x => x.ToString());
-                    ipList.AddRange(ips);
-                }
-            }
-
-            return ipList;
+        private static string[] SetIpAddressList(IList<string> ipValueList)
+            => ipValueList
+                .Where(ipValue => IPAddressRange.TryParse(ipValue, out _))
+                .SelectMany(ipValue => IPAddressRange.Parse(ipValue).Select<IPAddress, string>(ip => ip.ToString()))
+                .ToArray();
         }
-    }
 }
