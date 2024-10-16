@@ -111,17 +111,10 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureServices(x =>
-                {
-                    x.AddOcelot();
-                })
-                .Configure(async app =>
-                {
-                    await app.UseOcelot();
-                });
+                .ConfigureServices(x => x.AddOcelot())
+                .Configure(async app => await app.UseOcelot());
 
             _builder = _webHostBuilder.Build();
-
             _builder.Start();
         }
 
@@ -167,11 +160,8 @@ namespace Ocelot.IntegrationTests
         {
             var windowsOrMac = "::1";
             var linux = "127.0.0.1";
-
             var header = await _response.Content.ReadAsStringAsync();
-
             var passed = header == windowsOrMac || header == linux;
-
             passed.ShouldBeTrue();
         }
 
