@@ -19,7 +19,7 @@ All **Features** are listed in alphabetical order.
 The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.
 
 Additional tips for building Ocelot can be found in the **Building Ocelot** section.
-We adhere to a development process outlined in :doc:`../building/releaseprocess`.
+We adhere to a :doc:`../building/devprocess` outlined in :doc:`../building/releaseprocess`.
 
 .. admonition:: Table of Contents
 
@@ -76,5 +76,6 @@ We adhere to a development process outlined in :doc:`../building/releaseprocess`
     building/overview
     building/building
     building/tests
+    building/devprocess
     building/releaseprocess
 
