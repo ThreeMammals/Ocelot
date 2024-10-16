@@ -18,7 +18,7 @@ namespace Ocelot.Security.IPSecurity
 
             if (securityOptions.IPBlockedList != null)
             {
-                if (securityOptions.IPBlockedList.Contains(clientIp.ToString()))
+                if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
                 {
                     var error = new UnauthenticatedError($" This request rejects access to {clientIp} IP");
                     return new ErrorResponse(error);
@@ -27,7 +27,7 @@ namespace Ocelot.Security.IPSecurity
 
             if (securityOptions.IPAllowedList?.Count > 0)
             {
-                if (!securityOptions.IPAllowedList.Contains(clientIp.ToString()))
+                if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
                 {
                     var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
                     return new ErrorResponse(error);
