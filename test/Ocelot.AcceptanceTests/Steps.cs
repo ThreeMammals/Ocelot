@@ -99,13 +99,10 @@ public class Steps : IDisposable
         {
             var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
             var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
-
             var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
-
             return internalConfig.Data.RequestId == config.Data.RequestId;
         });
-
         result.ShouldBe(true);
     }
 
@@ -181,24 +178,21 @@ public class Steps : IDisposable
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
-
-    public Task GivenThereIsAConfigurationAsync(FileConfiguration fileConfiguration)
-        => GivenThereIsAConfigurationAsync(fileConfiguration, _ocelotConfigFileName);
-
-    public Task GivenThereIsAConfigurationAsync(FileConfiguration from, string toFile)
-    {
-        toFile ??= _ocelotConfigFileName;
-        var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
-        Files.Add(toFile); // register for disposing
-        return File.WriteAllTextAsync(toFile, jsonConfiguration);
-    }
-
     public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
     {
+        var json = SerializeJson(from, ref toFile);
+        File.WriteAllText(toFile, json);
+    }
+    public Task GivenThereIsAConfigurationAsync(FileConfiguration from, string toFile)
+    {
+        var json = SerializeJson(from, ref toFile);
+        return File.WriteAllTextAsync(toFile, json);
+    }
+    protected string SerializeJson(FileConfiguration from, ref string toFile)
+    {
         toFile ??= _ocelotConfigFileName;
-        var jsonConfiguration = JsonConvert.SerializeObject(from, Formatting.Indented);
-        File.WriteAllText(toFile, jsonConfiguration);
         Files.Add(toFile); // register for disposing
+        return JsonConvert.SerializeObject(from, Formatting.Indented);
     }
 
     protected virtual void DeleteFiles()
@@ -323,7 +317,6 @@ public class Steps : IDisposable
             });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -356,14 +349,9 @@ public class Steps : IDisposable
                     .AddConsul()
                     .AddConfigStoredInConsul();
             })
-            .Configure(app => 
-            {
-                // Turning as async/await some tests got broken
-                app.UseOcelot().GetAwaiter().GetResult(); 
-            });
+            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -382,14 +370,9 @@ public class Steps : IDisposable
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
-            .Configure(app => 
-            {
-                // Turning as async/await some tests got broken
-                app.UseOcelot().Wait(); 
-            });
+            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
         Thread.Sleep(1000);
     }
@@ -440,10 +423,9 @@ public class Steps : IDisposable
                             .WithHandle(typeof(InMemoryJsonHandle<>));
                     });
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async app => await app.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -471,7 +453,6 @@ public class Steps : IDisposable
             });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -498,10 +479,9 @@ public class Steps : IDisposable
                     .AddDelegatingHandler<TOne>()
                     .AddDelegatingHandler<TWo>();
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async a => await a.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -528,10 +508,9 @@ public class Steps : IDisposable
                     .AddDelegatingHandler<TOne>(true)
                     .AddDelegatingHandler<TWo>(true);
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async a => await a.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -556,10 +535,9 @@ public class Steps : IDisposable
                 s.AddOcelot()
                     .AddDelegatingHandler<TOne>(global);
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async a => await a.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -585,10 +563,9 @@ public class Steps : IDisposable
                 s.AddOcelot()
                     .AddDelegatingHandler<TOne>(true);
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async a => await a.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -641,10 +618,9 @@ public class Steps : IDisposable
                 s.AddAuthentication()
                     .AddIdentityServerAuthentication(authenticationProviderKey, options);
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async app => await app.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -708,7 +684,7 @@ public class Steps : IDisposable
                 l.AddConsole();
                 l.AddDebug();
             })
-            .Configure(async a => { await a.UseOcelot(ocelotPipelineConfig); }));
+            .Configure(async a => await a.UseOcelot(ocelotPipelineConfig)));
 
         _ocelotClient = _ocelotServer.CreateClient();
     }
@@ -849,16 +825,16 @@ public class Steps : IDisposable
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
-    public static async Task WhenIDoActionMultipleTimes(int times, Func<int, Task> action)
-    {
-        for (int i = 0; i < times; i++)
-            await action.Invoke(i);
-    }
-
     public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
     {
         for (int i = 0; i < times; i++)
             action?.Invoke(i);
+    }
+
+    public static async Task WhenIDoActionMultipleTimes(int times, Func<int, Task> action)
+    {
+        for (int i = 0; i < times; i++)
+            await action.Invoke(i);
     }
 
     public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
@@ -875,7 +851,6 @@ public class Steps : IDisposable
     public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
-
         _response = await _ocelotClient.GetAsync(url);
     }
 
@@ -911,38 +886,24 @@ public class Steps : IDisposable
         _postContent = content;
     }
 
-    public async Task ThenTheResponseBodyShouldBe(string expectedBody)
-    {
-        var result = await _response.Content.ReadAsStringAsync();
-        result.ShouldBe(expectedBody);
-    }
-
+    public void ThenTheResponseBodyShouldBe(string expectedBody)
+        => _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
     public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
-        => _response.Content.ReadAsStringAsync().Result.ShouldBe(expectedBody, customMessage);
+        => _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
 
     public void ThenTheContentLengthIs(int expected)
-    {
-        _response.Content.Headers.ContentLength.ShouldBe(expected);
-    }
+        => _response.Content.Headers.ContentLength.ShouldBe(expected);
 
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
         => _response.StatusCode.ShouldBe(expected);
-
-    public void ThenTheStatusCodeShouldBe(int expectedHttpStatusCode)
-    {
-        var responseStatusCode = (int)_response.StatusCode;
-        responseStatusCode.ShouldBe(expectedHttpStatusCode);
-    }
+    public void ThenTheStatusCodeShouldBe(int expected)
+        => ((int)_response.StatusCode).ShouldBe(expected);
 
     public void ThenTheRequestIdIsReturned()
-    {
-        _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
-    }
+        => _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
 
     public void ThenTheRequestIdIsReturned(string expected)
-    {
-        _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
-    }
+        => _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
 
     public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
     {
@@ -1009,10 +970,9 @@ public class Steps : IDisposable
                 s.AddSingleton(fake);
                 s.AddOcelot();
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async app => await app.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -1040,10 +1000,9 @@ public class Steps : IDisposable
                 s.AddOcelot();
                 s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();
             })
-            .Configure(async app => { await app.UseOcelot(); });
+            .Configure(async app => await app.UseOcelot());
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
@@ -1075,7 +1034,6 @@ public class Steps : IDisposable
             });
 
         _ocelotServer = new TestServer(_webHostBuilder);
-
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
