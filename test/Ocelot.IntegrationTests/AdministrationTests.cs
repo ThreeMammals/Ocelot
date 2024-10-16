@@ -68,7 +68,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
+        public async Task Should_return_response_200_with_call_re_routes_controller_using_base_url_added_in_file_config()
         {
             _httpClient = new HttpClient();
             var port = PortFinder.GetRandomPort();
@@ -288,7 +288,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void Should_activate_change_token_when_configuration_is_updated()
+        public async Task Should_activate_change_token_when_configuration_is_updated()
         {
             var configuration = new FileConfiguration
             {
