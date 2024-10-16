@@ -95,7 +95,7 @@ public class Steps : IDisposable
 
     public async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
     {
-        var result = await Wait.WaitFor(timeoutMs).Until(async () =>
+        var result = await Wait.WaitFor(timeoutMs).UntilAsync(async () =>
         {
             var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
             var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
