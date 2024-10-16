@@ -18,7 +18,7 @@
         {
             var delay = 1000;
 
-            var fileConfig = _fileConfigurationRepository.Get().GetAwaiter().GetResult();
+            var fileConfig = _fileConfigurationRepository.Get().GetAwaiter().GetResult(); // sync call, so TODO extend IFileConfigurationPollerOptions interface with 2nd async method
             if (fileConfig?.Data?.GlobalConfiguration?.ServiceDiscoveryProvider != null &&
                     !fileConfig.IsError &&
                     fileConfig.Data.GlobalConfiguration.ServiceDiscoveryProvider.PollingInterval > 0)
