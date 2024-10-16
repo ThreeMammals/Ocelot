@@ -33,7 +33,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public async Task should_clear_region()
+        public async Task Should_clear_region()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -149,14 +149,10 @@ namespace Ocelot.IntegrationTests
                 webBuilder.UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .Configure(async app =>
-                {
-                    await app.UseOcelot();
-                });
+                .Configure(async app => await app.UseOcelot());
             });
 
             _builder = _webHostBuilder.Build();
-
             _builder.Start();
         }
 
