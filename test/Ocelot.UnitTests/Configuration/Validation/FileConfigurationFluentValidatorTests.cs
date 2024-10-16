@@ -933,34 +933,22 @@ namespace Ocelot.UnitTests.Configuration.Validation
         };
 
         private async Task WhenIValidateTheConfiguration()
-        {
-            _result = await _configurationValidator.IsValid(_fileConfiguration);
-        }
+            => _result = await _configurationValidator.IsValid(_fileConfiguration);
 
         private void ThenTheResultIsValid()
-        {
-            _result.Data.IsError.ShouldBeFalse();
-        }
+            => _result.Data.IsError.ShouldBeFalse();
 
         private void ThenTheResultIsNotValid()
-        {
-            _result.Data.IsError.ShouldBeTrue();
-        }
+            => _result.Data.IsError.ShouldBeTrue();
 
         private void ThenTheErrorIs<T>()
-        {
-            _result.Data.Errors[0].ShouldBeOfType<T>();
-        }
+            => _result.Data.Errors[0].ShouldBeOfType<T>();
 
         private void ThenTheErrorMessageAtPositionIs(int index, string expected)
-        {
-            _result.Data.Errors[index].Message.ShouldBe(expected);
-        }
+            => _result.Data.Errors[index].Message.ShouldBe(expected);
 
         private void ThenThereAreErrors(bool isError)
-        {
-            _result.Data.IsError.ShouldBe(isError);
-        }
+            => _result.Data.IsError.ShouldBe(isError);
 
         private void ThenTheErrorMessagesAre(IEnumerable<string> messages)
         {
