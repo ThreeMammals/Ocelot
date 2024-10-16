@@ -324,7 +324,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                 {
                     await _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
                     _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-                    await _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
+                    _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
                     return true;
                 }
                 catch (Exception)
