@@ -99,7 +99,7 @@ namespace Ocelot.UnitTests.Infrastructure
 
         private void WhenIAuthorize()
         {
-            _result = _authorizer.Authorize(_principal, _allowedScopes);
+            _result = _authorizer.Authorize(_principal, _allowedScopes, null);
         }
 
         private void ThenTheFollowingIsReturned(Response<bool> expected)
