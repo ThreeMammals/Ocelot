@@ -316,13 +316,13 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .BDDfy();
         }
 
-        private void ThenTheConfigIsUpdatedInOcelot()
+        private async Task ThenTheConfigIsUpdatedInOcelot()
         {
-            var result = Wait.WaitFor(20000).Until(() =>
+            var result = await Wait.WaitFor(20000).UntilAsync(async () =>
             {
                 try
                 {
-                    _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
+                    await _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
                     _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
                     _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
                     return true;
@@ -348,7 +348,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             }
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+        private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
             _fakeConsulBuilder = new WebHostBuilder()
                             .UseUrls(url)
@@ -404,8 +404,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                                 });
                             })
                             .Build();
-
-            _fakeConsulBuilder.Start();
+            return _fakeConsulBuilder.StartAsync();
         }
 
         public class FakeConsulGetResponse
@@ -424,7 +423,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
+        private Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
             _builder = new WebHostBuilder()
                 .UseUrls(url)
@@ -443,8 +442,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                     });
                 })
                 .Build();
-
-            _builder.Start();
+            return _builder.StartAsync();
         }
 
         public void Dispose()

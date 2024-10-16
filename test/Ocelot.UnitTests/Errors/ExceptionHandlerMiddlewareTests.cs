@@ -100,18 +100,15 @@ namespace Ocelot.UnitTests.Errors
                .BDDfy();
         }
 
-        private void WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
+        private async Task WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
         {
             _httpContext.Request.Headers.Append(key, value);
-            /*
-            _httpContext.Setup(x => x.Request.Headers).Returns(new HeaderDictionary() { { key, value } });
-            */
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheConfigThrows()

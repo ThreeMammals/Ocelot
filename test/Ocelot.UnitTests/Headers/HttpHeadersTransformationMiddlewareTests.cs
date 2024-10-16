@@ -65,9 +65,9 @@ namespace Ocelot.UnitTests.Headers
                 .Verify(x => x.SetHeadersOnDownstreamRequest(_httpContext.Items.DownstreamRoute().AddHeadersToUpstream, _httpContext), Times.Once);
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheDownstreamRequestIs()

@@ -72,12 +72,12 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
     private int Count() => ++_count;
     private string Url() => $"/ClientRateLimit/?{Count()}";
 
-    private void WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Func<string> urlDelegate, long times)
+    private async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Func<string> urlDelegate, long times)
     {
         for (long i = 0; i < times; i++)
         {
             var url = urlDelegate.Invoke();
-            WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
+            await WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
         }
     }
 

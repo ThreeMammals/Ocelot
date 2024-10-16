@@ -80,7 +80,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
 
         var server = _identityServers[index] = builder.Build();
         server.Start();
-        VerifyIdentityServerStarted(url);
+        VerifyIdentityServerStarted(url).GetAwaiter().GetResult();
         return this;
     }
 

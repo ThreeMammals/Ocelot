@@ -176,17 +176,14 @@ namespace Ocelot.UnitTests.Multiplexing
             _downstreamContexts = downstreamContexts;
         }
 
-        private void WhenIAggregate()
+        private async Task WhenIAggregate()
         {
-            _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts).GetAwaiter().GetResult();
+            await _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts);
         }
 
-        private void ThenTheContentIs(string expected)
+        private async Task ThenTheContentIs(string expected)
         {
-            var content = _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync()
-                .GetAwaiter()
-                .GetResult();
-
+            var content = await _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
             content.ShouldBe(expected);
         }
 

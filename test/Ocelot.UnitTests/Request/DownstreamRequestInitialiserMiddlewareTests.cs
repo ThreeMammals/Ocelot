@@ -103,9 +103,9 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
             .Throws(_testException);
     }
 
-    private void WhenTheMiddlewareIsInvoked()
+    private async Task WhenTheMiddlewareIsInvoked()
     {
-        _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+        await _middleware.Invoke(_httpContext);
     }
 
     private void ThenTheContexRequestIsMappedToADownstreamRequest()

@@ -1,60 +1,51 @@
 Release Process
 ===============
 
-* The release process works best with `Gitflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ branching. 
-* Contributors can do whatever they want on PRs and feature branches to deliver a feature to **develop** branch.
-* Maintainers can do whatever they want on PRs and merges to **main** will result in packages being released to GitHub and NuGet.
+* The release process works best with `Gitflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_ branching.
+  Note, Ocelot team doesn't use `GitHub flow <https://docs.github.com/en/get-started/using-github/github-flow>`_ which is faster but not efficient in Ocelot delivery.
+* Contributors can do whatever they want on pull requests and feature branches to deliver a feature to **develop** branch.
+* Maintainers can do whatever they want on pull requests and merges to **main** will result in packages being released to GitHub and NuGet.
+* Finally, users follow :doc:`../building/devprocess`, but maintainers follow this :doc:`../building/releaseprocess`.
 
 Ocelot uses the following process to accept work into the NuGet packages.
 
-1. User creates an issue or picks up an `existing issue <https://github.com/ThreeMammals/Ocelot/issues>`_ in GitHub.
-   An issue can be created by converting `discussion <https://github.com/ThreeMammals/Ocelot/discussions>`_ topics if necessary and agreed upon.
+1. Maintainers provide code review of pull request and if all is good merge it, else they will suggest feedback that the user will need to act on.
+   Extra help to contributors is welcomed via constant Pair Programming sessions: multiple code reviews, fixing code review issues, any problem solving.
 
-2. User creates `a fork <https://docs.github.com/en/get-started/quickstart/fork-a-repo>`_ and branches from this (unless a member of core team, they can just create a branch on the head repo) e.g. ``feature/xxx``, ``bug/xxx`` etc.
-   It doesn't really matter what the "xxx" is. It might make sense to use the issue number and maybe a short description. 
-
-3. When the contributor is happy with their work they can create a pull request against **develop** in GitHub with their changes.
-
-4. The maintainer must follow the `SemVer <https://semver.org/>`_ support for this is provided by `GitVersion <https://gitversion.net/docs/>`_.
+2. The maintainer must follow the `SemVer <https://semver.org/>`_ support for this is provided by `GitVersion <https://gitversion.net/docs/>`_.
    So if the maintainer needs to make breaking changes, be sure to use the correct commit message, so **GitVersion** uses the correct **SemVer** tags.
    Do not manually tag the Ocelot repo: this will break things!
 
-5. The Ocelot team will review the PR and if all is good merge it, else they will suggest feedback that the user will need to act on.
+3. After the PR is merged to **develop** the Ocelot NuGet packages will not be updated until a release is created.
+   And, when enough work has been completed to justify a new release, **develop** branch will be merged into **main** as ``release/X.Y.Z`` branch,
+   the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
 
-   In order to speed up getting a PR the contributor should think about the following:
+4. Release engineer, the owner of integration tokens both on CircleCi and GitHub, automates each release build by the main building script aka ``build.cake``.
+   Release engineer is responsible for any DevOps at the organization, in any (sub)repositories, supporting the main building script.
 
-   - Have I covered all my changes with tests at unit and acceptance level?
-   - Have I updated any documentation that my changes may have affected?
-   - Does my feature make sense, have I checked all of Ocelot's other features to make sure it doesn't already exist?
+5. Release engineer writes `ReleaseNotes.md <https://github.com/ThreeMammals/Ocelot/blob/main/README.md>`_ notifying community about
+   important artifacts of the release such as new/updated features, fixed bugs, updated documentation, breaking changes, contributors info, version upgrade instructions, etc.
 
-   In order for a PR to be merged the following must have occured:
+6. The final step is to go back to GitHub and close current milestone ensuring the following:
 
-   - All new code is covered by unit tests.
-   - All new code has at least 1 acceptance test covering the happy path.
-   - Tests must have passed locally.
-   - Build must have green status.
-   - Build must not have slowed down dramatically.
-   - The main Ocelot package must not have taken on any non MS dependencies.
+   * all issues in the milestone should be closed, the rest of work of open issues should be moved to the next milestone.
+   * all pull requests of the milestone should be closed, or moved to the next upcoming release milestone.
+   * Release Notes should be published to GitHub releases, with extra checking the text.
+   * Published release must be marked as the latest, if appropriate Nuget packages were successfully uploaded to `NuGet Gallery | ThreeMammals <https://www.nuget.org/profiles/ThreeMammals>`_ account.
 
-6. After the PR is merged to **develop** the Ocelot NuGet packages will not be updated until a release is created.
-
-7. When enough work has been completed to justify a new release,
-   **develop** branch will be merged into **main** as **release/xxx** branch, the release process will begin which builds the code, versions it, pushes artifacts to GitHub and NuGet packages to NuGet.
-
-8. The final step is to go back to GitHub and close any issues that are now fixed.
-   **Note**: All linked issues to the PR in **Development** settings (right side PR settings) will be closed automatically while merging the PR.
-   It is imperative that developer uses the "**Link an issue from this repository**" pop-up dialog of the **Development** settings!
+7. Optional support of the major version ``2X.Y.0`` should be provided in such cases as Microsoft official patches, critical Ocelot defects of the major version.
+   Maintainers release patched versions ``2X.Y.xxx`` as hot-fixing patch-versions.
 
 Notes
 -----
 
 All NuGet package builds and releases are done with CircleCI, see `Pipelines - ThreeMammals/Ocelot <https://circleci.com/gh/ThreeMammals/Ocelot/>`_.
 
-Only Tom Pallister (owner) and Ocelot Core Team members (maintainers) can merge releases into **main** at the moment.
-This is to ensure there is a final `quality gate <#quality-gates>`_ in place. Tom is mainly looking for security issues on the final merge.
+Only `Tom Pallister <https://github.com/TomPallister>`_, `Raman Maksimchuk <https://github.com/raman-m>`_ (owners) and maintainers from `Ocelot Team <https://github.com/orgs/ThreeMammals/teams>`_ can merge releases into `main <https://github.com/ThreeMammals/Ocelot/tree/main>`_ at the moment.
+This is to ensure there is a final :ref:`quality-gates` in place.
+Maintainers are mainly looking for security issues on the final merge: see Step 7 in the process.
 
-We **do** follow this development and release process!
-If anything is unclear or you get stuck in the process, please contact the `Ocelot Core Team <https://github.com/orgs/ThreeMammals/teams/ocelot-core>`_ members or repository maintainers.
+.. _quality-gates:
 
 Quality Gates
 -------------

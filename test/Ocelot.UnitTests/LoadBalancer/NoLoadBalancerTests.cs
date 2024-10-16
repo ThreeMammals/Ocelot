@@ -83,9 +83,9 @@ namespace Ocelot.UnitTests.LoadBalancer
             _services.AddRange(services);
         }
 
-        private void WhenIGetTheNextHostAndPort()
+        private async Task WhenIGetTheNextHostAndPort()
         {
-            _result = _loadBalancer.LeaseAsync(new DefaultHttpContext()).Result;
+            _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
         }
 
         private void ThenTheHostAndPortIs(ServiceHostAndPort expected)

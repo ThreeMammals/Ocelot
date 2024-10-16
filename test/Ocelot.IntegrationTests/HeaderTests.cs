@@ -68,7 +68,7 @@ namespace Ocelot.IntegrationTests
             GivenOcelotIsRunning();
             await WhenIGetUrlOnTheApiGateway("/");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-            ThenXForwardedForIsSet();
+            await ThenXForwardedForIsSet();
         }
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string headerKey)
@@ -111,17 +111,10 @@ namespace Ocelot.IntegrationTests
                     config.AddJsonFile("ocelot.json", false, false);
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureServices(x =>
-                {
-                    x.AddOcelot();
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                });
+                .ConfigureServices(x => x.AddOcelot())
+                .Configure(async app => await app.UseOcelot());
 
             _builder = _webHostBuilder.Build();
-
             _builder.Start();
         }
 
@@ -163,15 +156,12 @@ namespace Ocelot.IntegrationTests
             _response.StatusCode.ShouldBe(code);
         }
 
-        private void ThenXForwardedForIsSet()
+        private async Task ThenXForwardedForIsSet()
         {
             var windowsOrMac = "::1";
             var linux = "127.0.0.1";
-
-            var header = _response.Content.ReadAsStringAsync().Result;
-
+            var header = await _response.Content.ReadAsStringAsync();
             var passed = header == windowsOrMac || header == linux;
-
             passed.ShouldBeTrue();
         }
 

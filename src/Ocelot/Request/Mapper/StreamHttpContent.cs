@@ -56,7 +56,9 @@ public class StreamHttpContent : HttpContent
                 if (zeroByteReadTask.IsCompletedSuccessfully)
                 {
                     // Consume the ValueTask's result in case it is backed by an IValueTaskSource
-                    _ = zeroByteReadTask.Result;
+                    // It is save to read the Result once after the ValueTask has completed, and we've checked for complition by IsCompletedSuccessfully property
+                    // See remarks: https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1.result?view=net-8.0#remarks
+                    _ = zeroByteReadTask.Result; // No need to await the task by .GetAwaiter().GetResult()
                 }
                 else
                 {

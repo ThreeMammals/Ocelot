@@ -30,9 +30,8 @@ public class Consul : IServiceDiscoveryProvider
         var nodesTask = _consul.Catalog.Nodes();
 
         await Task.WhenAll(entriesTask, nodesTask);
-
-        var entries = entriesTask.Result.Response ?? Array.Empty<ServiceEntry>();
-        var nodes = nodesTask.Result.Response ?? Array.Empty<Node>();
+        var entries = (await entriesTask).Response ?? Array.Empty<ServiceEntry>();
+        var nodes = (await nodesTask).Response ?? Array.Empty<Node>();
         if (entries.Length == 0)
         {
             _logger.LogWarning(() => $"{nameof(Consul)} Provider: No service entries found for '{_configuration.KeyOfServiceInConsul}' service!");

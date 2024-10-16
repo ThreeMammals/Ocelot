@@ -42,7 +42,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_replace_scheme_and_path()
+    public async Task Should_replace_scheme_and_path()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -64,7 +64,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
@@ -72,7 +72,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_replace_query_string()
+    public async Task Should_replace_query_string()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -98,7 +98,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates");
@@ -106,7 +106,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_replace_query_string_but_leave_non_placeholder_queries()
+    public async Task Should_replace_query_string_but_leave_non_placeholder_queries()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -132,7 +132,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -140,7 +140,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_replace_query_string_but_leave_non_placeholder_queries_2()
+    public async Task Should_replace_query_string_but_leave_non_placeholder_queries_2()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -166,7 +166,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -174,7 +174,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_replace_query_string_exact_match()
+    public async Task Should_replace_query_string_exact_match()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -201,7 +201,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates/3");
@@ -209,7 +209,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_not_create_service_fabric_url()
+    public async Task Should_not_create_service_fabric_url()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -234,14 +234,14 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
     }
 
     [Fact]
-    public void Should_create_service_fabric_url()
+    public async Task Should_create_service_fabric_url()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -263,14 +263,14 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1");
     }
 
     [Fact]
-    public void Should_create_service_fabric_url_with_query_string_for_stateless_service()
+    public async Task Should_create_service_fabric_url_with_query_string_for_stateless_service()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -292,14 +292,14 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1");
     }
 
     [Fact]
-    public void Should_create_service_fabric_url_with_query_string_for_stateful_service()
+    public async Task Should_create_service_fabric_url_with_query_string_for_stateful_service()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -321,14 +321,14 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
     }
 
     [Fact]
-    public void Should_create_service_fabric_url_with_version_from_upstream_path_template()
+    public async Task Should_create_service_fabric_url_with_version_from_upstream_path_template()
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
@@ -350,7 +350,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/products", "Service_1.0/Api");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Service_1.0/Api/products?PartitionKind=test&PartitionKey=1");
@@ -358,7 +358,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Fact]
     [Trait("Bug", "473")]
-    public void Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different()
+    public async Task Should_not_remove_additional_query_parameter_when_placeholder_and_parameter_names_are_different()
     {
         // Arrange
         var methods = new List<string> { "Post", "Get" };
@@ -384,7 +384,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/Authorized/1?server=2");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=123456789");
@@ -392,7 +392,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_not_replace_by_empty_scheme()
+    public async Task Should_not_replace_by_empty_scheme()
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -416,7 +416,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
@@ -424,7 +424,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Fact]
     [Trait("Bug", "952")]
-    public void Should_map_query_parameters_with_different_names()
+    public async Task Should_map_query_parameters_with_different_names()
     {
         // Arrange
         var methods = new List<string> { "Post", "Get" };
@@ -449,7 +449,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley");
@@ -458,7 +458,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Fact]
     [Trait("Bug", "952")]
-    public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
+    public async Task Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
     {
         // Arrange
         var methods = new List<string> { "Post", "Get" };
@@ -483,7 +483,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley&userId=webley");
@@ -494,7 +494,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     [Trait("Bug", "1174")]
     [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
     [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
-    public void Should_forward_query_parameters_without_duplicates(string everythingelse)
+    public async Task Should_forward_query_parameters_without_duplicates(string everythingelse)
     {
         // Arrange
         var methods = new List<string> { "Get" };
@@ -519,7 +519,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         var query = everythingelse;
@@ -535,7 +535,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1?query=1", "{url}", "", "/api/v1/test?query=1", "?query=1")]
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/", "{url}", "", "/api/v1/test/", "")]
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1", "{url}", "", "/api/v1/test", "")]
-    public void Should_fix_issue_748(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI, string queryString)
+    public async Task Should_fix_issue_748(string upstreamTemplate, string downstreamTemplate, string requestURL, string placeholderName, string placeholderValue, string downstreamURI, string queryString)
     {
         // Arrange
         var methods = new List<string> { "Get" };
@@ -562,7 +562,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn(downstreamURI);
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000" + downstreamURI);
@@ -571,7 +571,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Fact]
     [Trait("Bug", "2002")]
-    public void Should_map_when_query_parameters_has_same_names_with_placeholder()
+    public async Task Should_map_when_query_parameters_has_same_names_with_placeholder()
     {
         // Arrange
         const string username = "bbenameur";
@@ -604,7 +604,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
@@ -615,7 +615,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     [Trait("Bug", "2116")]
     [InlineData("api/debug()")] // no query
     [InlineData("api/debug%28%29")] // debug()
-    public void ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath)
+    public async Task ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath)
     {
         // Arrange
         var withGetMethod = new List<string> { "Get" };
@@ -641,7 +641,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"routed/{urlPath}");
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
@@ -654,10 +654,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _httpContext.Items.SetIInternalConfiguration(configuration);
     }
 
-    private void WhenICallTheMiddleware()
+    private async Task WhenICallTheMiddleware()
     {
         _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object);
-        _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+        await _middleware.Invoke(_httpContext);
     }
 
     private void GivenTheDownStreamRouteIs(DownstreamRouteHolder downstreamRoute)

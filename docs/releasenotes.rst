@@ -179,4 +179,8 @@ Contributing
 
 For `ideas <https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas>`_ and `questions <https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a>`_, please post them in the `Ocelot Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space.
 
-Our development process is detailed in the :doc:`../building/releaseprocess` documentation.
+Our :doc:`../building/devprocess` is a part of successful :doc:`../building/releaseprocess`.
+If you are a new contributor, it is crucial to read :doc:`../building/devprocess` attentively to grasp our methods for efficient and swift feature delivery.
+We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
+
+We extend our best wishes for your successful contributions to the Ocelot product!

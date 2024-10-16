@@ -154,9 +154,9 @@ namespace Ocelot.UnitTests.RequestId
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private Task WhenICallTheMiddleware()
         {
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            return _middleware.Invoke(_httpContext);
         }
 
         private void GivenThereIsNoGlobalRequestId()

@@ -499,10 +499,11 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Headers.Count().ShouldBe(0);
     }
 
-    private void ThenTheMappedRequestHasContent(string expectedContent)
+    private async Task ThenTheMappedRequestHasContent(string expectedContent)
     {
         Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedContent);
+        var contentAsString = await _mappedRequest.Content.ReadAsStringAsync();
+        contentAsString.ShouldBe(expectedContent);
     }
 
     private void ThenTheMappedRequestHasContentLength(long expectedLength)

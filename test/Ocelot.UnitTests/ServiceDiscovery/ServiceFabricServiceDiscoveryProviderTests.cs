@@ -29,11 +29,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _port = 19081;
         }
 
-        private void WhenIGet()
+        private async Task WhenIGet()
         {
             _config = new ServiceFabricConfiguration(_host, _port, _serviceName);
             _provider = new ServiceFabricServiceDiscoveryProvider(_config);
-            _services = _provider.GetAsync().GetAwaiter().GetResult();
+            _services = await _provider.GetAsync();
         }
 
         private void ThenTheServiceFabricNamingServiceIsRetured()

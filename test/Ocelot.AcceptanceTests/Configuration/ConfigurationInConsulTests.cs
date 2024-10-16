@@ -73,7 +73,7 @@ namespace Ocelot.AcceptanceTests.Configuration
                 .BDDfy();
         }
 
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+        private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
             _fakeConsulBuilder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -128,8 +128,7 @@ namespace Ocelot.AcceptanceTests.Configuration
                                 });
                             });
                 }).Build();
-
-            _fakeConsulBuilder.Start();
+            return _fakeConsulBuilder.StartAsync();
         }
 
         public class FakeConsulGetResponse
@@ -148,7 +147,7 @@ namespace Ocelot.AcceptanceTests.Configuration
             public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
         }
 
-        private void GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
+        private Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
             _builder = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(webBuilder =>
@@ -169,8 +168,7 @@ namespace Ocelot.AcceptanceTests.Configuration
                     });
                 })
                 .Build();
-
-            _builder.Start();
+            return _builder.StartAsync();
         }
 
         public void Dispose()

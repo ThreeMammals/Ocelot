@@ -122,10 +122,10 @@ namespace Ocelot.UnitTests.LoadBalancer
                 .BDDfy();
         }
 
-        private void WhenICallTheMiddleware()
+        private async Task WhenICallTheMiddleware()
         {
             _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
-            _middleware.Invoke(_httpContext).GetAwaiter().GetResult();
+            await _middleware.Invoke(_httpContext);
         }
 
         private void GivenTheConfigurationIs(ServiceProviderConfiguration config)

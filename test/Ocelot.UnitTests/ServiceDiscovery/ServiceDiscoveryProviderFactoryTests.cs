@@ -212,10 +212,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 Times.Once());
         }
 
-        private void ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
+        private async Task ThenTheFollowingServicesAreReturned(List<DownstreamHostAndPort> downstreamAddresses)
         {
             var result = (ConfigurationServiceProvider)_result.Data;
-            var services = result.GetAsync().Result;
+            var services = await result.GetAsync();
 
             for (var i = 0; i < services.Count; i++)
             {

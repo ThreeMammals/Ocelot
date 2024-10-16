@@ -113,13 +113,13 @@ namespace Ocelot.AcceptanceTests.Authentication
         }
 
         [IgnorePublicMethod]
-        public void GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
+        public async Task GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
         {
             var scopes = new string[] { "api", "api2" };
             _identityServerBuilder = CreateIdentityServer(url, tokenType, scopes, null)
                 .Build();
-            _identityServerBuilder.Start();
-            VerifyIdentityServerStarted(url);
+            await _identityServerBuilder.StartAsync();
+            await VerifyIdentityServerStarted(url);
         }
 
         public override void Dispose()

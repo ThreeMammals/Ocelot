@@ -112,9 +112,9 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                     {
                         s.AddOcelot();
                     })
-                    .Configure(app =>
+                    .Configure(async app =>
                     {
-                        app.UseOcelot().Wait();
+                        await app.UseOcelot();
                     })
                     .UseUrls("http://localhost:5001");
             }).Build();
@@ -150,9 +150,9 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                 {
                     s.AddOcelot();
                 })
-                .Configure(app =>
+                .Configure(async app =>
                 {
-                    app.UseOcelot().Wait();
+                    await app.UseOcelot();
                 })
                 .UseUrls("http://localhost:5001");
             }).Build();

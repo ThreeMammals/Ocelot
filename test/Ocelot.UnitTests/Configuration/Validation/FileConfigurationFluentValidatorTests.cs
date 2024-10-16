@@ -601,7 +601,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData(null, true)]
         [InlineData(Empty, true)]
         [InlineData("Test", false)]
-        public void HaveServiceDiscoveryProviderRegistered_RouteServiceName_Validated(string serviceName, bool valid)
+        public async Task HaveServiceDiscoveryProviderRegistered_RouteServiceName_Validated(string serviceName, bool valid)
         {
             // Arrange
             var route = GivenDefaultRoute();
@@ -610,7 +610,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             config.GlobalConfiguration.ServiceDiscoveryProvider = null;
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -622,7 +622,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData(true, null, false)]
         [InlineData(true, "type", false)]
         [InlineData(true, "servicefabric", true)]
-        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
+        public async Task HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
         {
             // Arrange
             var route = GivenServiceDiscoveryRoute();
@@ -635,7 +635,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             }
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -645,7 +645,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryFinderDelegates_Validated(bool hasDelegate)
+        public async Task HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryFinderDelegates_Validated(bool hasDelegate)
         {
             // Arrange
             var valid = hasDelegate;
@@ -658,7 +658,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             }
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             _result.Data.IsError.ShouldNotBe(valid);
@@ -723,7 +723,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_not_valid_when_upstream_headers_the_same()
+        public async Task Configuration_is_not_valid_when_upstream_headers_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -739,7 +739,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -749,7 +749,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_upstream_headers_not_the_same()
+        public async Task Configuration_is_valid_when_upstream_headers_not_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -765,7 +765,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsValid();
@@ -774,7 +774,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_upstream_headers_count_not_the_same()
+        public async Task Configuration_is_valid_when_upstream_headers_count_not_the_same()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -789,7 +789,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsValid();
@@ -798,7 +798,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Fact]
         [Trait("PR", "1312")]
         [Trait("Feat", "360")]
-        public void Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
+        public async Task Configuration_is_valid_when_one_upstream_headers_empty_and_other_not_empty()
         {
             // Arrange
             var route1 = GivenRouteWithUpstreamHeaderTemplates("/asdf/", "/api/products/", new()
@@ -810,7 +810,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
             GivenAConfiguration(route1, route2);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsValid();
@@ -826,14 +826,14 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{foo}")] // valid
         [InlineData("/yahoo/foo/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
         [InlineData("/yahoo/{foo}/{bar}", "/foo/{bar}/{bar}", "DownstreamPathTemplate '/foo/{bar}/{bar}' has duplicated placeholder")] // invalid
-        public void IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
+        public async Task IsPlaceholderNotDuplicatedIn_RuleForFileRoute_PathTemplatePlaceholdersAreValidated(string upstream, string downstream, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenThereAreErrors(expected.Length > 0);
@@ -843,16 +843,16 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Theory]
         [Trait("PR", "1927")]
         [Trait("Bug", "683")]
-        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}",              "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder")]
+        [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder")]
         [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template(string upstream, string downstream, string host, params string[] expected)
+        public async Task Configuration_is_invalid_when_placeholder_is_used_twice_in_upstream_path_template(string upstream, string downstream, string host, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream, host);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -862,16 +862,16 @@ namespace Ocelot.UnitTests.Configuration.Validation
         [Theory]
         [Trait("PR", "1927")]
         [Trait("Bug", "683")]
-        [InlineData("/foo/bar/{everything}",              "/bar/{everything}/{everything}", "foo", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
+        [InlineData("/foo/bar/{everything}", "/bar/{everything}/{everything}", "foo", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
         [InlineData("/foo/bar/{everything}/{everything}", "/bar/{everything}/{everything}", "foo", "UpstreamPathTemplate '/foo/bar/{everything}/{everything}' has duplicated placeholder", "DownstreamPathTemplate '/bar/{everything}/{everything}' has duplicated placeholder")]
-        public void Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template(string upstream, string downstream, string host, params string[] expected)
+        public async Task Configuration_is_invalid_when_placeholder_is_used_twice_in_downstream_path_template(string upstream, string downstream, string host, params string[] expected)
         {
             // Arrange
             var route = GivenDefaultRoute(upstream, downstream, host);
             GivenAConfiguration(route);
 
             // Act
-            WhenIValidateTheConfiguration();
+            await WhenIValidateTheConfiguration();
 
             // Assert
             ThenTheResultIsNotValid();
@@ -932,35 +932,23 @@ namespace Ocelot.UnitTests.Configuration.Validation
             Port = 8500,
         };
 
-        private void WhenIValidateTheConfiguration()
-        {
-            _result = _configurationValidator.IsValid(_fileConfiguration).Result;
-        }
+        private async Task WhenIValidateTheConfiguration()
+            => _result = await _configurationValidator.IsValid(_fileConfiguration);
 
         private void ThenTheResultIsValid()
-        {
-            _result.Data.IsError.ShouldBeFalse();
-        }
+            => _result.Data.IsError.ShouldBeFalse();
 
         private void ThenTheResultIsNotValid()
-        {
-            _result.Data.IsError.ShouldBeTrue();
-        }
+            => _result.Data.IsError.ShouldBeTrue();
 
         private void ThenTheErrorIs<T>()
-        {
-            _result.Data.Errors[0].ShouldBeOfType<T>();
-        }
+            => _result.Data.Errors[0].ShouldBeOfType<T>();
 
         private void ThenTheErrorMessageAtPositionIs(int index, string expected)
-        {
-            _result.Data.Errors[index].Message.ShouldBe(expected);
-        }
+            => _result.Data.Errors[index].Message.ShouldBe(expected);
 
         private void ThenThereAreErrors(bool isError)
-        {
-            _result.Data.IsError.ShouldBe(isError);
-        }
+            => _result.Data.IsError.ShouldBe(isError);
 
         private void ThenTheErrorMessagesAre(IEnumerable<string> messages)
         {

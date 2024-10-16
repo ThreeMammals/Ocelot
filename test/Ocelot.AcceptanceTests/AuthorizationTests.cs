@@ -308,7 +308,7 @@ namespace Ocelot.AcceptanceTests
             });
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
+        private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -390,12 +390,12 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
-            Steps.VerifyIdentityServerStarted(url);
+            await Steps.VerifyIdentityServerStarted(url);
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
+        private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -461,9 +461,9 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
-            Steps.VerifyIdentityServerStarted(url);
+            await Steps.VerifyIdentityServerStarted(url);
         }
 
         private async Task GivenIHaveATokenForApiReadOnlyScope(string url)

@@ -30,10 +30,10 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _expected = services;
         }
 
-        private void WhenIGetTheService()
+        private async Task WhenIGetTheService()
         {
             _serviceProvider = new ConfigurationServiceProvider(_expected);
-            _result = _serviceProvider.GetAsync().Result;
+            _result = await _serviceProvider.GetAsync();
         }
 
         private void ThenTheFollowingIsReturned(List<Service> services)

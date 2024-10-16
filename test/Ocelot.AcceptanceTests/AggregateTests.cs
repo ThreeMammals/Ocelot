@@ -746,7 +746,7 @@ namespace Ocelot.AcceptanceTests
                     s.AddOcelot()
                         .AddSingletonDefinedAggregator<TAggregator>();
                 })
-                .Configure(a => { a.UseOcelot().Wait(); });
+                .Configure(async b => await b.UseOcelot());
 
             _ocelotServer = new TestServer(_webHostBuilder);
             _ocelotClient = _ocelotServer.CreateClient();

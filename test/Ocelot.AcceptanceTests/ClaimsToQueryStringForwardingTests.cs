@@ -204,7 +204,7 @@ namespace Ocelot.AcceptanceTests
             _servicebuilder.Start();
         }
 
-        private void GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
+        private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
         {
             _identityServerBuilder = new WebHostBuilder()
                 .UseUrls(url)
@@ -275,9 +275,9 @@ namespace Ocelot.AcceptanceTests
                 })
                 .Build();
 
-            _identityServerBuilder.Start();
+            await _identityServerBuilder.StartAsync();
 
-            Steps.VerifyIdentityServerStarted(url);
+            await Steps.VerifyIdentityServerStarted(url);
         }
 
         public void Dispose()

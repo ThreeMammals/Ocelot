@@ -77,13 +77,13 @@ namespace Ocelot.UnitTests.Consul
             result.ShouldBeTrue();
         }
 
-        private void WhenIGetTheServicesWithoutDelay(int expected)
+        private async Task WhenIGetTheServicesWithoutDelay(int expected)
         {
             var provider = new PollConsul(_delay, "test2", _factory.Object, _consulServiceDiscoveryProvider.Object);
             bool result;
             try
             {
-                _result = provider.GetAsync().GetAwaiter().GetResult();
+                _result = await provider.GetAsync();
                 result = _result.Count == expected;
             }
             catch (Exception)

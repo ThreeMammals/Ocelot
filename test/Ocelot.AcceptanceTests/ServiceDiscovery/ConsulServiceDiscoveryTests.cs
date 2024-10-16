@@ -407,18 +407,18 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
-        Action<int> requestToProjectsAndThenRequestToCustomersAndAssert = (i) =>
+        Func<int, Task> requestToProjectsAndThenRequestToCustomersAndAssert = async (i) =>
         {
             // Step 1
             int count = i + 1;
-            WhenIGetUrlOnTheApiGateway("/projects/api/projects");
+            await WhenIGetUrlOnTheApiGateway("/projects/api/projects");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(0, count);
             ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[0]}", $"i is {i}");
             _responses[2 * i] = _response;
 
             // Step 2
-            WhenIGetUrlOnTheApiGateway("/customers/api/customers");
+            await WhenIGetUrlOnTheApiGateway("/customers/api/customers");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(1, count);
             ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[1]}", $"i is {i}");
@@ -561,12 +561,12 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         return config;
     }
 
-    private void WhenIGetUrl(string url, CookieHeaderValue cookie)
+    private async Task WhenIGetUrl(string url, CookieHeaderValue cookie)
     {
         var t = cookie != null
             ? WhenIGetUrlOnTheApiGateway(url, cookie)
             : WhenIGetUrl(url);
-        _response = t.Result;
+        _response = await t;
     }
 
     private void ThenTheTokenIs(string token)

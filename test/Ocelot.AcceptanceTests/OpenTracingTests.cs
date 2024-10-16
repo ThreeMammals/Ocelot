@@ -515,7 +515,7 @@ namespace Ocelot.AcceptanceTests
         }
     }
 
-    public class Waiter
+    public class Waiter // TODO Move to Ocelot.Testing project
     {
         private readonly int _milliSeconds;
 
@@ -524,36 +524,27 @@ namespace Ocelot.AcceptanceTests
             _milliSeconds = milliSeconds;
         }
 
+        // TODO Replace with async version in tests
         public bool Until(Func<bool> condition)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var passed = false;
-            while (stopwatch.ElapsedMilliseconds < _milliSeconds)
-            {
-                if (condition.Invoke())
-                {
-                    passed = true;
-                    break;
-                }
-            }
-
-            return passed;
+            Task<bool> WrappedCondition() => Task.FromResult(condition.Invoke());
+            return UntilAsync(WrappedCondition).GetAwaiter().GetResult();
         }
 
-        public async Task<bool> Until(Func<Task<bool>> condition)
+        public async Task<bool> UntilAsync(Func<Task<bool>> condition)
         {
             var stopwatch = Stopwatch.StartNew();
-            var passed = false;
             while (stopwatch.ElapsedMilliseconds < _milliSeconds)
             {
                 if (await condition.Invoke())
                 {
-                    passed = true;
-                    break;
+                    stopwatch.Stop();
+                    return true;
                 }
             }
 
-            return passed;
+            stopwatch.Stop();
+            return false;
         }
 
         public bool Until<T>(Func<bool> condition)
@@ -569,6 +560,7 @@ namespace Ocelot.AcceptanceTests
                 }
             }
 
+            stopwatch.Stop();
             return passed;
         }
     }

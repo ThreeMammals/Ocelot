@@ -86,9 +86,9 @@ namespace Ocelot.UnitTests.Controllers
                 .Verify(x => x.Set(_fileConfiguration), Times.Once);
         }
 
-        private void WhenIPostTheFileConfiguration()
+        private async Task WhenIPostTheFileConfiguration()
         {
-            _result = _controller.Post(_fileConfiguration).Result;
+            _result = await _controller.Post(_fileConfiguration);
         }
 
         private void GivenTheFileConfiguration(FileConfiguration fileConfiguration)
@@ -108,9 +108,9 @@ namespace Ocelot.UnitTests.Controllers
                 .ReturnsAsync(fileConfiguration);
         }
 
-        private void WhenIGetTheFileConfiguration()
+        private async Task WhenIGetTheFileConfiguration()
         {
-            _result = _controller.Get().Result;
+            _result = await _controller.Get();
         }
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()

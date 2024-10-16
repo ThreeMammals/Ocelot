@@ -33,7 +33,7 @@ namespace Ocelot.IntegrationTests
         }
 
         [Fact]
-        public void should_clear_region()
+        public async Task Should_clear_region()
         {
             var initialConfiguration = new FileConfiguration
             {
@@ -85,9 +85,9 @@ namespace Ocelot.IntegrationTests
 
             GivenThereIsAConfiguration(initialConfiguration);
             GivenOcelotIsRunning();
-            GivenIHaveAnOcelotToken("/administration");
+            await GivenIHaveAnOcelotToken("/administration");
             GivenIHaveAddedATokenToMyRequest();
-            WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
+            await WhenIDeleteOnTheApiGateway($"/administration/outputcache/{regionToClear}");
             ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
         }
 
@@ -96,7 +96,7 @@ namespace Ocelot.IntegrationTests
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token.AccessToken);
         }
 
-        private void GivenIHaveAnOcelotToken(string adminPath)
+        private async Task GivenIHaveAnOcelotToken(string adminPath)
         {
             var tokenUrl = $"{adminPath}/connect/token";
             var formData = new List<KeyValuePair<string, string>>
@@ -108,12 +108,12 @@ namespace Ocelot.IntegrationTests
             };
             var content = new FormUrlEncodedContent(formData);
 
-            var response = _httpClient.PostAsync(tokenUrl, content).Result;
-            var responseContent = response.Content.ReadAsStringAsync().Result;
+            var response = await _httpClient.PostAsync(tokenUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
             _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
             var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = _httpClient.GetAsync(configPath).Result;
+            response = await _httpClient.GetAsync(configPath);
             response.EnsureSuccessStatusCode();
         }
 
@@ -149,19 +149,16 @@ namespace Ocelot.IntegrationTests
                 webBuilder.UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                });
+                .Configure(async app => await app.UseOcelot());
             });
 
             _builder = _webHostBuilder.Build();
-
             _builder.Start();
         }
 
         private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         {
+            // TODO: Turn method as async
             var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
@@ -187,9 +184,9 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        private void WhenIDeleteOnTheApiGateway(string url)
+        private async Task WhenIDeleteOnTheApiGateway(string url)
         {
-            _response = _httpClient.DeleteAsync(url).Result;
+            _response = await _httpClient.DeleteAsync(url);
         }
 
         private void ThenTheStatusCodeShouldBe(HttpStatusCode expectedHttpStatusCode)

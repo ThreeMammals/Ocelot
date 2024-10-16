@@ -393,9 +393,9 @@ namespace Ocelot.UnitTests.Security
             _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
         }
 
-        private void WhenTheSecurityPolicy()
+        private async Task WhenTheSecurityPolicy()
         {
-            response = _ipSecurityPolicy.Security(_httpContext.Items.DownstreamRoute(), _httpContext).GetAwaiter().GetResult();
+            response = await _ipSecurityPolicy.Security(_httpContext.Items.DownstreamRoute(), _httpContext);
         }
 
         private void ThenSecurityPassing()

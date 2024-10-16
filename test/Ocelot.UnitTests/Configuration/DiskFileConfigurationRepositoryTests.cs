@@ -29,21 +29,21 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void Should_return_file_configuration()
+        public async Task Should_return_file_configuration()
         {
             Arrange();
             var config = FakeFileConfigurationForGet();
             GivenTheConfigurationIs(config);
 
             // Act
-            WhenIGetTheRoutes();
+            await WhenIGetTheRoutes();
 
             // Assert
             ThenTheFollowingIsReturned(config);
         }
 
         [Fact]
-        public void Should_return_file_configuration_if_environment_name_is_unavailable()
+        public async Task Should_return_file_configuration_if_environment_name_is_unavailable()
         {
             Arrange();
             var config = FakeFileConfigurationForGet();
@@ -51,20 +51,20 @@ namespace Ocelot.UnitTests.Configuration
             GivenTheConfigurationIs(config);
 
             // Act
-            WhenIGetTheRoutes();
+            await WhenIGetTheRoutes();
 
             // Assert
             ThenTheFollowingIsReturned(config);
         }
 
         [Fact]
-        public void Should_set_file_configuration()
+        public async Task Should_set_file_configuration()
         {
             Arrange();
             var config = FakeFileConfigurationForSet();
 
             // Act
-            WhenISetTheConfiguration(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -73,14 +73,14 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void Should_set_file_configuration_if_environment_name_is_unavailable()
+        public async Task Should_set_file_configuration_if_environment_name_is_unavailable()
         {
             Arrange();
             var config = FakeFileConfigurationForSet();
             GivenTheEnvironmentNameIsUnavailable();
 
             // Act
-            WhenISetTheConfiguration(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void Should_set_environment_file_configuration_and_ocelot_file_configuration()
+        public async Task Should_set_environment_file_configuration_and_ocelot_file_configuration()
         {
             Arrange();
             var config = FakeFileConfigurationForSet();
@@ -96,7 +96,7 @@ namespace Ocelot.UnitTests.Configuration
             var ocelotJson = GivenTheUserAddedOcelotJson();
 
             // Act
-            WhenISetTheConfiguration(config);
+            await WhenISetTheConfiguration(config);
 
             // Assert
             ThenTheConfigurationIsStoredAs(config);
@@ -123,10 +123,11 @@ namespace Ocelot.UnitTests.Configuration
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns((string)null);
         }
 
-        private void WhenISetTheConfiguration(FileConfiguration fileConfiguration)
+        private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)
         {
-            _repo.Set(fileConfiguration);
-            _result = _repo.Get().Result.Data;
+            await _repo.Set(fileConfiguration);
+            var response = await _repo.Get();
+            _result = response.Data;
         }
 
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
@@ -182,9 +183,10 @@ namespace Ocelot.UnitTests.Configuration
             _files.Add(environmentSpecific);
         }
 
-        private void WhenIGetTheRoutes()
+        private async Task WhenIGetTheRoutes()
         {
-            _result = _repo.Get().Result.Data;
+            var response = await _repo.Get();
+            _result = response.Data;
         }
 
         private void ThenTheFollowingIsReturned(FileConfiguration expecteds)

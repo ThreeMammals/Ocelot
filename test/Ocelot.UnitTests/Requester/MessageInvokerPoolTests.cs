@@ -264,24 +264,22 @@ public class MessageInvokerPoolTests : UnitTest
 
     private void ThenSomethingIsReturned() => _response.ShouldNotBeNull();
 
-    private void WhenICallTheClient(string url)
+    private async Task WhenICallTheClient(string url)
     {
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
-        _response = messageInvoker
-            .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None).GetAwaiter()
-            .GetResult();
+        _response = await messageInvoker
+            .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None);
     }
 
-    private void WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
+    private async Task WhenICallTheClientWillThrowAfterTimeout(TimeSpan timeout)
     {
         var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
         var stopwatch = new Stopwatch();
         try
         {
             stopwatch.Start();
-            _response = messageInvoker
-                .SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://test.com"), CancellationToken.None).GetAwaiter()
-                .GetResult();
+            _response = await messageInvoker
+                .SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://test.com"), CancellationToken.None);
         }
         catch (Exception e)
         {
