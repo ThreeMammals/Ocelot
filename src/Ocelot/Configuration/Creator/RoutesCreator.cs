@@ -108,7 +108,7 @@ namespace Ocelot.Configuration.Creator
 
             var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
 
-            var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions);
+            var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions, globalConfiguration);
 
             var downstreamHttpVersion = _versionCreator.Create(fileRoute.DownstreamHttpVersion);
 

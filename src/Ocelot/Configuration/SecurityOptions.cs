@@ -4,8 +4,8 @@
     {
         public SecurityOptions()
         {
-            IPAllowedList = new();
-            IPBlockedList = new();
+            IPAllowedList = new List<string>();
+            IPBlockedList = new List<string>();
         }
 
         public SecurityOptions(string allowed = null, string blocked = null)
@@ -13,22 +13,22 @@
         {
             if (!string.IsNullOrEmpty(allowed))
             {
-                IPAllowedList.Add(allowed);
+                IPAllowedList = IPAllowedList.Append(allowed).ToList();
             }
 
             if (!string.IsNullOrEmpty(blocked))
             {
-                IPBlockedList.Add(blocked);
+                IPBlockedList = IPBlockedList.Append(blocked).ToList();
             }
         }
 
-        public SecurityOptions(List<string> allowedList = null, List<string> blockedList = null)
+        public SecurityOptions(IList<string> allowedList = null, IList<string> blockedList = null)
         {
-            IPAllowedList = allowedList ?? new();
-            IPBlockedList = blockedList ?? new();
+            IPAllowedList = allowedList ?? new List<string>();
+            IPBlockedList = blockedList ?? new List<string>();
         }
 
-        public List<string> IPAllowedList { get; }
-        public List<string> IPBlockedList { get; }
+        public IList<string> IPAllowedList { get; }
+        public IList<string> IPBlockedList { get; }
     }
 }
