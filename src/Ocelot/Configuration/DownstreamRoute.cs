@@ -141,18 +141,18 @@ namespace Ocelot.Configuration
             : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
 
         /// <summary>The timeout duration for the downstream request in seconds.</summary>
-        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
+        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
         public int? Timeout { get; }
 
         /// <summary>Defines the default timeout in seconds for all routes, applicable at both the Route-level and globally.</summary>
         /// <remarks>By default, initialized to 90 seconds.</remarks>
-        /// <value>An <see cref="int"/> value, default.</value>
+        /// <value>An <see cref="int"/> value.</value>
         public static int DefaultTimeoutSeconds { get; set; } = 90;
 
         /// <summary>
         /// Calculates timeout in milliseconds based on QoS options with applying default timeout values.
         /// </summary>
-        /// <returns>An <see cref="int"/> value in milliseconds.</returns>
+        /// <returns>An <see cref="int"/> value, in milliseconds.</returns>
         public int TimeoutMilliseconds() => QosOptions.UseQos
             ? QosOptions.TimeoutValue ?? QoSOptions.DefaultTimeout
             : 1000 * (Timeout ?? DefaultTimeoutSeconds);
