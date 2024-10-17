@@ -8,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Ocelot.AcceptanceTests
 {
     public class ClaimsToHeadersForwardingTests : IDisposable

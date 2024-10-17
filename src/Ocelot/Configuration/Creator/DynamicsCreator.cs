@@ -29,22 +29,26 @@ namespace Ocelot.Configuration.Creator
                 .ToList();
         }
 
-        private Route SetUpDynamicRoute(FileDynamicRoute fileDynamicRoute, FileGlobalConfiguration globalConfiguration)
+        public int CreateTimeout(FileDynamicRoute route, FileGlobalConfiguration global)
+            => route.Timeout ?? global.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds;
+
+        private Route SetUpDynamicRoute(FileDynamicRoute dynamicRoute, FileGlobalConfiguration globalConfiguration)
         {
             var rateLimitOption = _rateLimitOptionsCreator
-                .Create(fileDynamicRoute.RateLimitRule, globalConfiguration);
+                .Create(dynamicRoute.RateLimitRule, globalConfiguration);
 
-            var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
-            var versionPolicy = _versionPolicyCreator.Create(fileDynamicRoute.DownstreamHttpVersionPolicy);
-            var metadata = _metadataCreator.Create(fileDynamicRoute.Metadata, globalConfiguration);
+            var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
+            var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
+            var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
 
             var downstreamRoute = new DownstreamRouteBuilder()
                 .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
                 .WithRateLimitOptions(rateLimitOption)
-                .WithServiceName(fileDynamicRoute.ServiceName)
+                .WithServiceName(dynamicRoute.ServiceName)
                 .WithDownstreamHttpVersion(version)
                 .WithDownstreamHttpVersionPolicy(versionPolicy)
                 .WithMetadata(metadata)
+                .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
                 .Build();
 
             var route = new RouteBuilder()
