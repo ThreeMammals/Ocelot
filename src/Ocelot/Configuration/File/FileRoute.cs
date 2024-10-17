@@ -81,7 +81,7 @@ namespace Ocelot.Configuration.File
         ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/></item>
         /// </list>
         /// </remarks>
-        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
+        /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
         public int? Timeout { get; set; }
 
         public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
