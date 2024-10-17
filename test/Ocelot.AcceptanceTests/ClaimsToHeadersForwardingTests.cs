@@ -76,7 +76,7 @@ namespace Ocelot.AcceptanceTests
                             AuthenticationProviderKey = "Test",
                             AllowedScopes = new List<string>
                             {
-                                "openid", "offline_access", "api",
+                                "api",
                             },
                         },
                         AddHeadersToRequest =
