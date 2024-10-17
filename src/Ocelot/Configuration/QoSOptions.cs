@@ -54,7 +54,10 @@ public class QoSOptions
     public int? TimeoutValue { get; }
     public const int LowTimeout = 10; // 10 ms // TODO Double check the Polly docs
     public const int HighTimeout = 86_400_000; // 24 hours in milliseconds
-    public const int DefaultTimeout = 30_000; // 30 seconds
+
+    /// <summary>The default is set to 30 seconds, but it can be globally assigned any value.</summary>
+    /// <value>An <see cref="int"/> value.</value>
+    public static int DefaultTimeout { get; set; } = 30_000;
 
     public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
 }

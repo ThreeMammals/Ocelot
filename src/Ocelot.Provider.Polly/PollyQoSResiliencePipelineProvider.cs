@@ -6,7 +6,6 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
-using System;
 using System.Net;
 
 namespace Ocelot.Provider.Polly;
@@ -20,8 +19,6 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     private readonly IOcelotLogger _logger;
     private readonly FileGlobalConfiguration _global;
     
-    public const int DefaultQoSTimeoutMilliseconds = 40_000;
-
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
@@ -125,7 +122,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     {
         int? timeoutMs = route?.QosOptions?.TimeoutValue
             ?? _global?.QoSOptions?.TimeoutValue
-            ?? DefaultQoSTimeoutMilliseconds; // TODO Need team's consensus!!! Prefer QoSOptions.DefaultTimeout ?
+            ?? QoSOptions.DefaultTimeout;
 
         // 0 means No option!
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
