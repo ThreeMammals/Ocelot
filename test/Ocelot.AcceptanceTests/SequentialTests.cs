@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.AcceptanceTests;
 
@@ -6,6 +6,4 @@ namespace Ocelot.AcceptanceTests;
 /// Apply <see cref="CollectionAttribute"/> to classes to disable parallelization.
 /// </summary>
 [CollectionDefinition(nameof(SequentialTests), DisableParallelization = true)]
-public class SequentialTests
-{
-}
+public class SequentialTests { }

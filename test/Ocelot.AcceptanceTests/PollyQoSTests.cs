@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Requester;
-using System.Reflection;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -180,30 +177,32 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .BDDfy();
     }
 
+    // TODO: If failed in parallel execution mode, switch to SequentialTests
+    // This issue may arise when transitioning all tests to parallel execution
+    // This test must be sequential because of usage of the static DownstreamRoute.DefaultTimeoutSeconds
     [Fact]
     [Trait("Bug", "1833")]
     public void Should_timeout_per_default_after_90_seconds()
     {
-        var defTimeoutMs = 1_000 * DownstreamRoute.DefaultTimeoutSeconds; // original value is 90 seconds
-        defTimeoutMs = 1_000 * 3; // override value
-        var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500)) // 3.5s > 3s -> ServiceUnavailable
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => GivenIHackDefaultTimeoutValue(defTimeoutMs)) // after 3 secs -> Timeout exception aka request cancellation
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .BDDfy();
-    }
-
-    private void GivenIHackDefaultTimeoutValue(int defaultTimeoutMs)
-    {
-        var field = typeof(MessageInvokerPool).GetField("_timeoutMilliseconds", BindingFlags.NonPublic | BindingFlags.Instance);
-        var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
-        field.SetValue(service, defaultTimeoutMs); // hack the value of default 90 seconds
+        int originalValue = DownstreamRoute.DefaultTimeoutSeconds; // original value is 90 seconds
+        try
+        {
+            DownstreamRoute.DefaultTimeoutSeconds = 3; // override original value
+            var defTimeoutMs = 1_000 * DownstreamRoute.DefaultTimeoutSeconds;
+            var port = PortFinder.GetRandomPort();
+            var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+            var configuration = GivenConfiguration(route);
+            this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500)) // 3.5s > 3s -> ServiceUnavailable
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithPolly())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 3 secs -> Timeout exception aka request cancellation
+                .BDDfy();
+        }
+        finally
+        {
+            DownstreamRoute.DefaultTimeoutSeconds = originalValue;
+        }
     }
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
