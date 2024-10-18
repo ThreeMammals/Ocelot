@@ -8,7 +8,7 @@ namespace Ocelot.Authorization
     {
         Response<bool> Authorize(
             ClaimsPrincipal claimsPrincipal,
-            Dictionary<string, string> routeClaimsRequirement,
+            Dictionary<string, string[]> routeClaimsRequirement,
             List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
         );
     }
