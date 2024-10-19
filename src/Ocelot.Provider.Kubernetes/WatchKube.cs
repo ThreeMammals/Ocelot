@@ -2,41 +2,49 @@
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 
 namespace Ocelot.Provider.Kubernetes;
 
-// Dispose() won't be called because provider wasn't resolved from DI
 public class WatchKube : IServiceDiscoveryProvider, IDisposable
 {
+    internal const int FailedSubscriptionRetrySeconds = 5;
+    internal const int FirstResultsFetchingTimeoutSeconds = 2;
+    
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
     private readonly IKubeServiceBuilder _serviceBuilder;
+    private readonly IScheduler _scheduler;
     
-    private List<Service> _services = null;
     private readonly IDisposable _subscription;
+    private readonly TaskCompletionSource _firstResultsCompletionSource;
+    
+    private List<Service> _services = new();
 
     public WatchKube(
         KubeRegistryConfiguration configuration,
         IOcelotLoggerFactory factory,
         IKubeApiClient kubeApi,
-        IKubeServiceBuilder serviceBuilder)
+        IKubeServiceBuilder serviceBuilder,
+        IScheduler scheduler)
     {
         _configuration = configuration;
-        _logger = factory.CreateLogger<Kube>();
+        _logger = factory.CreateLogger<WatchKube>();
         _kubeApi = kubeApi;
         _serviceBuilder = serviceBuilder;
-        
+        _scheduler = scheduler;
+
+        _firstResultsCompletionSource = new TaskCompletionSource();
+        SetFirstResultsCompletedAfterDelay();
         _subscription = CreateSubscription();
     }
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        // need to wait for first result fetching somehow
-        if (_services is null)
-        {
-            await Task.Delay(1000);
-        }
+        // wait for first results fetching
+        await _firstResultsCompletionSource.Task;
 
         if (_services is not { Count: > 0 })
         {
@@ -46,13 +54,20 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
         return _services;
     }
 
+    private void SetFirstResultsCompletedAfterDelay() => Observable
+        .Timer(TimeSpan.FromSeconds(FirstResultsFetchingTimeoutSeconds), _scheduler)
+        .Subscribe(_ => _firstResultsCompletionSource.TrySetResult());
+
     private IDisposable CreateSubscription() =>
         _kubeApi
             .EndpointsV1()
             .Watch(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace)
+            .Do(_ => { }, ex => _logger.LogError(() => GetMessage("Endpoints subscription error occured."), ex))
+            .RetryAfter(TimeSpan.FromSeconds(FailedSubscriptionRetrySeconds), _scheduler)
             .Subscribe(
                 onNext: endpointEvent =>
                 {
+                    _firstResultsCompletionSource.TrySetResult();
                     _services = endpointEvent.EventType switch
                     {
                         ResourceEventType.Deleted or ResourceEventType.Error => new(),
@@ -60,15 +75,10 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
                         _ => _serviceBuilder.BuildServices(_configuration, endpointEvent.Resource).ToList(),
                     };
                 },
-                onError: ex =>
-                {
-                    // recreate subscription in case of exceptions?
-                    _logger.LogError(() => GetMessage("Endpoints subscription error occured"), ex);
-                },
                 onCompleted: () =>
                 {
-                    // called only when subscription is cancelled
-                    _logger.LogWarning(() => GetMessage("Subscription to service endpoints completed"));
+                    // called only when subscription canceled in Dispose
+                    _logger.LogInformation(() => GetMessage("Subscription to service endpoints completed"));
                 });
 
     private string GetMessage(string message)

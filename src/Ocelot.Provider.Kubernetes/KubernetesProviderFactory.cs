@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
+using System.Reactive.Concurrency;
 
 namespace Ocelot.Provider.Kubernetes;
 
