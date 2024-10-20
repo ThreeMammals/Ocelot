@@ -10,7 +10,7 @@ namespace Ocelot.Provider.Kubernetes;
 public class WatchKube : IServiceDiscoveryProvider, IDisposable
 {
     internal const int FailedSubscriptionRetrySeconds = 5;
-    internal const int FirstResultsFetchingTimeoutSeconds = 2;
+    internal const int FirstResultsFetchingTimeoutSeconds = 3;
     
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
