@@ -156,7 +156,7 @@ public class WatchKubeTests
             {
                 return endpoints.Subsets.Select((x, i) => new Service(
                     config.KeyOfServiceInK8s,
-                    new ServiceHostAndPort(x.Addresses[i].Hostname, x.Ports[i].Port),
+                    new ServiceHostAndPort(x.Addresses[i].Hostname, x.Ports[i].Port!.Value),
                     i.ToString(),
                     endpoints.ApiVersion,
                     Enumerable.Empty<string>()));
