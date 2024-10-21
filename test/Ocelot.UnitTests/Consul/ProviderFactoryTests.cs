@@ -26,12 +26,17 @@ public class ProviderFactoryTests
         loggerFactory.Setup(x => x.CreateLogger<PollConsul>()).Returns(logger.Object);
 
         var consulFactory = new Mock<IConsulClientFactory>();
+        var consulServiceBuilder = new Mock<IConsulServiceBuilder>();
 
         var services = new ServiceCollection();
         services.AddSingleton(contextAccessor.Object);
         services.AddSingleton(consulFactory.Object);
         services.AddSingleton(loggerFactory.Object);
-        _provider = services.BuildServiceProvider();
+        services.AddScoped(_ => consulServiceBuilder.Object);
+
+        _provider = services.BuildServiceProvider(validateScopes: true);
+
+        context.RequestServices = _provider.CreateScope().ServiceProvider;
     }
 
     [Fact]
