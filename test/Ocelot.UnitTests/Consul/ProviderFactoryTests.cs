@@ -34,52 +34,63 @@ public class ProviderFactoryTests
         services.AddSingleton(loggerFactory.Object);
         services.AddScoped(_ => consulServiceBuilder.Object);
 
-        _provider = services.BuildServiceProvider(true); // validate scopes
+        _provider = services.BuildServiceProvider(true); // validate scopes!!!
         _context.RequestServices = _provider.CreateScope().ServiceProvider;
     }
 
     [Fact]
-    public void Should_return_consul_service_discovery_provider()
+    public void Get_EmptyServiceName_ReturnedConsul()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
             .Build();
 
-        var provider = ConsulProviderFactory.Get(_provider,
-            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty,
-                1), route);
-        provider.ShouldBeOfType<Provider.Consul.Consul>();
+        // Act
+        var actual = ConsulProviderFactory.Get(
+            _provider,
+            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1),
+            route);
+
+        // Assert
+        actual.ShouldBeOfType<Provider.Consul.Consul>();
     }
 
     [Fact]
-    public void should_return_polling_consul_service_discovery_provider()
+    public void Get_EmptyServiceName_ReturnedPollConsul()
     {
-        var provider = DummyPollingConsulServiceFactory(string.Empty);
-        var pollProvider = provider as PollConsul;
-        pollProvider.ShouldNotBeNull();
+        // Arrange, Act
+        var route = GivenRoute(string.Empty);
+        var actual = Act(route);
+
+        // Assert
+        actual.ShouldNotBeNull().ShouldBeOfType<PollConsul>();
     }
 
     [Fact]
-    public void Should_return_same_provider_for_given_service_name()
+    public void Get_RoutesWithTheSameServiceName_ReturnedSameProvider()
     {
-        var provider = DummyPollingConsulServiceFactory("test");
-        var provider2 = DummyPollingConsulServiceFactory("test");
+        // Arrange, Act: 1
+        var route1 = GivenRoute("test");
+        var actual1 = Act(route1);
 
-        provider.ShouldBeEquivalentTo(provider2);
+        // Arrange, Act: 2
+        var route2 = GivenRoute("test");
+        var actual2 = Act(route2);
 
-        var pollProvider = provider as PollConsul;
-        pollProvider.ShouldNotBeNull();
-
-        var pollProvider2 = provider2 as PollConsul;
-        pollProvider2.ShouldNotBeNull();
-
-        pollProvider.ServiceName.ShouldBeEquivalentTo(pollProvider2.ServiceName);
+        // Assert
+        actual1.ShouldNotBeNull().ShouldBeOfType<PollConsul>();
+        actual2.ShouldNotBeNull().ShouldBeOfType<PollConsul>();
+        actual1.ShouldBeEquivalentTo(actual2);
+        var provider1 = actual1 as PollConsul;
+        var provider2 = actual2 as PollConsul;
+        provider1.ServiceName.ShouldBeEquivalentTo(provider2.ServiceName);
     }
 
-    [Theory]
-    [InlineData(new object[] { new[] { "service1", "service2", "service3", "service4" } })]
-    public void Should_return_provider_according_to_service_name(string[] serviceNames)
+    [Fact]
+    public void ShouldReturnProviderAccordingToServiceName()
     {
+        string[] serviceNames = new[] { "service1", "service2", "service3", "service4" };
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
 
         foreach (var serviceName in serviceNames)
@@ -89,17 +100,12 @@ public class ProviderFactoryTests
         }
 
         var convertedProvidersList = providersList.Select(x => x as PollConsul).ToList();
-
-        foreach (var convertedProvider in convertedProvidersList)
-        {
-            convertedProvider.ShouldNotBeNull();
-        }
+        convertedProvidersList.ForEach(x => x.ShouldNotBeNull());
 
         foreach (var serviceName in serviceNames)
         {
             var cProvider = DummyPollingConsulServiceFactory(serviceName);
             var convertedCProvider = cProvider as PollConsul;
-
             convertedCProvider.ShouldNotBeNull();
 
             var matchingProviders = convertedProvidersList
@@ -118,29 +124,25 @@ public class ProviderFactoryTests
     public void Should_throw_invalid_operation_exception()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
-            .WithServiceName(string.Empty)
-            .Build();
+        var route = GivenRoute(string.Empty);
         _context.RequestServices = _provider; // given service provider is root provider
 
         // Act
-        Func<IServiceDiscoveryProvider> consulProviderFactoryCall = () => ConsulProviderFactory.Get(
-            _provider,
-            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1),
-            route);
+        Func<IServiceDiscoveryProvider> consulProviderFactoryCall = () => Act(route);
 
         // Assert
         consulProviderFactoryCall.ShouldThrow<InvalidOperationException>();
     }
 
-    private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName)
+    private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName) => Act(GivenRoute(serviceName));
+
+    private static DownstreamRoute GivenRoute(string serviceName) => new DownstreamRouteBuilder()
+        .WithServiceName(serviceName)
+        .Build();
+
+    private IServiceDiscoveryProvider Act(DownstreamRoute route)
     {
         var stopsFromPolling = 10000;
-
-        var route = new DownstreamRouteBuilder()
-            .WithServiceName(serviceName)
-            .Build();
-
         return ConsulProviderFactory.Get?.Invoke(
             _provider,
             new ServiceProviderConfiguration(ConsulProviderFactory.PollConsul, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
