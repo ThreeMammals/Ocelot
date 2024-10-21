@@ -636,12 +636,19 @@ public class Steps : IDisposable
     }
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
-        => GivenOcelotIsRunningWithServices(configureServices, null);
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp)
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
+
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, bool validateScopes)
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes);
+
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp, bool validateScopes)
     {
         _webHostBuilder = new WebHostBuilder()
             .ConfigureAppConfiguration(WithBasicConfiguration)
+            .UseDefaultServiceProvider(opts => opts.ValidateScopes = validateScopes)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot);
         _ocelotServer = new TestServer(_webHostBuilder);
