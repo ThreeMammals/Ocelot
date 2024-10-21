@@ -12,9 +12,12 @@ namespace Ocelot.UnitTests.Kubernetes;
 
 public class KubernetesProviderFactoryTests : UnitTest
 {
-    private readonly ServiceCollection _services = new();
-    private IOcelotBuilder _builder;
-    private ServiceProvider _serviceProvider;
+    private readonly IOcelotBuilder _builder;
+
+    public KubernetesProviderFactoryTests()
+    {
+        _builder = new ServiceCollection().AddOcelot();
+    }
 
     [Theory]
     [Trait("Bug", "977")]
@@ -22,60 +25,38 @@ public class KubernetesProviderFactoryTests : UnitTest
     [InlineData(nameof(Kube))]
     public void Should_resolve_Provider(string providerType)
     {
-        this.Given(s => s.GivenOcelotBuilder())
-            .When(s => s.WhenKubernetesRegistered())
-            .When(s => s.WhenServiceProviderBuilt(true))
-            .Then(s => s.ThenKubeDiscoveryProviderCanBeResolved(providerType))
-            .BDDfy();
-    }
-
-    private void GivenOcelotBuilder()
-    {
-        _builder = _services.AddOcelot();
-    }
-
-    private void WhenKubernetesRegistered()
-    {
+        // Arrange
         _builder.AddKubernetes();
 
         var kubeClient = new Mock<IKubeApiClient>();
-        kubeClient.Setup(x => x.ResourceClient(It.IsAny<Func<IKubeApiClient, IEndPointClient>>()))
+        kubeClient
+            .Setup(x => x.ResourceClient(It.IsAny<Func<IKubeApiClient, IEndPointClient>>()))
             .Returns(Mock.Of<IEndPointClient>());
+        var sd = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClient));
+        _builder.Services.Replace(ServiceDescriptor.Describe(sd.ServiceType, _ => kubeClient.Object, sd.Lifetime));
 
-        // mocked IKubeApiClient should have the same lifetime
-        var kubeApiClientDescriptor = _services.First(x => x.ServiceType == typeof(IKubeApiClient));
-        var sd = new ServiceDescriptor(kubeApiClientDescriptor.ServiceType,
-            _ => kubeClient.Object,
-            kubeApiClientDescriptor.Lifetime);
-        _builder.Services.Replace(sd);
-    }
+        var serviceProvider = _builder.Services.BuildServiceProvider(validateScopes: true);
 
-    private void WhenServiceProviderBuilt(bool validateScopes)
-    {
-        _serviceProvider = _services.BuildServiceProvider(validateScopes);
-    }
+        var config = GivenServiceProvider(providerType);
+        var route = GivenRoute("test-service");
 
-    private void ThenKubeDiscoveryProviderCanBeResolved(string providerType)
-    {
-        var resolving = () =>
-        {
-            var finder = _serviceProvider.GetRequiredService<ServiceDiscoveryFinderDelegate>();
+        // Act
+        var resolving = () => _ = serviceProvider
+            .GetRequiredService<ServiceDiscoveryFinderDelegate>()
+            .Invoke(serviceProvider, config, route);
 
-            var config = new ServiceProviderConfiguration(providerType,
-                scheme: string.Empty,
-                host: string.Empty,
-                port: 1,
-                token: string.Empty,
-                configurationKey: string.Empty,
-                pollingInterval: 1);
-
-            var route = new DownstreamRouteBuilder()
-                .WithServiceName("service")
-                .Build();
-
-            _ = finder.Invoke(_serviceProvider, config, route);
-        };
-        
+        // Assert
         resolving.ShouldNotThrow();
     }
+
+    private static ServiceProviderConfiguration GivenServiceProvider(string type) => new(
+        type: type,
+        scheme: string.Empty,
+        host: string.Empty,
+        port: 1,
+        token: string.Empty,
+        configurationKey: string.Empty,
+        pollingInterval: 1);
+
+    private static DownstreamRoute GivenRoute(string name) => new DownstreamRouteBuilder().WithServiceName(name).Build();
 }
