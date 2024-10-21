@@ -12,13 +12,14 @@ namespace Ocelot.UnitTests.Consul;
 public class ProviderFactoryTests
 {
     private readonly IServiceProvider _provider;
+    private readonly HttpContext _context = new DefaultHttpContext();
+    private Func<IServiceDiscoveryProvider> _consulProviderFactoryCall;
 
     public ProviderFactoryTests()
     {
         var contextAccessor = new Mock<IHttpContextAccessor>();
-        var context = new DefaultHttpContext();
-        context.Items.Add(nameof(ConsulRegistryConfiguration), new ConsulRegistryConfiguration(null, null, 0, null, null));
-        contextAccessor.SetupGet(x => x.HttpContext).Returns(context);
+        _context.Items.Add(nameof(ConsulRegistryConfiguration), new ConsulRegistryConfiguration(null, null, 0, null, null));
+        contextAccessor.SetupGet(x => x.HttpContext).Returns(_context);
 
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         var logger = new Mock<IOcelotLogger>();
@@ -36,7 +37,7 @@ public class ProviderFactoryTests
 
         _provider = services.BuildServiceProvider(validateScopes: true);
 
-        context.RequestServices = _provider.CreateScope().ServiceProvider;
+        _context.RequestServices = _provider.CreateScope().ServiceProvider;
     }
 
     [Fact]
@@ -112,6 +113,36 @@ public class ProviderFactoryTests
                 .ShouldNotBeNull()
                 .ServiceName.ShouldBeEquivalentTo(convertedCProvider.ServiceName);
         }
+    }
+
+    [Fact]
+    public void should_throw_invalid_operation_exception()
+    {
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName(string.Empty)
+            .Build();
+
+        this.Given(x => GivenServiceProviderIsRootProvider())
+            .When(x => WhenIGetServiceDiscoveryProvider(route))
+            .Then(x => ThenInvalidOperationExceptionIsThrown(_consulProviderFactoryCall))
+            .BDDfy();
+    }
+
+    private void GivenServiceProviderIsRootProvider()
+    {
+        _context.RequestServices = _provider;
+    }
+
+    private void WhenIGetServiceDiscoveryProvider(DownstreamRoute route)
+    {
+        _consulProviderFactoryCall = () => ConsulProviderFactory.Get(_provider,
+            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty,
+                1), route);
+    }
+
+    private void ThenInvalidOperationExceptionIsThrown(Func<IServiceDiscoveryProvider> func)
+    {
+        func.ShouldThrow<InvalidOperationException>();
     }
 
     private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName)
