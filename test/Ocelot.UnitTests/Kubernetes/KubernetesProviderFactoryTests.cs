@@ -5,6 +5,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes;
+using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.UnitTests.Kubernetes;
@@ -37,10 +38,14 @@ public class KubernetesProviderFactoryTests : UnitTest
     {
         _builder.AddKubernetes();
 
+        var kubeClient = new Mock<IKubeApiClient>();
+        kubeClient.Setup(x => x.ResourceClient(It.IsAny<Func<IKubeApiClient, IEndPointClient>>()))
+            .Returns(Mock.Of<IEndPointClient>());
+
         // mocked IKubeApiClient should have the same lifetime
         var kubeApiClientDescriptor = _services.First(x => x.ServiceType == typeof(IKubeApiClient));
         var sd = new ServiceDescriptor(kubeApiClientDescriptor.ServiceType,
-            _ => Mock.Of<IKubeApiClient>(),
+            _ => kubeClient.Object,
             kubeApiClientDescriptor.Lifetime);
         _builder.Services.Replace(sd);
     }
