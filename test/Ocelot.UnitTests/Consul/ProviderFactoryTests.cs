@@ -34,12 +34,12 @@ public class ProviderFactoryTests
         services.AddSingleton(loggerFactory.Object);
         services.AddScoped(_ => consulServiceBuilder.Object);
 
-        _provider = services.BuildServiceProvider(true); // with validate scopes
+        _provider = services.BuildServiceProvider(true); // validate scopes
         _context.RequestServices = _provider.CreateScope().ServiceProvider;
     }
 
     [Fact]
-    public void should_return_consul_service_discovery_provider()
+    public void Should_return_consul_service_discovery_provider()
     {
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
@@ -60,7 +60,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void should_return_same_provider_for_given_service_name()
+    public void Should_return_same_provider_for_given_service_name()
     {
         var provider = DummyPollingConsulServiceFactory("test");
         var provider2 = DummyPollingConsulServiceFactory("test");
@@ -78,7 +78,7 @@ public class ProviderFactoryTests
 
     [Theory]
     [InlineData(new object[] { new[] { "service1", "service2", "service3", "service4" } })]
-    public void should_return_provider_according_to_service_name(string[] serviceNames)
+    public void Should_return_provider_according_to_service_name(string[] serviceNames)
     {
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
 
