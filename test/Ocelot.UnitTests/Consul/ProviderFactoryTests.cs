@@ -116,6 +116,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
+    [Trait("Bug", "2178")]
     public void should_throw_invalid_operation_exception()
     {
         var route = new DownstreamRouteBuilder()
