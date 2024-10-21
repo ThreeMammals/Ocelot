@@ -28,10 +28,11 @@ public static class ConsulProviderFactory // TODO : IServiceDiscoveryProviderFac
         var factory = provider.GetService<IOcelotLoggerFactory>();
         var consulFactory = provider.GetService<IConsulClientFactory>();
         var contextAccessor = provider.GetService<IHttpContextAccessor>();
+        var context = contextAccessor.HttpContext;
 
         var configuration = new ConsulRegistryConfiguration(config.Scheme, config.Host, config.Port, route.ServiceName, config.Token); // TODO Why not to pass 2 args only: config, route? LoL
-        contextAccessor.HttpContext.Items[nameof(ConsulRegistryConfiguration)] = configuration; // initialize data
-        var serviceBuilder = provider.GetService<IConsulServiceBuilder>(); // consume data in default/custom builder
+        context.Items[nameof(ConsulRegistryConfiguration)] = configuration; // initialize data
+        var serviceBuilder = context.RequestServices.GetService<IConsulServiceBuilder>(); // consume data in default/custom builder
 
         var consulProvider = new Consul(configuration, factory, consulFactory, serviceBuilder); // TODO It must be added to DI-container!
 
