@@ -13,7 +13,6 @@ public class ProviderFactoryTests
 {
     private readonly IServiceProvider _provider;
     private readonly HttpContext _context = new DefaultHttpContext();
-    private Func<IServiceDiscoveryProvider> _consulProviderFactoryCall;
 
     public ProviderFactoryTests()
     {
@@ -35,8 +34,7 @@ public class ProviderFactoryTests
         services.AddSingleton(loggerFactory.Object);
         services.AddScoped(_ => consulServiceBuilder.Object);
 
-        _provider = services.BuildServiceProvider(validateScopes: true);
-
+        _provider = services.BuildServiceProvider(true); // with validate scopes
         _context.RequestServices = _provider.CreateScope().ServiceProvider;
     }
 
@@ -117,33 +115,22 @@ public class ProviderFactoryTests
 
     [Fact]
     [Trait("Bug", "2178")]
-    public void should_throw_invalid_operation_exception()
+    public void Should_throw_invalid_operation_exception()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
             .Build();
+        _context.RequestServices = _provider; // given service provider is root provider
 
-        this.Given(x => GivenServiceProviderIsRootProvider())
-            .When(x => WhenIGetServiceDiscoveryProvider(route))
-            .Then(x => ThenInvalidOperationExceptionIsThrown(_consulProviderFactoryCall))
-            .BDDfy();
-    }
+        // Act
+        Func<IServiceDiscoveryProvider> consulProviderFactoryCall = () => ConsulProviderFactory.Get(
+            _provider,
+            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1),
+            route);
 
-    private void GivenServiceProviderIsRootProvider()
-    {
-        _context.RequestServices = _provider;
-    }
-
-    private void WhenIGetServiceDiscoveryProvider(DownstreamRoute route)
-    {
-        _consulProviderFactoryCall = () => ConsulProviderFactory.Get(_provider,
-            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty,
-                1), route);
-    }
-
-    private void ThenInvalidOperationExceptionIsThrown(Func<IServiceDiscoveryProvider> func)
-    {
-        func.ShouldThrow<InvalidOperationException>();
+        // Assert
+        consulProviderFactoryCall.ShouldThrow<InvalidOperationException>();
     }
 
     private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName)
