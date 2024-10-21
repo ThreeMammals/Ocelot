@@ -15,28 +15,26 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
 public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
 {
     private readonly string _kubernetesUrl;
-    private readonly IKubeApiClient _clientFactory;
     private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
+    private readonly Action<KubeClientOptions> _kubeClientOptionsConfigure;
 
     public KubernetesServiceDiscoveryTests()
     {
         _kubernetesUrl = DownstreamUrl(PortFinder.GetRandomPort());
-        var option = new KubeClientOptions
+        _kubeClientOptionsConfigure = opts =>
         {
-            ApiEndPoint = new Uri(_kubernetesUrl),
-            AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG",
-            AuthStrategy = KubeAuthStrategy.BearerToken,
-            AllowInsecure = true,
+            opts.ApiEndPoint = new Uri(_kubernetesUrl);
+            opts.AccessToken = "txpc696iUhbVoudg164r93CxDTrKRVWG";
+            opts.AuthStrategy = KubeAuthStrategy.BearerToken;
+            opts.AllowInsecure = true;
         };
-        _clientFactory = KubeApiClient.Create(option);
         _kubernetesHandler = new();
     }
 
@@ -311,15 +309,24 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     }
 
     private void WithKubernetes(IServiceCollection services) => services
-        .AddOcelot().AddKubernetes()
-        .Services.RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory);
+        .AddOcelot().AddKubernetes(false)
+        .Services.Configure(_kubeClientOptionsConfigure)
+        .Replace(GetValidateScopesDescriptor());
 
     private void WithKubernetesAndRoundRobin(IServiceCollection services) => services
-        .AddOcelot().AddKubernetes()
+        .AddOcelot().AddKubernetes(false)
         .AddCustomLoadBalancer<RoundRobinAnalyzer>(GetRoundRobinAnalyzer)
         .Services
-        .RemoveAll<IKubeApiClient>().AddSingleton(_clientFactory)
-        .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
+        .Configure(_kubeClientOptionsConfigure)
+        .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>()
+        .Replace(GetValidateScopesDescriptor());
+
+    private static ServiceDescriptor GetValidateScopesDescriptor()
+    {
+        var options = new ServiceProviderOptions { ValidateScopes = true };
+        return ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
+            new DefaultServiceProviderFactory(options));
+    }
 
     private int _k8sCounter, _k8sServiceGeneration;
     private static readonly object K8sCounterLocker = new();
