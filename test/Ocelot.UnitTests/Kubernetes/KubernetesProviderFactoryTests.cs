@@ -48,6 +48,32 @@ public class KubernetesProviderFactoryTests : UnitTest
         // Assert
         resolving.ShouldNotThrow();
     }
+    
+    [Theory]
+    [Trait("Bug", "977")]
+    [InlineData(nameof(PollKube))]
+    [InlineData(nameof(Kube))]
+    public void Should_fail_to_resolve_when_IKubeApiClient_is_scoped(string providerType)
+    {
+        // Arrange
+        _builder.AddKubernetes();
+        var sd = ServiceDescriptor.Describe(typeof(IKubeApiClient), _ => Mock.Of<IKubeApiClient>(), ServiceLifetime.Scoped);
+        _builder.Services.Replace(sd);
+
+        var serviceProvider = _builder.Services.BuildServiceProvider(validateScopes: true);
+
+        var config = GivenServiceProvider(providerType);
+        var route = GivenRoute("test-service");
+
+        // Act
+        var resolving = () => _ = serviceProvider
+            .GetRequiredService<ServiceDiscoveryFinderDelegate>()
+            .Invoke(serviceProvider, config, route);
+
+        // Assert
+        var ex = resolving.ShouldThrow<InvalidOperationException>();
+        ex.Message.ShouldContain("Cannot resolve scoped service 'KubeClient.IKubeApiClient' from root provider");
+    }
 
     private static ServiceProviderConfiguration GivenServiceProvider(string type) => new(
         type: type,

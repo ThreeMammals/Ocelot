@@ -60,7 +60,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunningWithServices(services => WithKubernetes(services)))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -100,7 +100,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunningWithServices(services => WithKubernetes(services)))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
@@ -308,18 +308,14 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         });
     }
 
-    private void WithKubernetes(IServiceCollection services) => services
-        .AddOcelot().AddKubernetes(false)
-        .Services.Configure(_kubeClientOptionsConfigure)
-        .Replace(GetValidateScopesDescriptor());
-
-    private void WithKubernetesAndRoundRobin(IServiceCollection services) => services
-        .AddOcelot().AddKubernetes(false)
-        .AddCustomLoadBalancer<RoundRobinAnalyzer>(GetRoundRobinAnalyzer)
-        .Services
+    private IOcelotBuilder WithKubernetes(IServiceCollection services) => services
         .Configure(_kubeClientOptionsConfigure)
-        .RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>()
-        .Replace(GetValidateScopesDescriptor());
+        .Replace(GetValidateScopesDescriptor())
+        .AddOcelot().AddKubernetes(false);
+
+    private void WithKubernetesAndRoundRobin(IServiceCollection services) => WithKubernetes(services)
+        .AddCustomLoadBalancer<RoundRobinAnalyzer>(GetRoundRobinAnalyzer)
+        .Services.RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
     private static ServiceDescriptor GetValidateScopesDescriptor()
     {
