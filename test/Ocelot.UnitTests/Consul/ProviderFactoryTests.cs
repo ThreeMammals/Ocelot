@@ -9,9 +9,10 @@ using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.Consul;
 
-public class ProviderFactoryTests
+public sealed class ProviderFactoryTests : UnitTest, IDisposable
 {
-    private readonly IServiceProvider _provider;
+    private readonly ServiceProvider _provider;
+    private readonly IServiceScope _scope;
     private readonly HttpContext _context = new DefaultHttpContext();
 
     public ProviderFactoryTests()
@@ -35,33 +36,36 @@ public class ProviderFactoryTests
         services.AddScoped(_ => consulServiceBuilder.Object);
 
         _provider = services.BuildServiceProvider(true); // validate scopes!!!
-        _context.RequestServices = _provider.CreateScope().ServiceProvider;
+        _scope = _provider.CreateScope();
+        _context.RequestServices = _scope.ServiceProvider;
+    }
+
+    public void Dispose()
+    {
+        _scope.Dispose();
+        _provider.Dispose();
     }
 
     [Fact]
-    public void Get_EmptyServiceName_ReturnedConsul()
+    public void Get_EmptyTypeName_ReturnedConsul()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
-            .WithServiceName(string.Empty)
-            .Build();
+        var emptyType = string.Empty;
+        var route = GivenRoute(string.Empty);
 
         // Act
-        var actual = ConsulProviderFactory.Get(
-            _provider,
-            new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1),
-            route);
+        var actual = CreateProvider(route, emptyType);
 
         // Assert
-        actual.ShouldBeOfType<Provider.Consul.Consul>();
+        actual.ShouldNotBeNull().ShouldBeOfType<Provider.Consul.Consul>();
     }
 
     [Fact]
-    public void Get_EmptyServiceName_ReturnedPollConsul()
+    public void Get_PollConsulTypeName_ReturnedPollConsul()
     {
         // Arrange, Act
         var route = GivenRoute(string.Empty);
-        var actual = Act(route);
+        var actual = CreateProvider(route, nameof(PollConsul));
 
         // Assert
         actual.ShouldNotBeNull().ShouldBeOfType<PollConsul>();
@@ -72,11 +76,11 @@ public class ProviderFactoryTests
     {
         // Arrange, Act: 1
         var route1 = GivenRoute("test");
-        var actual1 = Act(route1);
+        var actual1 = CreateProvider(route1);
 
         // Arrange, Act: 2
         var route2 = GivenRoute("test");
-        var actual2 = Act(route2);
+        var actual2 = CreateProvider(route2);
 
         // Assert
         actual1.ShouldNotBeNull().ShouldBeOfType<PollConsul>();
@@ -88,7 +92,7 @@ public class ProviderFactoryTests
     }
 
     [Fact]
-    public void ShouldReturnProviderAccordingToServiceName()
+    public void Get_MultipleServiceNames_ShouldReturnProviderAccordingToServiceName()
     {
         string[] serviceNames = new[] { "service1", "service2", "service3", "service4" };
         var providersList = serviceNames.Select(DummyPollingConsulServiceFactory).ToList();
@@ -121,31 +125,31 @@ public class ProviderFactoryTests
 
     [Fact]
     [Trait("Bug", "2178")]
-    public void Should_throw_invalid_operation_exception()
+    public void Get_RootProvider_ShouldThrowInvalidOperationException()
     {
         // Arrange
         var route = GivenRoute(string.Empty);
         _context.RequestServices = _provider; // given service provider is root provider
 
         // Act
-        Func<IServiceDiscoveryProvider> consulProviderFactoryCall = () => Act(route);
+        Func<IServiceDiscoveryProvider> consulProviderFactoryCall = () => CreateProvider(route);
 
         // Assert
         consulProviderFactoryCall.ShouldThrow<InvalidOperationException>();
     }
 
-    private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName) => Act(GivenRoute(serviceName));
+    private IServiceDiscoveryProvider DummyPollingConsulServiceFactory(string serviceName) => CreateProvider(GivenRoute(serviceName));
 
     private static DownstreamRoute GivenRoute(string serviceName) => new DownstreamRouteBuilder()
         .WithServiceName(serviceName)
         .Build();
 
-    private IServiceDiscoveryProvider Act(DownstreamRoute route)
+    private IServiceDiscoveryProvider CreateProvider(DownstreamRoute route, string providerType = ConsulProviderFactory.PollConsul)
     {
         var stopsFromPolling = 10000;
-        return ConsulProviderFactory.Get?.Invoke(
+        return ConsulProviderFactory.Get.Invoke(
             _provider,
-            new ServiceProviderConfiguration(ConsulProviderFactory.PollConsul, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
+            new ServiceProviderConfiguration(providerType, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
             route);
     }
 }
