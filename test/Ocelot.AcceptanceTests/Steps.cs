@@ -320,41 +320,6 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCacheManager((x) =>
-                    {
-                        x.WithMicrosoftLogging(_ =>
-                            {
-                                //log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithJsonSerializer()
-                            .WithHandle(typeof(InMemoryJsonHandle<>));
-                    })
-                    .AddConsul()
-                    .AddConfigStoredInConsul();
-            })
-            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
     public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
     {
         var result = await Wait.WaitFor(2000).UntilAsync(async () =>
