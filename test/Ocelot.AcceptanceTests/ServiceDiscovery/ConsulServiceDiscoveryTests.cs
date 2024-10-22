@@ -321,7 +321,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => ThenConsulNodesShouldHaveBeenCalledTimes(1))
 
             // Override default service builder
-            .Given(x => GivenOcelotIsRunningWithServices(WithOverriddenConsulServiceBuilder, true))
+            .Given(x => GivenOcelotIsRunningWithServices(WithConsulServiceBuilder, true))
             .When(x => WhenIGetUrlOnTheApiGateway("/open/home"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Raman"))
@@ -428,7 +428,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? WithLbAnalyzer(loadBalancer) : WithConsul))
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? WithLbAnalyzer(loadBalancer) : WithConsul, true))
             .When(x => WhenIDoActionMultipleTimes(50, requestToProjectsAndThenRequestToCustomersAndAssert))
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, Bug2119ServiceNames)) // !!!
@@ -461,7 +461,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(service1, service2))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? WithLbAnalyzer(loadBalancer) : WithConsul))
+            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? WithLbAnalyzer(loadBalancer) : WithConsul, true))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(total, "/projects/api/projects", "/customers/api/customers"))
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenResponsesShouldHaveBodyFromDifferentServices(ports, Bug2119ServiceNames)) // !!!
@@ -509,7 +509,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     private static void WithConsul(IServiceCollection services) => services
         .AddOcelot().AddConsul();
 
-    private static void WithOverriddenConsulServiceBuilder(IServiceCollection services) => services
+    private static void WithConsulServiceBuilder(IServiceCollection services) => services
         .AddOcelot().AddConsul<MyConsulServiceBuilder>();
 
     public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
