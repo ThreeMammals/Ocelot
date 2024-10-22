@@ -2,17 +2,21 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Provider.Consul;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
 {
-    public class ConsulConfigurationInConsulTests : IDisposable
+    public sealed class ConsulConfigurationInConsulTests : Steps, IDisposable
     {
         private IWebHost _builder;
-        private readonly Steps _steps;
         private IWebHost _fakeConsulBuilder;
         private FileConfiguration _config;
         private readonly List<ServiceEntry> _consulServices;
@@ -20,11 +24,10 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
         public ConsulConfigurationInConsulTests()
         {
             _consulServices = new List<ServiceEntry>();
-            _steps = new Steps();
         }
 
         [Fact]
-        public void should_return_response_200_with_simple_url()
+        public void Should_return_response_200_with_simple_url()
         {
             var consulPort = PortFinder.GetRandomPort();
             var servicePort = PortFinder.GetRandomPort();
@@ -64,16 +67,16 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
             this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_load_configuration_out_of_consul()
+        public void Should_load_configuration_out_of_consul()
         {
             var consulPort = PortFinder.GetRandomPort();
             var servicePort = PortFinder.GetRandomPort();
@@ -127,16 +130,16 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
+                .When(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
         [Fact]
-        public void should_load_configuration_out_of_consul_if_it_is_changed()
+        public void Should_load_configuration_out_of_consul_if_it_is_changed()
         {
             var consulPort = PortFinder.GetRandomPort();
             var servicePort = PortFinder.GetRandomPort();
@@ -221,18 +224,18 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-                .And(x => _steps.WhenIGetUrlOnTheApiGateway("/cs/status"))
-                .And(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .And(x => GivenThereIsAConfiguration(configuration))
+                .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
+                .And(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
+                .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .When(x => GivenTheConsulConfigurationIs(secondConsulConfig))
                 .Then(x => ThenTheConfigIsUpdatedInOcelot())
                 .BDDfy();
         }
 
         [Fact]
-        public void should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
+        public void Should_handle_request_to_consul_for_downstream_service_and_make_request_no_re_routes_and_rate_limit()
         {
             var consulPort = PortFinder.GetRandomPort();
             const string serviceName = "web";
@@ -305,14 +308,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             .And(x => GivenTheConsulConfigurationIs(consulConfig))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningUsingConsulToStoreConfig())
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(200))
-            .When(x => _steps.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(428))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(200))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+            .Then(x => ThenTheStatusCodeShouldBe(200))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(428))
             .BDDfy();
         }
 
@@ -322,9 +325,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             {
                 try
                 {
-                    await _steps.WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
-                    _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-                    _steps.ThenTheResponseBodyShouldBe("Hello from Laura");
+                    await WhenIGetUrlOnTheApiGateway("/cs/status/awesome");
+                    ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+                    ThenTheResponseBodyShouldBe("Hello from Laura");
                     return true;
                 }
                 catch (Exception)
@@ -346,6 +349,27 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             {
                 _consulServices.Add(serviceEntry);
             }
+        }
+
+        private void GivenOcelotIsRunningUsingConsulToStoreConfig()
+        {
+            _webHostBuilder = new WebHostBuilder()
+                .UseDefaultServiceProvider(_ => _.ValidateScopes = true)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", true, false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                    config.AddJsonFile(_ocelotConfigFileName, true, false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
+                .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+            _ocelotClient = _ocelotServer.CreateClient();
+            Thread.Sleep(1000);
         }
 
         private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
@@ -445,33 +469,19 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             return _builder.StartAsync();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _builder?.Dispose();
-            _steps.Dispose();
+            _fakeConsulBuilder?.Dispose();
+            base.Dispose();
         }
 
         private class FakeCache : IOcelotCache<FileConfiguration>
         {
-            public void Add(string key, FileConfiguration value, TimeSpan ttl, string region)
-            {
-                throw new NotImplementedException();
-            }
-
-            public FileConfiguration Get(string key, string region)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ClearRegion(string region)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region)
-            {
-                throw new NotImplementedException();
-            }
+            public void Add(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
+            public FileConfiguration Get(string key, string region) => throw new NotImplementedException();
+            public void ClearRegion(string region) => throw new NotImplementedException();
+            public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         }
     }
 }

@@ -355,28 +355,6 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningUsingConsulToStoreConfig()
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
-            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-        Thread.Sleep(1000);
-    }
-
     public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
     {
         var result = await Wait.WaitFor(2000).UntilAsync(async () =>
