@@ -18,7 +18,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Provider.Consul;
 using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
 using Ocelot.Tracing.Butterfly;
@@ -46,9 +45,12 @@ public class Steps : IDisposable
     private readonly Random _random;
     protected readonly Guid _testId;
     protected readonly string _ocelotConfigFileName;
+
+    // TODO Merge both members
     protected IWebHostBuilder _webHostBuilder;
-    private WebHostBuilder _ocelotBuilder;
-    private IWebHost _ocelotHost;
+    protected IWebHostBuilder _ocelotBuilder;
+
+    private IWebHost _ocelotHost; // TODO remove because of one reference
     private IOcelotConfigurationChangeTokenSource _changeToken;
 
     public Steps()
@@ -106,6 +108,10 @@ public class Steps : IDisposable
         result.ShouldBe(true);
     }
 
+    /// <summary>
+    /// TODO Move to <see cref="WebSocketTests"/>. See references.
+    /// </summary>
+    /// <returns>Task.</returns>
     public async Task StartFakeOcelotWithWebSockets()
     {
         _ocelotBuilder = new WebHostBuilder();
@@ -113,41 +119,6 @@ public class Steps : IDisposable
         {
             s.AddSingleton(_ocelotBuilder);
             s.AddOcelot();
-        });
-        _ocelotBuilder.UseKestrel()
-            .UseUrls("http://localhost:5000")
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureLogging((hostingContext, logging) =>
-            {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-            })
-            .Configure(async app =>
-            {
-                app.UseWebSockets();
-                await app.UseOcelot();
-            })
-            .UseIISIntegration();
-        _ocelotHost = _ocelotBuilder.Build();
-        await _ocelotHost.StartAsync();
-    }
-
-    public async Task StartFakeOcelotWithWebSocketsWithConsul()
-    {
-        _ocelotBuilder = new WebHostBuilder();
-        _ocelotBuilder.ConfigureServices(s =>
-        {
-            s.AddSingleton(_ocelotBuilder);
-            s.AddOcelot().AddConsul();
         });
         _ocelotBuilder.UseKestrel()
             .UseUrls("http://localhost:5000")
@@ -318,63 +289,6 @@ public class Steps : IDisposable
 
         _ocelotServer = new TestServer(_webHostBuilder);
         _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCacheManager((x) =>
-                    {
-                        x.WithMicrosoftLogging(_ =>
-                            {
-                                //log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithJsonSerializer()
-                            .WithHandle(typeof(InMemoryJsonHandle<>));
-                    })
-                    .AddConsul()
-                    .AddConfigStoredInConsul();
-            })
-            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningUsingConsulToStoreConfig()
-    {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
-            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-        Thread.Sleep(1000);
     }
 
     public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
@@ -636,12 +550,19 @@ public class Steps : IDisposable
     }
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
-        => GivenOcelotIsRunningWithServices(configureServices, null);
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp)
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
+
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, bool validateScopes)
+        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes);
+
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp, bool validateScopes)
     {
         _webHostBuilder = new WebHostBuilder()
             .ConfigureAppConfiguration(WithBasicConfiguration)
+            .UseDefaultServiceProvider(opts => opts.ValidateScopes = validateScopes)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot);
         _ocelotServer = new TestServer(_webHostBuilder);
