@@ -47,7 +47,7 @@ public class Kube : IServiceDiscoveryProvider
     }
 
     private Task<EndpointsV1> GetEndpoint() => _kubeApi
-        .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
+        .EndpointsV1()
         .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
 
     private bool CheckErroneousState(EndpointsV1 endpoint)

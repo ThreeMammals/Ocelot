@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
+using System.Reactive.Concurrency;
 
 namespace Ocelot.Provider.Kubernetes
 {
@@ -11,6 +12,8 @@ namespace Ocelot.Provider.Kubernetes
         /// String constant used for provider type definition.
         /// </summary>
         public const string PollKube = nameof(Kubernetes.PollKube);
+
+        public const string WatchKube = nameof(Kubernetes.WatchKube);
 
         public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
 
@@ -26,6 +29,11 @@ namespace Ocelot.Provider.Kubernetes
                 KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
                 Scheme = route.DownstreamScheme,
             };
+
+            if (WatchKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                return new WatchKube(configuration, factory, kubeClient, serviceBuilder, Scheduler.Default);
+            }
 
             var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
  

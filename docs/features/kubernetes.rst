@@ -72,7 +72,7 @@ The example here shows a typical configuration:
       }
     }
 
-Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` type.
+Service deployment in **Namespace** ``Dev``, **ServiceDiscoveryProvider** type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` or :ref:`k8s-watchkube-provider` type.
 
   **Note 1**: ``Host``, ``Port`` and ``Token`` are no longer in use.
 
@@ -102,6 +102,22 @@ If you poll Kubernetes, it is possible Ocelot will not know if a service is down
 This really depends on how volatile your services are.
 We doubt it will matter for most people and polling may give a tiny performance improvement over calling Kubernetes per request.
 There is no way for Ocelot to work these out for you. 
+
+.. _k8s-watchkube-provider:
+
+WatchKube provider
+^^^^^^^^^^^^^^^^^^
+
+This option utilizes Kubernetes API `watch requests <https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes>`_ for fetching service configuration.
+Essentially it means that there will be one streamed http connection with kube-api per downstream service.
+Changes streamed by this connection will be used for updating available endpoints list.
+
+.. code-block:: json
+
+  "ServiceDiscoveryProvider": {
+    "Namespace": "dev",
+    "Type": "WatchKube"
+  }
 
 Global vs Route Levels
 ----------------------
