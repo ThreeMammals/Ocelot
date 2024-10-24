@@ -60,7 +60,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(services => WithKubernetes(services)))
+            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -100,7 +100,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(services => WithKubernetes(services)))
+            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
@@ -308,21 +308,18 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         });
     }
 
-    private IOcelotBuilder WithKubernetes(IServiceCollection services) => services
+    private static ServiceDescriptor GetValidateScopesDescriptor()
+        => ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
+            new DefaultServiceProviderFactory(new() { ValidateScopes = true }));
+    private IOcelotBuilder AddKubernetes(IServiceCollection services) => services
         .Configure(_kubeClientOptionsConfigure)
         .Replace(GetValidateScopesDescriptor())
         .AddOcelot().AddKubernetes(false);
 
-    private void WithKubernetesAndRoundRobin(IServiceCollection services) => WithKubernetes(services)
+    private void WithKubernetes(IServiceCollection services) => AddKubernetes(services);
+    private void WithKubernetesAndRoundRobin(IServiceCollection services) => AddKubernetes(services)
         .AddCustomLoadBalancer<RoundRobinAnalyzer>(GetRoundRobinAnalyzer)
         .Services.RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
-
-    private static ServiceDescriptor GetValidateScopesDescriptor()
-    {
-        var options = new ServiceProviderOptions { ValidateScopes = true };
-        return ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
-            new DefaultServiceProviderFactory(options));
-    }
 
     private int _k8sCounter, _k8sServiceGeneration;
     private static readonly object K8sCounterLocker = new();
@@ -346,7 +343,7 @@ internal class FakeKubeServiceCreator : KubeServiceCreator
         var index = subset.Addresses.IndexOf(address);
         var portV1 = ports[index];
         Logger.LogDebug(() => $"K8s service with key '{configuration.KeyOfServiceInK8s}' and address {address.Ip}; Detected port is {portV1.Name}:{portV1.Port}. Total {ports.Count} ports of [{string.Join(',', ports.Select(p => p.Name))}].");
-        return new ServiceHostAndPort(address.Ip, portV1.Port, portV1.Name);
+        return new ServiceHostAndPort(address.Ip, (int)portV1.Port, portV1.Name);
     }
 
     protected override IEnumerable<string> GetServiceTags(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)

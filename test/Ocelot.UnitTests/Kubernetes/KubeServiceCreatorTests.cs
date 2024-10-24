@@ -70,6 +70,7 @@ public sealed class KubeServiceCreatorTests
         Assert.Empty(actual);
     }
 
+    [Trait("Bug", "977")]
     [Fact(DisplayName = "Create: With empty args -> No exceptions during creation")]
     public void Create_NotNullButEmptyArgs_CreatedEmptyService()
     {
@@ -94,6 +95,8 @@ public sealed class KubeServiceCreatorTests
         var actualService = actual.SingleOrDefault();
         Assert.NotNull(actualService);
         Assert.Null(actualService.Name);
+        Assert.NotNull(actualService.HostAndPort);
+        Assert.Equal(80, actualService.HostAndPort.DownstreamPort);
     }
 
     [Fact]
