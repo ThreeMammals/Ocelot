@@ -23,7 +23,7 @@ namespace Ocelot.Configuration
             CacheOptions cacheOptions,
             LoadBalancerOptions loadBalancerOptions,
             RateLimitOptions rateLimitOptions,
-            Dictionary<string, string> routeClaimsRequirement,
+            Dictionary<string, string[]> routeClaimsRequirement,
             List<ClaimToThing> claimsToQueries,
             List<ClaimToThing> claimsToHeaders,
             List<ClaimToThing> claimsToClaims,
@@ -99,7 +99,7 @@ namespace Ocelot.Configuration
         public CacheOptions CacheOptions { get; }
         public LoadBalancerOptions LoadBalancerOptions { get; }
         public RateLimitOptions RateLimitOptions { get; }
-        public Dictionary<string, string> RouteClaimsRequirement { get; }
+        public Dictionary<string, string[]> RouteClaimsRequirement { get; }
         public List<ClaimToThing> ClaimsToQueries { get; }
         public List<ClaimToThing> ClaimsToHeaders { get; }
         public List<ClaimToThing> ClaimsToClaims { get; }

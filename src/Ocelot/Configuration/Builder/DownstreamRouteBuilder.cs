@@ -13,7 +13,7 @@ public class DownstreamRouteBuilder
     private bool _isAuthenticated;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
-    private Dictionary<string, string> _routeClaimRequirement;
+    private Dictionary<string, string[]> _routeClaimRequirement;
     private bool _isAuthorized;
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
@@ -126,7 +126,7 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithRouteClaimsRequirement(Dictionary<string, string> input)
+    public DownstreamRouteBuilder WithRouteClaimsRequirement(Dictionary<string, string[]> input)
     {
         _routeClaimRequirement = input;
         return this;
