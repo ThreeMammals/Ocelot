@@ -5,70 +5,38 @@ using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes;
 using System.Reflection;
 
-namespace Ocelot.UnitTests.Kubernetes
+namespace Ocelot.UnitTests.Kubernetes;
+
+public class OcelotBuilderExtensionsTests : UnitTest // No Chinese tests now!
 {
-    public class OcelotBuilderExtensionsTests : UnitTest
+    private readonly IServiceCollection _services;
+    private readonly IConfiguration _configRoot;
+    private IOcelotBuilder _ocelotBuilder;
+
+    public OcelotBuilderExtensionsTests()
     {
-        private readonly IServiceCollection _services;
-        private readonly IConfiguration _configRoot;
-        private IOcelotBuilder _ocelotBuilder;
-        private Exception _ex;
+        _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
+        _services = new ServiceCollection();
+        _services.AddSingleton(GetHostingEnvironment());
+        _services.AddSingleton(_configRoot);
+    }
 
-        public OcelotBuilderExtensionsTests()
-        {
-            _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
-            _services = new ServiceCollection();
-            _services.AddSingleton(GetHostingEnvironment());
-            _services.AddSingleton(_configRoot);
-        }
+    private static IWebHostEnvironment GetHostingEnvironment()
+    {
+        var environment = new Mock<IWebHostEnvironment>();
+        environment.Setup(e => e.ApplicationName)
+            .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+        return environment.Object;
+    }
 
-        private static IWebHostEnvironment GetHostingEnvironment()
-        {
-            var environment = new Mock<IWebHostEnvironment>();
-            environment
-                .Setup(e => e.ApplicationName)
-                .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+    [Fact]
+    [Trait("Feat", "345")]
+    public void AddKubernetes_NoExceptions_ShouldSetUpKubernetes()
+    {
+        var addOcelot = () => _ocelotBuilder = _services.AddOcelot(_configRoot);
+        addOcelot.ShouldNotThrow();
 
-            return environment.Object;
-        }
-
-        [Fact]
-        [Trait("Feat", "345")]
-        public void Should_set_up_kubernetes()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpKubernetes())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
-
-        private void WhenISetUpOcelotServices()
-        {
-            try
-            {
-                _ocelotBuilder = _services.AddOcelot(_configRoot);
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void WhenISetUpKubernetes()
-        {
-            try
-            {
-                _ocelotBuilder.AddKubernetes();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
-
-        private void ThenAnExceptionIsntThrown()
-        {
-            _ex.ShouldBeNull();
-        }
+        var addKubernetes = () => _ocelotBuilder.AddKubernetes();
+        addKubernetes.ShouldNotThrow();
     }
 }
