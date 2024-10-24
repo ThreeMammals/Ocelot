@@ -87,7 +87,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90), false))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -110,7 +110,7 @@ public class MessageInvokerPoolTests : UnitTest
 
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90), false))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -259,7 +259,7 @@ public class MessageInvokerPoolTests : UnitTest
         _context = new DefaultHttpContext();
         _context.Items.UpsertDownstreamRoute(downstream);
         _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
-            { RequestUri = new Uri(url), Method = method }));
+        { RequestUri = new Uri(url), Method = method }));
     }
 
     private void ThenSomethingIsReturned() => _response.ShouldNotBeNull();
@@ -330,7 +330,7 @@ public class MessageInvokerPoolTests : UnitTest
             .WithQosOptions(new QoSOptions(new FileQoSOptions()))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
+            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120), false))
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
 
