@@ -13,6 +13,10 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
+/// <summary>
+/// Contains integration tests.
+/// Move to integration testing, and add at least one "happy path" unit test.
+/// </summary>
 public class KubeTests
 {
     private readonly Mock<IOcelotLoggerFactory> _factory;
@@ -50,7 +54,7 @@ public class KubeTests
         receivedToken.Value.ShouldBe($"Bearer {nameof(Should_return_service_from_k8s)}");
     }
 
-    [Fact]
+    [Fact] // This is not unit test! LoL :) This should be an integration test or even an acceptance test...
     [Trait("Bug", "2110")]
     public async Task Should_return_single_service_from_k8s_during_concurrent_calls()
     {

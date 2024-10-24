@@ -5,7 +5,7 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 
 namespace Ocelot.Provider.Kubernetes
 {
-    public static class KubernetesProviderFactory
+    public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProviderFactory
     {
         /// <summary>
         /// String constant used for provider type definition.

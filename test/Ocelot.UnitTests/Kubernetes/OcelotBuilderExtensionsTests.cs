@@ -1,74 +1,71 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using KubeClient;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes;
+using Ocelot.Provider.Kubernetes.Interfaces;
+using Ocelot.ServiceDiscovery;
 using System.Reflection;
 
-namespace Ocelot.UnitTests.Kubernetes
+namespace Ocelot.UnitTests.Kubernetes;
+
+public class OcelotBuilderExtensionsTests : UnitTest // No Chinese tests now!
 {
-    public class OcelotBuilderExtensionsTests : UnitTest
+    private readonly IServiceCollection _services;
+    private readonly IConfiguration _configRoot;
+    private IOcelotBuilder _ocelotBuilder;
+
+    public OcelotBuilderExtensionsTests()
     {
-        private readonly IServiceCollection _services;
-        private readonly IConfiguration _configRoot;
-        private IOcelotBuilder _ocelotBuilder;
-        private Exception _ex;
+        _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
+        _services = new ServiceCollection();
+        _services.AddSingleton(GetHostingEnvironment());
+        _services.AddSingleton(_configRoot);
+    }
 
-        public OcelotBuilderExtensionsTests()
-        {
-            _configRoot = new ConfigurationRoot(new List<IConfigurationProvider>());
-            _services = new ServiceCollection();
-            _services.AddSingleton(GetHostingEnvironment());
-            _services.AddSingleton(_configRoot);
-        }
+    private static IWebHostEnvironment GetHostingEnvironment()
+    {
+        var environment = new Mock<IWebHostEnvironment>();
+        environment.Setup(e => e.ApplicationName)
+            .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+        return environment.Object;
+    }
 
-        private static IWebHostEnvironment GetHostingEnvironment()
-        {
-            var environment = new Mock<IWebHostEnvironment>();
-            environment
-                .Setup(e => e.ApplicationName)
-                .Returns(typeof(OcelotBuilderExtensionsTests).GetTypeInfo().Assembly.GetName().Name);
+    [Fact]
+    [Trait("Feat", "345")]
+    public void AddKubernetes_NoExceptions_ShouldSetUpKubernetes()
+    {
+        // Arrange
+        var addOcelot = () => _ocelotBuilder = _services.AddOcelot(_configRoot);
+        addOcelot.ShouldNotThrow();
 
-            return environment.Object;
-        }
+        // Act
+        var addKubernetes = () => _ocelotBuilder.AddKubernetes();
 
-        [Fact]
-        [Trait("Feat", "345")]
-        public void Should_set_up_kubernetes()
-        {
-            this.Given(x => WhenISetUpOcelotServices())
-                .When(x => WhenISetUpKubernetes())
-                .Then(x => ThenAnExceptionIsntThrown())
-                .BDDfy();
-        }
+        // Assert
+        addKubernetes.ShouldNotThrow();
+    }
 
-        private void WhenISetUpOcelotServices()
-        {
-            try
-            {
-                _ocelotBuilder = _services.AddOcelot(_configRoot);
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
+    [Fact]
+    [Trait("Bug", "977")]
+    [Trait("PR", "2180")]
+    public void AddKubernetes_DefaultServices_HappyPath()
+    {
+        // Arrange, Act
+        _ocelotBuilder = _services.AddOcelot(_configRoot).AddKubernetes();
 
-        private void WhenISetUpKubernetes()
-        {
-            try
-            {
-                _ocelotBuilder.AddKubernetes();
-            }
-            catch (Exception e)
-            {
-                _ex = e;
-            }
-        }
+        // Assert
+        var descriptor = _services.SingleOrDefault(sd => sd.ServiceType == typeof(IKubeApiClient)).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton); // 2180 scenario
 
-        private void ThenAnExceptionIsntThrown()
-        {
-            _ex.ShouldBeNull();
-        }
+        descriptor = _services.SingleOrDefault(sd => sd.ServiceType == typeof(ServiceDiscoveryFinderDelegate)).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
+
+        descriptor = _services.SingleOrDefault(sd => sd.ServiceType == typeof(IKubeServiceBuilder)).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
+
+        descriptor = _services.SingleOrDefault(sd => sd.ServiceType == typeof(IKubeServiceCreator)).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
     }
 }
