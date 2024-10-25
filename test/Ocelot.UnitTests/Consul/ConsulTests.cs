@@ -185,7 +185,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
 
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider([CallerMemberName] string serviceName = "test")
     {
-        _fakeConsulBuilder = new WebHostBuilder()
+        _fakeConsulBuilder = TestHostBuilder.Create()
             .UseUrls(_fakeConsulServiceDiscoveryUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

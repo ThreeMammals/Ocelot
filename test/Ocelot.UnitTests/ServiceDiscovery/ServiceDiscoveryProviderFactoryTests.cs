@@ -27,7 +27,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _collection = new ServiceCollection();
-            _provider = _collection.BuildServiceProvider();
+            _provider = _collection.BuildServiceProvider(true);
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
 
             _loggerFactory.Setup(x => x.CreateLogger<ServiceDiscoveryProviderFactory>())
@@ -168,7 +168,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
         {
             ServiceDiscoveryFinderDelegate fake = (provider, config, name) => new Fake();
             _collection.AddSingleton(fake);
-            _provider = _collection.BuildServiceProvider();
+            _provider = _collection.BuildServiceProvider(true);
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
 
@@ -179,7 +179,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 .AddSingleton(KubernetesProviderFactory.Get)
                 .AddSingleton(k8sClient.Object)
                 .AddSingleton(_loggerFactory.Object);
-            _provider = _collection.BuildServiceProvider();
+            _provider = _collection.BuildServiceProvider(true);
             _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
         }
 

@@ -6,59 +6,50 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Samples.Web;
 using Ocelot.Tracing.OpenTracing;
 using OpenTracing.Util;
 using System.IO;
 
-namespace OcelotOpenTracing
+namespace Ocelot.Samples.OpenTracing;
+
+public static class Program
 {
-    internal static class Program
+    public static void Main(string[] args)
     {
-        private static void Main(string[] args)
-        {
-            Host.CreateDefaultBuilder()
-                .ConfigureWebHostDefaults(webBuilder =>
+        OcelotHostBuilder.Create(args)
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config
+                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json",
+                        optional: true, reloadOnChange: false)
+                    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+                    .AddEnvironmentVariables();
+            })
+            .ConfigureServices((context, services) =>
+            {
+                services.AddSingleton(sp =>
                 {
-                    webBuilder
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseKestrel()
-                        .ConfigureAppConfiguration((hostingContext, config) =>
-                        {
-                            config
-                                .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-                                .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json",
-                                    optional: true, reloadOnChange: false)
-                                .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
-                                .AddEnvironmentVariables();
-                        })
-                        .ConfigureServices((context, services) =>
-                        {
-                            services.AddSingleton(sp =>
-                            {
-                                var loggerFactory = sp.GetService<ILoggerFactory>();
-                                var config = new Configuration(context.HostingEnvironment.ApplicationName, loggerFactory);
-
-                                var tracer = config.GetTracer();
-                                GlobalTracer.Register(tracer);
-                                return tracer;
-                            });
-
-                            services
-                                .AddOcelot()
-                                .AddOpenTracing();
-                        })
-                        .ConfigureLogging(logging =>
-                        {
-                            logging.AddConsole();
-                        })
-                        .Configure(app =>
-                        {
-                            app.UseOcelot().Wait();
-                        });
+                    var loggerFactory = sp.GetService<ILoggerFactory>();
+                    var config = new Jaeger.Configuration(context.HostingEnvironment.ApplicationName, loggerFactory);
+                    var tracer = config.GetTracer();
+                    GlobalTracer.Register(tracer);
+                    return tracer;
                 })
-                .Build()
-                .Run();
-        }
+                .AddOcelot()
+                .AddOpenTracing();
+            })
+            .ConfigureLogging(logging =>
+            {
+                logging.AddConsole();
+            })
+            .Configure(async app =>
+            {
+                await app.UseOcelot();
+            })
+            .Build()
+            .Run();
     }
 }

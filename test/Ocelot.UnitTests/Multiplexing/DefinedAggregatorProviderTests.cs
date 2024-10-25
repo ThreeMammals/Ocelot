@@ -45,7 +45,7 @@ namespace Ocelot.UnitTests.Multiplexing
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
-            var services = serviceCollection.BuildServiceProvider();
+            var services = serviceCollection.BuildServiceProvider(true);
             _provider = new ServiceLocatorDefinedAggregatorProvider(services);
         }
 
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Multiplexing
         private void GivenNoDefinedAggregator()
         {
             var serviceCollection = new ServiceCollection();
-            var services = serviceCollection.BuildServiceProvider();
+            var services = serviceCollection.BuildServiceProvider(true);
             _provider = new ServiceLocatorDefinedAggregatorProvider(services);
         }
 

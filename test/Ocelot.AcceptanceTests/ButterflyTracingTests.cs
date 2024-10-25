@@ -149,7 +149,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
-            _serviceOneBuilder = new WebHostBuilder()
+            _serviceOneBuilder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -189,7 +189,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenFakeButterfly(string baseUrl)
         {
-            _fakeButterfly = new WebHostBuilder()
+            _fakeButterfly = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -209,7 +209,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
         {
-            _serviceTwoBuilder = new WebHostBuilder()
+            _serviceTwoBuilder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

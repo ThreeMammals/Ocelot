@@ -115,7 +115,7 @@ namespace Ocelot.UnitTests.Configuration
 
         private void WhenICreate()
         {
-            var serviceProvider = _serviceCollection.BuildServiceProvider();
+            var serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _versionPolicyCreator.Object);
             _result = _creator.Create(_fileConfig, _routes);
         }

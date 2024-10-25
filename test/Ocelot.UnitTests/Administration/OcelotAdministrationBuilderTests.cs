@@ -70,7 +70,7 @@ namespace Ocelot.UnitTests.Administration
 
         private void ThenTheCorrectAdminPathIsRegitered()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var path = _serviceProvider.GetService<IAdministrationPath>();
             path.Path.ShouldBe("/administration");
         }

@@ -168,7 +168,7 @@ public class KubeTests
             return Task.CompletedTask;
         }
 
-        var host = new WebHostBuilder()
+        var host = TestHostBuilder.Create()
             .UseUrls(url)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

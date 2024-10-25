@@ -80,7 +80,7 @@ namespace Ocelot.UnitTests.Multiplexing
         [Trait("Bug", "1396")]
         public async Task Invoke_ContextUser_ForwardedToDownstreamContext()
         {
-            // Setup
+            // Create
             HttpContext actualContext = null;
             _middleware = new MultiplexingMiddleware(NextMe, loggerFactory.Object, factory.Object);
             Task NextMe(HttpContext context)

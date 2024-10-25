@@ -211,16 +211,16 @@ namespace Ocelot.UnitTests.DependencyInjection
         [Fact]
         public void Should_use_default_mvc_builder()
         {
-            this.Given(x => x.WhenISetUpOcelotServicesWithoutConfig())
-                .Then(x => CstorShouldUseDefaultBuilderToInitMvcCoreBuilder())
-                .BDDfy();
+            WhenISetUpOcelotServicesWithoutConfig();
+            CstorShouldUseDefaultBuilderToInitMvcCoreBuilder();
         }
 
         private void CstorShouldUseDefaultBuilderToInitMvcCoreBuilder()
         {
             _ocelotBuilder.ShouldNotBeNull();
             _ocelotBuilder.MvcCoreBuilder.ShouldNotBeNull();
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
+            using IServiceScope scope = _serviceProvider.CreateScope();
 
             // .AddMvcCore()
             _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
@@ -253,7 +253,7 @@ namespace Ocelot.UnitTests.DependencyInjection
                 .ShouldNotBeNull().ShouldBeOfType<ServiceBasedControllerActivator>();
 
             // .AddAuthorization()
-            _serviceProvider.GetService<IAuthenticationService>()
+            scope.ServiceProvider.GetService<IAuthenticationService>()
                 .ShouldNotBeNull().ShouldBeOfType<AuthenticationService>();
             _serviceProvider.GetService<IApplicationModelProvider>()
                 .ShouldNotBeNull()
@@ -333,7 +333,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
             _ocelotBuilder.ShouldNotBeNull();
             _ocelotBuilder.MvcCoreBuilder.ShouldNotBeNull();
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
 
             // .AddMvcCore()
             _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
@@ -414,7 +414,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
             handlers[0].DelegatingHandler.ShouldBeOfType<TOne>();
             handlers[1].DelegatingHandler.ShouldBeOfType<TWo>();
@@ -422,7 +422,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<TOne, TWo>()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
@@ -430,7 +430,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TOne, TWo>()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var handlers = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
             handlers[0].ShouldBeOfType<TOne>();
             handlers[1].ShouldBeOfType<TWo>();
@@ -438,7 +438,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var creators = _serviceProvider.GetServices<ILoadBalancerCreator>().ToList();
             creators.Count(c => c.GetType() == typeof(NoLoadBalancerCreator)).ShouldBe(1);
             creators.Count(c => c.GetType() == typeof(RoundRobinCreator)).ShouldBe(1);
@@ -472,7 +472,7 @@ namespace Ocelot.UnitTests.DependencyInjection
 
         private void ThenTheIPlaceholderInstanceIsReplaced()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             var placeholders = _serviceProvider.GetService<IPlaceholders>();
             placeholders.ShouldBeOfType<ConfigAwarePlaceholders>();
         }
@@ -505,7 +505,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _serviceProvider = _services.BuildServiceProvider();
+                _serviceProvider = _services.BuildServiceProvider(true);
                 var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
                 logger.ShouldNotBeNull();
             }
@@ -519,7 +519,7 @@ namespace Ocelot.UnitTests.DependencyInjection
         {
             try
             {
-                _serviceProvider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+                _serviceProvider = _services.BuildServiceProvider(true);
             }
             catch (Exception e)
             {

@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Eureka
                 .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null, null)));
             var services = new ServiceCollection();
             services.AddSingleton(configRepo.Object);
-            var sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider(true);
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
             provider.Status.ShouldBe(TaskStatus.RanToCompletion);
         }
@@ -35,7 +35,7 @@ namespace Ocelot.UnitTests.Eureka
             var services = new ServiceCollection();
             services.AddSingleton(configRepo.Object);
             services.AddSingleton(client.Object);
-            var sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider(true);
             var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
             provider.Status.ShouldBe(TaskStatus.RanToCompletion);
         }

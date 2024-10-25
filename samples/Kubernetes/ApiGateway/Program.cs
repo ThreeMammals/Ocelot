@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Ocelot.Samples.Web;
 
 namespace Ocelot.Samples.OcelotKube.ApiGateway;
 
@@ -8,11 +8,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        BuildWebHost(args).Run();
-    }
-
-    public static IWebHost BuildWebHost(string[] args) =>
-        WebHost.CreateDefaultBuilder(args)
+        OcelotHostBuilder.Create(args)
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config
@@ -23,5 +19,7 @@ public class Program
                     .AddEnvironmentVariables();
             })
         .UseStartup<Startup>()
-        .Build();
+        .Build()
+        .Run();
+    }
 }

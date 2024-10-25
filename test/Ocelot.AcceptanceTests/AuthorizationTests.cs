@@ -310,7 +310,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
         {
-            _identityServerBuilder = new WebHostBuilder()
+            _identityServerBuilder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -397,7 +397,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, List<TestUser> users)
         {
-            _identityServerBuilder = new WebHostBuilder()
+            _identityServerBuilder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

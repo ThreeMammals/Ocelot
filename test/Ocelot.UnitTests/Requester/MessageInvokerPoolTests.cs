@@ -97,7 +97,7 @@ public class MessageInvokerPoolTests : UnitTest
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
+            .When(x => WhenICallTheClient("http://www.google.com/"))
             .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
             .BDDfy();
     }
@@ -168,7 +168,7 @@ public class MessageInvokerPoolTests : UnitTest
     private void GivenADownstreamService()
     {
         var count = 0;
-        _host = new WebHostBuilder()
+        _host = TestHostBuilder.Create()
             .UseUrls("http://localhost:5003")
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

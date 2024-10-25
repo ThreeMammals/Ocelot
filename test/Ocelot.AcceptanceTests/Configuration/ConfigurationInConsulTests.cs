@@ -88,8 +88,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
 
     private void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
     {
-        _webHostBuilder = new WebHostBuilder()
-            .UseDefaultServiceProvider(_ => _.ValidateScopes = true)
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);

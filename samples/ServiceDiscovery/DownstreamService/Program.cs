@@ -1,5 +1,5 @@
 ﻿global using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore;
+using Ocelot.Samples.Web;
 
 [assembly: ApiController]
 
@@ -9,9 +9,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        WebHost.CreateDefaultBuilder(args)
+        DownstreamHostBuilder.Create(args)
             .UseStartup<Startup>()
-            .Build()
-            .Run();
+            .Build(); //.Run();
     }
 }

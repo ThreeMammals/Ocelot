@@ -353,8 +353,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
         private void GivenOcelotIsRunningUsingConsulToStoreConfig()
         {
-            _webHostBuilder = new WebHostBuilder()
-                .UseDefaultServiceProvider(_ => _.ValidateScopes = true)
+            _webHostBuilder = TestHostBuilder.Create()
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -374,7 +373,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
         private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
+            _fakeConsulBuilder = TestHostBuilder.Create()
                             .UseUrls(url)
                             .UseKestrel()
                             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -449,7 +448,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
         private Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

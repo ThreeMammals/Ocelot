@@ -118,7 +118,7 @@ public class SerilogBenchmarks : ManualConfig
             _ => throw new ArgumentOutOfRangeException(nameof(minLogLevel), minLogLevel, null),
         };
 
-        _webHost = new WebHostBuilder()
+        _webHost = TestHostBuilder.Create()
             .UseKestrel()
             .UseUrls(url)
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -205,7 +205,7 @@ public class SerilogBenchmarks : ManualConfig
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
     {
-        _service = new WebHostBuilder()
+        _service = TestHostBuilder.Create()
             .UseUrls(baseUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

@@ -1,16 +1,17 @@
-﻿using KubeClient;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
-using Ocelot.Provider.Kubernetes;
-using Ocelot.Provider.Kubernetes.Interfaces;
+using Ocelot.Middleware;
+using Ocelot.Provider.Eureka;
 using Ocelot.ServiceDiscovery;
+using Steeltoe.Common.Discovery;
+using Steeltoe.Common.Http.Discovery;
 using System.Reflection;
 
-namespace Ocelot.UnitTests.Kubernetes;
+namespace Ocelot.UnitTests.Eureka;
 
-public class OcelotBuilderExtensionsTests : UnitTest // No Chinese tests now!
+public sealed class OcelotBuilderExtensionsTests : UnitTest
 {
     private readonly IServiceCollection _services;
     private readonly IConfiguration _configRoot;
@@ -33,39 +34,39 @@ public class OcelotBuilderExtensionsTests : UnitTest // No Chinese tests now!
     }
 
     [Fact]
-    [Trait("Feat", "345")]
-    public void AddKubernetes_NoExceptions_ShouldSetUpKubernetes()
+    [Trait("PR", "734")]
+    [Trait("Feat", "324, 844")]
+    public void AddEureka_NoExceptions_ShouldSetUpEureka()
     {
         // Arrange
         var addOcelot = () => _ocelotBuilder = _services.AddOcelot(_configRoot);
         addOcelot.ShouldNotThrow();
 
         // Act
-        var addKubernetes = () => _ocelotBuilder.AddKubernetes();
+        var addEureka = () => _ocelotBuilder.AddEureka();
 
         // Assert
-        addKubernetes.ShouldNotThrow();
+        addEureka.ShouldNotThrow();
     }
 
     [Fact]
-    [Trait("Bug", "977")]
-    [Trait("PR", "2180")]
-    public void AddKubernetes_DefaultServices_HappyPath()
+    [Trait("PR", "734")]
+    [Trait("Feat", "324, 844")]
+    public void AddEureka_DefaultServices_HappyPath()
     {
         // Arrange, Act
-        _ocelotBuilder = _services.AddOcelot(_configRoot).AddKubernetes();
+        _ocelotBuilder = _services.AddOcelot(_configRoot).AddEureka();
+
+        // Assert: AddDiscoveryClient
+        var descriptor = _services.SingleOrDefault(Of<DiscoveryHttpMessageHandler>).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Transient);
+        descriptor = _services.SingleOrDefault(Of<IServiceInstanceProvider>).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
 
         // Assert
-        var descriptor = _services.SingleOrDefault(Of<IKubeApiClient>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton); // 2180 scenario
-
         descriptor = _services.SingleOrDefault(Of<ServiceDiscoveryFinderDelegate>).ShouldNotBeNull();
         descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
-
-        descriptor = _services.SingleOrDefault(Of<IKubeServiceBuilder>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
-
-        descriptor = _services.SingleOrDefault(Of<IKubeServiceCreator>).ShouldNotBeNull();
+        descriptor = _services.SingleOrDefault(Of<OcelotMiddlewareConfigurationDelegate>).ShouldNotBeNull();
         descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
     }
 

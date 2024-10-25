@@ -430,7 +430,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void GivenTheServiceProviderReturnsNothing()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
         }
 
         private void ThenAnErrorIsReturned()
@@ -492,7 +492,7 @@ namespace Ocelot.UnitTests.Requester
 
         private void WhenIGet()
         {
-            _serviceProvider = _services.BuildServiceProvider();
+            _serviceProvider = _services.BuildServiceProvider(true);
             _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
             _result = _factory.Get(_downstreamRoute);
         }

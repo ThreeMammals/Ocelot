@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "..\src\Ocelot\Ocelot.csproj", "{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.AdministrationApi", "Administration\Ocelot.Samples.AdministrationApi.csproj", "{238467FE-19EE-4102-9AF7-51EB2C6F0354}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.Basic.ApiGateway", "Basic\Ocelot.Samples.Basic.ApiGateway.csproj", "{A7D2C43A-E35C-4A89-AEE5-5C87052ECD89}"
@@ -26,6 +28,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceFabric.ApiGateway", "ServiceFabric\ApiGateway\Ocelot.Samples.ServiceFabric.ApiGateway.csproj", "{115F7934-3326-492A-B131-64F0EAEBAD71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.ServiceFabric.DownstreamService", "ServiceFabric\DownstreamService\Ocelot.Samples.ServiceFabric.DownstreamService.csproj", "{6C777A20-F557-45CF-B87B-11E3C6B29A36}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.Web", "Web\Ocelot.Samples.Web.csproj", "{EA553F5C-4B94-4E4A-8C3E-0124C5EA5F6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,14 @@ Global
 		{6C777A20-F557-45CF-B87B-11E3C6B29A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C777A20-F557-45CF-B87B-11E3C6B29A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C777A20-F557-45CF-B87B-11E3C6B29A36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA553F5C-4B94-4E4A-8C3E-0124C5EA5F6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA553F5C-4B94-4E4A-8C3E-0124C5EA5F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA553F5C-4B94-4E4A-8C3E-0124C5EA5F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA553F5C-4B94-4E4A-8C3E-0124C5EA5F6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

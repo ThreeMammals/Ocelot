@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.IO;
+using Ocelot.Samples.Web;
 
 namespace Ocelot.Samples.OcelotBasic.ApiGateway;
 
@@ -11,9 +11,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        new WebHostBuilder()
-           .UseKestrel()
-           .UseContentRoot(Directory.GetCurrentDirectory())
+        OcelotHostBuilder.BasicSetup()
            .ConfigureAppConfiguration((hostingContext, config) =>
            {
                config
