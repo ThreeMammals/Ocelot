@@ -50,7 +50,7 @@ var releaseNotes = new List<string>();
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
-bool IsTechnicalRelease = true;
+bool IsTechnicalRelease = false;
 
 var target = Argument("target", "Default");
 var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
@@ -139,194 +139,271 @@ Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{
-		Information($"Generating release notes at {releaseNotesFile}");
+        Information($"Generating release notes at {releaseNotesFile}");
+        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
+        var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
+        var releaseVersion = versioning.NuGetVersion;
 
-		// local helper function
-		Func<string, IEnumerable<string>> GitHelper = (command) =>
-		{
-			IEnumerable<string> output;
-			var exitCode = StartProcess(
-				"git",
-				new ProcessSettings { Arguments = command, RedirectStandardOutput = true },
-				out output);
-			if (exitCode != 0)
-				throw new Exception("Failed to execute Git command: " + command);
-			return output;
-		};
+        // Read main header from Git file, substitute version in header, and add content further...
+        Information("{0}  New release tag is " + releaseVersion);
+        Information("{1} Last release tag is " + lastRelease);
+        var body = System.IO.File.ReadAllText("./ReleaseNotes.md");
+        var releaseHeader = string.Format(body, releaseVersion, lastRelease);
+        releaseNotes = new List<string> { releaseHeader };
+        if (IsTechnicalRelease)
+        {
+            WriteReleaseNotes();
+            return;
+        }
 
-		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
-		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-		var releaseVersion = versioning.NuGetVersion;
+        const bool debugUserEmail = false;
+        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
+            .ToList();
+        var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
+        static SummaryItem CreateSummaryItem(System.Text.RegularExpressions.Match m) => new()
+        {
+            Commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
+            Author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+            Email = m.Groups["email"]?.Value?.Trim() ?? string.Empty,
+        };
+        var summary = shortlogSummary
+            .Where(x => re.IsMatch(x))
+            .Select(x => re.Match(x))
+            .Select(CreateSummaryItem)
+            .ToList();
 
-		// Read main header from Git file, substitute version in header, and add content further...
-		Information("{0}  New release tag is " + releaseVersion);
-		Information("{1} Last release tag is " + lastRelease);
-		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
-		releaseNotes = new List<string> { releaseHeader };
-		if (IsTechnicalRelease)
-		{
-			WriteReleaseNotes();
-			return;
-		}
+        // Starring aka Release Influencers
+        var starring = new List<string>();
+        string CreateStars(int count, string name)
+        {
+            var contributor = summary.Find(x => x.Author.Equals(name));
+            var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", count));
+            var emailInfo = debugUserEmail ? ", " + contributor.Email : string.Empty;
+            return $"{stars}  {contributor.Author} {emailInfo}";
+        }
+        // foreach (var contributor in summary)
+        // {
+        //     starring.Add(CreateStars(contributor.Commits, contributor.Author));
+        // }
+        // Information("---==< Old Starring >==---");
+        // Information(string.Join(Environment.NewLine, starring));
+        var commitsGrouping = summary
+            .GroupBy(x => x.Commits)
+            .Select(CreateCommitsGroupingItem)
+            .OrderByDescending(x => x.Commits)
+            .ToList();
+        starring = IterateCommits(commitsGrouping,
+            breaker: log => false, // don't break, so iterate all groups (summary)
+            byCommits: (log, group) => CreateStars(group.Commits, group.Authors.First()),
+            byFiles: (log, group, fGroup) => CreateStars(group.Commits, fGroup.Contributors.First().Contributor),
+            byInsertions: (log, group, fGroup, insGroup) => CreateStars(group.Commits, insGroup.Contributors.First().Contributor),
+            byDeletions: (log, group, fGroup, insGroup, contributor) => CreateStars(group.Commits, contributor.Contributor));
+        Information("---==< Starring >==---");
+        Information(string.Join(Environment.NewLine, starring));
 
-		var debugUserEmail = false;
-		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
-			.ToList();
-		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
-		var summary = shortlogSummary
-			.Where(x => re.IsMatch(x))
-			.Select(x => re.Match(x))
-			.Select(m => new
-			{
-				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
-				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
-				email = m.Groups["email"]?.Value?.Trim() ?? string.Empty,
-			})
-			.ToList();
+        // Honoring aka Top Contributors
+        var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" }; // Ocelot Core team members should not be in Top 3 Chart
+        var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "redbird_project@yahoo.fr", "58469901+ggnaegi@users.noreply.github.com" };
+        static CommitsGroupingItem CreateCommitsGroupingItem(IGrouping<int, SummaryItem> g) => new()
+        {
+            Commits = g.Key,
+            Count = g.Count(),
+            Authors = g.Select(x => x.Author).ToArray(),
+        };
+        commitsGrouping = summary
+            .Where(x => !coreTeamNames.Contains(x.Author) && !coreTeamEmails.Contains(x.Email)) // filter out Ocelot Core team members
+            .GroupBy(x => x.Commits)
+            .Select(CreateCommitsGroupingItem)
+            .OrderByDescending(x => x.Commits)
+            .ToList();
+        var topContributors = IterateCommits(commitsGrouping,
+            breaker: log => false, // (log.Count >= 3), // going to create Top 3
+            byCommits: (log, group) =>
+            {
+                var place = Place(log.Count);
+                var author = group.Authors.First();
+                return Honor(place, author, group.Commits);
+            },
+            byFiles: (log, group, fGroup) =>
+            {
+                var place = Place(log.Count);
+                var contributor = fGroup.Contributors.First();
+                return HonorForFiles(place, contributor.Contributor, group.Commits, contributor.Files);
+            },
+            byInsertions: (log, group, fGroup, insGroup) =>
+            {
+                var place = Place(log.Count);
+                var contributor = insGroup.Contributors.First();
+                return HonorForInsertions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions);
+            },
+            byDeletions: (log, group, fGroup, insGroup, contributor) =>
+            {
+                var place = Place(log.Count);
+                return HonorForDeletions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
+            });
+        Information("---==< TOP Contributors >==---");
+        Information(string.Join(Environment.NewLine, topContributors));
 
-		// Starring aka Release Influencers
-		var starring = new List<string>();
-		foreach (var contributor in summary)
-		{
-			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
-			var emailInfo = debugUserEmail ? ", " + contributor.email : string.Empty;
-			starring.Add($"{stars}  {contributor.author}{emailInfo}");
-		}
-
-		// Honoring aka Top Contributors
-		const int top3 = 3; // going to create Top 3
-		var topContributors = new List<string>();
-		// Ocelot Core team members should not be in Top 3 Chart
-		var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" };
-		var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "redbird_project@yahoo.fr", "58469901+ggnaegi@users.noreply.github.com" };
-		var commitsGrouping = summary
-			.Where(x => !coreTeamNames.Contains(x.author) && !coreTeamEmails.Contains(x.email)) // filter out Ocelot Core team members
-			.GroupBy(x => x.commits)
-			.Select(g => new
-			{
-				commits = g.Key,
-				count = g.Count(),
-				authors = g.Select(x => x.author).ToList(),
-			})
-			.OrderByDescending(x => x.commits)
-			.ToList();
-
-		// local helpers
-		string[] places = new[] { "1st", "2nd", "3rd", "4", "5", "6", "7", "8", "9", "10", "11" };
-		static string Plural(int n) => n == 1 ? "" : "s";
-		static string Honor(string place, string author, int commits, string suffix = null)
-			=> $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
-		static string HonorForFiles(string place, string author, int commits, int files, string suffix = null)
-			=> Honor(place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
-		static string HonorForInsertions(string place, string author, int commits, int files, int insertions, string suffix = null)
-			=> HonorForFiles(place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
-		static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
-			=> HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
-
-		foreach (var group in commitsGrouping)
-		{
-			if (topContributors.Count >= top3) break;
-			if (group.count == 1)
-			{
-				var place = places[topContributors.Count];
-				var author = group.authors.First();
-				var honoring = Honor(place, author, group.commits);
-				topContributors.Add(honoring);
-			}
-			else // multiple candidates with the same number of commits, so, group by files changed
-			{
-				var statistics = new List<(string Contributor, int Files, int Insertions, int Deletions)>();
-				var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
-				// Collect statistics from git log & shortlog
-				foreach (var author in group.authors)
-				{
-					if (!statistics.Exists(s => s.Contributor == author))
-					{
-						var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
-						var data = shortstat
-							.Where(x => shortstatRegex.IsMatch(x))
-							.Select(x => shortstatRegex.Match(x))
-							.Select(m => new
-							{
-								files = int.Parse(m.Groups["files"]?.Value ?? "0"),
-								insertions = int.Parse(m.Groups["insertions"]?.Value ?? "0"),
-								deletions = int.Parse(m.Groups["deletions"]?.Value ?? "0"),
-							})
-							.ToList();
-						statistics.Add((author, data.Sum(x => x.files), data.Sum(x => x.insertions), data.Sum(x => x.deletions)));
-					}
-				}
-				var filesGrouping = statistics
-					.GroupBy(x => x.Files)
-					.Select(g => new
-					{
-						files = g.Key,
-						count = g.Count(),
-						contributors = g.SelectMany(x => statistics.Where(s => s.Contributor==x.Contributor && s.Files==g.Key)).ToList(),
-					})
-					.OrderByDescending(x => x.files)
-					.ToList();
-				foreach (var fGroup in filesGrouping)
-				{
-					if (topContributors.Count >= top3) break;
-					if (fGroup.count == 1)
-					{
-						var place = places[topContributors.Count];
-						var contributor = fGroup.contributors.First();
-						var honoring = HonorForFiles(place, contributor.Contributor, group.commits, contributor.Files);
-						topContributors.Add(honoring);
-					}
-					else // multiple candidates with the same number of commits, with the same number of changed files, so, group by additions (insertions)
-					{
-						var insertionsGrouping = fGroup.contributors
-							.GroupBy(x => x.Insertions)
-							.Select(g => new
-							{
-								insertions = g.Key,
-								count = g.Count(),
-								contributors = g.SelectMany(x => fGroup.contributors.Where(s => s.Contributor == x.Contributor && s.Insertions == g.Key)).ToList(),
-							})
-							.OrderByDescending(x => x.insertions)
-							.ToList();
-						foreach (var insGroup in insertionsGrouping)
-						{
-							if (topContributors.Count >= top3) break;
-							if (insGroup.count == 1)
-							{
-								var place = places[topContributors.Count];
-								var contributor = insGroup.contributors.First();
-								var honoring = HonorForInsertions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions);
-								topContributors.Add(honoring);
-							}
-							else // multiple candidates with the same number of commits, with the same number of changed files, with the same number of insertions, so, order desc by deletions
-							{
-								foreach (var contributor in insGroup.contributors.OrderByDescending(x => x.Deletions))
-								{
-									if (topContributors.Count >= top3) break;
-									var place = places[topContributors.Count];
-									var honoring = HonorForDeletions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions, contributor.Deletions);
-									topContributors.Add(honoring);
-								}
-							}
-						}
-					}
-				}
-			}
-		} // END of Top 3
-
-		releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		releaseNotes.AddRange(topContributors);
-		releaseNotes.Add("");
-		releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		releaseNotes.AddRange(starring);
-		releaseNotes.Add("");
-		releaseNotes.Add($"### Features in Release {releaseVersion}");
-		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
-		releaseNotes.AddRange(commitsHistory);
-
-		WriteReleaseNotes();
+        // local helpers
+        static string Place(int i) => ++i == 1 ? "1st" : i == 2 ? "2nd" : i == 3 ? "3rd" : $"{i}th";
+        static string Plural(int n) => n == 1 ? "" : "s";
+        static string Honor(string place, string author, int commits, string suffix = null)
+            => $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
+        static string HonorForFiles(string place, string author, int commits, int files, string suffix = null)
+            => Honor(place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
+        static string HonorForInsertions(string place, string author, int commits, int files, int insertions, string suffix = null)
+            => HonorForFiles(place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
+        static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
+            => HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
+        List<string> IterateCommits(List<CommitsGroupingItem> commitsGrouping, Predicate<List<string>> breaker,
+            Func<List<string>, CommitsGroupingItem, string> byCommits,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, string> byFiles,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, InsertionsGroupingItem, string> byInsertions,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, InsertionsGroupingItem, FilesChangedItem, string> byDeletions)
+        {
+            var log = new List<string>();
+            foreach (var group in commitsGrouping)
+            {
+                if (breaker.Invoke(log)) break; // (log.Count >= top3)
+                if (group.Count == 1)
+                {
+                    log.Add(byCommits.Invoke(log, group));
+                }
+                else // multiple candidates with the same number of commits, so, group by files changed
+                {
+                    var statistics = new List<FilesChangedItem>();
+                    var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
+                    static FilesChangedItem CreateFilesChangedItem(System.Text.RegularExpressions.Match m) => new()
+                    {
+                        Files = int.Parse(m.Groups["files"]?.Value ?? "0"),
+                        Insertions = int.Parse(m.Groups["insertions"]?.Value ?? "0"),
+                        Deletions = int.Parse(m.Groups["deletions"]?.Value ?? "0"),
+                    };
+                    foreach (var author in group.Authors) // Collect statistics from git log & shortlog
+                    {
+                        if (!statistics.Exists(s => s.Contributor == author))
+                        {
+                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
+                            var data = shortstat
+                                .Where(x => shortstatRegex.IsMatch(x))
+                                .Select(x => shortstatRegex.Match(x))
+                                .Select(CreateFilesChangedItem)
+                                .ToList();
+                            statistics.Add(new FilesChangedItem(author, data.Sum(x => x.Files), data.Sum(x => x.Insertions), data.Sum(x => x.Deletions)));
+                        }
+                    }
+                    var filesGrouping = statistics
+                        .GroupBy(x => x.Files)
+                        .Select(g => new FilesGroupingItem
+                        {
+                            Files = g.Key,
+                            Count = g.Count(),
+                            Contributors = g.SelectMany(x => statistics.Where(s => s.Contributor == x.Contributor && s.Files == g.Key)).ToArray(),
+                        })
+                        .OrderByDescending(x => x.Files)
+                        .ToList();
+                    foreach (var fGroup in filesGrouping)
+                    {
+                        if (breaker.Invoke(log)) break;
+                        if (fGroup.Count == 1)
+                        {
+                            log.Add(byFiles.Invoke(log, group, fGroup));
+                        }
+                        else // multiple candidates with the same number of commits, with the same number of changed files, so, group by additions (insertions)
+                        {
+                            var insertionsGrouping = fGroup.Contributors
+                                .GroupBy(x => x.Insertions)
+                                .Select(g => new InsertionsGroupingItem
+                                {
+                                    Insertions = g.Key,
+                                    Count = g.Count(),
+                                    Contributors = g.SelectMany(x => fGroup.Contributors.Where(s => s.Contributor == x.Contributor && s.Insertions == g.Key)).ToArray(),
+                                })
+                                .OrderByDescending(x => x.Insertions)
+                                .ToList();
+                            foreach (var insGroup in insertionsGrouping)
+                            {
+                                if (breaker.Invoke(log)) break;
+                                if (insGroup.Count == 1)
+                                {
+                                    log.Add(byInsertions.Invoke(log, group, fGroup, insGroup));
+                                }
+                                else // multiple candidates with the same number of commits, with the same number of changed files, with the same number of insertions, so, order desc by deletions
+                                {
+                                    foreach (var contributor in insGroup.Contributors.OrderByDescending(x => x.Deletions))
+                                    {
+                                        if (breaker.Invoke(log)) break;
+                                        log.Add(byDeletions.Invoke(log, group, fGroup, insGroup, contributor));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return log;
+        } // END of IterateCommits
+        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        // releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        // releaseNotes.Add($"### Features in Release {releaseVersion}");
+        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
+        // releaseNotes.AddRange(commitsHistory);
+        WriteReleaseNotes();
 	});
 
+struct SummaryItem
+{
+	public int Commits;
+	public string Author;
+	public string Email;
+}
+struct CommitsGroupingItem
+{
+	public int Commits;
+	public int Count;
+	public string[] Authors;
+}
+struct FilesChangedItem
+{
+	public string Contributor;
+	public int Files;
+	public int Insertions;
+	public int Deletions;
+	public FilesChangedItem(string author, int files, int insertions, int deletions)
+	{
+		Contributor = author;
+		Files = files;
+		Insertions = insertions;
+		Deletions = deletions;
+	}
+}
+struct FilesGroupingItem
+{
+	public int Files;
+	public int Count;
+	public FilesChangedItem[] Contributors;
+}
+struct InsertionsGroupingItem
+{
+	public int Insertions;
+	public int Count;
+	public FilesChangedItem[] Contributors;
+}
+private List<string> GitHelper(string command)
+{
+	IEnumerable<string> output;
+	var exitCode = StartProcess(
+		"git",
+		new ProcessSettings { Arguments = command, RedirectStandardOutput = true },
+		out output);
+	if (exitCode != 0)
+		throw new Exception("Failed to execute Git command: " + command);
+	return output.ToList();
+}
 private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
@@ -341,7 +418,7 @@ private void WriteReleaseNotes()
 	}
 
 	Information("Release notes are >>>\n{0}<<<", content);
-	Information($"EXITED {nameof(WriteReleaseNotes)}");
+	//Information($"EXITED {nameof(WriteReleaseNotes)}");
 }
 
 Task("RunUnitTests")
