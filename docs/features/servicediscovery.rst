@@ -469,8 +469,8 @@ Custom Provider Sample
 
 In order to introduce a basic template for a custom Service Discovery provider, we've prepared a good sample:
 
-    | **Link**: `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ / `OcelotServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotServiceDiscovery>`_
-    | **Solution**: `Ocelot.Samples.ServiceDiscovery.sln <https://github.com/ThreeMammals/Ocelot/blob/main/samples/OcelotServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_
+    | **Link**: `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ / `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/ServiceDiscovery>`_
+    | **Solution**: `Ocelot.Samples.ServiceDiscovery.sln <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_
 
 This solution contains the following projects:
 
@@ -479,7 +479,7 @@ This solution contains the following projects:
 
 This solution is ready for any deployment. All services are bound, meaning all ports and hosts are prepared for immediate use (running in Visual Studio).
 
-All instructions for running this solution are in `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/OcelotServiceDiscovery/README.md>`_.
+All instructions for running this solution are in `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/README.md>`_.
 
 DownstreamService
 """""""""""""""""
@@ -493,7 +493,7 @@ ApiGateway
 This project includes a custom *Service Discovery* provider and it only has route(s) to `DownstreamService <#downstreamservice>`_ services in the **ocelot.json** file.
 You can add more routes!
 
-The main source code for the custom provider is in the `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
+The main source code for the custom provider is in the `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/ServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
 the ``MyServiceDiscoveryProvider`` and ``MyServiceDiscoveryProviderFactory`` classes.
 You are welcome to design and develop them!
 
