@@ -1,5 +1,3 @@
-.. service-discovery:
-
 Service Discovery
 =================
 
@@ -282,7 +280,7 @@ Then add the following to your ``ConfigureServices`` method.
 
     s.AddOcelot().AddEureka();
 
-Then in order to get this working add the following to **ocelot.json**:
+Then in order to get this working add the following to `ocelot.json`_:
 
 .. code-block:: json
 
@@ -309,7 +307,7 @@ Ocelot will now register all the necessary services when it starts up and if you
 One of the services polls Eureka every 30 seconds (default) and gets the latest service state and persists this in memory.
 When Ocelot asks for a given service it is retrieved from memory so performance is not a big problem.
 
-Ocelot will use the scheme (``http``, ``https``) set in Eureka if these values are not provided in **ocelot.json**
+Ocelot will use the scheme (``http``, ``https``) set in Eureka if these values are not provided in `ocelot.json`_.
 
 .. _sd-dynamic-routing:
 
@@ -443,7 +441,7 @@ This is done by implementing the ``IServiceDiscoveryProvider`` interface, as sho
         }
     }
 
-And set its class name as the provider type in **ocelot.json**:
+And set its class name as the provider type in `ocelot.json`_:
 
 .. code-block:: json
 
@@ -464,6 +462,8 @@ Finally, in the application's **ConfigureServices** method, register a ``Service
     services.AddSingleton(serviceDiscoveryFinder);
     services.AddOcelot();
 
+.. _sd-custom-provider-sample:
+
 Custom Provider Sample
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -474,26 +474,31 @@ In order to introduce a basic template for a custom Service Discovery provider, 
 
 This solution contains the following projects:
 
-- `ApiGateway <#apigateway>`_
-- `DownstreamService <#downstreamservice>`_
+- :ref:`sd-cps-api-gateway`
+- :ref:`sd-cps-downstream-service`
 
 This solution is ready for any deployment. All services are bound, meaning all ports and hosts are prepared for immediate use (running in Visual Studio).
 
 All instructions for running this solution are in `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/README.md>`_.
 
+
+.. _sd-cps-downstream-service:
+
 DownstreamService
 """""""""""""""""
 
-This project provides a single downstream service that can be reused across `ApiGateway <#apigateway>`_ routes.
+This project provides a single downstream service that can be reused across :ref:`sd-cps-api-gateway` routes.
 It has multiple **launchSettings.json** profiles for your favorite launch and hosting scenarios: Visual Studio running sessions, Kestrel console hosting, and Docker deployments.
+
+.. _sd-cps-api-gateway:
 
 ApiGateway
 """"""""""
 
-This project includes a custom *Service Discovery* provider and it only has route(s) to `DownstreamService <#downstreamservice>`_ services in the **ocelot.json** file.
+This project includes a custom *Service Discovery* provider and it only has route(s) to :ref:`sd-cps-downstream-service` services in the `ocelot.json <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/ApiGateway/ocelot.json>`__ file.
 You can add more routes!
 
-The main source code for the custom provider is in the `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/ServiceDiscovery/ApiGateway/ServiceDiscovery>`_ folder:
+The main source code for the custom provider is in the `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/ServiceDiscovery/ApiGateway/ServiceDiscovery>`__ folder:
 the ``MyServiceDiscoveryProvider`` and ``MyServiceDiscoveryProviderFactory`` classes.
 You are welcome to design and develop them!
 
@@ -537,8 +542,8 @@ But you can leave this ``Type`` option for compatibility between both designs.
 """"
 
 .. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
-.. [#f2] *"Consul Configuration Key"* feature was requested in issue `346`_ as a part of version `7.0.0`_.
-.. [#f3] Customization of *"Consul Service Builder"* was implemented as a part of bug `954`_ fixing and the feature was delivered in version `23.3`_.
+.. [#f2] :ref:`sd-consul-configuration-key` feature was requested in issue `346`_ as a part of version `7.0.0`_.
+.. [#f3] Customization of :ref:`sd-consul-service-builder` was implemented as a part of bug `954`_ fixing and the feature was delivered in version `23.3`_.
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
 .. _Consul: https://www.consul.io/
