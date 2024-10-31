@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Version>0.0.0-dev</Version>
-    <Authors>Kjell-Åke Gafvelin</Authors>
+    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Description>This package provides OpenTracing support to Ocelot.</Description>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
     <PackageIcon>ocelot_logo.png</PackageIcon>

@@ -3,7 +3,7 @@
 .. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
 .. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
 .. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
-.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
 
 ############################
 Ocelot `23.3`_ Documentation
@@ -19,7 +19,7 @@ All **Features** are listed in alphabetical order.
 The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.
 
 Additional tips for building Ocelot can be found in the **Building Ocelot** section.
-We adhere to a :doc:`../building/devprocess` outlined in :doc:`../building/releaseprocess`.
+We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../building/releaseprocess`.
 
 .. admonition:: Table of Contents
 

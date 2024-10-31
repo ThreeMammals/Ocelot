@@ -1,19 +1,25 @@
-.. |K8s Logo| image:: https://kubernetes.io/images/favicon.png
+.. |K8sLogo| image:: https://kubernetes.io/images/nav_logo2.svg
   :alt: K8s Logo
-  :width: 40
+  :height: 50
+  :target: https://kubernetes.io
 
-|K8s Logo| Kubernetes [#f1]_ aka K8s
-====================================
+.. |kubernetes| image:: https://kubernetes.io/images/nav_logo2.svg
+  :alt: kubernetes logo
+  :height: 17
+  :target: https://kubernetes.io
 
-    A part of feature: :doc:`../features/servicediscovery` [#f2]_
+|K8sLogo| K8s [#f1]_
+====================
+
+    A part of feature: :doc:`../features/servicediscovery`
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
-Ocelot used to use the services API to send requests to the `K8s <https://kubernetes.io/>`__ service but this was changed in `PR 1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
+Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in PR `1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
 
 Install
 -------
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides **Kubernetes** [#f1]_ support in Ocelot:
+The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides |kubernetes| support in Ocelot [#f2]_:
 
 .. code-block:: powershell
 
@@ -36,7 +42,7 @@ Default ``usePodServiceAccount = true``, which means that Service Account using 
     }
 
 You can replicate a Permissive using RBAC role bindings (see `Permissive RBAC Permissions <https://kubernetes.io/docs/reference/access-authn-authz/rbac/#permissive-rbac-permissions>`_),
-K8s API server and token will read from pod.
+`K8s`_ API server and token will read from pod.
 
 .. code-block:: bash
 
@@ -158,6 +164,6 @@ Consequently, if the port name is not designated, the default downstream scheme 
 
 """"
 
-.. [#f1] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
-.. [#f2] This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider. 
-.. [#f3] *"Downstream Scheme vs Port Names"* feature was requested as part of `issue 1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
+.. [#f1] :doc:`../features/kubernetes` feature was requested as part of issue `345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1>`_ 
+.. [#f2] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
+.. [#f3] :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
