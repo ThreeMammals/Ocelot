@@ -3,7 +3,7 @@
 > Hot fixed version: [23.3.4](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4)
 > Milestone: [October'24](https://github.com/ThreeMammals/Ocelot/milestone/7)
 
-:heart: A heartfelt "Thank You" to [Nikolai Masson](https://github.com/Niksson) and [Nikolay Kuksov](https://github.com/kick2nick) for their contributions!
+:heart: A heartfelt "Thank You" to **[Nikolai Masson](https://github.com/Niksson)** (@Niksson) and **[Nikolay Kuksov](https://github.com/kick2nick)** (@kick2nick) for their contributions!
 
 ### :information_source: About
 This release provides minor bug fixes from the previous [23.3.4](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4) release. All bugs have been addressed in the [October'24](https://github.com/ThreeMammals/Ocelot/milestone/7) milestone.

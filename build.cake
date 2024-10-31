@@ -1,4 +1,4 @@
-#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
+﻿#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
 #tool dotnet:?package=coveralls.net&version=4.0.1
 #tool nuget:?package=ReportGenerator&version=5.2.4
 #addin nuget:?package=Newtonsoft.Json&version=13.0.3
@@ -135,8 +135,31 @@ Task("Version")
 		}
 	});
 
+Task("GitLogUniqContributors")
+	.Does(() =>
+	{
+        Information("---==< Unique Contributors >==---");
+		var command = "log --format=\"%aN|%aE\" ";
+		// command += IsRunningOnCircleCI() ? "| sort | uniq" :
+		// 	IsRunningInPowershell() ? "| Sort-Object -Unique" : "| sort | uniq";
+		List<string> output = GitHelper(command);
+		output.Sort();
+		List<string> contributors = output.Distinct().ToList();
+		contributors.Sort();
+        Information($"Detected {contributors.Count} unique contributors:");
+        Information(string.Join(Environment.NewLine, contributors));
+		// TODO Search example in bash: curl -L -H "X-GitHub-Api-Version: 2022-11-28"   "https://api.github.com/search/users?q=Chris+Swinchatt"
+        Information(Environment.NewLine + "Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca");
+        AnsiConsole.Markup("Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca" + Environment.NewLine);
+		// Powershell life hack: $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+		// https://stackoverflow.com/questions/40098771/changing-powershells-default-output-encoding-to-utf-8
+		// https://stackoverflow.com/questions/49476326/displaying-unicode-in-powershell/49481797#49481797
+		// https://stackoverflow.com/questions/57131654/using-utf-8-encoding-chcp-65001-in-command-prompt-windows-powershell-window/57134096#57134096
+	});
+
 Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
+	.IsDependentOn("GitLogUniqContributors")
 	.Does(() =>
 	{
         Information($"Generating release notes at {releaseNotesFile}");
@@ -179,7 +202,7 @@ Task("CreateReleaseNotes")
             var contributor = summary.Find(x => x.Author.Equals(name));
             var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", count));
             var emailInfo = debugUserEmail ? ", " + contributor.Email : string.Empty;
-            return $"{stars}  {contributor.Author} {emailInfo}";
+            return $"{stars}  {contributor.Author}{emailInfo}";
         }
         // foreach (var contributor in summary)
         // {
