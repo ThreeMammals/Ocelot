@@ -135,7 +135,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
                 .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-                .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
+                .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/status", 200, "Hello from Laura"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
                 .When(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
@@ -162,8 +162,6 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
                     },
                 },
             };
-
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
 
             var consulConfig = new FileConfiguration
             {
@@ -228,7 +226,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
             };
 
             this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
+                .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort), string.Empty))
                 .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/status", 200, "Hello from Laura"))
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunningUsingConsulToStoreConfig())
@@ -379,69 +377,54 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery
 
         private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
         {
-            _fakeConsulBuilder = new WebHostBuilder()
-                            .UseUrls(url)
-                            .UseKestrel()
-                            .UseContentRoot(Directory.GetCurrentDirectory())
-                            .UseIISIntegration()
-                            .UseUrls(url)
-                                .Configure(app =>
-                                {
-                                    app.Run(async context =>
-                                    {
-                                        if (context.Request.Method.Equals(HttpMethods.Get, StringComparison.OrdinalIgnoreCase) && context.Request.Path.Value == " /v1/kv/InternalConfiguration")
-                                        {
-                                            var json = JsonConvert.SerializeObject(_config);
-
-                                            var bytes = Encoding.UTF8.GetBytes(json);
-
-                                            var base64 = Convert.ToBase64String(bytes);
-
-                                            var kvp = new FakeConsulGetResponse(base64);
-                                            json = JsonConvert.SerializeObject(new[] { kvp });
-                                            context.Response.Headers.Append("Content-Type", "application/json");
-                                            await context.Response.WriteAsync(json);
-                                        }
-                                        else if (context.Request.Method.Equals(HttpMethods.Put, StringComparison.OrdinalIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
-                                        {
-                                            try
-                                            {
-                                                var reader = new StreamReader(context.Request.Body);
-
-                                                // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
-                                                // var json = reader.ReadToEnd();                                            
-                                                var json = await reader.ReadToEndAsync();
-
-                                                _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
-
-                                                var response = JsonConvert.SerializeObject(true);
-
-                                                await context.Response.WriteAsync(response);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                Console.WriteLine(e);
-                                                throw;
-                                            }
-                                        }
-                                        else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                                        {
-                                            var json = JsonConvert.SerializeObject(_consulServices);
-                                            context.Response.Headers.Append("Content-Type", "application/json");
-                                            await context.Response.WriteAsync(json);
-                                        }
-                                    });
-                                })
-                                .Build();
+            _fakeConsulBuilder = TestHostBuilder.Create()
+                .UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseUrls(url)
+                .Configure(app => app.Run(async context =>
+                {
+                    if (context.Request.Method.Equals(HttpMethods.Get, StringComparison.OrdinalIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
+                    {
+                        var json = JsonConvert.SerializeObject(_config);
+                        var bytes = Encoding.UTF8.GetBytes(json);
+                        var base64 = Convert.ToBase64String(bytes);
+                        var kvp = new FakeConsulGetResponse(base64);
+                        json = JsonConvert.SerializeObject(new[] { kvp });
+                        context.Response.Headers.Append("Content-Type", "application/json");
+                        await context.Response.WriteAsync(json);
+                    }
+                    else if (context.Request.Method.Equals(HttpMethods.Put, StringComparison.OrdinalIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
+                    {
+                        try
+                        {
+                            using var reader = new StreamReader(context.Request.Body);
+                            var json = await reader.ReadToEndAsync();
+                            _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
+                            var response = JsonConvert.SerializeObject(true);
+                            await context.Response.WriteAsync(response);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    }
+                    else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+                    {
+                        var json = JsonConvert.SerializeObject(_consulServices);
+                        context.Response.Headers.Append("Content-Type", "application/json");
+                        await context.Response.WriteAsync(json);
+                    }
+                }))
+                .Build();
             return _fakeConsulBuilder.StartAsync();
         }
 
         public class FakeConsulGetResponse
         {
-            public FakeConsulGetResponse(string value)
-            {
-                Value = value;
-            }
+            public FakeConsulGetResponse(string value) => Value = value;
 
             public int CreateIndex => 100;
             public int ModifyIndex => 200;
