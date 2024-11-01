@@ -54,7 +54,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
-        if (!options.IsValid()) throw new ArgumentException("QoS options are invalid.");
+        if (!options.IsValid())
+        {
+            throw new ArgumentException("QoS options are invalid.");
+        }
 
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
             key: new OcelotResiliencePipelineKey(GetRouteName(route)),

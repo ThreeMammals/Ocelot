@@ -52,7 +52,7 @@ namespace Ocelot.Configuration
             double failureRatio,
             int samplingDuration,
             int timeoutValue,
-           string key)
+            string key)
         {
             DurationOfBreak = durationOfBreak;
             ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
@@ -100,12 +100,8 @@ namespace Ocelot.Configuration
 
         public string Key { get; }
 
-        /// <summary>
-        /// Value for TimeoutStrategy in milliseconds.
-        /// </summary>
-        /// <value>
-        /// An <see cref="int"/> value (milliseconds).
-        /// </value>
+        /// <summary>Value for TimeoutStrategy in milliseconds.</summary>
+        /// <value>An <see cref="int"/> value (milliseconds).</value>
         public int TimeoutValue { get; }
 
         public bool UseQos => ExceptionsAllowedBeforeBreaking >= 2 || TimeoutValue > 0;
