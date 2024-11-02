@@ -97,7 +97,7 @@ public class MessageInvokerPoolTests : UnitTest
         this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
             .And(x => GivenAMessageInvokerPool())
             .And(x => GivenARequest(route))
-            .When(x => WhenICallTheClient("http://www.google.com/"))
+            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
             .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
             .BDDfy();
     }

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.DependencyInjection
 {
@@ -188,7 +189,7 @@ namespace Ocelot.UnitTests.DependencyInjection
             foreach (var part in configParts)
             {
                 var filename = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, part.Key));
-                File.WriteAllText(filename, JsonConvert.SerializeObject(part.Value, Formatting.Indented));
+                File.WriteAllText(filename, JsonSerializer.Serialize(part.Value, JsonSerializerOptionsFactory.WebWriteIndented));
                 _files.Add(filename);
             }
         }

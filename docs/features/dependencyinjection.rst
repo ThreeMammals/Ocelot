@@ -132,7 +132,14 @@ Current `implementation <https://github.com/search?q=repo%3AThreeMammals%2FOcelo
                 .AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
-                .AddNewtonsoftJson();
+                .AddJsonOptions(op =>
+                {
+                    op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    op.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+                    op.JsonSerializerOptions.WriteIndented = false;
+                    op.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    op.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                });
         }
 
 The method cannot be overridden. It is not virtual, and there is no way to override current behavior by inheritance.
@@ -154,74 +161,6 @@ The next section shows you an example of designing custom Ocelot pipeline by cus
 
 .. _di-custom-builder:
 
-Custom Builder
---------------
-
-**Goal**: Replace ``Newtonsoft.Json`` services with ``System.Text.Json`` services.
-
-Problem
-^^^^^^^
-
-The main `AddOcelot`_ method adds 
-`Newtonsoft JSON <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.newtonsoftjsonmvccorebuilderextensions.addnewtonsoftjson>`_ services 
-by the ``AddNewtonsoftJson`` extension method in default builder (`AddDefaultAspNetServices`_ method). 
-The ``AddNewtonsoftJson`` method calling was introduced in old .NET and Ocelot releases which was necessary when Microsoft did not launch the ``System.Text.Json`` library, 
-but now it affects normal use, so we have an intention to solve the problem.
-
-Modern `JSON services <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions.addjsonoptions>`_ 
-out of `the box <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.mvccoremvccorebuilderextensions>`_
-will help to configure JSON settings by the ``JsonSerializerOptions`` property for JSON formatters during (de)serialization.
-
-Solution
-^^^^^^^^
-
-We have the following methods in `ServiceCollectionExtensions`_ class:
-
-.. code-block:: csharp
-
-    IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder);
-    IOcelotBuilder AddOcelotUsingBuilder(this IServiceCollection services, IConfiguration configuration, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder);
-
-These methods with custom builder allow you to use your any desired JSON library for (de)serialization.
-But we are going to create custom ``MvcCoreBuilder`` with support of JSON services, such as ``System.Text.Json``.
-To do that we need to call ``AddJsonOptions`` extension of the ``MvcCoreMvcCoreBuilderExtensions`` class 
-(NuGet package: `Microsoft.AspNetCore.Mvc.Core <https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Core/>`_) in **Startup.cs**:
-
-.. code-block:: csharp
-
-    using Microsoft.Extensions.DependencyInjection;
-    using Ocelot.DependencyInjection;
-    using System.Reflection;
-    
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddLogging()
-                .AddMiddlewareAnalysis()
-                .AddWebEncoders()
-                // Add your custom builder
-                .AddOcelotUsingBuilder(MyCustomBuilder);
-        }
-
-        private static IMvcCoreBuilder MyCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
-        {
-            return builder
-                .AddApplicationPart(assembly)
-                .AddControllersAsServices()
-                .AddAuthorization()
-
-                // Replace AddNewtonsoftJson() by AddJsonOptions()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.WriteIndented = true; // use System.Text.Json
-                });
-        }
-    }
-
-The sample code provides settings to render JSON as indented text rather than compressed plain JSON text without spaces.
-This is just one common use case, and you can add additional services to the builder.
 
 ------------------------------------------------------------------
 
