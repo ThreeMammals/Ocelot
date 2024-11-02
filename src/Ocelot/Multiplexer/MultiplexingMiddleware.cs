@@ -181,8 +181,6 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return processing;
     }
 
-
-
     /// <summary>
     /// Process a downstream route asynchronously.
     /// </summary>
