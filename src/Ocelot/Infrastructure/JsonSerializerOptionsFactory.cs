@@ -13,7 +13,7 @@ public static class JsonSerializerOptionsFactory
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         PropertyNameCaseInsensitive = true,
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        WriteIndented = false
+        WriteIndented = false,
     };
 
     public static readonly JsonSerializerOptions WebWriteIndented = new()
@@ -22,7 +22,7 @@ public static class JsonSerializerOptionsFactory
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         PropertyNameCaseInsensitive = true,
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        WriteIndented = true
+        WriteIndented = true,
     };
 
     public static List<string> ExtractValuesFromJsonPath(this JsonDocument document, string jsonPath)
@@ -40,7 +40,10 @@ public static class JsonSerializerOptionsFactory
 
     private static void TraverseJsonPath(JsonElement currentElement, string[] pathParts, int index, List<string> elements)
     {
-        if (index >= pathParts.Length) return;
+        if (index >= pathParts.Length)
+        {
+            return;
+        }
 
         var part = pathParts[index];
 
@@ -60,7 +63,9 @@ public static class JsonSerializerOptionsFactory
                         {
                             var item = nextElement.ToString();
                             if (!string.IsNullOrWhiteSpace(item))
+                            {
                                 elements.Add(item);
+                            }
                         }
                     }
                     else
@@ -86,7 +91,9 @@ public static class JsonSerializerOptionsFactory
                 {
                     var item = nextElement.ToString();
                     if (!string.IsNullOrWhiteSpace(item))
+                    {
                         elements.Add(item);
+                    }
                 }
             }
         }
@@ -94,7 +101,9 @@ public static class JsonSerializerOptionsFactory
         {
             var item = currentElement.ToString();
             if (!string.IsNullOrWhiteSpace(item))
+            {
                 elements.Add(item);
+            }
         }
     }
 }

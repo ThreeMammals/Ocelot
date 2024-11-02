@@ -8,6 +8,7 @@ using Ocelot.AcceptanceTests.RateLimiting;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using System.Text;

@@ -11,6 +11,7 @@ using Ocelot.AcceptanceTests.Caching;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using System.Text;
@@ -150,9 +151,9 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                                         // var json = reader.ReadToEnd();                                            
                                         var json = await reader.ReadToEndAsync();
 
-                                            _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsFactory.Web);
+                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsFactory.Web);
 
-                                            var response = JsonSerializer.Serialize(true, JsonSerializerOptionsFactory.Web);
+                                        var response = JsonSerializer.Serialize(true, JsonSerializerOptionsFactory.Web);
 
                                         await context.Response.WriteAsync(response);
                                     }

@@ -155,7 +155,6 @@ public class OcelotBuilder : IOcelotBuilder
     /// <summary>
     /// Adds default ASP.NET services which are the minimal part of the gateway core.
     /// <para>
-    /// Finally the builder adds Newtonsoft.Json services via the <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/> extension-method.<br/>
     /// To remove these services, use custom builder in the <see cref="ServiceCollectionExtensions.AddOcelotUsingBuilder(IServiceCollection, Func{IMvcCoreBuilder, Assembly, IMvcCoreBuilder})"/> extension-method.
     /// </para>
     /// </summary>
@@ -170,7 +169,6 @@ public class OcelotBuilder : IOcelotBuilder
     /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
     /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
     /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
-    /// - <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/>, removable.
     /// </para>
     /// </remarks>
     /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
