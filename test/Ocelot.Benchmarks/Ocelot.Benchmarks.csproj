@@ -25,13 +25,12 @@
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0-dev-02301" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
     <PackageReference Include="BenchmarkDotNet" Version="0.13.11" />
     <PackageReference Include="Bogus" Version="35.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
   </ItemGroup>
 </Project>
