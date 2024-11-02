@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         public FileQoSOptionsFluentValidatorTests()
         {
             _services = new ServiceCollection();
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             _validator = new FileQoSOptionsFluentValidator(provider);
         }
 
@@ -78,7 +78,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             DelegatingHandler Fake(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => null;
             _services.AddSingleton((QosDelegatingHandlerDelegate)Fake);
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             _validator = new FileQoSOptionsFluentValidator(provider);
         }
 

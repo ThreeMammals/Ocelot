@@ -10,6 +10,7 @@ global using System.Threading.Tasks;
 // Project extra global namespaces
 global using Moq;
 global using Ocelot;
+global using Ocelot.Testing;
 global using Shouldly;
 global using System.Net;
 global using TestStack.BDDfy;

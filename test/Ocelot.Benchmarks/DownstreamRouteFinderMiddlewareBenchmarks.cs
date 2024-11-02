@@ -31,7 +31,7 @@ namespace Ocelot.Benchmarks
             var serviceCollection = new ServiceCollection();
             var config = new ConfigurationRoot(new List<IConfigurationProvider>());
             var builder = new OcelotBuilder(serviceCollection, config);
-            var services = serviceCollection.BuildServiceProvider();
+            var services = serviceCollection.BuildServiceProvider(true);
             var loggerFactory = services.GetService<IOcelotLoggerFactory>();
             var drpf = services.GetService<IDownstreamRouteProviderFactory>();
 

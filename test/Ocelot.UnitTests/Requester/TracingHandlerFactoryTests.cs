@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.Requester
             _tracer = new Mock<ITracer>();
             _serviceCollection = new ServiceCollection();
             _serviceCollection.AddSingleton(_tracer.Object);
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _repo = new Mock<IRequestScopedDataRepository>();
             _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
         }

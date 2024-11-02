@@ -114,7 +114,7 @@ public class Steps : IDisposable
     /// <returns>Task.</returns>
     public async Task StartFakeOcelotWithWebSockets()
     {
-        _ocelotBuilder = new WebHostBuilder();
+        _ocelotBuilder = TestHostBuilder.Create();
         _ocelotBuilder.ConfigureServices(s =>
         {
             s.AddSingleton(_ocelotBuilder);
@@ -231,9 +231,7 @@ public class Steps : IDisposable
 
     protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string environmentName = null)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 var env = hostingContext.HostingEnvironment;
@@ -259,9 +257,7 @@ public class Steps : IDisposable
 
     internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -312,9 +308,7 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningUsingJsonSerializedCache()
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -347,9 +341,7 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -374,9 +366,7 @@ public class Steps : IDisposable
         where TOne : DelegatingHandler
         where TWo : DelegatingHandler
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -403,9 +393,7 @@ public class Steps : IDisposable
         where TOne : DelegatingHandler
         where TWo : DelegatingHandler
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -431,9 +419,7 @@ public class Steps : IDisposable
     public void GivenOcelotIsRunningWithHandlerRegisteredInDi<TOne>(bool global = false)
         where TOne : DelegatingHandler
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -458,9 +444,7 @@ public class Steps : IDisposable
     public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency)
         where TOne : DelegatingHandler
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -514,9 +498,7 @@ public class Steps : IDisposable
     public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
         string authenticationProviderKey)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -550,19 +532,12 @@ public class Steps : IDisposable
     }
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
-        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
+        => GivenOcelotIsRunningWithServices(configureServices, null);
 
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp)
-        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes: false);
-
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, bool validateScopes)
-        => GivenOcelotIsRunningWithServices(configureServices, null, validateScopes);
-
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp, bool validateScopes)
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp/*, bool validateScopes*/)
     {
-        _webHostBuilder = new WebHostBuilder()
+        _webHostBuilder = TestHostBuilder.Create() // ValidateScopes = true
             .ConfigureAppConfiguration(WithBasicConfiguration)
-            .UseDefaultServiceProvider(opts => opts.ValidateScopes = validateScopes)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot);
         _ocelotServer = new TestServer(_webHostBuilder);
@@ -594,8 +569,8 @@ public class Steps : IDisposable
             .AddEnvironmentVariables();
 
         var configuration = builder.Build();
-        _webHostBuilder = new WebHostBuilder();
-        _webHostBuilder.ConfigureServices(s => { s.AddSingleton(_webHostBuilder); });
+        _webHostBuilder = TestHostBuilder.Create()
+            .ConfigureServices(s => { s.AddSingleton(_webHostBuilder); });
 
         _ocelotServer = new TestServer(_webHostBuilder
             .UseConfiguration(configuration)
@@ -655,7 +630,7 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
     {
-        _webHostBuilder = new WebHostBuilder()
+        _webHostBuilder = TestHostBuilder.Create()
             .UseKestrel()
             .ConfigureAppConfiguration((_, config) =>
             {
@@ -874,9 +849,7 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -904,9 +877,7 @@ public class Steps : IDisposable
 
     public void GivenOcelotIsRunningWithLogger()
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -929,9 +900,7 @@ public class Steps : IDisposable
 
     internal void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
     {
-        _webHostBuilder = new WebHostBuilder();
-
-        _webHostBuilder
+        _webHostBuilder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);

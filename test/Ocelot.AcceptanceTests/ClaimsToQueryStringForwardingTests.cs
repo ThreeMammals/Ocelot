@@ -174,7 +174,7 @@ namespace Ocelot.AcceptanceTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode)
         {
-            _servicebuilder = new WebHostBuilder()
+            _servicebuilder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -206,7 +206,7 @@ namespace Ocelot.AcceptanceTests
 
         private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
         {
-            _identityServerBuilder = new WebHostBuilder()
+            _identityServerBuilder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

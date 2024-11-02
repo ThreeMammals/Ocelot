@@ -13,7 +13,7 @@ namespace Ocelot.UnitTests.Requester
         public HttpExceptionToErrorMapperTests()
         {
             _services = new ServiceCollection();
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             _mapper = new HttpExceptionToErrorMapper(provider);
         }
 
@@ -59,7 +59,7 @@ namespace Ocelot.UnitTests.Requester
 
             _services.AddSingleton(errorMapping);
 
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
 
             _mapper = new HttpExceptionToErrorMapper(provider);
 

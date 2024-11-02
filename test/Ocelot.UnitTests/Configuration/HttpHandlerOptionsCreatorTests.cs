@@ -18,7 +18,7 @@ namespace Ocelot.UnitTests.Configuration
         public HttpHandlerOptionsCreatorTests()
         {
             _serviceCollection = new ServiceCollection();
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 
@@ -210,7 +210,7 @@ namespace Ocelot.UnitTests.Configuration
         {
             var tracer = new FakeTracer();
             _serviceCollection.AddSingleton<ITracer, FakeTracer>();
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
         }
 

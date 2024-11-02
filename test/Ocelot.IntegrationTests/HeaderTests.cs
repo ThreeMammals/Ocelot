@@ -73,7 +73,7 @@ namespace Ocelot.IntegrationTests
 
         private void GivenThereIsAServiceRunningOn(string url, int statusCode, string headerKey)
         {
-            _downstreamBuilder = new WebHostBuilder()
+            _downstreamBuilder = TestHostBuilder.Create()
                 .UseUrls(url)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -98,7 +98,7 @@ namespace Ocelot.IntegrationTests
 
         private void GivenOcelotIsRunning()
         {
-            _webHostBuilder = new WebHostBuilder()
+            _webHostBuilder = TestHostBuilder.Create()
                 .UseUrls(_ocelotBaseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

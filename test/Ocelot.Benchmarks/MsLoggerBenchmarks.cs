@@ -87,7 +87,7 @@ public class MsLoggerBenchmarks : ManualConfig
 
     private void GivenOcelotIsRunning(string url, LogLevel minLogLevel)
     {
-        _webHost = new WebHostBuilder()
+        _webHost = TestHostBuilder.Create()
             .UseKestrel()
             .UseUrls(url)
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -174,7 +174,7 @@ public class MsLoggerBenchmarks : ManualConfig
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
     {
-        _service = new WebHostBuilder()
+        _service = TestHostBuilder.Create()
             .UseUrls(baseUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

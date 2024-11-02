@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             _services = new ServiceCollection();
             _authProvider = new Mock<IAuthenticationSchemeProvider>();
-            _provider = _services.BuildServiceProvider();
+            _provider = _services.BuildServiceProvider(true);
 
             // TODO Replace with mocks
             _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
@@ -972,7 +972,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
             _services.AddSingleton((QosDelegatingHandlerDelegate)Del);
-            _provider = _services.BuildServiceProvider();
+            _provider = _services.BuildServiceProvider(true);
             _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 
@@ -980,7 +980,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         {
             ServiceDiscoveryFinderDelegate del = (a, b, c) => new FakeServiceDiscoveryProvider();
             _services.AddSingleton(del);
-            _provider = _services.BuildServiceProvider();
+            _provider = _services.BuildServiceProvider(true);
             _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
         }
 

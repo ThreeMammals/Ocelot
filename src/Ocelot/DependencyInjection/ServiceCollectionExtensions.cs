@@ -77,13 +77,13 @@ public static class ServiceCollectionExtensions
 
     private static IConfiguration FindConfiguration(this IServiceCollection services, IWebHostEnvironment env)
     {
-        var descriptor = services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IConfiguration));
+        var descriptor = services.FirstOrDefault(x => x.ServiceType == typeof(IConfiguration));
         if (descriptor == null)
         {
             return DefaultConfiguration(env);
         }
 
-        var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider();
+        var provider = new ServiceCollection().Add(descriptor).BuildServiceProvider(true);
         var configuration = provider.GetService<IConfiguration>();
         return configuration ?? DefaultConfiguration(env);
     }

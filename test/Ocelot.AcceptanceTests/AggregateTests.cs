@@ -578,7 +578,7 @@ namespace Ocelot.AcceptanceTests
                     .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
                     .And(x => auth.GivenIHaveAToken(identityServerUrl))
                     .And(x => auth.GivenThereIsAConfiguration(configuration))
-                    .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp, true))
+                    .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
                     .And(x => auth.GivenIHaveAddedATokenToMyRequest())
                     .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
                     .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -727,9 +727,7 @@ namespace Ocelot.AcceptanceTests
             where TAggregator : class, IDefinedAggregator
             where TDependency : class
         {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
+            _webHostBuilder = TestHostBuilder.Create()
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);

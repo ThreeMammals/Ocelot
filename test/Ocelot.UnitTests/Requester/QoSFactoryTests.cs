@@ -20,7 +20,7 @@ namespace Ocelot.UnitTests.Requester
             _services = new ServiceCollection();
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
             _contextAccessor = new Mock<IHttpContextAccessor>();
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
         }
 
@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.Requester
             _services = new ServiceCollection();
             DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
             _services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandlerDelegate);
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
             var downstreamRoute = new DownstreamRouteBuilder().Build();
             var handler = _factory.Get(downstreamRoute);

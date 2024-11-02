@@ -17,7 +17,8 @@
 .. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
 .. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
 .. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
-.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
+.. _23.3.6: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
 
 .. _954: https://github.com/ThreeMammals/Ocelot/issues/954
 .. _957: https://github.com/ThreeMammals/Ocelot/issues/957
@@ -69,6 +70,7 @@ The major version `23.3.0`_ includes several patches, the history of which is pr
       Be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
 
   - `23.3.5`_, on Oct 12, 2024. Documentation patch: Html and Pdf doc layouts.
+  - `23.3.6`_, on Oct 31, 2024. Version `23.3.4`_ patch: DI-scopes validation, :doc:`../features/servicediscovery` feature update.
 
 .. _release-notes:
 

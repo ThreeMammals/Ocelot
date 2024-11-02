@@ -78,7 +78,7 @@ public class AuthenticationSteps : Steps, IDisposable
     {
         apiScopes ??= new string[] { "api" };
         clients ??= new Client[] { DefaultClient(tokenType, apiScopes) };
-        var builder = new WebHostBuilder()
+        var builder = TestHostBuilder.Create()
             .UseUrls(url)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.Middleware
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(root);
             services.AddOcelot();
-            var provider = services.BuildServiceProvider();
+            var provider = services.BuildServiceProvider(true);
             _builder = new ApplicationBuilder(provider);
         }
     }

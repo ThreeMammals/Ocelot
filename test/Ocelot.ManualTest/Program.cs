@@ -12,7 +12,7 @@ namespace Ocelot.ManualTest
     {
         public static void Main(string[] args)
         {
-            new WebHostBuilder()
+            TestHostBuilder.Create()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>

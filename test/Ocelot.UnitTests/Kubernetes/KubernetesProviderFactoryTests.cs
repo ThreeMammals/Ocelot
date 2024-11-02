@@ -34,7 +34,7 @@ public class KubernetesProviderFactoryTests : UnitTest
             .Returns(Mock.Of<IEndPointClient>());
         var descriptor = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClient));
         _builder.Services.Replace(ServiceDescriptor.Describe(descriptor.ServiceType, _ => kubeClient.Object, descriptor.Lifetime));
-        var serviceProvider = _builder.Services.BuildServiceProvider(validateScopes: true);
+        var serviceProvider = _builder.Services.BuildServiceProvider(true);
         var config = GivenServiceProvider(providerType.Name);
         var route = GivenRoute();
 
@@ -58,7 +58,7 @@ public class KubernetesProviderFactoryTests : UnitTest
         // Arrange
         var descriptor = ServiceDescriptor.Describe(typeof(IKubeApiClient), _ => Mock.Of<IKubeApiClient>(), ServiceLifetime.Scoped);
         _builder.Services.Replace(descriptor);
-        var serviceProvider = _builder.Services.BuildServiceProvider(validateScopes: true);
+        var serviceProvider = _builder.Services.BuildServiceProvider(true);
         var config = GivenServiceProvider(providerType);
         var route = GivenRoute();
 

@@ -18,7 +18,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <Version>0.0.0-dev</Version>
-    <Authors>geffzhang</Authors>
+    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Company />
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>

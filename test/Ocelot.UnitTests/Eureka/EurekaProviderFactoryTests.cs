@@ -11,7 +11,7 @@ namespace Ocelot.UnitTests.Eureka
         public void should_not_get()
         {
             var config = new ServiceProviderConfigurationBuilder().Build();
-            var sp = new ServiceCollection().BuildServiceProvider();
+            var sp = new ServiceCollection().BuildServiceProvider(true);
             Should.Throw<NullReferenceException>(() =>
                 EurekaProviderFactory.Get(sp, config, null));
         }
@@ -23,7 +23,7 @@ namespace Ocelot.UnitTests.Eureka
             var client = new Mock<IDiscoveryClient>();
             var services = new ServiceCollection();
             services.AddSingleton(client.Object);
-            var sp = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider(true);
             var route = new DownstreamRouteBuilder()
                 .WithServiceName(string.Empty)
                 .Build();

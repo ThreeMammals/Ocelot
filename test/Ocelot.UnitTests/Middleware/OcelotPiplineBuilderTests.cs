@@ -56,7 +56,7 @@ namespace Ocelot.UnitTests.Middleware
 
         private void WhenIUseAGeneric()
         {
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.UseMiddleware<ExceptionHandlerMiddleware>();
             var del = builder.Build();
@@ -71,7 +71,7 @@ namespace Ocelot.UnitTests.Middleware
         private void WhenIUseAFunc()
         {
             _counter = 0;
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.Use(async (ctx, next) =>
             {
@@ -91,7 +91,7 @@ namespace Ocelot.UnitTests.Middleware
         [Fact]
         public void Middleware_Multi_Parameters_Invoke()
         {
-            var provider = _services.BuildServiceProvider();
+            var provider = _services.BuildServiceProvider(true);
             IApplicationBuilder builder = new ApplicationBuilder(provider);
             builder = builder.UseMiddleware<MultiParametersInvokeMiddleware>();
             var del = builder.Build();

@@ -194,7 +194,7 @@ public class ResponseBenchmarks : ManualConfig
 
     private void GivenOcelotIsRunning(string url)
     {
-        _ocelot = new WebHostBuilder()
+        _ocelot = TestHostBuilder.Create()
             .UseKestrel()
             .UseUrls(url)
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -234,7 +234,7 @@ public class ResponseBenchmarks : ManualConfig
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
     {
-        _service = new WebHostBuilder()
+        _service = TestHostBuilder.Create()
             .UseUrls(baseUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

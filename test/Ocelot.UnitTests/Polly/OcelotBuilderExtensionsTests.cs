@@ -31,7 +31,7 @@ namespace Ocelot.UnitTests.Polly
             services
                 .AddOcelot(configuration)
                 .AddPolly();
-            var provider = services.BuildServiceProvider();
+            var provider = services.BuildServiceProvider(true);
 
             var handler = provider.GetService<QosDelegatingHandlerDelegate>();
             handler.ShouldNotBeNull();

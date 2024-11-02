@@ -10,4 +10,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
+  </ItemGroup>
+
 </Project>

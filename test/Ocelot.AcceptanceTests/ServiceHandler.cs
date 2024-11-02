@@ -14,7 +14,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAServiceRunningOn(string baseUrl, RequestDelegate handler)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -30,7 +30,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, RequestDelegate handler)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -47,7 +47,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAServiceRunningOnWithKestrelOptions(string baseUrl, string basePath, Action<KestrelServerOptions> options, RequestDelegate handler)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel()
                 .ConfigureKestrel(options ?? WithDefaultKestrelServerOptions) // !
@@ -69,7 +69,7 @@ namespace Ocelot.AcceptanceTests
 
         public void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string fileName, string password, int port, RequestDelegate handler)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .UseUrls(baseUrl)
                 .UseKestrel(options =>
                 {
@@ -91,7 +91,7 @@ namespace Ocelot.AcceptanceTests
 
         public async Task StartFakeDownstreamService(string url, Func<HttpContext, Func<Task>, Task> middleware)
         {
-            _builder = new WebHostBuilder()
+            _builder = TestHostBuilder.Create()
                 .ConfigureServices(s => { }).UseKestrel()
                 .UseUrls(url)
                 .UseContentRoot(Directory.GetCurrentDirectory())

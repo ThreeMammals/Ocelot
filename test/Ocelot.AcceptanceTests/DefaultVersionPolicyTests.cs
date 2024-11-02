@@ -131,7 +131,7 @@ public sealed class DefaultVersionPolicyTests : Steps
     private static void GivenThereIsAServiceRunningOn(int port, HttpProtocols protocols)
     {
         var url = $"{Uri.UriSchemeHttps}://localhost:{port}";
-        var builder = new WebHostBuilder()
+        var builder = TestHostBuilder.Create()
             .UseUrls(url)
             .UseKestrel()
             .ConfigureKestrel(serverOptions =>

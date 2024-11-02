@@ -111,8 +111,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
 
     private async Task StartFakeOcelotWithWebSocketsWithConsul()
     {
-        _ocelotBuilder = new WebHostBuilder()
-            .UseDefaultServiceProvider(_ => _.ValidateScopes = true)
+        _ocelotBuilder = TestHostBuilder.Create()
             .ConfigureServices(s =>
             {
                 s.AddSingleton(_ocelotBuilder);

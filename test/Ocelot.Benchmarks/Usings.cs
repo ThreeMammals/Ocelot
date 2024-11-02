@@ -14,3 +14,4 @@ global using BenchmarkDotNet.Configs;
 global using BenchmarkDotNet.Diagnosers;
 global using BenchmarkDotNet.Validators;
 global using Ocelot;
+global using Ocelot.Testing;

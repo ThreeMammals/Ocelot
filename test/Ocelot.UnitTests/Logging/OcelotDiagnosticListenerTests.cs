@@ -21,7 +21,7 @@ namespace Ocelot.UnitTests.Logging
             _factory = new Mock<IOcelotLoggerFactory>();
             _logger = new Mock<IOcelotLogger>();
             _serviceCollection = new ServiceCollection();
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
+            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
             _factory.Setup(x => x.CreateLogger<OcelotDiagnosticListener>()).Returns(_logger.Object);
             _listener = new OcelotDiagnosticListener(_factory.Object, _serviceProvider);
         }
