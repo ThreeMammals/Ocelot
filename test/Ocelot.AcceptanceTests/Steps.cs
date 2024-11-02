@@ -75,6 +75,13 @@ public class Steps : IDisposable
         Routes = new(routes),
     };
 
+    protected static FileConfiguration GivenConfiguration(FileGlobalConfiguration globalConfig, params FileRoute[] routes)
+    {
+        var config = GivenConfiguration(routes);
+        config.GlobalConfiguration = globalConfig;
+        return config;
+    }
+
     protected static FileRoute GivenDefaultRoute(int port) => new()
     {
         DownstreamPathTemplate = "/",

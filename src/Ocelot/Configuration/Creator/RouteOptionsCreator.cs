@@ -5,17 +5,16 @@ namespace Ocelot.Configuration.Creator
 {
     public class RouteOptionsCreator : IRouteOptionsCreator
     {
-        public RouteOptions Create(FileRoute fileRoute)
+        public RouteOptions Create(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
         {
             if (fileRoute == null)
             {
                 return new RouteOptionsBuilder().Build();
             }
 
-            var authOpts = fileRoute.AuthenticationOptions;
-            var isAuthenticated = authOpts != null
-                && (!string.IsNullOrEmpty(authOpts.AuthenticationProviderKey)
-                    || authOpts.AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true);
+            var isAuthenticated = fileRoute.AuthenticationOptions?.AllowAnonymous != true && globalConfiguration?.AuthenticationOptions?.HasProviderKey == true
+                || fileRoute.AuthenticationOptions?.HasProviderKey == true;
+               
             var isAuthorized = fileRoute.RouteClaimsRequirement?.Any() == true;
 
             // TODO: This sounds more like a hack, it might be better to refactor this at some point.
