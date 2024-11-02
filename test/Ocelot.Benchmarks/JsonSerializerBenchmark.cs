@@ -19,21 +19,16 @@ namespace Ocelot.Benchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            Faker<User> faker = new Faker<User>().CustomInstantiator(
-                f =>
-                    new User
-                    {
-                        UserId = Guid.NewGuid(),
-                        FirstName = f.Name.FirstName(),
-                        LastName = f.Name.LastName(),
-                        FullName = f.Name.FullName(),
-                        Username = f.Internet.UserName(f.Name.FirstName(), f.Name.LastName()),
-                        Email = f.Internet.Email(f.Name.FirstName(), f.Name.LastName())
-                    }
-            );
-
+            Faker<User> faker = new Faker<User>().CustomInstantiator(f => new User
+            {
+                UserId = Guid.NewGuid(),
+                FirstName = f.Name.FirstName(),
+                LastName = f.Name.LastName(),
+                FullName = f.Name.FullName(),
+                Username = f.Internet.UserName(f.Name.FirstName(), f.Name.LastName()),
+                Email = f.Internet.Email(f.Name.FirstName(), f.Name.LastName()),
+            });
             _testUsers = faker.Generate(Count);
-
             _serializedTestUsers = JsonSerializer.Serialize(_testUsers);
         }
 
