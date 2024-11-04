@@ -56,13 +56,22 @@ namespace Ocelot.Configuration.Validator
 
             When(route => route.RateLimitOptions.EnableRateLimiting, () =>
             {
-                RuleFor(route => route.RateLimitOptions.Period)
+                When(IsOcelotRateLimiter, () =>
+                {
+                    RuleFor(route => route.RateLimitOptions.Period)
                     .NotEmpty()
                     .WithMessage("RateLimitOptions.Period is empty");
 
-                RuleFor(route => route.RateLimitOptions)
-                    .Must(IsValidPeriod)
-                    .WithMessage("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+                    RuleFor(route => route.RateLimitOptions)
+                        .Must(IsValidPeriod)
+                        .WithMessage("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+                });
+
+                When(IsDotNetRateLimiter, () => {
+                    RuleFor(route => route.RateLimitOptions.RateLimitPolicyName)
+                    .NotEmpty()
+                    .WithMessage("{PropertyValue} is empty.");
+                });
             });
 
             RuleFor(route => route.AuthenticationOptions)
@@ -105,6 +114,16 @@ namespace Ocelot.Configuration.Validator
             var primary = options.AuthenticationProviderKey;
             return !string.IsNullOrEmpty(primary) && supportedSchemes.Contains(primary)
                 || (string.IsNullOrEmpty(primary) && options.AuthenticationProviderKeys.All(supportedSchemes.Contains));
+        }
+
+        private static bool IsOcelotRateLimiter(FileRoute fileRoute)
+        {
+            return fileRoute.RateLimitOptions.RateLimitMiddlewareType == RateLimitMiddlewareType.Ocelot;
+        }
+
+        private static bool IsDotNetRateLimiter(FileRoute fileRoute)
+        {
+            return fileRoute.RateLimitOptions.RateLimitMiddlewareType == RateLimitMiddlewareType.DotNet;
         }
 
         private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)

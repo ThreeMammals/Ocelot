@@ -1,9 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Cache;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.RateLimiting;
+
+#if NET7_0_OR_GREATER
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+#endif
 
 namespace Ocelot.DependencyInjection;
 
@@ -17,9 +24,24 @@ public static class Features
     /// </remarks>
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
-    public static IServiceCollection AddRateLimiting(this IServiceCollection services) => services
-        .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
-        .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    {
+        services
+            .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
+            .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
+
+#if NET7_0_OR_GREATER
+        services.AddRateLimiter(options =>
+        {
+            options.OnRejected = async (rejectedContext, token) =>
+            {
+                rejectedContext.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                await rejectedContext.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
+            };
+        });
+#endif
+        return services;
+    }
 
     /// <summary>
     /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/caching.rst">Request Caching</see>.
@@ -50,6 +72,6 @@ public static class Features
     /// </summary>
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
-    public static IServiceCollection AddOcelotMetadata(this IServiceCollection services) => 
+    public static IServiceCollection AddOcelotMetadata(this IServiceCollection services) =>
         services.AddSingleton<IMetadataCreator, DefaultMetadataCreator>();
 }
