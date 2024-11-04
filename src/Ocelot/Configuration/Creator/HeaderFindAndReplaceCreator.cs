@@ -3,9 +3,6 @@ using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Header = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace Ocelot.Configuration.Creator
@@ -43,7 +40,7 @@ namespace Ocelot.Configuration.Creator
 
             foreach (var input in headerPairs)
             {
-                if (input.Value.Contains(','))
+                if (input.Value.Contains(HeaderFindAndReplace.Comma))
                 {
                     var hAndr = Map(input);
                     if (!hAndr.IsError)
@@ -53,7 +50,7 @@ namespace Ocelot.Configuration.Creator
                     else
                     {
                         var name = propertyName ?? "Headers Transformation";
-                        _logger.LogWarning($"Unable to add {name} {input.Key}: {input.Value}");
+                        _logger.LogWarning(() => $"Unable to add {name} {input.Key}: {input.Value}");
                     }
                 }
                 else
@@ -67,7 +64,7 @@ namespace Ocelot.Configuration.Creator
 
         private Response<HeaderFindAndReplace> Map(Header input)
         {
-            var findAndReplace = input.Value.Split(',');
+            var findAndReplace = input.Value.Split(HeaderFindAndReplace.Comma);
 
             var replace = findAndReplace[1].TrimStart();
 
