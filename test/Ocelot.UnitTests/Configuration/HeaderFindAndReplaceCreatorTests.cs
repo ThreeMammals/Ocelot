@@ -12,6 +12,7 @@ namespace Ocelot.UnitTests.Configuration;
 public class HeaderFindAndReplaceCreatorTests : UnitTest
 {
     private readonly HeaderFindAndReplaceCreator _creator;
+    private readonly FileGlobalConfiguration _global;
     private FileRoute _route;
     private HeaderTransformations _result;
     private readonly Mock<IPlaceholders> _placeholders;
@@ -24,16 +25,17 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         _factory = new Mock<IOcelotLoggerFactory>();
         _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
         _placeholders = new Mock<IPlaceholders>();
-        var fileGlobalConfiguration = new FileGlobalConfiguration();
-        fileGlobalConfiguration.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
-        fileGlobalConfiguration.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
-        fileGlobalConfiguration.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
-        fileGlobalConfiguration.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
+
+        _global = new FileGlobalConfiguration();
+        _global.UpstreamHeaderTransform.Add("TestGlobal", "Test, Chicken");
+        _global.UpstreamHeaderTransform.Add("MoopGlobal", "o, a");
+        _global.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
+        _global.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
 
         var options = new Mock<IOptions<FileConfiguration>>();
         options.Setup(x => x.Value).Returns(new FileConfiguration
         {
-            GlobalConfiguration = fileGlobalConfiguration,
+            GlobalConfiguration = _global,
         });
 
         _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
@@ -67,8 +69,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         {
             new("Pop", "West", "East", 0),
             new("Bop", "e", "r", 0),
-            new("PopGlobal", "West", "East", 0),
-            new("BopGlobal", "e", "r", 0),
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
         };
         GivenTheRoute(route);
 
@@ -117,8 +119,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
-            new("PopGlobal", "West", "East", 0),
-            new("BopGlobal", "e", "r", 0),
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
         };
         GivenTheRoute(route);
         GivenThePlaceholderIs("http://ocelot.com/");
@@ -131,6 +133,7 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "204")]
     public void Should_log_errors_and_not_add_headers()
     {
         // Arrange
@@ -147,8 +150,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         };
         var expectedDownstream = new List<HeaderFindAndReplace>
         {
-            new("PopGlobal", "West", "East", 0),
-            new("BopGlobal", "e", "r", 0),
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
         };
         var expectedUpstream = new List<HeaderFindAndReplace>
         {
@@ -164,14 +167,13 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         // Assert
         ThenTheFollowingDownstreamIsReturned(expectedDownstream);
         ThenTheFollowingUpstreamIsReturned(expectedUpstream);
-        ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}");
-        ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}");
+        ThenTheLoggerIsCalledCorrectly($"Unable to add {nameof(FileRoute.DownstreamHeaderTransform)} Location: http://www.bbc.co.uk/, {{BaseUrl}}");
+        ThenTheLoggerIsCalledCorrectly($"Unable to add {nameof(FileRoute.UpstreamHeaderTransform)} Location: http://www.bbc.co.uk/, {{BaseUrl}}");
     }
 
-    private void ThenTheLoggerIsCalledCorrectly(string message)
-    {
-        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == message)), Times.Once);
-    }
+    private void ThenTheLoggerIsCalledCorrectly(string message) => _logger
+        .Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == message)),
+            Times.Once);
 
     [Fact]
     public void Should_use_base_url_partial_placeholder()
@@ -187,8 +189,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
-            new("PopGlobal", "West", "East", 0),
-            new("BopGlobal", "e", "r", 0),
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
         };
         GivenTheRoute(route);
         GivenThePlaceholderIs("http://ocelot.com/");
@@ -201,6 +203,7 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "204")]
     public void Should_map_with_partial_placeholder_in_the_middle()
     {
         // Arrange
@@ -214,6 +217,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         var expected = new List<HeaderFindAndReplace>
         {
             new("Host-Next", "www.bbc.co.uk", "subdomain.ocelot.next/path", 0),
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
         };
         GivenTheRoute(route);
         GivenThePlaceholderIs("ocelot.next");
