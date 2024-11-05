@@ -120,7 +120,7 @@ namespace Ocelot.Middleware
             }
 
             // Now we can run the claims to headers transformation middleware.
-            // We allow the ocelot middleware to be overriden by whatever the user wants
+            // We allow the Ocelot middleware to be overriden by whatever the user wants
             if (pipelineConfiguration.ClaimsToHeadersMiddleware == null)
             {
                 app.UseClaimsToHeadersMiddleware();
