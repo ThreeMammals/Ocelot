@@ -24,8 +24,7 @@ namespace Ocelot.Middleware
 {
     public static class OcelotPipelineExtensions
     {
-        public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app,
-            OcelotPipelineConfiguration pipelineConfiguration)
+        public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app, OcelotPipelineConfiguration pipelineConfiguration)
         {
             // this sets up the downstream context and gets the config
             app.UseDownstreamContextMiddleware();
@@ -89,16 +88,8 @@ namespace Ocelot.Middleware
             app.UseIfNotNull(pipelineConfiguration.PreAuthenticationMiddleware);
 
             // Now we know where the client is going to go we can authenticate them.
-            // We allow the ocelot middleware to be overriden by whatever the
-            // user wants
-            if (pipelineConfiguration.AuthenticationMiddleware == null)
-            {
-                app.UseAuthenticationMiddleware();
-            }
-            else
-            {
-                app.Use(pipelineConfiguration.AuthenticationMiddleware);
-            }
+            // We allow the Ocelot middleware to be overriden by whatever the user wants.
+            app.UseIfNotNull<AuthenticationMiddleware>(pipelineConfiguration.AuthenticationMiddleware);
 
             // The next thing we do is look at any claims transforms in case this is important for authorization
             app.UseClaimsToClaimsMiddleware();
@@ -106,21 +97,12 @@ namespace Ocelot.Middleware
             // Allow pre authorization logic. The idea being people might want to run something custom before what is built in.
             app.UseIfNotNull(pipelineConfiguration.PreAuthorizationMiddleware);
 
-            // Now we have authenticated and done any claims transformation we
-            // can authorize the request
-            // We allow the ocelot middleware to be overriden by whatever the
-            // user wants
-            if (pipelineConfiguration.AuthorizationMiddleware == null)
-            {
-                app.UseAuthorizationMiddleware();
-            }
-            else
-            {
-                app.Use(pipelineConfiguration.AuthorizationMiddleware);
-            }
+            // Now we have authenticated and done any claims transformation, we can authorize the request by AuthorizationMiddleware.
+            // We allow the Ocelot middleware to be overriden by whatever the user wants.
+            app.UseIfNotNull<AuthorizationMiddleware>(pipelineConfiguration.AuthorizationMiddleware);
 
-            // Now we can run the claims to headers transformation middleware
-            app.UseClaimsToHeadersMiddleware();
+            // Now we can run the ClaimsToHeadersMiddleware: we allow the Ocelot middleware to be overriden by whatever the user wants.
+            app.UseIfNotNull<ClaimsToHeadersMiddleware>(pipelineConfiguration.ClaimsToHeadersMiddleware);
 
             // Allow the user to implement their own query string manipulation logic
             app.UseIfNotNull(pipelineConfiguration.PreQueryStringBuilderMiddleware);
@@ -146,13 +128,12 @@ namespace Ocelot.Middleware
             return app.Build();
         }
 
-        private static void UseIfNotNull(this IApplicationBuilder builder,
-            Func<HttpContext, Func<Task>, Task> middleware)
-        {
-            if (middleware != null)
-            {
-                builder.Use(middleware);
-            }
-        }
+        private static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
+            => middleware != null ? builder.Use(middleware) : builder;
+
+        private static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
+            where TMiddleware : OcelotMiddleware => middleware != null
+                ? builder.Use(middleware)
+                : builder.UseMiddleware<TMiddleware>();
     }
 }
