@@ -48,20 +48,20 @@ namespace Ocelot.Middleware
         public Func<HttpContext, Func<Task>, Task> AuthorizationMiddleware { get; set; }
 
         /// <summary>
-        /// This allows the user to implement there own query string manipulation logic.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
-        /// </value>
-        public Func<HttpContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
-
-        /// <summary>
         /// This allows the user to completely override the Ocelot's Claims to Headers middleware.
         /// </summary>
         /// <value>
         /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
         /// </value>
         public Func<HttpContext, Func<Task>, Task> ClaimsToHeadersMiddleware { get; set; }
+
+        /// <summary>
+        /// This allows the user to implement there own query string manipulation logic.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.
+        /// </value>
+        public Func<HttpContext, Func<Task>, Task> PreQueryStringBuilderMiddleware { get; set; }
 
         /// <summary>
         /// This is an extension that will branch to different pipes.

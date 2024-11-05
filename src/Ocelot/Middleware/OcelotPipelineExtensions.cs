@@ -10,6 +10,7 @@ using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer.Middleware;
+using Ocelot.Multiplexer;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.RateLimiting.Middleware;
 using Ocelot.Request.Middleware;
