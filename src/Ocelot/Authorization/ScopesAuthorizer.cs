@@ -6,9 +6,8 @@ namespace Ocelot.Authorization
 {
     public class ScopesAuthorizer : IScopesAuthorizer
     {
-        private const string ScopeClaimKey = "scope";
-
         private readonly IClaimsParser _claimsParser;
+        private const string Scope = "scope";
 
         public ScopesAuthorizer(IClaimsParser claimsParser)
         {
@@ -22,14 +21,14 @@ namespace Ocelot.Authorization
                 return new OkResponse<bool>(true);
             }
 
-            var scopesResponse = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, ScopeClaimKey);
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
 
-            if (scopesResponse.IsError)
+            if (values.IsError)
             {
-                return new ErrorResponse<bool>(scopesResponse.Errors);
+                return new ErrorResponse<bool>(values.Errors);
             }
 
-            IList<string> userScopes = scopesResponse.Data;
+            IList<string> userScopes = values.Data;
 
             if (userScopes.Count == 1)
             {
