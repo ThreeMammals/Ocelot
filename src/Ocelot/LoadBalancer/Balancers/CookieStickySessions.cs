@@ -31,10 +31,8 @@ public class CookieStickySessions : ILoadBalancer
     }
 
     private readonly int _keyExpiryInMs;
-    private readonly string _key;
     private readonly string _cookieName;
     private readonly ILoadBalancer _loadBalancer;
-    private readonly IStickySessionStorage _storage;
     private readonly IBus<StickySession> _bus;
 
 #if NET9_0_OR_GREATER
@@ -50,7 +48,6 @@ public class CookieStickySessions : ILoadBalancer
     public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus, IStickySessionStorage storage)
     {
         _bus = bus;
-        _key = key;
         _cookieName = cookieName;
         _keyExpiryInMs = keyExpiryInMs;
         _loadBalancer = loadBalancer;
@@ -105,7 +102,6 @@ public class CookieStickySessions : ILoadBalancer
     {
         lock (Locker)
         {
-            //Stored[key] = value;
             _storage.SetSession(key, value);
             _bus.Publish(value, _keyExpiryInMs);
         }
