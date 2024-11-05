@@ -43,6 +43,7 @@ public class DownstreamRouteBuilder
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
+    private bool _connectionClose;
 
     public DownstreamRouteBuilder()
     {
@@ -282,6 +283,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithConnectionClose(bool connectionClose)
+    {
+        _connectionClose = connectionClose;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -321,6 +328,7 @@ public class DownstreamRouteBuilder
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
             _upstreamHeaders,
-            _metadataOptions);
+            _metadataOptions,
+            _connectionClose);
     }
 }

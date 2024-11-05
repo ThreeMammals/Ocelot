@@ -26,6 +26,7 @@ namespace Ocelot.Configuration.File
             UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
             UpstreamHttpMethod = new List<string>();
+            ConnectionClose = false;
         }
 
         public FileRoute(FileRoute from)
@@ -38,6 +39,7 @@ namespace Ocelot.Configuration.File
         public Dictionary<string, string> AddQueriesToRequest { get; set; }
         public FileAuthenticationOptions AuthenticationOptions { get; set; }
         public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
+        public bool ConnectionClose { get; set; }
         public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
         public List<string> DelegatingHandlers { get; set; }
         public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
@@ -97,6 +99,7 @@ namespace Ocelot.Configuration.File
             to.AddQueriesToRequest = new(from.AddQueriesToRequest);
             to.AuthenticationOptions = new(from.AuthenticationOptions);
             to.ChangeDownstreamPathTemplate = new(from.ChangeDownstreamPathTemplate);
+            to.ConnectionClose = from.ConnectionClose;
             to.DangerousAcceptAnyServerCertificateValidator = from.DangerousAcceptAnyServerCertificateValidator;
             to.DelegatingHandlers = new(from.DelegatingHandlers);
             to.DownstreamHeaderTransform = new(from.DownstreamHeaderTransform);
