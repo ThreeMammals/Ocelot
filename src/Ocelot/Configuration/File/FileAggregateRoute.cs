@@ -20,4 +20,9 @@ public class FileAggregateRoute : IRoute
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHttpMethod = new();
     }
+
+    /// <summary>This allows to override global default HTTP verb value.</summary>
+    /// <remarks>Defaults: The <see cref="HttpMethod.Get"/> value.</remarks>
+    /// <value>A <see cref="HttpMethod"/> value.</value>
+    public static HttpMethod DefaultHttpMethod { get; set; } = HttpMethod.Get;
 }
