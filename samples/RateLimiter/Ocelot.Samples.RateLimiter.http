@@ -1,0 +1,9 @@
+@RateLimiterSample_HostAddress = http://localhost:5202
+
+GET {{RateLimiterSample_HostAddress}}/laura/
+Accept: application/json
+
+GET {{RateLimiterSample_HostAddress}}/tom/
+Accept: application/json
+
+###
