@@ -100,9 +100,58 @@ public class AggregatesCreatorTests : UnitTest
         AssertResultByIndex(1);
     }
 
-    private void AssertResultByIndex(int i)
+    [Theory]
+    [Trait("Feat", "1389")]
+    [InlineData(nameof(HttpMethod.Get))]
+    [InlineData(nameof(HttpMethod.Post))]
+    public void SetUpAggregateRoute_NoUpstreamHttpMethod_DefaultVerbIsAssigned(string httpVerb)
     {
-        _result[i].UpstreamHttpMethod.ShouldContain(x => x == HttpMethod.Get);
+        // Arrange
+        _fileConfiguration = new FileConfiguration
+        {
+            Aggregates = new List<FileAggregateRoute>
+            {
+                new()
+                {
+                    RouteKeys = new List<string>{"key1", "key2"},
+                },
+                new()
+                {
+                    RouteKeys = new List<string>{"key3", "key4"},
+                    UpstreamHttpMethod = new() { httpVerb }, // wanted verb
+                },
+            },
+        };
+        _routes = new List<Route>
+        {
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+        };
+        GivenTheUtpCreatorReturns();
+        GivenTheUhtpCreatorReturns();
+
+        // Act
+        _result = _creator.Create(_fileConfiguration, _routes);
+
+        // Assert
+        ThenTheUtpCreatorIsCalledCorrectly();
+        _result.ShouldNotBeNull().Count.ShouldBe(2);
+        AssertRoute(0, FileAggregateRoute.DefaultHttpMethod); // default verb scenario
+        AssertRoute(1, new HttpMethod(httpVerb)); // // wanted verb scenario
+    }
+
+    private void AssertRoute(int i, HttpMethod expected)
+    {
+        _result[i].UpstreamHttpMethod.ShouldContain(x => x == expected);
+        AssertResultByIndex(i, expected);
+    }
+
+    private void AssertResultByIndex(int i, HttpMethod method = null)
+    {
+        method ??= FileAggregateRoute.DefaultHttpMethod;
+        _result[i].UpstreamHttpMethod.ShouldContain(x => x == method);
         _result[i].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[i].UpstreamHost);
         _result[i].UpstreamTemplatePattern.ShouldBe(_aggregateUtp[i]);
         _result[i].UpstreamHeaderTemplates.ShouldBe(_headerTemplates[i]);
