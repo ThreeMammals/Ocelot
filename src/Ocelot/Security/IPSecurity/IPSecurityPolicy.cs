@@ -16,7 +16,7 @@ namespace Ocelot.Security.IPSecurity
                 return new OkResponse();
             }
 
-            if (securityOptions.IPBlockedList != null)
+            if (securityOptions.IPBlockedList != null && securityOptions.IPBlockedList.Count > 0 && clientIp != null)
             {
                 if (securityOptions.IPBlockedList.Contains(clientIp.ToString()))
                 {
@@ -25,7 +25,7 @@ namespace Ocelot.Security.IPSecurity
                 }
             }
 
-            if (securityOptions.IPAllowedList?.Count > 0)
+            if (securityOptions.IPAllowedList != null && securityOptions.IPAllowedList.Count > 0 && clientIp != null)
             {
                 if (!securityOptions.IPAllowedList.Contains(clientIp.ToString()))
                 {
