@@ -142,6 +142,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        [Trait("Feat", "1389")]
         public void Should_allow_get_method()
         {
             FileAggregateRoute route = JsonConvert.DeserializeObject<FileAggregateRoute>("{\"UpstreamHttpMethod\":[\"Get\"]}");
@@ -149,6 +150,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
+        [Trait("Feat", "1389")]
         public void Should_allow_post_method()
         {
             FileAggregateRoute route = JsonConvert.DeserializeObject<FileAggregateRoute>("{\"UpstreamHttpMethod\":[\"Post\"]}");
@@ -156,7 +158,7 @@ namespace Ocelot.AcceptanceTests
         }
 
         [Fact]
-        public void should_return_response_200_with_advanced_aggregate_configs()
+        public void Should_return_response_200_with_advanced_aggregate_configs()
         {
             var port1 = PortFinder.GetRandomPort();
             var port2 = PortFinder.GetRandomPort();
