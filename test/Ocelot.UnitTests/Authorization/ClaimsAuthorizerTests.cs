@@ -10,7 +10,7 @@ namespace Ocelot.UnitTests.Authorization
     {
         private readonly ClaimsAuthorizer _claimsAuthorizer;
         private ClaimsPrincipal _claimsPrincipal;
-        private Dictionary<string, string> _requirement;
+        private Dictionary<string, string[]> _requirement;
         private List<PlaceholderNameAndValue> _urlPathPlaceholderNameAndValues;
         private Response<bool> _result;
 
@@ -26,9 +26,9 @@ namespace Ocelot.UnitTests.Authorization
                 {
                     new("UserType", "registered"),
                 }))))
-                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
                 {
-                    {"UserType", "registered"},
+                    {"UserType",new []{ "registered" }},
                 }))
                 .When(x => x.WhenICallTheAuthorizer())
                 .Then(x => x.ThenTheUserIsAuthorized())
@@ -42,9 +42,9 @@ namespace Ocelot.UnitTests.Authorization
                 {
                     new("userid", "14"),
                 }))))
-               .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+               .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
                 {
-                    {"userid", "{userId}"},
+                    {"userid",new []{ "{userId}" }},
                 }))
                .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
                 {
@@ -62,9 +62,9 @@ namespace Ocelot.UnitTests.Authorization
                 {
                     new("userid", "15"),
                 }))))
-               .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+               .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
                 {
-                    {"userid", "{userId}"},
+                    {"userid", new []{ "{userId}" }},
                 }))
                .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
                 {
@@ -74,7 +74,7 @@ namespace Ocelot.UnitTests.Authorization
                .Then(x => x.ThenTheUserIsntAuthorized())
                .BDDfy();
         }
-
+        
         [Fact]
         public void should_authorize_user_multiple_claims_of_same_type()
         {
@@ -83,9 +83,25 @@ namespace Ocelot.UnitTests.Authorization
                     new("UserType", "guest"),
                     new("UserType", "registered"),
                 }))))
-                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
                 {
-                    {"UserType", "registered"},
+                    {"UserType", new []{ "registered" }},
+                }))
+                .When(x => x.WhenICallTheAuthorizer())
+                .Then(x => x.ThenTheUserIsAuthorized())
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_authorize_user_with_route_having_multiple_claims_requirement()
+        {
+            this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+                {
+                    new("UserType", "registered"),
+                }))))
+                .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
+                {
+                    {"UserType", new []{ "non-admin","registered" }},
                 }))
                 .When(x => x.WhenICallTheAuthorizer())
                 .Then(x => x.ThenTheUserIsAuthorized())
@@ -96,9 +112,9 @@ namespace Ocelot.UnitTests.Authorization
         public void should_not_authorize_user()
         {
             this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()))))
-            .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
+            .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string[]>
                 {
-                    { "UserType", "registered" },
+                    { "UserType",new []{ "registered" }},
                 }))
             .When(x => x.WhenICallTheAuthorizer())
             .Then(x => x.ThenTheUserIsntAuthorized())
@@ -110,7 +126,7 @@ namespace Ocelot.UnitTests.Authorization
             _claimsPrincipal = claimsPrincipal;
         }
 
-        private void GivenARouteClaimsRequirement(Dictionary<string, string> requirement)
+        private void GivenARouteClaimsRequirement(Dictionary<string, string[]> requirement)
         {
             _requirement = requirement;
         }

@@ -1,4 +1,4 @@
-﻿using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.Creator;
 
 namespace Ocelot.Configuration.File
 {
@@ -21,7 +21,7 @@ namespace Ocelot.Configuration.File
             Priority = 1;
             QoSOptions = new FileQoSOptions();
             RateLimitOptions = new FileRateLimitRule();
-            RouteClaimsRequirement = new Dictionary<string, string>();
+            RouteClaimsRequirement = new Dictionary<string, string[]>();
             SecurityOptions = new FileSecurityOptions();
             UpstreamHeaderTemplates = new Dictionary<string, string>();
             UpstreamHeaderTransform = new Dictionary<string, string>();
@@ -67,7 +67,7 @@ namespace Ocelot.Configuration.File
         public FileQoSOptions QoSOptions { get; set; }
         public FileRateLimitRule RateLimitOptions { get; set; }
         public string RequestIdKey { get; set; }
-        public Dictionary<string, string> RouteClaimsRequirement { get; set; }
+        public Dictionary<string, string[]> RouteClaimsRequirement { get; set; }
         public bool RouteIsCaseSensitive { get; set; }
         public FileSecurityOptions SecurityOptions { get; set; }
         public string ServiceName { get; set; }

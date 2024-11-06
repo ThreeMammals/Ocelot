@@ -75,7 +75,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         RouteClaimsRequirement =
                         {
-                            {"UserType", "registered"},
+                            {"UserType",new []{ "registered" }},
                         },
                     },
                 },
@@ -134,7 +134,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         RouteClaimsRequirement =
                         {
-                            {"UserType", "registered"},
+                            {"UserType",new []{ "registered" }},
                         },
                     },
                 },
@@ -266,7 +266,7 @@ namespace Ocelot.AcceptanceTests
                         },
                         RouteClaimsRequirement =
                         {
-                            {"Role", "User"},
+                            {"Role",new []{ "User" }},
                         },
                     },
                 },

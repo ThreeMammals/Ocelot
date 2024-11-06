@@ -32,7 +32,7 @@ public class DownstreamRouteExtensionsTests
             new CacheOptions(0, null, null, null),
             new LoadBalancerOptions(null, null, 0),
             new RateLimitOptions(false, null, null, false, null, null, null, 0),
-            new Dictionary<string, string>(),
+            new Dictionary<string, string[]>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
