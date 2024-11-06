@@ -70,7 +70,7 @@ namespace Ocelot.Configuration.Validator
                 When(IsDotNetRateLimiter, () => {
                     RuleFor(route => route.RateLimitOptions.RateLimitPolicyName)
                     .NotEmpty()
-                    .WithMessage("{PropertyValue} is empty.");
+                    .WithMessage("RateLimitOptions.RateLimitPolicyName is required when RateLimitOptions.RateLimitMiddlewareType is DotNet.");
                 });
             });
 

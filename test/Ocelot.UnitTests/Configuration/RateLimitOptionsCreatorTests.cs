@@ -19,7 +19,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_rate_limit_options()
+        public void should_create_rate_limit_options_ocelot()
         {
             var fileRoute = new FileRoute
             {
@@ -54,6 +54,52 @@ namespace Ocelot.UnitTests.Configuration
                 .WithRateLimitRule(new RateLimitRule(fileRoute.RateLimitOptions.Period,
                        fileRoute.RateLimitOptions.PeriodTimespan,
                        fileRoute.RateLimitOptions.Limit))
+                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.Ocelot)
+                .Build();
+
+            _enabled = false;
+
+            this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
+                .And(x => x.GivenTheFollowingFileGlobalConfig(fileGlobalConfig))
+                .And(x => x.GivenRateLimitingIsEnabled())
+                .When(x => x.WhenICreate())
+                .Then(x => x.ThenTheFollowingIsReturned(expected))
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_create_rate_limit_options_dotnet()
+        {
+            var fileRoute = new FileRoute
+            {
+                RateLimitOptions = new FileRateLimitRule
+                {
+                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
+                    RateLimitPolicyName = "test",
+                    EnableRateLimiting = true,
+                },
+            };
+            var fileGlobalConfig = new FileGlobalConfiguration
+            {
+                RateLimitOptions = new FileRateLimitOptions
+                {
+                    ClientIdHeader = "ClientIdHeader",
+                    DisableRateLimitHeaders = true,
+                    QuotaExceededMessage = "QuotaExceededMessage",
+                    HttpStatusCode = 200,
+                },
+            };
+            var expected = new RateLimitOptionsBuilder()
+                .WithClientIdHeader("ClientIdHeader")
+                .WithClientWhiteList(() => new List<string>())
+                .WithDisableRateLimitHeaders(true)
+                .WithEnableRateLimiting(true)
+                .WithHttpStatusCode(200)
+                .WithQuotaExceededMessage("QuotaExceededMessage")
+                .WithRateLimitCounterPrefix("ocelot")
+                .WithRateLimitRule(new RateLimitRule(null, 0, 0))
+                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.DotNet)
+                .WithRateLimitPolicyName("test")
                 .Build();
 
             _enabled = false;

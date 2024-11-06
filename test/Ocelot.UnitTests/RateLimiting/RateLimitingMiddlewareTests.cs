@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿#if NET7_0_OR_GREATER
+using Microsoft.AspNetCore.RateLimiting;
+#endif
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -56,7 +59,9 @@ public class RateLimitingMiddlewareTests : UnitTest
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 100.0D, limit),
-                (int)HttpStatusCode.TooManyRequests))
+                (int)HttpStatusCode.TooManyRequests,
+                RateLimitMiddlewareType.Ocelot,
+                string.Empty))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
             .Build();
@@ -98,7 +103,9 @@ public class RateLimitingMiddlewareTests : UnitTest
                     quotaExceededMessage: "Exceeding!",
                     rateLimitCounterPrefix: string.Empty,
                     new RateLimitRule("1s", 100.0D, 3),
-                    (int)HttpStatusCode.TooManyRequests))
+                    (int)HttpStatusCode.TooManyRequests,
+                    RateLimitMiddlewareType.Ocelot,
+                    string.Empty))
                 .WithUpstreamHttpMethod(new() { "Get" })
                 .Build())
             .WithUpstreamHttpMethod(new() { "Get" })
@@ -130,7 +137,9 @@ public class RateLimitingMiddlewareTests : UnitTest
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 30.0D, limit), // bug scenario
-                (int)HttpStatusCode.TooManyRequests))
+                (int)HttpStatusCode.TooManyRequests,
+                RateLimitMiddlewareType.Ocelot,
+                string.Empty))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
             .Build();
@@ -141,7 +150,9 @@ public class RateLimitingMiddlewareTests : UnitTest
         var downstreamRouteHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act, Assert: 100 requests must be successful
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit, downstreamRouteHolder); // make 100 requests, but not exceed the limit
+        var contexts =
+            await WhenICallTheMiddlewareMultipleTimes(limit,
+                downstreamRouteHolder); // make 100 requests, but not exceed the limit
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
         contexts.ForEach(ctx =>
         {
@@ -161,7 +172,55 @@ public class RateLimitingMiddlewareTests : UnitTest
         contexts[0].Items.Errors().Single().HttpStatusCode.ShouldBe((int)HttpStatusCode.TooManyRequests);
     }
 
-    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ downstreamRoute)
+ #if NET7_0_OR_GREATER
+    [Fact]
+    [Trait("Feat", "37")]
+    public async Task Should_add_EnableRateLimittingAttribute_When_DotNetRateLimiting()
+    {
+        // Arrange
+        const long limit = 3L;
+        var upstreamTemplate = new UpstreamPathTemplateBuilder()
+            .Build();
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithEnableRateLimiting(true)
+            .WithRateLimitOptions(new(
+                enableRateLimiting: true,
+                clientIdHeader: null,
+                getClientWhitelist: null,
+                disableRateLimitHeaders: false,
+                quotaExceededMessage: null,
+                rateLimitCounterPrefix: null,
+                null,
+                (int)HttpStatusCode.TooManyRequests,
+                RateLimitMiddlewareType.DotNet,
+                "testPolicy"))
+            .WithUpstreamHttpMethod(new() { "Get" })
+            .WithUpstreamPathTemplate(upstreamTemplate)
+            .Build();
+        var route = new RouteBuilder()
+            .WithDownstreamRoute(downstreamRoute)
+            .WithUpstreamHttpMethod(new() { "Get" })
+            .Build();
+        var downstreamRouteHolder = new _DownstreamRouteHolder_(new(), route);
+
+        // Act, Assert
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit+1, downstreamRouteHolder);
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
+        
+        contexts.ForEach(ctx =>
+        {
+            var endpoint = ctx.GetEndpoint();
+            endpoint.ShouldNotBeNull();
+            
+            var rateLimitAttribute = endpoint.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+            rateLimitAttribute.PolicyName.ShouldBe("testPolicy");
+        });
+        
+    }
+#endif
+
+    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times,
+        _DownstreamRouteHolder_ downstreamRoute)
     {
         var contexts = new List<HttpContext>();
         _downstreamResponses.Clear();

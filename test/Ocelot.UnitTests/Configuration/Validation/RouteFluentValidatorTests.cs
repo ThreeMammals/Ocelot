@@ -1,6 +1,7 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using System.Reflection;
@@ -153,7 +154,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
+        public void should_not_be_valid_if_enable_rate_limiting_true_type_ocelot_and_period_is_empty()
         {
             var fileRoute = new FileRoute
             {
@@ -173,7 +174,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_has_value()
+        public void should_not_be_valid_if_enable_rate_limiting_true_type_ocelot_and_period_has_value()
         {
             var fileRoute = new FileRoute
             {
@@ -190,6 +191,49 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .When(_ => WhenIValidate())
                 .Then(_ => ThenTheResultIsInvalid())
                 .And(_ => ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_not_be_valid_if_enable_rate_limiting_true_type_dotnet_and_policy_is_empty()
+        {
+            var fileRoute = new FileRoute
+            {
+                DownstreamPathTemplate = "/test",
+                UpstreamPathTemplate = "/test",
+                RateLimitOptions = new FileRateLimitRule
+                {
+                    EnableRateLimiting = true,
+                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
+                },
+            };
+
+            this.Given(_ => GivenThe(fileRoute))
+                .When(_ => WhenIValidate())
+                .Then(_ => ThenTheResultIsInvalid())
+                .And(_ => ThenTheErrorsContains("RateLimitOptions.RateLimitPolicyName is required when RateLimitOptions.RateLimitMiddlewareType is DotNet."))
+                .BDDfy();
+        }
+        
+        [Fact]
+        public void should_be_valid_if_enable_rate_limiting_true_type_dotnet_and_policy_has_value()
+        {
+            var fileRoute = new FileRoute
+            {
+                DownstreamPathTemplate = "/test",
+                UpstreamPathTemplate = "/test",
+                ServiceName = "Lads",
+                RateLimitOptions = new FileRateLimitRule
+                {
+                    EnableRateLimiting = true,
+                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
+                    RateLimitPolicyName = "testPolicy",
+                },
+            };
+
+            this.Given(_ => GivenThe(fileRoute))
+                .When(_ => WhenIValidate())
+                .Then(_ => ThenTheResultIsValid())
                 .BDDfy();
         }
 

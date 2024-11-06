@@ -63,6 +63,8 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             var rateLimitOptions = new RateLimitOptionsBuilder()
                 .WithEnableRateLimiting(true)
                 .WithClientIdHeader("test")
+                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.DotNet)
+                .WithRateLimitPolicyName("test")
                 .Build();
 
             var downstreamRoute = new DownstreamRouteBuilder()
