@@ -29,7 +29,8 @@ The user can set functions against the following (see more in the `OcelotPipelin
 * ``AuthenticationMiddleware`` overrides Ocelot authentication middleware. [#f1]_
 * ``PreAuthorizationMiddleware`` injection allows the user to run pre authorization logic and then call Ocelot authorization middleware.
 * ``AuthorizationMiddleware`` overrides Ocelots authorization middleware. [#f1]_
-* ``PreQueryStringBuilderMiddleware`` injection allows the user to manipulate the query string on the http request before it is passed to Ocelot request creator.
+* ``ClaimsToHeadersMiddleware`` injection overrides Ocelots claims to headers middleware.
+* ``PreQueryStringBuilderMiddleware`` injection allows the user to manipulate the query string on the http request before it is passed to Ocelots request creator.
 
 Obviously you can just add mentioned Ocelot middleware overridings as normal before the call to ``app.UseOcelot()``.
 It cannot be added after as Ocelot does not call the next Ocelot middleware overridings based on specified middleware configuration.

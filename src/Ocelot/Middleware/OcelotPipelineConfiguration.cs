@@ -47,6 +47,10 @@ namespace Ocelot.Middleware
         /// </value>
         public Func<HttpContext, Func<Task>, Task> AuthorizationMiddleware { get; set; }
 
+        /// <summary>This allows the user to completely override the Ocelot's <see cref="Headers.Middleware.ClaimsToHeadersMiddleware" />.</summary>
+        /// <value>A <see cref="Func{HttpContext, TFunc, Task}"/> delegate object.</value>
+        public Func<HttpContext, Func<Task>, Task> ClaimsToHeadersMiddleware { get; set; }
+
         /// <summary>
         /// This allows the user to implement there own query string manipulation logic.
         /// </summary>
