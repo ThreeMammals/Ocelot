@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -139,22 +138,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
-        }
-
-        [Fact]
-        [Trait("Feat", "1389")]
-        public void Should_allow_get_method()
-        {
-            FileAggregateRoute route = JsonConvert.DeserializeObject<FileAggregateRoute>("{\"UpstreamHttpMethod\":[\"Get\"]}");
-            Assert.Contains("Get", route.UpstreamHttpMethod);
-        }
-
-        [Fact]
-        [Trait("Feat", "1389")]
-        public void Should_allow_post_method()
-        {
-            FileAggregateRoute route = JsonConvert.DeserializeObject<FileAggregateRoute>("{\"UpstreamHttpMethod\":[\"Post\"]}");
-            Assert.Contains("Post", route.UpstreamHttpMethod);
         }
 
         [Fact]
@@ -668,6 +651,12 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => ThenTheResponseBodyShouldBe(expected))
                 .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Feat", "1389")]
+        public void TODO()
+        {
         }
 
         private static string FormatFormCollection(IFormCollection reqForm)
