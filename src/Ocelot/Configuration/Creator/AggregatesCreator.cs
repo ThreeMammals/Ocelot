@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
@@ -26,8 +27,7 @@ namespace Ocelot.Configuration.Creator
         {
             if (aggregateRoute.UpstreamHttpMethod.Count == 0)
             {
-                // Default method to Get for standard use case
-                aggregateRoute.UpstreamHttpMethod.Add(HttpMethod.Get.ToString());
+                aggregateRoute.UpstreamHttpMethod.Add(HttpMethods.Get); // default method is Get, for standard use case
             }
 
             var applicableRoutes = new List<DownstreamRoute>();
