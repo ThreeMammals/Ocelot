@@ -7,16 +7,11 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Configuration.Validator
 {
-    /// <summary>
-    /// Validation of a <see cref="FileConfiguration"/> objects.
-    /// </summary>
+    /// <summary>Validation of a <see cref="FileConfiguration"/> objects.</summary>
     public partial class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
     {
         private const string Servicefabric = "servicefabric";
         private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
-
-        private static readonly Regex _regExPlaceholder =
-            new Regex("{[^}]+}", RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
 
         public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
         {
@@ -104,10 +99,10 @@ namespace Ocelot.Configuration.Validator
         }
 
 #if NET7_0_OR_GREATER
-        [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+        [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, 100, "en-US")]
         private static partial Regex PlaceholderRegex();
 #else
-        private static readonly Regex PlaceholderRegexVar = new(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+        private static readonly Regex PlaceholderRegexVar = new(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
         private static Regex PlaceholderRegex() => PlaceholderRegexVar;
 #endif
 
