@@ -6,8 +6,6 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
-using System.Text.RegularExpressions;
-using System;
 using System.Web;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
@@ -16,7 +14,6 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
-        private static ConcurrentDictionary<string, Regex> _regex = new ConcurrentDictionary<string, Regex>();
 
         private const char Ampersand = '&';
         private const char QuestionMark = '?';
@@ -121,6 +118,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         }
 
         private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
+        private static ConcurrentDictionary<string, Regex> _regex = new();
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
@@ -130,8 +128,8 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
                 var pattern = $@"\b{name}={value}\b";
                 var rgx = _regex.AddOrUpdate(pattern,
-                    new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(100)),
-                    (key, oldValue) => oldValue);
+                            new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(100)),
+                            (key, oldValue) => oldValue);
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {
                     var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);                    
@@ -168,8 +166,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
 
         private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
         {
-            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" &&
-                   downstreamRoute.UseServiceDiscovery;
+            return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
         }
     }
 }
