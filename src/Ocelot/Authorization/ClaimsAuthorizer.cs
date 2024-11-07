@@ -6,7 +6,7 @@ using System.Security.Claims;
 namespace Ocelot.Authorization
 {
     /// <summary>Authorizer which is implemented using Claims-based authorization.</summary>
-    /// <remarks>Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims?view=aspnetcore-7.0">Claims-based authorization in ASP.NET Core</see>.</remarks>
+    /// <remarks>Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims">Claims-based authorization in ASP.NET Core</see>.</remarks>
     public class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
@@ -24,8 +24,12 @@ namespace Ocelot.Authorization
         {
             foreach (var required in routeClaimsRequirement)
             {
-                var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
+                if (string.IsNullOrEmpty(required.Value) || string.IsNullOrWhiteSpace(required.Value))
+                {
+                    continue; // if required value is not specified
+                }
 
+                var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
                 if (values.IsError)
                 {
                     return new ErrorResponse<bool>(values.Errors);
@@ -68,12 +72,11 @@ namespace Ocelot.Authorization
                     }
                     else
                     {
-                        // if required value is not specified
-                        if (string.IsNullOrEmpty(required.Value))
-                        {
-                            continue;
-                        }
-
+                        //// if required value is not specified
+                        //if (string.IsNullOrEmpty(required.Value))
+                        //{
+                        //    continue;
+                        //}
                         // static claim
                         var authorized = values.Data.Contains(required.Value);
                         if (!authorized)
