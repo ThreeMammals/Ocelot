@@ -46,7 +46,7 @@ namespace Ocelot.AcceptanceTests.RateLimiting
                 .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/", 1))
                 .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.TooManyRequests))
                 .Then(x => x.ThenTheResponseBodyShouldBe(_quotaExceededMessage))
-                .And(x => GivenIWait(1000 * _rateLimitWindow))
+                .And(x => GivenIWait((1000 * _rateLimitWindow) + 100))
                 .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/", 1))
                 .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.OK))
                 .BDDfy();
