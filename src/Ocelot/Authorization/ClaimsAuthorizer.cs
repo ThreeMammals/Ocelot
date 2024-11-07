@@ -5,13 +5,9 @@ using System.Security.Claims;
 
 namespace Ocelot.Authorization
 {
-    /// <summary>
-    /// Authorizer which is implemented using Claims-based authorization.
-    /// <para>
-    /// Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims?view=aspnetcore-7.0">Claims-based authorization in ASP.NET Core</see>.
-    /// </para>
-    /// </summary>
-    public partial class ClaimsAuthorizer : IClaimsAuthorizer
+    /// <summary>Authorizer which is implemented using Claims-based authorization.</summary>
+    /// <remarks>Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims?view=aspnetcore-7.0">Claims-based authorization in ASP.NET Core</see>.</remarks>
+    public class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
 
@@ -38,7 +34,7 @@ namespace Ocelot.Authorization
                 if (values.Data != null)
                 {
                     // dynamic claim
-                    var match = VariableRegex().Match(required.Value);
+                    var match = Regex.Match(required.Value, @"^{(?<variable>.+)}$");
                     if (match.Success)
                     {
                         var variableName = match.Captures[0].Value;
@@ -95,8 +91,5 @@ namespace Ocelot.Authorization
 
             return new OkResponse<bool>(true);
         }
-
-        [GeneratedRegex("^{(?<variable>.+)}$")]
-        private static partial Regex VariableRegex();
     }
 }
