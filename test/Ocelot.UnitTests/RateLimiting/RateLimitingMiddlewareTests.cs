@@ -174,7 +174,7 @@ public class RateLimitingMiddlewareTests : UnitTest
 
  #if NET7_0_OR_GREATER
     [Fact]
-    [Trait("Feat", "37")]
+    [Trait("Feat", "2138")]
     public async Task Should_add_EnableRateLimittingAttribute_When_DotNetRateLimiting()
     {
         // Arrange
