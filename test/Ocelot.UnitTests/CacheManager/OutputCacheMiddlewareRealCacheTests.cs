@@ -39,7 +39,7 @@ namespace Ocelot.UnitTests.CacheManager
         }
 
         [Fact]
-        public void Should_cache_content_headers()
+        public void should_cache_content_headers()
         {
             var content = new StringContent("{\"Test\": 1}")
             {
