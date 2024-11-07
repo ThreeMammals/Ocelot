@@ -2,6 +2,8 @@ using IdentityServer4.AccessTokenValidation;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.Authentication
 {
@@ -110,6 +112,40 @@ namespace Ocelot.AcceptanceTests.Authentication
                 .When(x => WhenIPostUrlOnTheApiGateway("/"))
                 .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
                 .BDDfy();
+        }
+
+        [Fact]
+        [Trait("Feat", "1387")]
+        public void Should_return_www_authenticate_header_on_401()
+        {
+            var port = PortFinder.GetRandomPort();
+            var route = GivenDefaultAuthRoute(port);
+            var configuration = GivenConfiguration(route);
+            this.Given(x => GivenThereIsAConfiguration(configuration))
+                .And(x => GivenOcelotIsRunningWithJwtAuth("Test"))
+                .And(x => GivenIHaveNoTokenForMyRequest())
+                .When(x => WhenIGetUrlOnTheApiGateway("/"))
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+                .And(x => ThenTheResponseShouldContainAuthChallenge())
+                .BDDfy();
+        }
+        private void GivenOcelotIsRunningWithJwtAuth(string authenticationProviderKey)
+        {
+            GivenOcelotIsRunningWithServices(WithJwtBearer);
+            void WithJwtBearer(IServiceCollection s)
+            {
+                s.AddAuthentication().AddJwtBearer(authenticationProviderKey, options => { });
+                s.AddOcelot();
+            }
+        }
+        private void GivenIHaveNoTokenForMyRequest()
+        {
+            _ocelotClient.DefaultRequestHeaders.Authorization = null;
+        }
+        private void ThenTheResponseShouldContainAuthChallenge()
+        {
+            _response.Headers.TryGetValues("WWW-Authenticate", out var headerValue).ShouldBeTrue();
+            headerValue.ShouldNotBeEmpty();
         }
 
         [IgnorePublicMethod]

@@ -61,13 +61,20 @@ namespace Ocelot.Responder.Middleware
             var statusCode = _codeMapper.Map(errors);
             _responder.SetErrorResponseOnContext(context, statusCode);
 
-            if (errors.All(e => e.Code != OcelotErrorCode.QuotaExceededError))
+            if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
             {
-                return;
+                var downstreamResponse = context.Items.DownstreamResponse();
+                await _responder.SetErrorResponseOnContext(context, downstreamResponse);
             }
 
-            var downstreamResponse = context.Items.DownstreamResponse();
-            await _responder.SetErrorResponseOnContext(context, downstreamResponse);
+            if (errors.Any(e => e.Code == OcelotErrorCode.UnauthenticatedError))
+            {
+                var challenge = context.Items.AuthChallenge();
+                if (!string.IsNullOrEmpty(challenge))
+                {
+                    _responder.SetAuthChallengeOnContext(context, challenge);
+                }
+            }
         }
     }
 }
