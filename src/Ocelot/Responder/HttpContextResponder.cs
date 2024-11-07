@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
 using Ocelot.Middleware;
-using System.Runtime.Remoting.Messaging;
 
 namespace Ocelot.Responder;
 
@@ -79,9 +78,7 @@ public class HttpContextResponder : IHttpResponder
     }
 
     public void SetAuthChallengeOnContext(HttpContext context, string challenge)
-    {
-        AddHeaderIfDoesntExist(context, new Header("WWW-Authenticate", new[] { challenge }));
-    }
+        => AddHeaderIfDoesntExist(context, new Header("WWW-Authenticate", new[] { challenge }));
 
     private static void SetStatusCode(HttpContext context, int statusCode)
     {

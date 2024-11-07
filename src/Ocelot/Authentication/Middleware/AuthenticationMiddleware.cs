@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Runtime.Remoting.Contexts;
-using System.Threading.Tasks;
 
 namespace Ocelot.Authentication.Middleware
 {
@@ -38,7 +36,7 @@ namespace Ocelot.Authentication.Middleware
 
             if (result.Principal?.Identity == null)
             {
-                await ChallengeAsync(httpContext, downstreamRoute);
+                await ChallengeAsync(httpContext, downstreamRoute, result);
                 SetUnauthenticatedError(httpContext, path, null);
                 return;
             }
@@ -52,7 +50,7 @@ namespace Ocelot.Authentication.Middleware
                 return;
             }
 
-            await ChallengeAsync(httpContext, downstreamRoute);
+            await ChallengeAsync(httpContext, downstreamRoute, result);
             SetUnauthenticatedError(httpContext, path, httpContext.User.Identity.Name);
         }
 
@@ -63,10 +61,10 @@ namespace Ocelot.Authentication.Middleware
             httpContext.Items.SetError(error);
         }
 
-        private async Task ChallengeAsync(HttpContext context, DownstreamRoute route)
+        private async Task ChallengeAsync(HttpContext context, DownstreamRoute route, AuthenticateResult status)
         {
             // Perform a challenge. This populates the WWW-Authenticate header on the response
-            await context.ChallengeAsync(route.AuthenticationOptions.AuthenticationProviderKey);
+            await context.ChallengeAsync(route.AuthenticationOptions.AuthenticationProviderKey); // TODO Read failed scheme from auth result
 
             // Since the response gets re-created down the pipeline, we store the challenge in the Items, so we can re-apply it when sending the response
             if (context.Response.Headers.TryGetValue("WWW-Authenticate", out var authenticateHeader))
