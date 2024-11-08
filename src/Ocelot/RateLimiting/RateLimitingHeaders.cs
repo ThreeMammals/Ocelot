@@ -9,7 +9,8 @@ namespace Ocelot.RateLimiting;
 /// <list type="bullet">
 /// <item>GitHub: <see href="https://github.com/ioggstream/draft-polli-ratelimit-headers">draft-polli-ratelimit-headers</see></item>
 /// <item>GitHub: <see href="https://github.com/ietf-wg-httpapi/ratelimit-headers">ratelimit-headers</see></item>
-/// <item>GitHub Wiki: <see href="https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html">RateLimit header fields for HTTP </see></item>
+/// <item>GitHub Wiki: <see href="https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html">RateLimit header fields for HTTP</see></item>
+/// <item>StackOverflow: <see href="https://stackoverflow.com/questions/16022624/examples-of-http-api-rate-limiting-http-response-headers">Examples of HTTP API Rate Limiting HTTP Response headers</see></item>
 /// </list>
 /// </remarks>
 public static class RateLimitingHeaders
