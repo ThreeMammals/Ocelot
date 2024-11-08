@@ -122,14 +122,14 @@ namespace Ocelot.RateLimiting.Middleware
         public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
             var message = GetResponseMessage(option);
-
-            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode);
-
-            http.Content = new StringContent(message);
+            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode)
+            {
+                Content = new StringContent(message),
+            };
 
             if (!option.DisableRateLimitHeaders)
             {
-                http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter);        // in seconds, not date string
+                http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter); // in seconds, not date string
                 httpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfter;
             }
 
