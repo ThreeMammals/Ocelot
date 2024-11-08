@@ -216,16 +216,16 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
             },
         };
     }
+
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
         _response.Headers.Contains("X-Rate-Limit-Limit").ShouldBe(headersExist);
         _response.Headers.Contains("X-Rate-Limit-Remaining").ShouldBe(headersExist);
         _response.Headers.Contains("X-Rate-Limit-Reset").ShouldBe(headersExist);
     }
+
     private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
-    {
-        _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
-    }
+        => _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
     {
@@ -275,17 +275,5 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
             RequestIdKey = "OcelotClientRequest",
         };
         return config;
-    }
-
-    private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
-    {
-        _response.Headers.Contains("X-Rate-Limit-Limit").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Remaining").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Reset").ShouldBe(headersExist);
-    }
-
-    private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
-    {
-        _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
     }
 }

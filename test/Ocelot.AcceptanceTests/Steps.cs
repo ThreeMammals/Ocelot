@@ -795,18 +795,6 @@ public class Steps : IDisposable
     public void ThenTheStatusCodeShouldBe(int expected)
         => ((int)_response.StatusCode).ShouldBe(expected);
 
-    public void ThenRateLimitingHeadersExistInResponse(bool headersExist)
-    {
-        _response.Headers.Contains("X-Rate-Limit-Limit").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Remaining").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Reset").ShouldBe(headersExist);
-    }
-
-    public void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
-    {
-        _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
-    }
-
     public void ThenTheRequestIdIsReturned()
         => _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
 
