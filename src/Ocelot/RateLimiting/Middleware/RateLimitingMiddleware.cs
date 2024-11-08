@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
@@ -12,18 +11,18 @@ namespace Ocelot.RateLimiting.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IRateLimiting _limiter;
-        private readonly IServiceProvider _container;
+        private readonly IHttpContextAccessor _contextAccessor;
 
         public RateLimitingMiddleware(
             RequestDelegate next,
             IOcelotLoggerFactory factory,
             IRateLimiting limiter,
-            IServiceProvider container)
+            IHttpContextAccessor contextAccessor)
             : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;
             _limiter = limiter;
-            _container = container;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -73,15 +72,14 @@ namespace Ocelot.RateLimiting.Middleware
                 }
             }
 
-            //set X-Rate-Limit headers for the longest period
+            // Set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var httpContextAccessor = _container.GetService<IHttpContextAccessor>();
-                if (httpContextAccessor != null)
+                var originalContext = _contextAccessor?.HttpContext;
+                if (originalContext != null)
                 {
-                    var originalHttpContext = httpContextAccessor.HttpContext;
-                    var headers = _limiter.GetHeaders(originalHttpContext, identity, options);
-                    originalHttpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                    var headers = _limiter.GetHeaders(originalContext, identity, options);
+                    originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
                 }
             }
 
@@ -103,15 +101,8 @@ namespace Ocelot.RateLimiting.Middleware
                 );
         }
 
-        public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            if (option.ClientWhitelist.Contains(requestIdentity.ClientId))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+            => option.ClientWhitelist.Contains(requestIdentity.ClientId);
 
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
         {
