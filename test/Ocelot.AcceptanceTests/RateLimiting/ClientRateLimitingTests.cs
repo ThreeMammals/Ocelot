@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
@@ -170,9 +171,9 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
 
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
-        _response.Headers.Contains("X-Rate-Limit-Limit").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Remaining").ShouldBe(headersExist);
-        _response.Headers.Contains("X-Rate-Limit-Reset").ShouldBe(headersExist);
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
     }
 
     private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)

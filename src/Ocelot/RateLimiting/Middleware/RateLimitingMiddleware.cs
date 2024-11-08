@@ -135,14 +135,17 @@ namespace Ocelot.RateLimiting.Middleware
             return message;
         }
 
-        private static Task SetRateLimitHeaders(object rateLimitHeaders)
+        /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>
+        /// <remarks>More details in <see cref="RateLimitingHeaders"/> docs.</remarks>
+        /// <param name="state">Captured state as a <see cref="RateLimitHeaders"/> object.</param>
+        /// <returns>The <see cref="Task.CompletedTask"/> object.</returns>
+        private static Task SetRateLimitHeaders(object state)
         {
-            var headers = (RateLimitHeaders)rateLimitHeaders;
-
-            headers.Context.Response.Headers["X-Rate-Limit-Limit"] = headers.Limit;
-            headers.Context.Response.Headers["X-Rate-Limit-Remaining"] = headers.Remaining;
-            headers.Context.Response.Headers["X-Rate-Limit-Reset"] = headers.Reset;
-
+            var limitHeaders = (RateLimitHeaders)state;
+            var headers = limitHeaders.Context.Response.Headers;
+            headers[RateLimitingHeaders.X_Rate_Limit_Limit] = limitHeaders.Limit;
+            headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = limitHeaders.Remaining;
+            headers[RateLimitingHeaders.X_Rate_Limit_Reset] = limitHeaders.Reset;
             return Task.CompletedTask;
         }
     }
