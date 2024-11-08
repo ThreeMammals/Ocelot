@@ -14,15 +14,18 @@ namespace Ocelot.RateLimiting;
 /// </remarks>
 public static class RateLimitingHeaders
 {
+    public const char Dash = '-';
+    public const char Underscore = '_';
+
     /// <summary>Gets the <c>Retry-After</c> HTTP header name.</summary>
-    public static readonly string RetryAfter = HeaderNames.RetryAfter;
+    public static readonly string Retry_After = HeaderNames.RetryAfter;
 
     /// <summary>Gets the <c>X-Rate-Limit-Limit</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Limit = "X-Rate-Limit-Limit";
+    public static readonly string X_Rate_Limit_Limit = nameof(X_Rate_Limit_Limit).Replace(Underscore, Dash);
 
     /// <summary>Gets the <c>X-Rate-Limit-Remaining</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Remaining = "X-Rate-Limit-Remaining";
+    public static readonly string X_Rate_Limit_Remaining = nameof(X_Rate_Limit_Remaining).Replace(Underscore, Dash);
 
     /// <summary>Gets the <c>X-Rate-Limit-Reset</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Reset = "X-Rate-Limit-Reset";
+    public static readonly string X_Rate_Limit_Reset = nameof(X_Rate_Limit_Reset).Replace(Underscore, Dash);
 }
