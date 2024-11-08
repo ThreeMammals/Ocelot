@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
-public sealed class ClientRateLimitingTests : Steps, IDisposable
+public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
 {
     const int OK = (int)HttpStatusCode.OK;
     const int TooManyRequests = (int)HttpStatusCode.TooManyRequests;

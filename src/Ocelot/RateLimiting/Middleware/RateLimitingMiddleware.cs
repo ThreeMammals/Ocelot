@@ -4,7 +4,6 @@ using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
 using System.Globalization;
 
 namespace Ocelot.RateLimiting.Middleware
