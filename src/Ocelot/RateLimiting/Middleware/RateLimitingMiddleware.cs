@@ -1,7 +1,8 @@
-﻿#if NET7_0_OR_GREATER
+#if NET7_0_OR_GREATER
 using Microsoft.AspNetCore.RateLimiting;
 #endif
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -13,15 +14,18 @@ namespace Ocelot.RateLimiting.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IRateLimiting _limiter;
+        private readonly IHttpContextAccessor _contextAccessor;
 
         public RateLimitingMiddleware(
             RequestDelegate next,
             IOcelotLoggerFactory factory,
-            IRateLimiting limiter)
+            IRateLimiting limiter,
+            IHttpContextAccessor contextAccessor)
             : base(factory.CreateLogger<RateLimitingMiddleware>())
         {
             _next = next;
             _limiter = limiter;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -83,11 +87,15 @@ namespace Ocelot.RateLimiting.Middleware
                 }
             }
 
-            //set X-Rate-Limit headers for the longest period
+            // Set X-Rate-Limit headers for the longest period
             if (!options.DisableRateLimitHeaders)
             {
-                var headers = _limiter.GetHeaders(httpContext, identity, options);
-                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                var originalContext = _contextAccessor?.HttpContext;
+                if (originalContext != null)
+                {
+                    var headers = _limiter.GetHeaders(originalContext, identity, options);
+                    originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                }
             }
 
             await _next.Invoke(httpContext);
@@ -108,15 +116,8 @@ namespace Ocelot.RateLimiting.Middleware
                 );
         }
 
-        public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        {
-            if (option.ClientWhitelist.Contains(requestIdentity.ClientId))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+            => option.ClientWhitelist.Contains(requestIdentity.ClientId);
 
         public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
         {
@@ -127,14 +128,15 @@ namespace Ocelot.RateLimiting.Middleware
         public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
         {
             var message = GetResponseMessage(option);
-
-            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode);
-
-            http.Content = new StringContent(message);
+            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode)
+            {
+                Content = new StringContent(message),
+            };
 
             if (!option.DisableRateLimitHeaders)
             {
-                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter); // in seconds, not date string
+                http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter); // in seconds, not date string
+                httpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfter;
             }
 
             return new DownstreamResponse(http);
@@ -148,14 +150,17 @@ namespace Ocelot.RateLimiting.Middleware
             return message;
         }
 
-        private static Task SetRateLimitHeaders(object rateLimitHeaders)
+        /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>
+        /// <remarks>More details in <see cref="RateLimitingHeaders"/> docs.</remarks>
+        /// <param name="state">Captured state as a <see cref="RateLimitHeaders"/> object.</param>
+        /// <returns>The <see cref="Task.CompletedTask"/> object.</returns>
+        private static Task SetRateLimitHeaders(object state)
         {
-            var headers = (RateLimitHeaders)rateLimitHeaders;
-
-            headers.Context.Response.Headers["X-Rate-Limit-Limit"] = headers.Limit;
-            headers.Context.Response.Headers["X-Rate-Limit-Remaining"] = headers.Remaining;
-            headers.Context.Response.Headers["X-Rate-Limit-Reset"] = headers.Reset;
-
+            var limitHeaders = (RateLimitHeaders)state;
+            var headers = limitHeaders.Context.Response.Headers;
+            headers[RateLimitingHeaders.X_Rate_Limit_Limit] = limitHeaders.Limit;
+            headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = limitHeaders.Remaining;
+            headers[RateLimitingHeaders.X_Rate_Limit_Reset] = limitHeaders.Reset;
             return Task.CompletedTask;
         }
     }
