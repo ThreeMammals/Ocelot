@@ -733,17 +733,6 @@ public class Steps : IDisposable
             await action.Invoke(i);
     }
 
-    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
-    {
-        for (var i = 0; i < times; i++)
-        {
-            const string clientId = "ocelotclient1";
-            var request = new HttpRequestMessage(new HttpMethod("GET"), url);
-            request.Headers.Add("ClientId", clientId);
-            _response = await _ocelotClient.SendAsync(request);
-        }
-    }
-
     public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)
     {
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
