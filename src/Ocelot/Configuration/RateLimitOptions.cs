@@ -32,7 +32,7 @@
         /// Gets the list of white listed clients.
         /// </summary>
         /// <value>
-        /// A <see cref="List{T}"/> collection with white listed clients.
+        /// A <see cref="List{T}"/> (where T is <see cref="string"/>) collection with white listed clients.
         /// </value>
         public List<string> ClientWhitelist => _getClientWhitelist();
 
@@ -80,10 +80,10 @@
         public bool EnableRateLimiting { get; }
 
         /// <summary>
-        /// Disables X-Rate-Limit and Rety-After headers.
+        /// Disables <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
         /// </summary>
         /// <value>
-        /// A boolean value for disabling X-Rate-Limit and Rety-After headers.
+        /// A boolean value for disabling <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
         /// </value>
         public bool DisableRateLimitHeaders { get; }
     }

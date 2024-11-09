@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Ocelot.AcceptanceTests.RateLimiting;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -14,7 +15,7 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery
 {
-    public sealed class ConsulConfigurationInConsulTests : Steps, IDisposable
+    public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDisposable
     {
         private IWebHost _builder;
         private IWebHost _fakeConsulBuilder;
