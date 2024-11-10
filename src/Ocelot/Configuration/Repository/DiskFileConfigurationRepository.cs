@@ -32,10 +32,12 @@ namespace Ocelot.Configuration.Repository
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment,
             IOcelotConfigurationChangeTokenSource changeTokenSource,
+            IOcelotCache<FileConfiguration> cache,
             string folder)
         {
             _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
+            _cache = cache;
             Initialize(folder);
         }
 
