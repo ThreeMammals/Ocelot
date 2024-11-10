@@ -67,6 +67,10 @@ namespace Ocelot.Configuration.Repository
             return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
+        /// <summary>Default TTL in seconds for caching <see cref="FileConfiguration"/> in the <see cref="Set(FileConfiguration)"/> method.</summary>
+        /// <value>An <see cref="int"/> value, 300 seconds (5 minutes) by default.</value>
+        public static int CacheTtlSeconds { get; set; } = 300;
+
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
@@ -88,7 +92,7 @@ namespace Ocelot.Configuration.Repository
             }
 
             _changeTokenSource.Activate();
-            _cache.AddAndDelete(CacheKey, fileConfiguration, TimeSpan.FromMinutes(5), region: CacheKey);
+            _cache.AddAndDelete(CacheKey, fileConfiguration, TimeSpan.FromSeconds(CacheTtlSeconds), region: CacheKey);
             return Task.FromResult<Response>(new OkResponse());
         }
     }

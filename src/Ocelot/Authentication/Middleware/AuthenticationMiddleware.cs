@@ -22,6 +22,10 @@ namespace Ocelot.Authentication.Middleware
             _memoryCache = memoryCache;
         }
 
+        /// <summary>Default TTL in seconds for caching <see cref="ClaimsPrincipal"/> of the current <see cref="AuthenticateResult"/> object.</summary>
+        /// <value>An <see cref="int"/> value, 300 seconds (5 minutes) by default.</value>
+        public static int CacheTtlSeconds { get; set; } = 300;
+
         public async Task Invoke(HttpContext httpContext)
         {
             var request = httpContext.Request;
@@ -43,7 +47,7 @@ namespace Ocelot.Authentication.Middleware
             {
                 var auth = await AuthenticateAsync(httpContext, downstreamRoute);
                 principal = auth.Principal;
-                _memoryCache.Set(cacheKey, principal, TimeSpan.FromMinutes(5));
+                _memoryCache.Set(cacheKey, principal, TimeSpan.FromSeconds(CacheTtlSeconds));
             }
 
             if (principal?.Identity == null)

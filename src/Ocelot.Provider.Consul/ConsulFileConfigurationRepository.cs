@@ -57,8 +57,8 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         return new OkResponse<FileConfiguration>(consulConfig);
     }
 
-    /// <summary>Default TTL in seconds for caching <see cref="FileConfiguration"/>.</summary>
-    /// <value>An <see cref="int"/> value.</value>
+    /// <summary>Default TTL in seconds for caching <see cref="FileConfiguration"/> in the <see cref="Set(FileConfiguration)"/> method.</summary>
+    /// <value>An <see cref="int"/> value, 5 by default.</value>
     public static int CacheTtlSeconds { get; set; } = 5;
 
     public async Task<Response> Set(FileConfiguration ocelotConfiguration)
