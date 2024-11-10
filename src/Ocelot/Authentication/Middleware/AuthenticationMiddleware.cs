@@ -4,7 +4,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System;
 using System.Security.Claims;
 
 namespace Ocelot.Authentication.Middleware
@@ -40,23 +39,20 @@ namespace Ocelot.Authentication.Middleware
             Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
             var token = httpContext.Request.Headers.FirstOrDefault(r => r.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
             var cacheKey = "identityToken." + token;
-            if (!_memoryCache.TryGetValue(cacheKey, out ClaimsPrincipal userClaim))
+            if (!_memoryCache.TryGetValue(cacheKey, out ClaimsPrincipal principal))
             {
-                var result = await AuthenticateAsync(httpContext, downstreamRoute);
-
-                userClaim = result.Principal;
-
-                _memoryCache.Set(cacheKey, userClaim, TimeSpan.FromMinutes(5));
+                var auth = await AuthenticateAsync(httpContext, downstreamRoute);
+                principal = auth.Principal;
+                _memoryCache.Set(cacheKey, principal, TimeSpan.FromMinutes(5));
             }
-            httpContext.User = userClaim;
-            //var result = await AuthenticateAsync(httpContext, downstreamRoute);
-            //if (result.Principal?.Identity == null)
-            //{
-            //    SetUnauthenticatedError(httpContext, path, null);
-            //    return;
-            //}
-            //httpContext.User = result.Principal;
 
+            if (principal?.Identity == null)
+            {
+                SetUnauthenticatedError(httpContext, path, null);
+                return;
+            }
+
+            httpContext.User = principal;
             if (httpContext.User.Identity.IsAuthenticated)
             {
                 Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{httpContext.User.Identity.AuthenticationType}' scheme.");
