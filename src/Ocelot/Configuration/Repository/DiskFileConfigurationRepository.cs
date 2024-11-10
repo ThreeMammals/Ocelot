@@ -14,22 +14,25 @@ namespace Ocelot.Configuration.Repository
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
         private readonly IOcelotCache<FileConfiguration> _cache;
-        private readonly string _cacheKey;
+
         private FileInfo _ocelotFile;
         private FileInfo _environmentFile;
         private readonly object _lock = new();
+        public const string CacheKey = nameof(DiskFileConfigurationRepository);
 
         public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment,
-            IOcelotConfigurationChangeTokenSource changeTokenSource, IOcelotCache<FileConfiguration> cache)
+            IOcelotConfigurationChangeTokenSource changeTokenSource,
+            IOcelotCache<FileConfiguration> cache)
         {
             _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
-            Initialize(AppContext.BaseDirectory);
             _cache = cache;
-            _cacheKey = "InternalDiskFileConfigurationRepository";
+            Initialize(AppContext.BaseDirectory);
         }
 
-        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource, string folder)
+        public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment,
+            IOcelotConfigurationChangeTokenSource changeTokenSource,
+            string folder)
         {
             _hostingEnvironment = hostingEnvironment;
             _changeTokenSource = changeTokenSource;
@@ -48,29 +51,25 @@ namespace Ocelot.Configuration.Repository
 
         public Task<Response<FileConfiguration>> Get()
         {
-            var configuration = _cache.Get(_cacheKey, _cacheKey);
-
+            var configuration = _cache.Get(CacheKey, region: CacheKey);
             if (configuration != null)
             {
                 return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(configuration));
             }
 
             string jsonConfiguration;
-
             lock (_lock)
             {
                 jsonConfiguration = FileSys.ReadAllText(_environmentFile.FullName);
             }
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
-
             return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
         }
 
         public Task<Response> Set(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-
             lock (_lock)
             {
                 if (_environmentFile.Exists)
@@ -89,9 +88,7 @@ namespace Ocelot.Configuration.Repository
             }
 
             _changeTokenSource.Activate();
-
-            _cache.AddAndDelete(_cacheKey, fileConfiguration, TimeSpan.FromMinutes(5), _cacheKey);
-
+            _cache.AddAndDelete(CacheKey, fileConfiguration, TimeSpan.FromMinutes(5), region: CacheKey);
             return Task.FromResult<Response>(new OkResponse());
         }
     }

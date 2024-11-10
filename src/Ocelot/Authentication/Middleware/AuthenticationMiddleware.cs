@@ -37,8 +37,8 @@ namespace Ocelot.Authentication.Middleware
             }
 
             Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
-            var token = httpContext.Request.Headers.FirstOrDefault(r => r.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
-            var cacheKey = "identityToken." + token;
+            var token = httpContext.Request.Headers.Authorization;
+            var cacheKey = $"{nameof(AuthenticationMiddleware)}.{nameof(IHeaderDictionary.Authorization)}:{token}";
             if (!_memoryCache.TryGetValue(cacheKey, out ClaimsPrincipal principal))
             {
                 var auth = await AuthenticateAsync(httpContext, downstreamRoute);
