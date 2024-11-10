@@ -54,7 +54,6 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         var bytes = queryResult.Response.Value;
         var json = Encoding.UTF8.GetString(bytes);
         var consulConfig = JsonConvert.DeserializeObject<FileConfiguration>(json);
-
         return new OkResponse<FileConfiguration>(consulConfig);
     }
 
@@ -67,11 +66,10 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
             Value = bytes,
         };
 
-            var result = await _consul.KV.Put(kvPair);
-            if (result.Response)
-            {
-                _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(5), _configurationKey);
-
+        var result = await _consul.KV.Put(kvPair);
+        if (result.Response)
+        {
+            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(5), _configurationKey);
             return new OkResponse();
         }
 
