@@ -1,12 +1,19 @@
 using Ocelot.Configuration.File;
-using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Repository
+namespace Ocelot.Configuration.Repository;
+
+public interface IFileConfigurationRepository
 {
-    public interface IFileConfigurationRepository
-    {
-        Task<Response<FileConfiguration>> Get();
+    /// <summary>
+    /// Gets file configuration, aka ocelot.json content model.
+    /// </summary>
+    /// <returns>A <see cref="FileConfiguration"/> model.</returns>
+    Task<FileConfiguration> GetAsync();
 
-        Task<Response> Set(FileConfiguration fileConfiguration);
-    }
+    /// <summary>
+    /// Sets file configuration rewriting ocelot.json content.
+    /// </summary>
+    /// <param name="fileConfiguration">Current model.</param>
+    /// <returns>A <see cref="Task"/> object.</returns>
+    Task SetAsync(FileConfiguration fileConfiguration);
 }

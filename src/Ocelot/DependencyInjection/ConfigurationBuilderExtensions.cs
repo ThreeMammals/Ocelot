@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.DependencyInjection
@@ -118,6 +119,11 @@ namespace Ocelot.DependencyInjection
                 .ToArray();
 
             fileConfiguration ??= new FileConfiguration();
+            dynamic fcMerged = JObject.FromObject(fileConfiguration);
+            fcMerged.GlobalConfiguration ??= new JObject();
+            fcMerged.Aggregates ??= new JArray();
+            fcMerged.Routes ??= new JArray();
+
             primaryFile ??= Path.Join(folder, PrimaryConfigFile);
             globalFile ??= Path.Join(folder, GlobalConfigFile);
             var primaryFileInfo = new FileInfo(primaryFile);
@@ -132,19 +138,17 @@ namespace Ocelot.DependencyInjection
                 }
 
                 var lines = File.ReadAllText(file.FullName);
-                var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
-                if (file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
-                    file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
-                {
-                    fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
-                }
-
-                fileConfiguration.Aggregates.AddRange(config.Aggregates);
-                fileConfiguration.Routes.AddRange(config.Routes);
+                dynamic config = JToken.Parse(lines);
+                bool isGlobal = file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
+                    file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase);
+                MergeConfig(fcMerged, config, isGlobal);                
             }
 
-            return JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+            return ((JObject)fcMerged).ToString();
         }
+
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, JObject fileConfiguration)
+            => SerializeToFile(builder, fileConfiguration);
 
         /// <summary>
         /// Adds Ocelot configuration by ready configuration object and writes JSON to the primary configuration file.<br/>
@@ -159,9 +163,12 @@ namespace Ocelot.DependencyInjection
         /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
             string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+            => SerializeToFile(builder, fileConfiguration);
+
+        private static IConfigurationBuilder SerializeToFile(IConfigurationBuilder builder, object fileConfiguration, bool? optional = null, bool? reloadOnChange = null)
         {
             var json = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
-            return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
+            return AddOcelotJsonFile(builder, json, PrimaryConfigFile, optional, reloadOnChange);
         }
 
         /// <summary>
@@ -203,5 +210,35 @@ namespace Ocelot.DependencyInjection
             File.WriteAllText(primary, json);
             return builder?.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
         }
+
+        private static void MergeConfig(JToken to, JToken from, bool isGlobal)
+        {
+            if (isGlobal)
+            {
+                MergeConfigSection(to, from, nameof(FileConfiguration.GlobalConfiguration));
+            }
+
+            MergeConfigSection(to, from, nameof(FileConfiguration.Aggregates));
+            MergeConfigSection(to, from, nameof(FileConfiguration.Routes));
+        }
+
+        private static void MergeConfigSection(JToken to, JToken from, string sectionName)
+        {
+            var destination = to[sectionName];
+            var source = from[sectionName];
+            if (source == null || destination == null)
+            {
+                return;
+            }
+
+            if (source is JObject)
+            {
+                to[sectionName] = source;
+            }
+            else if (source is JArray)
+            {
+                (destination as JArray).Merge(source);
+            }
+        }        
     }
 }

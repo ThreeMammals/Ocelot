@@ -12,28 +12,32 @@
             _fileConfigurationRepository = fileConfigurationRepository;
         }
 
-        public int Delay => GetDelay();
+        public int Delay => GetDelay().GetAwaiter().GetResult();
 
-        private int GetDelay()
+        private async Task<int> GetDelay()
         {
             var delay = 1000;
-
-            var fileConfig = _fileConfigurationRepository.Get().GetAwaiter().GetResult(); // sync call, so TODO extend IFileConfigurationPollerOptions interface with 2nd async method
-            if (fileConfig?.Data?.GlobalConfiguration?.ServiceDiscoveryProvider != null &&
-                    !fileConfig.IsError &&
-                    fileConfig.Data.GlobalConfiguration.ServiceDiscoveryProvider.PollingInterval > 0)
+            try
             {
-                delay = fileConfig.Data.GlobalConfiguration.ServiceDiscoveryProvider.PollingInterval;
-            }
-            else
-            {
-                var internalConfig = _internalConfigRepo.Get();
-                if (internalConfig?.Data?.ServiceProviderConfiguration != null &&
-                !internalConfig.IsError &&
-                internalConfig.Data.ServiceProviderConfiguration.PollingInterval > 0)
+                var fileConfig = await _fileConfigurationRepository.GetAsync();
+                var provider = fileConfig?.GlobalConfiguration?.ServiceDiscoveryProvider;
+                if (provider != null && provider.PollingInterval > 0)
                 {
-                    delay = internalConfig.Data.ServiceProviderConfiguration.PollingInterval;
+                    delay = provider.PollingInterval;
                 }
+                else
+                {
+                    var internalConfig = _internalConfigRepo.Get();
+                    var configuration = internalConfig?.Data?.ServiceProviderConfiguration;
+                    if (configuration != null && configuration.PollingInterval > 0)
+                    {
+                        delay = configuration.PollingInterval;
+                    }
+                }
+            }
+            catch
+            {
+                delay = 0;
             }
 
             return delay;

@@ -28,7 +28,7 @@ namespace Ocelot.UnitTests.Configuration
             _repo = new Mock<IFileConfigurationRepository>();
             _fileConfig = new FileConfiguration();
             _config = new Mock<IFileConfigurationPollerOptions>();
-            _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
+            _repo.Setup(x => x.GetAsync()).ReturnsAsync(_fileConfig);
             _config.Setup(x => x.Delay).Returns(100);
             _internalConfig = new Mock<IInternalConfiguration>();
             _internalConfigRepo = new Mock<IInternalConfigurationRepository>();
@@ -118,7 +118,7 @@ namespace Ocelot.UnitTests.Configuration
             };
 
             this.Given(x => GivenPollerHasStarted())
-                .Given(x => WhenProviderErrors())
+                .And(x => WhenProviderErrors())
                 .Then(x => ThenTheSetterIsCalled(newConfig, 0))
                 .BDDfy();
         }
@@ -138,16 +138,16 @@ namespace Ocelot.UnitTests.Configuration
         private void WhenProviderErrors()
         {
             _repo
-                .Setup(x => x.Get())
-                .ReturnsAsync(new ErrorResponse<FileConfiguration>(new AnyError()));
+                .Setup(x => x.GetAsync())
+                .ThrowsAsync(new FileNotFoundException(new AnyError().Message));
         }
 
         private void WhenTheConfigIsChanged(FileConfiguration newConfig, int delay)
         {
             _repo
-                .Setup(x => x.Get())
+                .Setup(x => x.GetAsync())
                 .Callback(() => Thread.Sleep(delay))
-                .ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
+                .ReturnsAsync(newConfig);
         }
 
         private void WhenPollerIsDisposed()

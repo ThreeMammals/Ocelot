@@ -40,7 +40,7 @@ namespace Ocelot.Configuration.Repository
             _environmentFile = new FileInfo(Path.Combine(folder, envFile));
         }
 
-        public Task<Response<FileConfiguration>> Get()
+        public Task<FileConfiguration> GetAsync()
         {
             string jsonConfiguration;
 
@@ -50,11 +50,10 @@ namespace Ocelot.Configuration.Repository
             }
 
             var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
-
-            return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
+            return Task.FromResult(fileConfiguration);
         }
 
-        public Task<Response> Set(FileConfiguration fileConfiguration)
+        public Task SetAsync(FileConfiguration fileConfiguration)
         {
             var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
 
@@ -76,7 +75,7 @@ namespace Ocelot.Configuration.Repository
             }
 
             _changeTokenSource.Activate();
-            return Task.FromResult<Response>(new OkResponse());
+            return Task.CompletedTask;
         }
     }
 }
