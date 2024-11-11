@@ -1,73 +1,39 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 
 namespace Ocelot.AcceptanceTests
 {
-    public class ConfigurationBuilderExtensionsTests
-    {        
-        private IWebHostBuilder _webHostBuilder;
-        private TestServer _ocelotServer;
+    public class ConfigurationBuilderExtensionsTests : Steps
+    {
+        private JObject _config;
 
         [Fact]
         public void Should_merge_routes_custom_properties()
         {
-            this.Given(x => GivenOcelotIsRunningWithMultipleConfigs())
-                .When(x => x.WhenICreateClient())
-                .Then(x => ThenConfigContentShouldHaveThreeRoutes())
+            var folder = "MergeConfiguration"; // TODO Convert to dynamic temp test folder instead of static one
+            this.Given(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
+                .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
                 .And(x => ShouldMergeWithCustomPropertyInXservices())
                 .And(x => ShouldMergeWithCustomGlobalProperty())
                 .And(x => ShouldMergeWithCustomPropertyInYservices())
                 .BDDfy();
         }
 
-        private void GivenOcelotIsRunningWithMultipleConfigs()
+        private void GivenOcelotIsRunningWithMultipleConfigs(string folder) => StartOcelot(
+            (context, config) => config.AddOcelot(folder, context.HostingEnvironment),
+            "Env");
+
+        private async Task ThenConfigContentShouldHaveThreeRoutes(string folder)
         {
-            _webHostBuilder = new WebHostBuilder();
-
-            _webHostBuilder
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddOcelot("MergeConfiguration", hostingContext.HostingEnvironment);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddOcelot();
-                })
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                });
+            const int three = 3;
+            var mergedConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
+            File.Exists(mergedConfigFile).ShouldBeTrue();
+            var lines = await File.ReadAllTextAsync(mergedConfigFile);
+            _config = JObject.Parse(lines).ShouldNotBeNull();
+            var routes = _config[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
+            routes.Children().Count().ShouldBe(three);
         }
-
-        private void WhenICreateClient()
-        {
-            _ocelotServer = new TestServer(_webHostBuilder);
-            _ = _ocelotServer.CreateClient();
-        }
-
-        private void ThenConfigContentShouldHaveThreeRoutes()
-        {
-            var mergedConfigFileName = "ocelot.json";
-            File.Exists(mergedConfigFileName).ShouldBeTrue();
-            var lines = File.ReadAllText(mergedConfigFileName);
-            _config = JObject.Parse(lines);
-
-            _config[nameof(FileConfiguration.Routes)].ShouldNotBeNull()
-                .Children().Count().ShouldBe(3);
-        }
-
-        private JObject _config;
 
         private void ShouldMergeWithCustomPropertyInXservices()
         {

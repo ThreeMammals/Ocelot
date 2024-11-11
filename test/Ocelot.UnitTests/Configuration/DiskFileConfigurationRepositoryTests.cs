@@ -125,15 +125,8 @@ namespace Ocelot.UnitTests.Configuration
 
         private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)
         {
-            await _repo.Set(fileConfiguration);
-            var response = await _repo.Get();
-            _result = response.Data;
-        }
-
-        private void WhenISetTheConfiguration()
-        {
-            _repo.SetAsync(_fileConfiguration);
-            _result = _repo.GetAsync().Result;
+            await _repo.SetAsync(fileConfiguration);
+            _result = await _repo.GetAsync();
         }
 
         private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)
@@ -189,11 +182,7 @@ namespace Ocelot.UnitTests.Configuration
             _files.Add(environmentSpecific);
         }
 
-        private async Task WhenIGetTheRoutes()
-        {
-            var response = await _repo.Get();
-            _result = response.Data;
-        }
+        private async Task WhenIGetTheRoutes() => _result = await _repo.GetAsync();
 
         private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
         {

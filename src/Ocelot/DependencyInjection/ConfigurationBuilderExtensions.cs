@@ -118,12 +118,12 @@ namespace Ocelot.DependencyInjection
                     !fi.FullName.Equals(environmentFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            dynamic fileConfigurationMerged = fileConfiguration != null ? JObject.FromObject(fileConfiguration) : new JObject();
-            fileConfigurationMerged.GlobalConfiguration ??= new JObject();
-            fileConfigurationMerged.Aggregates ??= new JArray();
-            fileConfigurationMerged.Routes ??= new JArray();
-
             fileConfiguration ??= new FileConfiguration();
+            dynamic fcMerged = JObject.FromObject(fileConfiguration);
+            fcMerged.GlobalConfiguration ??= new JObject();
+            fcMerged.Aggregates ??= new JArray();
+            fcMerged.Routes ??= new JArray();
+
             primaryFile ??= Path.Join(folder, PrimaryConfigFile);
             globalFile ??= Path.Join(folder, GlobalConfigFile);
             var primaryFileInfo = new FileInfo(primaryFile);
@@ -137,17 +137,14 @@ namespace Ocelot.DependencyInjection
                     continue;
                 }
 
-                //var lines = File.ReadAllText(file.FullName);
-                //var config = JsonConvert.DeserializeObject<FileConfiguration>(lines);
                 var lines = File.ReadAllText(file.FullName);
                 dynamic config = JToken.Parse(lines);
-                var isGlobal = file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
+                bool isGlobal = file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
                     file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase);
-
-                MergeConfig(fileConfigurationMerged, config, isGlobal);                
+                MergeConfig(fcMerged, config, isGlobal);                
             }
 
-            return ((JObject)fileConfigurationMerged).ToString();
+            return ((JObject)fcMerged).ToString();
         }
 
         public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, JObject fileConfiguration)
@@ -164,9 +161,8 @@ namespace Ocelot.DependencyInjection
         /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
         /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
         /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-        //public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
-        //    string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration)
+        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
+            string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
             => SerializeToFile(builder, fileConfiguration);
 
         private static IConfigurationBuilder SerializeToFile(IConfigurationBuilder builder, object fileConfiguration, bool? optional = null, bool? reloadOnChange = null)
@@ -215,33 +211,34 @@ namespace Ocelot.DependencyInjection
             return builder?.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
         }
 
-        private static void MergeConfig(JToken destConfig, JToken srcConfig, bool isGlobal)
+        private static void MergeConfig(JToken to, JToken from, bool isGlobal)
         {
             if (isGlobal)
             {
-                MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.GlobalConfiguration));
+                MergeConfigSection(to, from, nameof(FileConfiguration.GlobalConfiguration));
             }
 
-            MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.Aggregates));
-            MergeConfigSection(destConfig, srcConfig, nameof(FileConfiguration.Routes));
+            MergeConfigSection(to, from, nameof(FileConfiguration.Aggregates));
+            MergeConfigSection(to, from, nameof(FileConfiguration.Routes));
         }
 
-        private static void MergeConfigSection(JToken destConfig, JToken srcConfig, string sectionName)
+        private static void MergeConfigSection(JToken to, JToken from, string sectionName)
         {
-            var destConfigSection = destConfig[sectionName];
-            var srcConfigSection = srcConfig[sectionName];
-
-            if (srcConfigSection != null)
+            var destination = to[sectionName];
+            var source = from[sectionName];
+            if (source == null || destination == null)
             {
-                if (srcConfigSection is JObject)
-                {
-                    destConfig[sectionName] = srcConfigSection;
-                }
-                else if (srcConfigSection is JArray)
-                {
-                    (destConfigSection as JArray).Merge(srcConfigSection);
-                }
-            }            
+                return;
+            }
+
+            if (source is JObject)
+            {
+                to[sectionName] = source;
+            }
+            else if (source is JArray)
+            {
+                (destination as JArray).Merge(source);
+            }
         }        
     }
 }
