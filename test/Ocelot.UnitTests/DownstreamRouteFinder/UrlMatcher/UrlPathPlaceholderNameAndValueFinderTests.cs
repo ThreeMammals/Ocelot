@@ -310,7 +310,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
             };
 
             this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/categories/"))
-                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/{finalUrlPath}/"))
+                .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/{finalUrlPath}"))
                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
                 .BDDfy();
