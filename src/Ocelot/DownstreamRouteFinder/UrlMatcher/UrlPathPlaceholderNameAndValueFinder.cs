@@ -1,161 +1,136 @@
 using Ocelot.Responses;
 
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFinder
 {
-    public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFinder
+    private const string PlaceHolderLeft = "{";
+    private const string PlaceHolderRight = "}";
+
+    /// <summary>
+    /// Finds the placeholders in the request path and query and returns their matching values.
+    /// We might encounter the following scenarios:
+    /// - The path template contains a catch-all query parameter. If so, we return the catch-all placeholder with an empty value.
+    /// - The path template contains a catch-all path parameter. If so, we return the catch-all placeholder with an empty value.
+    /// - The path template contains placeholders. We return the placeholders with their matching values.
+    /// </summary>
+    /// <param name="path">The request path.</param>
+    /// <param name="query">The query parameters.</param>
+    /// <param name="pathTemplate">The request path template.</param>
+    /// <returns>The list of the placeholders with their matching values.</returns>
+    public Response<List<PlaceholderNameAndValue>> Find(string path, string query, string pathTemplate)
     {
-        public Response<List<PlaceholderNameAndValue>> Find(string path, string query, string pathTemplate)
+        (bool isCatchAllQuery, string catchAllQueryPlaceholder) = IsCatchAllQuery(pathTemplate);
+        if (isCatchAllQuery)
         {
-            var placeHolderNameAndValues = new List<PlaceholderNameAndValue>();
-
-            path = $"{path}{query}";
-
-            var counterForPath = 0;
-
-            var delimiter = '/';
-            var nextDelimiter = '/';
-
-            for (var counterForTemplate = 0; counterForTemplate < pathTemplate.Length; counterForTemplate++)
+            return new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>
             {
-                if (ContinueScanningUrl(counterForPath, path.Length)
-                    && CharactersDontMatch(pathTemplate[counterForTemplate], path[counterForPath])
-                    && IsPlaceholder(pathTemplate[counterForTemplate]))
-                {
-                    //should_find_multiple_query_string make test pass
-                    if (PassedQueryString(pathTemplate, counterForTemplate))
-                    {
-                        delimiter = '&';
-                        nextDelimiter = '&';
-                    }
-
-                    //should_find_multiple_query_string_and_path makes test pass
-                    if (NotPassedQueryString(pathTemplate, counterForTemplate) && NoMoreForwardSlash(pathTemplate, counterForTemplate))
-                    {
-                        delimiter = '?';
-                        nextDelimiter = '?';
-                    }
-
-                    var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate);
-
-                    var placeholderValue = GetPlaceholderValue(pathTemplate, query, placeholderName, path, counterForPath, delimiter);
-
-                    placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
-
-                    counterForTemplate = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
-
-                    counterForPath = GetNextCounterPosition(path, counterForPath, nextDelimiter);
-
-                    continue;
-                }
-                else if (IsCatchAll(path, counterForPath, pathTemplate) || IsCatchAllAfterOtherPlaceholders(pathTemplate, counterForTemplate))
-                {
-                    var endOfPlaceholder = GetNextCounterPosition(pathTemplate, counterForTemplate, '}');
-
-                    var placeholderName = GetPlaceholderName(pathTemplate, counterForTemplate + 1);
-
-                    if (NothingAfterFirstForwardSlash(path))
-                    {
-                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, string.Empty));
-                    }
-                    else
-                    {
-                        var placeholderValue = GetPlaceholderValue(pathTemplate, query, placeholderName, path, counterForPath, '?');
-                        placeHolderNameAndValues.Add(new PlaceholderNameAndValue(placeholderName, placeholderValue));
-                    }
-
-                    counterForTemplate = endOfPlaceholder;
-                    counterForPath = GetNextCounterPosition(path, counterForPath, '?');
-                    continue;
-                }
-
-                counterForPath++;
-            }
-
-            return new OkResponse<List<PlaceholderNameAndValue>>(placeHolderNameAndValues);
+                new($"{PlaceHolderLeft}{catchAllQueryPlaceholder}{PlaceHolderRight}", string.Empty),
+            });
         }
 
-        private static bool NoMoreForwardSlash(string pathTemplate, int counterForTemplate)
+        // Find matching groups from path and query
+        IList<Group> groups = FindGroups(path, query, pathTemplate);
+        List<PlaceholderNameAndValue> placeholderNameAndValues = groups
+            .Select(group => new PlaceholderNameAndValue($"{PlaceHolderLeft}{group.Name}{PlaceHolderRight}", group.Value))
+            .ToList();
+
+        return new OkResponse<List<PlaceholderNameAndValue>>(placeholderNameAndValues);
+    }
+
+    /// <summary>
+    /// Finds the placeholders in the request path and query.
+    /// We use a regex pattern to match the placeholders in the path template.
+    /// We have two slight optimizations:
+    /// - First, we skip the query if it is not present in the path template.
+    /// - Second, we append a trailing slash to the path if it is a catch-all path.
+    /// </summary>
+    /// <param name="path">The request path.</param>
+    /// <param name="query">The query parameters.</param>
+    /// <param name="template">The path template.</param>
+    /// <returns>The matching groups.</returns>
+    private static IList<Group> FindGroups(string path, string query, string template)
+    {
+        Regex regex = new($@"\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}", RegexOptions.None, TimeSpan.FromSeconds(1));
+        template = EscapeExceptBraces(template);
+        string regexPattern = $"^{regex.Replace(template, match => $"(?<{match.Groups[1].Value}>[^&]*)")}";
+        
+        string testedPath = ShouldSkipQuery(query, template) ? path : $"{path}{query}";
+        Match match = Regex.Match(testedPath, regexPattern);
+        List<Group> foundGroups = match.Groups.Cast<Group>().Skip(1).ToList();
+        
+        if (foundGroups.Count > 0)
         {
-            return !pathTemplate.Substring(counterForTemplate).Contains("/");
+            return foundGroups;
         }
 
-        private static bool NotPassedQueryString(string pathTemplate, int counterForTemplate)
+        if (!IsCatchAllPath(template))
         {
-            return !pathTemplate.Substring(0, counterForTemplate).Contains('?');
+            return foundGroups;
         }
 
-        private static bool PassedQueryString(string pathTemplate, int counterForTemplate)
-        {
-            return pathTemplate.Substring(0, counterForTemplate).Contains('?');
-        }
+        // Append a trailing slash to the path if it is a catch-all path
+        match = Regex.Match($"{testedPath}/", regexPattern);
+        return match.Groups.Cast<Group>().Skip(1).ToList();
+    }
 
-        private static bool IsCatchAll(string path, int counterForPath, string pathTemplate)
-        {
-            return string.IsNullOrEmpty(path) || (path.Length > counterForPath && path[counterForPath] == '/') && pathTemplate.Length > 1
-                     && pathTemplate.Substring(0, 2) == "/{"
-                     && pathTemplate.IndexOf('}') == pathTemplate.Length - 1;
-        }
+    /// <summary>
+    /// Checks if the path template contains a catch-all query parameter.
+    /// It means that the path template ends with a question mark and a placeholder.
+    /// And no other placeholders are present in the path template.
+    /// </summary>
+    /// <param name="template">The path template.</param>
+    /// <returns>True if it matches and the found placeholder.</returns>
+    private static (bool IsMatch, string Placeholder) IsCatchAllQuery(string template)
+    {
+        Regex catchAllQueryRegex = new($@"^[^{{}}]*\?\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        Match catchAllMatch = catchAllQueryRegex.Match(template);
 
-        private static bool IsCatchAllAfterOtherPlaceholders(string pathTemplate, int counterForTemplate)
-            => (pathTemplate[counterForTemplate] == '/' || pathTemplate[counterForTemplate] == '?')
-                && (counterForTemplate < pathTemplate.Length - 1)
-                && (pathTemplate[counterForTemplate + 1] == '{')
-                && NoMoreForwardSlash(pathTemplate, counterForTemplate + 1);
+        return (catchAllMatch.Success, catchAllMatch.Success ? catchAllMatch.Groups[1].Value : string.Empty);
+    }
 
-        private static bool NothingAfterFirstForwardSlash(string path)
-        {
-            return path.Length == 1 || path.Length == 0;
-        }
+    /// <summary>
+    /// Check if the path template contains a catch-all path parameter.
+    /// It means that the path template ends with a placeholder and no other placeholders are present in the path template,
+    /// without a question mark (query parameters).
+    /// </summary>
+    /// <param name="template">The path template.</param>
+    /// <returns>True if it matches.</returns>
+    private static bool IsCatchAllPath(string template)
+    {
+        Regex catchAllPathRegex = new($@"^[^{{}}]*\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        return catchAllPathRegex.IsMatch(template) && !template.Contains('?');
+    }
+    
+    /// <summary>
+    /// Checks if the query should be skipped.
+    /// It should be skipped if it is not present in the path template.
+    /// </summary>
+    /// <param name="query">The query string.</param>
+    /// <param name="template">The path template.</param>
+    /// <returns>True if query should be skipped.</returns>
+    private static bool ShouldSkipQuery(string query, string template) => !string.IsNullOrEmpty(query) && !template.Contains('?');
 
-        private static string GetPlaceholderValue(string urlPathTemplate, string query, string variableName, string urlPath, int counterForUrl, char delimiter)
+    /// <summary>
+    /// Escapes all characters except braces, eg { and }.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The formatted string.</returns>
+    private static string EscapeExceptBraces(string input)
+    {
+        StringBuilder escaped = new ();
+        foreach (char c in input)
         {
-            if (counterForUrl >= urlPath.Length)
+            if (c.ToString() == PlaceHolderLeft || c.ToString() == PlaceHolderRight)
             {
-                return string.Empty;
+                escaped.Append(c);
             }
-
-            if ( urlPath[counterForUrl] == '/')
+            else
             {
-                counterForUrl++;
+                escaped.Append(Regex.Escape(c.ToString()));
             }
-
-            var positionOfNextSlash = urlPath.IndexOf(delimiter, counterForUrl);
-
-            if (positionOfNextSlash == -1 || (urlPathTemplate.Trim(delimiter).EndsWith(variableName) && string.IsNullOrEmpty(query)))
-            {
-                positionOfNextSlash = urlPath.Length;
-            }
-
-            var variableValue = urlPath.Substring(counterForUrl, positionOfNextSlash - counterForUrl);
-
-            return variableValue;
         }
-
-        private static string GetPlaceholderName(string urlPathTemplate, int counterForTemplate)
-        {
-            var postitionOfPlaceHolderClosingBracket = urlPathTemplate.IndexOf('}', counterForTemplate) + 1;
-
-            var variableName = urlPathTemplate.Substring(counterForTemplate, postitionOfPlaceHolderClosingBracket - counterForTemplate);
-
-            return variableName;
-        }
-
-        private static int GetNextCounterPosition(string urlTemplate, int counterForTemplate, char delimiter)
-        {
-            var closingPlaceHolderPositionOnTemplate = urlTemplate.IndexOf(delimiter, counterForTemplate);
-            return closingPlaceHolderPositionOnTemplate + 1;
-        }
-
-        private static bool CharactersDontMatch(char characterOne, char characterTwo)
-        {
-            return char.ToLower(characterOne) != char.ToLower(characterTwo);
-        }
-
-        private static bool ContinueScanningUrl(int counterForUrl, int urlLength)
-        {
-            return counterForUrl < urlLength;
-        }
-
-        private static bool IsPlaceholder(char character) => character == '{';
+        
+        return escaped.ToString();
     }
 }
