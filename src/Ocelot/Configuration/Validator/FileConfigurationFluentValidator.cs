@@ -99,10 +99,10 @@ namespace Ocelot.Configuration.Validator
         }
 
 #if NET7_0_OR_GREATER
-        [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, 100, "en-US")]
+        [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
         private static partial Regex PlaceholderRegex();
 #else
-        private static readonly Regex PlaceholderRegexVar = new(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, TimeSpan.FromMilliseconds(100));
+        private static readonly Regex PlaceholderRegexVar = new(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
         private static Regex PlaceholderRegex() => PlaceholderRegexVar;
 #endif
 

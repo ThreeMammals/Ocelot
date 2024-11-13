@@ -11,10 +11,10 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 {
     private const string PlaceHolderPattern = @"(\{header:.*?\})";
 #if NET7_0_OR_GREATER
-    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
+    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegExPlaceholders();
 #else
-    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout);
     private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
 #endif
 

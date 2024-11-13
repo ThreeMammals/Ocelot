@@ -128,7 +128,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
                 var pattern = $@"\b{name}={value}\b";
                 var rgx = _regex.AddOrUpdate(pattern,
-                            new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromMilliseconds(100)),
+                            new Regex(pattern, RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout),
                             (key, oldValue) => oldValue);
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {

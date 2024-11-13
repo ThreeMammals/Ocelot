@@ -14,6 +14,6 @@ public class UpstreamHeaderTemplate
     {
         Template = template;
         OriginalValue = originalValue;
-        Pattern = new Regex(template ?? "$^", RegexOptions.Compiled | RegexOptions.Singleline);
+        Pattern = new Regex(template ?? "$^", RegexOptions.Compiled | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout);
     }
 }

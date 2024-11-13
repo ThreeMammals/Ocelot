@@ -96,10 +96,10 @@ namespace Ocelot.DependencyInjection
         }
 
 #if NET7_0_OR_GREATER
-        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, 1000, "en-US")]
+        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
         private static partial Regex SubConfigRegex();
 #else
-        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
+        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout);
         private static Regex SubConfigRegex() => SubConfigRegexVar;
 #endif
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
