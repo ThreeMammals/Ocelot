@@ -25,6 +25,7 @@ namespace Ocelot.Infrastructure
                 { "{TraceId}", GetTraceId },
                 { "{RemoteIpAddress}", GetRemoteIpAddress },
                 { "{UpstreamHost}", GetUpstreamHost },
+                { "{UpstreamScheme}", GetUpstreamScheme },
             };
 
             _requestPlaceholders = new Dictionary<string, Func<DownstreamRequest, string>>
@@ -118,6 +119,17 @@ namespace Ocelot.Infrastructure
             catch
             {
                 return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
+            }
+        }
+        private Response<string> GetUpstreamScheme()
+        {
+            try
+            {
+                return new OkResponse<string>(_contextAccessor.HttpContext.Request.Scheme);
+            }
+            catch
+            {
+                return new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamScheme}"));
             }
         }
     }
