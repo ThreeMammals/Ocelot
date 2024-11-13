@@ -5,13 +5,12 @@ using System.Threading.RateLimiting;
 #endif
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.RateLimiting
 {
-    public class AspNetRateLimitingTests: Steps
+    public class AspNetRateLimitingTests: RateLimitingSteps
     {
         private const string _rateLimitPolicyName = "RateLimitPolicy";
         private const int _rateLimitLimit = 3;
