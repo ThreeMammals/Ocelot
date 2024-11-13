@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+#if NET7_0_OR_GREATER
+using Microsoft.AspNetCore.RateLimiting;
+#endif
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
@@ -38,6 +41,18 @@ namespace Ocelot.RateLimiting.Middleware
                 await _next.Invoke(httpContext);
                 return;
             }
+
+            #if NET7_0_OR_GREATER
+            if (!string.IsNullOrWhiteSpace(options.Policy))
+            {
+                //add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
+                var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.Policy));
+                var endpoint = new Endpoint(null, metadata, "tempEndpoint");
+                httpContext.SetEndpoint(endpoint);
+                await _next.Invoke(httpContext);
+                return;
+            }
+            #endif
 
             // compute identity from request
             var identity = SetIdentity(httpContext, options);

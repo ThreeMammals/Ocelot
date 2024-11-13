@@ -8,7 +8,7 @@
         private readonly Func<List<string>> _getClientWhitelist;
 
         public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, Func<List<string>> getClientWhitelist, bool disableRateLimitHeaders,
-            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
+            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode, string rateLimitPolicy = null)
         {
             EnableRateLimiting = enableRateLimiting;
             ClientIdHeader = clientIdHeader;
@@ -18,6 +18,7 @@
             RateLimitCounterPrefix = rateLimitCounterPrefix;
             RateLimitRule = rateLimitRule;
             HttpStatusCode = httpStatusCode;
+            Policy = rateLimitPolicy;
         }
 
         /// <summary>
@@ -86,5 +87,7 @@
         /// A boolean value for disabling <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
         /// </value>
         public bool DisableRateLimitHeaders { get; }
+
+        public string Policy { get; }
     }
 }

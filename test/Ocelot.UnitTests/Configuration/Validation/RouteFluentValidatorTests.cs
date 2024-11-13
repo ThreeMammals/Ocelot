@@ -1,6 +1,7 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using System.Reflection;
@@ -192,7 +193,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .And(_ => ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
                 .BDDfy();
         }
-
+        
         [Theory]
         [InlineData(null, false)]
         [InlineData("", false)]

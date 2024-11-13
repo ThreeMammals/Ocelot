@@ -10,6 +10,7 @@
         private string _rateLimitCounterPrefix;
         private RateLimitRule _rateLimitRule;
         private int _httpStatusCode;
+        private string _rateLimitPolicyName;
 
         public RateLimitOptionsBuilder WithEnableRateLimiting(bool enableRateLimiting)
         {
@@ -59,11 +60,17 @@
             return this;
         }
 
+        public RateLimitOptionsBuilder WithRateLimitPolicyName(string policyName)
+        {
+            _rateLimitPolicyName = policyName;
+            return this;
+        }
+
         public RateLimitOptions Build()
         {
             return new RateLimitOptions(_enableRateLimiting, _clientIdHeader, _getClientWhitelist,
                 _disableRateLimitHeaders, _quotaExceededMessage, _rateLimitCounterPrefix,
-                _rateLimitRule, _httpStatusCode);
+                _rateLimitRule, _httpStatusCode, _rateLimitPolicyName);
         }
     }
 }
