@@ -118,19 +118,15 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>The formatted string.</returns>
     private static string EscapeExceptBraces(string input)
     {
-        StringBuilder escaped = new ();
-        foreach (char c in input)
+        StringBuilder escaped = new();
+        ReadOnlySpan<char> span = input.AsSpan();
+ 
+        foreach (char c in span)
         {
-            if (c.ToString() == PlaceHolderLeft || c.ToString() == PlaceHolderRight)
-            {
-                escaped.Append(c);
-            }
-            else
-            {
-                escaped.Append(Regex.Escape(c.ToString()));
-            }
+            string str = c.ToString();
+            escaped.Append(str is PlaceHolderLeft or PlaceHolderRight ? str : Regex.Escape(str));
         }
-        
+ 
         return escaped.ToString();
     }
 }
