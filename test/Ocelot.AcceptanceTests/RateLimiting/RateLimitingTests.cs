@@ -11,7 +11,7 @@ using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.RateLimiting
 {
-    public class RateLimitingTests: Steps
+    public class AspNetRateLimitingTests: Steps
     {
         private const string _rateLimitPolicyName = "RateLimitPolicy";
         private const int _rateLimitLimit = 3;
