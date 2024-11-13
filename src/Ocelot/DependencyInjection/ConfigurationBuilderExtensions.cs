@@ -18,7 +18,6 @@ namespace Ocelot.DependencyInjection
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
         {
-            Regex.CacheSize += 100;
             var memorySource = new MemoryConfigurationSource
             {
                 InitialData = new List<KeyValuePair<string, string>>
@@ -106,7 +105,11 @@ namespace Ocelot.DependencyInjection
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
-            Regex.CacheSize += 100;
+            // All versions of overloaded AddOcelot methods call this GetMergedOcelotJson one, so we improve Regex performance by cache increasing.
+            // Developers can adjust the RegexGlobal value BEFORE calling AddOcelot
+            // Developers can adjust the Regex.CacheSize value AFTER calling AddOcelot
+            Regex.CacheSize = RegexGlobal.RegexCacheSize;
+
             var envName = string.IsNullOrEmpty(env?.EnvironmentName) ? "Development" : env.EnvironmentName;
             environmentFile ??= Path.Join(folder, string.Format(EnvironmentConfigFile, envName));
             var reg = SubConfigRegex();
