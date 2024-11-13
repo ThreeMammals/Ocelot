@@ -54,7 +54,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithRateLimitRule(new RateLimitRule(fileRoute.RateLimitOptions.Period,
                        fileRoute.RateLimitOptions.PeriodTimespan,
                        fileRoute.RateLimitOptions.Limit))
-                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.Ocelot)
                 .Build();
 
             _enabled = false;
@@ -68,14 +67,14 @@ namespace Ocelot.UnitTests.Configuration
         }
         
         [Fact]
-        public void should_create_rate_limit_options_dotnet()
+        [Trait("Feat", "2138")]
+        public void should_create_rate_limit_options_aspnet()
         {
             var fileRoute = new FileRoute
             {
                 RateLimitOptions = new FileRateLimitRule
                 {
-                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
-                    RateLimitPolicyName = "test",
+                    Policy = "test",
                     EnableRateLimiting = true,
                 },
             };
@@ -98,7 +97,6 @@ namespace Ocelot.UnitTests.Configuration
                 .WithQuotaExceededMessage("QuotaExceededMessage")
                 .WithRateLimitCounterPrefix("ocelot")
                 .WithRateLimitRule(new RateLimitRule(null, 0, 0))
-                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.DotNet)
                 .WithRateLimitPolicyName("test")
                 .Build();
 

@@ -154,7 +154,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_type_ocelot_and_period_is_empty()
+        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
         {
             var fileRoute = new FileRoute
             {
@@ -174,7 +174,7 @@ namespace Ocelot.UnitTests.Configuration.Validation
         }
 
         [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_type_ocelot_and_period_has_value()
+        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_has_value()
         {
             var fileRoute = new FileRoute
             {
@@ -194,49 +194,6 @@ namespace Ocelot.UnitTests.Configuration.Validation
                 .BDDfy();
         }
         
-        [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_type_dotnet_and_policy_is_empty()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                RateLimitOptions = new FileRateLimitRule
-                {
-                    EnableRateLimiting = true,
-                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
-                },
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("RateLimitOptions.RateLimitPolicyName is required when RateLimitOptions.RateLimitMiddlewareType is DotNet."))
-                .BDDfy();
-        }
-        
-        [Fact]
-        public void should_be_valid_if_enable_rate_limiting_true_type_dotnet_and_policy_has_value()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                ServiceName = "Lads",
-                RateLimitOptions = new FileRateLimitRule
-                {
-                    EnableRateLimiting = true,
-                    RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
-                    RateLimitPolicyName = "testPolicy",
-                },
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
-
         [Theory]
         [InlineData(null, false)]
         [InlineData("", false)]

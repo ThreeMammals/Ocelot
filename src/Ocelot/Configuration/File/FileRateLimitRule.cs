@@ -14,8 +14,7 @@
             Limit = from.Limit;
             Period = from.Period;
             PeriodTimespan = from.PeriodTimespan;
-            RateLimitMiddlewareType = from.RateLimitMiddlewareType;
-            RateLimitPolicyName = from.RateLimitPolicyName;
+            Policy = from.Policy;
         }
 
         /// <summary>
@@ -59,20 +58,12 @@
         public long Limit { get; set; }
 
         /// <summary>
-        /// Rate limit middleware type.
-        /// </summary>
-        /// <value>
-        /// <see cref="RateLimitMiddlewareType.Ocelot" />, <see cref="RateLimitMiddlewareType.DotNet" />
-        /// </value>
-        public RateLimitMiddlewareType RateLimitMiddlewareType { get; set; }
-
-        /// <summary>
         /// Rate limit policy name. It only takes effect if rate limit middleware type is set to DotNet.
         /// </summary>
         /// <value>
         /// A string of rate limit policy name.
         /// </value>
-        public string RateLimitPolicyName { get; set; }
+        public string Policy { get; set; }
 
         /// <inheritdoc/>
         public override string ToString()
@@ -84,13 +75,11 @@
 
             var sb = new StringBuilder();
 
-            sb.Append($"{nameof(RateLimitMiddlewareType)}:{RateLimitMiddlewareType},");
-
-            if (RateLimitMiddlewareType == RateLimitMiddlewareType.DotNet)
+            if (!string.IsNullOrWhiteSpace(Policy))
             {
-                sb.Append($"{nameof(RateLimitPolicyName)}:{RateLimitPolicyName}");
+                sb.Append($"{nameof(Policy)}:{Policy}");
             }
-            else if (RateLimitMiddlewareType == RateLimitMiddlewareType.Ocelot)
+            else
             {
                 sb.Append(
                 $"{nameof(Period)}:{Period},{nameof(PeriodTimespan)}:{PeriodTimespan:F},{nameof(Limit)}:{Limit},{nameof(ClientWhitelist)}:[");

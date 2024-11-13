@@ -58,12 +58,12 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         }
 
         [Fact]
+        [Trait("Feat", "2138")]
         public void should_create_downstream_route_with_rate_limit_options()
         {
             var rateLimitOptions = new RateLimitOptionsBuilder()
                 .WithEnableRateLimiting(true)
                 .WithClientIdHeader("test")
-                .WithRateLimitMiddlewareType(RateLimitMiddlewareType.DotNet)
                 .WithRateLimitPolicyName("test")
                 .Build();
 

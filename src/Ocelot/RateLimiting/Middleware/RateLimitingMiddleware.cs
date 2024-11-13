@@ -39,10 +39,10 @@ namespace Ocelot.RateLimiting.Middleware
             }
 
             #if NET7_0_OR_GREATER
-            if (options.RateLimitMiddlewareType == RateLimitMiddlewareType.DotNet)
+            if (!string.IsNullOrWhiteSpace(options.Policy))
             {
                 //add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
-                var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.RateLimiterPolicyName));
+                var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.Policy));
                 var endpoint = new Endpoint(null, metadata, "tempEndpoint");
                 httpContext.SetEndpoint(endpoint);
                 await _next.Invoke(httpContext);

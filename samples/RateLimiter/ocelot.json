@@ -27,8 +27,7 @@
       "Key": "Tom",
       "RateLimitOptions": {
         "EnableRateLimiting": true,
-        "RateLimitMiddlewareType": "DotNet",
-        "RateLimitPolicyName": "fixed"
+        "Policy": "fixed"
       }
     }
   ],

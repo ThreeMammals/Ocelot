@@ -60,7 +60,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 100.0D, limit),
                 (int)HttpStatusCode.TooManyRequests,
-                RateLimitMiddlewareType.Ocelot,
                 string.Empty))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
@@ -104,7 +103,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                     rateLimitCounterPrefix: string.Empty,
                     new RateLimitRule("1s", 100.0D, 3),
                     (int)HttpStatusCode.TooManyRequests,
-                    RateLimitMiddlewareType.Ocelot,
                     string.Empty))
                 .WithUpstreamHttpMethod(new() { "Get" })
                 .Build())
@@ -138,7 +136,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 30.0D, limit), // bug scenario
                 (int)HttpStatusCode.TooManyRequests,
-                RateLimitMiddlewareType.Ocelot,
                 string.Empty))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
@@ -175,7 +172,7 @@ public class RateLimitingMiddlewareTests : UnitTest
  #if NET7_0_OR_GREATER
     [Fact]
     [Trait("Feat", "2138")]
-    public async Task Should_add_EnableRateLimittingAttribute_When_DotNetRateLimiting()
+    public async Task Should_add_EnableRateLimittingAttribute_When_AspNetRateLimiting()
     {
         // Arrange
         const long limit = 3L;
@@ -192,7 +189,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                 rateLimitCounterPrefix: null,
                 null,
                 (int)HttpStatusCode.TooManyRequests,
-                RateLimitMiddlewareType.DotNet,
                 "testPolicy"))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)

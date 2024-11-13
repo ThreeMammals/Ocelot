@@ -103,7 +103,10 @@ namespace Ocelot.DependencyInjection
             Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
             Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
             Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-            Services.AddRateLimiting(configurationRoot); // Feature: Rate Limiting
+            Services.AddRateLimiting(); // Feature: Rate Limiting
+#if NET7_0_OR_GREATER
+            Services.AddAspNetRateLimiting(configurationRoot); // Feature: AspNet Rate Limiting
+#endif
             Services.TryAddSingleton<IRequestMapper, RequestMapper>();
             Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
             Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();

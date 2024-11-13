@@ -8,8 +8,7 @@
         private readonly Func<List<string>> _getClientWhitelist;
 
         public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, Func<List<string>> getClientWhitelist, bool disableRateLimitHeaders,
-            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode,
-            RateLimitMiddlewareType rateLimitMiddlewareType, string rateLimitPolicyName)
+            string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode, string rateLimitPolicy = null)
         {
             EnableRateLimiting = enableRateLimiting;
             ClientIdHeader = clientIdHeader;
@@ -19,8 +18,7 @@
             RateLimitCounterPrefix = rateLimitCounterPrefix;
             RateLimitRule = rateLimitRule;
             HttpStatusCode = httpStatusCode;
-            RateLimitMiddlewareType = rateLimitMiddlewareType;
-            RateLimiterPolicyName = rateLimitPolicyName;
+            Policy = rateLimitPolicy;
         }
 
         /// <summary>
@@ -90,8 +88,6 @@
         /// </value>
         public bool DisableRateLimitHeaders { get; }
 
-        public RateLimitMiddlewareType RateLimitMiddlewareType { get; }
-
-        public string RateLimiterPolicyName { get; }
+        public string Policy { get; }
     }
 }

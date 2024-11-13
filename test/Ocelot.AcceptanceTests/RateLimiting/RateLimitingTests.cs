@@ -62,8 +62,7 @@ namespace Ocelot.AcceptanceTests.RateLimiting
             RateLimitOptions = new FileRateLimitRule()
             {
                 EnableRateLimiting = true,
-                RateLimitMiddlewareType = RateLimitMiddlewareType.DotNet,
-                RateLimitPolicyName = rateLimitPolicyName,
+                Policy = rateLimitPolicyName,
             },
         };
         

@@ -66,12 +66,6 @@ namespace Ocelot.Configuration.Validator
                         .Must(IsValidPeriod)
                         .WithMessage("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
                 });
-
-                When(IsDotNetRateLimiter, () => {
-                    RuleFor(route => route.RateLimitOptions.RateLimitPolicyName)
-                    .NotEmpty()
-                    .WithMessage("RateLimitOptions.RateLimitPolicyName is required when RateLimitOptions.RateLimitMiddlewareType is DotNet.");
-                });
             });
 
             RuleFor(route => route.AuthenticationOptions)
@@ -118,12 +112,7 @@ namespace Ocelot.Configuration.Validator
 
         private static bool IsOcelotRateLimiter(FileRoute fileRoute)
         {
-            return fileRoute.RateLimitOptions.RateLimitMiddlewareType == RateLimitMiddlewareType.Ocelot;
-        }
-
-        private static bool IsDotNetRateLimiter(FileRoute fileRoute)
-        {
-            return fileRoute.RateLimitOptions.RateLimitMiddlewareType == RateLimitMiddlewareType.DotNet;
+            return string.IsNullOrWhiteSpace(fileRoute.RateLimitOptions.Policy);
         }
 
         private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)

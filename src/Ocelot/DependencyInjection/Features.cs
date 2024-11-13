@@ -26,13 +26,22 @@ public static class Features
     /// <param name="services">The services collection to add the feature to.</param>
     /// <param name="configurationRoot">Root configuration object.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
-    public static IServiceCollection AddRateLimiting(this IServiceCollection services, IConfiguration configurationRoot)
-    {
-        services
-            .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
-            .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
-
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services) => services
+        .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
+        .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
+    
 #if NET7_0_OR_GREATER
+    /// <summary>
+    /// Ocelot feature: <see href="">AspNet Rate Limiting</see>.
+    /// </summary>
+    /// <remarks>
+    /// Read The Docs: <see href="">Rate Limiting</see>.
+    /// </remarks>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="configurationRoot">Root configuration object.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddAspNetRateLimiting(this IServiceCollection services, IConfiguration configurationRoot)
+    {
         var globalRateLimitOptions = configurationRoot.Get<FileConfiguration>()?.GlobalConfiguration?.RateLimitOptions;
         var rejectStatusCode = globalRateLimitOptions?.HttpStatusCode ?? StatusCodes.Status429TooManyRequests;
         var rejectedMessage = globalRateLimitOptions?.QuotaExceededMessage ?? "API calls quota exceeded!";
@@ -44,9 +53,10 @@ public static class Features
                 await rejectedContext.HttpContext.Response.WriteAsync(rejectedMessage, token);
             };
         });
-#endif
+
         return services;
     }
+#endif
 
     /// <summary>
     /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/caching.rst">Request Caching</see>.
