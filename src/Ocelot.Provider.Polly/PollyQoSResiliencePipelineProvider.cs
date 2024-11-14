@@ -4,6 +4,7 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
+using System;
 using System.Net;
 
 namespace Ocelot.Provider.Polly;
@@ -53,6 +54,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
+        if (!options.IsValid())
+        {
+            throw new ArgumentException("QoS options are invalid.");
+        }
+
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
             key: new OcelotResiliencePipelineKey(GetRouteName(route)),
             configure: (builder) => ConfigureStrategies(builder, route));
@@ -76,8 +82,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
-            FailureRatio = 0.8,
-            SamplingDuration = TimeSpan.FromSeconds(10),
+            FailureRatio = options.FailureRatio,
+            SamplingDuration = TimeSpan.FromMilliseconds(options.SamplingDuration),
             MinimumThroughput = options.ExceptionsAllowedBeforeBreaking,
             BreakDuration = options.DurationOfBreak > QoSOptions.LowBreakDuration
                 ? TimeSpan.FromMilliseconds(options.DurationOfBreak)
