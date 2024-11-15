@@ -334,20 +334,25 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher
                  .BDDfy();
         }
 
-        [Fact]
+        [Theory]
         [Trait("Feat", "89")]
-        public void can_match_down_stream_url_with_downstream_template_with_place_holder_to_final_url_path()
+        [InlineData("/api/{finalUrlPath}", "/api/product/products/categories/", "{finalUrlPath}", "product/products/categories/")]
+        [InlineData("/myApp1Name/api/{urlPath}", "/myApp1Name/api/products/1", "{urlPath}", "products/1")]
+        public void Can_match_down_stream_url_with_downstream_template_with_place_holder_to_final_url_path(string template, string path, string placeholderName, string placeholderValue)
         {
+            // Arrange
             var expectedTemplates = new List<PlaceholderNameAndValue>
             {
-                new("{finalUrlPath}", "product/products/categories/"),
+                new(placeholderName, placeholderValue),
             };
+            GivenIHaveAUpstreamPath(path);
+            GivenIHaveAnUpstreamUrlTemplate(template);
 
-            this.Given(x => x.GivenIHaveAUpstreamPath("api/product/products/categories/"))
-                 .And(x => x.GivenIHaveAnUpstreamUrlTemplate("api/{finalUrlPath}/")) // Gui, don't remove final slash! We should not break old functionality
-                 .When(x => x.WhenIFindTheUrlVariableNamesAndValues())
-                 .And(x => x.ThenTheTemplatesVariablesAre(expectedTemplates))
-                 .BDDfy();
+            // Act
+            WhenIFindTheUrlVariableNamesAndValues();
+
+            // Assert
+            ThenTheTemplatesVariablesAre(expectedTemplates);
         }
 
         [Fact]

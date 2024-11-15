@@ -779,37 +779,18 @@ namespace Ocelot.AcceptanceTests.Routing
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_return_response_200_with_placeholder_for_final_url_path()
+        [Theory]
+        [Trait("Feat", "89")]
+        [InlineData("/api/{finalUrlPath}", "/api/api1/{finalUrlPath}", "/api/api1/product/products/categories/", "/api/product/products/categories/")]
+        [InlineData("/api/{urlPath}", "/myApp1Name/api/{urlPath}", "/myApp1Name/api/products/1", "/api/products/1")]
+        public void Should_return_response_200_with_placeholder_for_final_url_path2(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamPath)
         {
             var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/{urlPath}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/myApp1Name/api/{urlPath}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", HttpStatusCode.OK, "Some Product"))
+            var configuration = GivenDefaultConfiguration(port, upstreamPathTemplate, downstreamPathTemplate);
+            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamPath, HttpStatusCode.OK, "Some Product"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/myApp1Name/api/products/1"))
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway(requestURL))
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
