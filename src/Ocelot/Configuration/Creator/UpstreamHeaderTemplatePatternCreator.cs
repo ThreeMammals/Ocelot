@@ -1,4 +1,5 @@
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator;
@@ -11,11 +12,11 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 {
     private const string PlaceHolderPattern = @"(\{header:.*?\})";
 #if NET7_0_OR_GREATER
-    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
-    private static partial Regex RegExPlaceholders();
+    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
+    private static partial Regex RegexPlaceholders();
 #else
-    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
-    private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
+    private static readonly Regex _regexPlaceholders = RegexGlobal.New(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+    private static Regex RegexPlaceholders() => _regexPlaceholders;
 #endif
 
     public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
@@ -25,7 +26,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
         foreach (var headerTemplate in route.UpstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
-            var matches = RegExPlaceholders().Matches(headerTemplateValue);
+            var matches = RegexPlaceholders().Matches(headerTemplateValue);
 
             if (matches.Count > 0)
             {
