@@ -4,8 +4,8 @@ namespace Ocelot.DownstreamRouteFinder.UrlMatcher;
 
 public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFinder
 {
-    private const string PlaceHolderLeft = "{";
-    private const string PlaceHolderRight = "}";
+    private const char LeftCurlyBracket = '{';
+    private const char RightCurlyBracket = '}';
 
     /// <summary>
     /// Finds the placeholders in the request path and query and returns their matching values.
@@ -25,14 +25,14 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
         {
             return new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>
             {
-                new($"{PlaceHolderLeft}{catchAllQueryPlaceholder}{PlaceHolderRight}", string.Empty),
+                new($"{LeftCurlyBracket}{catchAllQueryPlaceholder}{RightCurlyBracket}", string.Empty),
             });
         }
 
         // Find matching groups from path and query
         IList<Group> groups = FindGroups(path, query, pathTemplate);
         List<PlaceholderNameAndValue> placeholderNameAndValues = groups
-            .Select(group => new PlaceholderNameAndValue($"{PlaceHolderLeft}{group.Name}{PlaceHolderRight}", group.Value))
+            .Select(group => new PlaceholderNameAndValue($"{LeftCurlyBracket}{group.Name}{RightCurlyBracket}", group.Value))
             .ToList();
 
         return new OkResponse<List<PlaceholderNameAndValue>>(placeholderNameAndValues);
@@ -51,7 +51,7 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>The matching groups.</returns>
     private static IList<Group> FindGroups(string path, string query, string template)
     {
-        Regex regex = new($@"\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}", RegexOptions.None, TimeSpan.FromSeconds(1));
+        Regex regex = new(@"\{(.*?)\}", RegexOptions.None, TimeSpan.FromSeconds(1));
         template = EscapeExceptBraces(template);
         string regexPattern = $"^{regex.Replace(template, match => $"(?<{match.Groups[1].Value}>[^&]*)")}";
         
@@ -83,7 +83,7 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>True if it matches and the found placeholder.</returns>
     private static (bool IsMatch, string Placeholder) IsCatchAllQuery(string template)
     {
-        Regex catchAllQueryRegex = new($@"^[^{{}}]*\?\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        Regex catchAllQueryRegex = new(@"^[^{{}}]*\?\{{(.*?)\}}$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
         Match catchAllMatch = catchAllQueryRegex.Match(template);
 
         return (catchAllMatch.Success, catchAllMatch.Success ? catchAllMatch.Groups[1].Value : string.Empty);
@@ -98,7 +98,7 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>True if it matches.</returns>
     private static bool IsCatchAllPath(string template)
     {
-        Regex catchAllPathRegex = new($@"^[^{{}}]*\{PlaceHolderLeft}(.*?)\{PlaceHolderRight}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        Regex catchAllPathRegex = new(@"^[^{{}}]*\{{(.*?)\}}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
         return catchAllPathRegex.IsMatch(template) && !template.Contains('?');
     }
     
@@ -123,8 +123,14 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
  
         foreach (char c in span)
         {
-            string str = c.ToString();
-            escaped.Append(str is PlaceHolderLeft or PlaceHolderRight ? str : Regex.Escape(str));
+            if (c is LeftCurlyBracket or RightCurlyBracket)
+            {
+                escaped.Append(c);
+            }
+            else
+            {
+                escaped.Append(Regex.Escape(c.ToString()));
+            }
         }
  
         return escaped.ToString();
