@@ -1,3 +1,5 @@
+using Ocelot.Infrastructure;
+
 namespace Ocelot.Values
 {
     public class UpstreamPathTemplate

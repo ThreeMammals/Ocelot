@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure;
 
 namespace Ocelot.Configuration.Validator
 {

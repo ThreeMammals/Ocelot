@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Errors;
+using Ocelot.Infrastructure;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 

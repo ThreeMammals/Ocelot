@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Values;
+﻿using Ocelot.Infrastructure;
+
+namespace Ocelot.Values;
 
 /// <summary>
 /// Upstream template properties of headers and their regular expression.

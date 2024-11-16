@@ -1,6 +1,6 @@
 ﻿using Ocelot.DependencyInjection;
 
-namespace Ocelot;
+namespace Ocelot.Infrastructure;
 
 public static class RegexGlobal
 {
@@ -22,4 +22,9 @@ public static class RegexGlobal
     /// <remarks>Default value is <c>100</c> ms aka <see cref="DefaultMatchTimeoutMilliseconds"/>.</remarks>
     /// <value>A <see cref="TimeSpan"/> value.</value>
     public static TimeSpan DefaultMatchTimeout { get; set; } = TimeSpan.FromMilliseconds(DefaultMatchTimeoutMilliseconds);
+
+    public static void Init()
+    {
+        AppDomain.CurrentDomain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromMilliseconds(DefaultMatchTimeoutMilliseconds));
+    }
 }

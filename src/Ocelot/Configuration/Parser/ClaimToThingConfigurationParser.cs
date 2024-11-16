@@ -1,4 +1,5 @@
-﻿using Ocelot.Responses;
+﻿using Ocelot.Infrastructure;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {
