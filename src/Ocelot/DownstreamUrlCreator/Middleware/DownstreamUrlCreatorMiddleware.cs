@@ -119,7 +119,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         }
 
         private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
-        private static ConcurrentDictionary<string, Regex> _regex = new();
+        private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
@@ -129,7 +129,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
                 var pattern = $@"\b{name}={value}\b";
                 var rgx = _regex.AddOrUpdate(pattern,
-                            new Regex(pattern, RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout),
+                            RegexGlobal.New(pattern),
                             (key, oldValue) => oldValue);
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {

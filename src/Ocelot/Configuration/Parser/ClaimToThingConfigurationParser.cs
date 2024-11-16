@@ -5,8 +5,8 @@ namespace Ocelot.Configuration.Parser
 {
     public class ClaimToThingConfigurationParser : IClaimToThingConfigurationParser
     {
-        private static readonly Regex _claimRegex = new("Claims\\[.*\\]", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
-        private static readonly Regex _indexRegex = new("value\\[.*\\]", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+        private static readonly Regex _claimRegex = RegexGlobal.New("Claims\\[.*\\]");
+        private static readonly Regex _indexRegex = RegexGlobal.New("value\\[.*\\]");
         private const char SplitToken = '>';
 
         public Response<ClaimToThing> Extract(string existingKey, string value)

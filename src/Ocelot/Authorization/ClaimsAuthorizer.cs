@@ -9,7 +9,7 @@ namespace Ocelot.Authorization
     public class ClaimsAuthorizer : IClaimsAuthorizer
     {
         private readonly IClaimsParser _claimsParser;
-        private static readonly Regex _regexAuthorize = new(@"^{(?<variable>.+)}$", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+        private static readonly Regex _regexAuthorize = RegexGlobal.New(@"^{(?<variable>.+)}$");
 
         public ClaimsAuthorizer(IClaimsParser claimsParser)
         {

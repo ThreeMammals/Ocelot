@@ -15,7 +15,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
     [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegExPlaceholders();
 #else
-    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout);
+    private static readonly Regex RegExPlaceholdersVar = RegexGlobal.New(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
     private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
 #endif
 

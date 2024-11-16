@@ -45,7 +45,7 @@ namespace Ocelot.Infrastructure
         public Response Remove(string key)
             => _placeholders.Remove(key);
 
-        private static readonly Regex _regex = new(@"[{}]", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+        private static readonly Regex _regex = RegexGlobal.New(@"[{}]");
         private static string CleanKey(string key)
             => _regex.Replace(key, string.Empty);
 

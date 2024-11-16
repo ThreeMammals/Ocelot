@@ -4,8 +4,8 @@ namespace Ocelot.Values
 {
     public class UpstreamPathTemplate
     {
-        private static readonly Regex _reg = new Regex("$^", RegexOptions.Compiled | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout);
-        private static ConcurrentDictionary<string, Regex> _regex = new ConcurrentDictionary<string, Regex>();
+        private static readonly Regex _reg = RegexGlobal.New("$^", RegexOptions.Singleline);
+        private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
         public UpstreamPathTemplate(string template, int priority, bool containsQueryString, string originalValue)
         {
@@ -17,7 +17,7 @@ namespace Ocelot.Values
                 ? _reg
                 : _regex.AddOrUpdate(
                     template,
-                    new Regex(template, RegexOptions.Compiled | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeout),
+                    RegexGlobal.New(template, RegexOptions.Singleline),
                     (key, oldValue) => oldValue);
         }
 

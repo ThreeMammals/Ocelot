@@ -9,10 +9,10 @@ namespace Ocelot.Configuration.Validator
     public class RouteFluentValidator : AbstractValidator<FileRoute>
     {
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
-        private static readonly Regex _secondsRegEx = new Regex("^[0-9]+s", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
-        private static readonly Regex _minutesRegEx = new Regex("^[0-9]+m", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
-        private static readonly Regex _hoursRegEx = new Regex("^[0-9]+h", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
-        private static readonly Regex _daysRegEx = new Regex("^[0-9]+d", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+        private static readonly Regex _secondsRegEx = RegexGlobal.New("^[0-9]+s");
+        private static readonly Regex _minutesRegEx = RegexGlobal.New("^[0-9]+m");
+        private static readonly Regex _hoursRegEx = RegexGlobal.New("^[0-9]+h");
+        private static readonly Regex _daysRegEx = RegexGlobal.New("^[0-9]+d");
 
         public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
         {

@@ -103,7 +103,7 @@ namespace Ocelot.Configuration.Validator
         [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
         private static partial Regex PlaceholderRegex();
 #else
-        private static readonly Regex PlaceholderRegexVar = new(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+        private static readonly Regex PlaceholderRegexVar = RegexGlobal.New(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private static Regex PlaceholderRegex() => PlaceholderRegexVar;
 #endif
 

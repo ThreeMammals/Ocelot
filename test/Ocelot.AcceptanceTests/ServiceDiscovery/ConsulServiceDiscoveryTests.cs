@@ -598,7 +598,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [GeneratedRegex("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex ServiceNameRegex();
 #else
-    private static readonly Regex ServiceNameRegexVar = new("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Compiled, RegexGlobal.DefaultMatchTimeout);
+    private static readonly Regex ServiceNameRegexVar = RegexGlobal.New("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Singleline);
     private static Regex ServiceNameRegex() => ServiceNameRegexVar;
 #endif
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
