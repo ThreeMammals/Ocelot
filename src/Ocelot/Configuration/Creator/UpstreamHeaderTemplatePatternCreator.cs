@@ -13,10 +13,10 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
     private const string PlaceHolderPattern = @"(\{header:.*?\})";
 #if NET7_0_OR_GREATER
     [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
-    private static partial Regex RegExPlaceholders();
+    private static partial Regex RegexPlaceholders();
 #else
-    private static readonly Regex RegExPlaceholdersVar = RegexGlobal.New(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-    private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
+    private static readonly Regex _regexPlaceholders = RegexGlobal.New(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+    private static Regex RegexPlaceholders() => _regexPlaceholders;
 #endif
 
     public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
@@ -26,7 +26,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
         foreach (var headerTemplate in route.UpstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
-            var matches = RegExPlaceholders().Matches(headerTemplateValue);
+            var matches = RegexPlaceholders().Matches(headerTemplateValue);
 
             if (matches.Count > 0)
             {
