@@ -83,7 +83,7 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>True if it matches and the found placeholder.</returns>
     private static (bool IsMatch, string Placeholder) IsCatchAllQuery(string template)
     {
-        Regex catchAllQueryRegex = new(@"^[^{{}}]*\?\{{(.*?)\}}$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        Regex catchAllQueryRegex = new(@"^[^{{}}]*\?\{(.*?)\}$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
         Match catchAllMatch = catchAllQueryRegex.Match(template);
 
         return (catchAllMatch.Success, catchAllMatch.Success ? catchAllMatch.Groups[1].Value : string.Empty);
@@ -98,7 +98,7 @@ public class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndValueFind
     /// <returns>True if it matches.</returns>
     private static bool IsCatchAllPath(string template)
     {
-        Regex catchAllPathRegex = new(@"^[^{{}}]*\{{(.*?)\}}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
+        Regex catchAllPathRegex = new(@"^[^{{}}]*\{(.*?)\}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(300));
         return catchAllPathRegex.IsMatch(template) && !template.Contains('?');
     }
     
