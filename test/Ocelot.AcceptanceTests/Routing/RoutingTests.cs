@@ -407,6 +407,41 @@ public sealed class RoutingTests : Steps, IDisposable
             .And(x => ThenTheResponseBodyShouldBe("Hello from Raman"))
             .BDDfy();
     }
+    
+    [Theory(DisplayName = "Should match complex queries with embedded placeholders.")]
+    [Trait("Bug", "2199")]
+    [Trait("Feat", "2200")]
+    [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
+        "/api/invoices_abc/def-ghi_abcd/xyz?urlId=bla", "/api/invoices/abc-def-ghi", "?urlId=bla")]
+    [InlineData("/api/products/{category}-{subcategory}/{filter}", "/api/products_{category}/{subcategory}_details/{itemId}?filter={filter}", 
+        "/api/products_electronics/computers_details/123?filter=active", "/api/products/electronics-computers/active", "")]
+    [InlineData("/api/users/{userId}/posts/{postId}/{lang}", "/api/users/{userId}/{postId}_content/{timestamp}?lang={lang}", 
+        "/api/users/101/2022_content/2024?lang=en", "/api/users/101/posts/2022/en", "")]
+    [InlineData("/api/categories/{cat}-{subcat}?sort={sort}", "/api/categories_{cat}/{subcat}_items/{itemId}?sort={sort}", 
+        "/api/categories_home/furniture_items/789?sort=asc", "/api/categories/home-furniture", "?sort=asc")]
+    [InlineData("/api/orders/{order}-{detail}?status={status}", "/api/orders_{order}/{detail}_invoice/{ref}?status={status}", 
+        "/api/orders_987/abc_invoice/123?status=shipped", "/api/orders/987-abc", "?status=shipped")]
+    [InlineData("/api/transactions/{type}-{region}", "/api/transactions_{type}/{region}_summary/{year}?q={query}", 
+        "/api/transactions_sales/NA_summary/2024?q=forecast", "/api/transactions/sales-NA", "?q=forecast")]
+    [InlineData("/api/resources/{resource}-{subresource}", "/api/resources_{resource}/{subresource}_data/{id}?key={apikey}", 
+        "/api/resources_images/photos_data/555?key=xyz123", "/api/resources/images-photos", "?key=xyz123")]
+    [InlineData("/api/accounts/{account}-{detail}", "/api/accounts_{account}/{detail}_info/{id}?opt={option}", 
+        "/api/accounts_admin/settings_info/101?opt=true", "/api/accounts/admin-settings", "?opt=true")]
+    public void ShouldMatchComplexQueriesWithEmbeddedPlaceholder(string downstream, string upstream, string requestUrl, string downstreamPath, string queryString)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstream, downstream);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello friends!"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(queryString))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello friends!"))
+            .BDDfy();
+    }
 
     [Fact]
     [Trait("Feat", "91, 94")]
@@ -549,6 +584,7 @@ public sealed class RoutingTests : Steps, IDisposable
             .And(x => ThenTheDownstreamUrlPathShouldBe(decodedDownstreamUrlPath))
             .BDDfy();
     }
+    
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
