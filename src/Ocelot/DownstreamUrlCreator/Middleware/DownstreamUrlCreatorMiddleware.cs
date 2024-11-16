@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -118,6 +119,7 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
         }
 
         private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
+        private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
         private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
         {
@@ -125,8 +127,10 @@ namespace Ocelot.DownstreamUrlCreator.Middleware
             {
                 var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
                 var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
-                var rgx = new Regex($@"\b{name}={value}\b");
-
+                var pattern = $@"\b{name}={value}\b";
+                var rgx = _regex.AddOrUpdate(pattern,
+                            RegexGlobal.New(pattern),
+                            (key, oldValue) => oldValue);
                 if (rgx.IsMatch(downstreamRequest.Query))
                 {
                     var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);                    

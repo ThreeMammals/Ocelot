@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 
 namespace Ocelot.DependencyInjection
 {
@@ -14,14 +15,6 @@ namespace Ocelot.DependencyInjection
         public const string PrimaryConfigFile = "ocelot.json";
         public const string GlobalConfigFile = "ocelot.global.json";
         public const string EnvironmentConfigFile = "ocelot.{0}.json";
-
-#if NET7_0_OR_GREATER
-        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
-        private static partial Regex SubConfigRegex();
-#else
-        private static readonly Regex SubConfigRegexVar = new(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
-        private static Regex SubConfigRegex() => SubConfigRegexVar;
-#endif
 
         [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
         public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
@@ -103,9 +96,21 @@ namespace Ocelot.DependencyInjection
                 AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
         }
 
+#if NET7_0_OR_GREATER
+        [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
+        private static partial Regex SubConfigRegex();
+#else
+        private static readonly Regex _subConfigRegex = RegexGlobal.New(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        private static Regex SubConfigRegex() => _subConfigRegex;
+#endif
         private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
             FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
         {
+            // All versions of overloaded AddOcelot methods call this GetMergedOcelotJson one, so we improve Regex performance by cache increasing.
+            // Developers can adjust the RegexGlobal value BEFORE calling AddOcelot
+            // Developers can adjust the Regex.CacheSize value AFTER calling AddOcelot
+            Regex.CacheSize = RegexGlobal.RegexCacheSize;
+
             var envName = string.IsNullOrEmpty(env?.EnvironmentName) ? "Development" : env.EnvironmentName;
             environmentFile ??= Path.Join(folder, string.Format(EnvironmentConfigFile, envName));
             var reg = SubConfigRegex();
