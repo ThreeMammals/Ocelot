@@ -9,4 +9,16 @@ public static class FileRouteExtensions
         route.DownstreamHostAndPorts.AddRange(hosts);
         return route;
     }
+
+    public static FileRoute SetPriority(this FileRoute route, int priority)
+    {
+        route.Priority = priority;
+        return route;
+    }
+
+    public static FileRoute WithMethods(this FileRoute route, params string[] methods)
+    {
+        route.UpstreamHttpMethod.AddRange(methods);
+        return route;
+    }
 }
