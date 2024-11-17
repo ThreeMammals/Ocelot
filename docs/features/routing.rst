@@ -69,11 +69,26 @@ In order to change this you can specify on a per Route basis the following setti
 
   "RouteIsCaseSensitive": true
 
-This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive. 
+This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive.
+
+.. _routing-embedded-placeholders:
+
+Embedded Placeholders [#f1]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Until now (November 2024), Ocelot could not evaluate multiple placeholders embedded between two forward slashes. 
+Additionally, it was not possible to distinguish the placeholder from other elements between the slashes. 
+For instance, ``/{url}-2/`` for ``/y-2/`` would return ``{url} = y-2``. We now propose a revised version of placeholder evaluation that enables the resolution of placeholders in complex URLs, such as:
+
+Path pattern: ``/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}``
+
+Upstream path: ``/api/invoices_super/123-456_abcd/789?urlId=987``
+
+Parsed placeholders: ``{url0} = super``, ``{url1} = 123``, ``{url2} = 456``, ``{url3} = 789``, ``{url4} = 987`` 
 
 .. _routing-empty-placeholders:
 
-Empty Placeholders [#f1]_
+Empty Placeholders [#f2]_
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is a special edge case of :ref:`routing-placeholders`, where the value of the placeholder is simply an empty string ``""``.
@@ -135,7 +150,7 @@ If you also have the Route below in your config then Ocelot would match it befor
 
 .. _routing-upstream-host:
 
-Upstream Host [#f2]_
+Upstream Host [#f3]_
 --------------------
 
 This feature allows you to have Routes based on the *upstream host*.
@@ -156,7 +171,7 @@ This means that if you have two Routes that are the same, apart from the **Upstr
 
 .. _routing-upstream-headers:
 
-Upstream Headers [#f3]_
+Upstream Headers [#f4]_
 -----------------------
 
 In addition to routing by ``UpstreamPathTemplate``, you can also define ``UpstreamHeaderTemplates``.
@@ -302,7 +317,7 @@ The placeholder ``{everything}`` name does not matter, any name will work.
 This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
 such as OData filters and etc (see issue `1174`_).
 
-  **Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f1]_
+  **Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f2]_
   Thus, upstream paths ``/contracts?`` and ``/contracts`` are routed to downstream path ``/apipath/contracts``, which has no query string at all.
 
 .. _routing-merging-of-query-parameters:
@@ -365,7 +380,7 @@ Consider the following 2 development scenarios :htm:`&rarr;`
 
 .. _routing-security-options:
 
-Security Options [#f4]_
+Security Options [#f5]_
 -----------------------
 
 Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package
@@ -397,19 +412,19 @@ The current patterns managed are the following:
 
 .. _routing-dynamic:
 
-Dynamic Routing [#f5]_
+Dynamic Routing [#f6]_
 ----------------------
 
 The idea is to enable dynamic routing when using a :doc:`../features/servicediscovery` provider so you don't have to provide the Route config.
 See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 
-""""
 
-.. [#f1] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_, see issue `748 <https://github.com/ThreeMammals/Ocelot/issues/748>`_ and the `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ release notes for details.
-.. [#f2] ":ref:`routing-upstream-host`" feature was requested as part of `issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_.
-.. [#f3] ":ref:`routing-upstream-headers`" feature was proposed in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_, and released in version `24.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0>`_.
-.. [#f4] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
-.. [#f5] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.
+.. [#f1] ":ref:`routing-embedded-placeholders`" feature was requested as part of `issue 2199 <https://github.com/ThreeMammals/Ocelot/issues/2199>`_.
+.. [#f2] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_, see issue `748 <https://github.com/ThreeMammals/Ocelot/issues/748>`_ and the `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ release notes for details.
+.. [#f3] ":ref:`routing-upstream-host`" feature was requested as part of `issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_.
+.. [#f4] ":ref:`routing-upstream-headers`" feature was proposed in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_, and released in version `24.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0>`_.
+.. [#f5] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
+.. [#f6] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings
