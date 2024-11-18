@@ -138,7 +138,6 @@ Task("Version")
 Task("GitLogUniqContributors")
 	.Does(() =>
 	{
-        Information("---==< Unique Contributors >==---");
 		var command = "log --format=\"%aN|%aE\" ";
 		// command += IsRunningOnCircleCI() ? "| sort | uniq" :
 		// 	IsRunningInPowershell() ? "| Sort-Object -Unique" : "| sort | uniq";
@@ -159,7 +158,7 @@ Task("GitLogUniqContributors")
 
 Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
-	.IsDependentOn("GitLogUniqContributors")
+	//.IsDependentOn("GitLogUniqContributors")
 	.Does(() =>
 	{
         Information($"Generating release notes at {releaseNotesFile}");
@@ -204,12 +203,14 @@ Task("CreateReleaseNotes")
             var emailInfo = debugUserEmail ? ", " + contributor.Email : string.Empty;
             return $"{stars}  {contributor.Author}{emailInfo}";
         }
-        // foreach (var contributor in summary)
-        // {
-        //     starring.Add(CreateStars(contributor.Commits, contributor.Author));
-        // }
-        // Information("---==< Old Starring >==---");
-        // Information(string.Join(Environment.NewLine, starring));
+
+        Information("------==< Old Starring >==------");
+        foreach (var contributor in summary)
+        {
+            starring.Add(CreateStars(contributor.Commits, contributor.Author));
+        }
+        Information(string.Join(Environment.NewLine, starring));
+
         var commitsGrouping = summary
             .GroupBy(x => x.Commits)
             .Select(CreateCommitsGroupingItem)
@@ -221,7 +222,7 @@ Task("CreateReleaseNotes")
             byFiles: (log, group, fGroup) => CreateStars(group.Commits, fGroup.Contributors.First().Contributor),
             byInsertions: (log, group, fGroup, insGroup) => CreateStars(group.Commits, insGroup.Contributors.First().Contributor),
             byDeletions: (log, group, fGroup, insGroup, contributor) => CreateStars(group.Commits, contributor.Contributor));
-        Information("---==< Starring >==---");
+        Information("------==< New Starring >==------");
         Information(string.Join(Environment.NewLine, starring));
 
         // Honoring aka Top Contributors
@@ -366,15 +367,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        // releaseNotes.Add("");
+        releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
         releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
         releaseNotes.AddRange(starring);
         releaseNotes.Add("");
-        // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
-        // releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 

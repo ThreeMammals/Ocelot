@@ -7,7 +7,7 @@ This minor release significantly upgrades the [Routing](https://github.com/Three
 
 ### :new: What's new?
 - **[Routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/routing.rst)**: Introducing the new "[Embedded Placeholders](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#embedded-placeholders-1)" feature by @ggnaegi.
-  As of November 2024, Ocelot was unable to process multiple [placeholders](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#placeholders) embedded between two forward slashes. It was also challenging to differentiate the placeholder from other elements within the slashes. For example, `/{url}-2/` for `/y-2/` would yield `{url} = y-2`. We are excited to introduce an enhanced method for evaluating placeholders that allows for the resolution of [placeholders](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#placeholders) within complex URLs.
+  As of November 2024, Ocelot was unable to process multiple [placeholders](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#placeholders) embedded between two forward slashes. It was also challenging to differentiate the placeholder from other elements within the slashes. For example, `/{{url}}-2/` for `/y-2/` would yield `{{url}} = y-2`. We are excited to introduce an enhanced method for evaluating placeholders that allows for the resolution of [placeholders](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#placeholders) within complex URLs.
   For additional information, refer to PR #2200.
 
 ### :up: Focus On
