@@ -6,7 +6,7 @@
     public class HttpHandlerOptions
     {
         public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
-            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
+            int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime, bool useDefaultCredentials)
         {
             AllowAutoRedirect = allowAutoRedirect;
             UseCookieContainer = useCookieContainer;
@@ -14,6 +14,7 @@
             UseProxy = useProxy;
             MaxConnectionsPerServer = maxConnectionsPerServer;
             PooledConnectionLifeTime = pooledConnectionLifeTime;
+            UseDefaultCredentials = useDefaultCredentials;
         }
 
         /// <summary>
@@ -43,7 +44,10 @@
         /// <summary>
         /// Specify the maximum of concurrent connection to a network endpoint.
         /// </summary>
-        /// <value>MaxConnectionsPerServer.</value>
+        /// <value>
+        /// The maximum number of concurrent connections (per server endpoint) allowed by an <see cref="HttpClient"/> object.
+        /// The property value is assignable to the <see cref="HttpClientHandler.MaxConnectionsPerServer"/> one.
+        /// </value>
         public int MaxConnectionsPerServer { get; }
 
         /// <summary>
@@ -51,5 +55,14 @@
         /// </summary>
         /// <value>PooledConnectionLifeTime.</value>
         public TimeSpan PooledConnectionLifeTime { get; }
+
+        /// <summary>
+        /// Specify is UseDefaultCredentials set on HttpClientHandler.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
+        /// The property value is assignable to the <see cref="HttpClientHandler.UseDefaultCredentials"/> one.
+        /// </value>
+        public bool UseDefaultCredentials { get; }
     }
 }

@@ -22,7 +22,7 @@ public class DownstreamRouteExtensionsTests
             new List<DownstreamHostAndPort>(),
             null,
             null,
-            new HttpHandlerOptions(false, false, false, false, 0, TimeSpan.Zero),
+            new HttpHandlerOptions(false, false, false, false, 0, TimeSpan.Zero, false),
             default,
             default,
             new QoSOptions(0, 0, 0, null),

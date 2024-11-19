@@ -12,7 +12,8 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
     {
-        _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
+        ArgumentNullException.ThrowIfNull(handlerFactory);
+        _handlerFactory = handlerFactory;
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
 
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -70,16 +71,18 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     private HttpMessageHandler CreateHandler(DownstreamRoute downstreamRoute)
     {
+        var options = downstreamRoute.HttpHandlerOptions;
         var handler = new SocketsHttpHandler
         {
-            AllowAutoRedirect = downstreamRoute.HttpHandlerOptions.AllowAutoRedirect,
-            UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
-            UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
-            MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
-            PooledConnectionLifetime = downstreamRoute.HttpHandlerOptions.PooledConnectionLifeTime,
+            AllowAutoRedirect = options.AllowAutoRedirect,
+            UseCookies = options.UseCookieContainer,
+            UseProxy = options.UseProxy,
+            MaxConnectionsPerServer = options.MaxConnectionsPerServer,
+            PooledConnectionLifetime = options.PooledConnectionLifeTime,
+            Credentials = options.UseDefaultCredentials ? CredentialCache.DefaultCredentials : null,
         };
 
-        if (downstreamRoute.HttpHandlerOptions.UseCookieContainer)
+        if (options.UseCookieContainer)
         {
             handler.CookieContainer = new CookieContainer();
         }
