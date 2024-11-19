@@ -13,12 +13,12 @@
         {
             if (!string.IsNullOrEmpty(allowed))
             {
-                IPAllowedList = IPAllowedList.Append(allowed).ToList();
+                IPAllowedList.Add(allowed);
             }
 
             if (!string.IsNullOrEmpty(blocked))
             {
-                IPBlockedList = IPBlockedList.Append(blocked).ToList();
+                IPBlockedList.Add(blocked);
             }
         }
 
