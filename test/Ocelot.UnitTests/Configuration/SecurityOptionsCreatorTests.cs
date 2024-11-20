@@ -2,117 +2,98 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public sealed class SecurityOptionsCreatorTests : UnitTest
 {
-    public class SecurityOptionsCreatorTests : UnitTest
+    private readonly SecurityOptionsCreator _creator = new();
+
+    [Fact]
+    public void Should_create_route_security_config()
     {
-        private FileSecurityOptions _fileSecurityOptions;
-        private SecurityOptions _result;
-        private FileGlobalConfiguration _globalConfig;
-        private readonly ISecurityOptionsCreator _creator;
-
-        public SecurityOptionsCreatorTests()
+        // Arrange
+        var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var securityOptions = new FileSecurityOptions
         {
-            _creator = new SecurityOptionsCreator();
-        }
+            IPAllowedList = ipAllowedList,
+            IPBlockedList = ipBlockedList,
+        };
+        var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
+        var globalConfig = new FileGlobalConfiguration();
 
-        [Fact]
-        public void Should_create_route_security_config()
+        // Act
+        var actual = _creator.Create(securityOptions, globalConfig);
+
+        // Assert
+        ThenTheResultIs(actual, expected);
+    }
+
+    [Fact]
+    [Trait("Feat", "2170")]
+    public void Should_create_global_security_config()
+    {
+        // Arrange
+        var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var globalConfig = new FileGlobalConfiguration
         {
-            var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var securityOptions = new FileSecurityOptions
+            SecurityOptions = new()
             {
                 IPAllowedList = ipAllowedList,
                 IPBlockedList = ipBlockedList,
-            };
+            },
+        };
+        var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
 
-            var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
+        // Act
+        var actual = _creator.Create(new(), globalConfig);
 
-            this.Given(x => x.GivenThe(new FileGlobalConfiguration()))
-                .Given(x => x.GivenThe(securityOptions))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected));
-        }
+        // Assert
+        ThenTheResultIs(actual, expected);
+    }
 
-        [Fact]
-        public void Should_create_global_security_config()
+    [Fact]
+    [Trait("Feat", "2170")]
+    public void Should_create_global_route_security_config()
+    {
+        // Arrange
+        var routeIpAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var routeIpBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var securityOptions = new FileSecurityOptions
         {
-            var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var globalConfig = new FileGlobalConfiguration
+            IPAllowedList = routeIpAllowedList,
+            IPBlockedList = routeIpBlockedList,
+        };
+        var globalIpAllowedList = new List<string> { "127.0.0.2", "192.168.1.2" };
+        var globalIpBlockedList = new List<string> { "127.0.0.2", "192.168.1.2" };
+        var globalConfig = new FileGlobalConfiguration
+        {
+            SecurityOptions = new FileSecurityOptions
             {
-                SecurityOptions = new FileSecurityOptions
-                {
-                    IPAllowedList = ipAllowedList,
-                    IPBlockedList = ipBlockedList,
-                },
-            };
+                IPAllowedList = globalIpAllowedList,
+                IPBlockedList = globalIpBlockedList,
+            },
+        };
+        var expected = new SecurityOptions(routeIpAllowedList, routeIpBlockedList);
 
-            var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
+        // Act
+        var actual = _creator.Create(securityOptions, globalConfig);
 
-            this.Given(x => x.GivenThe(globalConfig))
-                .Given(x => x.GivenThe(new FileSecurityOptions()))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected));
+        // Assert
+        ThenTheResultIs(actual, expected);
+    }
+
+    private static void ThenTheResultIs(SecurityOptions actual, SecurityOptions expected)
+    {
+        for (var i = 0; i < expected.IPAllowedList.Count; i++)
+        {
+            actual.IPAllowedList[i].ShouldBe(expected.IPAllowedList[i]);
         }
 
-        [Fact]
-        public void Should_create_global_route_security_config()
+        for (var i = 0; i < expected.IPBlockedList.Count; i++)
         {
-            var routeIpAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var routeIpBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var securityOptions = new FileSecurityOptions
-                {
-                    IPAllowedList = routeIpAllowedList,
-                    IPBlockedList = routeIpBlockedList,
-                };
-
-            var globalIpAllowedList = new List<string> { "127.0.0.2", "192.168.1.2" };
-            var globalIpBlockedList = new List<string> { "127.0.0.2", "192.168.1.2" };
-            var globalConfig = new FileGlobalConfiguration
-            {
-                SecurityOptions = new FileSecurityOptions
-                {
-                    IPAllowedList = globalIpAllowedList,
-                    IPBlockedList = globalIpBlockedList,
-                },
-            };
-
-            var expected = new SecurityOptions(routeIpAllowedList, routeIpBlockedList);
-
-            this.Given(x => x.GivenThe(globalConfig))
-                .Given(x => x.GivenThe(securityOptions))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected));
-        }
-
-        private void GivenThe(FileSecurityOptions fileSecurityOptions)
-        {
-            _fileSecurityOptions = fileSecurityOptions;
-        }
-
-        private void GivenThe(FileGlobalConfiguration globalConfiguration)
-        {
-            _globalConfig = globalConfiguration;
-        }
-
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_fileSecurityOptions, _globalConfig);
-        }
-
-        private void ThenTheResultIs(SecurityOptions expected)
-        {
-            for (var i = 0; i < expected.IPAllowedList.Count; i++)
-            {
-                _result.IPAllowedList[i].ShouldBe(expected.IPAllowedList[i]);
-            }
-
-            for (var i = 0; i < expected.IPBlockedList.Count; i++)
-            {
-                _result.IPBlockedList[i].ShouldBe(expected.IPBlockedList[i]);
-            }
+            actual.IPBlockedList[i].ShouldBe(expected.IPBlockedList[i]);
         }
     }
 }

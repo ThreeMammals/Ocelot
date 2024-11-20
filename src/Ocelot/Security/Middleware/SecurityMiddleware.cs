@@ -11,8 +11,7 @@ namespace Ocelot.Security.Middleware
 
         public SecurityMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IEnumerable<ISecurityPolicy> securityPolicies
-            )
+            IEnumerable<ISecurityPolicy> securityPolicies)
             : base(loggerFactory.CreateLogger<SecurityMiddleware>())
         {
             _securityPolicies = securityPolicies;
@@ -27,7 +26,7 @@ namespace Ocelot.Security.Middleware
             {
                 foreach (var policy in _securityPolicies)
                 {
-                    var result = await policy.Security(downstreamRoute, httpContext);
+                    var result = policy.Security(downstreamRoute, httpContext);
                     if (!result.IsError)
                     {
                         continue;
