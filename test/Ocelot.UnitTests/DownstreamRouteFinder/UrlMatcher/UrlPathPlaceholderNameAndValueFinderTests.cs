@@ -357,6 +357,59 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         // Assert
         ThenTheTemplatesVariablesAre(expectedTemplates.ToArray());
     }
+    
+    [Theory]
+    [Trait("Bug", "2209")]
+    [InlineData("/entities/{id}/events/recordsdata/{subCategoryId}_abcd/{itemId}?sort={sortBy}", "/Entities/43/Events/RecordsData/2_abcd/5?sort=desc",
+        "{id}", "43", "{subCategoryId}", "2", "{itemId}", "5", "{sortBy}", "desc")]
+    [InlineData("/api/PRODUCTS/{productId}/{category}_{itemId}_DeTails/{status}", "/API/Products/789/electronics_123_details/available",
+        "{productId}", "789", "{category}", "electronics", "{itemId}", "123", "{status}", "available")]
+    public void Can_match_all_placeholders_between_slashes_case_insensitive(string template, string path,
+        string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
+        string placeholderName3, string placeholderValue3, string placeholderName4, string placeholderValue4)
+    {
+        // Arrange
+        var expectedTemplates = new List<PlaceholderNameAndValue>
+        {
+            new(placeholderName1, placeholderValue1),
+            new(placeholderName2, placeholderValue2),
+            new(placeholderName3, placeholderValue3),
+            new(placeholderName4, placeholderValue4),
+        };
+
+        // Act
+        _result = _finder.Find(path, Empty, template);
+
+        // Assert
+        ThenTheTemplatesVariablesAre(expectedTemplates.ToArray());
+    }
+
+    [Theory]
+    [Trait("Bug", "2209")]
+    [InlineData("/entities/{Id}/events/recordsdata/{subCategoryId}_abcd/{itemId}?sort={sortBy}",
+        "/Entities/43/Events/RecordsData/2_abcd/5?sort=desc",
+        "{id}", "43", "{subcategoryid}", "2", "{itemid}", "5", "{sortby}", "desc")]
+    [InlineData("/api/PRODUCTS/{productid}/{category}_{itemid}_DeTails/{status}",
+        "/API/Products/789/electronics_123_details/available",
+        "{productId}", "789", "{Category}", "electronics", "{itemId}", "123", "{Status}", "available")]
+    public void Even_if_case_insensitive_cannot_match_placeholders(string template, string path,
+        string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
+        string placeholderName3, string placeholderValue3, string placeholderName4, string placeholderValue4)
+    {
+        var expectedTemplates = new List<PlaceholderNameAndValue>
+        {
+            new(placeholderName1, placeholderValue1),
+            new(placeholderName2, placeholderValue2),
+            new(placeholderName3, placeholderValue3),
+            new(placeholderName4, placeholderValue4),
+        };
+
+        // Act
+        _result = _finder.Find(path, Empty, template);
+
+        // Assert;
+        ThenTheExpectedVariablesCantBeFound(expectedTemplates.ToArray());
+    }
 
     private void ThenSinglePlaceholderIs(string expectedName, string expectedValue)
     {
@@ -369,6 +422,14 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         foreach (var expected in collection)
         {
             ThenSinglePlaceholderIs(expected.Name, expected.Value);
+        }
+    }
+
+    private void ThenTheExpectedVariablesCantBeFound(params PlaceholderNameAndValue[] collection)
+    {
+        foreach (var expected in collection)
+        {
+            _result.Data.FirstOrDefault(t => t.Name == expected.Name).ShouldBeNull();
         }
     }
 }
