@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.Creator
 {
     public class SecurityOptionsCreator : ISecurityOptionsCreator
     {
-        public SecurityOptions Create(FileSecurityOptions securityOptions, FileGlobalConfiguration globalConfiguration) 
+        public SecurityOptions Create(FileSecurityOptions securityOptions, FileGlobalConfiguration globalConfiguration)
             => Create(securityOptions.IsFullFilled() ? securityOptions : globalConfiguration.SecurityOptions);
 
         private static SecurityOptions Create(FileSecurityOptions securityOptions)
@@ -21,10 +21,16 @@ namespace Ocelot.Configuration.Creator
             return new SecurityOptions(ipAllowedList, ipBlockedList);
         }
 
-        private static string[] SetIpAddressList(List<string> ipValueList)
-            => ipValueList
-                .Where(ipValue => IPAddressRange.TryParse(ipValue, out _))
-                .SelectMany(ipValue => IPAddressRange.Parse(ipValue).Select<IPAddress, string>(ip => ip.ToString()))
-                .ToArray();
+        private static string[] SetIpAddressList(List<string> ipValues) => ipValues.SelectMany(Parse).ToArray();
+
+        private static string[] Parse(string ipValue)
+        {
+            if (IPAddressRange.TryParse(ipValue, out var range))
+            {
+                return range.Select<IPAddress, string>(ip => ip.ToString()).ToArray();
+            }
+
+            return Array.Empty<string>();
         }
+    }
 }
