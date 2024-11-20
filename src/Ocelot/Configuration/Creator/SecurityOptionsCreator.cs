@@ -21,7 +21,7 @@ namespace Ocelot.Configuration.Creator
             return new SecurityOptions(ipAllowedList, ipBlockedList);
         }
 
-        private static string[] SetIpAddressList(IList<string> ipValueList)
+        private static string[] SetIpAddressList(List<string> ipValueList)
             => ipValueList
                 .Where(ipValue => IPAddressRange.TryParse(ipValue, out _))
                 .SelectMany(ipValue => IPAddressRange.Parse(ipValue).Select<IPAddress, string>(ip => ip.ToString()))
