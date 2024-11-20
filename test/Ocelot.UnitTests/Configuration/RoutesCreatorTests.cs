@@ -303,7 +303,7 @@ namespace Ocelot.UnitTests.Configuration
             _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
             _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
-            _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions), Times.Once);
+            _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);
             _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
         }
     }

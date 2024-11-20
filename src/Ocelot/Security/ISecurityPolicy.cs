@@ -2,10 +2,10 @@
 using Ocelot.Configuration;
 using Ocelot.Responses;
 
-namespace Ocelot.Security
+namespace Ocelot.Security;
+
+public interface ISecurityPolicy
 {
-    public interface ISecurityPolicy
-    {
-        Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext);
-    }
+    Response Security(DownstreamRoute downstreamRoute, HttpContext context);
+    Task<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context);
 }
