@@ -1,20 +1,30 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Security.Claims;
 
 namespace Ocelot.Authentication.Middleware
 {
     public sealed class AuthenticationMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly IMemoryCache _memoryCache;
 
-        public AuthenticationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
+        public AuthenticationMiddleware(RequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
+            IMemoryCache memoryCache)
             : base(loggerFactory.CreateLogger<AuthenticationMiddleware>())
         {
             _next = next;
+            _memoryCache = memoryCache;
         }
+
+        /// <summary>Default TTL in seconds for caching <see cref="ClaimsPrincipal"/> of the current <see cref="AuthenticateResult"/> object.</summary>
+        /// <value>An <see cref="int"/> value, 300 seconds (5 minutes) by default.</value>
+        public static int CacheTtlSeconds { get; set; } = 300;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -25,23 +35,28 @@ namespace Ocelot.Authentication.Middleware
             // reducing nesting, returning early when no authentication is needed.
             if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !downstreamRoute.IsAuthenticated)
             {
-                Logger.LogInformation($"No authentication needed for path '{path}'.");
+                Logger.LogInformation(() => $"No authentication needed for path '{path}'.");
                 await _next(httpContext);
                 return;
             }
 
             Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
+            var token = httpContext.Request.Headers.Authorization;
+            var cacheKey = $"{nameof(AuthenticationMiddleware)}.{nameof(IHeaderDictionary.Authorization)}:{token}";
+            if (!_memoryCache.TryGetValue(cacheKey, out ClaimsPrincipal principal))
+            {
+                var auth = await AuthenticateAsync(httpContext, downstreamRoute);
+                principal = auth.Principal;
+                _memoryCache.Set(cacheKey, principal, TimeSpan.FromSeconds(CacheTtlSeconds));
+            }
 
-            var result = await AuthenticateAsync(httpContext, downstreamRoute);
-
-            if (result.Principal?.Identity == null)
+            if (principal?.Identity == null)
             {
                 SetUnauthenticatedError(httpContext, path, null);
                 return;
             }
 
-            httpContext.User = result.Principal;
-
+            httpContext.User = principal;
             if (httpContext.User.Identity.IsAuthenticated)
             {
                 Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{httpContext.User.Identity.AuthenticationType}' scheme.");

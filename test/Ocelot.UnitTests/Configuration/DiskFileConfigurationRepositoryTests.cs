@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using Ocelot.Cache;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -12,20 +14,25 @@ namespace Ocelot.UnitTests.Configuration
     {
         private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
         private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
+        private readonly Mock<IOcelotCache<FileConfiguration>> _cache;
         private IFileConfigurationRepository _repo;
         private FileConfiguration _result;
 
         public DiskFileConfigurationRepositoryTests()
         {
-            _hostingEnvironment = new Mock<IWebHostEnvironment>();
-            _changeTokenSource = new Mock<IOcelotConfigurationChangeTokenSource>(MockBehavior.Strict);
+            _hostingEnvironment = new();
+            _changeTokenSource = new();
+            _cache = new();
             _changeTokenSource.Setup(m => m.Activate());
+
+            // TODO Add integration tests: var aspMemoryCache = new DefaultMemoryCache<FileConfiguration>(new MemoryCache(new MemoryCacheOptions()));
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, /*aspMemoryCache*/_cache.Object);
         }
 
         private void Arrange([CallerMemberName] string testName = null)
         {
             _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(testName);
-            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, TestID);
+            _repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, _cache.Object, TestID);
         }
 
         [Fact]
@@ -120,7 +127,9 @@ namespace Ocelot.UnitTests.Configuration
 
         private void GivenTheEnvironmentNameIsUnavailable()
         {
-            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns((string)null);
+            _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(string.Empty);
+            // TODO Add integration tests: var aspMemoryCache = new DefaultMemoryCache<FileConfiguration>(new MemoryCache(new MemoryCacheOptions()));
+            //_repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, aspMemoryCache);
         }
 
         private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)

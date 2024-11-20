@@ -54,9 +54,12 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         var bytes = queryResult.Response.Value;
         var json = Encoding.UTF8.GetString(bytes);
         var consulConfig = JsonConvert.DeserializeObject<FileConfiguration>(json);
-
         return new OkResponse<FileConfiguration>(consulConfig);
     }
+
+    /// <summary>Default TTL in seconds for caching <see cref="FileConfiguration"/> in the <see cref="Set(FileConfiguration)"/> method.</summary>
+    /// <value>An <see cref="int"/> value, 5 by default.</value>
+    public static int CacheTtlSeconds { get; set; } = 5;
 
     public async Task<Response> Set(FileConfiguration ocelotConfiguration)
     {
@@ -70,8 +73,7 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         var result = await _consul.KV.Put(kvPair);
         if (result.Response)
         {
-            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
-
+            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(CacheTtlSeconds), _configurationKey);
             return new OkResponse();
         }
 
