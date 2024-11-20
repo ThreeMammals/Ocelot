@@ -46,7 +46,7 @@ public class AuthenticationOptionsCreatorTests
         // Arrange
         string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
         string[] authenticationProviderKeys = isAuthenticationProviderKeys ?
-            new string[] { "Test #1", "Test #2" } : null;
+            new string[] { "Test #1", "Test #2" } : Array.Empty<string>();
         var fileRoute = new FileRoute()
         {
             AuthenticationOptions = new FileAuthenticationOptions
@@ -56,11 +56,13 @@ public class AuthenticationOptionsCreatorTests
                 AuthenticationProviderKeys = authenticationProviderKeys,
             },
         };
-        var expected = new AuthenticationOptionsBuilder()
-            .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
-            .WithAuthenticationProviderKey(authenticationProviderKey)
-            .WithAuthenticationProviderKeys(authenticationProviderKeys)
-            .Build();
+
+        var b = new AuthenticationOptionsBuilder()
+            .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes);
+        b = isAuthenticationProviderKeys
+            ? b.WithAuthenticationProviderKeys(authenticationProviderKeys)
+            : b.WithAuthenticationProviderKey(authenticationProviderKey);
+        var expected = b.Build();
 
         // Act
         var actual = _authOptionsCreator.Create(fileRoute);
