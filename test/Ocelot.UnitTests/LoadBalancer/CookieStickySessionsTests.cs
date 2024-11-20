@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure;
+using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Middleware;
 using Ocelot.Responses;
@@ -28,7 +29,8 @@ public sealed class CookieStickySessionsTests : UnitTest
         _bus = new FakeBus<StickySession>();
         _loadBalancer = new Mock<ILoadBalancer>();
         _defaultExpiryInMs = 0;
-        _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus);
+        var sessionStorage = new InMemoryStickySessionStorage();
+        _stickySessions = new CookieStickySessions(_loadBalancer.Object, "sessionid", _defaultExpiryInMs, _bus, sessionStorage);
     }
 
     private void Arrange([CallerMemberName] string serviceName = null)

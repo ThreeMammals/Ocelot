@@ -14,16 +14,17 @@ public class CookieStickySessions : ILoadBalancer
     private readonly IBus<StickySession> _bus;
 
     private static readonly object Locker = new();
-    private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
+    private readonly IStickySessionStorage _storage;
 
     public string Type => nameof(CookieStickySessions);
 
-    public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus)
+    public CookieStickySessions(ILoadBalancer loadBalancer, string cookieName, int keyExpiryInMs, IBus<StickySession> bus, IStickySessionStorage storage)
     {
         _bus = bus;
         _cookieName = cookieName;
         _keyExpiryInMs = keyExpiryInMs;
         _loadBalancer = loadBalancer;
+        _storage = storage;
         _bus.Subscribe(CheckExpiry);
     }
 
@@ -32,12 +33,12 @@ public class CookieStickySessions : ILoadBalancer
         // TODO Get test coverage for this
         lock (Locker)
         {
-            if (!Stored.TryGetValue(sticky.Key, out var session) || session.Expiry >= DateTime.UtcNow)
+            if (!_storage.TryGetSession(sticky.Key, out var session) || session.Expiry >= DateTime.UtcNow)
             {
                 return;
             }
 
-            Stored.Remove(session.Key);
+            _storage.TryRemove(session.Key, out _);
             _loadBalancer.Release(session.HostAndPort);
         }
     }
@@ -50,7 +51,7 @@ public class CookieStickySessions : ILoadBalancer
         var key = $"{serviceName}:{cookie}"; // strong key name because of static store
         lock (Locker)
         {
-            if (!string.IsNullOrEmpty(key) && Stored.TryGetValue(key, out StickySession cached))
+            if (!string.IsNullOrEmpty(key) && _storage.TryGetSession(key, out StickySession cached))
             {
                 var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
                 Update(key, updated);
@@ -74,7 +75,7 @@ public class CookieStickySessions : ILoadBalancer
     {
         lock (Locker)
         {
-            Stored[key] = value;
+            _storage.SetSession(key, value);
             _bus.Publish(value, _keyExpiryInMs);
         }
     }
