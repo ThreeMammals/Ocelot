@@ -4,172 +4,189 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class AggregatesCreatorTests : UnitTest
 {
-    public class AggregatesCreatorTests : UnitTest
+    private readonly AggregatesCreator _creator;
+    private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
+    private FileConfiguration _fileConfiguration;
+    private List<Route> _routes;
+    private List<Route> _result;
+    private UpstreamPathTemplate[] _aggregateUtp;
+    private Dictionary<string, UpstreamHeaderTemplate>[] _headerTemplates;
+
+    public AggregatesCreatorTests()
     {
-        private readonly AggregatesCreator _creator;
-        private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
-        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
-        private FileConfiguration _fileConfiguration;
-        private List<Route> _routes;
-        private List<Route> _result;
-        private UpstreamPathTemplate _aggregate1Utp;
-        private UpstreamPathTemplate _aggregate2Utp;
-        private Dictionary<string, UpstreamHeaderTemplate> _headerTemplates1;
-        private Dictionary<string, UpstreamHeaderTemplate> _headerTemplates2;
+        _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
+        _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
+        _creator = new AggregatesCreator(_utpCreator.Object, _uhtpCreator.Object);
+    }
 
-        public AggregatesCreatorTests()
+    [Fact]
+    [Trait("Bug", "597")]
+    [Trait("Feat", "600")]
+    public void Create_NoRoutes_NoAggregates()
+    {
+        // Arrange
+        _fileConfiguration = new FileConfiguration
         {
-            _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
-            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
-            _creator = new AggregatesCreator(_utpCreator.Object, _uhtpCreator.Object);
-        }
-
-        [Fact]
-        public void should_return_no_aggregates()
-        {
-            var fileConfig = new FileConfiguration
+            Aggregates = new List<FileAggregateRoute>
             {
-                Aggregates = new List<FileAggregateRoute>
+                new()
                 {
-                    new()
-                    {
-                        RouteKeys = new List<string>{"key1"},
-                    },
+                    RouteKeys = new List<string>{"key1"},
                 },
-            };
-            var routes = new List<Route>();
+            },
+        };
+        _routes = new List<Route>();
 
-            this.Given(_ => GivenThe(fileConfig))
-                .And(_ => GivenThe(routes))
-                .When(_ => WhenICreate())
-                .Then(_ => TheUtpCreatorIsNotCalled())
-                .And(_ => ThenTheResultIsNotNull())
-                .And(_ => ThenTheResultIsEmpty())
-                .BDDfy();
-        }
+        // Act
+        _result = _creator.Create(_fileConfiguration, _routes);
 
-        [Fact]
-        public void should_create_aggregates()
+        // Assert
+        _utpCreator.Verify(x => x.Create(It.IsAny<FileAggregateRoute>()), Times.Never);
+        _result.ShouldNotBeNull().Count.ShouldBe(0); // empty result
+    }
+
+    [Fact]
+    [Trait("Bug", "597")]
+    [Trait("Feat", "600")]
+    public void Create_TwoAggregateRoutes_HappyPath()
+    {
+        // Arrange
+        _fileConfiguration = new FileConfiguration
         {
-            var fileConfig = new FileConfiguration
+            Aggregates = new List<FileAggregateRoute>
             {
-                Aggregates = new List<FileAggregateRoute>
+                new()
                 {
-                    new()
-                    {
-                        RouteKeys = new List<string>{"key1", "key2"},
-                        UpstreamHost = "hosty",
-                        UpstreamPathTemplate = "templatey",
-                        Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true,
-                    },
-                    new()
-                    {
-                        RouteKeys = new List<string>{"key3", "key4"},
-                        UpstreamHost = "hosty",
-                        UpstreamPathTemplate = "templatey",
-                        Aggregator = "aggregatory",
-                        RouteIsCaseSensitive = true,
-                    },
+                    RouteKeys = new List<string>{"key1", "key2"},
+                    UpstreamHost = "hosty",
+                    UpstreamPathTemplate = "templatey",
+                    Aggregator = "aggregatory",
+                    RouteIsCaseSensitive = true,
                 },
-            };
+                new()
+                {
+                    RouteKeys = new List<string>{"key3", "key4"},
+                    UpstreamHost = "hosty",
+                    UpstreamPathTemplate = "templatey",
+                    Aggregator = "aggregatory",
+                    RouteIsCaseSensitive = true,
+                },
+            },
+        };
+        _routes = new List<Route>
+        {
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+        };
+        GivenTheUtpCreatorReturns();
+        GivenTheUhtpCreatorReturns();
 
-            var routes = new List<Route>
+        // Act
+        _result = _creator.Create(_fileConfiguration, _routes);
+
+        // Assert
+        ThenTheUtpCreatorIsCalledCorrectly();
+
+        // Assert: then the aggregates are created
+        _result.ShouldNotBeNull().Count.ShouldBe(2);
+        AssertResultByIndex(0);
+        AssertResultByIndex(1);
+    }
+
+    [Theory]
+    [Trait("Feat", "1389")]
+    [InlineData(nameof(HttpMethod.Get))]
+    [InlineData(nameof(HttpMethod.Post))]
+    public void SetUpAggregateRoute_NoUpstreamHttpMethod_DefaultVerbIsAssigned(string httpVerb)
+    {
+        // Arrange
+        _fileConfiguration = new FileConfiguration
+        {
+            Aggregates = new List<FileAggregateRoute>
             {
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-                new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
-            };
-
-            this.Given(_ => GivenThe(fileConfig))
-                .And(_ => GivenThe(routes))
-                .And(_ => GivenTheUtpCreatorReturns())
-                .And(_ => GivenTheUhtpCreatorReturns())
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheUtpCreatorIsCalledCorrectly())
-                .And(_ => ThenTheAggregatesAreCreated())
-                .BDDfy();
-        }
-
-        private void ThenTheAggregatesAreCreated()
+                new()
+                {
+                    RouteKeys = new List<string>{"key1", "key2"},
+                },
+                new()
+                {
+                    RouteKeys = new List<string>{"key3", "key4"},
+                    UpstreamHttpMethod = new() { httpVerb }, // wanted verb
+                },
+            },
+        };
+        _routes = new List<Route>
         {
-            _result.ShouldNotBeNull();
-            _result.Count.ShouldBe(2);
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
+            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+        };
+        GivenTheUtpCreatorReturns();
+        GivenTheUhtpCreatorReturns();
 
-            _result[0].UpstreamHttpMethod.ShouldContain(x => x == HttpMethod.Get);
-            _result[0].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[0].UpstreamHost);
-            _result[0].UpstreamTemplatePattern.ShouldBe(_aggregate1Utp);
-            _result[0].UpstreamHeaderTemplates.ShouldBe(_headerTemplates1);
-            _result[0].Aggregator.ShouldBe(_fileConfiguration.Aggregates[0].Aggregator);
-            _result[0].DownstreamRoute.ShouldContain(x => x == _routes[0].DownstreamRoute[0]);
-            _result[0].DownstreamRoute.ShouldContain(x => x == _routes[1].DownstreamRoute[0]);
+        // Act
+        _result = _creator.Create(_fileConfiguration, _routes);
 
-            _result[1].UpstreamHttpMethod.ShouldContain(x => x == HttpMethod.Get);
-            _result[1].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[1].UpstreamHost);
-            _result[1].UpstreamTemplatePattern.ShouldBe(_aggregate2Utp);
-            _result[1].UpstreamHeaderTemplates.ShouldBe(_headerTemplates2);
-            _result[1].Aggregator.ShouldBe(_fileConfiguration.Aggregates[1].Aggregator);
-            _result[1].DownstreamRoute.ShouldContain(x => x == _routes[2].DownstreamRoute[0]);
-            _result[1].DownstreamRoute.ShouldContain(x => x == _routes[3].DownstreamRoute[0]);
-        }
+        // Assert
+        ThenTheUtpCreatorIsCalledCorrectly();
+        _result.ShouldNotBeNull().Count.ShouldBe(2);
+        AssertRoute(0, FileAggregateRoute.DefaultHttpMethod); // default verb scenario
+        AssertRoute(1, new HttpMethod(httpVerb)); // // wanted verb scenario
+    }
 
-        private void ThenTheUtpCreatorIsCalledCorrectly()
+    private void AssertRoute(int i, HttpMethod expected)
+    {
+        _result[i].UpstreamHttpMethod.ShouldContain(x => x == expected);
+        AssertResultByIndex(i, expected);
+    }
+
+    private void AssertResultByIndex(int i, HttpMethod method = null)
+    {
+        method ??= FileAggregateRoute.DefaultHttpMethod;
+        _result[i].UpstreamHttpMethod.ShouldContain(x => x == method);
+        _result[i].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[i].UpstreamHost);
+        _result[i].UpstreamTemplatePattern.ShouldBe(_aggregateUtp[i]);
+        _result[i].UpstreamHeaderTemplates.ShouldBe(_headerTemplates[i]);
+        _result[i].Aggregator.ShouldBe(_fileConfiguration.Aggregates[i].Aggregator);
+        _result[i].DownstreamRoute.ShouldContain(x => x == _routes[2 * i].DownstreamRoute[0]);
+        _result[i].DownstreamRoute.ShouldContain(x => x == _routes[(2 * i) + 1].DownstreamRoute[0]);
+    }
+
+    private void ThenTheUtpCreatorIsCalledCorrectly()
+    {
+        _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[0]), Times.Once);
+        _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[1]), Times.Once);
+    }
+
+    private void GivenTheUtpCreatorReturns()
+    {
+        _aggregateUtp = new[]
         {
-            _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[0]), Times.Once);
-            _utpCreator.Verify(x => x.Create(_fileConfiguration.Aggregates[1]), Times.Once);
-        }
+            new UpstreamPathTemplateBuilder().Build(),
+            new UpstreamPathTemplateBuilder().Build(),
+        };
+        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+            .Returns(_aggregateUtp[0])
+            .Returns(_aggregateUtp[1]);
+    }
 
-        private void GivenTheUtpCreatorReturns()
+    private void GivenTheUhtpCreatorReturns()
+    {
+        _headerTemplates = new[]
         {
-            _aggregate1Utp = new UpstreamPathTemplateBuilder().Build();
-            _aggregate2Utp = new UpstreamPathTemplateBuilder().Build();
-
-            _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
-                .Returns(_aggregate1Utp)
-                .Returns(_aggregate2Utp);
-        }
-
-        private void GivenTheUhtpCreatorReturns()
-        {
-            _headerTemplates1 = new Dictionary<string, UpstreamHeaderTemplate>();
-            _headerTemplates2 = new Dictionary<string, UpstreamHeaderTemplate>();
-
-            _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
-                .Returns(_headerTemplates1)
-                .Returns(_headerTemplates2);
-        }
-
-        private void ThenTheResultIsEmpty()
-        {
-            _result.Count.ShouldBe(0);
-        }
-
-        private void ThenTheResultIsNotNull()
-        {
-            _result.ShouldNotBeNull();
-        }
-
-        private void TheUtpCreatorIsNotCalled()
-        {
-            _utpCreator.Verify(x => x.Create(It.IsAny<FileAggregateRoute>()), Times.Never);
-        }
-
-        private void GivenThe(FileConfiguration fileConfiguration)
-        {
-            _fileConfiguration = fileConfiguration;
-        }
-
-        private void GivenThe(List<Route> routes)
-        {
-            _routes = routes;
-        }
-
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_fileConfiguration, _routes);
-        }
+            new Dictionary<string, UpstreamHeaderTemplate>(),
+            new Dictionary<string, UpstreamHeaderTemplate>(),
+        };
+        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+            .Returns(_headerTemplates[0])
+            .Returns(_headerTemplates[1]);
     }
 }

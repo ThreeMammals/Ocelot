@@ -24,6 +24,11 @@ namespace Ocelot.Configuration.Creator
 
         private Route SetUpAggregateRoute(IEnumerable<Route> routes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
         {
+            if (aggregateRoute.UpstreamHttpMethod.Count == 0)
+            {
+                aggregateRoute.UpstreamHttpMethod.Add(FileAggregateRoute.DefaultHttpMethod.ToString());
+            }
+
             var applicableRoutes = new List<DownstreamRoute>();
             var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
             var downstreamRoutes = aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey));
