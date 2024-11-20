@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.Configuration
         }
 
         [Fact]
-        public void should_create_route_security_config()
+        public void Should_create_route_security_config()
         {
             var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
             var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
@@ -32,12 +32,11 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenThe(new FileGlobalConfiguration()))
                 .Given(x => x.GivenThe(securityOptions))
                 .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected))
-                .BDDfy();
+                .Then(x => x.ThenTheResultIs(expected));
         }
 
         [Fact]
-        public void should_create_global_security_config()
+        public void Should_create_global_security_config()
         {
             var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
             var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
@@ -55,12 +54,11 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenThe(globalConfig))
                 .Given(x => x.GivenThe(new FileSecurityOptions()))
                 .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected))
-                .BDDfy();
+                .Then(x => x.ThenTheResultIs(expected));
         }
 
         [Fact]
-        public void should_create_global_route_security_config()
+        public void Should_create_global_route_security_config()
         {
             var routeIpAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
             var routeIpBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
@@ -86,8 +84,7 @@ namespace Ocelot.UnitTests.Configuration
             this.Given(x => x.GivenThe(globalConfig))
                 .Given(x => x.GivenThe(securityOptions))
                 .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheResultIs(expected))
-                .BDDfy();
+                .Then(x => x.ThenTheResultIs(expected));
         }
 
         private void GivenThe(FileSecurityOptions fileSecurityOptions)

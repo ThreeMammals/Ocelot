@@ -31,298 +31,271 @@ namespace Ocelot.UnitTests.Security
         }
 
         [Fact]
-        public void should_No_blocked_Ip_and_allowed_Ip()
+        public void Should_No_blocked_Ip_and_allowed_Ip()
         {
             this.Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_blockedIp_clientIp_block()
+        public void Should_blockedIp_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_blockedIp_clientIp_Not_block()
+        public void Should_blockedIp_clientIp_Not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_allowedIp_clientIp_block()
+        public void Should_allowedIp_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_allowedIp_clientIp_Not_block()
+        public void Should_allowedIp_clientIp_Not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
             this.Given(x => x.GivenSetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_cidrNotation_allowed24_clientIp_block()
+        public void Should_cidrNotation_allowed24_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.5")[0];
             this.Given(x => x.GivenCidr24AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_cidrNotation_allowed24_clientIp_not_block()
+        public void Should_cidrNotation_allowed24_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenCidr24AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_cidrNotation_allowed29_clientIp_block()
+        public void Should_cidrNotation_allowed29_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenCidr29AllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_cidrNotation_blocked24_clientIp_block()
+        public void Should_cidrNotation_blocked24_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
             this.Given(x => x.GivenCidr24BlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_cidrNotation_blocked24_clientIp_not_block()
+        public void Should_cidrNotation_blocked24_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
             this.Given(x => x.GivenCidr24BlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_range_allowed_clientIp_block()
+        public void Should_range_allowed_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_range_allowed_clientIp_not_block()
+        public void Should_range_allowed_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
             this.Given(x => x.GivenRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_range_blocked_clientIp_block()
+        public void Should_range_blocked_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_range_blocked_clientIp_not_block()
+        public void Should_range_blocked_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_shortRange_allowed_clientIp_block()
+        public void Should_shortRange_allowed_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenShortRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_shortRange_allowed_clientIp_not_block()
+        public void Should_shortRange_allowed_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
             this.Given(x => x.GivenShortRangeAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_shortRange_blocked_clientIp_block()
+        public void Should_shortRange_blocked_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
             this.Given(x => x.GivenShortRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_shortRange_blocked_clientIp_not_block()
+        public void Should_shortRange_blocked_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenShortRangeBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_ipSubnet_allowed_clientIp_block()
+        public void Should_ipSubnet_allowed_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.15")[0];
             this.Given(x => x.GivenIpSubnetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_ipSubnet_allowed_clientIp_not_block()
+        public void Should_ipSubnet_allowed_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenIpSubnetAllowedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_ipSubnet_blocked_clientIp_block()
+        public void Should_ipSubnet_blocked_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
             this.Given(x => x.GivenIpSubnetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_ipSubnet_blocked_clientIp_not_block()
+        public void Should_ipSubnet_blocked_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
             this.Given(x => x.GivenIpSubnetBlockedIP())
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_exludeAllowedFromBlocked_moreAllowed_clientIp_block()
+        public void Should_exludeAllowedFromBlocked_moreAllowed_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
             this.Given(x => x.GivenIpMoreAllowedThanBlocked(false))
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_exludeAllowedFromBlocked_moreAllowed_clientIp_not_block()
+        public void Should_exludeAllowedFromBlocked_moreAllowed_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
             this.Given(x => x.GivenIpMoreAllowedThanBlocked(true))
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_exludeAllowedFromBlocked_moreBlocked_clientIp_block()
+        public void Should_exludeAllowedFromBlocked_moreBlocked_clientIp_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenIpMoreBlockedThanAllowed(false))
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenNotSecurityPassing());
         }
 
         [Fact]
-        public void should_exludeAllowedFromBlocked_moreBlocked_clientIp_not_block()
+        public void Should_exludeAllowedFromBlocked_moreBlocked_clientIp_not_block()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenIpMoreBlockedThanAllowed(true))
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         [Fact]
-        public void should_route_config_overrides_global_config()
+        public void Should_route_config_overrides_global_config()
         {
             _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
             this.Given(x => x.GivenRouteConfigAndGlobalConfig(false))
                 .Given(x => x.GivenSetDownstreamRoute())
                 .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
+                .Then(x => x.ThenSecurityPassing());
         }
 
         private void GivenSetAllowedIP()
