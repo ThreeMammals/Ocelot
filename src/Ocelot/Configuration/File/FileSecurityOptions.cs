@@ -50,5 +50,8 @@ namespace Ocelot.Configuration.File
         /// Default value: false.
         /// </value>        
         public bool ExcludeAllowedFromBlocked { get; set; }
+
+        public bool IsFullFilled()
+            => this.IPAllowedList.Count > 0 || this.IPBlockedList.Count > 0;
     }
 }
