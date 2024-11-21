@@ -2,68 +2,67 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class ReasonPhraseTests : IDisposable
 {
-    public class ReasonPhraseTests : IDisposable
+    private readonly Steps _steps;
+    private readonly ServiceHandler _serviceHandler;
+
+    public ReasonPhraseTests()
     {
-        private readonly Steps _steps;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public ReasonPhraseTests()
+    [Fact]
+    public void should_return_reason_phrase()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_return_reason_phrase()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .And(_ => _steps.ThenTheReasonPhraseIs("some reason"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .And(_ => _steps.ThenTheReasonPhraseIs("some reason"))
+            .BDDfy();
+    }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string reasonPhrase)
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string reasonPhrase)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase;
+            context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase;
 
-                await context.Response.WriteAsync("YOYO!");
-            });
-        }
+            await context.Response.WriteAsync("YOYO!");
+        });
+    }
 
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
     }
 }
