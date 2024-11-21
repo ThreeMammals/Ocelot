@@ -117,15 +117,16 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     /// </summary>
     /// <param name="template">The path template.</param>
     /// <returns><see langword="true"/> if it matches.</returns>
-    private static bool IsCatchAllPath(string template) => RegexCatchAllPath().IsMatch(template) && !template.Contains('?');
+    private static bool IsCatchAllPath(string template) => RegexCatchAllPath().IsMatch(template) && !template.Contains(@"\?");
 
     /// <summary>Checks if the query should be skipped.
-    /// <para>It should be skipped if it is not present in the path template.</para>
+    /// <para>It should be skipped if it is not present in the path template.
+    /// Since the template is escaped, looking for \? not only ?.</para>
     /// </summary>
     /// <param name="query">The query string.</param>
     /// <param name="template">The path template.</param>
     /// <returns><see langword="true"/> if query should be skipped.</returns>
-    private static bool ShouldSkipQuery(string query, string template) => !string.IsNullOrEmpty(query) && !template.Contains('?');
+    private static bool ShouldSkipQuery(string query, string template) => !string.IsNullOrEmpty(query) && !template.Contains(@"\?");
 
     /// <summary>Escapes all characters except braces, eg { and }.</summary>
     /// <param name="input">The input string.</param>
@@ -149,7 +150,10 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
                 escaped.Append(Regex.Escape(c.ToString()));
             }
         }
- 
-        return escaped.ToString();
+
+        // Here we are not interested in the path itself, only the placeholders.
+        // Path validation is not part of this class, therefore allowing case-insensitive 
+        // matching.
+        return $"^(?i){escaped}";
     }
 }
