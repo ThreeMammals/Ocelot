@@ -6,7 +6,7 @@ using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
 using Ocelot.Samples.Web;
 
-namespace ApiGateway;
+namespace Ocelot.Samples.Eureka.ApiGateway;
 
 public class Program
 {

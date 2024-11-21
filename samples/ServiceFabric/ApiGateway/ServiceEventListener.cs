@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace OcelotApplicationApiGateway;
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
 /// <summary>
 /// ServiceEventListener is a class which listens to the eventsources registered and redirects the traces to a file

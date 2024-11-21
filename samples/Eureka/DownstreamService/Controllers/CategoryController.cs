@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
-namespace DownstreamService.Controllers;
+namespace Ocelot.Samples.Eureka.DownstreamService.Controllers;
 
 [Route("api/[controller]")]
 public class CategoryController : Controller

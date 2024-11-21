@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Steeltoe.Discovery.Client;
 
-namespace DownstreamService;
+namespace Ocelot.Samples.Eureka.DownstreamService;
 
 public class Startup
 {

@@ -8,7 +8,7 @@ using System;
 using System.Diagnostics.Tracing;
 using System.Threading;
 
-namespace OcelotApplicationApiGateway;
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
 
 /// <summary>

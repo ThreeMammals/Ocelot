@@ -6,7 +6,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.Web;
 
-namespace AdministrationApi;
+namespace Ocelot.Samples.AdministrationApi;
 
 public class Program
 {

@@ -6,7 +6,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace OcelotApplicationApiGateway;
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
 /// <summary>
 /// Implements methods for logging service related events.

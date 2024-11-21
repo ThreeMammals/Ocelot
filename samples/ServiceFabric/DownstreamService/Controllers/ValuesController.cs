@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
-namespace OcelotApplicationService.Controllers;
+namespace Ocelot.Samples.ServiceFabric.DownstreamService.Controllers;
 
 [Route("api/[controller]")]
 public class ValuesController : Controller
