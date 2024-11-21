@@ -1,41 +1,40 @@
 ﻿using CacheManager.Core;
 
-namespace Ocelot.Cache.CacheManager
+namespace Ocelot.Cache.CacheManager;
+
+public class OcelotCacheManagerCache<T> : IOcelotCache<T>
 {
-    public class OcelotCacheManagerCache<T> : IOcelotCache<T>
+    private readonly ICacheManager<T> _cacheManager;
+
+    public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
     {
-        private readonly ICacheManager<T> _cacheManager;
+        _cacheManager = cacheManager;
+    }
 
-        public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
+    public void Add(string key, T value, TimeSpan ttl, string region)
+    {
+        _cacheManager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
+    }
+
+    public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
+    {
+        var exists = _cacheManager.Get(key);
+
+        if (exists != null)
         {
-            _cacheManager = cacheManager;
+            _cacheManager.Remove(key);
         }
 
-        public void Add(string key, T value, TimeSpan ttl, string region)
-        {
-            _cacheManager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
-        }
+        Add(key, value, ttl, region);
+    }
 
-        public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
-        {
-            var exists = _cacheManager.Get(key);
+    public T Get(string key, string region)
+    {
+        return _cacheManager.Get<T>(key, region);
+    }
 
-            if (exists != null)
-            {
-                _cacheManager.Remove(key);
-            }
-
-            Add(key, value, ttl, region);
-        }
-
-        public T Get(string key, string region)
-        {
-            return _cacheManager.Get<T>(key, region);
-        }
-
-        public void ClearRegion(string region)
-        {
-            _cacheManager.ClearRegion(region);
-        }
+    public void ClearRegion(string region)
+    {
+        _cacheManager.ClearRegion(region);
     }
 }
