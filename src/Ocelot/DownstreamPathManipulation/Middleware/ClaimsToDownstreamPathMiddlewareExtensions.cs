@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.DownstreamPathManipulation.Middleware
+namespace Ocelot.DownstreamPathManipulation.Middleware;
+
+public static class ClaimsToDownstreamPathMiddlewareExtensions
 {
-    public static class ClaimsToDownstreamPathMiddlewareExtensions
+    public static IApplicationBuilder UseClaimsToDownstreamPathMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseClaimsToDownstreamPathMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ClaimsToDownstreamPathMiddleware>();
-        }
+        return builder.UseMiddleware<ClaimsToDownstreamPathMiddleware>();
     }
 }

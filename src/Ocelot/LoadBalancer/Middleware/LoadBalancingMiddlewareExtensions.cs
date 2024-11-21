@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.LoadBalancer.Middleware
+namespace Ocelot.LoadBalancer.Middleware;
+
+public static class LoadBalancingMiddlewareExtensions
 {
-    public static class LoadBalancingMiddlewareExtensions
+    public static IApplicationBuilder UseLoadBalancingMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseLoadBalancingMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<LoadBalancingMiddleware>();
-        }
+        return builder.UseMiddleware<LoadBalancingMiddleware>();
     }
 }

@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ocelot.DependencyInjection
+namespace Ocelot.DependencyInjection;
+
+public interface IOcelotAdministrationBuilder
 {
-    public interface IOcelotAdministrationBuilder
-    {
-        IServiceCollection Services { get; }
-        IConfiguration ConfigurationRoot { get; }
-    }
+    IServiceCollection Services { get; }
+    IConfiguration ConfigurationRoot { get; }
 }

@@ -1,10 +1,9 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Middleware;
 
-namespace Ocelot.Headers
+namespace Ocelot.Headers;
+
+public interface IAddHeadersToResponse
 {
-    public interface IAddHeadersToResponse
-    {
-        void Add(List<AddHeader> addHeaders, DownstreamResponse response);
-    }
+    void Add(List<AddHeader> addHeaders, DownstreamResponse response);
 }

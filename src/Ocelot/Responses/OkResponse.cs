@@ -1,9 +1,8 @@
-namespace Ocelot.Responses
+namespace Ocelot.Responses;
+
+public class OkResponse : Response
 {
-    public class OkResponse : Response
+    public OkResponse()
     {
-        public OkResponse()
-        {
-        }
     }
 }

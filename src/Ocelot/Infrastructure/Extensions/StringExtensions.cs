@@ -1,31 +1,30 @@
-﻿namespace Ocelot.Infrastructure.Extensions
+﻿namespace Ocelot.Infrastructure.Extensions;
+
+public static class StringExtensions
 {
-    public static class StringExtensions
+    public static string TrimStart(this string source, string trim, StringComparison stringComparison = StringComparison.Ordinal)
     {
-        public static string TrimStart(this string source, string trim, StringComparison stringComparison = StringComparison.Ordinal)
+        if (source == null)
         {
-            if (source == null)
-            {
-                return null;
-            }
-
-            var s = source;
-            while (s.StartsWith(trim, stringComparison))
-            {
-                s = s.Substring(trim.Length);
-            }
-
-            return s;
+            return null;
         }
 
-        public static string LastCharAsForwardSlash(this string source)
+        var s = source;
+        while (s.StartsWith(trim, stringComparison))
         {
-            if (source.EndsWith('/'))
-            {
-                return source;
-            }
-
-            return $"{source}/";
+            s = s.Substring(trim.Length);
         }
+
+        return s;
+    }
+
+    public static string LastCharAsForwardSlash(this string source)
+    {
+        if (source.EndsWith('/'))
+        {
+            return source;
+        }
+
+        return $"{source}/";
     }
 }
