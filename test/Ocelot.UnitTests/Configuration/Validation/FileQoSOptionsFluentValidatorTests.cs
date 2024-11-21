@@ -7,94 +7,93 @@ using Ocelot.Configuration.Validator;
 using Ocelot.Logging;
 using Ocelot.Requester;
 
-namespace Ocelot.UnitTests.Configuration.Validation
+namespace Ocelot.UnitTests.Configuration.Validation;
+
+public class FileQoSOptionsFluentValidatorTests : UnitTest
 {
-    public class FileQoSOptionsFluentValidatorTests : UnitTest
+    private FileQoSOptionsFluentValidator _validator;
+    private readonly ServiceCollection _services;
+    private ValidationResult _result;
+    private FileQoSOptions _qosOptions;
+
+    public FileQoSOptionsFluentValidatorTests()
     {
-        private FileQoSOptionsFluentValidator _validator;
-        private readonly ServiceCollection _services;
-        private ValidationResult _result;
-        private FileQoSOptions _qosOptions;
+        _services = new ServiceCollection();
+        var provider = _services.BuildServiceProvider(true);
+        _validator = new FileQoSOptionsFluentValidator(provider);
+    }
 
-        public FileQoSOptionsFluentValidatorTests()
+    [Fact]
+    public void should_be_valid_as_nothing_set()
+    {
+        this.Given(_ => GivenThe(new FileQoSOptions()))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_be_valid_as_qos_delegate_set()
+    {
+        var qosOptions = new FileQoSOptions
         {
-            _services = new ServiceCollection();
-            var provider = _services.BuildServiceProvider(true);
-            _validator = new FileQoSOptionsFluentValidator(provider);
-        }
+            TimeoutValue = 1,
+            ExceptionsAllowedBeforeBreaking = 1,
+        };
 
-        [Fact]
-        public void should_be_valid_as_nothing_set()
+        this.Given(_ => GivenThe(qosOptions))
+            .And(_ => GivenAQosDelegate())
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_be_invalid_as_no_qos_delegate()
+    {
+        var qosOptions = new FileQoSOptions
         {
-            this.Given(_ => GivenThe(new FileQoSOptions()))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
+            TimeoutValue = 1,
+            ExceptionsAllowedBeforeBreaking = 1,
+        };
 
-        [Fact]
-        public void should_be_valid_as_qos_delegate_set()
-        {
-            var qosOptions = new FileQoSOptions
-            {
-                TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1,
-            };
+        this.Given(_ => GivenThe(qosOptions))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInValid())
+            .And(_ => ThenTheErrorIs())
+            .BDDfy();
+    }
 
-            this.Given(_ => GivenThe(qosOptions))
-                .And(_ => GivenAQosDelegate())
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
+    private void ThenTheErrorIs()
+    {
+        _result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+    }
 
-        [Fact]
-        public void should_be_invalid_as_no_qos_delegate()
-        {
-            var qosOptions = new FileQoSOptions
-            {
-                TimeoutValue = 1,
-                ExceptionsAllowedBeforeBreaking = 1,
-            };
+    private void ThenTheResultIsInValid()
+    {
+        _result.IsValid.ShouldBeFalse();
+    }
 
-            this.Given(_ => GivenThe(qosOptions))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInValid())
-                .And(_ => ThenTheErrorIs())
-                .BDDfy();
-        }
+    private void GivenAQosDelegate()
+    {
+        DelegatingHandler Fake(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => null;
+        _services.AddSingleton((QosDelegatingHandlerDelegate)Fake);
+        var provider = _services.BuildServiceProvider(true);
+        _validator = new FileQoSOptionsFluentValidator(provider);
+    }
 
-        private void ThenTheErrorIs()
-        {
-            _result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
-        }
+    private void GivenThe(FileQoSOptions qosOptions)
+    {
+        _qosOptions = qosOptions;
+    }
 
-        private void ThenTheResultIsInValid()
-        {
-            _result.IsValid.ShouldBeFalse();
-        }
+    private void WhenIValidate()
+    {
+        _result = _validator.Validate(_qosOptions);
+    }
 
-        private void GivenAQosDelegate()
-        {
-            DelegatingHandler Fake(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => null;
-            _services.AddSingleton((QosDelegatingHandlerDelegate)Fake);
-            var provider = _services.BuildServiceProvider(true);
-            _validator = new FileQoSOptionsFluentValidator(provider);
-        }
-
-        private void GivenThe(FileQoSOptions qosOptions)
-        {
-            _qosOptions = qosOptions;
-        }
-
-        private void WhenIValidate()
-        {
-            _result = _validator.Validate(_qosOptions);
-        }
-
-        private void ThenTheResultIsValid()
-        {
-            _result.IsValid.ShouldBeTrue();
-        }
+    private void ThenTheResultIsValid()
+    {
+        _result.IsValid.ShouldBeTrue();
     }
 }

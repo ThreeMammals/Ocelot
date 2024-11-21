@@ -5,447 +5,446 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using System.Reflection;
 
-namespace Ocelot.UnitTests.Configuration.Validation
+namespace Ocelot.UnitTests.Configuration.Validation;
+
+public class RouteFluentValidatorTests : UnitTest
 {
-    public class RouteFluentValidatorTests : UnitTest
+    private readonly RouteFluentValidator _validator;
+    private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
+    private Mock<IServiceProvider> _serviceProvider;
+    private FileRoute _route;
+    private ValidationResult _result;
+
+    public RouteFluentValidatorTests()
     {
-        private readonly RouteFluentValidator _validator;
-        private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
-        private Mock<IServiceProvider> _serviceProvider;
-        private FileRoute _route;
-        private ValidationResult _result;
+        _authProvider = new Mock<IAuthenticationSchemeProvider>();
+        _serviceProvider = new Mock<IServiceProvider>();
 
-        public RouteFluentValidatorTests()
+        // Todo - replace with mocks
+        _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+    }
+
+    [Fact]
+    public void downstream_path_template_should_not_be_empty()
+    {
+        var fileRoute = new FileRoute();
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Downstream Path Template cannot be empty"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void upstream_path_template_should_not_be_empty()
+    {
+        var fileRoute = new FileRoute
         {
-            _authProvider = new Mock<IAuthenticationSchemeProvider>();
-            _serviceProvider = new Mock<IServiceProvider>();
+            DownstreamPathTemplate = "test",
+        };
 
-            // Todo - replace with mocks
-            _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Upstream Path Template cannot be empty"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void downstream_path_template_should_not_be_empty()
+    [Fact]
+    public void downstream_path_template_should_start_with_forward_slash()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute();
+            DownstreamPathTemplate = "test",
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Downstream Path Template cannot be empty"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Downstream Path Template test doesnt start with forward slash"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void upstream_path_template_should_not_be_empty()
+    [Fact]
+    public void downstream_path_template_should_not_contain_double_forward_slash()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "//test",
+        };
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Downstream Path Template //test contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+            .BDDfy();
+    }
+
+    [Theory]
+    [InlineData("https://test")]
+    [InlineData("http://test")]
+    [InlineData("/test/http://")]
+    [InlineData("/test/https://")]
+    public void downstream_path_template_should_not_contain_scheme(string downstreamPathTemplate)
+    {
+        var fileRoute = new FileRoute
+        {
+            DownstreamPathTemplate = downstreamPathTemplate,
+        };
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains($"Downstream Path Template {downstreamPathTemplate} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void upstream_path_template_should_start_with_forward_slash()
+    {
+        var fileRoute = new FileRoute
+        {
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "test",
+        };
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Upstream Path Template test doesnt start with forward slash"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void upstream_path_template_should_not_contain_double_forward_slash()
+    {
+        var fileRoute = new FileRoute
+        {
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "//test",
+        };
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("Upstream Path Template //test contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+            .BDDfy();
+    }
+
+    [Theory]
+    [InlineData("https://test")]
+    [InlineData("http://test")]
+    [InlineData("/test/http://")]
+    [InlineData("/test/https://")]
+    public void upstream_path_template_should_not_contain_scheme(string upstreamPathTemplate)
+    {
+        var fileRoute = new FileRoute
+        {
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = upstreamPathTemplate,
+        };
+
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains($"Upstream Path Template {upstreamPathTemplate} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
+    {
+        var fileRoute = new FileRoute
+        {
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            RateLimitOptions = new FileRateLimitRule
             {
-                DownstreamPathTemplate = "test",
-            };
+                EnableRateLimiting = true,
+            },
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Upstream Path Template cannot be empty"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("RateLimitOptions.Period is empty"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void downstream_path_template_should_start_with_forward_slash()
+    [Fact]
+    public void should_not_be_valid_if_enable_rate_limiting_true_and_period_has_value()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            RateLimitOptions = new FileRateLimitRule
             {
-                DownstreamPathTemplate = "test",
-            };
+                EnableRateLimiting = true,
+                Period = "test",
+            },
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Downstream Path Template test doesnt start with forward slash"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void downstream_path_template_should_not_contain_double_forward_slash()
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("1s", true)]
+    [InlineData("2m", true)]
+    [InlineData("3h", true)]
+    [InlineData("4d", true)]
+    [InlineData("123", false)]
+    [InlineData("-123", false)]
+    [InlineData("bad", false)]
+    [InlineData(" 3s ", true)]
+    [InlineData(" -3s ", false)]
+    public void IsValidPeriod_ReflectionLifeHack_BranchesAreCovered(string period, bool expected)
+    {
+        // Arrange
+        var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
+        var argument = new FileRateLimitRule { Period = period };
+
+        // Act
+        bool actual = (bool)method.Invoke(_validator, new object[] { argument });
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void should_not_be_valid_if_specified_authentication_provider_isnt_registered()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            AuthenticationOptions = new FileAuthenticationOptions
             {
-                DownstreamPathTemplate = "//test",
-            };
+                AuthenticationProviderKey = "JwtLads",
+            },
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Downstream Path Template //test contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
+            .BDDfy();
+    }
 
-        [Theory]
-        [InlineData("https://test")]
-        [InlineData("http://test")]
-        [InlineData("/test/http://")]
-        [InlineData("/test/https://")]
-        public void downstream_path_template_should_not_contain_scheme(string downstreamPathTemplate)
+    [Fact]
+    public void should_not_be_valid_if_not_using_service_discovery_and_no_host_and_ports()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = downstreamPathTemplate,
-            };
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Downstream Path Template {downstreamPathTemplate} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void upstream_path_template_should_start_with_forward_slash()
+    [Fact]
+    public void should_be_valid_if_using_service_discovery_and_no_host_and_ports()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "test",
-            };
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            ServiceName = "Lads",
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Upstream Path Template test doesnt start with forward slash"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
 
-        [Fact]
-        public void upstream_path_template_should_not_contain_double_forward_slash()
+    [Fact]
+    public void should_be_valid_re_route_using_host_and_port_and_paths()
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "//test",
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("Upstream Path Template //test contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .BDDfy();
-        }
-
-        [Theory]
-        [InlineData("https://test")]
-        [InlineData("http://test")]
-        [InlineData("/test/http://")]
-        [InlineData("/test/https://")]
-        public void upstream_path_template_should_not_contain_scheme(string upstreamPathTemplate)
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = upstreamPathTemplate,
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Upstream Path Template {upstreamPathTemplate} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature."))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                RateLimitOptions = new FileRateLimitRule
+                new()
                 {
-                    EnableRateLimiting = true,
+                    Host = "localhost",
+                    Port = 5000,
                 },
-            };
+            },
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("RateLimitOptions.Period is empty"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_not_be_valid_if_enable_rate_limiting_true_and_period_has_value()
+    [Fact]
+    public void should_be_valid_if_specified_authentication_provider_is_registered()
+    {
+        const string key = "JwtLads";
+
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            AuthenticationOptions = new FileAuthenticationOptions
             {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                RateLimitOptions = new FileRateLimitRule
+                AuthenticationProviderKey = key,
+            },
+            DownstreamHostAndPorts = new List<FileHostAndPort>
+            {
+                new()
                 {
-                    EnableRateLimiting = true,
-                    Period = "test",
+                    Host = "localhost",
+                    Port = 5000,
                 },
-            };
+            },
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .And(_ => GivenAnAuthProvider(key))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
 
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("1s", true)]
-        [InlineData("2m", true)]
-        [InlineData("3h", true)]
-        [InlineData("4d", true)]
-        [InlineData("123", false)]
-        [InlineData("-123", false)]
-        [InlineData("bad", false)]
-        [InlineData(" 3s ", true)]
-        [InlineData(" -3s ", false)]
-        public void IsValidPeriod_ReflectionLifeHack_BranchesAreCovered(string period, bool expected)
+    [Theory]
+    [InlineData("1.0")]
+    [InlineData("1.1")]
+    [InlineData("2.0")]
+    [InlineData("1,0")]
+    [InlineData("1,1")]
+    [InlineData("2,0")]
+    [InlineData("1")]
+    [InlineData("2")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void should_be_valid_re_route_using_downstream_http_version(string version)
+    {
+        var fileRoute = new FileRoute
         {
-            // Arrange
-            var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
-            var argument = new FileRateLimitRule { Period = period };
-
-            // Act
-            bool actual = (bool)method.Invoke(_validator, new object[] { argument });
-
-            // Assert
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void should_not_be_valid_if_specified_authentication_provider_isnt_registered()
-        {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                AuthenticationOptions = new FileAuthenticationOptions
+                new()
                 {
-                    AuthenticationProviderKey = "JwtLads",
+                    Host = "localhost",
+                    Port = 5000,
                 },
-            };
+            },
+            DownstreamHttpVersion = version,
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider"))
-                .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsValid())
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_not_be_valid_if_not_using_service_discovery_and_no_host_and_ports()
+    [Theory]
+    [InlineData("retg1.1")]
+    [InlineData("re2.0")]
+    [InlineData("1,0a")]
+    [InlineData("a1,1")]
+    [InlineData("12,0")]
+    [InlineData("asdf")]
+    public void should_be_invalid_re_route_using_downstream_http_version(string version)
+    {
+        var fileRoute = new FileRoute
         {
-            var fileRoute = new FileRoute
+            DownstreamPathTemplate = "/test",
+            UpstreamPathTemplate = "/test",
+            DownstreamHostAndPorts = new List<FileHostAndPort>
             {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_be_valid_if_using_service_discovery_and_no_host_and_ports()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                ServiceName = "Lads",
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_be_valid_re_route_using_host_and_port_and_paths()
-        {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
+                new()
                 {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
+                    Host = "localhost",
+                    Port = 5000,
                 },
-            };
+            },
+            DownstreamHttpVersion = version,
+        };
 
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
+        this.Given(_ => GivenThe(fileRoute))
+            .When(_ => WhenIValidate())
+            .Then(_ => ThenTheResultIsInvalid())
+            .And(_ => ThenTheErrorsContains("'Downstream Http Version'")) // this error message changes depending on the OS language
+            .BDDfy();
+    }
+
+    private void GivenAnAuthProvider(string key)
+    {
+        var schemes = new List<AuthenticationScheme>
+        {
+            new(key, key, typeof(FakeAutheHandler)),
+        };
+
+        _authProvider
+            .Setup(x => x.GetAllSchemesAsync())
+            .ReturnsAsync(schemes);
+    }
+
+    private void ThenTheResultIsValid()
+    {
+        _result.IsValid.ShouldBeTrue();
+    }
+
+    private void GivenThe(FileRoute route)
+    {
+        _route = route;
+    }
+
+    private async Task WhenIValidate()
+    {
+        _result = await _validator.ValidateAsync(_route);
+    }
+
+    private void ThenTheResultIsInvalid()
+    {
+        _result.IsValid.ShouldBeFalse();
+    }
+
+    private void ThenTheErrorsContains(string expected)
+    {
+        _result.Errors.ShouldContain(x => x.ErrorMessage.Contains(expected));
+    }
+
+    private class FakeAutheHandler : IAuthenticationHandler
+    {
+        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
+        {
+            throw new System.NotImplementedException();
         }
 
-        [Fact]
-        public void should_be_valid_if_specified_authentication_provider_is_registered()
+        public Task<AuthenticateResult> AuthenticateAsync()
         {
-            const string key = "JwtLads";
-
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                AuthenticationOptions = new FileAuthenticationOptions
-                {
-                    AuthenticationProviderKey = key,
-                },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
-                },
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .And(_ => GivenAnAuthProvider(key))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
+            throw new System.NotImplementedException();
         }
 
-        [Theory]
-        [InlineData("1.0")]
-        [InlineData("1.1")]
-        [InlineData("2.0")]
-        [InlineData("1,0")]
-        [InlineData("1,1")]
-        [InlineData("2,0")]
-        [InlineData("1")]
-        [InlineData("2")]
-        [InlineData("")]
-        [InlineData(null)]
-        public void should_be_valid_re_route_using_downstream_http_version(string version)
+        public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
-                },
-                DownstreamHttpVersion = version,
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
+            throw new System.NotImplementedException();
         }
 
-        [Theory]
-        [InlineData("retg1.1")]
-        [InlineData("re2.0")]
-        [InlineData("1,0a")]
-        [InlineData("a1,1")]
-        [InlineData("12,0")]
-        [InlineData("asdf")]
-        public void should_be_invalid_re_route_using_downstream_http_version(string version)
+        public Task ForbidAsync(AuthenticationProperties properties)
         {
-            var fileRoute = new FileRoute
-            {
-                DownstreamPathTemplate = "/test",
-                UpstreamPathTemplate = "/test",
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 5000,
-                    },
-                },
-                DownstreamHttpVersion = version,
-            };
-
-            this.Given(_ => GivenThe(fileRoute))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsInvalid())
-                .And(_ => ThenTheErrorsContains("'Downstream Http Version'")) // this error message changes depending on the OS language
-                .BDDfy();
-        }
-
-        private void GivenAnAuthProvider(string key)
-        {
-            var schemes = new List<AuthenticationScheme>
-            {
-                new(key, key, typeof(FakeAutheHandler)),
-            };
-
-            _authProvider
-                .Setup(x => x.GetAllSchemesAsync())
-                .ReturnsAsync(schemes);
-        }
-
-        private void ThenTheResultIsValid()
-        {
-            _result.IsValid.ShouldBeTrue();
-        }
-
-        private void GivenThe(FileRoute route)
-        {
-            _route = route;
-        }
-
-        private async Task WhenIValidate()
-        {
-            _result = await _validator.ValidateAsync(_route);
-        }
-
-        private void ThenTheResultIsInvalid()
-        {
-            _result.IsValid.ShouldBeFalse();
-        }
-
-        private void ThenTheErrorsContains(string expected)
-        {
-            _result.Errors.ShouldContain(x => x.ErrorMessage.Contains(expected));
-        }
-
-        private class FakeAutheHandler : IAuthenticationHandler
-        {
-            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public Task<AuthenticateResult> AuthenticateAsync()
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public Task ChallengeAsync(AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public Task ForbidAsync(AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,48 +1,47 @@
 ﻿using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Headers;
+
+public class RemoveHeadersTests : UnitTest
 {
-    public class RemoveHeadersTests : UnitTest
+    private List<Header> _headers;
+    private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
+    private Response _result;
+
+    public RemoveHeadersTests()
     {
-        private List<Header> _headers;
-        private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
-        private Response _result;
+        _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
+    }
 
-        public RemoveHeadersTests()
+    [Fact]
+    public void should_remove_header()
+    {
+        var headers = new List<Header>
         {
-            _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
-        }
+            new("Transfer-Encoding", new List<string> {"chunked"}),
+        };
 
-        [Fact]
-        public void should_remove_header()
-        {
-            var headers = new List<Header>
-            {
-                new("Transfer-Encoding", new List<string> {"chunked"}),
-            };
+        this.Given(x => x.GivenAHttpContext(headers))
+            .When(x => x.WhenIRemoveTheHeaders())
+            .Then(x => x.TheHeaderIsNoLongerInTheContext())
+            .BDDfy();
+    }
 
-            this.Given(x => x.GivenAHttpContext(headers))
-                .When(x => x.WhenIRemoveTheHeaders())
-                .Then(x => x.TheHeaderIsNoLongerInTheContext())
-                .BDDfy();
-        }
+    private void GivenAHttpContext(List<Header> headers)
+    {
+        _headers = headers;
+    }
 
-        private void GivenAHttpContext(List<Header> headers)
-        {
-            _headers = headers;
-        }
+    private void WhenIRemoveTheHeaders()
+    {
+        _result = _removeOutputHeaders.Remove(_headers);
+    }
 
-        private void WhenIRemoveTheHeaders()
-        {
-            _result = _removeOutputHeaders.Remove(_headers);
-        }
-
-        private void TheHeaderIsNoLongerInTheContext()
-        {
-            _result.IsError.ShouldBeFalse();
-            _headers.ShouldNotContain(x => x.Key == "Transfer-Encoding");
-            _headers.ShouldNotContain(x => x.Key == "transfer-encoding");
-        }
+    private void TheHeaderIsNoLongerInTheContext()
+    {
+        _result.IsError.ShouldBeFalse();
+        _headers.ShouldNotContain(x => x.Key == "Transfer-Encoding");
+        _headers.ShouldNotContain(x => x.Key == "transfer-encoding");
     }
 }

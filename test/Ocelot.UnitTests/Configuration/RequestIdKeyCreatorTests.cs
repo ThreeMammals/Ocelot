@@ -1,89 +1,88 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class RequestIdKeyCreatorTests : UnitTest
 {
-    public class RequestIdKeyCreatorTests : UnitTest
+    private FileRoute _fileRoute;
+    private FileGlobalConfiguration _fileGlobalConfig;
+    private string _result;
+    private readonly RequestIdKeyCreator _creator;
+
+    public RequestIdKeyCreatorTests()
     {
-        private FileRoute _fileRoute;
-        private FileGlobalConfiguration _fileGlobalConfig;
-        private string _result;
-        private readonly RequestIdKeyCreator _creator;
+        _creator = new RequestIdKeyCreator();
+    }
 
-        public RequestIdKeyCreatorTests()
+    [Fact]
+    public void should_use_global_configuration()
+    {
+        var route = new FileRoute();
+        var globalConfig = new FileGlobalConfiguration
         {
-            _creator = new RequestIdKeyCreator();
-        }
+            RequestIdKey = "cheese",
+        };
 
-        [Fact]
-        public void should_use_global_configuration()
+        this.Given(x => x.GivenTheFollowingRoute(route))
+            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
+            .When(x => x.WhenICreate())
+            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_use_re_route_specific()
+    {
+        var route = new FileRoute
         {
-            var route = new FileRoute();
-            var globalConfig = new FileGlobalConfiguration
-            {
-                RequestIdKey = "cheese",
-            };
+            RequestIdKey = "cheese",
+        };
+        var globalConfig = new FileGlobalConfiguration();
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
-                .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenTheFollowingRoute(route))
+            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
+            .When(x => x.WhenICreate())
+            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_use_re_route_specific()
+    [Fact]
+    public void should_use_re_route_over_global_specific()
+    {
+        var route = new FileRoute
         {
-            var route = new FileRoute
-            {
-                RequestIdKey = "cheese",
-            };
-            var globalConfig = new FileGlobalConfiguration();
-
-            this.Given(x => x.GivenTheFollowingRoute(route))
-                .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_use_re_route_over_global_specific()
+            RequestIdKey = "cheese",
+        };
+        var globalConfig = new FileGlobalConfiguration
         {
-            var route = new FileRoute
-            {
-                RequestIdKey = "cheese",
-            };
-            var globalConfig = new FileGlobalConfiguration
-            {
-                RequestIdKey = "test",
-            };
+            RequestIdKey = "test",
+        };
 
-            this.Given(x => x.GivenTheFollowingRoute(route))
-                .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-                .When(x => x.WhenICreate())
-                .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenTheFollowingRoute(route))
+            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
+            .When(x => x.WhenICreate())
+            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
+            .BDDfy();
+    }
 
-        private void GivenTheFollowingRoute(FileRoute fileRoute)
-        {
-            _fileRoute = fileRoute;
-        }
+    private void GivenTheFollowingRoute(FileRoute fileRoute)
+    {
+        _fileRoute = fileRoute;
+    }
 
-        private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration globalConfig)
-        {
-            _fileGlobalConfig = globalConfig;
-        }
+    private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration globalConfig)
+    {
+        _fileGlobalConfig = globalConfig;
+    }
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_fileRoute, _fileGlobalConfig);
-        }
+    private void WhenICreate()
+    {
+        _result = _creator.Create(_fileRoute, _fileGlobalConfig);
+    }
 
-        private void ThenTheFollowingIsReturned(string expected)
-        {
-            _result.ShouldBe(expected);
-        }
+    private void ThenTheFollowingIsReturned(string expected)
+    {
+        _result.ShouldBe(expected);
     }
 }

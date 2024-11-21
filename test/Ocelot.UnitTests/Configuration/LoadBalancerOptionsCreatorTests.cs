@@ -2,50 +2,49 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class LoadBalancerOptionsCreatorTests : UnitTest
 {
-    public class LoadBalancerOptionsCreatorTests : UnitTest
+    private readonly ILoadBalancerOptionsCreator _creator;
+    private FileLoadBalancerOptions _fileLoadBalancerOptions;
+    private LoadBalancerOptions _result;
+
+    public LoadBalancerOptionsCreatorTests()
     {
-        private readonly ILoadBalancerOptionsCreator _creator;
-        private FileLoadBalancerOptions _fileLoadBalancerOptions;
-        private LoadBalancerOptions _result;
+        _creator = new LoadBalancerOptionsCreator();
+    }
 
-        public LoadBalancerOptionsCreatorTests()
+    [Fact]
+    public void should_create()
+    {
+        var fileLoadBalancerOptions = new FileLoadBalancerOptions
         {
-            _creator = new LoadBalancerOptionsCreator();
-        }
+            Type = "test",
+            Key = "west",
+            Expiry = 1,
+        };
 
-        [Fact]
-        public void should_create()
-        {
-            var fileLoadBalancerOptions = new FileLoadBalancerOptions
-            {
-                Type = "test",
-                Key = "west",
-                Expiry = 1,
-            };
+        this.Given(_ => GivenThe(fileLoadBalancerOptions))
+            .When(_ => WhenICreate())
+            .Then(_ => ThenTheOptionsAreCreated(fileLoadBalancerOptions))
+            .BDDfy();
+    }
 
-            this.Given(_ => GivenThe(fileLoadBalancerOptions))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheOptionsAreCreated(fileLoadBalancerOptions))
-                .BDDfy();
-        }
+    private void ThenTheOptionsAreCreated(FileLoadBalancerOptions expected)
+    {
+        _result.Type.ShouldBe(expected.Type);
+        _result.Key.ShouldBe(expected.Key);
+        _result.ExpiryInMs.ShouldBe(expected.Expiry);
+    }
 
-        private void ThenTheOptionsAreCreated(FileLoadBalancerOptions expected)
-        {
-            _result.Type.ShouldBe(expected.Type);
-            _result.Key.ShouldBe(expected.Key);
-            _result.ExpiryInMs.ShouldBe(expected.Expiry);
-        }
+    private void WhenICreate()
+    {
+        _result = _creator.Create(_fileLoadBalancerOptions);
+    }
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_fileLoadBalancerOptions);
-        }
-
-        private void GivenThe(FileLoadBalancerOptions fileLoadBalancerOptions)
-        {
-            _fileLoadBalancerOptions = fileLoadBalancerOptions;
-        }
+    private void GivenThe(FileLoadBalancerOptions fileLoadBalancerOptions)
+    {
+        _fileLoadBalancerOptions = fileLoadBalancerOptions;
     }
 }

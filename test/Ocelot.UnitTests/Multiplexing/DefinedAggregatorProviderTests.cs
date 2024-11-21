@@ -5,79 +5,78 @@ using Ocelot.Multiplexer;
 using Ocelot.Responses;
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
-namespace Ocelot.UnitTests.Multiplexing
+namespace Ocelot.UnitTests.Multiplexing;
+
+public class DefinedAggregatorProviderTests : UnitTest
 {
-    public class DefinedAggregatorProviderTests : UnitTest
+    private ServiceLocatorDefinedAggregatorProvider _provider;
+    private Response<IDefinedAggregator> _aggregator;
+    private Route _route;
+
+    [Fact]
+    public void should_find_aggregator()
     {
-        private ServiceLocatorDefinedAggregatorProvider _provider;
-        private Response<IDefinedAggregator> _aggregator;
-        private Route _route;
+        var route = new RouteBuilder()
+            .WithAggregator("TestDefinedAggregator")
+            .Build();
 
-        [Fact]
-        public void should_find_aggregator()
-        {
-            var route = new RouteBuilder()
-                .WithAggregator("TestDefinedAggregator")
-                .Build();
+        this.Given(_ => GivenDefinedAggregator())
+            .And(_ => GivenRoute(route))
+            .When(_ => WhenIGet())
+            .Then(_ => ThenTheAggregatorIsReturned())
+            .BDDfy();
+    }
 
-            this.Given(_ => GivenDefinedAggregator())
-                .And(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenTheAggregatorIsReturned())
-                .BDDfy();
-        }
+    [Fact]
+    public void should_not_find_aggregator()
+    {
+        var route = new RouteBuilder()
+            .WithAggregator("TestDefinedAggregator")
+            .Build();
 
-        [Fact]
-        public void should_not_find_aggregator()
-        {
-            var route = new RouteBuilder()
-                .WithAggregator("TestDefinedAggregator")
-                .Build();
+        this.Given(_ => GivenNoDefinedAggregator())
+            .And(_ => GivenRoute(route))
+            .When(_ => WhenIGet())
+            .Then(_ => ThenAnErrorIsReturned())
+            .BDDfy();
+    }
 
-            this.Given(_ => GivenNoDefinedAggregator())
-                .And(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenAnErrorIsReturned())
-                .BDDfy();
-        }
+    private void GivenDefinedAggregator()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
+        var services = serviceCollection.BuildServiceProvider(true);
+        _provider = new ServiceLocatorDefinedAggregatorProvider(services);
+    }
 
-        private void GivenDefinedAggregator()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
-            var services = serviceCollection.BuildServiceProvider(true);
-            _provider = new ServiceLocatorDefinedAggregatorProvider(services);
-        }
+    private void ThenTheAggregatorIsReturned()
+    {
+        _aggregator.Data.ShouldNotBeNull();
+        _aggregator.Data.ShouldBeOfType<TestDefinedAggregator>();
+        _aggregator.IsError.ShouldBeFalse();
+    }
 
-        private void ThenTheAggregatorIsReturned()
-        {
-            _aggregator.Data.ShouldNotBeNull();
-            _aggregator.Data.ShouldBeOfType<TestDefinedAggregator>();
-            _aggregator.IsError.ShouldBeFalse();
-        }
+    private void GivenNoDefinedAggregator()
+    {
+        var serviceCollection = new ServiceCollection();
+        var services = serviceCollection.BuildServiceProvider(true);
+        _provider = new ServiceLocatorDefinedAggregatorProvider(services);
+    }
 
-        private void GivenNoDefinedAggregator()
-        {
-            var serviceCollection = new ServiceCollection();
-            var services = serviceCollection.BuildServiceProvider(true);
-            _provider = new ServiceLocatorDefinedAggregatorProvider(services);
-        }
+    private void GivenRoute(Route route)
+    {
+        _route = route;
+    }
 
-        private void GivenRoute(Route route)
-        {
-            _route = route;
-        }
+    private void WhenIGet()
+    {
+        _aggregator = _provider.Get(_route);
+    }
 
-        private void WhenIGet()
-        {
-            _aggregator = _provider.Get(_route);
-        }
-
-        private void ThenAnErrorIsReturned()
-        {
-            _aggregator.IsError.ShouldBeTrue();
-            _aggregator.Errors[0].Message.ShouldBe("Could not find Aggregator: TestDefinedAggregator");
-            _aggregator.Errors[0].ShouldBeOfType<CouldNotFindAggregatorError>();
-        }
+    private void ThenAnErrorIsReturned()
+    {
+        _aggregator.IsError.ShouldBeTrue();
+        _aggregator.Errors[0].Message.ShouldBe("Could not find Aggregator: TestDefinedAggregator");
+        _aggregator.Errors[0].ShouldBeOfType<CouldNotFindAggregatorError>();
     }
 }
