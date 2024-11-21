@@ -442,6 +442,64 @@ public sealed class RoutingTests : Steps, IDisposable
             .And(x => ThenTheResponseBodyShouldBe("Hello from Guillaume"))
             .BDDfy();
     }
+    
+    [Theory]
+    [Trait("Bug", "2209")]
+    [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
+        "/api/InvoIces_abc/def-ghi_abcd/xyz?urlId=bla", "/api/invoices/abc-def-ghi", "?urlId=bla")]
+    [InlineData("/api/products/{category}-{subcategory}/{filter}", "/api/products_{category}/{subcategory}_details/{itemId}?filter={filter}", 
+        "/API/PRODUCTS_electronics/computers_details/123?filter=active", "/api/products/electronics-computers/active", "")]
+    [InlineData("/api/users/{userId}/posts/{postId}/{lang}", "/api/users/{userId}/{postId}_content/{timestamp}?lang={lang}", 
+        "/api/UsErS/101/2022_content/2024?lang=en", "/api/users/101/posts/2022/en", "")]
+    [InlineData("/api/categories/{cat}-{subcat}?sort={sort}", "/api/categories_{cat}/{subcat}_items/{itemId}?sort={sort}", 
+        "/api/CATEGORIES_home/furniture_items/789?sort=asc", "/api/categories/home-furniture", "?sort=asc")]
+    [InlineData("/api/orders/{order}-{detail}?status={status}", "/api/orders_{order}/{detail}_invoice/{ref}?status={status}", 
+        "/API/ORDERS_987/abc_invOiCE/123?status=shipped", "/api/orders/987-abc", "?status=shipped")]
+    [InlineData("/api/transactions/{type}-{region}", "/api/transactions_{type}/{region}_summary/{year}?q={query}", 
+        "/api/TRanSacTIONS_sales/NA_summary/2024?q=forecast", "/api/transactions/sales-NA", "?q=forecast")]
+    public void ShouldMatchComplexQueriesCaseInsensitive(string downstream, string upstream, string requestUrl, string downstreamPath, string queryString)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstream, downstream);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello from Guillaume"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(queryString))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Guillaume"))
+            .BDDfy();
+    }
+    
+    [Theory]
+    [Trait("Bug", "2209")]
+    [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
+        "/api/InvoIces_abc/def-ghi_abcd/xyz?urlId=bla", "/api/invoices/abc-def-ghi", "?urlId=bla")]
+    [InlineData("/api/products/{category}-{subcategory}/{filter}", "/api/products_{category}/{subcategory}_details/{itemId}?filter={filter}", 
+        "/API/PRODUCTS_electronics/computers_details/123?filter=active", "/api/products/electronics-computers/active", "")]
+    [InlineData("/api/users/{userId}/posts/{postId}/{lang}", "/api/users/{userId}/{postId}_content/{timestamp}?lang={lang}", 
+        "/api/UsErS/101/2022_content/2024?lang=en", "/api/users/101/posts/2022/en", "")]
+    [InlineData("/api/categories/{cat}-{subcat}?sort={sort}", "/api/categories_{cat}/{subcat}_items/{itemId}?sort={sort}", 
+        "/api/CATEGORIES_home/furniture_items/789?sort=asc", "/api/categories/home-furniture", "?sort=asc")]
+    [InlineData("/api/orders/{order}-{detail}?status={status}", "/api/orders_{order}/{detail}_invoice/{ref}?status={status}", 
+        "/API/ORDERS_987/abc_invOiCE/123?status=shipped", "/api/orders/987-abc", "?status=shipped")]
+    [InlineData("/api/transactions/{type}-{region}", "/api/transactions_{type}/{region}_summary/{year}?q={query}", 
+        "/api/TRanSacTIONS_sales/NA_summary/2024?q=forecast", "/api/transactions/sales-NA", "?q=forecast")]
+    public void ShouldNotMatchComplexQueriesCaseSensitive(string downstream, string upstream, string requestUrl, string downstreamPath, string queryString)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstream, downstream);
+        route.RouteIsCaseSensitive = true;
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello from Guillaume"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+            .BDDfy();
+    }
 
     [Fact]
     [Trait("Feat", "91, 94")]
