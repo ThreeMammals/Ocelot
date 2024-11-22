@@ -1,4 +1,4 @@
-﻿using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Security.Claims;
 
@@ -28,14 +28,22 @@ namespace Ocelot.Authorization
                 return new ErrorResponse<bool>(values.Errors);
             }
 
-            var userScopes = values.Data;
+            IList<string> userScopes = values.Data;
 
-            var matchesScopes = routeAllowedScopes.Intersect(userScopes);
+            if (userScopes.Count == 1)
+            {
+                var scope = userScopes[0];
 
-            if (!matchesScopes.Any())
+                if (scope.Contains(' '))
+                {
+                    userScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            if (routeAllowedScopes.Except(userScopes).Any())
             {
                 return new ErrorResponse<bool>(
-                    new ScopeNotAuthorizedError($"no one user scope: '{string.Join(',', userScopes)}' match with some allowed scope: '{string.Join(',', routeAllowedScopes)}'"));
+                    new ScopeNotAuthorizedError($"User scopes: '{string.Join(',', userScopes)}' do not have all allowed route scopes: '{string.Join(',', routeAllowedScopes)}'"));
             }
 
             return new OkResponse<bool>(true);
