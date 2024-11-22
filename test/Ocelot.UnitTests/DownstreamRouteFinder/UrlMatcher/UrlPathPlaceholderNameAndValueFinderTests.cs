@@ -416,6 +416,41 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         // Assert;
         ThenTheExpectedVariablesCantBeFound(expectedTemplates.ToArray());
     }
+    
+    [Theory]
+    [Trait("Bug", "2212")]
+    [InlineData("/dati-registri/{version}/{everything}", "/dati-registri/v1.0/operatore/R80QQ5J9600/valida", "{version}", "v1.0", "{everything}", "operatore/R80QQ5J9600/valida")]
+    [InlineData("/api/invoices/{invoiceId}/{url}", "/api/invoices/1", "{invoiceId}", "1", "{url}", "")]
+    [InlineData("/api/{version}/{type}/{everything}", "/api/v1.0/items/details/12345", "{version}", "v1.0", "{type}", "items", "{everything}", "details/12345")]
+    [InlineData("/resources/{area}/{id}/{details}", "/resources/europe/56789/info/about", "{area}", "europe", "{id}", "56789", "{details}", "info/about")]
+    [InlineData("/data/{version}/{category}/{subcategory}/{rest}", "/data/2.1/sales/reports/weekly/summary", "{version}", "2.1", "{category}", "sales", "{subcategory}", "reports", "{rest}", "weekly/summary")]
+    [InlineData("/users/{region}/{team}/{userId}/{details}", "/users/north/eu/12345/activities/list", "{region}", "north", "{team}", "eu", "{userId}", "12345", "{details}", "activities/list")]
+    public void Match_CatchAll_OnlyTheLastPlaceholderCanContainSlashes(string template, string path,
+        string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
+        string placeholderName3 = null, string placeholderValue3 = null, string placeholderName4 = null, string placeholderValue4 = null)
+    {
+        var expectedTemplates = new List<PlaceholderNameAndValue>
+        {
+            new(placeholderName1, placeholderValue1),
+            new(placeholderName2, placeholderValue2),
+        };
+        
+        if (!string.IsNullOrEmpty(placeholderName3))
+        {
+            expectedTemplates.Add(new(placeholderName3, placeholderValue3));
+        }
+        
+        if (!string.IsNullOrEmpty(placeholderName4))
+        {
+            expectedTemplates.Add(new(placeholderName4, placeholderValue4));
+        }
+
+        // Act
+        _result = _finder.Find(path, Empty, template);
+
+        // Assert
+        ThenTheTemplatesVariablesAre(expectedTemplates.ToArray());
+    }
 
     private void ThenSinglePlaceholderIs(string expectedName, string expectedValue)
     {

@@ -67,10 +67,12 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     private static List<Group> FindGroups(string path, string query, string template)
     {
         template = EscapeExceptBraces(template);
-        var regexPattern = $"^{RegexPlaceholders().Replace(template, match => $"(?<{match.Groups[1].Value}>[^&]*)")}";
+        var regexPattern = GenerateRegexPattern(template);
         var testedPath = ShouldSkipQuery(query, template) ? path : $"{path}{query}";
+        
         var match = Regex.Match(testedPath, regexPattern);
         var foundGroups = match.Groups.Cast<Group>().Skip(1).ToList();
+        
         if (foundGroups.Count > 0 || !IsCatchAllPath(template))
         {
             return foundGroups;
@@ -79,6 +81,33 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
         // Append a trailing slash to the path if it is a catch-all path
         match = Regex.Match($"{testedPath}/", regexPattern);
         return match.Groups.Cast<Group>().Skip(1).ToList();
+    }
+    
+    /// <summary>
+    /// The placeholders that are not placed at the end of the template
+    /// are delimited by forward slashes, only the last one, the catch-all can match
+    /// more segments.
+    /// </summary>
+    /// <param name="escapedTemplate">The escaped path template.</param>
+    /// <returns>The pattern for values replacement.</returns>
+    private static string GenerateRegexPattern(string escapedTemplate)
+    {
+        // first we count the matches
+        var placeHoldersCountMatch = RegexPlaceholders().Matches(escapedTemplate);
+        int placeHoldersCount = placeHoldersCountMatch.Count;
+        
+        int index = 0;
+        
+        // we know that the replace process will be started from the beginning of the url
+        // so we can use a simple counter to determine the last placeholder
+        var regexPattern = $@"^{RegexPlaceholders().Replace(escapedTemplate, match =>
+        {
+            var groupName = match.Groups[1].Value;
+            index++;
+            return index == placeHoldersCount ? $"(?<{groupName}>[^&]*)" : $"(?<{groupName}>[^/|&]*)"; 
+        })}";
+
+        return regexPattern;
     }
 
     private const int CatchAllQueryMilliseconds = 300;
