@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Ocelot.Samples.Web;
 using System;
 
-namespace DownstreamService;
+namespace Ocelot.Samples.Eureka.DownstreamService;
 
 public class Program
 {

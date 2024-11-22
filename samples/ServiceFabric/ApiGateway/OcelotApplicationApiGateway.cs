@@ -8,24 +8,23 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using System.Collections.Generic;
 using System.Fabric;
 
-namespace OcelotApplicationApiGateway
-{
-    /// Service that handles front-end web requests and acts as a proxy to the back-end data for the UI web page.
-    /// It is a stateless service that hosts a Web API application on OWIN.
-    internal sealed class OcelotServiceWebService : StatelessService
-    {
-        public OcelotServiceWebService(StatelessServiceContext context)
-            : base(context)
-        { }
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
-        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+/// Service that handles front-end web requests and acts as a proxy to the back-end data for the UI web page.
+/// It is a stateless service that hosts a Web API application on OWIN.
+internal sealed class OcelotServiceWebService : StatelessService
+{
+    public OcelotServiceWebService(StatelessServiceContext context)
+        : base(context)
+    { }
+
+    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+    {
+        return new[]
         {
-            return new[]
-            {
-                new ServiceInstanceListener(
-                    initparams => new WebCommunicationListener(string.Empty, initparams),
-                    "OcelotServiceWebListener")
-            };
-        }
+            new ServiceInstanceListener(
+                initparams => new WebCommunicationListener(string.Empty, initparams),
+                "OcelotServiceWebListener")
+        };
     }
 }

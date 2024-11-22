@@ -10,64 +10,63 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.WebSockets;
 
-namespace Ocelot.UnitTests.Middleware
+namespace Ocelot.UnitTests.Middleware;
+
+public class OcelotPipelineExtensionsTests : UnitTest
 {
-    public class OcelotPipelineExtensionsTests : UnitTest
+    private ApplicationBuilder _builder;
+    private RequestDelegate _handlers;
+
+    [Fact]
+    public void should_set_up_pipeline()
     {
-        private ApplicationBuilder _builder;
-        private RequestDelegate _handlers;
+        this.Given(_ => GivenTheDepedenciesAreSetUp())
+             .When(_ => WhenIBuild())
+             .Then(_ => ThenThePipelineIsBuilt())
+             .BDDfy();
+    }
 
-        [Fact]
-        public void should_set_up_pipeline()
-        {
-            this.Given(_ => GivenTheDepedenciesAreSetUp())
-                 .When(_ => WhenIBuild())
-                 .Then(_ => ThenThePipelineIsBuilt())
-                 .BDDfy();
-        }
+    [Fact]
+    public void should_expand_pipeline()
+    {
+        this.Given(_ => GivenTheDepedenciesAreSetUp())
+             .When(_ => WhenIExpandBuild())
+             .Then(_ => ThenThePipelineIsBuilt())
+             .BDDfy();
+    }
 
-        [Fact]
-        public void should_expand_pipeline()
-        {
-            this.Given(_ => GivenTheDepedenciesAreSetUp())
-                 .When(_ => WhenIExpandBuild())
-                 .Then(_ => ThenThePipelineIsBuilt())
-                 .BDDfy();
-        }
+    private void ThenThePipelineIsBuilt()
+    {
+        _handlers.ShouldNotBeNull();
+    }
 
-        private void ThenThePipelineIsBuilt()
-        {
-            _handlers.ShouldNotBeNull();
-        }
+    private void WhenIBuild()
+    {
+        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+    }
 
-        private void WhenIBuild()
+    private void WhenIExpandBuild()
+    {
+        var configuration = new OcelotPipelineConfiguration();
+        configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
         {
-            _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
-        }
+            app.UseDownstreamRouteFinderMiddleware();
+            app.UseDownstreamRequestInitialiser();
+            app.UseLoadBalancingMiddleware();
+            app.UseDownstreamUrlCreatorMiddleware();
+            app.UseWebSocketsProxyMiddleware();
+        });
+        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+    }
 
-        private void WhenIExpandBuild()
-        {
-            var configuration = new OcelotPipelineConfiguration();
-            configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
-            {
-                app.UseDownstreamRouteFinderMiddleware();
-                app.UseDownstreamRequestInitialiser();
-                app.UseLoadBalancingMiddleware();
-                app.UseDownstreamUrlCreatorMiddleware();
-                app.UseWebSocketsProxyMiddleware();
-            });
-            _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
-        }
-
-        private void GivenTheDepedenciesAreSetUp()
-        {
-            IConfigurationBuilder test = new ConfigurationBuilder();
-            var root = test.Build();
-            var services = new ServiceCollection();
-            services.AddSingleton<IConfiguration>(root);
-            services.AddOcelot();
-            var provider = services.BuildServiceProvider(true);
-            _builder = new ApplicationBuilder(provider);
-        }
+    private void GivenTheDepedenciesAreSetUp()
+    {
+        IConfigurationBuilder test = new ConfigurationBuilder();
+        var root = test.Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(root);
+        services.AddOcelot();
+        var provider = services.BuildServiceProvider(true);
+        _builder = new ApplicationBuilder(provider);
     }
 }

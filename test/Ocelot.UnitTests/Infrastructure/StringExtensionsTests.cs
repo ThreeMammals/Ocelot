@@ -1,27 +1,26 @@
 ﻿using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.UnitTests.Infrastructure
+namespace Ocelot.UnitTests.Infrastructure;
+
+public class StringExtensionsTests
 {
-    public class StringExtensionsTests
+    [Fact]
+    public void should_trim_start()
     {
-        [Fact]
-        public void should_trim_start()
-        {
-            var test = "/string";
+        var test = "/string";
 
-            test = test.TrimStart("/");
+        test = test.TrimStart("/");
 
-            test.ShouldBe("string");
-        }
+        test.ShouldBe("string");
+    }
 
-        [Fact]
-        public void should_return_source()
-        {
-            var test = "string";
+    [Fact]
+    public void should_return_source()
+    {
+        var test = "string";
 
-            test = test.LastCharAsForwardSlash();
+        test = test.LastCharAsForwardSlash();
 
-            test.ShouldBe("string/");
-        }
+        test.ShouldBe("string/");
     }
 }

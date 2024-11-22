@@ -1,15 +1,14 @@
 using Ocelot.Configuration;
 using Ocelot.LoadBalancer.LoadBalancers;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.LoadBalancer;
+
+public class LoadBalancerOptionsTests
 {
-    public class LoadBalancerOptionsTests
+    [Fact]
+    public void should_default_to_no_load_balancer()
     {
-        [Fact]
-        public void should_default_to_no_load_balancer()
-        {
-            var options = new LoadBalancerOptionsBuilder().Build();
-            options.Type.ShouldBe(nameof(NoLoadBalancer));
-        }
+        var options = new LoadBalancerOptionsBuilder().Build();
+        options.Type.ShouldBe(nameof(NoLoadBalancer));
     }
 }

@@ -1,63 +1,27 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class MethodTests : IDisposable
 {
-    public class MethodTests : IDisposable
+    private readonly Steps _steps;
+    private readonly ServiceHandler _serviceHandler;
+
+    public MethodTests()
     {
-        private readonly Steps _steps;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public MethodTests()
+    [Fact]
+    public void should_return_response_200_when_get_converted_to_post()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_return_response_200_when_get_converted_to_post()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/{url}",
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/{url}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamHttpMethod = "POST",
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_200_when_get_converted_to_post_with_content()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+            Routes = new List<FileRoute>
                 {
                     new()
                     {
@@ -76,82 +40,117 @@ namespace Ocelot.AcceptanceTests
                         DownstreamHttpMethod = "POST",
                     },
                 },
-            };
+        };
 
-            const string expected = "here is some content";
-            var httpContent = new StringContent(expected);
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
-                .BDDfy();
-        }
+    [Fact]
+    public void should_return_response_200_when_get_converted_to_post_with_content()
+    {
+        var port = PortFinder.GetRandomPort();
 
-        [Fact]
-        public void should_return_response_200_when_get_converted_to_get_with_content()
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/{url}",
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/{url}",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/{url}",
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/{url}",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        DownstreamHttpMethod = "GET",
                     },
+                    DownstreamHttpMethod = "POST",
                 },
-            };
+            },
+        };
 
-            const string expected = "here is some content";
-            var httpContent = new StringContent(expected);
+        const string expected = "here is some content";
+        var httpContent = new StringContent(expected);
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "GET"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", httpContent))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+            .BDDfy();
+    }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string expected)
+    [Fact]
+    public void should_return_response_200_when_get_converted_to_get_with_content()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            Routes = new List<FileRoute>
             {
-                if (context.Request.Method == expected)
+                new()
                 {
-                    context.Response.StatusCode = 200;
-                    var reader = new StreamReader(context.Request.Body);
-                    var body = await reader.ReadToEndAsync();
-                    await context.Response.WriteAsync(body);
-                }
-                else
-                {
-                    context.Response.StatusCode = 500;
-                }
-            });
-        }
+                    DownstreamPathTemplate = "/{url}",
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/{url}",
+                    UpstreamHttpMethod = new List<string> { "Post" },
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    DownstreamHttpMethod = "GET",
+                },
+            },
+        };
 
-        public void Dispose()
+        const string expected = "here is some content";
+        var httpContent = new StringContent(expected);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "GET"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", httpContent))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+            .BDDfy();
+    }
+
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string expected)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
-            _serviceHandler.Dispose();
-            _steps.Dispose();
-        }
+            if (context.Request.Method == expected)
+            {
+                context.Response.StatusCode = 200;
+                var reader = new StreamReader(context.Request.Body);
+                var body = await reader.ReadToEndAsync();
+                await context.Response.WriteAsync(body);
+            }
+            else
+            {
+                context.Response.StatusCode = 500;
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler.Dispose();
+        _steps.Dispose();
     }
 }

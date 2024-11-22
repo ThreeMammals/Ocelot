@@ -3,10 +3,9 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.QueryStrings
+namespace Ocelot.QueryStrings;
+
+public interface IAddQueriesToRequest
 {
-    public interface IAddQueriesToRequest
-    {
-        Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest);
-    }
+    Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest);
 }

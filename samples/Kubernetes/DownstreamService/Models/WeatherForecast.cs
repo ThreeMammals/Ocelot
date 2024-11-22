@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ocelot.Samples.OcelotKube.DownstreamService.Models;
+namespace Ocelot.Samples.Kubernetes.DownstreamService.Models;
 
 public class WeatherForecast
 {

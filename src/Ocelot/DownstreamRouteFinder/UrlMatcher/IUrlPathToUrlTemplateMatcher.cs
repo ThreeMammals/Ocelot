@@ -1,10 +1,9 @@
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+public interface IUrlPathToUrlTemplateMatcher
 {
-    public interface IUrlPathToUrlTemplateMatcher
-    {
-        Response<UrlMatch> Match(string upstreamUrlPath, string upstreamQueryString, UpstreamPathTemplate pathTemplate);
-    }
+    Response<UrlMatch> Match(string upstreamUrlPath, string upstreamQueryString, UpstreamPathTemplate pathTemplate);
 }

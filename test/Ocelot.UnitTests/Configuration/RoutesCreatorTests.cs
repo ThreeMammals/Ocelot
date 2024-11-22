@@ -4,307 +4,306 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class RoutesCreatorTests : UnitTest
 {
-    public class RoutesCreatorTests : UnitTest
+    private readonly RoutesCreator _creator;
+    private readonly Mock<IClaimsToThingCreator> _cthCreator;
+    private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
+    private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
+    private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
+    private readonly Mock<IQoSOptionsCreator> _qosoCreator;
+    private readonly Mock<IRouteOptionsCreator> _rroCreator;
+    private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
+    private readonly Mock<ICacheOptionsCreator> _coCreator;
+    private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
+    private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
+    private readonly Mock<IDownstreamAddressesCreator> _daCreator;
+    private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
+    private readonly Mock<IRouteKeyCreator> _rrkCreator;
+    private readonly Mock<ISecurityOptionsCreator> _soCreator;
+    private readonly Mock<IVersionCreator> _versionCreator;
+    private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
+    private readonly Mock<IMetadataCreator> _metadataCreator;
+    private FileConfiguration _fileConfig;
+    private RouteOptions _rro;
+    private string _requestId;
+    private string _rrk;
+    private UpstreamPathTemplate _upt;
+    private AuthenticationOptions _ao;
+    private List<ClaimToThing> _ctt;
+    private QoSOptions _qoso;
+    private RateLimitOptions _rlo;
+    private CacheOptions _cacheOptions;
+    private HttpHandlerOptions _hho;
+    private HeaderTransformations _ht;
+    private List<DownstreamHostAndPort> _dhp;
+    private LoadBalancerOptions _lbo;
+    private List<Route> _result;
+    private Version _expectedVersion;
+    private HttpVersionPolicy _expectedVersionPolicy;
+    private Dictionary<string, UpstreamHeaderTemplate> _uht;
+    private Dictionary<string, string> _expectedMetadata;
+
+    public RoutesCreatorTests()
     {
-        private readonly RoutesCreator _creator;
-        private readonly Mock<IClaimsToThingCreator> _cthCreator;
-        private readonly Mock<IAuthenticationOptionsCreator> _aoCreator;
-        private readonly Mock<IUpstreamTemplatePatternCreator> _utpCreator;
-        private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
-        private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
-        private readonly Mock<IQoSOptionsCreator> _qosoCreator;
-        private readonly Mock<IRouteOptionsCreator> _rroCreator;
-        private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-        private readonly Mock<ICacheOptionsCreator> _coCreator;
-        private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
-        private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
-        private readonly Mock<IDownstreamAddressesCreator> _daCreator;
-        private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
-        private readonly Mock<IRouteKeyCreator> _rrkCreator;
-        private readonly Mock<ISecurityOptionsCreator> _soCreator;
-        private readonly Mock<IVersionCreator> _versionCreator;
-        private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
-        private readonly Mock<IMetadataCreator> _metadataCreator;
-        private FileConfiguration _fileConfig;
-        private RouteOptions _rro;
-        private string _requestId;
-        private string _rrk;
-        private UpstreamPathTemplate _upt;
-        private AuthenticationOptions _ao;
-        private List<ClaimToThing> _ctt;
-        private QoSOptions _qoso;
-        private RateLimitOptions _rlo;
-        private CacheOptions _cacheOptions;
-        private HttpHandlerOptions _hho;
-        private HeaderTransformations _ht;
-        private List<DownstreamHostAndPort> _dhp;
-        private LoadBalancerOptions _lbo;
-        private List<Route> _result;
-        private Version _expectedVersion;
-        private HttpVersionPolicy _expectedVersionPolicy;
-        private Dictionary<string, UpstreamHeaderTemplate> _uht;
-        private Dictionary<string, string> _expectedMetadata;
+        _cthCreator = new Mock<IClaimsToThingCreator>();
+        _aoCreator = new Mock<IAuthenticationOptionsCreator>();
+        _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
+        _ridkCreator = new Mock<IRequestIdKeyCreator>();
+        _qosoCreator = new Mock<IQoSOptionsCreator>();
+        _rroCreator = new Mock<IRouteOptionsCreator>();
+        _rloCreator = new Mock<IRateLimitOptionsCreator>();
+        _coCreator = new Mock<ICacheOptionsCreator>();
+        _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
+        _hfarCreator = new Mock<IHeaderFindAndReplaceCreator>();
+        _daCreator = new Mock<IDownstreamAddressesCreator>();
+        _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
+        _rrkCreator = new Mock<IRouteKeyCreator>();
+        _soCreator = new Mock<ISecurityOptionsCreator>();
+        _versionCreator = new Mock<IVersionCreator>();
+        _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
+        _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
+        _metadataCreator = new Mock<IMetadataCreator>();
 
-        public RoutesCreatorTests()
+        _creator = new RoutesCreator(
+            _cthCreator.Object,
+            _aoCreator.Object,
+            _utpCreator.Object,
+            _ridkCreator.Object,
+            _qosoCreator.Object,
+            _rroCreator.Object,
+            _rloCreator.Object,
+            _coCreator.Object,
+            _hhoCreator.Object,
+            _hfarCreator.Object,
+            _daCreator.Object,
+            _lboCreator.Object,
+            _rrkCreator.Object,
+            _soCreator.Object,
+            _versionCreator.Object,
+            _versionPolicyCreator.Object,
+            _uhtpCreator.Object,
+            _metadataCreator.Object);
+    }
+
+    [Fact]
+    public void Should_return_nothing()
+    {
+        var fileConfig = new FileConfiguration();
+
+        this.Given(_ => GivenThe(fileConfig))
+            .When(_ => WhenICreate())
+            .Then(_ => ThenNoRoutesAreReturned())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_return_routes()
+    {
+        var fileConfig = new FileConfiguration
         {
-            _cthCreator = new Mock<IClaimsToThingCreator>();
-            _aoCreator = new Mock<IAuthenticationOptionsCreator>();
-            _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
-            _ridkCreator = new Mock<IRequestIdKeyCreator>();
-            _qosoCreator = new Mock<IQoSOptionsCreator>();
-            _rroCreator = new Mock<IRouteOptionsCreator>();
-            _rloCreator = new Mock<IRateLimitOptionsCreator>();
-            _coCreator = new Mock<ICacheOptionsCreator>();
-            _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
-            _hfarCreator = new Mock<IHeaderFindAndReplaceCreator>();
-            _daCreator = new Mock<IDownstreamAddressesCreator>();
-            _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
-            _rrkCreator = new Mock<IRouteKeyCreator>();
-            _soCreator = new Mock<ISecurityOptionsCreator>();
-            _versionCreator = new Mock<IVersionCreator>();
-            _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
-            _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
-            _metadataCreator = new Mock<IMetadataCreator>();
-
-            _creator = new RoutesCreator(
-                _cthCreator.Object,
-                _aoCreator.Object,
-                _utpCreator.Object,
-                _ridkCreator.Object,
-                _qosoCreator.Object,
-                _rroCreator.Object,
-                _rloCreator.Object,
-                _coCreator.Object,
-                _hhoCreator.Object,
-                _hfarCreator.Object,
-                _daCreator.Object,
-                _lboCreator.Object,
-                _rrkCreator.Object,
-                _soCreator.Object,
-                _versionCreator.Object,
-                _versionPolicyCreator.Object,
-                _uhtpCreator.Object,
-                _metadataCreator.Object);
-        }
-
-        [Fact]
-        public void Should_return_nothing()
-        {
-            var fileConfig = new FileConfiguration();
-
-            this.Given(_ => GivenThe(fileConfig))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenNoRoutesAreReturned())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void Should_return_routes()
-        {
-            var fileConfig = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    ServiceName = "dave",
+                    DangerousAcceptAnyServerCertificateValidator = true,
+                    AddClaimsToRequest = new Dictionary<string, string>
                     {
-                        ServiceName = "dave",
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                        AddClaimsToRequest = new Dictionary<string, string>
-                        {
-                            { "a","b" },
-                        },
-                        AddHeadersToRequest = new Dictionary<string, string>
-                        {
-                            { "c","d" },
-                        },
-                        AddQueriesToRequest = new Dictionary<string, string>
-                        {
-                            { "e","f" },
-                        },
-                        UpstreamHttpMethod = new List<string> { "GET", "POST" },
-                        Metadata = new Dictionary<string, string>
-                        {
-                            ["foo"] = "bar",
-                        },
+                        { "a","b" },
                     },
-                    new()
+                    AddHeadersToRequest = new Dictionary<string, string>
                     {
-                        ServiceName = "wave",
-                        DangerousAcceptAnyServerCertificateValidator = false,
-                        AddClaimsToRequest = new Dictionary<string, string>
-                        {
-                            { "g","h" },
-                        },
-                        AddHeadersToRequest = new Dictionary<string, string>
-                        {
-                            { "i","j" },
-                        },
-                        AddQueriesToRequest = new Dictionary<string, string>
-                        {
-                            { "k","l" },
-                        },
-                        UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
-                        Metadata = new Dictionary<string, string>
-                        {
-                            ["foo"] = "baz",
-                        },
+                        { "c","d" },
+                    },
+                    AddQueriesToRequest = new Dictionary<string, string>
+                    {
+                        { "e","f" },
+                    },
+                    UpstreamHttpMethod = new List<string> { "GET", "POST" },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["foo"] = "bar",
                     },
                 },
-            };
+                new()
+                {
+                    ServiceName = "wave",
+                    DangerousAcceptAnyServerCertificateValidator = false,
+                    AddClaimsToRequest = new Dictionary<string, string>
+                    {
+                        { "g","h" },
+                    },
+                    AddHeadersToRequest = new Dictionary<string, string>
+                    {
+                        { "i","j" },
+                    },
+                    AddQueriesToRequest = new Dictionary<string, string>
+                    {
+                        { "k","l" },
+                    },
+                    UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["foo"] = "baz",
+                    },
+                },
+            },
+        };
 
-            this.Given(_ => GivenThe(fileConfig))
-              .And(_ => GivenTheDependenciesAreSetUpCorrectly())
-              .When(_ => WhenICreate())
-              .Then(_ => ThenTheDependenciesAreCalledCorrectly())
-              .And(_ => ThenTheRoutesAreCreated())
-              .BDDfy();
-        }
+        this.Given(_ => GivenThe(fileConfig))
+          .And(_ => GivenTheDependenciesAreSetUpCorrectly())
+          .When(_ => WhenICreate())
+          .Then(_ => ThenTheDependenciesAreCalledCorrectly())
+          .And(_ => ThenTheRoutesAreCreated())
+          .BDDfy();
+    }
 
-        private void ThenTheDependenciesAreCalledCorrectly()
+    private void ThenTheDependenciesAreCalledCorrectly()
+    {
+        ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
+        ThenTheDepsAreCalledFor(_fileConfig.Routes[1], _fileConfig.GlobalConfiguration);
+    }
+
+    private void GivenTheDependenciesAreSetUpCorrectly()
+    {
+        _expectedVersion = new Version("1.1");
+        _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+        _rro = new RouteOptions(false, false, false, false, false);
+        _requestId = "testy";
+        _rrk = "besty";
+        _upt = new UpstreamPathTemplateBuilder().Build();
+        _ao = new AuthenticationOptionsBuilder().Build();
+        _ctt = new List<ClaimToThing>();
+        _qoso = new QoSOptionsBuilder().Build();
+        _rlo = new RateLimitOptionsBuilder().Build();
+
+        _cacheOptions = new CacheOptions(0, "vesty", null, false);
+        _hho = new HttpHandlerOptionsBuilder().Build();
+        _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
+        _dhp = new List<DownstreamHostAndPort>();
+        _lbo = new LoadBalancerOptionsBuilder().Build();
+        _uht = new Dictionary<string, UpstreamHeaderTemplate>();
+        _expectedMetadata = new Dictionary<string, string>()
         {
-            ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
-            ThenTheDepsAreCalledFor(_fileConfig.Routes[1], _fileConfig.GlobalConfiguration);
-        }
+            ["foo"] = "bar",
+        };
 
-        private void GivenTheDependenciesAreSetUpCorrectly()
+        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
+        _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
+        _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
+        _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
+        _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ao);
+        _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
+        _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
+        _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
+        _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
+        _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
+        _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
+        _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
+        _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
+        _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
+        _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
+        _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
+        _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(new MetadataOptions(new FileMetadataOptions
         {
-            _expectedVersion = new Version("1.1");
-            _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-            _rro = new RouteOptions(false, false, false, false, false);
-            _requestId = "testy";
-            _rrk = "besty";
-            _upt = new UpstreamPathTemplateBuilder().Build();
-            _ao = new AuthenticationOptionsBuilder().Build();
-            _ctt = new List<ClaimToThing>();
-            _qoso = new QoSOptionsBuilder().Build();
-            _rlo = new RateLimitOptionsBuilder().Build();
+            Metadata = _expectedMetadata,
+        }));
+    }
 
-            _cacheOptions = new CacheOptions(0, "vesty", null, false);
-            _hho = new HttpHandlerOptionsBuilder().Build();
-            _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
-            _dhp = new List<DownstreamHostAndPort>();
-            _lbo = new LoadBalancerOptionsBuilder().Build();
-            _uht = new Dictionary<string, UpstreamHeaderTemplate>();
-            _expectedMetadata = new Dictionary<string, string>()
-            {
-                ["foo"] = "bar",
-            };
+    private void ThenTheRoutesAreCreated()
+    {
+        _result.Count.ShouldBe(2);
 
-            _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
-            _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
-            _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
-            _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
-            _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ao);
-            _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
-            _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
-            _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-            _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
-            _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
-            _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
-            _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
-            _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
-            _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
-            _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
-            _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
-            _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(new MetadataOptions(new FileMetadataOptions
-            {
-                Metadata = _expectedMetadata,
-            }));
-        }
+        ThenTheRouteIsSet(_fileConfig.Routes[0], 0);
+        ThenTheRouteIsSet(_fileConfig.Routes[1], 1);
+    }
 
-        private void ThenTheRoutesAreCreated()
-        {
-            _result.Count.ShouldBe(2);
+    private void ThenNoRoutesAreReturned()
+    {
+        _result.ShouldBeEmpty();
+    }
 
-            ThenTheRouteIsSet(_fileConfig.Routes[0], 0);
-            ThenTheRouteIsSet(_fileConfig.Routes[1], 1);
-        }
+    private void GivenThe(FileConfiguration fileConfig)
+    {
+        _fileConfig = fileConfig;
+    }
 
-        private void ThenNoRoutesAreReturned()
-        {
-            _result.ShouldBeEmpty();
-        }
+    private void WhenICreate()
+    {
+        _result = _creator.Create(_fileConfig);
+    }
 
-        private void GivenThe(FileConfiguration fileConfig)
-        {
-            _fileConfig = fileConfig;
-        }
+    private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)
+    {
+        _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
+        _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
+        _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
+        _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
+        _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
+        _result[routeIndex].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBe(_rro.EnableRateLimiting);
+        _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
+        _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
+        _result[routeIndex].DownstreamRoute[0].UpstreamPathTemplate.ShouldBe(_upt);
+        _result[routeIndex].DownstreamRoute[0].AuthenticationOptions.ShouldBe(_ao);
+        _result[routeIndex].DownstreamRoute[0].ClaimsToHeaders.ShouldBe(_ctt);
+        _result[routeIndex].DownstreamRoute[0].ClaimsToQueries.ShouldBe(_ctt);
+        _result[routeIndex].DownstreamRoute[0].ClaimsToClaims.ShouldBe(_ctt);
+        _result[routeIndex].DownstreamRoute[0].QosOptions.ShouldBe(_qoso);
+        _result[routeIndex].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo);
+        _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_cacheOptions.Region);
+        _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(0);
+        _result[routeIndex].DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_hho);
+        _result[routeIndex].DownstreamRoute[0].UpstreamHeadersFindAndReplace.ShouldBe(_ht.Upstream);
+        _result[routeIndex].DownstreamRoute[0].DownstreamHeadersFindAndReplace.ShouldBe(_ht.Downstream);
+        _result[routeIndex].DownstreamRoute[0].AddHeadersToUpstream.ShouldBe(_ht.AddHeadersToUpstream);
+        _result[routeIndex].DownstreamRoute[0].AddHeadersToDownstream.ShouldBe(_ht.AddHeadersToDownstream);
+        _result[routeIndex].DownstreamRoute[0].DownstreamAddresses.ShouldBe(_dhp);
+        _result[routeIndex].DownstreamRoute[0].LoadBalancerOptions.ShouldBe(_lbo);
+        _result[routeIndex].DownstreamRoute[0].UseServiceDiscovery.ShouldBe(_rro.UseServiceDiscovery);
+        _result[routeIndex].DownstreamRoute[0].DangerousAcceptAnyServerCertificateValidator.ShouldBe(expected.DangerousAcceptAnyServerCertificateValidator);
+        _result[routeIndex].DownstreamRoute[0].DelegatingHandlers.ShouldBe(expected.DelegatingHandlers);
+        _result[routeIndex].DownstreamRoute[0].ServiceName.ShouldBe(expected.ServiceName);
+        _result[routeIndex].DownstreamRoute[0].DownstreamScheme.ShouldBe(expected.DownstreamScheme);
+        _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
+        _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
+        _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
+        _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
+        _result[routeIndex].UpstreamHttpMethod
+            .Select(x => x.Method)
+            .ToList()
+            .ShouldContain(x => x == expected.UpstreamHttpMethod[0]);
+        _result[routeIndex].UpstreamHttpMethod
+            .Select(x => x.Method)
+            .ToList()
+            .ShouldContain(x => x == expected.UpstreamHttpMethod[1]);
+        _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
+        _result[routeIndex].DownstreamRoute.Count.ShouldBe(1);
+        _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);
+        _result[routeIndex].UpstreamHeaderTemplates.ShouldBe(_uht);
+    }
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_fileConfig);
-        }
-
-        private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)
-        {
-            _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
-            _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
-            _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
-            _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
-            _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
-            _result[routeIndex].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBe(_rro.EnableRateLimiting);
-            _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
-            _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
-            _result[routeIndex].DownstreamRoute[0].UpstreamPathTemplate.ShouldBe(_upt);
-            _result[routeIndex].DownstreamRoute[0].AuthenticationOptions.ShouldBe(_ao);
-            _result[routeIndex].DownstreamRoute[0].ClaimsToHeaders.ShouldBe(_ctt);
-            _result[routeIndex].DownstreamRoute[0].ClaimsToQueries.ShouldBe(_ctt);
-            _result[routeIndex].DownstreamRoute[0].ClaimsToClaims.ShouldBe(_ctt);
-            _result[routeIndex].DownstreamRoute[0].QosOptions.ShouldBe(_qoso);
-            _result[routeIndex].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.Region.ShouldBe(_cacheOptions.Region);
-            _result[routeIndex].DownstreamRoute[0].CacheOptions.TtlSeconds.ShouldBe(0);
-            _result[routeIndex].DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_hho);
-            _result[routeIndex].DownstreamRoute[0].UpstreamHeadersFindAndReplace.ShouldBe(_ht.Upstream);
-            _result[routeIndex].DownstreamRoute[0].DownstreamHeadersFindAndReplace.ShouldBe(_ht.Downstream);
-            _result[routeIndex].DownstreamRoute[0].AddHeadersToUpstream.ShouldBe(_ht.AddHeadersToUpstream);
-            _result[routeIndex].DownstreamRoute[0].AddHeadersToDownstream.ShouldBe(_ht.AddHeadersToDownstream);
-            _result[routeIndex].DownstreamRoute[0].DownstreamAddresses.ShouldBe(_dhp);
-            _result[routeIndex].DownstreamRoute[0].LoadBalancerOptions.ShouldBe(_lbo);
-            _result[routeIndex].DownstreamRoute[0].UseServiceDiscovery.ShouldBe(_rro.UseServiceDiscovery);
-            _result[routeIndex].DownstreamRoute[0].DangerousAcceptAnyServerCertificateValidator.ShouldBe(expected.DangerousAcceptAnyServerCertificateValidator);
-            _result[routeIndex].DownstreamRoute[0].DelegatingHandlers.ShouldBe(expected.DelegatingHandlers);
-            _result[routeIndex].DownstreamRoute[0].ServiceName.ShouldBe(expected.ServiceName);
-            _result[routeIndex].DownstreamRoute[0].DownstreamScheme.ShouldBe(expected.DownstreamScheme);
-            _result[routeIndex].DownstreamRoute[0].RouteClaimsRequirement.ShouldBe(expected.RouteClaimsRequirement);
-            _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
-            _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
-            _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
-            _result[routeIndex].UpstreamHttpMethod
-                .Select(x => x.Method)
-                .ToList()
-                .ShouldContain(x => x == expected.UpstreamHttpMethod[0]);
-            _result[routeIndex].UpstreamHttpMethod
-                .Select(x => x.Method)
-                .ToList()
-                .ShouldContain(x => x == expected.UpstreamHttpMethod[1]);
-            _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
-            _result[routeIndex].DownstreamRoute.Count.ShouldBe(1);
-            _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);
-            _result[routeIndex].UpstreamHeaderTemplates.ShouldBe(_uht);
-        }
-
-        private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
-        {
-            _rroCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
-            _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
-            _aoCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);
-            _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
-            _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
-            _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
-            _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
-            _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
-            _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
-            _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
-            _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
-            _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);
-            _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
-        }
+    private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
+    {
+        _rroCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
+        _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
+        _aoCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);
+        _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
+        _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
+        _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
+        _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
+        _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
+        _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
+        _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
+        _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);
+        _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
     }
 }

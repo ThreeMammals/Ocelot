@@ -6,110 +6,109 @@ using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.LoadBalancer;
+
+public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
 {
-    public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
+    private DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
+    private Func<DownstreamRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;
+    private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
+    private DownstreamRoute _route;
+    private Response<ILoadBalancer> _loadBalancer;
+    private string _typeName;
+
+    public DelegateInvokingLoadBalancerCreatorTests()
     {
-        private DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
-        private Func<DownstreamRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;
-        private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
-        private DownstreamRoute _route;
-        private Response<ILoadBalancer> _loadBalancer;
-        private string _typeName;
+        _creatorFunc = (route, serviceDiscoveryProvider) =>
+            new FakeLoadBalancer(route, serviceDiscoveryProvider);
+        _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
+        _serviceProvider = new Mock<IServiceDiscoveryProvider>();
+    }
 
-        public DelegateInvokingLoadBalancerCreatorTests()
+    [Fact]
+    public void should_return_expected_name()
+    {
+        this.When(x => x.WhenIGetTheLoadBalancerTypeName())
+            .Then(x => x.ThenTheLoadBalancerTypeIs("FakeLoadBalancer"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_result_of_specified_creator_func()
+    {
+        var route = new DownstreamRouteBuilder()
+            .Build();
+
+        this.Given(x => x.GivenARoute(route))
+            .When(x => x.WhenIGetTheLoadBalancer())
+            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancer>())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_error()
+    {
+        var route = new DownstreamRouteBuilder()
+            .Build();
+
+        this.Given(x => x.GivenARoute(route))
+            .And(x => x.GivenTheCreatorFuncThrows())
+            .When(x => x.WhenIGetTheLoadBalancer())
+            .Then(x => x.ThenAnErrorIsReturned())
+            .BDDfy();
+    }
+
+    private void GivenTheCreatorFuncThrows()
+    {
+        _creatorFunc = (route, serviceDiscoveryProvider) => throw new Exception();
+
+        _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
+    }
+
+    private void ThenAnErrorIsReturned()
+    {
+        _loadBalancer.IsError.ShouldBeTrue();
+    }
+
+    private void GivenARoute(DownstreamRoute route)
+    {
+        _route = route;
+    }
+
+    private void WhenIGetTheLoadBalancer()
+    {
+        _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
+    }
+
+    private void WhenIGetTheLoadBalancerTypeName()
+    {
+        _typeName = _creator.Type;
+    }
+
+    private void ThenTheLoadBalancerIsReturned<T>()
+        where T : ILoadBalancer
+    {
+        _loadBalancer.Data.ShouldBeOfType<T>();
+    }
+
+    private void ThenTheLoadBalancerTypeIs(string type)
+    {
+        _typeName.ShouldBe(type);
+    }
+
+    private class FakeLoadBalancer : ILoadBalancer
+    {
+        public FakeLoadBalancer(DownstreamRoute downstreamRoute, IServiceDiscoveryProvider serviceDiscoveryProvider)
         {
-            _creatorFunc = (route, serviceDiscoveryProvider) =>
-                new FakeLoadBalancer(route, serviceDiscoveryProvider);
-            _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
-            _serviceProvider = new Mock<IServiceDiscoveryProvider>();
+            DownstreamRoute = downstreamRoute;
+            ServiceDiscoveryProvider = serviceDiscoveryProvider;
         }
 
-        [Fact]
-        public void should_return_expected_name()
-        {
-            this.When(x => x.WhenIGetTheLoadBalancerTypeName())
-                .Then(x => x.ThenTheLoadBalancerTypeIs("FakeLoadBalancer"))
-                .BDDfy();
-        }
+        public DownstreamRoute DownstreamRoute { get; }
+        public IServiceDiscoveryProvider ServiceDiscoveryProvider { get; }
 
-        [Fact]
-        public void should_return_result_of_specified_creator_func()
-        {
-            var route = new DownstreamRouteBuilder()
-                .Build();
-
-            this.Given(x => x.GivenARoute(route))
-                .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancer>())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error()
-        {
-            var route = new DownstreamRouteBuilder()
-                .Build();
-
-            this.Given(x => x.GivenARoute(route))
-                .And(x => x.GivenTheCreatorFuncThrows())
-                .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenAnErrorIsReturned())
-                .BDDfy();
-        }
-
-        private void GivenTheCreatorFuncThrows()
-        {
-            _creatorFunc = (route, serviceDiscoveryProvider) => throw new Exception();
-
-            _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
-        }
-
-        private void ThenAnErrorIsReturned()
-        {
-            _loadBalancer.IsError.ShouldBeTrue();
-        }
-
-        private void GivenARoute(DownstreamRoute route)
-        {
-            _route = route;
-        }
-
-        private void WhenIGetTheLoadBalancer()
-        {
-            _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
-        }
-
-        private void WhenIGetTheLoadBalancerTypeName()
-        {
-            _typeName = _creator.Type;
-        }
-
-        private void ThenTheLoadBalancerIsReturned<T>()
-            where T : ILoadBalancer
-        {
-            _loadBalancer.Data.ShouldBeOfType<T>();
-        }
-
-        private void ThenTheLoadBalancerTypeIs(string type)
-        {
-            _typeName.ShouldBe(type);
-        }
-
-        private class FakeLoadBalancer : ILoadBalancer
-        {
-            public FakeLoadBalancer(DownstreamRoute downstreamRoute, IServiceDiscoveryProvider serviceDiscoveryProvider)
-            {
-                DownstreamRoute = downstreamRoute;
-                ServiceDiscoveryProvider = serviceDiscoveryProvider;
-            }
-
-            public DownstreamRoute DownstreamRoute { get; }
-            public IServiceDiscoveryProvider ServiceDiscoveryProvider { get; }
-
-            public string Type => nameof(FakeLoadBalancer);
-            public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
-            public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
-        }
+        public string Type => nameof(FakeLoadBalancer);
+        public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
+        public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
     }
 }

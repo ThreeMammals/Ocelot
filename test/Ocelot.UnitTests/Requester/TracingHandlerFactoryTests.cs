@@ -3,31 +3,30 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Requester;
 
-namespace Ocelot.UnitTests.Requester
+namespace Ocelot.UnitTests.Requester;
+
+public class TracingHandlerFactoryTests
 {
-    public class TracingHandlerFactoryTests
+    private readonly TracingHandlerFactory _factory;
+    private readonly Mock<ITracer> _tracer;
+    private readonly IServiceCollection _serviceCollection;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly Mock<IRequestScopedDataRepository> _repo;
+
+    public TracingHandlerFactoryTests()
     {
-        private readonly TracingHandlerFactory _factory;
-        private readonly Mock<ITracer> _tracer;
-        private readonly IServiceCollection _serviceCollection;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Mock<IRequestScopedDataRepository> _repo;
+        _tracer = new Mock<ITracer>();
+        _serviceCollection = new ServiceCollection();
+        _serviceCollection.AddSingleton(_tracer.Object);
+        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
+        _repo = new Mock<IRequestScopedDataRepository>();
+        _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
+    }
 
-        public TracingHandlerFactoryTests()
-        {
-            _tracer = new Mock<ITracer>();
-            _serviceCollection = new ServiceCollection();
-            _serviceCollection.AddSingleton(_tracer.Object);
-            _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-            _repo = new Mock<IRequestScopedDataRepository>();
-            _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
-        }
-
-        [Fact]
-        public void should_return()
-        {
-            var handler = _factory.Get();
-            handler.ShouldBeOfType<OcelotHttpTracingHandler>();
-        }
+    [Fact]
+    public void should_return()
+    {
+        var handler = _factory.Get();
+        handler.ShouldBeOfType<OcelotHttpTracingHandler>();
     }
 }

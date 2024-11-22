@@ -10,81 +10,80 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace OcelotApplicationApiGateway
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
+
+/// <summary>
+/// ServiceEventListener is a class which listens to the eventsources registered and redirects the traces to a file
+/// Note that this class serves as a template to EventListener class and redirects the logs to /tmp/{appnameyyyyMMddHHmmssffff}.
+/// You can extend the functionality by writing your code to implement rolling logs for the logs written through this class.
+/// You can also write your custom listener class and handle the registered evestsources accordingly. 
+/// </summary>
+internal class ServiceEventListener : EventListener
 {
-    /// <summary>
-    /// ServiceEventListener is a class which listens to the eventsources registered and redirects the traces to a file
-    /// Note that this class serves as a template to EventListener class and redirects the logs to /tmp/{appnameyyyyMMddHHmmssffff}.
-    /// You can extend the functionality by writing your code to implement rolling logs for the logs written through this class.
-    /// You can also write your custom listener class and handle the registered evestsources accordingly. 
-    /// </summary>
-    internal class ServiceEventListener : EventListener
+    private readonly string _fileName;
+    private readonly string _filepath = Path.GetTempPath();
+
+    public ServiceEventListener(string appName)
     {
-        private readonly string _fileName;
-        private readonly string _filepath = Path.GetTempPath();
+        _fileName = appName + DateTime.Now.ToString("yyyyMMddHHmmssffff");
+    }
 
-        public ServiceEventListener(string appName)
+    /// <summary>
+    /// We override this method to get a callback on every event we subscribed to with EnableEvents
+    /// </summary>
+    /// <param name="eventData">The event arguments that describe the event.</param>
+    protected override void OnEventWritten(EventWrittenEventArgs eventData)
+    {
+        using (var writer = new StreamWriter(new FileStream(_filepath + _fileName, FileMode.Append)))
         {
-            _fileName = appName + DateTime.Now.ToString("yyyyMMddHHmmssffff");
-        }
+            // report all event information
+            writer.Write(" {0} ", Write(eventData.Task.ToString(),
+            eventData.EventName,
+            eventData.EventId.ToString(),
+            eventData.Level));
 
-        /// <summary>
-        /// We override this method to get a callback on every event we subscribed to with EnableEvents
-        /// </summary>
-        /// <param name="eventData">The event arguments that describe the event.</param>
-        protected override void OnEventWritten(EventWrittenEventArgs eventData)
-        {
-            using (var writer = new StreamWriter(new FileStream(_filepath + _fileName, FileMode.Append)))
+            if (eventData.Message != null)
             {
-                // report all event information
-                writer.Write(" {0} ", Write(eventData.Task.ToString(),
-                eventData.EventName,
-                eventData.EventId.ToString(),
-                eventData.Level));
-
-                if (eventData.Message != null)
-                {
-                    writer.WriteLine(string.Format(CultureInfo.InvariantCulture, eventData.Message, eventData.Payload.ToArray()));
-                }
+                writer.WriteLine(string.Format(CultureInfo.InvariantCulture, eventData.Message, eventData.Payload.ToArray()));
             }
         }
+    }
 
-        private static String Write(string taskName, string eventName, string id, EventLevel level)
+    private static String Write(string taskName, string eventName, string id, EventLevel level)
+    {
+        var output = new StringBuilder();
+
+        var now = DateTime.UtcNow;
+        output.Append(now.ToString("yyyy/MM/dd-HH:mm:ss.fff", CultureInfo.InvariantCulture));
+        output.Append(',');
+        output.Append(ConvertLevelToString(level));
+        output.Append(',');
+        output.Append(taskName);
+
+        if (!string.IsNullOrEmpty(eventName))
         {
-            var output = new StringBuilder();
-
-            var now = DateTime.UtcNow;
-            output.Append(now.ToString("yyyy/MM/dd-HH:mm:ss.fff", CultureInfo.InvariantCulture));
-            output.Append(',');
-            output.Append(ConvertLevelToString(level));
-            output.Append(',');
-            output.Append(taskName);
-
-            if (!string.IsNullOrEmpty(eventName))
-            {
-                output.Append('.');
-                output.Append(eventName);
-            }
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                output.Append('@');
-                output.Append(id);
-            }
-
-            output.Append(',');
-            return output.ToString();
+            output.Append('.');
+            output.Append(eventName);
         }
 
-        private static string ConvertLevelToString(EventLevel level)
+        if (!string.IsNullOrEmpty(id))
         {
-            switch (level)
-            {
-                case EventLevel.Informational:
-                    return "Info";
-                default:
-                    return level.ToString();
-            }
+            output.Append('@');
+            output.Append(id);
+        }
+
+        output.Append(',');
+        return output.ToString();
+    }
+
+    private static string ConvertLevelToString(EventLevel level)
+    {
+        switch (level)
+        {
+            case EventLevel.Informational:
+                return "Info";
+            default:
+                return level.ToString();
         }
     }
 }

@@ -2,7 +2,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Threading;
 
-namespace OcelotApplicationService;
+namespace Ocelot.Samples.ServiceFabric.DownstreamService;
 
 internal static class Program
 {

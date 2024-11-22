@@ -1,14 +1,13 @@
-﻿namespace Ocelot.Cache
-{
-    internal class CacheObject<T>
-    {
-        public CacheObject(T value, DateTime expires)
-        {
-            Value = value;
-            Expires = expires;
-        }
+﻿namespace Ocelot.Cache;
 
-        public T Value { get; }
-        public DateTime Expires { get; }
+internal class CacheObject<T>
+{
+    public CacheObject(T value, DateTime expires)
+    {
+        Value = value;
+        Expires = expires;
     }
+
+    public T Value { get; }
+    public DateTime Expires { get; }
 }

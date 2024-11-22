@@ -8,76 +8,75 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Claims
+namespace Ocelot.UnitTests.Claims;
+
+public class ClaimsToClaimsMiddlewareTests : UnitTest
 {
-    public class ClaimsToClaimsMiddlewareTests : UnitTest
+    private readonly Mock<IAddClaimsToRequest> _addHeaders;
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IOcelotLogger> _logger;
+    private readonly ClaimsToClaimsMiddleware _middleware;
+    private readonly RequestDelegate _next;
+    private readonly HttpContext _httpContext;
+
+    public ClaimsToClaimsMiddlewareTests()
     {
-        private readonly Mock<IAddClaimsToRequest> _addHeaders;
-        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private readonly Mock<IOcelotLogger> _logger;
-        private readonly ClaimsToClaimsMiddleware _middleware;
-        private readonly RequestDelegate _next;
-        private readonly HttpContext _httpContext;
+        _httpContext = new DefaultHttpContext();
+        _addHeaders = new Mock<IAddClaimsToRequest>();
+        _loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _logger = new Mock<IOcelotLogger>();
+        _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
+        _next = context => Task.CompletedTask;
+        _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
+    }
 
-        public ClaimsToClaimsMiddlewareTests()
-        {
-            _httpContext = new DefaultHttpContext();
-            _addHeaders = new Mock<IAddClaimsToRequest>();
-            _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
-            _loggerFactory.Setup(x => x.CreateLogger<ClaimsToClaimsMiddleware>()).Returns(_logger.Object);
-            _next = context => Task.CompletedTask;
-            _middleware = new ClaimsToClaimsMiddleware(_next, _loggerFactory.Object, _addHeaders.Object);
-        }
-
-        [Fact]
-        public void should_call_claims_to_request_correctly()
-        {
-            var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-                new RouteBuilder()
-                    .WithDownstreamRoute(new DownstreamRouteBuilder()
-                        .WithDownstreamPathTemplate("any old string")
-                        .WithClaimsToClaims(new List<ClaimToThing>
-                        {
-                            new("sub", "UserType", "|", 0),
-                        })
-                        .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .Build())
+    [Fact]
+    public void should_call_claims_to_request_correctly()
+    {
+        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
+            new RouteBuilder()
+                .WithDownstreamRoute(new DownstreamRouteBuilder()
+                    .WithDownstreamPathTemplate("any old string")
+                    .WithClaimsToClaims(new List<ClaimToThing>
+                    {
+                        new("sub", "UserType", "|", 0),
+                    })
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build());
+                    .Build())
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build());
 
-            this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheAddClaimsToRequestReturns())
-                .When(x => x.WhenICallTheMiddleware())
-                .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
-                .BDDfy();
-        }
+        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
+            .And(x => x.GivenTheAddClaimsToRequestReturns())
+            .When(x => x.WhenICallTheMiddleware())
+            .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
+            .BDDfy();
+    }
 
-        private async Task WhenICallTheMiddleware()
-        {
-            await _middleware.Invoke(_httpContext);
-        }
+    private async Task WhenICallTheMiddleware()
+    {
+        await _middleware.Invoke(_httpContext);
+    }
 
-        private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
-        {
-            _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
+    private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+    {
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
 
-            _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
-        }
+        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+    }
 
-        private void GivenTheAddClaimsToRequestReturns()
-        {
-            _addHeaders
-                .Setup(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<HttpContext>()))
-                .Returns(new OkResponse());
-        }
+    private void GivenTheAddClaimsToRequestReturns()
+    {
+        _addHeaders
+            .Setup(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
+            It.IsAny<HttpContext>()))
+            .Returns(new OkResponse());
+    }
 
-        private void ThenTheClaimsToRequestIsCalledCorrectly()
-        {
-            _addHeaders
-                .Verify(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<HttpContext>()), Times.Once);
-        }
+    private void ThenTheClaimsToRequestIsCalledCorrectly()
+    {
+        _addHeaders
+            .Verify(x => x.SetClaimsOnContext(It.IsAny<List<ClaimToThing>>(),
+            It.IsAny<HttpContext>()), Times.Once);
     }
 }

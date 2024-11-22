@@ -3,150 +3,149 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class TwoDownstreamServicesTests : IDisposable
 {
-    public class TwoDownstreamServicesTests : IDisposable
+    private readonly Steps _steps;
+    private readonly List<ServiceEntry> _serviceEntries;
+    private string _downstreamPathOne;
+    private string _downstreamPathTwo;
+    private readonly ServiceHandler _serviceHandler;
+
+    public TwoDownstreamServicesTests()
     {
-        private readonly Steps _steps;
-        private readonly List<ServiceEntry> _serviceEntries;
-        private string _downstreamPathOne;
-        private string _downstreamPathTwo;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+        _serviceEntries = new List<ServiceEntry>();
+    }
 
-        public TwoDownstreamServicesTests()
+    [Fact]
+    public void should_fix_issue_194()
+    {
+        var consulPort = PortFinder.GetRandomPort();
+        var servicePort1 = PortFinder.GetRandomPort();
+        var servicePort2 = PortFinder.GetRandomPort();
+        var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
+        var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
+        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-            _serviceEntries = new List<ServiceEntry>();
-        }
-
-        [Fact]
-        public void should_fix_issue_194()
-        {
-            var consulPort = PortFinder.GetRandomPort();
-            var servicePort1 = PortFinder.GetRandomPort();
-            var servicePort2 = PortFinder.GetRandomPort();
-            var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-            var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
-            var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/user/{user}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api/user/{user}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                        new()
-                        {
-                            DownstreamPathTemplate = "/api/product/{product}",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = servicePort2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api/product/{product}",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-                GlobalConfiguration = new FileGlobalConfiguration
+            Routes = new List<FileRoute>
                 {
-                    ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                    new()
                     {
-                        Scheme = "https",
-                        Host = "localhost",
-                        Port = consulPort,
+                        DownstreamPathTemplate = "/api/user/{user}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = servicePort1,
+                            },
+                        },
+                        UpstreamPathTemplate = "/api/user/{user}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                    new()
+                    {
+                        DownstreamPathTemplate = "/api/product/{product}",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = servicePort2,
+                            },
+                        },
+                        UpstreamPathTemplate = "/api/product/{product}",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
                 },
-            };
-
-            this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, "/api/user/info", 200, "user"))
-                .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, "/api/product/info", 200, "product"))
-                .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/user/info?id=1"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("user"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/product/info?id=1"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("product"))
-                .BDDfy();
-        }
-
-        private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+            GlobalConfiguration = new FileGlobalConfiguration
             {
-                if (context.Request.Path.Value == "/v1/health/service/product")
+                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                 {
-                    var json = JsonConvert.SerializeObject(_serviceEntries);
-                    context.Response.Headers.Append("Content-Type", "application/json");
-                    await context.Response.WriteAsync(json);
-                }
-            });
-        }
+                    Scheme = "https",
+                    Host = "localhost",
+                    Port = consulPort,
+                },
+            },
+        };
 
-        private void GivenProductServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+        this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, "/api/user/info", 200, "user"))
+            .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, "/api/product/info", 200, "product"))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/user/info?id=1"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("user"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/product/info?id=1"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("product"))
+            .BDDfy();
+    }
+
+    private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            if (context.Request.Path.Value == "/v1/health/service/product")
             {
-                _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value)
-                    ? context.Request.PathBase.Value
-                    : context.Request.Path.Value;
+                var json = JsonConvert.SerializeObject(_serviceEntries);
+                context.Response.Headers.Append("Content-Type", "application/json");
+                await context.Response.WriteAsync(json);
+            }
+        });
+    }
 
-                if (_downstreamPathOne != basePath)
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
-
-        private void GivenProductServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+    private void GivenProductServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                ? context.Request.PathBase.Value
+                : context.Request.Path.Value;
+
+            if (_downstreamPathOne != basePath)
             {
-                _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync("downstream path didnt match base path");
+            }
+            else
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            }
+        });
+    }
 
-                if (_downstreamPathTwo != basePath)
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
-
-        public void Dispose()
+    private void GivenProductServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+            _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+            if (_downstreamPathTwo != basePath)
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync("downstream path didnt match base path");
+            }
+            else
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
     }
 }

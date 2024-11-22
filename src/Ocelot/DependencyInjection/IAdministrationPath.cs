@@ -1,7 +1,6 @@
-namespace Ocelot.DependencyInjection
+namespace Ocelot.DependencyInjection;
+
+public interface IAdministrationPath
 {
-    public interface IAdministrationPath
-    {
-        string Path { get; }
-    }
+    string Path { get; }
 }

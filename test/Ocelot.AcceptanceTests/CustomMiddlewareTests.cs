@@ -3,430 +3,429 @@ using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class CustomMiddlewareTests : IDisposable
 {
-    public class CustomMiddlewareTests : IDisposable
+    private readonly Steps _steps;
+    private int _counter;
+    private readonly ServiceHandler _serviceHandler;
+
+    public CustomMiddlewareTests()
     {
-        private readonly Steps _steps;
-        private int _counter;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _counter = 0;
+        _steps = new Steps();
+    }
 
-        public CustomMiddlewareTests()
+    [Fact]
+    public void should_call_pre_query_string_builder_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _counter = 0;
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_call_pre_query_string_builder_middleware()
-        {
-            var configuration = new OcelotPipelineConfiguration
+            AuthorizationMiddleware = async (ctx, next) =>
             {
-                AuthorizationMiddleware = async (ctx, next) =>
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_call_authorization_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            AuthorizationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_call_authentication_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            AuthenticationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/41879/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_call_pre_error_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            PreErrorResponderMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_call_pre_authorization_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            PreAuthorizationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_call_pre_http_authentication_middleware()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            PreAuthenticationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_not_throw_when_pipeline_terminates_early()
+    {
+        var configuration = new OcelotPipelineConfiguration
+        {
+            PreQueryStringBuilderMiddleware = (context, next) =>
+                Task.Run(() =>
                 {
                     _counter++;
-                    await next.Invoke();
+                    return; // do not invoke the rest of the pipeline
+                }),
+        };
+
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
                 },
-            };
+        };
 
-            var port = PortFinder.GetRandomPort();
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunning(configuration))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
 
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_authorization_middleware()
+    [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
+    public void should_fix_issue_237()
+    {
+        Func<object, Task> callback = state =>
         {
-            var configuration = new OcelotPipelineConfiguration
+            var httpContext = (HttpContext)state;
+
+            if (httpContext.Response.StatusCode > 400)
             {
-                AuthorizationMiddleware = async (ctx, next) =>
-                {
-                    _counter++;
-                    await next.Invoke();
-                },
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_authentication_middleware()
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                AuthenticationMiddleware = async (ctx, next) =>
-                {
-                    _counter++;
-                    await next.Invoke();
-                },
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/41879/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_pre_error_middleware()
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreErrorResponderMiddleware = async (ctx, next) =>
-                {
-                    _counter++;
-                    await next.Invoke();
-                },
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_pre_authorization_middleware()
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreAuthorizationMiddleware = async (ctx, next) =>
-                {
-                    _counter++;
-                    await next.Invoke();
-                },
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_pre_http_authentication_middleware()
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreAuthenticationMiddleware = async (ctx, next) =>
-                {
-                    _counter++;
-                    await next.Invoke();
-                },
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, string.Empty))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_throw_when_pipeline_terminates_early()
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreQueryStringBuilderMiddleware = (context, next) =>
-                    Task.Run(() =>
-                    {
-                        _counter++;
-                        return; // do not invoke the rest of the pipeline
-                    }),
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunning(configuration))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => x.ThenTheCounterIs(1))
-                .BDDfy();
-        }
-
-        [Fact(Skip = "This is just an example to show how you could hook into Ocelot pipeline with your own middleware. At the moment you must use Response.OnCompleted callback and cannot change the response :( I will see if this can be changed one day!")]
-        public void should_fix_issue_237()
-        {
-            Func<object, Task> callback = state =>
-            {
-                var httpContext = (HttpContext)state;
-
-                if (httpContext.Response.StatusCode > 400)
-                {
-                    Debug.WriteLine("COUNT CALLED");
-                    Console.WriteLine("COUNT CALLED");
-                }
-
-                return Task.CompletedTask;
-            };
-
-            var port = PortFinder.GetRandomPort();
-
-            var fileConfiguration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/west",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "/test"))
-                .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-                .And(x => _steps.GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-                .BDDfy();
-        }
-
-        private void ThenTheCounterIs(int expected)
-        {
-            _counter.ShouldBe(expected);
-        }
-
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string basePath)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
-            {
-                if (string.IsNullOrEmpty(basePath))
-                {
-                    context.Response.StatusCode = statusCode;
-                }
-                else if (context.Request.Path.Value != basePath)
-                {
-                    context.Response.StatusCode = 404;
-                }
-
-                return Task.CompletedTask;
-            });
-        }
-
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
-
-        public class FakeMiddleware
-        {
-            private readonly RequestDelegate _next;
-            private readonly Func<object, Task> _callback;
-
-            public FakeMiddleware(RequestDelegate next, Func<object, Task> callback)
-            {
-                _next = next;
-                _callback = callback;
+                Debug.WriteLine("COUNT CALLED");
+                Console.WriteLine("COUNT CALLED");
             }
 
-            public async Task Invoke(HttpContext context)
-            {
-                await _next(context);
+            return Task.CompletedTask;
+        };
 
-                context.Response.OnCompleted(_callback, context);
+        var port = PortFinder.GetRandomPort();
+
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/west",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "/test"))
+            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
+            .And(x => _steps.GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+            .BDDfy();
+    }
+
+    private void ThenTheCounterIs(int expected)
+    {
+        _counter.ShouldBe(expected);
+    }
+
+    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string basePath)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+        {
+            if (string.IsNullOrEmpty(basePath))
+            {
+                context.Response.StatusCode = statusCode;
             }
+            else if (context.Request.Path.Value != basePath)
+            {
+                context.Response.StatusCode = 404;
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
+    }
+
+    public class FakeMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly Func<object, Task> _callback;
+
+        public FakeMiddleware(RequestDelegate next, Func<object, Task> callback)
+        {
+            _next = next;
+            _callback = callback;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            await _next(context);
+
+            context.Response.OnCompleted(_callback, context);
         }
     }
 }

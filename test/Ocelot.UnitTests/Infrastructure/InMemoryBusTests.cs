@@ -1,39 +1,38 @@
 using Ocelot.Infrastructure;
 
-namespace Ocelot.UnitTests.Infrastructure
+namespace Ocelot.UnitTests.Infrastructure;
+
+public class InMemoryBusTests
 {
-    public class InMemoryBusTests
+    private readonly InMemoryBus<object> _bus;
+
+    public InMemoryBusTests()
     {
-        private readonly InMemoryBus<object> _bus;
+        _bus = new InMemoryBus<object>();
+    }
 
-        public InMemoryBusTests()
+    [Fact]
+    public async Task should_publish_with_delay()
+    {
+        var called = false;
+        _bus.Subscribe(x =>
         {
-            _bus = new InMemoryBus<object>();
-        }
+            called = true;
+        });
+        _bus.Publish(new object(), 1);
+        await Task.Delay(100);
+        called.ShouldBeTrue();
+    }
 
-        [Fact]
-        public async Task should_publish_with_delay()
+    [Fact]
+    public void should_not_be_publish_yet_as_no_delay_in_caller()
+    {
+        var called = false;
+        _bus.Subscribe(x =>
         {
-            var called = false;
-            _bus.Subscribe(x =>
-            {
-                called = true;
-            });
-            _bus.Publish(new object(), 1);
-            await Task.Delay(100);
-            called.ShouldBeTrue();
-        }
-
-        [Fact]
-        public void should_not_be_publish_yet_as_no_delay_in_caller()
-        {
-            var called = false;
-            _bus.Subscribe(x =>
-            {
-                called = true;
-            });
-            _bus.Publish(new object(), 1);
-            called.ShouldBeFalse();
-        }
+            called = true;
+        });
+        _bus.Publish(new object(), 1);
+        called.ShouldBeFalse();
     }
 }

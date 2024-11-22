@@ -1,10 +1,9 @@
 using Ocelot.Configuration.File;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Setter
+namespace Ocelot.Configuration.Setter;
+
+public interface IFileConfigurationSetter
 {
-    public interface IFileConfigurationSetter
-    {
-        Task<Response> Set(FileConfiguration config);
-    }
+    Task<Response> Set(FileConfiguration config);
 }

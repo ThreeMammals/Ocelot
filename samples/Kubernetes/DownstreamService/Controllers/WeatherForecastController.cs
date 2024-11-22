@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ocelot.Samples.OcelotKube.DownstreamService.Controllers;
+namespace Ocelot.Samples.Kubernetes.DownstreamService.Controllers;
 
 using Models;
 
