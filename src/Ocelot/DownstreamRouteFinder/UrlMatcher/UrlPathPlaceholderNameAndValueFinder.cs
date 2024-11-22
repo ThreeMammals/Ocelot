@@ -84,30 +84,26 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     }
     
     /// <summary>
-    /// The placeholders that are not placed at the end of the template
-    /// are delimited by forward slashes, only the last one, the catch-all can match
-    /// more segments.
+    /// The placeholders that are not placed at the end of the template are delimited by forward slashes, only the last one, the catch-all can match more segments.
     /// </summary>
     /// <param name="escapedTemplate">The escaped path template.</param>
     /// <returns>The pattern for values replacement.</returns>
     private static string GenerateRegexPattern(string escapedTemplate)
     {
-        // first we count the matches
+        // First we count the matches
         var placeHoldersCountMatch = RegexPlaceholders().Matches(escapedTemplate);
-        int placeHoldersCount = placeHoldersCountMatch.Count;
-        
-        int index = 0;
-        
-        // we know that the replace process will be started from the beginning of the url
+        int index = 0, placeHoldersCount = placeHoldersCountMatch.Count;
+
+        // We know that the replace process will be started from the beginning of the url,
         // so we can use a simple counter to determine the last placeholder
-        var regexPattern = $@"^{RegexPlaceholders().Replace(escapedTemplate, match =>
+        string MatchEvaluator(Match match)
         {
             var groupName = match.Groups[1].Value;
             index++;
-            return index == placeHoldersCount ? $"(?<{groupName}>[^&]*)" : $"(?<{groupName}>[^/|&]*)"; 
-        })}";
+            return index == placeHoldersCount ? $"(?<{groupName}>[^&]*)" : $"(?<{groupName}>[^/|&]*)";
+        }
 
-        return regexPattern;
+        return $@"^{RegexPlaceholders().Replace(escapedTemplate, MatchEvaluator)}";
     }
 
     private const int CatchAllQueryMilliseconds = 300;

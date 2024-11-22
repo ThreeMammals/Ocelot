@@ -425,7 +425,7 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
     [InlineData("/resources/{area}/{id}/{details}", "/resources/europe/56789/info/about", "{area}", "europe", "{id}", "56789", "{details}", "info/about")]
     [InlineData("/data/{version}/{category}/{subcategory}/{rest}", "/data/2.1/sales/reports/weekly/summary", "{version}", "2.1", "{category}", "sales", "{subcategory}", "reports", "{rest}", "weekly/summary")]
     [InlineData("/users/{region}/{team}/{userId}/{details}", "/users/north/eu/12345/activities/list", "{region}", "north", "{team}", "eu", "{userId}", "12345", "{details}", "activities/list")]
-    public void Match_CatchAll_OnlyTheLastPlaceholderCanContainSlashes(string template, string path,
+    public void Find_HasCatchAll_OnlyTheLastPlaceholderCanContainSlashes(string template, string path,
         string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
         string placeholderName3 = null, string placeholderValue3 = null, string placeholderName4 = null, string placeholderValue4 = null)
     {
