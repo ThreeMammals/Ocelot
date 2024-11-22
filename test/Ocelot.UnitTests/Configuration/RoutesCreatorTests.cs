@@ -162,6 +162,34 @@ namespace Ocelot.UnitTests.Configuration
               .BDDfy();
         }
 
+        [Fact]
+        public void CreateTimeout_RouteTimeoutIsLessThanGlobalOne_CreatedFromRouteValue()
+        {
+            // Arrange
+            var fileRoute = new FileRoute { Timeout = 10 };
+            var globalConfiguration = new FileGlobalConfiguration { Timeout = 20 };
+
+            // Act
+            var timeout = _creator.CreateTimeout(fileRoute, globalConfiguration);
+
+            // Assert
+            Assert.Equal(fileRoute.Timeout, timeout);
+        }
+
+        [Fact]
+        public void CreateTimeout_NoRouteTimeoutAndHasGlobalTimeout_CreatedFromGlobalValue()
+        {
+            // Arrange
+            var fileRoute = new FileRoute();
+            var globalConfiguration = new FileGlobalConfiguration { Timeout = 20 };
+
+            // Act
+            var timeout = _creator.CreateTimeout(fileRoute, globalConfiguration);
+
+            // Assert
+            Assert.Equal(globalConfiguration.Timeout, timeout);
+        }
+
         private void ThenTheDependenciesAreCalledCorrectly()
         {
             ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);

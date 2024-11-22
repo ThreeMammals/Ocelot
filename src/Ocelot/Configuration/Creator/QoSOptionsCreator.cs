@@ -28,7 +28,7 @@ namespace Ocelot.Configuration.Creator
             return Map(key, options.TimeoutValue, options.DurationOfBreak, options.ExceptionsAllowedBeforeBreaking);
         }
 
-        private static QoSOptions Map(string key, int timeoutValue, int durationOfBreak, int exceptionsAllowedBeforeBreaking)
+        private static QoSOptions Map(string key, int? timeoutValue, int durationOfBreak, int exceptionsAllowedBeforeBreaking)
         {
             return new QoSOptionsBuilder()
                 .WithExceptionsAllowedBeforeBreaking(exceptionsAllowedBeforeBreaking)

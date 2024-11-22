@@ -67,14 +67,15 @@ namespace Ocelot.Configuration.Creator
 
         public List<Route> Create(FileConfiguration fileConfiguration)
         {
+            Route CreateRoute(FileRoute route)
+                => SetUpRoute(route, SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration));
             return fileConfiguration.Routes
-                .Select(route =>
-                {
-                    var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration);
-                    return SetUpRoute(route, downstreamRoute);
-                })
+                .Select(CreateRoute)
                 .ToList();
         }
+
+        public int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
+            => route.Timeout ?? global.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds;
 
         private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
         {
@@ -156,8 +157,8 @@ namespace Ocelot.Configuration.Creator
                 .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
                 .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
                 .WithMetadata(metadata)
+                .WithTimeout(CreateTimeout(fileRoute, globalConfiguration))
                 .Build();
-
             return route;
         }
 
@@ -173,7 +174,6 @@ namespace Ocelot.Configuration.Creator
                 .WithUpstreamHost(fileRoute.UpstreamHost)
                 .WithUpstreamHeaders(upstreamHeaderTemplates)
                 .Build();
-
             return route;
         }
     }
