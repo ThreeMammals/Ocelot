@@ -44,8 +44,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         base.Dispose();
     }
 
-    [Fact]
-    public void ShouldReturnServicesFromK8s()
+    [Theory]
+    [InlineData(nameof(Kube))]
+    [InlineData(nameof(WatchKube))]
+    public void ShouldReturnServicesFromK8s(string discoveryType)
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
         const string serviceName = nameof(ShouldReturnServicesFromK8s);
@@ -55,7 +57,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         var subsetV1 = GivenSubsetAddress(downstream);
         var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, discoveryType, route);
         var downstreamResponse = serviceName;
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -95,7 +97,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         route.DownstreamScheme = downstreamScheme; // !!! Warning !!! Select port by name as scheme
         route.UpstreamPathTemplate = "/api/example/{url}";
         route.ServiceName = serviceName; // "example-web"
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, nameof(Kube), route);
 
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -173,7 +175,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, nameof(Kube), route);
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
@@ -245,7 +247,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             LoadBalancerOptions = new() { Type = loadBalancerType },
         };
 
-    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, params FileRoute[] routes)
+    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, string type, params FileRoute[] routes)
     {
         var u = new Uri(_kubernetesUrl);
         var configuration = GivenConfiguration(routes);
@@ -254,7 +256,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             Scheme = u.Scheme,
             Host = u.Host,
             Port = u.Port,
-            Type = nameof(Kube),
+            Type = type,
             PollingInterval = 0,
             Namespace = serviceNamespace,
         };
@@ -305,15 +307,34 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
+            
+            if (context.Request.Path.Value == $"/api/v1/watch/namespaces/{namespaces}/endpoints/{serviceName}")
+            {
+                var json = JsonConvert.SerializeObject(new ResourceEventV1<EndpointsV1>()
+                {
+                    EventType = ResourceEventType.Added,
+                    Resource = endpoints,
+                });
+
+                if (context.Request.Headers.TryGetValue("Authorization", out var values))
+                {
+                    _receivedToken = values.First();
+                }
+
+                context.Response.StatusCode = 200;
+                context.Response.Headers.Append("Content-Type", "application/json");
+                
+                await using var sw = new StreamWriter(context.Response.Body);
+                await sw.WriteLineAsync(json);
+                await sw.FlushAsync();
+                
+                // keeping open connection like kube api will slow down tests
+            }
         });
     }
 
-    private static ServiceDescriptor GetValidateScopesDescriptor()
-        => ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
-            new DefaultServiceProviderFactory(new() { ValidateScopes = true }));
     private IOcelotBuilder AddKubernetes(IServiceCollection services) => services
         .Configure(_kubeClientOptionsConfigure)
-        .Replace(GetValidateScopesDescriptor())
         .AddOcelot().AddKubernetes(false);
 
     private void WithKubernetes(IServiceCollection services) => AddKubernetes(services);
