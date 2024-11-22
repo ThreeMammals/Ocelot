@@ -4,8 +4,9 @@
 .. _@jlukawska: https://github.com/jlukawska
 .. _@kesskalli: https://github.com/kesskalli
 
-.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
+.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
 .. _23.4.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
+.. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
 
 .. _1111: https://github.com/ThreeMammals/Ocelot/issues/1111
 .. _1307: https://github.com/ThreeMammals/Ocelot/pull/1307
@@ -25,11 +26,11 @@ Welcome to the Ocelot `23.4`_ documentation!
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
 
-.. The major version `23.4.0`_ includes several patches, the history of which is provided below.
+The major version `23.4.0`_ includes several patches, the history of which is provided below.
 
-.. .. admonition:: Patches
+.. admonition:: Patches
 
-..   - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
+  - `23.4.1`_, on Nov 22, 2024: Routing patch.
 
 .. _release-notes:
 
@@ -37,11 +38,11 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 -----------------
 
 | Release Tag: `23.4.0`_
-| Release Codename: `Make Guillaume Great Again! <https://github.com/ThreeMammals/Ocelot/commits?author=ggnaegi>`_
+| Release Codename: `McDonald's <https://www.youtube.com/watch?v=_PgYAPdOs9M>`_
 
-  :htm:`<details><summary>With codename decoding links:</summary>`
+  :htm:`<details><summary>With release jokes:</summary>`
 
-  - **for men**: The abbreviation "MGGA" is reminiscent of the `MAGA slogan <https://www.bing.com/search?q=make+america+great+again+slogan>`_
+  - **for men**: Wearing a cap with the `MAGA slogan <https://www.bing.com/search?q=make+america+great+again+slogan>`_ is encouraged when visiting McDonald's.
   - **for women**: Donald is fond of caps, particularly the `MAGA cap <https://www.bing.com/search?q=make+america+great+again+cap>`_, and it's amusing to see children's reactions when `We Ask Kids How Mr.D is Doing <https://www.youtube.com/watch?v=XYviM5xevC8>`_?
   - **for black men**: Here are some highlights of Donald's antics aka Mr. D:
 
