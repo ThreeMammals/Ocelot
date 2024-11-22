@@ -385,22 +385,31 @@ Consider the following 2 development scenarios :htm:`&rarr;`
 Security Options [#f5]_
 -----------------------
 
-Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package
-with `MPL-2.0 License <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
+Ocelot enables the management of multiple patterns for allowed and blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package, which is licensed under the `MPL-2.0 license <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
 
-This feature is designed to allow greater IP management in order to include or exclude a wide IP range via CIDR notation or IP range.
-The current patterns managed are the following:
+This feature is designed to enhanced IP management, allowing for the inclusion exclusion of a broad IP range through CIDR notation or specific IP ranges.
+The current managed patterns are as follows:
 
-* Single IP: :code:`192.168.1.1`
-* IP Range: :code:`192.168.1.1-192.168.1.250`
-* IP Short Range: :code:`192.168.1.1-250`
-* IP Range with subnet: :code:`192.168.1.0/255.255.255.0`
-* CIDR: :code:`192.168.1.0/24`
-* CIDR for IPv6: :code:`fe80::/10`
-* The allowed/blocked lists are evaluated during configuration loading
-* The **ExcludeAllowedFromBlocked** property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
-  Default value: :code:`false`
-* The absence of a property in **SecurityOptions** is allowed, it takes the default value.
+.. list-table::
+    :widths: 35 65
+    :header-rows: 1
+
+    * - *IP Rule*
+      - *Example*
+    * - Single IP
+      - ``192.168.1.1``
+    * - IP Range
+      - ``192.168.1.1-192.168.1.250``
+    * - IP Short Range
+      - ``192.168.1.1-250``
+    * - IP Subnet
+      - ``192.168.1.0/255.255.255.0``
+    * - CIDR IPv4
+      - ``192.168.1.0/24``
+    * - CIDR IPv6
+      - ``fe80::/10``
+
+Here is a quick example:
 
 .. code-block:: json
 
@@ -412,9 +421,17 @@ The current patterns managed are the following:
     }
   }
 
+Please **note** that:
+
+* The allowed/blocked lists are evaluated during configuration loading
+* The ``ExcludeAllowedFromBlocked`` property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
+  Default value: :code:`false`
+* The absence of a property in *Security Options* is allowed, it takes the default value.
+* The *Security Options* can be configured **globally** in the ``GlobalConfiguration`` JSON; however, it is ignored if overriding options are specified at the route level [#f6]_.
+
 .. _routing-dynamic:
 
-Dynamic Routing [#f6]_
+Dynamic Routing [#f7]_
 ----------------------
 
 The idea is to enable dynamic routing when using a :doc:`../features/servicediscovery` provider so you don't have to provide the Route config.
@@ -426,7 +443,8 @@ See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 .. [#f3] ":ref:`routing-upstream-host`" feature was requested as part of issue `216`_.
 .. [#f4] ":ref:`routing-upstream-headers`" feature was proposed in issue `360`_, and released in version `23.3`_.
 .. [#f5] ":ref:`routing-security-options`" feature was requested as part of issue `628`_ (version `12.0.1`_), then redesigned and improved by issue `1400`_, and published in version `20.0`_ docs.
-.. [#f6] ":ref:`routing-dynamic`" feature was requested as part of issue `340`_. Refer to complete reference: :ref:`sd-dynamic-routing`.
+.. [#f6] Global ":ref:`routing-security-options`" feature was requested as part of issue `2165`_ , and released in version `23.4.1`_.
+.. [#f7] ":ref:`routing-dynamic`" feature was requested as part of issue `340`_. Refer to complete reference: :ref:`sd-dynamic-routing`.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings
@@ -441,6 +459,7 @@ See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 .. _952: https://github.com/ThreeMammals/Ocelot/issues/952
 .. _1174: https://github.com/ThreeMammals/Ocelot/issues/1174
 .. _1400: https://github.com/ThreeMammals/Ocelot/issues/1400
+.. _2165: https://github.com/ThreeMammals/Ocelot/issues/2165
 .. _2199: https://github.com/ThreeMammals/Ocelot/issues/2199
 
 .. _12.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1
@@ -448,3 +467,4 @@ See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 .. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
+.. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
