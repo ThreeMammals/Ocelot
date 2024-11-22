@@ -501,6 +501,30 @@ public sealed class RoutingTests : Steps, IDisposable
             .BDDfy();
     }
 
+    [Theory]
+    [Trait("Bug", "2212")]
+    [InlineData("/data-registers/{version}/it/{everything}", "/dati-registri/{version}/{everything}", "/dati-registri/v1.0/operatore/R80QQ5J9600/valida", "/data-registers/v1.0/it/operatore/R80QQ5J9600/valida")]
+    [InlineData("/files/{version}/uploads/{everything}", "/data/{version}/storage/{everything}", "/data/v2.0/storage/images/photos/nature", "/files/v2.0/uploads/images/photos/nature")]
+    [InlineData("/resources/{area}/details/{everything}", "/api/resources/{area}/info/{everything}", "/api/resources/global/info/stats/2024/data", "/resources/global/details/stats/2024/data")]
+    [InlineData("/users/{userId}/logs/{everything}", "/data/users/{userId}/activity/{everything}", "/data/users/12345/activity/session/login/2024", "/users/12345/logs/session/login/2024")]
+    [InlineData("/orders/{orderId}/items/{everything}", "/ecommerce/{orderId}/details/{everything}", "/ecommerce/98765/details/category/electronics/phone", "/orders/98765/items/category/electronics/phone")]
+    [InlineData("/tasks/{taskId}/subtasks/{everything}", "/work/{taskId}/breakdown/{everything}", "/work/56789/breakdown/phase/3/step/2", "/tasks/56789/subtasks/phase/3/step/2")]
+    [InlineData("/configs/{env}/overrides/{everything}", "/settings/{env}/{everything}", "/settings/prod/feature/toggles", "/configs/prod/overrides/feature/toggles")]
+    public void OnlyTheLastPlaceholderShouldMatchSeveralSegments(string downstream, string upstream, string requestUrl, string downstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstream, downstream);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello from Guillaume"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Guillaume"))
+            .BDDfy();
+    }
+
     [Fact]
     [Trait("Feat", "91, 94")]
     public void Should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
