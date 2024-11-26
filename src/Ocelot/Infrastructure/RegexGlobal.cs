@@ -22,7 +22,11 @@ public static class RegexGlobal
     /// <value>An <see cref="int"/> value.</value>
     public static int RegexCacheSize { get; set; }
 
-    /// <summary>Default value for the <see cref="GeneratedRegexAttribute"/> attribute and the <see cref="Regex"/> constructors.</summary>
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CS1574 // File name must match first type name
+    /// <summary>Default value for the <see cref="GeneratedRegexAttribute"/> and the <see cref="Regex"/> constructors.</summary>
+#pragma warning restore CS1574 // File name must match first type name
+#pragma warning restore IDE0079 // Remove unnecessary suppression
     public const int DefaultMatchTimeoutMilliseconds = 100;
 
     /// <summary>Default match timeout for the <see cref="Regex"/> constructors.</summary>
