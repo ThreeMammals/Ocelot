@@ -5,93 +5,92 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.Tracing.Butterfly
+namespace Ocelot.Tracing.Butterfly;
+
+public class ButterflyTracer : DelegatingHandler, Logging.ITracer
 {
-    public class ButterflyTracer : DelegatingHandler, Logging.ITracer
+    private readonly IServiceTracer _tracer;
+    private const string PrefixSpanId = "ot-spanId";
+
+    public ButterflyTracer(IServiceProvider services)
     {
-        private readonly IServiceTracer _tracer;
-        private const string PrefixSpanId = "ot-spanId";
+        _tracer = services.GetService<IServiceTracer>();
+    }
 
-        public ButterflyTracer(IServiceProvider services)
+    public void Event(HttpContext httpContext, string @event)
+    {
+        // todo - if the user isnt using tracing the code gets here and will blow up on
+        // _tracer.Tracer.TryExtract..
+        if (_tracer == null)
         {
-            _tracer = services.GetService<IServiceTracer>();
+            return;
         }
 
-        public void Event(HttpContext httpContext, string @event)
+        var span = httpContext.GetSpan();
+
+        if (span == null)
         {
-            // todo - if the user isnt using tracing the code gets here and will blow up on
-            // _tracer.Tracer.TryExtract..
-            if (_tracer == null)
+            var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
+            if (_tracer.Tracer.TryExtract(out var spanContext, httpContext.Request.Headers, (c, k) => c[k].GetValue(),
+                c => c.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.GetValue())).GetEnumerator()))
             {
-                return;
+                spanBuilder.AsChildOf(spanContext);
             }
 
-            var span = httpContext.GetSpan();
-
-            if (span == null)
-            {
-                var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
-                if (_tracer.Tracer.TryExtract(out var spanContext, httpContext.Request.Headers, (c, k) => c[k].GetValue(),
-                    c => c.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.GetValue())).GetEnumerator()))
-                {
-                    spanBuilder.AsChildOf(spanContext);
-                }
-
-                span = _tracer.Start(spanBuilder);
-                httpContext.SetSpan(span);
-            }
-
-            span?.Log(LogField.CreateNew().Event(@event));
+            span = _tracer.Start(spanBuilder);
+            httpContext.SetSpan(span);
         }
 
-        public Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken,
-            Action<string> addTraceIdToRepo,
-            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        span?.Log(LogField.CreateNew().Event(@event));
+    }
+
+    public Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken,
+        Action<string> addTraceIdToRepo,
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+    {
+        return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken, addTraceIdToRepo, baseSendAsync));
+    }
+
+    protected virtual async Task<HttpResponseMessage> TracingSendAsync(
+        ISpan span,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken,
+        Action<string> addTraceIdToRepo,
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+    {
+        if (request.Headers.Contains(PrefixSpanId))
         {
-            return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken, addTraceIdToRepo, baseSendAsync));
+            request.Headers.Remove(PrefixSpanId);
+            request.Headers.TryAddWithoutValidation(PrefixSpanId, span.SpanContext.SpanId);
         }
 
-        protected virtual async Task<HttpResponseMessage> TracingSendAsync(
-            ISpan span,
-            HttpRequestMessage request,
-            CancellationToken cancellationToken,
-            Action<string> addTraceIdToRepo,
-            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        addTraceIdToRepo(span.SpanContext.TraceId);
+
+        span.Tags.Client().Component("HttpClient")
+            .HttpMethod(request.Method.Method)
+            .HttpUrl(request.RequestUri.OriginalString)
+            .HttpHost(request.RequestUri.Host)
+            .HttpPath(request.RequestUri.PathAndQuery)
+            .PeerAddress(request.RequestUri.OriginalString)
+            .PeerHostName(request.RequestUri.Host)
+            .PeerPort(request.RequestUri.Port);
+
+        _tracer.Tracer.Inject(span.SpanContext, request.Headers, (c, k, v) =>
         {
-            if (request.Headers.Contains(PrefixSpanId))
+            if (!c.Contains(k))
             {
-                request.Headers.Remove(PrefixSpanId);
-                request.Headers.TryAddWithoutValidation(PrefixSpanId, span.SpanContext.SpanId);
+                c.Add(k, v);
             }
+        });
 
-            addTraceIdToRepo(span.SpanContext.TraceId);
+        span.Log(LogField.CreateNew().ClientSend());
 
-            span.Tags.Client().Component("HttpClient")
-                .HttpMethod(request.Method.Method)
-                .HttpUrl(request.RequestUri.OriginalString)
-                .HttpHost(request.RequestUri.Host)
-                .HttpPath(request.RequestUri.PathAndQuery)
-                .PeerAddress(request.RequestUri.OriginalString)
-                .PeerHostName(request.RequestUri.Host)
-                .PeerPort(request.RequestUri.Port);
+        var responseMessage = await baseSendAsync(request, cancellationToken);
 
-            _tracer.Tracer.Inject(span.SpanContext, request.Headers, (c, k, v) =>
-            {
-                if (!c.Contains(k))
-                {
-                    c.Add(k, v);
-                }
-            });
+        span.Log(LogField.CreateNew().ClientReceive());
 
-            span.Log(LogField.CreateNew().ClientSend());
-
-            var responseMessage = await baseSendAsync(request, cancellationToken);
-
-            span.Log(LogField.CreateNew().ClientReceive());
-
-            return responseMessage;
-        }
+        return responseMessage;
     }
 }

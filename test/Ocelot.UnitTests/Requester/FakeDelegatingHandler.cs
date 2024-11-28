@@ -1,79 +1,78 @@
-namespace Ocelot.UnitTests.Requester
+namespace Ocelot.UnitTests.Requester;
+
+public class FakeDelegatingHandler : DelegatingHandler
 {
-    public class FakeDelegatingHandler : DelegatingHandler
+    public FakeDelegatingHandler()
     {
-        public FakeDelegatingHandler()
-        {
-            Order = 1;
-        }
-
-        public FakeDelegatingHandler(int order)
-        {
-            Order = order;
-        }
-
-        public int Order { get; }
-
-        public DateTime TimeCalled { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            TimeCalled = DateTime.Now;
-            return Task.FromResult(new HttpResponseMessage());
-        }
+        Order = 1;
     }
 
-    public class FakeDelegatingHandlerThree : DelegatingHandler
+    public FakeDelegatingHandler(int order)
     {
-        public FakeDelegatingHandlerThree()
-        {
-            Order = 3;
-        }
-
-        public int Order { get; }
-
-        public DateTime TimeCalled { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            TimeCalled = DateTime.Now;
-            return Task.FromResult(new HttpResponseMessage());
-        }
+        Order = order;
     }
 
-    public class FakeDelegatingHandlerFour : DelegatingHandler
+    public int Order { get; }
+
+    public DateTime TimeCalled { get; private set; }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        public FakeDelegatingHandlerFour()
-        {
-            Order = 4;
-        }
+        TimeCalled = DateTime.Now;
+        return Task.FromResult(new HttpResponseMessage());
+    }
+}
 
-        public int Order { get; }
-
-        public DateTime TimeCalled { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            TimeCalled = DateTime.Now;
-            return Task.FromResult(new HttpResponseMessage());
-        }
+public class FakeDelegatingHandlerThree : DelegatingHandler
+{
+    public FakeDelegatingHandlerThree()
+    {
+        Order = 3;
     }
 
-    public class FakeDelegatingHandlerTwo : DelegatingHandler
+    public int Order { get; }
+
+    public DateTime TimeCalled { get; private set; }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        public FakeDelegatingHandlerTwo()
-        {
-            Order = 2;
-        }
+        TimeCalled = DateTime.Now;
+        return Task.FromResult(new HttpResponseMessage());
+    }
+}
 
-        public int Order { get; }
+public class FakeDelegatingHandlerFour : DelegatingHandler
+{
+    public FakeDelegatingHandlerFour()
+    {
+        Order = 4;
+    }
 
-        public DateTime TimeCalled { get; private set; }
+    public int Order { get; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            TimeCalled = DateTime.Now;
-            return Task.FromResult(new HttpResponseMessage());
-        }
+    public DateTime TimeCalled { get; private set; }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        TimeCalled = DateTime.Now;
+        return Task.FromResult(new HttpResponseMessage());
+    }
+}
+
+public class FakeDelegatingHandlerTwo : DelegatingHandler
+{
+    public FakeDelegatingHandlerTwo()
+    {
+        Order = 2;
+    }
+
+    public int Order { get; }
+
+    public DateTime TimeCalled { get; private set; }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        TimeCalled = DateTime.Now;
+        return Task.FromResult(new HttpResponseMessage());
     }
 }

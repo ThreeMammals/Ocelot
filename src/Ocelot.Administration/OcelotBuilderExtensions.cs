@@ -10,126 +10,125 @@ using Ocelot.Middleware;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Ocelot.Administration
+namespace Ocelot.Administration;
+
+public static class OcelotBuilderExtensions
 {
-    public static class OcelotBuilderExtensions
+    public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, string secret)
     {
-        public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, string secret)
+        var administrationPath = new AdministrationPath(path);
+
+        builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
+
+        //add identity server for admin area
+        var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
+
+        if (identityServerConfiguration != null)
         {
-            var administrationPath = new AdministrationPath(path);
+            AddIdentityServer(identityServerConfiguration, administrationPath, builder, builder.Configuration);
+        }
 
-            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
+        builder.Services.AddSingleton<IAdministrationPath>(administrationPath);
+        return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
+    }
 
-            //add identity server for admin area
-            var identityServerConfiguration = IdentityServerConfigurationCreator.GetIdentityServerConfiguration(secret);
+    public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, Action<JwtBearerOptions> configureOptions)
+    {
+        var administrationPath = new AdministrationPath(path);
+        builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
 
-            if (identityServerConfiguration != null)
+        if (configureOptions != null)
+        {
+            AddIdentityServer(configureOptions, builder);
+        }
+
+        builder.Services.AddSingleton<IAdministrationPath>(administrationPath);
+        return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
+    }
+
+    private static void AddIdentityServer(Action<JwtBearerOptions> configOptions, IOcelotBuilder builder)
+    {
+        builder.Services
+            .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            .AddJwtBearer("Bearer", configOptions);
+    }
+
+    private static void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
+    {
+        builder.Services.TryAddSingleton(identityServerConfiguration);
+        var identityServerBuilder = builder.Services
+            .AddIdentityServer(o =>
             {
-                AddIdentityServer(identityServerConfiguration, administrationPath, builder, builder.Configuration);
-            }
+                o.IssuerUri = "Ocelot";
+                o.EmitStaticAudienceClaim = true;
+            })
+            .AddInMemoryApiScopes(ApiScopes(identityServerConfiguration))
+            .AddInMemoryApiResources(Resources(identityServerConfiguration))
+            .AddInMemoryClients(Client(identityServerConfiguration));
 
-            builder.Services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
-        }
+        var urlFinder = new BaseUrlFinder(configuration);
+        var baseSchemeUrlAndPort = urlFinder.Find();
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        public static IOcelotAdministrationBuilder AddAdministration(this IOcelotBuilder builder, string path, Action<JwtBearerOptions> configureOptions)
-        {
-            var administrationPath = new AdministrationPath(path);
-            builder.Services.AddSingleton(IdentityServerMiddlewareConfigurationProvider.Get);
-
-            if (configureOptions != null)
+        builder.Services
+            .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            .AddJwtBearer("Bearer", options =>
             {
-                AddIdentityServer(configureOptions, builder);
-            }
+                options.Authority = baseSchemeUrlAndPort + adminPath.Path;
+                options.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
 
-            builder.Services.AddSingleton<IAdministrationPath>(administrationPath);
-            return new OcelotAdministrationBuilder(builder.Services, builder.Configuration);
-        }
-
-        private static void AddIdentityServer(Action<JwtBearerOptions> configOptions, IOcelotBuilder builder)
-        {
-            builder.Services
-                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddJwtBearer("Bearer", configOptions);
-        }
-
-        private static void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
-        {
-            builder.Services.TryAddSingleton(identityServerConfiguration);
-            var identityServerBuilder = builder.Services
-                .AddIdentityServer(o =>
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    o.IssuerUri = "Ocelot";
-                    o.EmitStaticAudienceClaim = true;
-                })
-                .AddInMemoryApiScopes(ApiScopes(identityServerConfiguration))
-                .AddInMemoryApiResources(Resources(identityServerConfiguration))
-                .AddInMemoryClients(Client(identityServerConfiguration));
+                    ValidateAudience = false,
+                };
+            });
 
-            var urlFinder = new BaseUrlFinder(configuration);
-            var baseSchemeUrlAndPort = urlFinder.Find();
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        //todo - refactor naming..
+        if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
+        {
+            identityServerBuilder.AddDeveloperSigningCredential();
+        }
+        else
+        {
+            //todo - refactor so calls method?
+            var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+            identityServerBuilder.AddSigningCredential(cert);
+        }
+    }
 
-            builder.Services
-                .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddJwtBearer("Bearer", options =>
+    private static IEnumerable<ApiScope> ApiScopes(IIdentityServerConfiguration identityServerConfiguration)
+    {
+        return identityServerConfiguration.AllowedScopes.Select(s => new ApiScope(s));
+    }
+
+    private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
+    {
+        return new List<ApiResource>
+        {
+            new(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+            {
+                ApiSecrets = new List<Secret>
                 {
-                    options.Authority = baseSchemeUrlAndPort + adminPath.Path;
-                    options.RequireHttpsMetadata = identityServerConfiguration.RequireHttps;
-
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    new()
                     {
-                        ValidateAudience = false,
-                    };
-                });
-
-            //todo - refactor naming..
-            if (string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificateLocation) || string.IsNullOrEmpty(identityServerConfiguration.CredentialsSigningCertificatePassword))
-            {
-                identityServerBuilder.AddDeveloperSigningCredential();
-            }
-            else
-            {
-                //todo - refactor so calls method?
-                var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-                identityServerBuilder.AddSigningCredential(cert);
-            }
-        }
-
-        private static IEnumerable<ApiScope> ApiScopes(IIdentityServerConfiguration identityServerConfiguration)
-        {
-            return identityServerConfiguration.AllowedScopes.Select(s => new ApiScope(s));
-        }
-
-        private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
-        {
-            return new List<ApiResource>
-            {
-                new(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
-                {
-                    ApiSecrets = new List<Secret>
-                    {
-                        new()
-                        {
-                            Value = identityServerConfiguration.ApiSecret.Sha256(),
-                        },
+                        Value = identityServerConfiguration.ApiSecret.Sha256(),
                     },
                 },
-            };
-        }
+            },
+        };
+    }
 
-        private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration)
+    private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration)
+    {
+        return new List<Client>
         {
-            return new List<Client>
+            new()
             {
-                new()
-                {
-                    ClientId = identityServerConfiguration.ApiName,
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = new List<Secret> {new(identityServerConfiguration.ApiSecret.Sha256())},
-                    AllowedScopes = identityServerConfiguration.AllowedScopes,
-                },
-            };
-        }
+                ClientId = identityServerConfiguration.ApiName,
+                AllowedGrantTypes = GrantTypes.ClientCredentials,
+                ClientSecrets = new List<Secret> {new(identityServerConfiguration.ApiSecret.Sha256())},
+                AllowedScopes = identityServerConfiguration.AllowedScopes,
+            },
+        };
     }
 }

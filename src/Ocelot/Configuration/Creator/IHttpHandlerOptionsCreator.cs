@@ -1,12 +1,11 @@
 ﻿using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+/// <summary>
+/// Describes creation of HttpHandlerOptions.
+/// </summary>
+public interface IHttpHandlerOptionsCreator
 {
-    /// <summary>
-    /// Describes creation of HttpHandlerOptions.
-    /// </summary>
-    public interface IHttpHandlerOptionsCreator
-    {
-        HttpHandlerOptions Create(FileHttpHandlerOptions options);
-    }
+    HttpHandlerOptions Create(FileHttpHandlerOptions options);
 }

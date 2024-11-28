@@ -5,84 +5,83 @@ using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.QueryStrings
+namespace Ocelot.QueryStrings;
+
+public class AddQueriesToRequest : IAddQueriesToRequest
 {
-    public class AddQueriesToRequest : IAddQueriesToRequest
+    private readonly IClaimsParser _claimsParser;
+
+    public AddQueriesToRequest(IClaimsParser claimsParser)
     {
-        private readonly IClaimsParser _claimsParser;
+        _claimsParser = claimsParser;
+    }
 
-        public AddQueriesToRequest(IClaimsParser claimsParser)
+    public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
+    {
+        var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.Query);
+
+        foreach (var config in claimsToThings)
         {
-            _claimsParser = claimsParser;
-        }
+            var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
 
-        public Response SetQueriesOnDownstreamRequest(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims, DownstreamRequest downstreamRequest)
-        {
-            var queryDictionary = ConvertQueryStringToDictionary(downstreamRequest.Query);
-
-            foreach (var config in claimsToThings)
+            if (value.IsError)
             {
-                var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
-
-                if (value.IsError)
-                {
-                    return new ErrorResponse(value.Errors);
-                }
-
-                var exists = queryDictionary.FirstOrDefault(x => x.Key == config.ExistingKey);
-
-                if (!string.IsNullOrEmpty(exists.Key))
-                {
-                    queryDictionary[exists.Key] = value.Data;
-                }
-                else
-                {
-                    queryDictionary.Add(config.ExistingKey, value.Data);
-                }
+                return new ErrorResponse(value.Errors);
             }
 
-            downstreamRequest.Query = ConvertDictionaryToQueryString(queryDictionary);
+            var exists = queryDictionary.FirstOrDefault(x => x.Key == config.ExistingKey);
 
-            return new OkResponse();
-        }
-
-        private static Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
-        {
-            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
-                .ParseQuery(queryString);
-
-            return query;
-        }
-
-        private static string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
-        {
-            var builder = new StringBuilder();
-
-            builder.Append('?');
-
-            var outerCount = 0;
-
-            foreach (var query in queryDictionary)
+            if (!string.IsNullOrEmpty(exists.Key))
             {
-                for (var innerCount = 0; innerCount < query.Value.Count; innerCount++)
-                {
-                    builder.Append($"{query.Key}={query.Value[innerCount]}");
+                queryDictionary[exists.Key] = value.Data;
+            }
+            else
+            {
+                queryDictionary.Add(config.ExistingKey, value.Data);
+            }
+        }
 
-                    if (innerCount < (query.Value.Count - 1))
-                    {
-                        builder.Append('&');
-                    }
-                }
+        downstreamRequest.Query = ConvertDictionaryToQueryString(queryDictionary);
 
-                if (outerCount < (queryDictionary.Count - 1))
+        return new OkResponse();
+    }
+
+    private static Dictionary<string, StringValues> ConvertQueryStringToDictionary(string queryString)
+    {
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers
+            .ParseQuery(queryString);
+
+        return query;
+    }
+
+    private static string ConvertDictionaryToQueryString(Dictionary<string, StringValues> queryDictionary)
+    {
+        var builder = new StringBuilder();
+
+        builder.Append('?');
+
+        var outerCount = 0;
+
+        foreach (var query in queryDictionary)
+        {
+            for (var innerCount = 0; innerCount < query.Value.Count; innerCount++)
+            {
+                builder.Append($"{query.Key}={query.Value[innerCount]}");
+
+                if (innerCount < (query.Value.Count - 1))
                 {
                     builder.Append('&');
                 }
-
-                outerCount++;
             }
 
-            return builder.ToString();
+            if (outerCount < (queryDictionary.Count - 1))
+            {
+                builder.Append('&');
+            }
+
+            outerCount++;
         }
+
+        return builder.ToString();
     }
 }

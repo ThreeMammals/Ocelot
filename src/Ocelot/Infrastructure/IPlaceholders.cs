@@ -1,16 +1,15 @@
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public interface IPlaceholders
 {
-    public interface IPlaceholders
-    {
-        Response<string> Get(string key);
+    Response<string> Get(string key);
 
-        Response<string> Get(string key, DownstreamRequest request);
+    Response<string> Get(string key, DownstreamRequest request);
 
-        Response Add(string key, Func<Response<string>> func);
+    Response Add(string key, Func<Response<string>> func);
 
-        Response Remove(string key);
-    }
+    Response Remove(string key);
 }

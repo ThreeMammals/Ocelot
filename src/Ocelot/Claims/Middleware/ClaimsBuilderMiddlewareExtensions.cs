@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Claims.Middleware
+namespace Ocelot.Claims.Middleware;
+
+public static class ClaimsBuilderMiddlewareExtensions
 {
-    public static class ClaimsBuilderMiddlewareExtensions
+    public static IApplicationBuilder UseClaimsToClaimsMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseClaimsToClaimsMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ClaimsToClaimsMiddleware>();
-        }
+        return builder.UseMiddleware<ClaimsToClaimsMiddleware>();
     }
 }

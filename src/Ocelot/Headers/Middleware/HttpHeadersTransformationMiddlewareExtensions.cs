@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Headers.Middleware
+namespace Ocelot.Headers.Middleware;
+
+public static class HttpHeadersTransformationMiddlewareExtensions
 {
-    public static class HttpHeadersTransformationMiddlewareExtensions
+    public static IApplicationBuilder UseHttpHeadersTransformationMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseHttpHeadersTransformationMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<HttpHeadersTransformationMiddleware>();
-        }
+        return builder.UseMiddleware<HttpHeadersTransformationMiddleware>();
     }
 }

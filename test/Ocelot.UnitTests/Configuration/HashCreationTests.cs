@@ -1,30 +1,29 @@
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class HashCreationTests
 {
-    public class HashCreationTests
+    [Fact]
+    public void should_create_hash_and_salt()
     {
-        [Fact]
-        public void should_create_hash_and_salt()
+        var password = "secret";
+
+        var salt = new byte[128 / 8];
+
+        using (var rng = RandomNumberGenerator.Create())
         {
-            var password = "secret";
-
-            var salt = new byte[128 / 8];
-
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
-            var storedSalt = Convert.ToBase64String(salt);
-
-            var storedHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 10000,
-                numBytesRequested: 256 / 8));
+            rng.GetBytes(salt);
         }
+
+        var storedSalt = Convert.ToBase64String(salt);
+
+        var storedHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+            password: password,
+            salt: salt,
+            prf: KeyDerivationPrf.HMACSHA256,
+            iterationCount: 10000,
+            numBytesRequested: 256 / 8));
     }
 }

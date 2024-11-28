@@ -7,37 +7,36 @@ using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Ocelot.Requester;
 
-namespace Ocelot.UnitTests.Polly
+namespace Ocelot.UnitTests.Polly;
+
+public class OcelotBuilderExtensionsTests
 {
-    public class OcelotBuilderExtensionsTests
+    [Fact]
+    public void Should_build()
     {
-        [Fact]
-        public void Should_build()
-        {
-            var loggerFactory = new Mock<IOcelotLoggerFactory>();
-            var contextAccessor = new Mock<IHttpContextAccessor>();
-            var services = new ServiceCollection();
-            var options = new QoSOptionsBuilder()
-                .WithTimeoutValue(100)
-                .WithExceptionsAllowedBeforeBreaking(2)
-                .WithDurationOfBreak(200)
-                .Build();
-            var route = new DownstreamRouteBuilder().WithQosOptions(options)
-                .Build();
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        var contextAccessor = new Mock<IHttpContextAccessor>();
+        var services = new ServiceCollection();
+        var options = new QoSOptionsBuilder()
+            .WithTimeoutValue(100)
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(200)
+            .Build();
+        var route = new DownstreamRouteBuilder().WithQosOptions(options)
+            .Build();
 
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .Build();
-            services
-                .AddOcelot(configuration)
-                .AddPolly();
-            var provider = services.BuildServiceProvider(true);
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .Build();
+        services
+            .AddOcelot(configuration)
+            .AddPolly();
+        var provider = services.BuildServiceProvider(true);
 
-            var handler = provider.GetService<QosDelegatingHandlerDelegate>();
-            handler.ShouldNotBeNull();
+        var handler = provider.GetService<QosDelegatingHandlerDelegate>();
+        handler.ShouldNotBeNull();
 
-            var delgatingHandler = handler(route, contextAccessor.Object, loggerFactory.Object);
-            delgatingHandler.ShouldNotBeNull();
-        }
+        var delgatingHandler = handler(route, contextAccessor.Object, loggerFactory.Object);
+        delgatingHandler.ShouldNotBeNull();
     }
 }

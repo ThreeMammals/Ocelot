@@ -69,11 +69,28 @@ In order to change this you can specify on a per Route basis the following setti
 
   "RouteIsCaseSensitive": true
 
-This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive. 
+This means that when Ocelot tries to match the incoming upstream URL with an upstream template the evaluation will be case sensitive.
+
+.. _routing-embedded-placeholders:
+
+Embedded Placeholders [#f1]_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Prior to version `23.4`_, Ocelot was unable to evaluate multiple placeholders embedded between two forward slashes, ``/``. 
+It was also challenging to differentiate the placeholder from other elements within the slashes. 
+For example, ``/{url}-2/`` when applied to ``/y-2/`` would yield ``{url} = y-2``.
+
+We now introduce an improved method of placeholder evaluation that facilitates the identification of placeholders in complex URLs. For example:
+
+- **Given** path pattern: ``/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}``
+- **When** upstream URL path: ``/api/invoices_super/123-456_abcd/789?urlId=987``
+- **Then** resulting placeholders would be ``{url0} = super``, ``{url1} = 123``, ``{url2} = 456``, ``{url3} = 789``, ``{url4} = 987``
+
+    **Note**, we believe this feature should be compatible with any URL query strings, although it has not been thoroughly tested.
 
 .. _routing-empty-placeholders:
 
-Empty Placeholders [#f1]_
+Empty Placeholders [#f2]_
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is a special edge case of :ref:`routing-placeholders`, where the value of the placeholder is simply an empty string ``""``.
@@ -135,7 +152,7 @@ If you also have the Route below in your config then Ocelot would match it befor
 
 .. _routing-upstream-host:
 
-Upstream Host [#f2]_
+Upstream Host [#f3]_
 --------------------
 
 This feature allows you to have Routes based on the *upstream host*.
@@ -156,7 +173,7 @@ This means that if you have two Routes that are the same, apart from the **Upstr
 
 .. _routing-upstream-headers:
 
-Upstream Headers [#f3]_
+Upstream Headers [#f4]_
 -----------------------
 
 In addition to routing by ``UpstreamPathTemplate``, you can also define ``UpstreamHeaderTemplates``.
@@ -302,7 +319,7 @@ The placeholder ``{everything}`` name does not matter, any name will work.
 This entire query string routing feature is very useful in cases where the query string should not be transformed but rather routed without any changes,
 such as OData filters and etc (see issue `1174`_).
 
-  **Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f1]_
+  **Note**, the ``{everything}`` placeholder can be empty while catching all query strings, because this is a part of the :ref:`routing-empty-placeholders` feature! [#f2]_
   Thus, upstream paths ``/contracts?`` and ``/contracts`` are routed to downstream path ``/apipath/contracts``, which has no query string at all.
 
 .. _routing-merging-of-query-parameters:
@@ -365,25 +382,34 @@ Consider the following 2 development scenarios :htm:`&rarr;`
 
 .. _routing-security-options:
 
-Security Options [#f4]_
+Security Options [#f5]_
 -----------------------
 
-Ocelot allows you to manage multiple patterns for allowed/blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package
-with `MPL-2.0 License <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
+Ocelot enables the management of multiple patterns for allowed and blocked IPs using the `IPAddressRange <https://github.com/jsakamoto/ipaddressrange>`_ package, which is licensed under the `MPL-2.0 license <https://github.com/jsakamoto/ipaddressrange/blob/master/LICENSE>`_.
 
-This feature is designed to allow greater IP management in order to include or exclude a wide IP range via CIDR notation or IP range.
-The current patterns managed are the following:
+This feature is designed to enhanced IP management, allowing for the inclusion exclusion of a broad IP range through CIDR notation or specific IP ranges.
+The current managed patterns are as follows:
 
-* Single IP: :code:`192.168.1.1`
-* IP Range: :code:`192.168.1.1-192.168.1.250`
-* IP Short Range: :code:`192.168.1.1-250`
-* IP Range with subnet: :code:`192.168.1.0/255.255.255.0`
-* CIDR: :code:`192.168.1.0/24`
-* CIDR for IPv6: :code:`fe80::/10`
-* The allowed/blocked lists are evaluated during configuration loading
-* The **ExcludeAllowedFromBlocked** property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
-  Default value: :code:`false`
-* The absence of a property in **SecurityOptions** is allowed, it takes the default value.
+.. list-table::
+    :widths: 35 65
+    :header-rows: 1
+
+    * - *IP Rule*
+      - *Example*
+    * - Single IP
+      - ``192.168.1.1``
+    * - IP Range
+      - ``192.168.1.1-192.168.1.250``
+    * - IP Short Range
+      - ``192.168.1.1-250``
+    * - IP Subnet
+      - ``192.168.1.0/255.255.255.0``
+    * - CIDR IPv4
+      - ``192.168.1.0/24``
+    * - CIDR IPv6
+      - ``fe80::/10``
+
+Here is a quick example:
 
 .. code-block:: json
 
@@ -395,25 +421,50 @@ The current patterns managed are the following:
     }
   }
 
+Please **note** that:
+
+* The allowed/blocked lists are evaluated during configuration loading
+* The ``ExcludeAllowedFromBlocked`` property is intended to provide the ability to specify a wide range of blocked IP addresses and allow a subrange of IP addresses.
+  Default value: :code:`false`
+* The absence of a property in *Security Options* is allowed, it takes the default value.
+* The *Security Options* can be configured **globally** in the ``GlobalConfiguration`` JSON; however, it is ignored if overriding options are specified at the route level [#f6]_.
+
 .. _routing-dynamic:
 
-Dynamic Routing [#f5]_
+Dynamic Routing [#f7]_
 ----------------------
 
 The idea is to enable dynamic routing when using a :doc:`../features/servicediscovery` provider so you don't have to provide the Route config.
 See the :ref:`sd-dynamic-routing` docs if this sounds interesting to you.
 
-""""
 
-.. [#f1] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_, see issue `748 <https://github.com/ThreeMammals/Ocelot/issues/748>`_ and the `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`__ release notes for details.
-.. [#f2] ":ref:`routing-upstream-host`" feature was requested as part of `issue 216 <https://github.com/ThreeMammals/Ocelot/pull/216>`_.
-.. [#f3] ":ref:`routing-upstream-headers`" feature was proposed in `issue 360 <https://github.com/ThreeMammals/Ocelot/issues/360>`_, and released in version `24.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0>`_.
-.. [#f4] ":ref:`routing-security-options`" feature was requested as part of `issue 628 <https://github.com/ThreeMammals/Ocelot/issues/628>`_ (of `12.0.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1>`_ version), then redesigned and improved by `issue 1400 <https://github.com/ThreeMammals/Ocelot/issues/1400>`_, and published in version `20.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0>`_ docs.
-.. [#f5] ":ref:`routing-dynamic`" feature was requested as part of `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. Complete reference: :ref:`sd-dynamic-routing`.
+.. [#f1] ":ref:`routing-embedded-placeholders`" feature was requested as part of issue `2199`_ , and released in version `23.4`_
+.. [#f2] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0`_, see issue `748`_ and the `23.0`_ release notes for details.
+.. [#f3] ":ref:`routing-upstream-host`" feature was requested as part of issue `216`_.
+.. [#f4] ":ref:`routing-upstream-headers`" feature was proposed in issue `360`_, and released in version `23.3`_.
+.. [#f5] ":ref:`routing-security-options`" feature was requested as part of issue `628`_ (version `12.0.1`_), then redesigned and improved by issue `1400`_, and published in version `20.0`_ docs.
+.. [#f6] Global ":ref:`routing-security-options`" feature was requested as part of issue `2165`_ , and released in version `23.4.1`_.
+.. [#f7] ":ref:`routing-dynamic`" feature was requested as part of issue `340`_. Refer to complete reference: :ref:`sd-dynamic-routing`.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings
+
+.. _216: https://github.com/ThreeMammals/Ocelot/issues/216
 .. _270: https://github.com/ThreeMammals/Ocelot/issues/270
+.. _340: https://github.com/ThreeMammals/Ocelot/issues/340
+.. _360: https://github.com/ThreeMammals/Ocelot/issues/360
 .. _473: https://github.com/ThreeMammals/Ocelot/issues/473
+.. _628: https://github.com/ThreeMammals/Ocelot/issues/628
+.. _748: https://github.com/ThreeMammals/Ocelot/issues/748
 .. _952: https://github.com/ThreeMammals/Ocelot/issues/952
 .. _1174: https://github.com/ThreeMammals/Ocelot/issues/1174
+.. _1400: https://github.com/ThreeMammals/Ocelot/issues/1400
+.. _2165: https://github.com/ThreeMammals/Ocelot/issues/2165
+.. _2199: https://github.com/ThreeMammals/Ocelot/issues/2199
+
+.. _12.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/12.0.1
+.. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
+.. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
+.. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1

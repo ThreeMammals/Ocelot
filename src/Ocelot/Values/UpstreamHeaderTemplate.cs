@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Values;
+﻿using Ocelot.Infrastructure;
+
+namespace Ocelot.Values;
 
 /// <summary>
 /// Upstream template properties of headers and their regular expression.
@@ -14,6 +16,6 @@ public class UpstreamHeaderTemplate
     {
         Template = template;
         OriginalValue = originalValue;
-        Pattern = new Regex(template ?? "$^", RegexOptions.Compiled | RegexOptions.Singleline);
+        Pattern = RegexGlobal.New(template ?? "$^", RegexOptions.Singleline);
     }
 }

@@ -1,26 +1,62 @@
 ﻿using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class RequestIdTests : IDisposable
 {
-    public class RequestIdTests : IDisposable
+    private readonly Steps _steps;
+    private readonly ServiceHandler _serviceHandler;
+
+    public RequestIdTests()
     {
-        private readonly Steps _steps;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public RequestIdTests()
+    [Fact]
+    public void should_use_default_request_id_and_forward()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_use_default_request_id_and_forward()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
+                {
+                    DownstreamPathTemplate = "/",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    DownstreamScheme = "http",
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    RequestIdKey = _steps.RequestIdKey,
+                },
+            },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheRequestIdIsReturned())
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_use_request_id_and_forward()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
                 {
                     new()
                     {
@@ -36,150 +72,113 @@ namespace Ocelot.AcceptanceTests
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "Get" },
-                        RequestIdKey = _steps.RequestIdKey,
                     },
                 },
-            };
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheRequestIdIsReturned())
-                .BDDfy();
-        }
+        var requestId = Guid.NewGuid().ToString();
 
-        [Fact]
-        public void should_use_request_id_and_forward()
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
+            .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_use_global_request_id_and_forward()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-            };
-
-            var requestId = Guid.NewGuid().ToString();
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
-                .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_use_global_request_id_and_forward()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                        },
-                    },
-                GlobalConfiguration = new FileGlobalConfiguration
+            Routes = new List<FileRoute>
                 {
-                    RequestIdKey = _steps.RequestIdKey,
-                },
-            };
-
-            var requestId = Guid.NewGuid().ToString();
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
-                .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_use_global_request_id_create_and_forward()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
+                                Host = "localhost",
+                                Port = port,
                             },
-                            DownstreamScheme = "http",
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
                         },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    RequestIdKey = _steps.RequestIdKey,
                 },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheRequestIdIsReturned())
-                .BDDfy();
-        }
-
-        private void GivenThereIsAServiceRunningOn(string url)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+            GlobalConfiguration = new FileGlobalConfiguration
             {
-                context.Request.Headers.TryGetValue(_steps.RequestIdKey, out var requestId);
-                context.Response.Headers[_steps.RequestIdKey] = requestId.First();
-                return Task.CompletedTask;
-            });
-        }
+                RequestIdKey = _steps.RequestIdKey,
+            },
+        };
 
-        public void Dispose()
+        var requestId = Guid.NewGuid().ToString();
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", requestId))
+            .Then(x => _steps.ThenTheRequestIdIsReturned(requestId))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_use_global_request_id_create_and_forward()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        DownstreamScheme = "http",
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                    },
+                },
+            GlobalConfiguration = new FileGlobalConfiguration
+            {
+                RequestIdKey = _steps.RequestIdKey,
+            },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheRequestIdIsReturned())
+            .BDDfy();
+    }
+
+    private void GivenThereIsAServiceRunningOn(string url)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+        {
+            context.Request.Headers.TryGetValue(_steps.RequestIdKey, out var requestId);
+            context.Response.Headers[_steps.RequestIdKey] = requestId.First();
+            return Task.CompletedTask;
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
     }
 }

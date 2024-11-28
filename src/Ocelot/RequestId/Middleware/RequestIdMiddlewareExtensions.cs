@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.RequestId.Middleware
+namespace Ocelot.RequestId.Middleware;
+
+public static class RequestIdMiddlewareExtensions
 {
-    public static class RequestIdMiddlewareExtensions
+    public static IApplicationBuilder UseRequestIdMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseRequestIdMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<RequestIdMiddleware>();
-        }
+        return builder.UseMiddleware<RequestIdMiddleware>();
     }
 }

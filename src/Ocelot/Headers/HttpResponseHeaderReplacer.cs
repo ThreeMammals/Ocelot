@@ -5,51 +5,50 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Headers
+namespace Ocelot.Headers;
+
+public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
 {
-    public class HttpResponseHeaderReplacer : IHttpResponseHeaderReplacer
+    private readonly IPlaceholders _placeholders;
+
+    public HttpResponseHeaderReplacer(IPlaceholders placeholders)
     {
-        private readonly IPlaceholders _placeholders;
+        _placeholders = placeholders;
+    }
 
-        public HttpResponseHeaderReplacer(IPlaceholders placeholders)
+    public Response Replace(HttpContext httpContext, List<HeaderFindAndReplace> fAndRs)
+    {
+        var response = httpContext.Items.DownstreamResponse();
+        var request = httpContext.Items.DownstreamRequest();
+
+        foreach (var f in fAndRs)
         {
-            _placeholders = placeholders;
-        }
+            var dict = response.Headers.ToDictionary(x => x.Key);
 
-        public Response Replace(HttpContext httpContext, List<HeaderFindAndReplace> fAndRs)
-        {
-            var response = httpContext.Items.DownstreamResponse();
-            var request = httpContext.Items.DownstreamRequest();
-
-            foreach (var f in fAndRs)
+            //if the response headers contain a matching find and replace
+            if (dict.TryGetValue(f.Key, out var values))
             {
-                var dict = response.Headers.ToDictionary(x => x.Key);
+                //check to see if it is a placeholder in the find...
+                var placeholderValue = _placeholders.Get(f.Find, request);
 
-                //if the response headers contain a matching find and replace
-                if (dict.TryGetValue(f.Key, out var values))
+                if (!placeholderValue.IsError)
                 {
-                    //check to see if it is a placeholder in the find...
-                    var placeholderValue = _placeholders.Get(f.Find, request);
+                    //if it is we need to get the value of the placeholder
+                    var replaced = values.Values.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());
 
-                    if (!placeholderValue.IsError)
-                    {
-                        //if it is we need to get the value of the placeholder
-                        var replaced = values.Values.ToList()[f.Index].Replace(placeholderValue.Data, f.Replace.LastCharAsForwardSlash());
+                    response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
+                    response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
+                }
+                else
+                {
+                    var replaced = values.Values.ToList()[f.Index].Replace(f.Find, f.Replace);
 
-                        response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
-                        response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
-                    }
-                    else
-                    {
-                        var replaced = values.Values.ToList()[f.Index].Replace(f.Find, f.Replace);
-
-                        response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
-                        response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
-                    }
+                    response.Headers.Remove(response.Headers.First(item => item.Key == f.Key));
+                    response.Headers.Add(new Header(f.Key, new List<string> { replaced }));
                 }
             }
-
-            return new OkResponse();
         }
+
+        return new OkResponse();
     }
 }
