@@ -5,22 +5,25 @@ namespace Ocelot.UnitTests.Infrastructure;
 public class StringExtensionsTests
 {
     [Fact]
-    public void should_trim_start()
+    public void TrimPrefix_ArgsCheck_ReturnedSource()
     {
-        var test = "/string";
-
-        test = test.TrimStart("/");
-
-        test.ShouldBe("string");
+        ((string)null).TrimPrefix("/").ShouldBeNull();
+        "x".TrimPrefix(null).ShouldBe("x");
+        "x".TrimPrefix(string.Empty).ShouldBe("x");
     }
 
     [Fact]
-    public void should_return_source()
+    public void TrimPrefix_HasPrefix_HappyPath()
     {
-        var test = "string";
+        "/string".TrimPrefix("/").ShouldBe("string");
+        "///string".TrimPrefix("/").ShouldBe("string");
+        "ABABstring".TrimPrefix("AB").ShouldBe("string");
+    }
 
-        test = test.LastCharAsForwardSlash();
-
-        test.ShouldBe("string/");
+    [Fact]
+    public void LastCharAsForwardSlash_HappyPath()
+    {
+        "string".LastCharAsForwardSlash().ShouldBe("string/");
+        "string/".LastCharAsForwardSlash().ShouldBe("string/");
     }
 }
