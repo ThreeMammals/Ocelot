@@ -40,7 +40,15 @@ namespace Ocelot.Configuration.Creator
             if (upstreamTemplate.Contains('?'))
             {
                 containsQueryString = true;
-                upstreamTemplate = upstreamTemplate.Replace("?", "(\\/|\\?)");
+
+                if (upstreamTemplate.Contains("/?"))
+                {
+                    upstreamTemplate = upstreamTemplate.Replace("/?", "(\\/|\\?|$)");
+                }
+                else if (upstreamTemplate.Contains('?'))
+                {
+                    upstreamTemplate = upstreamTemplate.Replace("?", "(\\/|\\?|$)");
+                }
             }
 
             for (var i = 0; i < placeholders.Count; i++)
