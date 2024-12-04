@@ -34,7 +34,7 @@ using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 namespace Ocelot.AcceptanceTests;
 
-public class Steps : IDisposable
+public class Steps : BddfyConfig, IDisposable
 {
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
@@ -53,7 +53,7 @@ public class Steps : IDisposable
     private IWebHost _ocelotHost; // TODO remove because of one reference
     private IOcelotConfigurationChangeTokenSource _changeToken;
 
-    public Steps()
+    public Steps() : base()
     {
         _random = new Random();
         _testId = Guid.NewGuid();
