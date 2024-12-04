@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
+using Ocelot.AcceptanceTests.Properties;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
