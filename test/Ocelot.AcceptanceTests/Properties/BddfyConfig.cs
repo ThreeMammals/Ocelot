@@ -7,16 +7,16 @@ public class BddfyConfig
 {
     public BddfyConfig()
     {
-        Configurator.BatchProcessors.HtmlReport.Disable();
-        Configurator.BatchProcessors.Add(new BddfyTitleAndStatusReporter());
-
         // Configurator.Processors.ConsoleReport.RunsOn(story => story.Result != Result.Passed);
         Configurator.Processors.ConsoleReport.Disable();
-        Configurator.Processors.Add(() => new BddfyTitleAndStatusProcessor());
+        Configurator.Processors.Add(() => new BddfyProcessor());
+
+        //Configurator.BatchProcessors.Add(new BddfyBatchProcessingReporter());
+        Configurator.BatchProcessors.HtmlReport.Disable();
     }
 }
 
-public class BddfyTitleAndStatusProcessor : IProcessor
+public class BddfyProcessor : IProcessor
 {
     private static ConcurrentDictionary<string, Scenario> cache = new();
     public ProcessType ProcessType => ProcessType.Report;
@@ -41,22 +41,36 @@ public class BddfyTitleAndStatusProcessor : IProcessor
     }
 }
 
-public class BddfyTitleAndStatusReporter : IBatchProcessor
+public class BddfyBatchProcessingReporter : IBatchProcessor
 {
+    private static int totalStories;
+    private static int totalScenarios;
+    private static Result final = Result.NotExecuted;
+
     public static void Process(Story story)
     {
+        //foreach (var scenario in story.Scenarios)
+        //{
+        //    //Console.WriteLine($"Scenario: {scenario.Title} - Status: {scenario.Result}");
+        //    totalScenarios++;
+        //}
         foreach (var scenario in story.Scenarios)
         {
-            Result status = scenario.Result;
-            Console.WriteLine($"Scenario: {scenario.Title} - Status: {status}");
+            //Console.WriteLine($"Scenario: {scenario.Title} - Status: {scenario.Result}");
+            totalScenarios++;
         }
+        totalStories++;
+        final = (Result)Math.Max((int)story.Result, (int)final);
     }
 
     public void Process(IEnumerable<Story> stories)
     {
-        foreach (var scenario in stories)
-        {
-            Process(scenario);
-        }
+        var list = stories.ToList();
+        list.ForEach(Process);
+
+        Console.WriteLine("Warning: Per-scenario logging has been disabled!");
+        Console.WriteLine($"The {nameof(BddfyBatchProcessingReporter)} has processed total {totalStories} stories with total {totalScenarios} scenarios.");
+        Console.WriteLine($"Final result: {final}");
+        Console.WriteLine();
     }
 }
