@@ -91,7 +91,10 @@ public static class OcelotBuilderExtensions
         else
         {
             //todo - refactor so calls method?
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+            // TODO: Refactor the code to phase out IdentityServer4 in favor of its successor or replace with ASP.NET Identity framework
             var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
             identityServerBuilder.AddSigningCredential(cert);
         }
     }

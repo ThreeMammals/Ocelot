@@ -30,7 +30,5 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
         }
-
-        app.UseDiscoveryClient();
     }
 }
