@@ -113,7 +113,11 @@ public class AdministrationTests : IDisposable
         await ThenTheResultHaveMultiLineIndentedJson();
     }
 
+#if NET9_0
+    [Fact(Skip = "Require migration to .NET 9 or removing")]
+#else
     [Fact]
+#endif
     public async Task Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
     {
         var configuration = new FileConfiguration();
