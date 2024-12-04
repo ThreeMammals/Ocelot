@@ -14,8 +14,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net6.0;net7.0;net8.0";
-const string LatestFramework = "net8.0";
+const string AllFrameworks = "net8.0;net9.0";
+const string LatestFramework = "net9.0";
 
 var compileConfig = Argument("configuration", Release); // compile
 
@@ -96,7 +96,7 @@ Task("Compile")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // build using .NET 8 SDK only
+			settings.Framework = LatestFramework; // build using .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
@@ -467,7 +467,7 @@ Task("RunUnitTests")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -520,14 +520,13 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -542,14 +541,13 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
