@@ -54,11 +54,7 @@ public class BddfyBatchProcessingReporter : IBatchProcessor
         //    //Console.WriteLine($"Scenario: {scenario.Title} - Status: {scenario.Result}");
         //    totalScenarios++;
         //}
-        foreach (var scenario in story.Scenarios)
-        {
-            //Console.WriteLine($"Scenario: {scenario.Title} - Status: {scenario.Result}");
-            totalScenarios++;
-        }
+        totalScenarios += story.Scenarios.Count();
         totalStories++;
         final = (Result)Math.Max((int)story.Result, (int)final);
     }

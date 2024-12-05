@@ -31,7 +31,7 @@ public static class OcelotMiddlewareExtensions
 
     public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
     {
-        var configuration = await CreateConfiguration(builder);
+        _ = await CreateConfiguration(builder);
 
         ConfigureDiagnosticListener(builder);
 
@@ -156,7 +156,7 @@ public static class OcelotMiddlewareExtensions
 
     private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
     {
-        var env = builder.ApplicationServices.GetService<IWebHostEnvironment>();
+        _ = builder.ApplicationServices.GetService<IWebHostEnvironment>();
         var listener = builder.ApplicationServices.GetService<OcelotDiagnosticListener>();
         var diagnosticListener = builder.ApplicationServices.GetService<DiagnosticListener>();
         diagnosticListener.SubscribeWithAdapter(listener);
