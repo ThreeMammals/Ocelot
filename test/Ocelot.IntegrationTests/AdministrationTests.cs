@@ -112,7 +112,7 @@ public class AdministrationTests : IDisposable
         await ThenTheResultHaveMultiLineIndentedJson();
     }
 
-#if NET9_0
+#if NET9_0_OR_GREATER
     [Fact(Skip = "Require migration to .NET 9 or removing")]
 #else
     [Fact]
