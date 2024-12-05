@@ -527,7 +527,7 @@ public sealed class AggregateTests : Steps, IDisposable
         var route2 = GivenRoute(port2, "/tom", "Tom");
         var configuration = GivenConfiguration(route1, route2);
         var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
-        Action<IdentityServerAuthenticationOptions> options = o =>
+        void configureOptions(IdentityServerAuthenticationOptions o)
         {
             o.Authority = identityServerUrl;
             o.ApiName = "api";
@@ -535,20 +535,20 @@ public sealed class AggregateTests : Steps, IDisposable
             o.SupportedTokens = SupportedTokens.Both;
             o.ApiSecret = "secret";
             o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-        };
+        }
         Action<IServiceCollection> configureServices = s =>
         {
             s.AddOcelot();
-            s.AddMvcCore(options =>
+            s.AddMvcCore(mvc =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .RequireClaim("scope", "api")
                     .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+                mvc.Filters.Add(new AuthorizeFilter(policy));
             });
             s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(options);
+                .AddIdentityServerAuthentication(configureOptions);
         };
         var count = 0;
         var actualContexts = new HttpContext[2];

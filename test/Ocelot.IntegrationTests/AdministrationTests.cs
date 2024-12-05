@@ -95,14 +95,13 @@ public class AdministrationTests : IDisposable
     public async Task Should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
     {
         var configuration = new FileConfiguration();
-
-        Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = (builder, assembly) =>
+        static IMvcCoreBuilder customBuilder(IMvcCoreBuilder builder, Assembly assembly)
         {
             return builder.AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.WriteIndented = true; });
-        };
+        }
 
         await GivenThereIsAConfiguration(configuration);
         GivenOcelotUsingBuilderIsRunning(customBuilder);
@@ -484,8 +483,7 @@ public class AdministrationTests : IDisposable
 
         var port = PortFinder.GetRandomPort();
         var identityServerRootUrl = $"http://localhost:{port}";
-
-        Action<JwtBearerOptions> options = o =>
+        void options(JwtBearerOptions o)
         {
             o.Authority = identityServerRootUrl;
             o.RequireHttpsMetadata = false;
@@ -493,7 +491,7 @@ public class AdministrationTests : IDisposable
             {
                 ValidateAudience = false,
             };
-        };
+        }
 
         await GivenThereIsAConfiguration(configuration);
         await GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api");
