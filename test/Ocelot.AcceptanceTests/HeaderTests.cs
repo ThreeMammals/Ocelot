@@ -16,7 +16,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void should_transform_upstream_header()
+    public void Should_transform_upstream_header()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -57,7 +57,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void should_transform_downstream_header()
+    public void Should_transform_downstream_header()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -97,7 +97,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void should_fix_issue_190()
+    public void Should_fix_issue_190()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -141,7 +141,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void should_fix_issue_205()
+    public void Should_fix_issue_205()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -185,7 +185,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void should_fix_issue_417()
+    public void Should_fix_issue_417()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -233,7 +233,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void request_should_reuse_cookies_with_cookie_container()
+    public void Request_should_reuse_cookies_with_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -276,7 +276,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void request_should_have_own_cookies_no_cookie_container()
+    public void Request_should_have_own_cookies_no_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -319,7 +319,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void issue_474_should_not_put_spaces_in_header()
+    public void Issue_474_should_not_put_spaces_in_header()
     {
         var port = PortFinder.GetRandomPort();
 
@@ -356,7 +356,7 @@ public sealed class HeaderTests : IDisposable
     }
 
     [Fact]
-    public void issue_474_should_put_spaces_in_header()
+    public void Issue_474_should_put_spaces_in_header()
     {
         var port = PortFinder.GetRandomPort();
 
