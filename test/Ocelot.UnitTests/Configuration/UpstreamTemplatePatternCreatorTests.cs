@@ -237,20 +237,24 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
     }
 
     [Theory]
-    [InlineData(@"/api/v1/abc?{everything}", false)]
-    [InlineData(@"/api/v1/abc2/{everything}", true)]
-    public void ShouldCreateCorrectTemplatePattern(string urlPath, bool shouldMatch)
+    [Trait("Bug", "2132")]
+    [Trait("Bug", "2065")]
+    [InlineData("/api/v1/abc?{everything}", "/api/v1/abc2/apple", false)]
+    [InlineData("/api/v1/abc2/{everything}", "/api/v1/abc2/apple", true)]
+    [InlineData("/products?{everything}", "/products/1", false)]
+    [InlineData("/products/{everything}", "/products/1", true)]
+    public void ShouldCreateCorrectTemplatePattern(string urlPathTemplate, string requestPath, bool shouldMatch)
     {
         // Arrange
         var creator = new UpstreamTemplatePatternCreator();
         var fileRoute = new FileRoute
         {
-            UpstreamPathTemplate = urlPath,
+            UpstreamPathTemplate = urlPathTemplate,
         };
 
         // Act
         var result = creator.Create(fileRoute);
-        var match = Regex.Match("/api/v1/abc2/apple", result.Template);
+        var match = Regex.Match(requestPath, result.Template);
 
         // Assert
         Assert.Equal(shouldMatch, match.Success);
