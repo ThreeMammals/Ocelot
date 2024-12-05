@@ -15,18 +15,16 @@ public class FileConfigurationControllerTests : UnitTest
     private readonly Mock<IFileConfigurationSetter> _setter;
     private IActionResult _result;
     private FileConfiguration _fileConfiguration;
-    private readonly Mock<IServiceProvider> _provider;
 
     public FileConfigurationControllerTests()
     {
-        _provider = new Mock<IServiceProvider>();
         _repo = new Mock<IFileConfigurationRepository>();
         _setter = new Mock<IFileConfigurationSetter>();
-        _controller = new FileConfigurationController(_repo.Object, _setter.Object, _provider.Object);
+        _controller = new FileConfigurationController(_repo.Object, _setter.Object);
     }
 
     [Fact]
-    public void should_get_file_configuration()
+    public void Should_get_file_configuration()
     {
         var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
 
@@ -37,7 +35,7 @@ public class FileConfigurationControllerTests : UnitTest
     }
 
     [Fact]
-    public void should_return_error_when_cannot_get_config()
+    public void Should_return_error_when_cannot_get_config()
     {
         var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
 
@@ -49,7 +47,7 @@ public class FileConfigurationControllerTests : UnitTest
     }
 
     [Fact]
-    public void should_post_file_configuration()
+    public void Should_post_file_configuration()
     {
         var expected = new FileConfiguration();
 
@@ -61,7 +59,7 @@ public class FileConfigurationControllerTests : UnitTest
     }
 
     [Fact]
-    public void should_return_error_when_cannot_set_config()
+    public void Should_return_error_when_cannot_set_config()
     {
         var expected = new FileConfiguration();
 
