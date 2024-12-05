@@ -113,7 +113,11 @@ public class AdministrationTests : IDisposable
     }
 
 #if NET9_0_OR_GREATER
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable xUnit1004 // Test methods should not be skipped
     [Fact(Skip = "Require migration to .NET 9 or removing")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+#pragma warning restore IDE0079 // Remove unnecessary suppression
 #else
     [Fact]
 #endif
