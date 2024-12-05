@@ -216,7 +216,7 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/|\\?|$)unitId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/$|\\/\\?|\\?|$)unitId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
     }
@@ -231,7 +231,7 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/|\\?|$)unitId={MatchEverything}&productId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/$|\\/\\?|\\?|$)unitId={MatchEverything}&productId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
     }
