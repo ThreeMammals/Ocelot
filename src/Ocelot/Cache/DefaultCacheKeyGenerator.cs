@@ -1,7 +1,5 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing.Internal;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Request.Middleware;
-using System.Diagnostics;
 
 namespace Ocelot.Cache;
 
@@ -44,26 +42,24 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
         
         if (options.EnableFlexibleHashing)
         {
-            var requestHeadersString = ReadHeaders(downstreamRequest);
+            var requestHeadersString = await ReadHeadersAsync(downstreamRequest);
             builder.Append(Delimiter)
                 .Append(requestHeadersString);
 
-            return MD5Helper.GenerateMd5(FlexibleClean(builder.ToString()));
+            return MD5Helper.GenerateMd5(FlexibleClean(builder.ToString(), options.FlexibleHashingRegexes));
         }
 
         return MD5Helper.GenerateMd5(builder.ToString());
     }
 
-    private static string FlexibleClean(string input) => Regex.Replace(input,
-        @"--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}--|(--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
-        "--GUID--",
-        RegexOptions.Singleline);
-
-    private static string ReadHeaders(DownstreamRequest downstream) => downstream.HasContent
-        ? string.Join(":", downstream?.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value)))
-        : string.Empty;
+    private static string FlexibleClean(string input, List<string> patterns) =>
+        patterns.Aggregate(input, (current, pattern) => Regex.Replace(current, pattern, string.Empty, RegexOptions.Singleline));
 
     private static Task<string> ReadContentAsync(DownstreamRequest downstream) => downstream.HasContent
         ? downstream?.Request?.Content?.ReadAsStringAsync() ?? Task.FromResult(string.Empty)
+        : Task.FromResult(string.Empty);
+
+    private static Task<string> ReadHeadersAsync(DownstreamRequest downstream) => downstream.HasContent
+        ? Task.FromResult(string.Join(":", downstream?.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value))))
         : Task.FromResult(string.Empty);
 }

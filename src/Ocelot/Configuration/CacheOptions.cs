@@ -21,13 +21,17 @@ public class CacheOptions
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
     /// <param name="enableFlexibleHashing">The switcher for flexible content hashing. If not speciefied, false value is used by default.</param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableFlexibleHashing)
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableFlexibleHashing, List<string> flexibleHashingRegexes)
     {
         TtlSeconds = ttlSeconds ?? 0;
         Region = region;
         Header = header;
         EnableContentHashing = enableContentHashing ?? false;
         EnableFlexibleHashing = enableFlexibleHashing ?? false;
+        FlexibleHashingRegexes = flexibleHashingRegexes ?? new()
+        {
+            "--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}--|(--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
+        };
     }
 
     /// <summary>Time-to-live seconds.</summary>
@@ -46,4 +50,9 @@ public class CacheOptions
     /// <remarks>Default value is <see langword="false"/>. No flexible hashing by default.</remarks>
     /// <value><see langword="true"/> if flexible hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableFlexibleHashing { get; }
+
+    /// <summary>Gets the list of regular expressions for flexible hashing.</summary>
+    /// <remarks>Default value is an empty list.</remarks>
+    /// <value>A list of <see cref="string"/> values.</value>
+    public List<string> FlexibleHashingRegexes { get; }
 }

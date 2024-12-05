@@ -11,8 +11,9 @@ public class CacheOptionsCreator : ICacheOptionsCreator
         var ttlSeconds = options.TtlSeconds ?? global?.CacheOptions.TtlSeconds;
         var enableContentHashing = options.EnableContentHashing ?? global?.CacheOptions.EnableContentHashing;
         var enableFlexibleHashing = options.EnableFlexibleHashing ?? global?.CacheOptions.EnableFlexibleHashing;
+        var flexibleHashingRegexes = options.FlexibleHashingRegexes ?? global?.CacheOptions.FlexibleHashingRegexes;
 
-        return new CacheOptions(ttlSeconds, region, header, enableContentHashing, enableFlexibleHashing);
+        return new CacheOptions(ttlSeconds, region, header, enableContentHashing, enableFlexibleHashing, flexibleHashingRegexes);
     }
 
     protected virtual string GetRegion(string region, string upstreamPathTemplate, IList<string> upstreamHttpMethod)

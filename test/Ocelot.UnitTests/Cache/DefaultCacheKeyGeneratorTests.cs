@@ -35,7 +35,7 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
         const string noHeader = null;
         const string content = nameof(should_generate_cache_key_with_request_content);
         var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{content}");
-        CacheOptions options = new CacheOptions(100, "region", noHeader, true, false);
+        CacheOptions options = new CacheOptions(100, "region", noHeader, true, false, null);
 
         this.Given(x => x.GivenDownstreamRoute(options))
             .And(x => GivenHasContent(content))
@@ -59,7 +59,7 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
     [Fact]
     public void should_generate_cache_key_with_cache_options_header()
     {
-        CacheOptions options = new CacheOptions(100, "region", headerName, false, false);
+        CacheOptions options = new CacheOptions(100, "region", headerName, false, false, null);
         var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}");
 
         this.Given(x => x.GivenDownstreamRoute(options))
@@ -72,7 +72,7 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
     public void should_generate_cache_key_happy_path()
     {
         const string content = nameof(should_generate_cache_key_happy_path);
-        CacheOptions options = new CacheOptions(100, "region", headerName, true, false);
+        CacheOptions options = new CacheOptions(100, "region", headerName, true, false, null);
         var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{header}-{content}");
 
         this.Given(x => x.GivenDownstreamRoute(options))
