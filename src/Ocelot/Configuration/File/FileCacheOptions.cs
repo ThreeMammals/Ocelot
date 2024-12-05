@@ -10,6 +10,7 @@ public class FileCacheOptions
         TtlSeconds = from.TtlSeconds;
         Header = from.Header;
         EnableContentHashing = from.EnableContentHashing;
+        EnableFlexibleHashing = from.EnableFlexibleHashing;
     }
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="int"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
@@ -23,4 +24,9 @@ public class FileCacheOptions
     /// <remarks>If <see langword="null"/> then use global configuration with <see langword="false"/> by default.</remarks>
     /// <value><see langword="true"/> if content hashing is enabled; otherwise, <see langword="false"/>.</value>
     public bool? EnableContentHashing { get; set; }
+
+    /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="bool"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
+    /// <remarks>If <see langword="null"/> then use global configuration with <see langword="false"/> by default.</remarks>
+    /// <value><see langword="true"/> if content hashing is enabled; otherwise, <see langword="false"/>.</value>
+    public bool? EnableFlexibleHashing { get; set; }
 }

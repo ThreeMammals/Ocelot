@@ -77,7 +77,7 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
     {
         var route = new DownstreamRouteBuilder()
             .WithIsCached(true)
-            .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
+            .WithCacheOptions(new CacheOptions(100, "kanken", null, false, false))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 

@@ -26,5 +26,6 @@ public class Startup
         }
 
         app.UseOcelot().Wait();
+        //app.UseOcelot();
     }
 }

@@ -181,7 +181,7 @@ public class RoutesCreatorTests : UnitTest
         _qoso = new QoSOptionsBuilder().Build();
         _rlo = new RateLimitOptionsBuilder().Build();
 
-        _cacheOptions = new CacheOptions(0, "vesty", null, false);
+        _cacheOptions = new CacheOptions(0, "vesty", null, false, false);
         _hho = new HttpHandlerOptionsBuilder().Build();
         _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
         _dhp = new List<DownstreamHostAndPort>();
