@@ -27,6 +27,6 @@ public class FileCacheOptions
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="bool"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
     /// <remarks>If <see langword="null"/> then use global configuration with <see langword="false"/> by default.</remarks>
-    /// <value><see langword="true"/> if content hashing is enabled; otherwise, <see langword="false"/>.</value>
+    /// <value><see langword="true"/> if content flexible hashing is enabled; otherwise, <see langword="false"/>.</value>
     public bool? EnableFlexibleHashing { get; set; }
 }

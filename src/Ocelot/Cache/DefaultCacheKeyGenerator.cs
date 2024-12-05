@@ -34,7 +34,7 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
         {
             return MD5Helper.GenerateMd5(builder.ToString());
         }
-        
+
         if (options.EnableContentHashing)
         {
             var requestContentString = await ReadContentAsync(downstreamRequest);
@@ -44,22 +44,20 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
         
         if (options.EnableFlexibleHashing)
         {
-            var requestUriString = ReadUri(downstreamRequest);
             var requestHeadersString = ReadHeaders(downstreamRequest);
             builder.Append(Delimiter)
-                .Append(requestUriString)
-                .Append(Delimiter)
                 .Append(requestHeadersString);
+
+            return MD5Helper.GenerateMd5(FlexibleClean(builder.ToString()));
         }
 
-        return MD5Helper.GenerateMd5(RegexClean(builder.ToString()));
+        return MD5Helper.GenerateMd5(builder.ToString());
     }
 
-    private static string RegexClean(string input) => Regex.Replace(input, @"--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}--|(--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})", "--GUID--", RegexOptions.Singleline);
-
-    private static string ReadUri(DownstreamRequest downstream) => downstream.HasContent
-        ? downstream?.Request?.RequestUri?.ToString() ?? string.Empty
-        : string.Empty;
+    private static string FlexibleClean(string input) => Regex.Replace(input,
+        @"--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}--|(--[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})",
+        "--GUID--",
+        RegexOptions.Singleline);
 
     private static string ReadHeaders(DownstreamRequest downstream) => downstream.HasContent
         ? string.Join(":", downstream?.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value)))

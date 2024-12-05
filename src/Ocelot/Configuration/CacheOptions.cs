@@ -20,7 +20,7 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
-    /// <param name="enableFlexibleHashing">The switcher for flexible hashing. If not speciefied, false value is used by default.</param>
+    /// <param name="enableFlexibleHashing">The switcher for flexible content hashing. If not speciefied, false value is used by default.</param>
     public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableFlexibleHashing)
     {
         TtlSeconds = ttlSeconds ?? 0;
@@ -42,7 +42,7 @@ public class CacheOptions
     /// <value><see langword="true"/> if hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableContentHashing { get; }
 
-    /// <summary>Enables flexible hashing of the <see cref="DownstreamRequest.Method"/> of the <see cref="DownstreamRequest.Request"/> object.</summary>
+    /// <summary>Enables MD5 flexible hash calculation of the <see cref="HttpRequestMessage.Content"/> of the <see cref="DownstreamRequest.Request"/> object.</summary>
     /// <remarks>Default value is <see langword="false"/>. No flexible hashing by default.</remarks>
     /// <value><see langword="true"/> if flexible hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableFlexibleHashing { get; }
