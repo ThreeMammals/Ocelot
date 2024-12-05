@@ -18,14 +18,14 @@ public class BddfyConfig
 
 public class BddfyProcessor : IProcessor
 {
-    private static ConcurrentDictionary<string, Scenario> cache = new();
+    private static readonly ConcurrentDictionary<string, Scenario> Cache = new();
     public ProcessType ProcessType => ProcessType.Report;
     public void Process(Story story)
     {
         //Console.WriteLine($"{story.Result} Story: {story.Namespace} | Total Scenarios: {story.Scenarios.Count()}");
         foreach (var scenario in story.Scenarios)
         {
-            if (cache.TryAdd(scenario.Id, scenario))
+            if (Cache.TryAdd(scenario.Id, scenario))
             {
                 Console.ForegroundColor = scenario.Result == Result.Passed ? ConsoleColor.Green : ConsoleColor.Red;
                 Console.Write(scenario.Result);
