@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class HeaderTests : IDisposable
+public sealed class HeaderTests : IDisposable
 {
     private int _count;
     private readonly Steps _steps;
@@ -459,7 +459,7 @@ public class HeaderTests : IDisposable
 
     public void Dispose()
     {
-        _serviceHandler?.Dispose();
+        _serviceHandler.Dispose();
         _steps.Dispose();
     }
 }
