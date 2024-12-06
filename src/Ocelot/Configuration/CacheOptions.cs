@@ -22,7 +22,7 @@ public class CacheOptions
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
     /// <param name="enableHeadersHashing">The switcher for headers hashing. If not speciefied, false value is used by default.</param>
     /// <param name="cleanableHashingRegexes">The list of regex patterns to clean the hash. If not speciefied, an empty list is used by default.</param></param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableHeadersHashing, List<string> cleanableHashingRegexes)
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableHeadersHashing, List<string>? cleanableHashingRegexes)
     {
         TtlSeconds = ttlSeconds ?? 0;
         Region = region;
