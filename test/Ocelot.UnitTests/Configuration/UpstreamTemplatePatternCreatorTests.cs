@@ -1,6 +1,7 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -215,7 +216,7 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/$|\\/\\?|\\?|$)unitId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
     }
@@ -230,9 +231,33 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}&productId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(\\/$|\\/\\?|\\?|$)unitId={MatchEverything}&productId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Bug", "2132")]
+    [Trait("Bug", "2065")]
+    [InlineData("/api/v1/abc?{everything}", "/api/v1/abc2/apple", false)]
+    [InlineData("/api/v1/abc2/{everything}", "/api/v1/abc2/apple", true)]
+    [InlineData("/products?{everything}", "/products/1", false)]
+    [InlineData("/products/{everything}", "/products/1", true)]
+    public void ShouldCreateCorrectTemplatePattern(string urlPathTemplate, string requestPath, bool shouldMatch)
+    {
+        // Arrange
+        var creator = new UpstreamTemplatePatternCreator();
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
+
+        // Act
+        var result = creator.Create(fileRoute);
+        var match = Regex.Match(requestPath, result.Template);
+
+        // Assert
+        Assert.Equal(shouldMatch, match.Success);
     }
 
     private void GivenTheFollowingFileRoute(FileRoute fileRoute)
