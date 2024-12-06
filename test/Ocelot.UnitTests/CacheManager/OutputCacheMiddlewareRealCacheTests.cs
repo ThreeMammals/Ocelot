@@ -13,13 +13,13 @@ namespace Ocelot.UnitTests.CacheManager;
 
 public class OutputCacheMiddlewareRealCacheTests : UnitTest
 {
-    private readonly IOcelotCache<CachedResponse> _cacheManager;
+    private readonly OcelotCacheManagerCache<CachedResponse> _cacheManager;
     private readonly ICacheKeyGenerator _cacheKeyGenerator;
     private readonly OutputCacheMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public OutputCacheMiddlewareRealCacheTests()
     {
@@ -39,20 +39,22 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
     }
 
     [Fact]
-    public void should_cache_content_headers()
+    public async Task Should_cache_content_headers()
     {
+        // Arrange
         var content = new StringContent("{\"Test\": 1}")
         {
             Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
         };
-
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs();
 
-        this.Given(x => x.GivenResponseIsNotCached(response))
-            .And(x => x.GivenTheDownstreamRouteIs())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheContentTypeHeaderIsCached())
-            .BDDfy();
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheContentTypeHeaderIsCached();
     }
 
     private async Task WhenICallTheMiddleware()

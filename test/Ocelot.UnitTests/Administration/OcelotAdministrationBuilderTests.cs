@@ -36,26 +36,33 @@ public class OcelotAdministrationBuilderTests : UnitTest
 
     //keep
     [Fact]
-    public void should_set_up_administration_with_identity_server_options()
+    public void Should_set_up_administration_with_identity_server_options()
     {
-        Action<JwtBearerOptions> options = o => { };
+        // Arrange
+        static void options(JwtBearerOptions o)
+        {
+        }
 
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => WhenISetUpAdministration(options))
-            .Then(x => ThenAnExceptionIsntThrown())
-            .Then(x => ThenTheCorrectAdminPathIsRegitered())
-            .BDDfy();
+        // Act
+        WhenISetUpOcelotServices();
+        WhenISetUpAdministration(options);
+
+        // Assert
+        ThenAnExceptionIsntThrown();
+        ThenTheCorrectAdminPathIsRegitered();
     }
 
     //keep
     [Fact]
-    public void should_set_up_administration()
+    public void Should_set_up_administration()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => WhenISetUpAdministration())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .Then(x => ThenTheCorrectAdminPathIsRegitered())
-            .BDDfy();
+        // Arrange, Act
+        WhenISetUpOcelotServices();
+        WhenISetUpAdministration();
+
+        // Assert
+        ThenAnExceptionIsntThrown();
+        ThenTheCorrectAdminPathIsRegitered();
     }
 
     private void WhenISetUpAdministration()

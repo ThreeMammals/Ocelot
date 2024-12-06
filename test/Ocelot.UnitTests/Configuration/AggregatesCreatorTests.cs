@@ -27,8 +27,9 @@ public class AggregatesCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_no_aggregates()
+    public void Should_return_no_aggregates()
     {
+        // Arrange
         var fileConfig = new FileConfiguration
         {
             Aggregates = new List<FileAggregateRoute>
@@ -40,19 +41,22 @@ public class AggregatesCreatorTests : UnitTest
             },
         };
         var routes = new List<Route>();
+        GivenThe(fileConfig);
+        GivenThe(routes);
 
-        this.Given(_ => GivenThe(fileConfig))
-            .And(_ => GivenThe(routes))
-            .When(_ => WhenICreate())
-            .Then(_ => TheUtpCreatorIsNotCalled())
-            .And(_ => ThenTheResultIsNotNull())
-            .And(_ => ThenTheResultIsEmpty())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        TheUtpCreatorIsNotCalled();
+        ThenTheResultIsNotNull();
+        ThenTheResultIsEmpty();
     }
 
     [Fact]
-    public void should_create_aggregates()
+    public void Should_create_aggregates()
     {
+        // Arrange
         var fileConfig = new FileConfiguration
         {
             Aggregates = new List<FileAggregateRoute>
@@ -75,7 +79,6 @@ public class AggregatesCreatorTests : UnitTest
                 },
             },
         };
-
         var routes = new List<Route>
         {
             new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
@@ -84,14 +87,17 @@ public class AggregatesCreatorTests : UnitTest
             new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
         };
 
-        this.Given(_ => GivenThe(fileConfig))
-            .And(_ => GivenThe(routes))
-            .And(_ => GivenTheUtpCreatorReturns())
-            .And(_ => GivenTheUhtpCreatorReturns())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheUtpCreatorIsCalledCorrectly())
-            .And(_ => ThenTheAggregatesAreCreated())
-            .BDDfy();
+        GivenThe(fileConfig);
+        GivenThe(routes);
+        GivenTheUtpCreatorReturns();
+        GivenTheUhtpCreatorReturns();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheUtpCreatorIsCalledCorrectly();
+        ThenTheAggregatesAreCreated();
     }
 
     private void ThenTheAggregatesAreCreated()

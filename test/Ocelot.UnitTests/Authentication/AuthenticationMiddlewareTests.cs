@@ -18,7 +18,7 @@ public class AuthenticationMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
     private readonly Mock<IServiceProvider> _serviceProvider;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     private AuthenticationMiddleware _middleware;
     private RequestDelegate _next;
@@ -64,30 +64,33 @@ public class AuthenticationMiddlewareTests : UnitTest
     [Fact]
     public void Should_call_next_middleware_if_route_is_not_authenticated()
     {
-        var methods = new List<string> { "Get" };
-        this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-            ))
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsAuthenticated())
-            .BDDfy();
+        // Arrange
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .Build());
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsAuthenticated();
     }
 
     [Fact]
     public void Should_call_next_middleware_if_route_is_using_options_method()
     {
-        const string OPTIONS = "OPTIONS";
-        var methods = new List<string> { OPTIONS };
-        this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                .WithUpstreamHttpMethod(methods)
-                .WithIsAuthenticated(true)
-                .Build()
-            ))
-            .And(x => GivenTheRequestIsUsingMethod(OPTIONS))
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsAuthenticated())
-            .BDDfy();
+        // Arrange
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithUpstreamHttpMethod(new() { HttpMethods.Options })
+            .WithIsAuthenticated(true)
+            .Build());
+        GivenTheRequestIsUsingMethod(HttpMethods.Options);
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsAuthenticated();
     }
 
     [Theory]
@@ -95,74 +98,82 @@ public class AuthenticationMiddlewareTests : UnitTest
     [InlineData(true)]
     public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isMultipleKeys)
     {
+        // Arrange
         var multipleKeys = new string[] { string.Empty, "Fail", "Test" };
         var options = new AuthenticationOptions(null,
             !isMultipleKeys ? "Test" : null,
             isMultipleKeys ? multipleKeys : null
         );
-        var methods = new List<string> { "Get" };
-        this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                .WithAuthenticationOptions(options)
-                .WithIsAuthenticated(true)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-            ))
-            .And(x => GivenTheRequestIsUsingMethod(methods.First()))
-            .And(x => GivenTheAuthenticationIsFail())
-            .And(x => GivenTheAuthenticationIsSuccess())
-            .And(x => GivenTheAuthenticationThrowsException())
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsAuthenticated())
-            .BDDfy();
+        var methods = new List<string> { HttpMethods.Get };
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(options)
+            .WithIsAuthenticated(true)
+            .WithUpstreamHttpMethod(methods)
+            .Build());
+        GivenTheRequestIsUsingMethod(methods.First());
+        GivenTheAuthenticationIsFail();
+        GivenTheAuthenticationIsSuccess();
+        GivenTheAuthenticationThrowsException();
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsAuthenticated();
     }
 
     [Fact]
     public void Should_provide_backward_compatibility_if_route_has_several_options_authentication_providers()
     {
+        // Arrange
         var options = new AuthenticationOptions(null,
             "Test",
             new string[] { string.Empty, "Fail", "Test" }
         );
-        var methods = new List<string> { "Get" };
-        this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                .WithAuthenticationOptions(options)
-                .WithIsAuthenticated(true)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-            ))
-            .And(x => GivenTheRequestIsUsingMethod(methods.First()))
-            .And(x => GivenTheAuthenticationIsFail())
-            .And(x => GivenTheAuthenticationIsSuccess())
-            .And(x => GivenTheAuthenticationThrowsException())
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsAuthenticated())
-            .BDDfy();
+        var methods = new List<string> { HttpMethods.Get };
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(options)
+            .WithIsAuthenticated(true)
+            .WithUpstreamHttpMethod(methods)
+            .Build());
+        GivenTheRequestIsUsingMethod(methods.First());
+        GivenTheAuthenticationIsFail();
+        GivenTheAuthenticationIsSuccess();
+        GivenTheAuthenticationThrowsException();
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsAuthenticated();
     }
 
     [Fact]
     public void Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
     {
+        // Arrange
         var options = new AuthenticationOptions(null, null,
             new string[] { string.Empty, "Fail", "Fail", "UnknownScheme" }
         );
-        var methods = new List<string> { "Get" };
+        var methods = new List<string> { HttpMethods.Get };
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(options)
+            .WithIsAuthenticated(true)
+            .WithUpstreamHttpMethod(methods)
+            .Build());
+        GivenTheRequestIsUsingMethod(methods.First());
+        GivenTheAuthenticationIsFail();
+        GivenTheAuthenticationIsSuccess();
 
-        this.Given(x => GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-                .WithAuthenticationOptions(options)
-                .WithIsAuthenticated(true)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-            ))
-            .And(x => GivenTheRequestIsUsingMethod(methods.First()))
-            .And(x => GivenTheAuthenticationIsFail())
-            .And(x => GivenTheAuthenticationIsSuccess())
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsNotAuthenticated())
-            .BDDfy();
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsNotAuthenticated();
         _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
         _logWarningMessages.Count.ShouldBe(1);
         _logWarningMessages.First().ShouldStartWith("Client has NOT been authenticated for path");
-        _httpContext.Items.Errors().First().ShouldBeOfType(typeof(UnauthenticatedError));
+        _httpContext.Items.Errors().First().ShouldBeOfType<UnauthenticatedError>();
     }
 
     [Theory]
@@ -170,6 +181,7 @@ public class AuthenticationMiddlewareTests : UnitTest
     [InlineData(2)]
     public void Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty(int keysCount)
     {
+        // Arrange
         var emptyKeys = new string[keysCount];
         for (int i = 0; i < emptyKeys.Length; i++)
         {
@@ -184,11 +196,14 @@ public class AuthenticationMiddlewareTests : UnitTest
             .WithUpstreamHttpMethod(methods)
             .WithDownstreamPathTemplate("/" + nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty))
             .Build();
-        this.Given(x => GivenTheDownStreamRouteIs(route))
-            .And(x => GivenTheRequestIsUsingMethod(methods.First()))
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheUserIsNotAuthenticated())
-            .BDDfy();
+        GivenTheDownStreamRouteIs(route);
+        GivenTheRequestIsUsingMethod(methods.First());
+
+        // Act
+        WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsNotAuthenticated();
         _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
         _logWarningMessages.Count.ShouldBe(2);
         _logWarningMessages[0].ShouldStartWith($"Impossible to authenticate client for path '/{nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty)}':");
@@ -196,7 +211,7 @@ public class AuthenticationMiddlewareTests : UnitTest
         _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(1);
     }
 
-    private List<string> _logWarningMessages = new();
+    private readonly List<string> _logWarningMessages = new();
 
     private void GivenTheAuthenticationIsFail()
     {
@@ -261,15 +276,5 @@ public class AuthenticationMiddlewareTests : UnitTest
         };
         _middleware = new AuthenticationMiddleware(_next, _factory.Object);
         await _middleware.Invoke(_httpContext);
-    }
-}
-
-public static class StreamExtensions
-{
-    public static string AsString(this Stream stream)
-    {
-        using var reader = new StreamReader(stream);
-        var text = reader.ReadToEnd();
-        return text;
     }
 }

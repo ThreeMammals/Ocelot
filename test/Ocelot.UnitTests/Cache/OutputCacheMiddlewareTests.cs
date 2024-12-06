@@ -19,12 +19,10 @@ public class OutputCacheMiddlewareTests : UnitTest
     private readonly RequestDelegate _next;
     private readonly ICacheKeyGenerator _cacheKeyGenerator;
     private CachedResponse _response;
-    private readonly HttpContext _httpContext;
-    private Mock<IRequestScopedDataRepository> _repo;
+    private readonly DefaultHttpContext _httpContext;
 
     public OutputCacheMiddlewareTests()
     {
-        _repo = new Mock<IRequestScopedDataRepository>();
         _httpContext = new DefaultHttpContext();
         _cache = new Mock<IOcelotCache<CachedResponse>>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
@@ -36,50 +34,59 @@ public class OutputCacheMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_returned_cached_item_when_it_is_in_cache()
+    public async Task Should_returned_cached_item_when_it_is_in_cache()
     {
+        // Arrange
         var headers = new Dictionary<string, IEnumerable<string>>
         {
             { "test", new List<string> { "test" } },
         };
-
         var contentHeaders = new Dictionary<string, IEnumerable<string>>
         {
             { "content-type", new List<string> { "application/json" } },
         };
-
         var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
-        this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
-            .And(x => x.GivenTheDownstreamRouteIs())
-            .When(x => x.WhenICallTheMiddlewareAsync())
-            .Then(x => x.ThenTheCacheGetIsCalledCorrectly())
-            .BDDfy();
+        GivenThereIsACachedResponse(cachedResponse);
+        GivenTheDownstreamRouteIs();
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheGetIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_returned_cached_item_when_it_is_in_cache_expires_header()
+    public async Task Should_returned_cached_item_when_it_is_in_cache_expires_header()
     {
+        // Arrange
         var contentHeaders = new Dictionary<string, IEnumerable<string>>
         {
             { "Expires", new List<string> { "-1" } },
         };
-
         var cachedResponse = new CachedResponse(HttpStatusCode.OK, new Dictionary<string, IEnumerable<string>>(), string.Empty, contentHeaders, "some reason");
-        this.Given(x => x.GivenThereIsACachedResponse(cachedResponse))
-            .And(x => x.GivenTheDownstreamRouteIs())
-            .When(x => x.WhenICallTheMiddlewareAsync())
-            .Then(x => x.ThenTheCacheGetIsCalledCorrectly())
-            .BDDfy();
+        GivenThereIsACachedResponse(cachedResponse);
+        GivenTheDownstreamRouteIs();
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheGetIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_continue_with_pipeline_and_cache_response()
+    public async Task Should_continue_with_pipeline_and_cache_response()
     {
-        this.Given(x => x.GivenResponseIsNotCached(new HttpResponseMessage()))
-            .And(x => x.GivenTheDownstreamRouteIs())
-            .When(x => x.WhenICallTheMiddlewareAsync())
-            .Then(x => x.ThenTheCacheAddIsCalledCorrectly())
-            .BDDfy();
+        // Arrange
+        GivenResponseIsNotCached(new HttpResponseMessage());
+        GivenTheDownstreamRouteIs();
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalledCorrectly();
     }
 
     private async Task WhenICallTheMiddlewareAsync()

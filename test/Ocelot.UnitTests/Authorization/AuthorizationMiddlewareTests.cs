@@ -19,7 +19,7 @@ public class AuthorizationMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly AuthorizationMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public AuthorizationMiddlewareTests()
     {
@@ -34,18 +34,23 @@ public class AuthorizationMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_authorization_service()
+    public async Task Should_call_authorization_service()
     {
-        this.Given(x => x.GivenTheDownStreamRouteIs(new List<PlaceholderNameAndValue>(),
+        // Arrange
+        GivenTheDownStreamRouteIs(
+            new List<PlaceholderNameAndValue>(),
             new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                 .WithIsAuthorized(true)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()))
-            .And(x => x.GivenTheAuthServiceReturns(new OkResponse<bool>(true)))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheAuthServiceIsCalledCorrectly())
-            .BDDfy();
+                .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+                .Build());
+        GivenTheAuthServiceReturns(new OkResponse<bool>(true));
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheAuthServiceIsCalledCorrectly();
     }
 
     private async Task WhenICallTheMiddleware()

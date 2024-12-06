@@ -20,29 +20,39 @@ public class OcelotCacheManagerCache : UnitTest
     }
 
     [Fact]
-    public void should_get_from_cache()
+    public void Should_get_from_cache()
     {
-        this.Given(x => x.GivenTheFollowingIsCached("someKey", "someRegion", "someValue"))
-            .When(x => x.WhenIGetFromTheCache())
-            .Then(x => x.ThenTheResultIs("someValue"))
-            .BDDfy();
+        // Arrange
+        GivenTheFollowingIsCached("someKey", "someRegion", "someValue");
+
+        // Act
+        WhenIGetFromTheCache();
+
+        // Assert
+        ThenTheResultIs("someValue");
     }
 
     [Fact]
-    public void should_add_to_cache()
+    public void Should_add_to_cache()
     {
-        this.When(x => x.WhenIAddToTheCache("someKey", "someValue", TimeSpan.FromSeconds(1)))
-            .Then(x => x.ThenTheCacheIsCalledCorrectly())
-            .BDDfy();
+        // Arrange, Act
+        WhenIAddToTheCache("someKey", "someValue", TimeSpan.FromSeconds(1));
+
+        // Assert
+        ThenTheCacheIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_delete_key_from_cache()
+    public void Should_delete_key_from_cache()
     {
-        this.Given(_ => GivenTheFollowingRegion("fookey"))
-            .When(_ => WhenIDeleteTheRegion("fookey"))
-            .Then(_ => ThenTheRegionIsDeleted("fookey"))
-            .BDDfy();
+        // Arrange
+        GivenTheFollowingRegion("fookey");
+
+        // Act
+        WhenIDeleteTheRegion("fookey");
+
+        // Assert
+        ThenTheRegionIsDeleted("fookey");
     }
 
     private void WhenIDeleteTheRegion(string region)
