@@ -666,7 +666,36 @@ public sealed class RoutingTests : Steps, IDisposable
             .And(x => ThenTheDownstreamUrlPathShouldBe(decodedDownstreamUrlPath))
             .BDDfy();
     }
-    
+
+    [Fact]
+    [Trait("Bug", "2065")]
+    public void Should_match_correct_route_when_placeholder_appears_after_query_start()
+    {
+        // Arrange
+        var downstreamPath = "/products/1";
+        var port = PortFinder.GetRandomPort();
+
+        FileConfiguration configuration = new()
+        {
+            Routes = new List<FileRoute>
+            {
+                GivenRoute(port, "/products/{everything}", "/products/{everything}"), // This route should be matched
+                GivenRoute(port, "/products?{everything}", "/products?{everything}"), // This route should not be matched
+            },
+        };
+
+        // Act & Assert
+        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello from Finn"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/products/1"))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(""))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Finn"))
+            .BDDfy();
+    }
+
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
         var baseUrl = DownstreamUrl(port);
