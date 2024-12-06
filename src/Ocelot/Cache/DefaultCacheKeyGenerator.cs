@@ -28,7 +28,7 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
             }
         }
 
-        if (!options.EnableFlexibleHashing && !options.EnableContentHashing && !downstreamRequest.HasContent)
+        if (!options.EnableHeadersHashing && !options.EnableContentHashing && !downstreamRequest.HasContent)
         {
             return MD5Helper.GenerateMd5(builder.ToString());
         }
@@ -40,19 +40,22 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
                 .Append(requestContentString);
         }
         
-        if (options.EnableFlexibleHashing)
+        if (options.EnableHeadersHashing)
         {
             var requestHeadersString = await ReadHeadersAsync(downstreamRequest);
             builder.Append(Delimiter)
                 .Append(requestHeadersString);
+        }
 
-            return MD5Helper.GenerateMd5(FlexibleClean(builder.ToString(), options.FlexibleHashingRegexes));
+        if (options.CleanableHashingRegexes.Any())
+        {
+            return MD5Helper.GenerateMd5(HashingClean(builder.ToString(), options.CleanableHashingRegexes));
         }
 
         return MD5Helper.GenerateMd5(builder.ToString());
     }
 
-    private static string FlexibleClean(string input, List<string> patterns) =>
+    private static string HashingClean(string input, List<string> patterns) =>
         patterns.Aggregate(input, (current, pattern) => Regex.Replace(current, pattern, string.Empty, RegexOptions.Singleline));
 
     private static Task<string> ReadContentAsync(DownstreamRequest downstream) => downstream.HasContent

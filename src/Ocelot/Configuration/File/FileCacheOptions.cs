@@ -10,8 +10,8 @@ public class FileCacheOptions
         TtlSeconds = from.TtlSeconds;
         Header = from.Header;
         EnableContentHashing = from.EnableContentHashing;
-        EnableFlexibleHashing = from.EnableFlexibleHashing;
-        FlexibleHashingRegexes = from.FlexibleHashingRegexes;
+        EnableHeadersHashing = from.EnableHeadersHashing;
+        CleanableHashingRegexes = from.CleanableHashingRegexes;
     }
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="int"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
@@ -28,11 +28,11 @@ public class FileCacheOptions
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="bool"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
     /// <remarks>If <see langword="null"/> then use global configuration with <see langword="false"/> by default.</remarks>
-    /// <value><see langword="true"/> if content flexible hashing is enabled; otherwise, <see langword="false"/>.</value>
-    public bool? EnableFlexibleHashing { get; set; }
+    /// <value><see langword="true"/> if headers hashing is enabled; otherwise, <see langword="false"/>.</value>
+    public bool? EnableHeadersHashing { get; set; }
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="List{T}"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
     /// <remarks>If <see langword="null"/> then use global configuration with empty list by default.</remarks>
-    /// <value>The list of regular expressions for flexible hashing.</value>
-    public List<string>? FlexibleHashingRegexes { get; set; }
+    /// <value>The list of regular expressions for cleanable hashing.</value>
+    public List<string>? CleanableHashingRegexes { get; set; }
 }
