@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.Repository;
-using Ocelot.Middleware;
 
 namespace Ocelot.Administration;
 
 public static class IdentityServerMiddlewareConfigurationProvider
 {
-    public static OcelotMiddlewareConfigurationDelegate Get = builder =>
+    public static OcelotMiddlewareConfigurationDelegate Get { get; } = Getter;
+
+    private static Task Getter(IApplicationBuilder builder)
     {
         var internalConfigRepo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
 
@@ -37,5 +38,5 @@ public static class IdentityServerMiddlewareConfigurationProvider
         }
 
         return Task.CompletedTask;
-    };
+    }
 }

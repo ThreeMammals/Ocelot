@@ -125,7 +125,7 @@ public class WebSocketTests : IDisposable
 
     private async Task StartClient(string url)
     {
-        IClientWebSocket client = new ClientWebSocketProxy();
+        var client = new ClientWebSocketProxy();
 
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
@@ -177,7 +177,7 @@ public class WebSocketTests : IDisposable
     {
         await Task.Delay(500);
 
-        IClientWebSocket client = new ClientWebSocketProxy();
+        var client = new ClientWebSocketProxy();
 
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
