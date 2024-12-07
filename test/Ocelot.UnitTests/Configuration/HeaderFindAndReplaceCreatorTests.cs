@@ -27,9 +27,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_create()
+    public void Should_create()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             UpstreamHeaderTransform = new Dictionary<string, string>
             {
@@ -42,75 +43,76 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
                 {"Bop", "e, r"},
             },
         };
-
         var upstream = new List<HeaderFindAndReplace>
         {
             new("Test", "Test", "Chicken", 0),
             new("Moop", "o", "a", 0),
         };
-
         var downstream = new List<HeaderFindAndReplace>
         {
             new("Pop", "West", "East", 0),
             new("Bop", "e", "r", 0),
         };
 
-        this.Given(x => GivenTheRoute(route))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingUpstreamIsReturned(upstream))
-            .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingUpstreamIsReturned(upstream);
+        ThenTheFollowingDownstreamIsReturned(downstream);
     }
 
     [Fact]
-    public void should_create_with_add_headers_to_request()
+    public void Should_create_with_add_headers_to_request()
     {
+        // Arrange
         const string key = "X-Forwarded-For";
         const string value = "{RemoteIpAddress}";
-
-        var route = new FileRoute
+        _route = new FileRoute
         {
             UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {key, value},
             },
         };
-
         var expected = new AddHeader(key, value);
 
-        this.Given(x => GivenTheRoute(route))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingAddHeaderToUpstreamIsReturned(expected);
     }
 
     [Fact]
-    public void should_use_base_url_placeholder()
+    public void Should_use_base_url_placeholder()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
             },
         };
-
         var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/", "http://ocelot.com/", 0),
         };
+        GivenThePlaceholderIs("http://ocelot.com/");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingDownstreamIsReturned(downstream);
     }
 
     [Fact]
-    public void should_log_errors_and_not_add_headers()
+    public void Should_log_errors_and_not_add_headers()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
@@ -121,17 +123,17 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
                 {"Location", "http://www.bbc.co.uk/, {BaseUrl}"},
             },
         };
-
         var expected = new List<HeaderFindAndReplace>();
+        GivenTheBaseUrlErrors();
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenTheBaseUrlErrors())
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
-            .And(x => ThenTheFollowingUpstreamIsReturned(expected))
-            .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
-            .And(x => ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}"))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingDownstreamIsReturned(expected);
+        ThenTheFollowingUpstreamIsReturned(expected);
+        ThenTheLoggerIsCalledCorrectly("Unable to add DownstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}");
+        ThenTheLoggerIsCalledCorrectly("Unable to add UpstreamHeaderTransform Location: http://www.bbc.co.uk/, {BaseUrl}");
     }
 
     private void ThenTheLoggerIsCalledCorrectly(string message)
@@ -140,107 +142,112 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_use_base_url_partial_placeholder()
+    public void Should_use_base_url_partial_placeholder()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Location", "http://www.bbc.co.uk/pay, {BaseUrl}pay"},
             },
         };
-
         var downstream = new List<HeaderFindAndReplace>
         {
             new("Location", "http://www.bbc.co.uk/pay", "http://ocelot.com/pay", 0),
         };
+        GivenThePlaceholderIs("http://ocelot.com/");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingDownstreamIsReturned(downstream))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingDownstreamIsReturned(downstream);
     }
 
     [Fact]
-    public void should_map_with_partial_placeholder_in_the_middle()
+    public void Should_map_with_partial_placeholder_in_the_middle()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Host-Next", "www.bbc.co.uk, subdomain.{Host}/path"},
             },
         };
-
         var expected = new List<HeaderFindAndReplace>
         {
             new("Host-Next", "www.bbc.co.uk", "subdomain.ocelot.next/path", 0),
         };
+        GivenThePlaceholderIs("ocelot.next");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenThePlaceholderIs("ocelot.next"))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingDownstreamIsReturned(expected))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingDownstreamIsReturned(expected);
     }
 
     [Fact]
-    public void should_add_trace_id_header()
+    public void Should_add_trace_id_header()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"Trace-Id", "{TraceId}"},
             },
         };
-
         var expected = new AddHeader("Trace-Id", "{TraceId}");
+        GivenThePlaceholderIs("http://ocelot.com/");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => GivenThePlaceholderIs("http://ocelot.com/"))
-            .When(x => WhenICreate())
-            .Then(x => ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingAddHeaderToDownstreamIsReturned(expected);
     }
 
     [Fact]
-    public void should_add_downstream_header_as_is_when_no_replacement_is_given()
+    public void Should_add_downstream_header_as_is_when_no_replacement_is_given()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             DownstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"X-Custom-Header", "Value"},
             },
         };
-
         var expected = new AddHeader("X-Custom-Header", "Value");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => WhenICreate())
-            .Then(x => x.ThenTheFollowingAddHeaderToDownstreamIsReturned(expected))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingAddHeaderToDownstreamIsReturned(expected);
     }
 
     [Fact]
-    public void should_add_upstream_header_as_is_when_no_replacement_is_given()
+    public void Should_add_upstream_header_as_is_when_no_replacement_is_given()
     {
-        var route = new FileRoute
+        // Arrange
+        _route = new FileRoute
         {
             UpstreamHeaderTransform = new Dictionary<string, string>
             {
                 {"X-Custom-Header", "Value"},
             },
         };
-
         var expected = new AddHeader("X-Custom-Header", "Value");
 
-        this.Given(x => GivenTheRoute(route))
-            .And(x => WhenICreate())
-            .Then(x => x.ThenTheFollowingAddHeaderToUpstreamIsReturned(expected))
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_route);
+
+        // Assert
+        ThenTheFollowingAddHeaderToUpstreamIsReturned(expected);
     }
 
     private void GivenThePlaceholderIs(string placeholderValue)
@@ -278,16 +285,6 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             result.Key.ShouldBe(expected.Key);
             result.Replace.ShouldBe(expected.Replace);
         }
-    }
-
-    private void GivenTheRoute(FileRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_route);
     }
 
     private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)

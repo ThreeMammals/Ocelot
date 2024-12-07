@@ -22,58 +22,31 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
     }
 
     [Fact]
-    public void can_add_config()
+    public void Can_add_config()
     {
-        this.Given(x => x.GivenTheConfigurationIs(new FakeConfig("initial", "adminath")))
-            .When(x => x.WhenIAddOrReplaceTheConfig())
-            .Then(x => x.ThenNoErrorsAreReturned())
-            .And(x => AndTheChangeTokenIsActivated())
-            .BDDfy();
+        // Arrange
+        _config = new FakeConfig("initial", "adminath");
+
+        // Act
+        _result = _repo.AddOrReplace(_config);
+
+        // Assert
+        _result.IsError.ShouldBeFalse();
+        _changeTokenSource.Verify(m => m.Activate(), Times.Once);
     }
 
     [Fact]
-    public void can_get_config()
+    public void Can_get_config()
     {
-        this.Given(x => x.GivenThereIsASavedConfiguration())
-            .When(x => x.WhenIGetTheConfiguration())
-            .Then(x => x.ThenTheConfigurationIsReturned())
-            .BDDfy();
-    }
-
-    private void ThenTheConfigurationIsReturned()
-    {
-        _getResult.Data.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
-    }
-
-    private void WhenIGetTheConfiguration()
-    {
-        _getResult = _repo.Get();
-    }
-
-    private void GivenThereIsASavedConfiguration()
-    {
-        GivenTheConfigurationIs(new FakeConfig("initial", "adminath"));
-        WhenIAddOrReplaceTheConfig();
-    }
-
-    private void GivenTheConfigurationIs(IInternalConfiguration config)
-    {
-        _config = config;
-    }
-
-    private void WhenIAddOrReplaceTheConfig()
-    {
+        // Arrange
+        _config = new FakeConfig("initial", "adminath");
         _result = _repo.AddOrReplace(_config);
-    }
 
-    private void ThenNoErrorsAreReturned()
-    {
-        _result.IsError.ShouldBeFalse();
-    }
+        // Act
+        _getResult = _repo.Get();
 
-    private void AndTheChangeTokenIsActivated()
-    {
-        _changeTokenSource.Verify(m => m.Activate(), Times.Once);
+        // Assert
+        _getResult.Data.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
     }
 
     private class FakeConfig : IInternalConfiguration
@@ -106,9 +79,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         }
 
         public string AdministrationPath { get; }
-
         public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
-
         public string RequestId { get; }
         public LoadBalancerOptions LoadBalancerOptions { get; }
         public string DownstreamScheme { get; }

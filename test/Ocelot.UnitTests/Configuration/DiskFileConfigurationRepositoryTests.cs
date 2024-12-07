@@ -12,7 +12,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
 {
     private readonly Mock<IWebHostEnvironment> _hostingEnvironment;
     private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
-    private IFileConfigurationRepository _repo;
+    private DiskFileConfigurationRepository _repo;
     private FileConfiguration _result;
 
     public DiskFileConfigurationRepositoryTests()
@@ -36,7 +36,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         GivenTheConfigurationIs(config);
 
         // Act
-        await WhenIGetTheRoutes();
+        _result = (await _repo.Get()).Data;
 
         // Assert
         ThenTheFollowingIsReturned(config);
@@ -51,7 +51,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         GivenTheConfigurationIs(config);
 
         // Act
-        await WhenIGetTheRoutes();
+        _result = (await _repo.Get()).Data;
 
         // Assert
         ThenTheFollowingIsReturned(config);
@@ -69,7 +69,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         // Assert
         ThenTheConfigurationIsStoredAs(config);
         ThenTheConfigurationJsonIsIndented(config);
-        AndTheChangeTokenIsActivated();
+        _changeTokenSource.Verify(m => m.Activate(), Times.Once); // and the change token is activated
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         }
     }
 
-    private void ThenTheOcelotJsonIsStoredAs(FileInfo ocelotJson, FileConfiguration expecteds)
+    private static void ThenTheOcelotJsonIsStoredAs(FileInfo ocelotJson, FileConfiguration expecteds)
     {
         var actual = File.ReadAllText(ocelotJson.FullName);
         var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
@@ -183,12 +183,6 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         _files.Add(environmentSpecific);
     }
 
-    private async Task WhenIGetTheRoutes()
-    {
-        var response = await _repo.Get();
-        _result = response.Data;
-    }
-
     private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
     {
         _result.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
@@ -210,11 +204,6 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
             _result.Routes[i].DownstreamPathTemplate.ShouldBe(expecteds.Routes[i].DownstreamPathTemplate);
             _result.Routes[i].DownstreamScheme.ShouldBe(expecteds.Routes[i].DownstreamScheme);
         }
-    }
-
-    private void AndTheChangeTokenIsActivated()
-    {
-        _changeTokenSource.Verify(m => m.Activate(), Times.Once);
     }
 
     private static FileConfiguration FakeFileConfigurationForSet()

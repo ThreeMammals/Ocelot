@@ -270,7 +270,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
 
     private FileConfiguration ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(bool useCombinedConfig)
     {
-        var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
+        var fc = _configRoot.Get<FileConfiguration>();
 
         fc.GlobalConfiguration.BaseUrl.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.BaseUrl : _globalConfig.GlobalConfiguration.BaseUrl);
         fc.GlobalConfiguration.RateLimitOptions.ClientIdHeader.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.ClientIdHeader : _globalConfig.GlobalConfiguration.RateLimitOptions.ClientIdHeader);
@@ -308,7 +308,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
 
     private void NotContainsEnvSpecificConfig()
     {
-        var fc = (FileConfiguration)_configRoot.Get(typeof(FileConfiguration));
+        var fc = _configRoot.Get<FileConfiguration>();
         fc.Routes.ShouldNotContain(x => x.DownstreamScheme == _envSpecific.Routes[0].DownstreamScheme);
         fc.Routes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.Routes[0].DownstreamPathTemplate);
         fc.Routes.ShouldNotContain(x => x.Key == _envSpecific.Routes[0].Key);

@@ -1,239 +1,260 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Values;
 using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class UpstreamTemplatePatternCreatorTests : UnitTest
 {
-    private FileRoute _fileRoute;
-    private readonly UpstreamTemplatePatternCreator _creator;
-    private UpstreamPathTemplate _result;
+    private readonly UpstreamTemplatePatternCreator _creator = new();
     private const string MatchEverything = UpstreamTemplatePatternCreator.RegExMatchZeroOrMoreOfEverything;
 
-    public UpstreamTemplatePatternCreatorTests()
-    {
-        _creator = new UpstreamTemplatePatternCreator();
-    }
-
     [Fact]
-    public void should_match_up_to_next_slash()
+    public void Should_match_up_to_next_slash()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/v{apiVersion}/cards",
             Priority = 0,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^(?i)/api/v[^/]+/cards$"))
-            .And(x => ThenThePriorityIs(0))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^(?i)/api/v[^/]+/cards$");
+        result.Priority.ShouldBe(0);
     }
 
     [Fact]
-    public void should_use_re_route_priority()
+    public void Should_use_re_route_priority()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/orders/{catchAll}",
             Priority = 0,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/orders(?:|/{MatchEverything})$"))
-            .And(x => ThenThePriorityIs(0))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^(?i)/orders(?:|/{MatchEverything})$");
+        result.Priority.ShouldBe(0);
     }
 
     [Fact]
-    public void should_use_zero_priority()
+    public void Should_use_zero_priority()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/{catchAll}",
             Priority = 1,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
-            .And(x => ThenThePriorityIs(0))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^/.*");
+        result.Priority.ShouldBe(0);
     }
 
     [Fact]
-    public void should_set_upstream_template_pattern_to_ignore_case_sensitivity()
+    public void Should_set_upstream_template_pattern_to_ignore_case_sensitivity()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/PRODUCTS/{productId}",
             RouteIsCaseSensitive = false,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/PRODUCTS(?:|/{MatchEverything})$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^(?i)/PRODUCTS(?:|/{MatchEverything})$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
+    public void Should_match_forward_slash_or_no_forward_slash_if_template_end_with_forward_slash()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/PRODUCTS/",
             RouteIsCaseSensitive = false,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^(?i)/PRODUCTS(/|)$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^(?i)/PRODUCTS(/|)$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_set_upstream_template_pattern_to_respect_case_sensitivity()
+    public void Should_set_upstream_template_pattern_to_respect_case_sensitivity()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/PRODUCTS/{productId}",
             RouteIsCaseSensitive = true,
         };
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^/PRODUCTS(?:|/{MatchEverything})$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^/PRODUCTS(?:|/{MatchEverything})$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_anything_to_end_of_string()
+    public void Should_create_template_pattern_that_matches_anything_to_end_of_string()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/products/{productId}",
             RouteIsCaseSensitive = true,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^/api/products(?:|/{MatchEverything})$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^/api/products(?:|/{MatchEverything})$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_more_than_one_placeholder()
+    public void Should_create_template_pattern_that_matches_more_than_one_placeholder()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/products/{productId}/variants/{variantId}",
             RouteIsCaseSensitive = true,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^/api/products/[^/]+/variants(?:|/{MatchEverything})$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^/api/products/[^/]+/variants(?:|/{MatchEverything})$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
+    public void Should_create_template_pattern_that_matches_more_than_one_placeholder_with_trailing_slash()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/products/{productId}/variants/{variantId}/",
             RouteIsCaseSensitive = true,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^/api/products/[^/]+/variants/[^/]+(/|)$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^/api/products/[^/]+/variants/[^/]+(/|)$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_to_end_of_string()
+    public void Should_create_template_pattern_that_matches_to_end_of_string()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/",
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^/$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^/$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
+    public void Should_create_template_pattern_that_matches_to_end_of_string_when_slash_and_placeholder()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/{url}",
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^/.*"))
-            .And(x => ThenThePriorityIs(0))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^/.*");
+        result.Priority.ShouldBe(0);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
+    public void Should_create_template_pattern_that_starts_with_placeholder_then_has_another_later()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/{productId}/products/variants/{variantId}/",
             RouteIsCaseSensitive = true,
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned("^/[^/]+/products/variants/[^/]+(/|)$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe("^/[^/]+/products/variants/[^/]+(/|)$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_query_string()
+    public void Should_create_template_pattern_that_matches_query_string()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($@"^(?i)/api/subscriptions/[^/]+/updates(/$|/\?|\?|$)unitId={MatchEverything}$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($@"^(?i)/api/subscriptions/[^/]+/updates(/$|/\?|\?|$)unitId={MatchEverything}$");
+        result.Priority.ShouldBe(1);
     }
 
     [Fact]
-    public void should_create_template_pattern_that_matches_query_string_with_multiple_params()
+    public void Should_create_template_pattern_that_matches_query_string_with_multiple_params()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             UpstreamPathTemplate = "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId={productId}",
         };
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($@"^(?i)/api/subscriptions/[^/]+/updates(/$|/\?|\?|$)unitId={MatchEverything}&productId={MatchEverything}$"))
-            .And(x => ThenThePriorityIs(1))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}&productId={MatchEverything}$");
+        result.Priority.ShouldBe(1);
     }
 
     [Theory]
@@ -287,10 +308,5 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
     private void ThenTheFollowingIsReturned(string expected)
     {
         _result.Template.ShouldBe(expected);
-    }
-
-    private void ThenThePriorityIs(int v)
-    {
-        _result.Priority.ShouldBe(v);
     }
 }

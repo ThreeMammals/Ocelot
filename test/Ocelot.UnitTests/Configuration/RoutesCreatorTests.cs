@@ -92,18 +92,21 @@ public class RoutesCreatorTests : UnitTest
     [Fact]
     public void Should_return_nothing()
     {
-        var fileConfig = new FileConfiguration();
+        // Arrange
+        _fileConfig = new FileConfiguration();
 
-        this.Given(_ => GivenThe(fileConfig))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenNoRoutesAreReturned())
-            .BDDfy();
+        // Act
+        _result = _creator.Create(_fileConfig);
+
+        // Assert
+        _result.ShouldBeEmpty();
     }
 
     [Fact]
     public void Should_return_routes()
     {
-        var fileConfig = new FileConfiguration
+        // Arrange
+        _fileConfig = new FileConfiguration
         {
             Routes = new List<FileRoute>
             {
@@ -153,13 +156,14 @@ public class RoutesCreatorTests : UnitTest
                 },
             },
         };
+        GivenTheDependenciesAreSetUpCorrectly();
 
-        this.Given(_ => GivenThe(fileConfig))
-          .And(_ => GivenTheDependenciesAreSetUpCorrectly())
-          .When(_ => WhenICreate())
-          .Then(_ => ThenTheDependenciesAreCalledCorrectly())
-          .And(_ => ThenTheRoutesAreCreated())
-          .BDDfy();
+        // Act
+        _result = _creator.Create(_fileConfig);
+
+        // Assert
+        ThenTheDependenciesAreCalledCorrectly();
+        ThenTheRoutesAreCreated();
     }
 
     private void ThenTheDependenciesAreCalledCorrectly()
@@ -217,24 +221,8 @@ public class RoutesCreatorTests : UnitTest
     private void ThenTheRoutesAreCreated()
     {
         _result.Count.ShouldBe(2);
-
         ThenTheRouteIsSet(_fileConfig.Routes[0], 0);
         ThenTheRouteIsSet(_fileConfig.Routes[1], 1);
-    }
-
-    private void ThenNoRoutesAreReturned()
-    {
-        _result.ShouldBeEmpty();
-    }
-
-    private void GivenThe(FileConfiguration fileConfig)
-    {
-        _fileConfig = fileConfig;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_fileConfig);
     }
 
     private void ThenTheRouteIsSet(FileRoute expected, int routeIndex)

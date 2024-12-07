@@ -5,51 +5,46 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class RequestIdKeyCreatorTests : UnitTest
 {
-    private FileRoute _fileRoute;
-    private FileGlobalConfiguration _fileGlobalConfig;
-    private string _result;
-    private readonly RequestIdKeyCreator _creator;
-
-    public RequestIdKeyCreatorTests()
-    {
-        _creator = new RequestIdKeyCreator();
-    }
+    private readonly RequestIdKeyCreator _creator = new();
 
     [Fact]
-    public void should_use_global_configuration()
+    public void Should_use_global_configuration()
     {
+        // Arrange
         var route = new FileRoute();
         var globalConfig = new FileGlobalConfiguration
         {
             RequestIdKey = "cheese",
         };
 
-        this.Given(x => x.GivenTheFollowingRoute(route))
-            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-            .When(x => x.WhenICreate())
-            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route, globalConfig);
+
+        // Assert
+        result.ShouldBe("cheese");
     }
 
     [Fact]
-    public void should_use_re_route_specific()
+    public void Should_use_re_route_specific()
     {
+        // Arrange
         var route = new FileRoute
         {
             RequestIdKey = "cheese",
         };
         var globalConfig = new FileGlobalConfiguration();
 
-        this.Given(x => x.GivenTheFollowingRoute(route))
-            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-            .When(x => x.WhenICreate())
-            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route, globalConfig);
+
+        // Assert
+        result.ShouldBe("cheese");
     }
 
     [Fact]
-    public void should_use_re_route_over_global_specific()
+    public void Should_use_re_route_over_global_specific()
     {
+        // Arrange
         var route = new FileRoute
         {
             RequestIdKey = "cheese",
@@ -59,30 +54,10 @@ public class RequestIdKeyCreatorTests : UnitTest
             RequestIdKey = "test",
         };
 
-        this.Given(x => x.GivenTheFollowingRoute(route))
-            .And(x => x.GivenTheFollowingGlobalConfig(globalConfig))
-            .When(x => x.WhenICreate())
-            .Then(x => x.ThenTheFollowingIsReturned("cheese"))
-            .BDDfy();
-    }
+        // Act
+        var result = _creator.Create(route, globalConfig);
 
-    private void GivenTheFollowingRoute(FileRoute fileRoute)
-    {
-        _fileRoute = fileRoute;
-    }
-
-    private void GivenTheFollowingGlobalConfig(FileGlobalConfiguration globalConfig)
-    {
-        _fileGlobalConfig = globalConfig;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_fileRoute, _fileGlobalConfig);
-    }
-
-    private void ThenTheFollowingIsReturned(string expected)
-    {
-        _result.ShouldBe(expected);
+        // Assert
+        result.ShouldBe("cheese");
     }
 }

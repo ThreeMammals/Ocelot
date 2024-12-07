@@ -6,12 +6,7 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class RouteOptionsCreatorTests : UnitTest
 {
-    private readonly RouteOptionsCreator _creator;
-
-    public RouteOptionsCreatorTests()
-    {
-        _creator = new RouteOptionsCreator();
-    }
+    private readonly RouteOptionsCreator _creator = new();
 
     [Fact]
     public void Create_ArgumentIsNull_OptionsObjIsCreated()

@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class HttpHandlerOptionsCreatorTests : UnitTest
 {
-    private IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
+    private HttpHandlerOptionsCreator _creator;
     private FileRoute _fileRoute;
     private HttpHandlerOptions _httpHandlerOptions;
     private IServiceProvider _serviceProvider;
@@ -19,64 +19,69 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     {
         _serviceCollection = new ServiceCollection();
         _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
+        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
     }
 
     [Fact]
-    public void should_not_use_tracing_if_fake_tracer_registered()
+    public void Should_not_use_tracing_if_fake_tracer_registered()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
                 UseTracing = true,
             },
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_use_tracing_if_real_tracer_registered()
+    public void Should_use_tracing_if_real_tracer_registered()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
                 UseTracing = true,
             },
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        GivenARealTracer();
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .And(x => GivenARealTracer())
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
+    public void Should_create_options_with_useCookie_false_and_allowAutoRedirect_true_as_default()
     {
-        var fileRoute = new FileRoute();
+        // Arrange
+        _fileRoute = new FileRoute();
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_with_specified_useCookie_and_allowAutoRedirect()
+    public void Should_create_options_with_specified_useCookie_and_allowAutoRedirect()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
@@ -85,54 +90,57 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 UseTracing = false,
             },
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_with_useproxy_true_as_default()
+    public void Should_create_options_with_useproxy_true_as_default()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions(),
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_with_specified_useproxy()
+    public void Should_create_options_with_specified_useproxy()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
                 UseProxy = false,
             },
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_with_specified_MaxConnectionsPerServer()
+    public void Should_create_options_with_specified_MaxConnectionsPerServer()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
@@ -142,16 +150,18 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_fixing_specified_MaxConnectionsPerServer_range()
+    public void Should_create_options_fixing_specified_MaxConnectionsPerServer_range()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
@@ -161,39 +171,31 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
+
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     [Fact]
-    public void should_create_options_fixing_specified_MaxConnectionsPerServer_range_when_zero()
+    public void Should_create_options_fixing_specified_MaxConnectionsPerServer_range_when_zero()
     {
-        var fileRoute = new FileRoute
+        // Arrange
+        _fileRoute = new FileRoute
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
                 MaxConnectionsPerServer = 0,
             },
         };
-
         var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
-        this.Given(x => GivenTheFollowing(fileRoute))
-            .When(x => WhenICreateHttpHandlerOptions())
-            .Then(x => ThenTheFollowingOptionsReturned(expectedOptions))
-            .BDDfy();
-    }
+        // Act
+        _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
 
-    private void GivenTheFollowing(FileRoute fileRoute)
-    {
-        _fileRoute = fileRoute;
-    }
-
-    private void WhenICreateHttpHandlerOptions()
-    {
-        _httpHandlerOptions = _httpHandlerOptionsCreator.Create(_fileRoute.HttpHandlerOptions);
+        // Assert
+        ThenTheFollowingOptionsReturned(expectedOptions);
     }
 
     private void ThenTheFollowingOptionsReturned(HttpHandlerOptions expected)
@@ -208,10 +210,9 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
     private void GivenARealTracer()
     {
-        var tracer = new FakeTracer();
         _serviceCollection.AddSingleton<ITracer, FakeTracer>();
         _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _httpHandlerOptionsCreator = new HttpHandlerOptionsCreator(_serviceProvider);
+        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
     }
 
     /// <summary>

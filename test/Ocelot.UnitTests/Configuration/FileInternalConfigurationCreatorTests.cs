@@ -36,28 +36,32 @@ public class FileInternalConfigurationCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_validation_error()
+    public async Task Should_return_validation_error()
     {
-        var fileConfiguration = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheValidationFails();
 
-        this.Given(_ => GivenThe(fileConfiguration))
-            .And(_ => GivenTheValidationFails())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenAnErrorIsReturned())
-            .BDDfy();
+        // Act
+        _result = await _creator.Create(_fileConfiguration);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
     }
 
     [Fact]
-    public void should_return_internal_configuration()
+    public async Task Should_return_internal_configuration()
     {
-        var fileConfiguration = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheValidationSucceeds();
+        GivenTheDependenciesAreSetUp();
 
-        this.Given(_ => GivenThe(fileConfiguration))
-            .And(_ => GivenTheValidationSucceeds())
-            .And(_ => GivenTheDependenciesAreSetUp())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDependenciesAreCalledCorrectly())
-            .BDDfy();
+        // Act
+        _result = await _creator.Create(_fileConfiguration);
+
+        // Assert
+        ThenTheDependenciesAreCalledCorrectly();
     }
 
     private void ThenTheDependenciesAreCalledCorrectly()
@@ -94,25 +98,10 @@ public class FileInternalConfigurationCreatorTests : UnitTest
         _validator.Setup(x => x.IsValid(It.IsAny<FileConfiguration>())).ReturnsAsync(response);
     }
 
-    private void ThenAnErrorIsReturned()
-    {
-        _result.IsError.ShouldBeTrue();
-    }
-
-    private async Task WhenICreate()
-    {
-        _result = await _creator.Create(_fileConfiguration);
-    }
-
     private void GivenTheValidationFails()
     {
         var error = new ConfigurationValidationResult(true, new List<Error> { new AnyError() });
         var response = new OkResponse<ConfigurationValidationResult>(error);
         _validator.Setup(x => x.IsValid(It.IsAny<FileConfiguration>())).ReturnsAsync(response);
-    }
-
-    private void GivenThe(FileConfiguration fileConfiguration)
-    {
-        _fileConfiguration = fileConfiguration;
     }
 }
