@@ -161,10 +161,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         //Assert
-        Assert.Throws<JsonException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key);
-        });
+        Assert.Throws<JsonException>(() => _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key));
     }
 
     [Fact]
@@ -238,10 +235,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         // Assert
-        Assert.Throws<FormatException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<int>(key);
-        });
+        Assert.Throws<FormatException>(() => _ = _downstreamRoute.GetMetadata<int>(key));
     }
 
     [Theory]

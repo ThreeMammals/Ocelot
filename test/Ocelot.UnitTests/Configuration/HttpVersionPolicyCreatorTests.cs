@@ -5,11 +5,10 @@ namespace Ocelot.UnitTests.Configuration;
 [Trait("Feat", "1672")]
 public sealed class HttpVersionPolicyCreatorTests : UnitTest
 {
-    private readonly HttpVersionPolicyCreator _creator;
+    private readonly HttpVersionPolicyCreator _creator = new();
 
     public HttpVersionPolicyCreatorTests()
     {
-        _creator = new HttpVersionPolicyCreator();
     }
 
     [Theory]

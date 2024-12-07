@@ -7,20 +7,12 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class RateLimitOptionsCreatorTests : UnitTest
 {
-    private FileRoute _fileRoute;
-    private FileGlobalConfiguration _fileGlobalConfig;
-    private bool _enabled;
-    private readonly RateLimitOptionsCreator _creator;
-    private RateLimitOptions _result;
-
-    public RateLimitOptionsCreatorTests()
-    {
-        _creator = new RateLimitOptionsCreator();
-    }
+    private readonly RateLimitOptionsCreator _creator = new();
 
     [Fact]
-    public void should_create_rate_limit_options()
+    public void Should_create_rate_limit_options()
     {
+        // Arrange
         var fileRoute = new FileRoute
         {
             RateLimitOptions = new FileRateLimitRule
@@ -55,49 +47,22 @@ public class RateLimitOptionsCreatorTests : UnitTest
                    fileRoute.RateLimitOptions.PeriodTimespan,
                    fileRoute.RateLimitOptions.Limit))
             .Build();
+        bool enabled = true;
 
-        _enabled = false;
+        // Act
+        var result = _creator.Create(fileRoute.RateLimitOptions, fileGlobalConfig);
 
-        this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
-            .And(x => x.GivenTheFollowingFileGlobalConfig(fileGlobalConfig))
-            .And(x => x.GivenRateLimitingIsEnabled())
-            .When(x => x.WhenICreate())
-            .Then(x => x.ThenTheFollowingIsReturned(expected))
-            .BDDfy();
-    }
-
-    private void GivenTheFollowingFileRoute(FileRoute fileRoute)
-    {
-        _fileRoute = fileRoute;
-    }
-
-    private void GivenTheFollowingFileGlobalConfig(FileGlobalConfiguration fileGlobalConfig)
-    {
-        _fileGlobalConfig = fileGlobalConfig;
-    }
-
-    private void GivenRateLimitingIsEnabled()
-    {
-        _enabled = true;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_fileRoute.RateLimitOptions, _fileGlobalConfig);
-    }
-
-    private void ThenTheFollowingIsReturned(RateLimitOptions expected)
-    {
-        _enabled.ShouldBeTrue();
-        _result.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
-        _result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
-        _result.DisableRateLimitHeaders.ShouldBe(expected.DisableRateLimitHeaders);
-        _result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
-        _result.HttpStatusCode.ShouldBe(expected.HttpStatusCode);
-        _result.QuotaExceededMessage.ShouldBe(expected.QuotaExceededMessage);
-        _result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
-        _result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
-        _result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);
-        TimeSpan.FromSeconds(_result.RateLimitRule.PeriodTimespan).Ticks.ShouldBe(TimeSpan.FromSeconds(expected.RateLimitRule.PeriodTimespan).Ticks);
+        // Assert
+        enabled.ShouldBeTrue();
+        result.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
+        result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
+        result.DisableRateLimitHeaders.ShouldBe(expected.DisableRateLimitHeaders);
+        result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
+        result.HttpStatusCode.ShouldBe(expected.HttpStatusCode);
+        result.QuotaExceededMessage.ShouldBe(expected.QuotaExceededMessage);
+        result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
+        result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
+        result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);
+        TimeSpan.FromSeconds(result.RateLimitRule.PeriodTimespan).Ticks.ShouldBe(TimeSpan.FromSeconds(expected.RateLimitRule.PeriodTimespan).Ticks);
     }
 }

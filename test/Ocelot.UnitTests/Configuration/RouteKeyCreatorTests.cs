@@ -6,18 +6,12 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class RouteKeyCreatorTests : UnitTest
 {
-    private readonly RouteKeyCreator _creator;
-    private FileRoute _route;
-    private string _result;
-
-    public RouteKeyCreatorTests()
-    {
-        _creator = new RouteKeyCreator();
-    }
+    private readonly RouteKeyCreator _creator = new();
 
     [Fact]
     public void Should_return_sticky_session_key()
     {
+        // Arrange
         var route = new FileRoute
         {
             LoadBalancerOptions = new FileLoadBalancerOptions
@@ -27,15 +21,17 @@ public class RouteKeyCreatorTests : UnitTest
             },
         };
 
-        this.Given(_ => GivenThe(route))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheResultIs("CookieStickySessions:testy"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("CookieStickySessions:testy");
     }
 
     [Fact]
     public void Should_return_route_key()
     {
+        // Arrange
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
@@ -47,15 +43,17 @@ public class RouteKeyCreatorTests : UnitTest
             },
         };
 
-        this.Given(_ => GivenThe(route))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
     }
 
     [Fact]
     public void Should_return_route_key_with_upstream_host()
     {
+        // Arrange
         var route = new FileRoute
         {
             UpstreamHost = "my-host",
@@ -68,15 +66,17 @@ public class RouteKeyCreatorTests : UnitTest
             },
         };
 
-        this.Given(_ => GivenThe(route))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
     }
 
     [Fact]
     public void Should_return_route_key_with_svc_name()
     {
+        // Arrange
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
@@ -84,15 +84,17 @@ public class RouteKeyCreatorTests : UnitTest
             ServiceName = "products-service",
         };
 
-        this.Given(_ => GivenThe(route))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key"))
-            .BDDfy();
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key");
     }
 
     [Fact]
     public void Should_return_route_key_with_load_balancer_options()
     {
+        // Arrange
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
@@ -105,24 +107,10 @@ public class RouteKeyCreatorTests : UnitTest
             },
         };
 
-        this.Given(_ => GivenThe(route))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheResultIs("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy"))
-            .BDDfy();
-    }
+        // Act
+        var result = _creator.Create(route);
 
-    private void GivenThe(FileRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_route);
-    }
-
-    private void ThenTheResultIs(string expected)
-    {
-        _result.ShouldBe(expected);
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy");
     }
 }

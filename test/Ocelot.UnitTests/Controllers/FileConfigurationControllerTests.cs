@@ -13,8 +13,6 @@ public class FileConfigurationControllerTests : UnitTest
     private readonly FileConfigurationController _controller;
     private readonly Mock<IFileConfigurationRepository> _repo;
     private readonly Mock<IFileConfigurationSetter> _setter;
-    private IActionResult _result;
-    private FileConfiguration _fileConfiguration;
 
     public FileConfigurationControllerTests()
     {
@@ -24,97 +22,61 @@ public class FileConfigurationControllerTests : UnitTest
     }
 
     [Fact]
-    public void Should_get_file_configuration()
+    public async Task Should_get_file_configuration()
     {
+        // Arrange
         var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
+        _repo.Setup(x => x.Get()).ReturnsAsync(expected);
 
-        this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-            .When(x => x.WhenIGetTheFileConfiguration())
-            .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-            .BDDfy();
+        // Act
+        var result = await _controller.Get();
+
+        // Assert
+        _repo.Verify(x => x.Get(), Times.Once);
     }
 
     [Fact]
-    public void Should_return_error_when_cannot_get_config()
+    public async Task Should_return_error_when_cannot_get_config()
     {
+        // Arrange
         var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+        _repo.Setup(x => x.Get()).ReturnsAsync(expected);
 
-        this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-           .When(x => x.WhenIGetTheFileConfiguration())
-           .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-           .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
-           .BDDfy();
+        // Act
+        var result = await _controller.Get();
+
+        // Assert
+        _repo.Verify(x => x.Get(), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
     }
 
     [Fact]
-    public void Should_post_file_configuration()
+    public async Task Should_post_file_configuration()
     {
+        // Arrange
         var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse());
 
-        this.Given(x => GivenTheFileConfiguration(expected))
-            .And(x => GivenTheConfigSetterReturns(new OkResponse()))
-            .When(x => WhenIPostTheFileConfiguration())
-            .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
-            .BDDfy();
+        // Act
+        var result = await _controller.Post(expected);
+
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
     }
 
     [Fact]
-    public void Should_return_error_when_cannot_set_config()
+    public async Task Should_return_error_when_cannot_set_config()
     {
+        // Arrange
         var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>())).ReturnsAsync(new ErrorResponse(new FakeError()));
 
-        this.Given(x => GivenTheFileConfiguration(expected))
-            .And(x => GivenTheConfigSetterReturns(new ErrorResponse(new FakeError())))
-            .When(x => WhenIPostTheFileConfiguration())
-            .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
-            .And(x => ThenTheResponseIs<BadRequestObjectResult>())
-            .BDDfy();
-    }
+        // Act
+        var result = await _controller.Post(expected);
 
-    private void GivenTheConfigSetterReturns(Response response)
-    {
-        _setter
-            .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync(response);
-    }
-
-    private void ThenTheConfigrationSetterIsCalledCorrectly()
-    {
-        _setter
-            .Verify(x => x.Set(_fileConfiguration), Times.Once);
-    }
-
-    private async Task WhenIPostTheFileConfiguration()
-    {
-        _result = await _controller.Post(_fileConfiguration);
-    }
-
-    private void GivenTheFileConfiguration(FileConfiguration fileConfiguration)
-    {
-        _fileConfiguration = fileConfiguration;
-    }
-
-    private void ThenTheResponseIs<T>()
-    {
-        _result.ShouldBeOfType<T>();
-    }
-
-    private void GivenTheGetConfigurationReturns(Response<FileConfiguration> fileConfiguration)
-    {
-        _repo
-            .Setup(x => x.Get())
-            .ReturnsAsync(fileConfiguration);
-    }
-
-    private async Task WhenIGetTheFileConfiguration()
-    {
-        _result = await _controller.Get();
-    }
-
-    private void TheTheGetFileConfigurationIsCalledCorrectly()
-    {
-        _repo
-         .Verify(x => x.Get(), Times.Once);
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
     }
 
     private class FakeError : Error

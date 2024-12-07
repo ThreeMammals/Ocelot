@@ -26,7 +26,7 @@ public sealed class SecurityOptionsCreatorTests : UnitTest
         var actual = _creator.Create(securityOptions, globalConfig);
 
         // Assert
-        ThenTheResultIs(actual, expected);
+        actual.ThenTheResultIs(expected);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class SecurityOptionsCreatorTests : UnitTest
         var actual = _creator.Create(new(), globalConfig);
 
         // Assert
-        ThenTheResultIs(actual, expected);
+        actual.ThenTheResultIs(expected);
     }
 
     [Fact]
@@ -81,10 +81,13 @@ public sealed class SecurityOptionsCreatorTests : UnitTest
         var actual = _creator.Create(securityOptions, globalConfig);
 
         // Assert
-        ThenTheResultIs(actual, expected);
+        actual.ThenTheResultIs(expected);
     }
+}
 
-    private static void ThenTheResultIs(SecurityOptions actual, SecurityOptions expected)
+internal static class SecurityOptionsExtensions
+{
+    public static void ThenTheResultIs(this SecurityOptions actual, SecurityOptions expected)
     {
         for (var i = 0; i < expected.IPAllowedList.Count; i++)
         {

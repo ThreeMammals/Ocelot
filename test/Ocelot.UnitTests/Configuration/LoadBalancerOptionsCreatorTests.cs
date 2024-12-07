@@ -1,4 +1,3 @@
-using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
@@ -6,45 +5,25 @@ namespace Ocelot.UnitTests.Configuration;
 
 public class LoadBalancerOptionsCreatorTests : UnitTest
 {
-    private readonly ILoadBalancerOptionsCreator _creator;
-    private FileLoadBalancerOptions _fileLoadBalancerOptions;
-    private LoadBalancerOptions _result;
-
-    public LoadBalancerOptionsCreatorTests()
-    {
-        _creator = new LoadBalancerOptionsCreator();
-    }
+    private readonly LoadBalancerOptionsCreator _creator = new();
 
     [Fact]
-    public void should_create()
+    public void Should_create()
     {
-        var fileLoadBalancerOptions = new FileLoadBalancerOptions
+        // Arrange
+        var options = new FileLoadBalancerOptions
         {
             Type = "test",
             Key = "west",
             Expiry = 1,
         };
 
-        this.Given(_ => GivenThe(fileLoadBalancerOptions))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheOptionsAreCreated(fileLoadBalancerOptions))
-            .BDDfy();
-    }
+        // Act
+        var result = _creator.Create(options);
 
-    private void ThenTheOptionsAreCreated(FileLoadBalancerOptions expected)
-    {
-        _result.Type.ShouldBe(expected.Type);
-        _result.Key.ShouldBe(expected.Key);
-        _result.ExpiryInMs.ShouldBe(expected.Expiry);
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_fileLoadBalancerOptions);
-    }
-
-    private void GivenThe(FileLoadBalancerOptions fileLoadBalancerOptions)
-    {
-        _fileLoadBalancerOptions = fileLoadBalancerOptions;
+        // Assert
+        result.Type.ShouldBe(options.Type);
+        result.Key.ShouldBe(options.Key);
+        result.ExpiryInMs.ShouldBe(options.Expiry);
     }
 }

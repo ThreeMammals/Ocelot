@@ -33,23 +33,26 @@ public class DynamicsCreatorTests : UnitTest
     public void Should_return_nothing()
     {
         // Arrange
-        var fileConfig = new FileConfiguration();
-        GivenThe(fileConfig);
+        _fileConfig = new FileConfiguration();
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(_fileConfig);
 
         // Assert
-        ThenNothingIsReturned();
-        ThenTheRloCreatorIsNotCalled();
-        ThenTheMetadataCreatorIsNotCalled();
+        _result.Count.ShouldBe(0);
+
+        // Assert: then the RloCreator is not called
+        _rloCreator.Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+
+        // Assert: then the metadata creator is not called
+        _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
     }
 
     [Fact]
     public void Should_return_routes()
     {
         // Arrange
-        var fileConfig = new FileConfiguration
+        _fileConfig = new FileConfiguration
         {
             DynamicRoutes = new()
             {
@@ -57,14 +60,13 @@ public class DynamicsCreatorTests : UnitTest
                 GivenDynamicRoute("2", true, "2.0", "foo", "baz"),
             },
         };
-        GivenThe(fileConfig);
         GivenTheRloCreatorReturns();
         GivenTheVersionCreatorReturns();
         GivenTheVersionPolicyCreatorReturns();
         GivenTheMetadataCreatorReturns();
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(_fileConfig);
 
         // Assert
         ThenTheRoutesAreReturned();
@@ -73,8 +75,7 @@ public class DynamicsCreatorTests : UnitTest
         ThenTheMetadataCreatorIsCalledCorrectly();
     }
 
-    private FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting,
-        string downstreamHttpVersion, string key, string value) => new()
+    private static FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting, string downstreamHttpVersion, string key, string value) => new()
     {
         ServiceName = serviceName,
         RateLimitRule = new FileRateLimitRule
@@ -159,30 +160,5 @@ public class DynamicsCreatorTests : UnitTest
             .SetupSequence(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()))
             .Returns(_rlo1)
             .Returns(_rlo2);
-    }
-
-    private void ThenTheRloCreatorIsNotCalled()
-    {
-        _rloCreator.Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
-    }
-
-    private void ThenTheMetadataCreatorIsNotCalled()
-    {
-        _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
-    }
-
-    private void ThenNothingIsReturned()
-    {
-        _result.Count.ShouldBe(0);
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_fileConfig);
-    }
-
-    private void GivenThe(FileConfiguration fileConfig)
-    {
-        _fileConfig = fileConfig;
     }
 }
