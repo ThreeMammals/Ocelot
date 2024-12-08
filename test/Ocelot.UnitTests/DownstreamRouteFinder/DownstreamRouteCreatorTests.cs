@@ -37,8 +37,9 @@ public class DownstreamRouteCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_create_downstream_route()
+    public void Should_create_downstream_route()
     {
+        // Arrange
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",
@@ -50,32 +51,31 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration);
 
-        this.Given(_ => GivenTheConfiguration(configuration))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDownstreamRouteIsCreated())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamRouteIsCreated();
     }
 
     [Fact]
-    public void should_create_downstream_route_with_rate_limit_options()
+    public void Should_create_downstream_route_with_rate_limit_options()
     {
+        // Arrange
         var rateLimitOptions = new RateLimitOptionsBuilder()
             .WithEnableRateLimiting(true)
             .WithClientIdHeader("test")
             .Build();
-
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)
             .Build();
-
         var route = new RouteBuilder()
             .WithDownstreamRoute(downstreamRoute)
             .Build();
-
         var routes = new List<Route> { route };
-
         var configuration = new InternalConfiguration(
             routes,
             "doesnt matter",
@@ -87,17 +87,20 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration);
 
-        this.Given(_ => GivenTheConfiguration(configuration))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDownstreamRouteIsCreated())
-            .And(_ => WithRateLimitOptions(rateLimitOptions))
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamRouteIsCreated();
+        WithRateLimitOptions(rateLimitOptions);
     }
 
     [Fact]
-    public void should_cache_downstream_route()
+    public void Should_cache_downstream_route()
     {
+        // Arrange
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",
@@ -109,18 +112,21 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration, "/geoffisthebest/");
 
-        this.Given(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
-            .When(_ => WhenICreate())
-            .And(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
-            .When(_ => WhenICreateAgain())
-            .Then(_ => ThenTheDownstreamRoutesAreTheSameReference())
-            .BDDfy();
+        // Act
+        WhenICreate();
+        GivenTheConfiguration(configuration, "/geoffisthebest/");
+        WhenICreateAgain();
+
+        // Assert
+        _result.ShouldBe(_resultTwo);
     }
 
     [Fact]
-    public void should_not_cache_downstream_route()
+    public void Should_not_cache_downstream_route()
     {
+        // Arrange
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",
@@ -132,18 +138,21 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration, "/geoffistheworst/");
 
-        this.Given(_ => GivenTheConfiguration(configuration, "/geoffistheworst/"))
-            .When(_ => WhenICreate())
-            .And(_ => GivenTheConfiguration(configuration, "/geoffisthebest/"))
-            .When(_ => WhenICreateAgain())
-            .Then(_ => ThenTheDownstreamRoutesAreTheNotSameReference())
-            .BDDfy();
+        // Act
+        WhenICreate();
+        GivenTheConfiguration(configuration, "/geoffisthebest/");
+        WhenICreateAgain();
+
+        // Assert
+        _result.ShouldNotBe(_resultTwo);
     }
 
     [Fact]
-    public void should_create_downstream_route_with_no_path()
+    public void Should_create_downstream_route_with_no_path()
     {
+        // Arrange
         var upstreamUrlPath = "/auth/";
         var configuration = new InternalConfiguration(
             null,
@@ -156,16 +165,19 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration, upstreamUrlPath);
 
-        this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDownstreamPathIsForwardSlash())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamPathIsForwardSlash();
     }
 
     [Fact]
-    public void should_create_downstream_route_with_only_first_segment_no_traling_slash()
+    public void Should_create_downstream_route_with_only_first_segment_no_traling_slash()
     {
+        // Arrange
         var upstreamUrlPath = "/auth";
         var configuration = new InternalConfiguration(
             null,
@@ -178,16 +190,19 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration, upstreamUrlPath);
 
-        this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDownstreamPathIsForwardSlash())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamPathIsForwardSlash();
     }
 
     [Fact]
-    public void should_create_downstream_route_with_segments_no_traling_slash()
+    public void Should_create_downstream_route_with_segments_no_traling_slash()
     {
+        // Arrange
         var upstreamUrlPath = "/auth/test";
         var configuration = new InternalConfiguration(
             null,
@@ -200,16 +215,19 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrHigher);
+        GivenTheConfiguration(configuration, upstreamUrlPath);
 
-        this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenThePathDoesNotHaveTrailingSlash())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenThePathDoesNotHaveTrailingSlash();
     }
 
     [Fact]
-    public void should_create_downstream_route_and_remove_query_string()
+    public void Should_create_downstream_route_and_remove_query_string()
     {
+        // Arrange
         var upstreamUrlPath = "/auth/test?test=1&best=2";
         var configuration = new InternalConfiguration(
             null,
@@ -222,16 +240,19 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration, upstreamUrlPath);
 
-        this.Given(_ => GivenTheConfiguration(configuration, upstreamUrlPath))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheQueryStringIsRemoved())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheQueryStringIsRemoved();
     }
 
     [Fact]
-    public void should_create_downstream_route_for_sticky_sessions()
+    public void Should_create_downstream_route_for_sticky_sessions()
     {
+        // Arrange
         var loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(CookieStickySessions)).WithKey("boom").WithExpiryInMs(1).Build();
         var configuration = new InternalConfiguration(
             null,
@@ -244,21 +265,23 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration);
 
-        this.Given(_ => GivenTheConfiguration(configuration))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheStickySessionLoadBalancerIsUsed(loadBalancerOptions))
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheStickySessionLoadBalancerIsUsed(loadBalancerOptions);
     }
 
     [Fact]
-    public void should_create_downstream_route_with_qos()
+    public void Should_create_downstream_route_with_qos()
     {
+        // Arrange
         var qoSOptions = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(1)
             .WithTimeoutValue(1)
             .Build();
-
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",
@@ -270,17 +293,20 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration);
+        GivenTheQosCreatorReturns(qoSOptions);
 
-        this.Given(_ => GivenTheConfiguration(configuration))
-            .And(_ => GivenTheQosCreatorReturns(qoSOptions))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheQosOptionsAreSet(qoSOptions))
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheQosOptionsAreSet(qoSOptions);
     }
 
     [Fact]
-    public void should_create_downstream_route_with_handler_options()
+    public void Should_create_downstream_route_with_handler_options()
     {
+        // Arrange
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",
@@ -292,17 +318,18 @@ public class DownstreamRouteCreatorTests : UnitTest
             _handlerOptions,
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
+        GivenTheConfiguration(configuration);
 
-        this.Given(_ => GivenTheConfiguration(configuration))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheHandlerOptionsAreSet())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert: Then The Handler Options Are Set
+        _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
     }
 
     private void GivenTheQosCreatorReturns(QoSOptions options)
     {
-        _qosOptionsCreator
-            .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _qosOptionsCreator.Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns(options);
     }
 
@@ -383,11 +410,6 @@ public class DownstreamRouteCreatorTests : UnitTest
         _configuration = config;
     }
 
-    private void ThenTheHandlerOptionsAreSet()
-    {
-        _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
-    }
-
     private void WhenICreate()
     {
         _result = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
@@ -396,15 +418,5 @@ public class DownstreamRouteCreatorTests : UnitTest
     private void WhenICreateAgain()
     {
         _resultTwo = _creator.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
-    }
-
-    private void ThenTheDownstreamRoutesAreTheSameReference()
-    {
-        _result.ShouldBe(_resultTwo);
-    }
-
-    private void ThenTheDownstreamRoutesAreTheNotSameReference()
-    {
-        _result.ShouldNotBe(_resultTwo);
     }
 }

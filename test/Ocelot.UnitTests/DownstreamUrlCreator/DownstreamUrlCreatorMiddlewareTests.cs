@@ -26,12 +26,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private DownstreamUrlCreatorMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly HttpRequestMessage _request;
-    private readonly HttpContext _httpContext;
-    private readonly Mock<IRequestScopedDataRepository> _repo;
+    private readonly DefaultHttpContext _httpContext;
 
     public DownstreamUrlCreatorMiddlewareTests()
     {
-        _repo = new Mock<IRequestScopedDataRepository>();
         _httpContext = new DefaultHttpContext();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();

@@ -21,7 +21,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly DownstreamRouteFinderMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public DownstreamRouteFinderMiddlewareTests()
     {
@@ -37,8 +37,9 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_scoped_data_repository_correctly()
+    public async Task Should_call_scoped_data_repository_correctly()
     {
+        // Arrange
         var config = new InternalConfiguration(
             null,
             null,
@@ -50,28 +51,23 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
             new HttpHandlerOptionsBuilder().Build(),
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
-
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
+        GivenTheDownStreamRouteFinderReturns(new(
+            new List<PlaceholderNameAndValue>(),
+            new RouteBuilder()
+                .WithDownstreamRoute(downstreamRoute)
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build()));
+        GivenTheFollowingConfig(config);
 
-        this.Given(x => x.GivenTheDownStreamRouteFinderReturns(
-            new DownstreamRouteHolder(
-                new List<PlaceholderNameAndValue>(),
-                new RouteBuilder()
-                    .WithDownstreamRoute(downstreamRoute)
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())))
-            .And(x => GivenTheFollowingConfig(config))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
-            .BDDfy();
-    }
+        // Act
+        await _middleware.Invoke(_httpContext);
 
-    private void WhenICallTheMiddleware()
-    {
-        _middleware.Invoke(_httpContext).GetAwaiter().GetType();
+        // Assert
+        ThenTheScopedDataRepositoryIsCalledCorrectly();
     }
 
     private void GivenTheFollowingConfig(IInternalConfiguration config)
