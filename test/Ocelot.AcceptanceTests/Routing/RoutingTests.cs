@@ -668,29 +668,41 @@ public sealed class RoutingTests : Steps, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2065")]
+    [Trait("Bug", "2064")]
+    [Trait("Discus", "2065")]
     public void Should_match_correct_route_when_placeholder_appears_after_query_start()
     {
-        // Arrange
-        var downstreamPath = "/products/1";
+        const string DownstreamPath = "/1/products/1";
         var port = PortFinder.GetRandomPort();
-
-        FileConfiguration configuration = new()
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenRoute(port, "/products/{everything}", "/products/{everything}"), // This route should be matched
-                GivenRoute(port, "/products?{everything}", "/products?{everything}"), // This route should not be matched
-            },
-        };
-
-        // Act & Assert
-        this.Given(x => GivenThereIsAServiceRunningOn(port, downstreamPath, HttpStatusCode.OK, "Hello from Finn"))
+        var configuration = GivenConfiguration(
+            GivenRoute(port, "/{tenantId}/products?{everything}", "/{tenantId}/products?{everything}"), // This route should NOT BE matched
+            GivenRoute(port, "/{tenantId}/products/{everything}", "/{tenantId}/products/{everything}")); // This route should BE matched
+        this.Given(x => GivenThereIsAServiceRunningOn(port, DownstreamPath, HttpStatusCode.OK, "Hello from Finn"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/products/1"))
-            .Then(x => ThenTheDownstreamUrlPathShouldBe(downstreamPath))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(""))
+            .When(x => WhenIGetUrlOnTheApiGateway("/1/products/1"))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(DownstreamPath))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(string.Empty))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Finn"))
+            .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2132")]
+    public void Should_match_correct_route_when_a_configuration_exists_with_query_param_wildcard()
+    {
+        const string DownstreamPath = "/api/v1/apple";
+        var port = PortFinder.GetRandomPort();
+        var configuration = GivenConfiguration(
+            GivenRoute(port, "/api/v1/abc?{everything}",  "/api/v1/abc?{everything}"), // This route should NOT be matched
+            GivenRoute(port, "/api/v1/abc2/{everything}", "/api/v1/{everything}")); // This route should be matched
+        this.Given(x => GivenThereIsAServiceRunningOn(port, DownstreamPath, HttpStatusCode.OK, "Hello from Finn"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/api/v1/abc2/apple?isRequired=1"))
+            .Then(x => ThenTheDownstreamUrlPathShouldBe(DownstreamPath))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?isRequired=1"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Finn"))
             .BDDfy();
