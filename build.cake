@@ -14,8 +14,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net6.0;net7.0;net8.0";
-const string LatestFramework = "net8.0";
+const string AllFrameworks = "net8.0;net9.0";
+const string LatestFramework = "net9.0";
 
 var compileConfig = Argument("configuration", Release); // compile
 
@@ -96,7 +96,7 @@ Task("Compile")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // build using .NET 8 SDK only
+			settings.Framework = LatestFramework; // build using .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
@@ -467,7 +467,7 @@ Task("RunUnitTests")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -491,10 +491,16 @@ Task("RunUnitTests")
 			}
 
 			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-			{
-				RepoToken = repoToken
-			});
+			// CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+			// {
+			// 	RepoToken = repoToken
+			// });
+			Warning($@"Uploading is disabled due to the following reasons:
+			- App: /root/project/tools/csmacnz.Coveralls
+			- Framework: 'Microsoft.NETCore.App', version '6.0.0' (x64)
+			Upgrading csmacnz.Coveralls package to .NET 8-9 is required!!!
+			Repo: https://github.com/csmacnz/coveralls.net
+			Coveralls Language Integrations > .Net : https://docs.coveralls.io/dot-net");
 		}
 		else
 		{
@@ -520,14 +526,13 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -542,14 +547,13 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");

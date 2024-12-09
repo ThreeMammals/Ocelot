@@ -31,7 +31,7 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
             ? hostHeader.Split(':')[0]
             : hostHeader;
         var upstreamHeaders = httpContext.Request.Headers
-            .ToDictionary(h => h.Key, h => string.Join(';', h.Value));
+            .ToDictionary(h => h.Key, h => string.Join(';', (IList<string>)h.Value));
 
         Logger.LogDebug(() => $"Upstream URL path is '{upstreamUrlPath}'.");
 
