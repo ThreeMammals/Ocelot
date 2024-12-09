@@ -53,9 +53,9 @@ public static class OcelotBuilderExtensions
             .AddJwtBearer("Bearer", configOptions);
     }
 
-    private static void AddIdentityServer(IIdentityServerConfiguration identityServerConfiguration, IAdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
+    private static void AddIdentityServer(IdentityServerConfiguration identityServerConfiguration, AdministrationPath adminPath, IOcelotBuilder builder, IConfiguration configuration)
     {
-        builder.Services.TryAddSingleton(identityServerConfiguration);
+        builder.Services.TryAddSingleton<IIdentityServerConfiguration>(identityServerConfiguration);
         var identityServerBuilder = builder.Services
             .AddIdentityServer(o =>
             {
@@ -91,44 +91,41 @@ public static class OcelotBuilderExtensions
         else
         {
             //todo - refactor so calls method?
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
+            // TODO: Refactor the code to phase out IdentityServer4 in favor of its successor or replace with ASP.NET Identity framework
             var cert = new X509Certificate2(identityServerConfiguration.CredentialsSigningCertificateLocation, identityServerConfiguration.CredentialsSigningCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
+#pragma warning restore IDE0079 // Remove unnecessary suppression
             identityServerBuilder.AddSigningCredential(cert);
         }
     }
 
-    private static IEnumerable<ApiScope> ApiScopes(IIdentityServerConfiguration identityServerConfiguration)
-    {
-        return identityServerConfiguration.AllowedScopes.Select(s => new ApiScope(s));
-    }
+    private static IEnumerable<ApiScope> ApiScopes(IdentityServerConfiguration configuration)
+        => configuration.AllowedScopes.Select(s => new ApiScope(s));
 
-    private static List<ApiResource> Resources(IIdentityServerConfiguration identityServerConfiguration)
+    private static List<ApiResource> Resources(IdentityServerConfiguration configuration) => new()
     {
-        return new List<ApiResource>
+        new(configuration.ApiName, configuration.ApiName)
         {
-            new(identityServerConfiguration.ApiName, identityServerConfiguration.ApiName)
+            ApiSecrets = new List<Secret>
             {
-                ApiSecrets = new List<Secret>
+                new()
                 {
-                    new()
-                    {
-                        Value = identityServerConfiguration.ApiSecret.Sha256(),
-                    },
+                    Value = configuration.ApiSecret.Sha256(),
                 },
             },
-        };
-    }
+        },
+    };
 
-    private static List<Client> Client(IIdentityServerConfiguration identityServerConfiguration)
+    private static List<Client> Client(IdentityServerConfiguration configuration) => new()
     {
-        return new List<Client>
+        new()
         {
-            new()
-            {
-                ClientId = identityServerConfiguration.ApiName,
-                AllowedGrantTypes = GrantTypes.ClientCredentials,
-                ClientSecrets = new List<Secret> {new(identityServerConfiguration.ApiSecret.Sha256())},
-                AllowedScopes = identityServerConfiguration.AllowedScopes,
-            },
-        };
-    }
+            ClientId = configuration.ApiName,
+            AllowedGrantTypes = GrantTypes.ClientCredentials,
+            ClientSecrets = new List<Secret> {new(configuration.ApiSecret.Sha256())},
+            AllowedScopes = configuration.AllowedScopes,
+        },
+    };
 }

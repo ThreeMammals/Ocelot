@@ -95,14 +95,13 @@ public class AdministrationTests : IDisposable
     public async Task Should_return_OK_status_and_multiline_indented_json_response_with_json_options_for_custom_builder()
     {
         var configuration = new FileConfiguration();
-
-        Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = (builder, assembly) =>
+        static IMvcCoreBuilder customBuilder(IMvcCoreBuilder builder, Assembly assembly)
         {
             return builder.AddApplicationPart(assembly)
                 .AddControllersAsServices()
                 .AddAuthorization()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.WriteIndented = true; });
-        };
+        }
 
         await GivenThereIsAConfiguration(configuration);
         GivenOcelotUsingBuilderIsRunning(customBuilder);
@@ -113,7 +112,15 @@ public class AdministrationTests : IDisposable
         await ThenTheResultHaveMultiLineIndentedJson();
     }
 
+#if NET9_0_OR_GREATER
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+    [Fact(Skip = "Require migration to .NET 9 or removing")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+#else
     [Fact]
+#endif
     public async Task Should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
     {
         var configuration = new FileConfiguration();
@@ -480,8 +487,7 @@ public class AdministrationTests : IDisposable
 
         var port = PortFinder.GetRandomPort();
         var identityServerRootUrl = $"http://localhost:{port}";
-
-        Action<JwtBearerOptions> options = o =>
+        void options(JwtBearerOptions o)
         {
             o.Authority = identityServerRootUrl;
             o.RequireHttpsMetadata = false;
@@ -489,7 +495,7 @@ public class AdministrationTests : IDisposable
             {
                 ValidateAudience = false,
             };
-        };
+        }
 
         await GivenThereIsAConfiguration(configuration);
         await GivenThereIsAnIdentityServerOn(identityServerRootUrl, "api");

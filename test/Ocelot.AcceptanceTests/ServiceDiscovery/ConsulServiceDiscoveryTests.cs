@@ -397,7 +397,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [InlineData(true, nameof(LeastConnectionAnalyzer))] // extended scenario using analyzer
     [InlineData(false, nameof(RoundRobin))]
     [InlineData(true, nameof(RoundRobinAnalyzer))]
-    public void ShouldReturnDifferentServicesWhenSequentiallylyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
+    public void ShouldReturnDifferentServicesWhenSequentiallyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
     {
         var consulPort = PortFinder.GetRandomPort();
         var ports = PortFinder.GetPorts(Bug2119ServiceNames.Length);

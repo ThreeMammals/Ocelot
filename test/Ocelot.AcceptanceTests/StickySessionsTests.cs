@@ -8,7 +8,11 @@ namespace Ocelot.AcceptanceTests;
 public sealed class StickySessionsTests : Steps, IDisposable
 {
     private readonly int[] _counters;
+#if NET9_0_OR_GREATER
+    private static readonly Lock SyncLock = new();
+#else
     private static readonly object SyncLock = new();
+#endif
     private readonly ServiceHandler[] _handlers;
 
     public StickySessionsTests() : base()
