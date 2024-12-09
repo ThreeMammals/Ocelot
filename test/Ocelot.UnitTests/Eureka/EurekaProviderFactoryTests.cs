@@ -8,17 +8,20 @@ namespace Ocelot.UnitTests.Eureka;
 public class EurekaProviderFactoryTests
 {
     [Fact]
-    public void should_not_get()
+    public void Should_not_get()
     {
+        // Arrange
         var config = new ServiceProviderConfigurationBuilder().Build();
         var sp = new ServiceCollection().BuildServiceProvider(true);
-        Should.Throw<NullReferenceException>(() =>
-            EurekaProviderFactory.Get(sp, config, null));
+
+        // Act, Assert
+        Should.Throw<NullReferenceException>(() => EurekaProviderFactory.Get(sp, config, null));
     }
 
     [Fact]
-    public void should_get()
+    public void Should_get()
     {
+        // Arrange
         var config = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
         var client = new Mock<IDiscoveryClient>();
         var services = new ServiceCollection();
@@ -27,7 +30,11 @@ public class EurekaProviderFactoryTests
         var route = new DownstreamRouteBuilder()
             .WithServiceName(string.Empty)
             .Build();
+
+        // Act
         var provider = EurekaProviderFactory.Get(sp, config, route);
+
+        // Assert
         provider.ShouldBeOfType<Provider.Eureka.Eureka>();
     }
 }

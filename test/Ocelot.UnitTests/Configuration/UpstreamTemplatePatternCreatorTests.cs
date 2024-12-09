@@ -1,5 +1,6 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Values;
 using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
@@ -264,13 +265,16 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
     public void Should_not_match_when_placeholder_appears_after_query_start(string urlPathTemplate, string requestPath, bool shouldMatch)
     {
         // Arrange
-        GivenTheFollowingFileRoute(new() { UpstreamPathTemplate = urlPathTemplate });
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
 
         // Act
-        WhenICreateTheTemplatePattern();
+        var result = _creator.Create(fileRoute);
 
         // Assert
-        ShouldMatchWithRegex(requestPath, shouldMatch);
+        result.ShouldMatchWithRegex(requestPath, shouldMatch);
     }
 
     [Theory]
@@ -280,33 +284,24 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
     public void Should_not_match_with_query_param_wildcard(string urlPathTemplate, string requestPath, bool shouldMatch)
     {
         // Arrange
-        GivenTheFollowingFileRoute(new() { UpstreamPathTemplate = urlPathTemplate });
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
 
         // Act
-        WhenICreateTheTemplatePattern();
+        var result = _creator.Create(fileRoute);
 
         // Assert
-        ShouldMatchWithRegex(requestPath, shouldMatch);
+        result.ShouldMatchWithRegex(requestPath, shouldMatch);
     }
+}
 
-    private void ShouldMatchWithRegex(string requestPath, bool shouldMatch)
+internal static class UpstreamPathTemplateExtensions
+{
+    public static void ShouldMatchWithRegex(this UpstreamPathTemplate actual, string requestPath, bool shouldMatch)
     {
-        var match = Regex.Match(requestPath, _result.Template);
+        var match = Regex.Match(requestPath, actual.Template);
         Assert.Equal(shouldMatch, match.Success);
-    }
-
-    private void GivenTheFollowingFileRoute(FileRoute fileRoute)
-    {
-        _fileRoute = fileRoute;
-    }
-
-    private void WhenICreateTheTemplatePattern()
-    {
-        _result = _creator.Create(_fileRoute);
-    }
-
-    private void ThenTheFollowingIsReturned(string expected)
-    {
-        _result.Template.ShouldBe(expected);
     }
 }
