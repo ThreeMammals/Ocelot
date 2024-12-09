@@ -40,7 +40,11 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         if (upstreamTemplate.Contains('?'))
         {
             containsQueryString = true;
-            upstreamTemplate = upstreamTemplate.Replace("?", "(|\\?)");
+            const string queryStartRegex = "(/$|/\\?|\\?|$)";
+
+            upstreamTemplate = upstreamTemplate.Contains("/?")
+                ? upstreamTemplate.Replace("/?", queryStartRegex)
+                : upstreamTemplate.Replace("?", queryStartRegex);
         }
 
         for (var i = 0; i < placeholders.Count; i++)
