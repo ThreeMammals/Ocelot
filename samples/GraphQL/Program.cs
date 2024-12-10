@@ -11,8 +11,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using GraphQL.NewtonsoftJson;
 
 namespace Ocelot.Samples.GraphQL;
 
@@ -43,12 +45,12 @@ public class GraphQlDelegatingHandler : DelegatingHandler
 {
     //private readonly ISchema _schema;
     private readonly IDocumentExecuter _executer;
-    private readonly IDocumentWriter _writer;
+    private readonly IGraphQLTextSerializer _serializer;
 
-    public GraphQlDelegatingHandler(IDocumentExecuter executer, IDocumentWriter writer)
+    public GraphQlDelegatingHandler(IDocumentExecuter executer, IGraphQLTextSerializer serializer)
     {
         _executer = executer;
-        _writer = writer;
+        _serializer = serializer;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -68,12 +70,12 @@ public class GraphQlDelegatingHandler : DelegatingHandler
             _.Query = query;
         });
 
-        var responseBody = await _writer.WriteToStringAsync(result);
-
-        //maybe check for errors and headers etc in real world?
+        // IGraphQLSerializer & IGraphQLTextSerializer: https://github.com/graphql-dotnet/graphql-dotnet/blob/master/docs2/site/docs/getting-started/transport.md#igraphqlserializer--igraphqltextserializer
+        var responseBody = _serializer.Serialize(result);
+        var media = new MediaTypeHeaderValue("application/graphql-response+json");
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(responseBody)
+            Content =  new StringContent(responseBody, media),
         };
 
         //ocelot will treat this like any other http request...

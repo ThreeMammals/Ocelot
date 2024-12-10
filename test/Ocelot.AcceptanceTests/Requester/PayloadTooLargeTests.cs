@@ -131,12 +131,14 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
         _realServer = Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(webBuilder =>
             {
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1416 // Validate platform compatibility
                 webBuilder.UseHttpSys(options =>
                 {
                     options.MaxRequestBodySize = customBodyMaxSize;
                 })
 #pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore IDE0079 // Remove unnecessary suppression
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);

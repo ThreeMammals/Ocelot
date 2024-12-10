@@ -63,6 +63,8 @@ All versions can be found [on nuget](https://www.nuget.org/packages/Ocelot#versi
   <br/>This includes lots of information and will be helpful if you want to understand the features Ocelot currently offers.
 - [Ocelot RST Docs](https://github.com/ThreeMammals/Ocelot/tree/develop/docs)
   <br/>This includes source code of documentation as **.rst** files which are up to date for current development.
+- [Ask Ocelot Guru](https://gurubase.io/g/ocelot)
+  <br/>It's a Ocelot-focused AI to answer your questions.
 
 ## Coming up
 You can see what we are working on in [backlog](https://github.com/ThreeMammals/Ocelot/issues).
