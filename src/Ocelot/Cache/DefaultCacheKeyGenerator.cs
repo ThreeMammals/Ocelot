@@ -28,19 +28,41 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
             }
         }
 
-        if (!options.EnableContentHashing || !downstreamRequest.HasContent)
+        if (!options.EnableHeadersHashing && !options.EnableContentHashing && !downstreamRequest.HasContent)
         {
             return MD5Helper.GenerateMd5(builder.ToString());
         }
 
-        var requestContentString = await ReadContentAsync(downstreamRequest);
-        builder.Append(Delimiter)
-            .Append(requestContentString);
+        if (options.EnableContentHashing)
+        {
+            var requestContentString = await ReadContentAsync(downstreamRequest);
+            builder.Append(Delimiter)
+                .Append(requestContentString);
+        }
+        
+        if (options.EnableHeadersHashing)
+        {
+            var requestHeadersString = await ReadHeadersAsync(downstreamRequest);
+            builder.Append(Delimiter)
+                .Append(requestHeadersString);
+        }
+
+        if (options.CleanableHashingRegexes.Any())
+        {
+            return MD5Helper.GenerateMd5(HashingClean(builder.ToString(), options.CleanableHashingRegexes));
+        }
 
         return MD5Helper.GenerateMd5(builder.ToString());
     }
 
+    private static string HashingClean(string input, List<string> patterns) =>
+        patterns.Aggregate(input, (current, pattern) => Regex.Replace(current, pattern, string.Empty, RegexOptions.Singleline));
+
     private static Task<string> ReadContentAsync(DownstreamRequest downstream) => downstream.HasContent
         ? downstream?.Request?.Content?.ReadAsStringAsync() ?? Task.FromResult(string.Empty)
+        : Task.FromResult(string.Empty);
+
+    private static Task<string> ReadHeadersAsync(DownstreamRequest downstream) => downstream.HasContent
+        ? Task.FromResult(string.Join(":", downstream?.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value))))
         : Task.FromResult(string.Empty);
 }
