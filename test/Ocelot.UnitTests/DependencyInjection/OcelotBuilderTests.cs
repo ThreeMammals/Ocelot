@@ -167,7 +167,6 @@ public class OcelotBuilderTests : UnitTest
         aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
         var second = aggregators[0];
         first.ShouldBe(second);
-
     }
 
     [Fact]

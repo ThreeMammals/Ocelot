@@ -25,7 +25,7 @@ public class QoSFactoryTests
     }
 
     [Fact]
-    public void should_return_error()
+    public void Should_return_error()
     {
         var downstreamRoute = new DownstreamRouteBuilder().Build();
         var handler = _factory.Get(downstreamRoute);
@@ -34,7 +34,7 @@ public class QoSFactoryTests
     }
 
     [Fact]
-    public void should_return_handler()
+    public void Should_return_handler()
     {
         _services = new ServiceCollection();
         DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();

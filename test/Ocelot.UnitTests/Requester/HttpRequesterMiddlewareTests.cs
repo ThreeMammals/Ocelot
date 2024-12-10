@@ -31,35 +31,32 @@ public class HttpRequesterMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_services_correctly()
+    public void Should_call_services_correctly()
     {
-        this.Given(x => x.GivenTheRequestIs())
-            .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.OK))))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheDownstreamResponseIsSet())
-            .Then(x => InformationIsLogged())
-            .BDDfy();
+        GivenTheRequestIs();
+        GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.OK)));
+        WhenICallTheMiddleware();
+        ThenTheDownstreamResponseIsSet();
+        InformationIsLogged();
     }
 
     [Fact]
-    public void should_set_error()
+    public void Should_set_error()
     {
-        this.Given(x => x.GivenTheRequestIs())
-            .And(x => x.GivenTheRequesterReturns(new ErrorResponse<HttpResponseMessage>(new AnyError())))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheErrorIsSet())
-            .BDDfy();
+        GivenTheRequestIs();
+        GivenTheRequesterReturns(new ErrorResponse<HttpResponseMessage>(new AnyError()));
+        WhenICallTheMiddleware();
+        ThenTheErrorIsSet();
     }
 
     [Fact]
-    public void should_log_downstream_internal_server_error()
+    public void Should_log_downstream_internal_server_error()
     {
-        this.Given(x => x.GivenTheRequestIs())
-                .And(x => x.GivenTheRequesterReturns(
-                    new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.InternalServerError))))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.WarningIsLogged())
-            .BDDfy();
+        GivenTheRequestIs();
+        GivenTheRequesterReturns(
+            new OkResponse<HttpResponseMessage>(new HttpResponseMessage(HttpStatusCode.InternalServerError)));
+        WhenICallTheMiddleware();
+        WarningIsLogged();
     }
 
     [Theory]
@@ -68,11 +65,10 @@ public class HttpRequesterMiddlewareTests : UnitTest
     [InlineData(HttpStatusCode.PermanentRedirect)]
     public void Should_LogInformation_when_status_is_less_than_BadRequest(HttpStatusCode status)
     {
-        this.Given(x => x.GivenTheRequestIs())
-            .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status))))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.InformationIsLogged())
-            .BDDfy();
+        GivenTheRequestIs();
+        GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status)));
+        WhenICallTheMiddleware();
+        InformationIsLogged();
     }
 
     [Theory]
@@ -81,11 +77,10 @@ public class HttpRequesterMiddlewareTests : UnitTest
     [InlineData(HttpStatusCode.NotFound)]
     public void Should_LogWarning_when_status_is_BadRequest_or_greater(HttpStatusCode status)
     {
-        this.Given(x => x.GivenTheRequestIs())
-            .And(x => x.GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status))))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.WarningIsLogged())
-            .BDDfy();
+        GivenTheRequestIs();
+        GivenTheRequesterReturns(new OkResponse<HttpResponseMessage>(new HttpResponseMessage(status)));
+        WhenICallTheMiddleware();
+        WarningIsLogged();
     }
 
     private void ThenTheErrorIsSet()

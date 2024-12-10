@@ -42,14 +42,13 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
         var route = new DownstreamRouteBuilder().Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        WhenIGetTheServiceProvider();
+        ThenTheServiceProviderIs<ConfigurationServiceProvider>();
     }
 
     [Fact]
-    public void Should_return_list_of_configuration_services()
+    public async Task Should_return_list_of_configuration_services()
     {
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .Build();
@@ -62,11 +61,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
         var route = new DownstreamRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
-            .Then(x => ThenTheFollowingServicesAreReturned(downstreamAddresses))
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        WhenIGetTheServiceProvider();
+        ThenTheServiceProviderIs<ConfigurationServiceProvider>();
+        await ThenTheFollowingServicesAreReturned(downstreamAddresses);
     }
 
     [Fact]
@@ -81,11 +79,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
             .WithType(nameof(Fake))
             .Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .And(x => GivenAFakeDelegate())
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => x.ThenTheDelegateIsCalled())
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        GivenAFakeDelegate();
+        WhenIGetTheServiceProvider();
+        ThenTheDelegateIsCalled();
     }
 
     [Fact]
@@ -100,11 +97,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
             .WithType("Wookie")
             .Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .And(x => GivenAFakeDelegate())
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => x.ThenTheResultIsError())
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        GivenAFakeDelegate();
+        WhenIGetTheServiceProvider();
+        ThenTheResultIsError();
     }
 
     [Fact]
@@ -119,11 +115,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
             .WithType("ServiceFabric")
             .Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .And(x => GivenAFakeDelegate())
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        GivenAFakeDelegate();
+        WhenIGetTheServiceProvider();
+        ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>();
     }
 
     [Theory]
@@ -145,11 +140,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
             .WithPollingInterval(Timeout.Infinite)
             .Build();
 
-        this.Given(x => x.GivenTheRoute(serviceConfig, route))
-            .And(x => GivenKubernetesProvider())
-            .When(x => x.WhenIGetTheServiceProvider())
-            .Then(x => EnsureResponse(success))
-            .BDDfy();
+        GivenTheRoute(serviceConfig, route);
+        GivenKubernetesProvider();
+        WhenIGetTheServiceProvider();
+        EnsureResponse(success);
     }
 
     private void EnsureResponse(bool success)

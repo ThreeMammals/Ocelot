@@ -16,7 +16,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
 
     [Theory]
     [InlineData(OcelotErrorCode.UnauthenticatedError)]
-    public void should_return_unauthorized(OcelotErrorCode errorCode)
+    public void Should_return_unauthorized(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Unauthorized);
     }
@@ -27,14 +27,14 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     [InlineData(OcelotErrorCode.ScopeNotAuthorizedError)]
     [InlineData(OcelotErrorCode.UnauthorizedError)]
     [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)]
-    public void should_return_forbidden(OcelotErrorCode errorCode)
+    public void Should_return_forbidden(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Forbidden);
     }
 
     [Theory]
     [InlineData(OcelotErrorCode.RequestTimedOutError)]
-    public void should_return_service_unavailable(OcelotErrorCode errorCode)
+    public void Should_return_service_unavailable(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.ServiceUnavailable);
     }
@@ -43,14 +43,14 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
     [InlineData(OcelotErrorCode.CouldNotFindLoadBalancerCreator)]
     [InlineData(OcelotErrorCode.ErrorInvokingLoadBalancerCreator)]
-    public void should_return_internal_server_error(OcelotErrorCode errorCode)
+    public void Should_return_internal_server_error(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.InternalServerError);
     }
 
     [Theory]
     [InlineData(OcelotErrorCode.ConnectionToDownstreamServiceError)]
-    public void should_return_bad_gateway_error(OcelotErrorCode errorCode)
+    public void Should_return_bad_gateway_error(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.BadGateway);
     }
@@ -78,13 +78,13 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     [InlineData(OcelotErrorCode.UnknownError)]
     [InlineData(OcelotErrorCode.UnmappableRequestError)]
     [InlineData(OcelotErrorCode.UnsupportedAuthenticationProviderError)]
-    public void should_return_not_found(OcelotErrorCode errorCode)
+    public void Should_return_not_found(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public void should_return_request_entity_too_large()
+    public void Should_return_request_entity_too_large()
     {
         ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);
     }
@@ -151,10 +151,9 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
             errors.Add(new AnyError(errorCode));
         }
 
-        this.Given(x => x.GivenThereAreErrors(errors))
-           .When(x => x.WhenIGetErrorStatusCode())
-           .Then(x => x.ThenTheResponseIsStatusCodeIs(expectedHttpStatusCode))
-           .BDDfy();
+        GivenThereAreErrors(errors);
+        WhenIGetErrorStatusCode();
+        ThenTheResponseIsStatusCodeIs(expectedHttpStatusCode);
     }
 
     private void GivenThereAreErrors(List<Error> errors)

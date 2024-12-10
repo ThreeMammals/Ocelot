@@ -21,23 +21,21 @@ public class NoLoadBalancerCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_instance_of_expected_load_balancer_type()
+    public void Should_return_instance_of_expected_load_balancer_type()
     {
         var route = new DownstreamRouteBuilder()
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<NoLoadBalancer>())
-            .BDDfy();
+        GivenARoute(route);
+        WhenIGetTheLoadBalancer();
+        ThenTheLoadBalancerIsReturned<NoLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_expected_name()
+    public void Should_return_expected_name()
     {
-        this.When(x => x.WhenIGetTheLoadBalancerTypeName())
-            .Then(x => x.ThenTheLoadBalancerTypeIs("NoLoadBalancer"))
-            .BDDfy();
+        WhenIGetTheLoadBalancerTypeName();
+        ThenTheLoadBalancerTypeIs("NoLoadBalancer");
     }
 
     private void GivenARoute(DownstreamRoute route)

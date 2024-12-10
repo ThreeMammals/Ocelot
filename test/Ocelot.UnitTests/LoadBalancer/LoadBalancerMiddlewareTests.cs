@@ -44,7 +44,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_scoped_data_repository_correctly()
+    public async Task Should_call_scoped_data_repository_correctly()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -53,18 +53,17 @@ public class LoadBalancerMiddlewareTests : UnitTest
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();
 
-        this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
-            .And(x => GivenTheConfigurationIs(serviceProviderConfig))
-            .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
-            .And(x => x.GivenTheLoadBalancerHouseReturns())
-            .And(x => x.GivenTheLoadBalancerReturns())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheDownstreamUrlIsReplacedWith("http://127.0.0.1:80/abc?q=123"))
-            .BDDfy();
+        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
+        GivenTheConfigurationIs(serviceProviderConfig);
+        GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>());
+        GivenTheLoadBalancerHouseReturns();
+        GivenTheLoadBalancerReturns();
+        await WhenICallTheMiddleware();
+        ThenTheDownstreamUrlIsReplacedWith("http://127.0.0.1:80/abc?q=123");
     }
 
     [Fact]
-    public void should_set_pipeline_error_if_cannot_get_load_balancer()
+    public async Task Should_set_pipeline_error_if_cannot_get_load_balancer()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -73,17 +72,16 @@ public class LoadBalancerMiddlewareTests : UnitTest
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();
 
-        this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
-            .And(x => GivenTheConfigurationIs(serviceProviderConfig))
-            .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
-            .And(x => x.GivenTheLoadBalancerHouseReturnsAnError())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline())
-            .BDDfy();
+        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
+        GivenTheConfigurationIs(serviceProviderConfig);
+        GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>());
+        GivenTheLoadBalancerHouseReturnsAnError();
+        await WhenICallTheMiddleware();
+        ThenAnErrorStatingLoadBalancerCouldNotBeFoundIsSetOnPipeline();
     }
 
     [Fact]
-    public void should_set_pipeline_error_if_cannot_get_least()
+    public async Task Should_set_pipeline_error_if_cannot_get_least()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -92,18 +90,17 @@ public class LoadBalancerMiddlewareTests : UnitTest
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
            .Build();
 
-        this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
-            .And(x => GivenTheConfigurationIs(serviceProviderConfig))
-            .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
-            .And(x => x.GivenTheLoadBalancerHouseReturns())
-            .And(x => x.GivenTheLoadBalancerReturnsAnError())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline())
-            .BDDfy();
+        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
+        GivenTheConfigurationIs(serviceProviderConfig);
+        GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>());
+        GivenTheLoadBalancerHouseReturns();
+        GivenTheLoadBalancerReturnsAnError();
+        await WhenICallTheMiddleware();
+        ThenAnErrorStatingHostAndPortCouldNotBeFoundIsSetOnPipeline();
     }
 
     [Fact]
-    public void should_set_scheme()
+    public async Task Should_set_scheme()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod(new List<string> { "Get" })
@@ -112,20 +109,19 @@ public class LoadBalancerMiddlewareTests : UnitTest
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();
 
-        this.Given(x => x.GivenTheDownStreamUrlIs("http://my.url/abc?q=123"))
-            .And(x => GivenTheConfigurationIs(serviceProviderConfig))
-            .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>()))
-            .And(x => x.GivenTheLoadBalancerHouseReturns())
-            .And(x => x.GivenTheLoadBalancerReturnsOk())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenAnHostAndPortIsSetOnPipeline())
-            .BDDfy();
+        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
+        GivenTheConfigurationIs(serviceProviderConfig);
+        GivenTheDownStreamRouteIs(downstreamRoute, new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>());
+        GivenTheLoadBalancerHouseReturns();
+        GivenTheLoadBalancerReturnsOk();
+        await WhenICallTheMiddleware();
+        ThenAnHostAndPortIsSetOnPipeline();
     }
 
-    private async Task WhenICallTheMiddleware()
+    private Task WhenICallTheMiddleware()
     {
         _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
-        await _middleware.Invoke(_httpContext);
+        return _middleware.Invoke(_httpContext);
     }
 
     private void GivenTheConfigurationIs(ServiceProviderConfiguration config)

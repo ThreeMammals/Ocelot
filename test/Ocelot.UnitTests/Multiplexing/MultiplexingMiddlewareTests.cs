@@ -39,24 +39,22 @@ public class MultiplexingMiddlewareTests : UnitTest
     private Task Next(HttpContext context) => Task.FromResult(_count++);
 
     [Fact]
-    public void should_multiplex()
+    public async Task Should_multiplex()
     {
         var route = GivenDefaultRoute(2);
-        this.Given(x => GivenTheFollowing(route))
-            .When(x => WhenIMultiplex())
-            .Then(x => ThePipelineIsCalled(2))
-            .BDDfy();
+        GivenTheFollowing(route);
+        await WhenIMultiplex();
+        ThePipelineIsCalled(2);
     }
 
     [Fact]
-    public void should_not_multiplex()
+    public async Task Should_not_multiplex()
     {
         var route = new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().Build()).Build();
 
-        this.Given(x => GivenTheFollowing(route))
-            .When(x => WhenIMultiplex())
-            .Then(x => ThePipelineIsCalled(1))
-            .BDDfy();
+        GivenTheFollowing(route);
+        await WhenIMultiplex();
+        ThePipelineIsCalled(1);
     }
 
     [Fact]

@@ -17,30 +17,27 @@ public class BaseUrlFinderTests : UnitTest
     }
 
     [Fact]
-    public void should_use_default_base_url()
+    public void Should_use_default_base_url()
     {
-        this.When(x => WhenIFindTheUrl())
-            .Then(x => ThenTheUrlIs("http://localhost:5000"))
-            .BDDfy();
+        WhenIFindTheUrl();
+        ThenTheUrlIs("http://localhost:5000");
     }
 
     [Fact]
-    public void should_use_memory_config_base_url()
+    public void Should_use_memory_config_base_url()
     {
-        this.Given(x => GivenTheMemoryBaseUrlIs("http://baseurlfromconfig.com:5181"))
-            .When(x => WhenIFindTheUrl())
-            .Then(x => ThenTheUrlIs("http://baseurlfromconfig.com:5181"))
-            .BDDfy();
+        GivenTheMemoryBaseUrlIs("http://baseurlfromconfig.com:5181");
+        WhenIFindTheUrl();
+        ThenTheUrlIs("http://baseurlfromconfig.com:5181");
     }
 
     [Fact]
-    public void should_use_file_config_base_url()
+    public void Should_use_file_config_base_url()
     {
-        this.Given(x => GivenTheMemoryBaseUrlIs("http://localhost:7000"))
-            .And(x => GivenTheFileBaseUrlIs("http://baseurlfromconfig.com:5181"))
-            .When(x => WhenIFindTheUrl())
-            .Then(x => ThenTheUrlIs("http://baseurlfromconfig.com:5181"))
-            .BDDfy();
+        GivenTheMemoryBaseUrlIs("http://localhost:7000");
+        GivenTheFileBaseUrlIs("http://baseurlfromconfig.com:5181");
+        WhenIFindTheUrl();
+        ThenTheUrlIs("http://baseurlfromconfig.com:5181");
     }
 
     private void GivenTheMemoryBaseUrlIs(string configValue)

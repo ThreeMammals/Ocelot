@@ -14,31 +14,29 @@ public class DefinedAggregatorProviderTests : UnitTest
     private Route _route;
 
     [Fact]
-    public void should_find_aggregator()
+    public void Should_find_aggregator()
     {
         var route = new RouteBuilder()
             .WithAggregator("TestDefinedAggregator")
             .Build();
 
-        this.Given(_ => GivenDefinedAggregator())
-            .And(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheAggregatorIsReturned())
-            .BDDfy();
+        GivenDefinedAggregator();
+        GivenRoute(route);
+        WhenIGet();
+        ThenTheAggregatorIsReturned();
     }
 
     [Fact]
-    public void should_not_find_aggregator()
+    public void Should_not_find_aggregator()
     {
         var route = new RouteBuilder()
             .WithAggregator("TestDefinedAggregator")
             .Build();
 
-        this.Given(_ => GivenNoDefinedAggregator())
-            .And(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenAnErrorIsReturned())
-            .BDDfy();
+        GivenNoDefinedAggregator();
+        GivenRoute(route);
+        WhenIGet();
+        ThenAnErrorIsReturned();
     }
 
     private void GivenDefinedAggregator()

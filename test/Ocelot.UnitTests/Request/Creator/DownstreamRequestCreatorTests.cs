@@ -18,21 +18,20 @@ public class DownstreamRequestCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_create_downstream_request()
+    public async Task Should_create_downstream_request()
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "http://www.test.com");
         var content = new StringContent("test");
         request.Content = content;
 
-        this.Given(_ => GivenTheFrameworkIs(string.Empty))
-            .And(_ => GivenTheRequestIs(request))
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDownstreamRequestHasABody())
-            .BDDfy();
+        GivenTheFrameworkIs(string.Empty);
+        GivenTheRequestIs(request);
+        WhenICreate();
+        await ThenTheDownstreamRequestHasABody();
     }
 
     [Fact]
-    public void should_remove_body_for_http_methods()
+    public void Should_remove_body_for_http_methods()
     {
         var methods = new List<HttpMethod> { HttpMethod.Get, HttpMethod.Head, HttpMethod.Delete, HttpMethod.Trace };
         var request = new HttpRequestMessage(HttpMethod.Get, "http://www.test.com");
@@ -41,11 +40,10 @@ public class DownstreamRequestCreatorTests : UnitTest
 
         methods.ForEach(m =>
         {
-            this.Given(_ => GivenTheFrameworkIs(".NET Framework"))
-                .And(_ => GivenTheRequestIs(request))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheDownstreamRequestDoesNotHaveABody())
-                .BDDfy();
+            GivenTheFrameworkIs(".NET Framework");
+            GivenTheRequestIs(request);
+            WhenICreate();
+            ThenTheDownstreamRequestDoesNotHaveABody();
         });
     }
 

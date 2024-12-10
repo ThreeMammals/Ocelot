@@ -18,21 +18,19 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private RequestDelegate _handlers;
 
     [Fact]
-    public void should_set_up_pipeline()
+    public void Should_set_up_pipeline()
     {
-        this.Given(_ => GivenTheDepedenciesAreSetUp())
-             .When(_ => WhenIBuild())
-             .Then(_ => ThenThePipelineIsBuilt())
-             .BDDfy();
+        GivenTheDepedenciesAreSetUp();
+        WhenIBuild();
+        ThenThePipelineIsBuilt();
     }
 
     [Fact]
-    public void should_expand_pipeline()
+    public void Should_expand_pipeline()
     {
-        this.Given(_ => GivenTheDepedenciesAreSetUp())
-             .When(_ => WhenIExpandBuild())
-             .Then(_ => ThenThePipelineIsBuilt())
-             .BDDfy();
+        GivenTheDepedenciesAreSetUp();
+        WhenIExpandBuild();
+        ThenThePipelineIsBuilt();
     }
 
     private void ThenThePipelineIsBuilt()

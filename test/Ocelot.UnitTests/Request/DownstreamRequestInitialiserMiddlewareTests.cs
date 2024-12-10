@@ -40,41 +40,38 @@ public class DownstreamRequestInitialiserMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void Should_handle_valid_httpRequest()
+    public async Task Should_handle_valid_httpRequest()
     {
-        this.Given(_ => GivenTheHttpContextContainsARequest())
-            .And(_ => GivenTheMapperWillReturnAMappedRequest())
-            .When(_ => WhenTheMiddlewareIsInvoked())
-            .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
-            .And(_ => ThenTheDownstreamRequestIsStored())
-            .And(_ => ThenTheNextMiddlewareIsInvoked())
-            .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
-            .BDDfy();
+        GivenTheHttpContextContainsARequest();
+        GivenTheMapperWillReturnAMappedRequest();
+        await WhenTheMiddlewareIsInvoked();
+        ThenTheContexRequestIsMappedToADownstreamRequest();
+        ThenTheDownstreamRequestIsStored();
+        ThenTheNextMiddlewareIsInvoked();
+        ThenTheDownstreamRequestMethodIs("GET");
     }
 
     [Fact]
-    public void Should_map_downstream_route_method_to_downstream_request()
+    public async Task Should_map_downstream_route_method_to_downstream_request()
     {
-        this.Given(_ => GivenTheHttpContextContainsARequest())
-            .And(_ => GivenTheMapperWillReturnAMappedRequest())
-            .When(_ => WhenTheMiddlewareIsInvoked())
-            .Then(_ => ThenTheContexRequestIsMappedToADownstreamRequest())
-            .And(_ => ThenTheDownstreamRequestIsStored())
-            .And(_ => ThenTheNextMiddlewareIsInvoked())
-            .And(_ => ThenTheDownstreamRequestMethodIs("GET"))
-            .BDDfy();
+        GivenTheHttpContextContainsARequest();
+        GivenTheMapperWillReturnAMappedRequest();
+        await WhenTheMiddlewareIsInvoked();
+        ThenTheContexRequestIsMappedToADownstreamRequest();
+        ThenTheDownstreamRequestIsStored();
+        ThenTheNextMiddlewareIsInvoked();
+        ThenTheDownstreamRequestMethodIs("GET");
     }
 
     [Fact]
-    public void Should_handle_mapping_failure()
+    public async Task Should_handle_mapping_failure()
     {
-        this.Given(_ => GivenTheHttpContextContainsARequest())
-            .And(_ => GivenTheMapperWillReturnAnError())
-            .When(_ => WhenTheMiddlewareIsInvoked())
-            .And(_ => ThenTheDownstreamRequestIsNotStored())
-            .And(_ => ThenAPipelineErrorIsStored())
-            .And(_ => ThenTheNextMiddlewareIsNotInvoked())
-            .BDDfy();
+        GivenTheHttpContextContainsARequest();
+        GivenTheMapperWillReturnAnError();
+        await WhenTheMiddlewareIsInvoked();
+        ThenTheDownstreamRequestIsNotStored();
+        ThenAPipelineErrorIsStored();
+        ThenTheNextMiddlewareIsNotInvoked();
     }
 
     private void ThenTheDownstreamRequestMethodIs(string expected)

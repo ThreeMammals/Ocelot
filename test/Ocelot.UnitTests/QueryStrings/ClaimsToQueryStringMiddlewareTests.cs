@@ -37,7 +37,7 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_add_queries_correctly()
+    public async Task Should_call_add_queries_correctly()
     {
         var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
@@ -52,11 +52,10 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => x.GivenTheAddHeadersToRequestReturnsOk())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheAddQueriesToRequestIsCalledCorrectly())
-            .BDDfy();
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenTheAddHeadersToRequestReturnsOk();
+        await WhenICallTheMiddleware();
+        ThenTheAddQueriesToRequestIsCalledCorrectly();
     }
 
     private async Task WhenICallTheMiddleware()
@@ -86,7 +85,6 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
     {
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
     }
 }

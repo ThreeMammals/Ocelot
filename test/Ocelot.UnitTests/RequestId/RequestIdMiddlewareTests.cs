@@ -40,7 +40,7 @@ public class RequestIdMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_pass_down_request_id_from_upstream_request()
+    public void Should_pass_down_request_id_from_upstream_request()
     {
         var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
@@ -54,16 +54,15 @@ public class RequestIdMiddlewareTests : UnitTest
 
         var requestId = Guid.NewGuid().ToString();
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => GivenThereIsNoGlobalRequestId())
-            .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheTraceIdIs(requestId))
-            .BDDfy();
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenThereIsNoGlobalRequestId();
+        GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId);
+        WhenICallTheMiddleware();
+        ThenTheTraceIdIs(requestId);
     }
 
     [Fact]
-    public void should_add_request_id_when_not_on_upstream_request()
+    public void Should_add_request_id_when_not_on_upstream_request()
     {
         var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
@@ -75,39 +74,14 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => GivenThereIsNoGlobalRequestId())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheTraceIdIsAnything())
-            .BDDfy();
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenThereIsNoGlobalRequestId();
+        WhenICallTheMiddleware();
+        ThenTheTraceIdIsAnything();
     }
 
     [Fact]
-    public void should_add_request_id_scoped_repo_for_logging_later()
-    {
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
-
-        var requestId = Guid.NewGuid().ToString();
-
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => GivenThereIsNoGlobalRequestId())
-            .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheTraceIdIs(requestId))
-            .And(x => ThenTheRequestIdIsSaved())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_update_request_id_scoped_repo_for_logging_later()
+    public void Should_add_request_id_scoped_repo_for_logging_later()
     {
         var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
@@ -121,17 +95,39 @@ public class RequestIdMiddlewareTests : UnitTest
 
         var requestId = Guid.NewGuid().ToString();
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => GivenTheRequestIdWasSetGlobally())
-            .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheTraceIdIs(requestId))
-            .And(x => ThenTheRequestIdIsUpdated())
-            .BDDfy();
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenThereIsNoGlobalRequestId();
+        GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId);
+        WhenICallTheMiddleware();
+        ThenTheTraceIdIs(requestId);
+        ThenTheRequestIdIsSaved();
     }
 
     [Fact]
-    public void should_not_update_if_global_request_id_is_same_as_re_route_request_id()
+    public void Should_update_request_id_scoped_repo_for_logging_later()
+    {
+        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
+            new RouteBuilder()
+                .WithDownstreamRoute(new DownstreamRouteBuilder()
+                    .WithDownstreamPathTemplate("any old string")
+                    .WithRequestIdKey("LSRequestId")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .Build())
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .Build());
+
+        var requestId = Guid.NewGuid().ToString();
+
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenTheRequestIdWasSetGlobally();
+        GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId);
+        WhenICallTheMiddleware();
+        ThenTheTraceIdIs(requestId);
+        ThenTheRequestIdIsUpdated();
+    }
+
+    [Fact]
+    public void Should_not_update_if_global_request_id_is_same_as_re_route_request_id()
     {
         var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
@@ -145,13 +141,12 @@ public class RequestIdMiddlewareTests : UnitTest
 
         var requestId = "alreadyset";
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => GivenTheRequestIdWasSetGlobally())
-            .And(x => x.GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheTraceIdIs(requestId))
-            .And(x => ThenTheRequestIdIsNotUpdated())
-            .BDDfy();
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenTheRequestIdWasSetGlobally();
+        GivenTheRequestIdIsAddedToTheRequest("LSRequestId", requestId);
+        WhenICallTheMiddleware();
+        ThenTheTraceIdIs(requestId);
+        ThenTheRequestIdIsNotUpdated();
     }
 
     private Task WhenICallTheMiddleware()

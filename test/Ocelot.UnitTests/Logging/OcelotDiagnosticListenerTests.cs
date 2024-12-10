@@ -27,31 +27,28 @@ public class OcelotDiagnosticListenerTests : UnitTest
     }
 
     [Fact]
-    public void should_trace_middleware_started()
+    public void Should_trace_middleware_started()
     {
-        this.Given(_ => GivenAMiddlewareName())
-            .When(_ => WhenMiddlewareStartedCalled())
-            .Then(_ => ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}"))
-            .BDDfy();
+        GivenAMiddlewareName();
+        WhenMiddlewareStartedCalled();
+        ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}");
     }
 
     [Fact]
-    public void should_trace_middleware_finished()
+    public void Should_trace_middleware_finished()
     {
-        this.Given(_ => GivenAMiddlewareName())
-            .When(_ => WhenMiddlewareFinishedCalled())
-            .Then(_ => ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}"))
-            .BDDfy();
+        GivenAMiddlewareName();
+        WhenMiddlewareFinishedCalled();
+        ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}");
     }
 
     [Fact]
-    public void should_trace_middleware_exception()
+    public void Should_trace_middleware_exception()
     {
-        this.Given(_ => GivenAMiddlewareName())
-            .And(_ => GivenAException(new Exception("oh no")))
-            .When(_ => WhenMiddlewareExceptionCalled())
-            .Then(_ => ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};"))
-            .BDDfy();
+        GivenAMiddlewareName();
+        GivenAException(new Exception("oh no"));
+        WhenMiddlewareExceptionCalled();
+        ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};");
     }
 
     private void GivenAException(Exception exception)

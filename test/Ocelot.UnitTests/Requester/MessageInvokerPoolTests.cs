@@ -38,27 +38,25 @@ public class MessageInvokerPoolTests : UnitTest
     [Fact]
     public void If_calling_the_same_downstream_route_twice_should_return_the_same_message_invoker()
     {
-        this.Given(x => x.GivenADownstreamRoute("/super-test"))
-            .And(x => x.AndAHandlerFactory())
-            .And(x => x.GivenAMessageInvokerPool())
-            .When(x => x.WhenGettingMessageInvokerTwice())
-            .Then(x => x.ThenTheInvokersShouldBeTheSame())
-            .BDDfy();
+        GivenADownstreamRoute("/super-test");
+        AndAHandlerFactory();
+        GivenAMessageInvokerPool();
+        WhenGettingMessageInvokerTwice();
+        ThenTheInvokersShouldBeTheSame();
     }
 
     [Fact]
     public void If_calling_two_different_downstream_routes_should_return_different_message_invokers()
     {
-        this.Given(x => x.GivenTwoDifferentDownstreamRoutes("/super-test", "/super-test"))
-            .And(x => x.AndAHandlerFactory())
-            .And(x => x.GivenAMessageInvokerPool())
-            .When(x => x.WhenGettingMessageInvokerForBothRoutes())
-            .Then(x => x.ThenTheInvokersShouldNotBeTheSame())
-            .BDDfy();
+        GivenTwoDifferentDownstreamRoutes("/super-test", "/super-test");
+        AndAHandlerFactory();
+        GivenAMessageInvokerPool();
+        WhenGettingMessageInvokerForBothRoutes();
+        ThenTheInvokersShouldNotBeTheSame();
     }
 
     [Fact]
-    public void If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
+    public async Task If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
     {
         var fakeOne = new FakeDelegatingHandler();
         var fakeTwo = new FakeDelegatingHandler();
@@ -69,18 +67,17 @@ public class MessageInvokerPoolTests : UnitTest
             () => fakeTwo,
         };
 
-        this.Given(x => GivenTheFactoryReturns(handlers))
-            .And(x => GivenADownstreamRoute("/super-test"))
-            .And(x => GivenAMessageInvokerPool())
-            .And(x => GivenARequest())
-            .When(x => WhenICallTheClient("http://www.bbc.co.uk"))
-            .Then(x => ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo))
-            .And(x => ThenSomethingIsReturned())
-            .BDDfy();
+        GivenTheFactoryReturns(handlers);
+        GivenADownstreamRoute("/super-test");
+        GivenAMessageInvokerPool();
+        GivenARequest();
+        await WhenICallTheClient("http://www.bbc.co.uk");
+        ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo);
+        ThenSomethingIsReturned();
     }
 
     [Fact]
-    public void Should_log_if_ignoring_ssl_errors()
+    public async Task Should_log_if_ignoring_ssl_errors()
     {
         var qosOptions = new QoSOptionsBuilder()
             .Build();
@@ -94,16 +91,15 @@ public class MessageInvokerPoolTests : UnitTest
             .WithDangerousAcceptAnyServerCertificateValidator(true)
             .Build();
 
-        this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
-            .And(x => GivenAMessageInvokerPool())
-            .And(x => GivenARequest(route))
-            .When(x => WhenICallTheClient("http://www.google.com/"))
-            .Then(x => ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged())
-            .BDDfy();
+        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenAMessageInvokerPool();
+        GivenARequest(route);
+        await WhenICallTheClient("http://www.google.com/");
+        ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged();
     }
 
     [Fact]
-    public void Should_re_use_cookies_from_container()
+    public async Task Should_re_use_cookies_from_container()
     {
         var qosOptions = new QoSOptionsBuilder()
             .Build();
@@ -116,22 +112,21 @@ public class MessageInvokerPoolTests : UnitTest
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .Build();
 
-        this.Given(_ => GivenADownstreamService())
-            .And(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
-            .And(x => GivenAMessageInvokerPool())
-            .And(x => GivenARequest(route))
-            .And(_ => WhenICallTheClient("http://localhost:5003"))
-            .And(_ => ThenTheCookieIsSet())
-            .When(_ => WhenICallTheClient("http://localhost:5003"))
-            .Then(_ => ThenTheResponseIsOk())
-            .BDDfy();
+        GivenADownstreamService();
+        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenAMessageInvokerPool();
+        GivenARequest(route);
+        await WhenICallTheClient("http://localhost:5003");
+        ThenTheCookieIsSet();
+        await WhenICallTheClient("http://localhost:5003");
+        ThenTheResponseIsOk();
     }
 
     [Theory]
     [Trait("Issue", "1833")]
     [InlineData(5, 5)]
     [InlineData(10, 10)]
-    public void Create_TimeoutValueInQosOptions_MessageInvokerTimeout(int qosTimeout, int expectedSeconds)
+    public async Task Create_TimeoutValueInQosOptions_MessageInvokerTimeout(int qosTimeout, int expectedSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -146,11 +141,10 @@ public class MessageInvokerPoolTests : UnitTest
             .Build();
         GivenTheFactoryReturnsNothing();
 
-        this.Given(x => GivenTheFactoryReturns(new List<Func<DelegatingHandler>>()))
-            .And(x => GivenAMessageInvokerPool())
-            .And(x => GivenARequest(route))
-            .Then(x => WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds)))
-            .BDDfy();
+        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenAMessageInvokerPool();
+        GivenARequest(route);
+        await WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
     }
 
     private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()

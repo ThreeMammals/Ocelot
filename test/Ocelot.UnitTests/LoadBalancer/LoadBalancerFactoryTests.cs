@@ -35,99 +35,93 @@ public class LoadBalancerFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_return_no_load_balancer_by_default()
+    public void Should_return_no_load_balancer_by_default()
     {
         var route = new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeNoLoadBalancer>())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryReturns();
+        WhenIGetTheLoadBalancer();
+        ThenTheLoadBalancerIsReturned<FakeNoLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_matching_load_balancer()
+    public void Should_return_matching_load_balancer()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerTwo", string.Empty, 0))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancerTwo>())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryReturns();
+        WhenIGetTheLoadBalancer();
+        ThenTheLoadBalancerIsReturned<FakeLoadBalancerTwo>();
     }
 
     [Fact]
-    public void should_return_error_response_if_cannot_find_load_balancer_creator()
+    public void Should_return_error_response_if_cannot_find_load_balancer_creator()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("DoesntExistLoadBalancer", string.Empty, 0))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .And(x => x.ThenTheErrorMessageIsCorrect())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryReturns();
+        WhenIGetTheLoadBalancer();
+        ThenAnErrorResponseIsReturned();
+        ThenTheErrorMessageIsCorrect();
     }
 
     [Fact]
-    public void should_return_error_response_if_creator_errors()
+    public void Should_return_error_response_if_creator_errors()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("BrokenLoadBalancer", string.Empty, 0))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryReturns();
+        WhenIGetTheLoadBalancer();
+        ThenAnErrorResponseIsReturned();
     }
 
     [Fact]
-    public void should_call_service_provider()
+    public void Should_call_service_provider()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", string.Empty, 0))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryReturns();
+        WhenIGetTheLoadBalancer();
+        ThenTheServiceProviderIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_return_error_response_when_call_to_service_provider_fails()
+    public void Should_return_error_response_when_call_to_service_provider_fails()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", string.Empty, 0))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryFails())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .BDDfy();
+        GivenARoute(route);
+        GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheServiceProviderFactoryFails();
+        WhenIGetTheLoadBalancer();
+        ThenAnErrorResponseIsReturned();
     }
 
     private void GivenAServiceProviderConfig(ServiceProviderConfiguration serviceProviderConfig)

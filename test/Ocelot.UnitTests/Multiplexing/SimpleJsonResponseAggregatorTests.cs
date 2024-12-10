@@ -24,7 +24,7 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
-    public void should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
     {
         var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
 
@@ -61,18 +61,18 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
 
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheContentTypeIs("application/json"))
-            .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-            .BDDfy();
+        GivenTheUpstreamContext(new DefaultHttpContext());
+        GivenTheRoute(route);
+        GivenTheDownstreamContext(downstreamContexts);
+        await WhenIAggregate();
+        await ThenTheContentIs(expected);
+        ThenTheContentTypeIs("application/json");
+        ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?");
+            
     }
 
     [Fact]
-    public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
@@ -100,18 +100,17 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
 
         var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheContentTypeIs("application/json"))
-            .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-            .BDDfy();
+        GivenTheUpstreamContext(new DefaultHttpContext());
+        GivenTheRoute(route);
+        GivenTheDownstreamContext(downstreamContexts);
+        await WhenIAggregate();
+        await ThenTheContentIs(expected);
+        ThenTheContentTypeIs("application/json");
+        ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?");
     }
 
     [Fact]
-    public void should_return_error_if_any_downstreams_have_errored()
+    public async Task Should_return_error_if_any_downstreams_have_errored()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
@@ -141,13 +140,12 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
 
         var expected = "Error";
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheErrorIsMapped())
-            .BDDfy();
+        GivenTheUpstreamContext(new DefaultHttpContext());
+        GivenTheRoute(route);
+        GivenTheDownstreamContext(downstreamContexts);
+        await WhenIAggregate();
+        await ThenTheContentIs(expected);
+        ThenTheErrorIsMapped();
     }
 
     private void ThenTheReasonPhraseIs(string expected)

@@ -28,47 +28,41 @@ public class AddQueriesToRequestTests : UnitTest
     }
 
     [Fact]
-    public void should_add_new_queries_to_downstream_request()
+    public void Should_add_new_queries_to_downstream_request()
     {
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
+        GivenAClaimToThing(new List<ClaimToThing>
             {
                 new("query-key", string.Empty, string.Empty, 0),
-            }))
-            .Given(x => x.GivenClaims(claims))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIAddQueriesToTheRequest())
-            .Then(x => x.ThenTheResultIsSuccess())
-            .And(x => x.ThenTheQueryIsAdded())
-            .BDDfy();
+            });
+        GivenClaims(claims);
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+        WhenIAddQueriesToTheRequest();
+        ThenTheResultIsSuccess();
+        ThenTheQueryIsAdded();
     }
 
     [Fact]
-    public void should_add_new_queries_to_downstream_request_and_preserve_other_queries()
+    public void Should_add_new_queries_to_downstream_request_and_preserve_other_queries()
     {
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
+        GivenAClaimToThing(new List<ClaimToThing>
             {
                 new("query-key", string.Empty, string.Empty, 0),
-            }))
-            .Given(x => x.GivenClaims(claims))
-            .And(x => GivenTheDownstreamRequestHasQueryString("?test=1&test=2"))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIAddQueriesToTheRequest())
-            .Then(x => x.ThenTheResultIsSuccess())
-            .And(x => x.ThenTheQueryIsAdded())
-            .And(x => TheTheQueryStringIs("?test=1&test=2&query-key=value"))
-            .BDDfy();
+            });
+        GivenClaims(claims);
+        GivenTheDownstreamRequestHasQueryString("?test=1&test=2");
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+        WhenIAddQueriesToTheRequest();
+        ThenTheResultIsSuccess();
+        ThenTheQueryIsAdded();
+        TheTheQueryStringIs("?test=1&test=2&query-key=value");
     }
 
     private void TheTheQueryStringIs(string expected)
@@ -77,43 +71,38 @@ public class AddQueriesToRequestTests : UnitTest
     }
 
     [Fact]
-    public void should_replace_existing_queries_on_downstream_request()
+    public void Should_replace_existing_queries_on_downstream_request()
     {
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
+        GivenAClaimToThing(new List<ClaimToThing>
             {
                 new("query-key", string.Empty, string.Empty, 0),
-            }))
-            .And(x => x.GivenClaims(claims))
-            .And(x => x.GivenTheDownstreamRequestHasQueryString("query-key", "initial"))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIAddQueriesToTheRequest())
-            .Then(x => x.ThenTheResultIsSuccess())
-            .And(x => x.ThenTheQueryIsAdded())
-            .BDDfy();
+            });
+        GivenClaims(claims);
+        GivenTheDownstreamRequestHasQueryString("query-key", "initial");
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+        WhenIAddQueriesToTheRequest();
+        ThenTheResultIsSuccess();
+        ThenTheQueryIsAdded();
     }
 
     [Fact]
-    public void should_return_error()
+    public void Should_return_error()
     {
-        this.Given(
-           x => x.GivenAClaimToThing(new List<ClaimToThing>
+        GivenAClaimToThing(new List<ClaimToThing>
            {
                 new(string.Empty, string.Empty, string.Empty, 0),
-           }))
-           .Given(x => x.GivenClaims(new List<Claim>()))
-           .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
+           });
+        GivenClaims(new List<Claim>());
+        GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
            {
                new AnyError(),
-           })))
-           .When(x => x.WhenIAddQueriesToTheRequest())
-           .Then(x => x.ThenTheResultIsError())
-           .BDDfy();
+           }));
+        WhenIAddQueriesToTheRequest();
+        ThenTheResultIsError();
     }
 
     private void ThenTheQueryIsAdded()

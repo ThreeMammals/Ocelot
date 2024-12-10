@@ -20,21 +20,19 @@ public class ScopedRequestDataRepositoryTests : UnitTest
     }
 
     [Fact]
-    public void should_add_item()
+    public void Should_add_item()
     {
-        this.Given(x => x.GivenIHaveAnItemToAdd("blahh", new[] { 1, 2, 3, 4 }))
-            .When(x => x.WhenIAddTheItem())
-            .Then(x => x.ThenTheItemIsAdded())
-            .BDDfy();
+        GivenIHaveAnItemToAdd("blahh", new[] { 1, 2, 3, 4 });
+        WhenIAddTheItem();
+        ThenTheItemIsAdded();
     }
 
     [Fact]
-    public void should_get_item()
+    public void Should_get_item()
     {
-        this.Given(x => x.GivenThereIsAnItemInTheContext("chest"))
-            .When(x => x.WhenIGetTheItem())
-            .Then(x => x.ThenTheItemIsReturned())
-            .BDDfy();
+        GivenThereIsAnItemInTheContext("chest");
+        WhenIGetTheItem();
+        ThenTheItemIsReturned();
     }
 
     private void ThenTheItemIsReturned()

@@ -30,23 +30,16 @@ public class PollKubeTests : UnitTest
     [Trait("Feat", "345")]
     public void Should_return_service_from_kube()
     {
+        // Arrange
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
-
-        this.Given(x => GivenKubeReturns(service))
-            .When(x => WhenIGetTheServices(1))
-            .Then(x => ThenTheCountIs(1))
-            .BDDfy();
-    }
-
-    private void GivenKubeReturns(Service service)
-    {
         _services.Add(service);
         _kubeServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
-    }
 
-    private void ThenTheCountIs(int count)
-    {
-        _result.Count.ShouldBe(count);
+        // Act
+        WhenIGetTheServices(1);
+
+        // Assert
+        _result.Count.ShouldBe(1);            
     }
 
     private void WhenIGetTheServices(int expected)

@@ -41,15 +41,14 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
+    public async Task ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
     {
         List<object> actual = new();
-        this.Given(x => x.GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual))
-            .And(x => x.AndDoNotSetupProtocolsAndHeaders())
-            .And(x => x.AndDoNotConnectReally(null))
-            .When(x => x.WhenInvokeWithHttpContext())
-            .Then(x => x.ThenIgnoredAllSslWarnings(actual))
-            .BDDfy();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally(null);
+        await WhenInvokeWithHttpContext();
+        ThenIgnoredAllSslWarnings(actual);
     }
 
     private void GivenPropertyDangerousAcceptAnyServerCertificateValidator(bool enabled, List<object> actual)
@@ -130,15 +129,14 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [InlineData("http", "ws")]
     [InlineData("https", "wss")]
     [InlineData("ftp", "ftp")]
-    public void ShouldReplaceNonWsSchemes(string scheme, string expectedScheme)
+    public async Task ShouldReplaceNonWsSchemes(string scheme, string expectedScheme)
     {
         List<object> actual = new();
-        this.Given(x => x.GivenNonWebsocketScheme(scheme, actual))
-            .And(x => x.AndDoNotSetupProtocolsAndHeaders())
-            .And(x => x.AndDoNotConnectReally((uri, token) => actual.Add(uri)))
-            .When(x => x.WhenInvokeWithHttpContext())
-            .Then(x => x.ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual))
-            .BDDfy();
+        GivenNonWebsocketScheme(scheme, actual);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally((uri, token) => actual.Add(uri));
+        await WhenInvokeWithHttpContext();
+        ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual);
     }
 
     private void GivenNonWebsocketScheme(string scheme, List<object> actual)

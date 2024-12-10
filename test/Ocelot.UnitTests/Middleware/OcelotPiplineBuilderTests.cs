@@ -39,19 +39,17 @@ public class OcelotPiplineBuilderTests : UnitTest
     }
 
     [Fact]
-    public void should_build_generic()
+    public void Should_build_generic()
     {
-        this.When(x => WhenIUseAGeneric())
-            .Then(x => ThenTheGenericIsInThePipeline())
-            .BDDfy();
+        WhenIUseAGeneric();
+        ThenTheGenericIsInThePipeline();
     }
 
     [Fact]
-    public void should_build_func()
+    public void Should_build_func()
     {
-        this.When(x => WhenIUseAFunc())
-            .Then(x => ThenTheFuncIsInThePipeline())
-            .BDDfy();
+        WhenIUseAFunc();
+        ThenTheFuncIsInThePipeline();
     }
 
     private void WhenIUseAGeneric()

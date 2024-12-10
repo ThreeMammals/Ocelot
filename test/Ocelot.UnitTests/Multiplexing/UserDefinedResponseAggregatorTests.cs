@@ -23,7 +23,7 @@ public class UserDefinedResponseAggregatorTests : UnitTest
     }
 
     [Fact]
-    public void should_call_aggregator()
+    public async Task Should_call_aggregator()
     {
         var route = new RouteBuilder().Build();
 
@@ -41,18 +41,17 @@ public class UserDefinedResponseAggregatorTests : UnitTest
             contextB,
         };
 
-        this.Given(_ => GivenTheProviderReturnsAggregator())
-            .And(_ => GivenRoute(route))
-            .And(_ => GivenContexts(contexts))
-            .And(_ => GivenContext(context))
-            .When(_ => WhenIAggregate())
-            .Then(_ => ThenTheProviderIsCalled())
-            .And(_ => ThenTheContentIsCorrect())
-            .BDDfy();
+        GivenTheProviderReturnsAggregator();
+        GivenRoute(route);
+        GivenContexts(contexts);
+        GivenContext(context);
+        await WhenIAggregate();
+        ThenTheProviderIsCalled();
+        await ThenTheContentIsCorrect();
     }
 
     [Fact]
-    public void should_not_find_aggregator()
+    public async Task Should_not_find_aggregator()
     {
         var route = new RouteBuilder().Build();
 
@@ -70,14 +69,13 @@ public class UserDefinedResponseAggregatorTests : UnitTest
             contextB,
         };
 
-        this.Given(_ => GivenTheProviderReturnsError())
-            .And(_ => GivenRoute(route))
-            .And(_ => GivenContexts(contexts))
-            .And(_ => GivenContext(context))
-            .When(_ => WhenIAggregate())
-            .Then(_ => ThenTheProviderIsCalled())
-            .And(_ => ThenTheErrorIsReturned())
-            .BDDfy();
+        GivenTheProviderReturnsError();
+        GivenRoute(route);
+        GivenContexts(contexts);
+        GivenContext(context);
+        await WhenIAggregate();
+        ThenTheProviderIsCalled();
+        ThenTheErrorIsReturned();
     }
 
     private void ThenTheErrorIsReturned()

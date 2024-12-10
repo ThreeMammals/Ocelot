@@ -10,7 +10,7 @@ public class ConfigurationServiceProviderTests : UnitTest
     private List<Service> _expected;
 
     [Fact]
-    public void should_return_services()
+    public async Task Should_return_services()
     {
         var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
 
@@ -19,21 +19,15 @@ public class ConfigurationServiceProviderTests : UnitTest
             new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        this.Given(x => x.GivenServices(services))
-            .When(x => x.WhenIGetTheService())
-            .Then(x => x.ThenTheFollowingIsReturned(services))
-            .BDDfy();
+        GivenServices(services);
+        _serviceProvider = new ConfigurationServiceProvider(_expected);
+        _result = await _serviceProvider.GetAsync();
+        ThenTheFollowingIsReturned(services);
     }
 
     private void GivenServices(List<Service> services)
     {
         _expected = services;
-    }
-
-    private async Task WhenIGetTheService()
-    {
-        _serviceProvider = new ConfigurationServiceProvider(_expected);
-        _result = await _serviceProvider.GetAsync();
     }
 
     private void ThenTheFollowingIsReturned(List<Service> services)

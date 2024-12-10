@@ -41,15 +41,13 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
         _options
             .SetupGet(x => x.Value)
             .Returns(() => _fileConfiguration);
-        _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
-
     }
 
     [Fact]
     public async Task Should_set_config()
     {
         // Arrange
-        var config = FakeFileConfiguration();
+        var config = GivenFakeFileConfiguration();
         GivenWritingToConsulSucceeds();
 
         // Act
@@ -63,7 +61,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     public async Task Should_get_config()
     {
         // Arrange
-        var config = _fileConfiguration = FakeFileConfiguration();
+        var config = _fileConfiguration = GivenFakeFileConfiguration();
         GivenFetchFromConsulSucceeds();
 
         // Act
@@ -77,7 +75,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     public async Task Should_get_null_config()
     {
         // Arrange
-        _fileConfiguration = FakeFileConfiguration();
+        _fileConfiguration = GivenFakeFileConfiguration();
         GivenFetchFromConsulReturnsNull();
 
         // Act
@@ -91,7 +89,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     public async Task Should_get_config_from_cache()
     {
         // Arrange
-        var config = _fileConfiguration = FakeFileConfiguration();
+        var config = _fileConfiguration = GivenFakeFileConfiguration();
         GivenFetchFromCacheSucceeds();
 
         // Act
@@ -105,7 +103,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     public async Task Should_set_config_key()
     {
         // Arrange
-        _fileConfiguration = FakeFileConfiguration();
+        _fileConfiguration = GivenFakeFileConfiguration();
         GivenTheConfigKeyComesFromFileConfig("Tom");
         GivenFetchFromConsulSucceeds();
 
@@ -120,7 +118,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     public async Task Should_set_default_config_key()
     {
         // Arrange
-        _fileConfiguration = FakeFileConfiguration();
+        _fileConfiguration = GivenFakeFileConfiguration();
         GivenFetchFromConsulSucceeds();
 
         // Act
@@ -192,7 +190,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
         _kvEndpoint.Verify(x => x.Put(It.Is<KVPair>(k => k.Value.SequenceEqual(bytes)), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    private static FileConfiguration FakeFileConfiguration()
+    private FileConfiguration GivenFakeFileConfiguration()
     {
         var routes = new List<FileRoute>
         {
@@ -215,10 +213,12 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
                 Host = "blah",
             },
         };
-        return new FileConfiguration
+        _fileConfiguration = new FileConfiguration
         {
             GlobalConfiguration = globalConfiguration,
             Routes = routes,
         };
+        _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
+        return _fileConfiguration;
     }
 }

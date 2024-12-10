@@ -17,21 +17,19 @@ public class ServiceRegistryTests : UnitTest
     }
 
     [Fact]
-    public void should_register_service()
+    public void Should_register_service()
     {
-        this.Given(x => x.GivenAServiceToRegister("product", "localhost:5000", 80))
-        .When(x => x.WhenIRegisterTheService())
-        .Then(x => x.ThenTheServiceIsRegistered())
-        .BDDfy();
+        GivenAServiceToRegister("product", "localhost:5000", 80);
+        WhenIRegisterTheService();
+        ThenTheServiceIsRegistered();
     }
 
     [Fact]
-    public void should_lookup_service()
+    public void Should_lookup_service()
     {
-        this.Given(x => x.GivenAServiceIsRegistered("product", "localhost:600", 80))
-        .When(x => x.WhenILookupTheService("product"))
-        .Then(x => x.ThenTheServiceDetailsAreReturned())
-        .BDDfy();
+        GivenAServiceIsRegistered("product", "localhost:600", 80);
+        WhenILookupTheService("product");
+        ThenTheServiceDetailsAreReturned();
     }
 
     private void ThenTheServiceDetailsAreReturned()

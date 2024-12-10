@@ -34,28 +34,26 @@ public class RequestMapperTests : UnitTest
     public void Should_map_valid_request_uri(string scheme, string host, string path, string queryString,
         string expectedUri)
     {
-        this.Given(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasScheme(scheme))
-            .And(_ => GivenTheInputRequestHasHost(host))
-            .And(_ => GivenTheInputRequestHasPath(path))
-            .And(_ => GivenTheInputRequestHasQueryString(queryString))
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasUri(expectedUri))
-            .BDDfy();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasScheme(scheme);
+        GivenTheInputRequestHasHost(host);
+        GivenTheInputRequestHasPath(path);
+        GivenTheInputRequestHasQueryString(queryString);
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasUri(expectedUri);
     }
 
     [Theory]
     [InlineData("ftp", "google.com", "/abc/DEF", "?a=1&b=2")]
     public void Should_error_on_unsupported_request_uri(string scheme, string host, string path, string queryString)
     {
-        this.Given(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasScheme(scheme))
-            .And(_ => GivenTheInputRequestHasHost(host))
-            .And(_ => GivenTheInputRequestHasPath(path))
-            .And(_ => GivenTheInputRequestHasQueryString(queryString))
-            .Then(_ => ThenMapThrowsException())
-            .BDDfy();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasScheme(scheme);
+        GivenTheInputRequestHasHost(host);
+        GivenTheInputRequestHasPath(path);
+        GivenTheInputRequestHasQueryString(queryString);
+        ThenMapThrowsException();
     }
 
     [Theory]
@@ -64,12 +62,11 @@ public class RequestMapperTests : UnitTest
     [InlineData("WHATEVER")]
     public void Should_map_method(string method)
     {
-        this.Given(_ => GivenTheInputRequestHasMethod(method))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasMethod(method))
-            .BDDfy();
+        GivenTheInputRequestHasMethod(method);
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasMethod(method);
     }
 
     [Theory]
@@ -78,130 +75,120 @@ public class RequestMapperTests : UnitTest
     [InlineData("POST", "POST")]
     public void Should_use_downstream_route_method_if_set(string input, string expected)
     {
-        this.Given(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheDownstreamRouteMethodIs(input))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasMethod(expected))
-            .BDDfy();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheDownstreamRouteMethodIs(input);
+        GivenTheInputRequestHasAValidUri();
+        WhenMapped();
+        ThenTheMappedRequestHasMethod(expected);
     }
 
     [Fact]
     public void Should_map_all_headers()
     {
-        this.Given(_ => GivenTheInputRequestHasHeaders())
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasEachHeader())
-            .BDDfy();
+        GivenTheInputRequestHasHeaders();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasEachHeader();
     }
 
     [Fact]
     public void Should_handle_no_headers()
     {
-        this.Given(_ => GivenTheInputRequestHasNoHeaders())
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasNoHeaders())
-            .BDDfy();
+        GivenTheInputRequestHasNoHeaders();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasNoHeaders();
     }
 
     [Theory]
     [Trait("PR", "1972")]
     [InlineData("GET")]
     [InlineData("POST")]
-    public void Should_map_content(string method)
+    public async Task Should_map_content(string method)
     {
-        this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
-            .And(_ => GivenTheInputRequestHasMethod(method))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent("This is my content"))
-            .And(_ => ThenTheMappedRequestHasContentLength("This is my content".Length))
-            .BDDfy();
+        GivenTheInputRequestHasContent("This is my content");
+        GivenTheInputRequestHasMethod(method);
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        await ThenTheMappedRequestHasContent("This is my content");
+        ThenTheMappedRequestHasContentLength("This is my content".Length);
     }
 
     [Fact]
     [Trait("PR", "1972")]
-    public void Should_map_chucked_content()
+    public async Task Should_map_chucked_content()
     {
-        this.Given(_ => GivenTheInputRequestHasChunkedContent("This", " is my content"))
-            .And(_ => GivenTheInputRequestHasMethod("POST"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent("This is my content"))
-            .And(_ => ThenTheMappedRequestHasNoContentLength())
-            .BDDfy();
+        GivenTheInputRequestHasChunkedContent("This", " is my content");
+        GivenTheInputRequestHasMethod("POST");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        await ThenTheMappedRequestHasContent("This is my content");
+        ThenTheMappedRequestHasNoContentLength();
     }
 
     [Fact]
     [Trait("PR", "1972")]
-    public void Should_map_empty_content()
+    public async Task Should_map_empty_content()
     {
-        this.Given(_ => GivenTheInputRequestHasContent(""))
-            .And(_ => GivenTheInputRequestHasMethod("POST"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent(""))
-            .And(_ => ThenTheMappedRequestHasContentLength(0))
-            .BDDfy();
+        GivenTheInputRequestHasContent("");
+        GivenTheInputRequestHasMethod("POST");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        await ThenTheMappedRequestHasContent("");
+        ThenTheMappedRequestHasContentLength(0);
     }
 
     [Fact]
     [Trait("PR", "1972")]
-    public void Should_map_empty_chucked_content()
+    public async Task Should_map_empty_chucked_content()
     {
-        this.Given(_ => GivenTheInputRequestHasChunkedContent())
-            .And(_ => GivenTheInputRequestHasMethod("POST"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContent(""))
-            .And(_ => ThenTheMappedRequestHasNoContentLength())
-            .BDDfy();
+        GivenTheInputRequestHasChunkedContent();
+        GivenTheInputRequestHasMethod("POST");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        await ThenTheMappedRequestHasContent("");
+        ThenTheMappedRequestHasNoContentLength();
     }
 
     [Fact]
     public void Should_handle_no_content()
     {
-        this.Given(_ => GivenTheInputRequestHasNullContent())
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasNoContent())
-            .BDDfy();
+        GivenTheInputRequestHasNullContent();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasNoContent();
     }
 
     [Fact]
     public void Should_handle_no_content_type()
     {
-        this.Given(_ => GivenTheInputRequestHasNoContentType())
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasNoContent())
-            .BDDfy();
+        GivenTheInputRequestHasNoContentType();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasNoContent();
     }
 
     [Fact]
     public void Should_handle_no_content_length()
     {
-        this.Given(_ => GivenTheInputRequestHasNoContentLength())
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasNoContent())
-            .BDDfy();
+        GivenTheInputRequestHasNoContentLength();
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasNoContent();
     }
 
     [Fact]
@@ -210,41 +197,39 @@ public class RequestMapperTests : UnitTest
         var bytes = Encoding.UTF8.GetBytes("some md5");
         var md5Bytes = MD5.HashData(bytes);
 
-        this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
-            .And(_ => GivenTheContentTypeIs("application/json"))
-            .And(_ => GivenTheContentEncodingIs("gzip, compress"))
-            .And(_ => GivenTheContentLanguageIs("english"))
-            .And(_ => GivenTheContentLocationIs("/my-receipts/38"))
-            .And(_ => GivenTheContentRangeIs("bytes 1-2/*"))
-            .And(_ => GivenTheContentDispositionIs("inline"))
-            .And(_ => GivenTheContentMD5Is(md5Bytes))
-            .And(_ => GivenTheInputRequestHasMethod("GET"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
-            .And(_ => ThenTheMappedRequestHasContentEncodingHeader("gzip", "compress"))
-            .And(_ => ThenTheMappedRequestHasContentLanguageHeader("english"))
-            .And(_ => ThenTheMappedRequestHasContentLocationHeader("/my-receipts/38"))
-            .And(_ => ThenTheMappedRequestHasContentMD5Header(md5Bytes))
-            .And(_ => ThenTheMappedRequestHasContentRangeHeader())
-            .And(_ => ThenTheMappedRequestHasContentDispositionHeader("inline"))
-            .And(_ => ThenTheContentHeadersAreNotAddedToNonContentHeaders())
-            .BDDfy();
+        GivenTheInputRequestHasContent("This is my content");
+        GivenTheContentTypeIs("application/json");
+        GivenTheContentEncodingIs("gzip, compress");
+        GivenTheContentLanguageIs("english");
+        GivenTheContentLocationIs("/my-receipts/38");
+        GivenTheContentRangeIs("bytes 1-2/*");
+        GivenTheContentDispositionIs("inline");
+        GivenTheContentMD5Is(md5Bytes);
+        GivenTheInputRequestHasMethod("GET");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheMappedRequestHasContentEncodingHeader("gzip", "compress");
+        ThenTheMappedRequestHasContentLanguageHeader("english");
+        ThenTheMappedRequestHasContentLocationHeader("/my-receipts/38");
+        ThenTheMappedRequestHasContentMD5Header(md5Bytes);
+        ThenTheMappedRequestHasContentRangeHeader();
+        ThenTheMappedRequestHasContentDispositionHeader("inline");
+        ThenTheContentHeadersAreNotAddedToNonContentHeaders();
     }
 
     [Fact]
-    public void should_not_add_content_headers()
+    public void Should_not_add_content_headers()
     {
-        this.Given(_ => GivenTheInputRequestHasContent("This is my content"))
-            .And(_ => GivenTheContentTypeIs("application/json"))
-            .And(_ => GivenTheInputRequestHasMethod("POST"))
-            .And(_ => GivenTheInputRequestHasAValidUri())
-            .And(_ => GivenTheDownstreamRoute())
-            .When(_ => WhenMapped())
-            .And(_ => ThenTheMappedRequestHasContentTypeHeader("application/json"))
-            .And(_ => ThenTheOtherContentTypeHeadersAreNotMapped())
-            .BDDfy();
+        GivenTheInputRequestHasContent("This is my content");
+        GivenTheContentTypeIs("application/json");
+        GivenTheInputRequestHasMethod("POST");
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+        WhenMapped();
+        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheOtherContentTypeHeadersAreNotMapped();
     }
 
     private void GivenTheDownstreamRouteMethodIs(string input)

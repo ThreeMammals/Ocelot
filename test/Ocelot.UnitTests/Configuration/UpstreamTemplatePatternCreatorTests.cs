@@ -254,7 +254,7 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
         var result = _creator.Create(fileRoute);
 
         // Assert
-        result.Template.ShouldBe($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}&productId={MatchEverything}$");
+        result.Template.ShouldBe($"^(?i)/api/subscriptions/[^/]+/updates(/$|/\\?|\\?|$)unitId={MatchEverything}&productId={MatchEverything}$");
         result.Priority.ShouldBe(1);
     }
 

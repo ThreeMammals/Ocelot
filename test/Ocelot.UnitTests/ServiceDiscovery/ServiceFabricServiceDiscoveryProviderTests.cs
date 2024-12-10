@@ -14,12 +14,11 @@ public class ServiceFabricServiceDiscoveryProviderTests : UnitTest
     private List<Service> _services;
 
     [Fact]
-    public void should_return_service_fabric_naming_service()
+    public async Task Should_return_service_fabric_naming_service()
     {
-        this.Given(x => GivenTheFollowing())
-            .When(x => WhenIGet())
-            .Then(x => ThenTheServiceFabricNamingServiceIsRetured())
-            .BDDfy();
+        GivenTheFollowing();
+        await WhenIGet();
+        ThenTheServiceFabricNamingServiceIsRetured();
     }
 
     private void GivenTheFollowing()

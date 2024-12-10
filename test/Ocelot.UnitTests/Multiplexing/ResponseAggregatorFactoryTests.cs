@@ -19,28 +19,26 @@ public class ResponseAggregatorFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_return_simple_json_aggregator()
+    public void Should_return_simple_json_aggregator()
     {
         var route = new RouteBuilder()
             .Build();
 
-        this.Given(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheAggregatorIs<SimpleJsonResponseAggregator>())
-            .BDDfy();
+        GivenRoute(route);
+        WhenIGet();
+        ThenTheAggregatorIs<SimpleJsonResponseAggregator>();
     }
 
     [Fact]
-    public void should_return_user_defined_aggregator()
+    public void Should_return_user_defined_aggregator()
     {
         var route = new RouteBuilder()
             .WithAggregator("doesntmatter")
             .Build();
 
-        this.Given(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheAggregatorIs<UserDefinedResponseAggregator>())
-            .BDDfy();
+        GivenRoute(route);
+        WhenIGet();
+        ThenTheAggregatorIs<UserDefinedResponseAggregator>();
     }
 
     private void GivenRoute(Route route)

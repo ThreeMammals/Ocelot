@@ -24,33 +24,31 @@ public class LoadBalancerHouseTests : UnitTest
     }
 
     [Fact]
-    public void should_store_load_balancer_on_first_request()
+    public void Should_store_load_balancer_on_first_request()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerKey("test")
             .Build();
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .Then(x => x.ThenItIsAdded())
-            .BDDfy();
+        GivenThereIsALoadBalancer(route, new FakeLoadBalancer());
+        ThenItIsAdded();
     }
 
     [Fact]
-    public void should_not_store_load_balancer_on_second_request()
+    public void Should_not_store_load_balancer_on_second_request()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
             .WithLoadBalancerKey("test")
             .Build();
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenItIsReturned())
-            .BDDfy();
+        GivenThereIsALoadBalancer(route, new FakeLoadBalancer());
+        WhenWeGetTheLoadBalancer(route);
+        ThenItIsReturned();
     }
 
     [Fact]
-    public void should_store_load_balancers_by_key()
+    public void Should_store_load_balancers_by_key()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
@@ -62,27 +60,25 @@ public class LoadBalancerHouseTests : UnitTest
             .WithLoadBalancerKey("testtwo")
             .Build();
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .And(x => x.GivenThereIsALoadBalancer(routeTwo, new FakeRoundRobinLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
-            .When(x => x.WhenWeGetTheLoadBalancer(routeTwo))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeRoundRobinLoadBalancer>())
-            .BDDfy();
+        GivenThereIsALoadBalancer(route, new FakeLoadBalancer());
+        GivenThereIsALoadBalancer(routeTwo, new FakeRoundRobinLoadBalancer());
+        WhenWeGetTheLoadBalancer(route);
+        ThenTheLoadBalancerIs<FakeLoadBalancer>();
+        WhenWeGetTheLoadBalancer(routeTwo);
+        ThenTheLoadBalancerIs<FakeRoundRobinLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_error_if_exception()
+    public void Should_return_error_if_exception()
     {
         var route = new DownstreamRouteBuilder().Build();
 
-        this.When(x => x.WhenWeGetTheLoadBalancer(route))
-        .Then(x => x.ThenAnErrorIsReturned())
-        .BDDfy();
+        WhenWeGetTheLoadBalancer(route);
+        ThenAnErrorIsReturned();
     }
 
     [Fact]
-    public void should_get_new_load_balancer_if_route_load_balancer_has_changed()
+    public void Should_get_new_load_balancer_if_route_load_balancer_has_changed()
     {
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
@@ -94,12 +90,11 @@ public class LoadBalancerHouseTests : UnitTest
             .WithLoadBalancerKey("test")
             .Build();
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
-            .When(x => x.WhenIGetTheRouteWithTheSameKeyButDifferentLoadBalancer(routeTwo))
-            .Then(x => x.ThenTheLoadBalancerIs<LeastConnection>())
-            .BDDfy();
+        GivenThereIsALoadBalancer(route, new FakeLoadBalancer());
+        WhenWeGetTheLoadBalancer(route);
+        ThenTheLoadBalancerIs<FakeLoadBalancer>();
+        WhenIGetTheRouteWithTheSameKeyButDifferentLoadBalancer(routeTwo);
+        ThenTheLoadBalancerIs<LeastConnection>();
     }
 
     private void WhenIGetTheRouteWithTheSameKeyButDifferentLoadBalancer(DownstreamRoute route)

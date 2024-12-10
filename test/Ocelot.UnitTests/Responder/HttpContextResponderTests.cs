@@ -17,7 +17,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public async Task should_remove_transfer_encoding_header()
+    public async Task Should_remove_transfer_encoding_header()
     {
         var httpContext = new DefaultHttpContext();
         var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
@@ -32,7 +32,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public async Task should_ignore_content_if_null()
+    public async Task Should_ignore_content_if_null()
     {
         var httpContext = new DefaultHttpContext();
         var response = new DownstreamResponse(null, HttpStatusCode.OK,
@@ -45,7 +45,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public async Task should_have_content_length()
+    public async Task Should_have_content_length()
     {
         var httpContext = new DefaultHttpContext();
         var response = new DownstreamResponse(new StringContent("test"), HttpStatusCode.OK,
@@ -57,7 +57,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public async Task should_add_header()
+    public async Task Should_add_header()
     {
         var httpContext = new DefaultHttpContext();
         var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
@@ -72,7 +72,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public async Task should_add_reason_phrase()
+    public async Task Should_add_reason_phrase()
     {
         var httpContext = new DefaultHttpContext();
         var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
@@ -86,7 +86,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
-    public void should_call_without_exception()
+    public void Should_call_without_exception()
     {
         var httpContext = new DefaultHttpContext();
         _responder.SetErrorResponseOnContext(httpContext, 500);

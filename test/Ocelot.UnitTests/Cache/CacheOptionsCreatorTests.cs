@@ -22,7 +22,7 @@ public class CacheOptionsCreatorTests : UnitTest
         var actual = _creator.Create(route.FileCacheOptions, new FileGlobalConfiguration(), route.UpstreamPathTemplate, route.UpstreamHttpMethod);
 
         // Assert
-        actual.Region.ShouldBe("Gettestdummy");
+        actual.Region.ShouldBe($"{HttpMethods.Get}testdummy");
     }
 
     [Fact]

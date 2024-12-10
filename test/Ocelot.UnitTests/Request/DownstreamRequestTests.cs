@@ -5,7 +5,7 @@ namespace Ocelot.UnitTests.Request;
 public class DownstreamRequestTests
 {
     [Fact]
-    public void should_have_question_mark_with_question_mark_prefixed()
+    public void Should_have_question_mark_with_question_mark_prefixed()
     {
         var httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri("https://example.com/a?b=c");

@@ -18,7 +18,27 @@ public class NoLoadBalancerTests : UnitTest
     }
 
     [Fact]
-    public void should_return_host_and_port()
+    public async Task Should_return_host_and_port()
+    {
+        var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
+        var services = new List<Service>
+        {
+            new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        GivenServices(services);
+        await WhenIGetTheNextHostAndPort();
+        ThenTheHostAndPortIs(hostAndPort);
+    }
+
+    [Fact]
+    public async Task Should_return_error_if_no_services()
+    {
+        await WhenIGetTheNextHostAndPort();
+        ThenThereIsAnError();
+    }
+
+    [Fact]
+    public async Task Should_return_error_if_no_services_then_when_services_available_return_host_and_port()
     {
         var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
 
@@ -27,45 +47,19 @@ public class NoLoadBalancerTests : UnitTest
             new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        this.Given(x => x.GivenServices(services))
-            .When(x => x.WhenIGetTheNextHostAndPort())
-            .Then(x => x.ThenTheHostAndPortIs(hostAndPort))
-            .BDDfy();
+        await WhenIGetTheNextHostAndPort();
+        ThenThereIsAnError();
+        GivenServices(services);
+        await WhenIGetTheNextHostAndPort();
+        ThenTheHostAndPortIs(hostAndPort);
     }
 
     [Fact]
-    public void should_return_error_if_no_services()
+    public async Task Should_return_error_if_null_services()
     {
-        this.When(x => x.WhenIGetTheNextHostAndPort())
-            .Then(x => x.ThenThereIsAnError())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_error_if_no_services_then_when_services_available_return_host_and_port()
-    {
-        var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
-
-        var services = new List<Service>
-        {
-            new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
-        };
-
-        this.Given(_ => WhenIGetTheNextHostAndPort())
-            .And(_ => ThenThereIsAnError())
-            .And(_ => GivenServices(services))
-            .When(_ => WhenIGetTheNextHostAndPort())
-            .Then(_ => ThenTheHostAndPortIs(hostAndPort))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_error_if_null_services()
-    {
-        this.Given(x => x.GivenServicesAreNull())
-            .When(x => x.WhenIGetTheNextHostAndPort())
-            .Then(x => x.ThenThereIsAnError())
-            .BDDfy();
+        GivenServicesAreNull();
+        await WhenIGetTheNextHostAndPort();
+        ThenThereIsAnError();
     }
 
     private void GivenServicesAreNull()

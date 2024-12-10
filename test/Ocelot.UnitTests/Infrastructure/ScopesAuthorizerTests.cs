@@ -10,9 +10,6 @@ public class ScopesAuthorizerTests : UnitTest
 {
     private readonly ScopesAuthorizer _authorizer;
     public Mock<IClaimsParser> _parser;
-    private ClaimsPrincipal _principal;
-    private List<string> _allowedScopes;
-    private Response<bool> _result;
 
     public ScopesAuthorizerTests()
     {
@@ -21,65 +18,79 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
-    public void should_return_ok_if_no_allowed_scopes()
+    public void Should_return_ok_if_no_allowed_scopes()
     {
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheFollowing(new List<string>()))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string>();
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
     }
 
     [Fact]
-    public void should_return_ok_if_null_allowed_scopes()
+    public void Should_return_ok_if_null_allowed_scopes()
     {
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheFollowing((List<string>)null))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = (List<string>)null;
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
     }
 
     [Fact]
-    public void should_return_error_if_claims_parser_returns_error()
+    public void Should_return_error_if_claims_parser_returns_error()
     {
+        // Arrange
         var fakeError = new FakeError();
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError)))
-        .And(_ => GivenTheFollowing(new List<string> { "doesntmatter" }))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-        .BDDfy();
+        var principal = new ClaimsPrincipal();
+        GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError));
+        var allowedScopes = new List<string> { "doesntmatter" };
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
     }
 
     [Fact]
-    public void should_match_scopes_and_return_ok_result()
+    public void Should_match_scopes_and_return_ok_result()
     {
-        var claimsPrincipal = new ClaimsPrincipal();
+        // Arrange
+        var principal = new ClaimsPrincipal();
         var allowedScopes = new List<string> { "someScope" };
+        GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes));
 
-        this.Given(_ => GivenTheFollowing(claimsPrincipal))
-        .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes)))
-        .And(_ => GivenTheFollowing(allowedScopes))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
     }
 
     [Fact]
-    public void should_not_match_scopes_and_return_error_result()
+    public void Should_not_match_scopes_and_return_error_result()
     {
+        // Arrange
         var fakeError = new FakeError();
-        var claimsPrincipal = new ClaimsPrincipal();
+        var principal = new ClaimsPrincipal();
         var allowedScopes = new List<string> { "someScope" };
         var userScopes = new List<string> { "anotherScope" };
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
-        this.Given(_ => GivenTheFollowing(claimsPrincipal))
-        .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userScopes)))
-        .And(_ => GivenTheFollowing(allowedScopes))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-        .BDDfy();
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));        
     }
 
     private void GivenTheParserReturns(Response<List<string>> response)
@@ -87,25 +98,10 @@ public class ScopesAuthorizerTests : UnitTest
         _parser.Setup(x => x.GetValuesByClaimType(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>())).Returns(response);
     }
 
-    private void GivenTheFollowing(ClaimsPrincipal principal)
+    private static void ThenTheFollowingIsReturned(Response<bool> actual, Response<bool> expected)
     {
-        _principal = principal;
-    }
-
-    private void GivenTheFollowing(List<string> allowedScopes)
-    {
-        _allowedScopes = allowedScopes;
-    }
-
-    private void WhenIAuthorize()
-    {
-        _result = _authorizer.Authorize(_principal, _allowedScopes);
-    }
-
-    private void ThenTheFollowingIsReturned(Response<bool> expected)
-    {
-        _result.Data.ShouldBe(expected.Data);
-        _result.IsError.ShouldBe(expected.IsError);
+        actual.Data.ShouldBe(expected.Data);
+        actual.IsError.ShouldBe(expected.IsError);
     }
 }
 
