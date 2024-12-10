@@ -1,6 +1,7 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -215,7 +216,7 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($@"^(?i)/api/subscriptions/[^/]+/updates(/$|/\?|\?|$)unitId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
     }
@@ -230,9 +231,47 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
 
         this.Given(x => x.GivenTheFollowingFileRoute(fileRoute))
             .When(x => x.WhenICreateTheTemplatePattern())
-            .Then(x => x.ThenTheFollowingIsReturned($"^(?i)/api/subscriptions/[^/]+/updates(|\\?)unitId={MatchEverything}&productId={MatchEverything}$"))
+            .Then(x => x.ThenTheFollowingIsReturned($@"^(?i)/api/subscriptions/[^/]+/updates(/$|/\?|\?|$)unitId={MatchEverything}&productId={MatchEverything}$"))
             .And(x => ThenThePriorityIs(1))
             .BDDfy();
+    }
+
+    [Theory]
+    [Trait("Bug", "2064")]
+    [InlineData("/{tenantId}/products?{everything}", "/1/products/1", false)]
+    [InlineData("/{tenantId}/products/{everything}", "/1/products/1", true)]
+    public void Should_not_match_when_placeholder_appears_after_query_start(string urlPathTemplate, string requestPath, bool shouldMatch)
+    {
+        // Arrange
+        GivenTheFollowingFileRoute(new() { UpstreamPathTemplate = urlPathTemplate });
+
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ShouldMatchWithRegex(requestPath, shouldMatch);
+    }
+
+    [Theory]
+    [Trait("Bug", "2132")]
+    [InlineData("/api/v1/abc?{everything}", "/api/v1/abc2/apple", false)]
+    [InlineData("/api/v1/abc2/{everything}", "/api/v1/abc2/apple", true)]
+    public void Should_not_match_with_query_param_wildcard(string urlPathTemplate, string requestPath, bool shouldMatch)
+    {
+        // Arrange
+        GivenTheFollowingFileRoute(new() { UpstreamPathTemplate = urlPathTemplate });
+
+        // Act
+        WhenICreateTheTemplatePattern();
+
+        // Assert
+        ShouldMatchWithRegex(requestPath, shouldMatch);
+    }
+
+    private void ShouldMatchWithRegex(string requestPath, bool shouldMatch)
+    {
+        var match = Regex.Match(requestPath, _result.Template);
+        Assert.Equal(shouldMatch, match.Success);
     }
 
     private void GivenTheFollowingFileRoute(FileRoute fileRoute)
