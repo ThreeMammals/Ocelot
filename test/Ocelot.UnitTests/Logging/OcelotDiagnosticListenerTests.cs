@@ -11,9 +11,7 @@ public class OcelotDiagnosticListenerTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
-    private string _name;
-    private Exception _exception;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public OcelotDiagnosticListenerTests()
     {
@@ -29,56 +27,45 @@ public class OcelotDiagnosticListenerTests : UnitTest
     [Fact]
     public void Should_trace_middleware_started()
     {
-        GivenAMiddlewareName();
-        WhenMiddlewareStartedCalled();
-        ThenTheLogIs($"MiddlewareStarting: {_name}; {_httpContext.Request.Path}");
+        // Arrange
+        const string name = "name";
+
+        // Act
+        _listener.OnMiddlewareStarting(_httpContext, name);
+
+        // Assert
+        ThenTheLogIs($"MiddlewareStarting: {name}; {_httpContext.Request.Path}");
     }
 
     [Fact]
     public void Should_trace_middleware_finished()
     {
-        GivenAMiddlewareName();
-        WhenMiddlewareFinishedCalled();
-        ThenTheLogIs($"MiddlewareFinished: {_name}; {_httpContext.Response.StatusCode}");
+        // Arrange
+        const string name = "name";
+
+        // Act
+        _listener.OnMiddlewareFinished(_httpContext, name);
+
+        // Assert
+        ThenTheLogIs($"MiddlewareFinished: {name}; {_httpContext.Response.StatusCode}");
     }
 
     [Fact]
     public void Should_trace_middleware_exception()
     {
-        GivenAMiddlewareName();
-        GivenAException(new Exception("oh no"));
-        WhenMiddlewareExceptionCalled();
-        ThenTheLogIs($"MiddlewareException: {_name}; {_exception.Message};");
-    }
+        // Arrange
+        const string name = "name";
+        var exception = new Exception("oh no");
 
-    private void GivenAException(Exception exception)
-    {
-        _exception = exception;
-    }
+        // Act
+        _listener.OnMiddlewareException(exception, name);
 
-    private void WhenMiddlewareStartedCalled()
-    {
-        _listener.OnMiddlewareStarting(_httpContext, _name);
-    }
-
-    private void WhenMiddlewareFinishedCalled()
-    {
-        _listener.OnMiddlewareFinished(_httpContext, _name);
-    }
-
-    private void WhenMiddlewareExceptionCalled()
-    {
-        _listener.OnMiddlewareException(_exception, _name);
-    }
-
-    private void GivenAMiddlewareName()
-    {
-        _name = "name";
+        // Assert
+        ThenTheLogIs($"MiddlewareException: {name}; {exception.Message};");
     }
 
     private void ThenTheLogIs(string expected)
     {
-        _logger.Verify(
-            x => x.LogTrace(It.Is<Func<string>>(c => c.Invoke() == expected)));
+        _logger.Verify(x => x.LogTrace(It.Is<Func<string>>(c => c.Invoke() == expected)));
     }
 }

@@ -20,26 +20,35 @@ public class NoLoadBalancerTests : UnitTest
     [Fact]
     public async Task Should_return_host_and_port()
     {
+        // Arrange
         var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
         var services = new List<Service>
         {
             new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
         };
-        GivenServices(services);
-        await WhenIGetTheNextHostAndPort();
-        ThenTheHostAndPortIs(hostAndPort);
+        _services.AddRange(services);
+
+        // Act
+        _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
+
+        // Assert
+        _result.Data.ShouldBe(hostAndPort);
     }
 
     [Fact]
     public async Task Should_return_error_if_no_services()
     {
-        await WhenIGetTheNextHostAndPort();
-        ThenThereIsAnError();
+        // Arrange, Act
+        _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Should_return_error_if_no_services_then_when_services_available_return_host_and_port()
     {
+        // Arrange
         var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
 
         var services = new List<Service>
@@ -47,43 +56,26 @@ public class NoLoadBalancerTests : UnitTest
             new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        await WhenIGetTheNextHostAndPort();
-        ThenThereIsAnError();
-        GivenServices(services);
-        await WhenIGetTheNextHostAndPort();
-        ThenTheHostAndPortIs(hostAndPort);
+        // Act, Assert
+        _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
+        _result.IsError.ShouldBeTrue();
+        _services.AddRange(services);
+
+        // Act, Assert
+        _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
+        _result.Data.ShouldBe(hostAndPort);
     }
 
     [Fact]
     public async Task Should_return_error_if_null_services()
     {
-        GivenServicesAreNull();
-        await WhenIGetTheNextHostAndPort();
-        ThenThereIsAnError();
-    }
-
-    private void GivenServicesAreNull()
-    {
+        // Arrange
         _loadBalancer = new NoLoadBalancer(() => Task.FromResult((List<Service>)null));
-    }
 
-    private void ThenThereIsAnError()
-    {
-        _result.IsError.ShouldBeTrue();
-    }
-
-    private void GivenServices(List<Service> services)
-    {
-        _services.AddRange(services);
-    }
-
-    private async Task WhenIGetTheNextHostAndPort()
-    {
+        // Act
         _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
-    }
 
-    private void ThenTheHostAndPortIs(ServiceHostAndPort expected)
-    {
-        _result.Data.ShouldBe(expected);
+        // Assert
+        _result.IsError.ShouldBeTrue();
     }
 }

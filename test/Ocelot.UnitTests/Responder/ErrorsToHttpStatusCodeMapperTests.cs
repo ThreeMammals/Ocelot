@@ -1,18 +1,10 @@
 ﻿using Ocelot.Errors;
 using Ocelot.Responder;
-
 namespace Ocelot.UnitTests.Responder;
 
 public class ErrorsToHttpStatusCodeMapperTests : UnitTest
 {
-    private readonly IErrorsToHttpStatusCodeMapper _codeMapper;
-    private int _result;
-    private List<Error> _errors;
-
-    public ErrorsToHttpStatusCodeMapperTests()
-    {
-        _codeMapper = new ErrorsToHttpStatusCodeMapper();
-    }
+    private readonly ErrorsToHttpStatusCodeMapper _codeMapper = new();
 
     [Theory]
     [InlineData(OcelotErrorCode.UnauthenticatedError)]
@@ -129,12 +121,12 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     }
 
     [Fact]
-    public void check_we_have_considered_all_errors_in_these_tests()
+    public void Check_we_have_considered_all_errors_in_these_tests()
     {
         // If this test fails then it's because the number of error codes has changed.
         // You should make the appropriate changes to the test cases here to ensure
         // they cover all the error codes, and then modify this assertion.
-        Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(42, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
+        Enum.GetNames<OcelotErrorCode>().Length.ShouldBe(42, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
     }
 
     private void ShouldMapErrorToStatusCode(OcelotErrorCode errorCode, HttpStatusCode expectedHttpStatusCode)
@@ -144,35 +136,17 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
 
     private void ShouldMapErrorsToStatusCode(List<OcelotErrorCode> errorCodes, HttpStatusCode expectedHttpStatusCode)
     {
+        // Arrange
         var errors = new List<Error>();
-
         foreach (var errorCode in errorCodes)
         {
             errors.Add(new AnyError(errorCode));
         }
 
-        GivenThereAreErrors(errors);
-        WhenIGetErrorStatusCode();
-        ThenTheResponseIsStatusCodeIs(expectedHttpStatusCode);
-    }
+        // Act
+        var result = _codeMapper.Map(errors);
 
-    private void GivenThereAreErrors(List<Error> errors)
-    {
-        _errors = errors;
-    }
-
-    private void WhenIGetErrorStatusCode()
-    {
-        _result = _codeMapper.Map(_errors);
-    }
-
-    private void ThenTheResponseIsStatusCodeIs(int expectedCode)
-    {
-        _result.ShouldBe(expectedCode);
-    }
-
-    private void ThenTheResponseIsStatusCodeIs(HttpStatusCode expectedCode)
-    {
-        _result.ShouldBe((int)expectedCode);
+        // Assert
+        result.ShouldBe((int)expectedHttpStatusCode);
     }
 }

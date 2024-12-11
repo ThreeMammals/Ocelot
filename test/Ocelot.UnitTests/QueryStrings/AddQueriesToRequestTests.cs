@@ -13,10 +13,6 @@ public class AddQueriesToRequestTests : UnitTest
     private readonly AddQueriesToRequest _addQueriesToRequest;
     private DownstreamRequest _downstreamRequest;
     private readonly Mock<IClaimsParser> _parser;
-    private List<ClaimToThing> _configuration;
-    private List<Claim> _claims;
-    private Response _result;
-    private Response<string> _claimValue;
     private HttpRequestMessage _request;
 
     public AddQueriesToRequestTests()
@@ -30,38 +26,46 @@ public class AddQueriesToRequestTests : UnitTest
     [Fact]
     public void Should_add_new_queries_to_downstream_request()
     {
+        // Arrange
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-        GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("query-key", string.Empty, string.Empty, 0),
-            });
-        GivenClaims(claims);
-        GivenTheClaimParserReturns(new OkResponse<string>("value"));
-        WhenIAddQueriesToTheRequest();
-        ThenTheResultIsSuccess();
-        ThenTheQueryIsAdded();
+        var configuration = new List<ClaimToThing>
+        {
+            new("query-key", string.Empty, string.Empty, 0),
+        };
+        var claimValue = GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        var result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(configuration, claims, _downstreamRequest);
+
+        // Assert
+        result.IsError.ShouldBeFalse();
+        ThenTheQueryIsAdded(claimValue);
     }
 
     [Fact]
     public void Should_add_new_queries_to_downstream_request_and_preserve_other_queries()
     {
+        // Arrange
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-        GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("query-key", string.Empty, string.Empty, 0),
-            });
-        GivenClaims(claims);
+        var configuration = new List<ClaimToThing>
+        {
+            new("query-key", string.Empty, string.Empty, 0),
+        };
         GivenTheDownstreamRequestHasQueryString("?test=1&test=2");
-        GivenTheClaimParserReturns(new OkResponse<string>("value"));
-        WhenIAddQueriesToTheRequest();
-        ThenTheResultIsSuccess();
-        ThenTheQueryIsAdded();
+        var claimValue = GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        var result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(configuration, claims, _downstreamRequest);
+
+        // Assert
+        result.IsError.ShouldBeFalse();
+        ThenTheQueryIsAdded(claimValue);
         TheTheQueryStringIs("?test=1&test=2&query-key=value");
     }
 
@@ -73,53 +77,52 @@ public class AddQueriesToRequestTests : UnitTest
     [Fact]
     public void Should_replace_existing_queries_on_downstream_request()
     {
+        // Arrange
         var claims = new List<Claim>
         {
             new("test", "data"),
         };
-        GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("query-key", string.Empty, string.Empty, 0),
-            });
-        GivenClaims(claims);
+        var configuration = new List<ClaimToThing>
+        {
+            new("query-key", string.Empty, string.Empty, 0),
+        };
         GivenTheDownstreamRequestHasQueryString("query-key", "initial");
-        GivenTheClaimParserReturns(new OkResponse<string>("value"));
-        WhenIAddQueriesToTheRequest();
-        ThenTheResultIsSuccess();
-        ThenTheQueryIsAdded();
+        var claimValue = GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        var result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(configuration, claims, _downstreamRequest);
+
+        // Assert
+        result.IsError.ShouldBeFalse();
+        ThenTheQueryIsAdded(claimValue);
     }
 
     [Fact]
     public void Should_return_error()
     {
-        GivenAClaimToThing(new List<ClaimToThing>
-           {
-                new(string.Empty, string.Empty, string.Empty, 0),
-           });
-        GivenClaims(new List<Claim>());
-        GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
-           {
-               new AnyError(),
-           }));
-        WhenIAddQueriesToTheRequest();
-        ThenTheResultIsError();
+        // Arrange
+        var claims = new List<Claim>();
+        var configuration = new List<ClaimToThing>
+        {
+            new(string.Empty, string.Empty, string.Empty, 0),
+        };
+        _ = GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
+        {
+            new AnyError(),
+        }));
+
+        // Act
+        var result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(configuration, claims, _downstreamRequest);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
     }
 
-    private void ThenTheQueryIsAdded()
+    private void ThenTheQueryIsAdded(Response<string> claimValue)
     {
         var queries = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(_downstreamRequest.ToHttpRequestMessage().RequestUri.OriginalString);
         var query = queries.First(x => x.Key == "query-key");
-        query.Value.First().ShouldBe(_claimValue.Data);
-    }
-
-    private void GivenAClaimToThing(List<ClaimToThing> configuration)
-    {
-        _configuration = configuration;
-    }
-
-    private void GivenClaims(List<Claim> claims)
-    {
-        _claims = claims;
+        query.Value.First().ShouldBe(claimValue.Data);
     }
 
     private void GivenTheDownstreamRequestHasQueryString(string queryString)
@@ -136,32 +139,11 @@ public class AddQueriesToRequestTests : UnitTest
         _request.RequestUri = new Uri(newUri);
     }
 
-    private void GivenTheClaimParserReturns(Response<string> claimValue)
+    private Response<string> GivenTheClaimParserReturns(Response<string> claimValue)
     {
-        _claimValue = claimValue;
-        _parser
-            .Setup(
-                x =>
-                    x.GetValue(It.IsAny<IEnumerable<Claim>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<int>()))
-            .Returns(_claimValue);
-    }
-
-    private void WhenIAddQueriesToTheRequest()
-    {
-        _result = _addQueriesToRequest.SetQueriesOnDownstreamRequest(_configuration, _claims, _downstreamRequest);
-    }
-
-    private void ThenTheResultIsSuccess()
-    {
-        _result.IsError.ShouldBe(false);
-    }
-
-    private void ThenTheResultIsError()
-    {
-        _result.IsError.ShouldBe(true);
+        _parser.Setup(x => x.GetValue(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .Returns(claimValue);
+        return claimValue;
     }
 
     private class AnyError : Error

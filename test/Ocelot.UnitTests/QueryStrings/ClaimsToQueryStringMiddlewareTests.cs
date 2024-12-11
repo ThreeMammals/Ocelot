@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
+using Ocelot.DownstreamRouteFinder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings;
@@ -20,12 +19,10 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly ClaimsToQueryStringMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
-    private Mock<IRequestScopedDataRepository> _repo;
+    private readonly DefaultHttpContext _httpContext;
 
     public ClaimsToQueryStringMiddlewareTests()
     {
-        _repo = new Mock<IRequestScopedDataRepository>();
         _httpContext = new DefaultHttpContext();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
@@ -39,7 +36,9 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     [Fact]
     public async Task Should_call_add_queries_correctly()
     {
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
+        // Arrange
+        var downstreamRoute = new DownstreamRouteHolder(
+            new(),
             new RouteBuilder()
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
@@ -51,40 +50,16 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
-
-        GivenTheDownStreamRouteIs(downstreamRoute);
-        GivenTheAddHeadersToRequestReturnsOk();
-        await WhenICallTheMiddleware();
-        ThenTheAddQueriesToRequestIsCalledCorrectly();
-    }
-
-    private async Task WhenICallTheMiddleware()
-    {
-        await _middleware.Invoke(_httpContext);
-    }
-
-    private void GivenTheAddHeadersToRequestReturnsOk()
-    {
-        _addQueries
-            .Setup(x => x.SetQueriesOnDownstreamRequest(
-                It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<IEnumerable<Claim>>(),
-                It.IsAny<DownstreamRequest>()))
-            .Returns(new OkResponse());
-    }
-
-    private void ThenTheAddQueriesToRequestIsCalledCorrectly()
-    {
-        _addQueries
-            .Verify(x => x.SetQueriesOnDownstreamRequest(
-                It.IsAny<List<ClaimToThing>>(),
-                It.IsAny<IEnumerable<Claim>>(),
-                _httpContext.Items.DownstreamRequest()), Times.Once);
-    }
-
-    private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
-    {
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+        _addQueries.Setup(x => x.SetQueriesOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), It.IsAny<DownstreamRequest>()))
+            .Returns(new OkResponse());
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _addQueries.Verify(x => x.SetQueriesOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), _httpContext.Items.DownstreamRequest()),
+            Times.Once);
     }
 }

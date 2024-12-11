@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -43,11 +44,16 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [Fact]
     public async Task ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
     {
+        // Arrange
         List<object> actual = new();
         GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual);
         AndDoNotSetupProtocolsAndHeaders();
         AndDoNotConnectReally(null);
-        await WhenInvokeWithHttpContext();
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
         ThenIgnoredAllSslWarnings(actual);
     }
 
@@ -99,11 +105,6 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         serverSocket.SetupGet(x => x.CloseStatus).Returns(WebSocketCloseStatus.Empty);
     }
 
-    private async Task WhenInvokeWithHttpContext()
-    {
-        await _middleware.Invoke(_context.Object);
-    }
-
     private void ThenIgnoredAllSslWarnings(List<object> actual)
     {
         var route = _context.Object.Items.DownstreamRoute();
@@ -131,11 +132,16 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [InlineData("ftp", "ftp")]
     public async Task ShouldReplaceNonWsSchemes(string scheme, string expectedScheme)
     {
+        // Arrange
         List<object> actual = new();
         GivenNonWebsocketScheme(scheme, actual);
         AndDoNotSetupProtocolsAndHeaders();
         AndDoNotConnectReally((uri, token) => actual.Add(uri));
-        await WhenInvokeWithHttpContext();
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
         ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual);
     }
 
@@ -146,8 +152,8 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder().Build();
         var items = new Dictionary<object, object>
         {
-            { "DownstreamRequest", request },
-            { "DownstreamRoute", route },
+            { nameof(DownstreamRequest), request },
+            { nameof(DownstreamRoute), route },
         };
         _context.SetupGet(x => x.Items).Returns(items);
 

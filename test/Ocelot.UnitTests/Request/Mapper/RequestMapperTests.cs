@@ -19,7 +19,7 @@ public class RequestMapperTests : UnitTest
 
     public RequestMapperTests()
     {
-        HttpContext httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext();
         _inputRequest = httpContext.Request;
         _requestMapper = new RequestMapper();
     }
@@ -31,29 +31,37 @@ public class RequestMapperTests : UnitTest
     [InlineData("http", "myusername:mypassword@abc.co.uk", null, null, "http://myusername:mypassword@abc.co.uk/")]
     [InlineData("http", "點看.com", null, null, "http://xn--c1yn36f.com/")]
     [InlineData("http", "xn--c1yn36f.com", null, null, "http://xn--c1yn36f.com/")]
-    public void Should_map_valid_request_uri(string scheme, string host, string path, string queryString,
-        string expectedUri)
+    public void Should_map_valid_request_uri(string scheme, string host, string path, string queryString, string expectedUri)
     {
-        GivenTheInputRequestHasMethod("GET");
-        GivenTheInputRequestHasScheme(scheme);
+        // Arrange
+        _inputRequest.Method = "GET";
+        _inputRequest.Scheme = scheme;
         GivenTheInputRequestHasHost(host);
         GivenTheInputRequestHasPath(path);
         GivenTheInputRequestHasQueryString(queryString);
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasUri(expectedUri);
+
+        // Assert
+        Assert.NotNull(_mappedRequest.RequestUri);
+        _mappedRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
     }
 
     [Theory]
     [InlineData("ftp", "google.com", "/abc/DEF", "?a=1&b=2")]
     public void Should_error_on_unsupported_request_uri(string scheme, string host, string path, string queryString)
     {
-        GivenTheInputRequestHasMethod("GET");
-        GivenTheInputRequestHasScheme(scheme);
+        // Arrange
+        _inputRequest.Method = "GET";
+        _inputRequest.Scheme = scheme;
         GivenTheInputRequestHasHost(host);
         GivenTheInputRequestHasPath(path);
         GivenTheInputRequestHasQueryString(queryString);
-        ThenMapThrowsException();
+
+        // Act, Assert
+        Assert.Throws<NullReferenceException>(() => _requestMapper.Map(_inputRequest, _downstreamRoute));
     }
 
     [Theory]
@@ -62,11 +70,16 @@ public class RequestMapperTests : UnitTest
     [InlineData("WHATEVER")]
     public void Should_map_method(string method)
     {
-        GivenTheInputRequestHasMethod(method);
+        // Arrange
+        _inputRequest.Method = method;
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasMethod(method);
+
+        // Assert
+        _mappedRequest.Method.ToString().ShouldBe(method);
     }
 
     [Theory]
@@ -75,33 +88,73 @@ public class RequestMapperTests : UnitTest
     [InlineData("POST", "POST")]
     public void Should_use_downstream_route_method_if_set(string input, string expected)
     {
-        GivenTheInputRequestHasMethod("GET");
-        GivenTheDownstreamRouteMethodIs(input);
+        // Arrange
+        _inputRequest.Method = "GET";
+        _downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownStreamHttpMethod(input)
+            .WithDownstreamHttpVersion(new Version("1.1"))
+            .Build();
         GivenTheInputRequestHasAValidUri();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasMethod(expected);
+
+        // Assert
+        _mappedRequest.Method.ToString().ShouldBe(expected);
     }
 
     [Fact]
     public void Should_map_all_headers()
     {
-        GivenTheInputRequestHasHeaders();
-        GivenTheInputRequestHasMethod("GET");
+        // Arrange: Given The Input Request Has Headers
+        var abcVals = new[] { "123", "456" };
+        var defVals = new[] { "789", "012" };
+        _inputHeaders = new()
+        {
+            new("abc", new StringValues(abcVals)),
+            new("def", new StringValues(defVals)),
+        };
+
+        foreach (var inputHeader in _inputHeaders)
+        {
+            _inputRequest.Headers.Add(inputHeader);
+        }
+
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasEachHeader();
+
+        // Assert: Then The Mapped Request Has Each Header
+        _mappedRequest.Headers.Count().ShouldBe(_inputHeaders.Count);
+        foreach (var header in _mappedRequest.Headers)
+        {
+            var inputHeader = _inputHeaders.First(h => h.Key == header.Key);
+            inputHeader.ShouldNotBe(default);
+            inputHeader.Value.Count.ShouldBe(header.Value.Count());
+            foreach (var inputHeaderValue in inputHeader.Value)
+            {
+                Assert.Contains(header.Value, v => v == inputHeaderValue);
+            }
+        }
     }
 
     [Fact]
     public void Should_handle_no_headers()
     {
-        GivenTheInputRequestHasNoHeaders();
-        GivenTheInputRequestHasMethod("GET");
+        // Arrange
+        _inputRequest.Headers.Clear();
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasNoHeaders();
+
+        // Assert
+        _mappedRequest.Headers.Count().ShouldBe(0);
     }
 
     [Theory]
@@ -110,11 +163,16 @@ public class RequestMapperTests : UnitTest
     [InlineData("POST")]
     public async Task Should_map_content(string method)
     {
+        // Arrange
         GivenTheInputRequestHasContent("This is my content");
-        GivenTheInputRequestHasMethod(method);
+        _inputRequest.Method = method;
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
+
+        // Assert
         await ThenTheMappedRequestHasContent("This is my content");
         ThenTheMappedRequestHasContentLength("This is my content".Length);
     }
@@ -123,24 +181,34 @@ public class RequestMapperTests : UnitTest
     [Trait("PR", "1972")]
     public async Task Should_map_chucked_content()
     {
+        // Arrange
         GivenTheInputRequestHasChunkedContent("This", " is my content");
-        GivenTheInputRequestHasMethod("POST");
+        _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
+
+        // Assert
         await ThenTheMappedRequestHasContent("This is my content");
-        ThenTheMappedRequestHasNoContentLength();
+        _mappedRequest.Headers.TryGetValues(HeaderNames.ContentLength, out _).ShouldBeFalse(); // ThenTheMappedRequestHasNoContentLength
     }
 
     [Fact]
     [Trait("PR", "1972")]
     public async Task Should_map_empty_content()
     {
+        // Arrange
         GivenTheInputRequestHasContent("");
-        GivenTheInputRequestHasMethod("POST");
+        _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
+
+        // Assert
         await ThenTheMappedRequestHasContent("");
         ThenTheMappedRequestHasContentLength(0);
     }
@@ -149,114 +217,112 @@ public class RequestMapperTests : UnitTest
     [Trait("PR", "1972")]
     public async Task Should_map_empty_chucked_content()
     {
+        // Arrange
         GivenTheInputRequestHasChunkedContent();
-        GivenTheInputRequestHasMethod("POST");
+        _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
+
+        // Assert
         await ThenTheMappedRequestHasContent("");
-        ThenTheMappedRequestHasNoContentLength();
+        _mappedRequest.Headers.TryGetValues(HeaderNames.ContentLength, out _).ShouldBeFalse(); // ThenTheMappedRequestHasNoContentLength
     }
 
     [Fact]
     public void Should_handle_no_content()
     {
-        GivenTheInputRequestHasNullContent();
-        GivenTheInputRequestHasMethod("GET");
+        // Arrange
+        _inputRequest.Body = null!;
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasNoContent();
+
+        // Assert
+        _mappedRequest.Content.ShouldBeNull();
     }
 
     [Fact]
     public void Should_handle_no_content_type()
     {
-        GivenTheInputRequestHasNoContentType();
-        GivenTheInputRequestHasMethod("GET");
+        // Arrange
+        _inputRequest.ContentType = null;
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasNoContent();
+
+        // Assert
+        _mappedRequest.Content.ShouldBeNull();
     }
 
     [Fact]
     public void Should_handle_no_content_length()
     {
-        GivenTheInputRequestHasNoContentLength();
-        GivenTheInputRequestHasMethod("GET");
+        // Arrange
+        _inputRequest.ContentLength = null;
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
-        ThenTheMappedRequestHasNoContent();
+
+        // Assert
+        _mappedRequest.Content.ShouldBeNull();
     }
 
     [Fact]
     public void Should_map_content_headers()
     {
+        // Arrange
         var bytes = Encoding.UTF8.GetBytes("some md5");
         var md5Bytes = MD5.HashData(bytes);
 
         GivenTheInputRequestHasContent("This is my content");
-        GivenTheContentTypeIs("application/json");
-        GivenTheContentEncodingIs("gzip, compress");
-        GivenTheContentLanguageIs("english");
-        GivenTheContentLocationIs("/my-receipts/38");
-        GivenTheContentRangeIs("bytes 1-2/*");
-        GivenTheContentDispositionIs("inline");
-        GivenTheContentMD5Is(md5Bytes);
-        GivenTheInputRequestHasMethod("GET");
+        _inputRequest.ContentType = "application/json";
+        _inputRequest.Headers.Append("Content-Encoding", "gzip, compress");
+        _inputRequest.Headers.Append("Content-Language", "english");
+        _inputRequest.Headers.Append("Content-Location", "/my-receipts/38");
+        _inputRequest.Headers.Append("Content-Range", "bytes 1-2/*");
+        _inputRequest.Headers.Append("Content-Disposition", "inline");
+        var base64 = Convert.ToBase64String(md5Bytes);
+        _inputRequest.Headers.Append("Content-MD5", base64);
+        _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
+
+        // Act
         WhenMapped();
+
+        // Assert
         ThenTheMappedRequestHasContentTypeHeader("application/json");
-        ThenTheMappedRequestHasContentEncodingHeader("gzip", "compress");
-        ThenTheMappedRequestHasContentLanguageHeader("english");
-        ThenTheMappedRequestHasContentLocationHeader("/my-receipts/38");
-        ThenTheMappedRequestHasContentMD5Header(md5Bytes);
-        ThenTheMappedRequestHasContentRangeHeader();
-        ThenTheMappedRequestHasContentDispositionHeader("inline");
-        ThenTheContentHeadersAreNotAddedToNonContentHeaders();
-    }
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.ContentEncoding.ToArray()[0].ShouldBe("gzip");
+        _mappedRequest.Content.Headers.ContentEncoding.ToArray()[1].ShouldBe("compress");
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.ContentLanguage.First().ShouldBe("english");
+        Assert.NotNull(_mappedRequest.Content);
+        Assert.NotNull(_mappedRequest.Content.Headers.ContentLocation);
+        _mappedRequest.Content.Headers.ContentLocation.OriginalString.ShouldBe("/my-receipts/38");
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.ContentMD5.ShouldBe(md5Bytes);
+        Assert.NotNull(_mappedRequest.Content);
+        Assert.NotNull(_mappedRequest.Content.Headers.ContentRange);
+        _mappedRequest.Content.Headers.ContentRange.From.ShouldBe(1);
+        _mappedRequest.Content.Headers.ContentRange.To.ShouldBe(2);
+        Assert.NotNull(_mappedRequest.Content);
+        Assert.NotNull(_mappedRequest.Content.Headers.ContentDisposition);
+        _mappedRequest.Content.Headers.ContentDisposition.DispositionType.ShouldBe("inline");
 
-    [Fact]
-    public void Should_not_add_content_headers()
-    {
-        GivenTheInputRequestHasContent("This is my content");
-        GivenTheContentTypeIs("application/json");
-        GivenTheInputRequestHasMethod("POST");
-        GivenTheInputRequestHasAValidUri();
-        GivenTheDownstreamRoute();
-        WhenMapped();
-        ThenTheMappedRequestHasContentTypeHeader("application/json");
-        ThenTheOtherContentTypeHeadersAreNotMapped();
-    }
-
-    private void GivenTheDownstreamRouteMethodIs(string input)
-    {
-        _downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownStreamHttpMethod(input)
-            .WithDownstreamHttpVersion(new Version("1.1")).Build();
-    }
-
-    private void GivenTheDownstreamRoute()
-    {
-        _downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownstreamHttpVersion(new Version("1.1")).Build();
-    }
-
-    private void GivenTheInputRequestHasNoContentLength()
-    {
-        _inputRequest.ContentLength = null;
-    }
-
-    private void GivenTheInputRequestHasNoContentType()
-    {
-        _inputRequest.ContentType = null;
-    }
-
-    private void ThenTheContentHeadersAreNotAddedToNonContentHeaders()
-    {
+        // Assert: Then The Content-* Headers Are Not Added To Non Content Headers
         _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");
         _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentMD5");
         _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentRange");
@@ -267,8 +333,23 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Type");
     }
 
-    private void ThenTheOtherContentTypeHeadersAreNotMapped()
+    [Fact]
+    public void Should_not_add_content_headers()
     {
+        // Arrange
+        GivenTheInputRequestHasContent("This is my content");
+        _inputRequest.ContentType = "application/json";
+        _inputRequest.Method = "POST";
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+
+        // Act
+        WhenMapped();
+
+        // Assert
+        ThenTheMappedRequestHasContentTypeHeader("application/json");
+
+        // Assert: Then The Other Content Type Headers Are Not Mapped
         Assert.NotNull(_mappedRequest.Content);
         _mappedRequest.Content.Headers.ContentDisposition.ShouldBeNull();
         _mappedRequest.Content.Headers.ContentMD5.ShouldBeNull();
@@ -278,81 +359,10 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Content.Headers.ContentLocation.ShouldBeNull();
     }
 
-    private void ThenTheMappedRequestHasContentDispositionHeader(string expected)
+    private void GivenTheDownstreamRoute()
     {
-        Assert.NotNull(_mappedRequest.Content);
-        Assert.NotNull(_mappedRequest.Content.Headers.ContentDisposition);
-        _mappedRequest.Content.Headers.ContentDisposition.DispositionType.ShouldBe(expected);
-    }
-
-    private void GivenTheContentDispositionIs(string input)
-    {
-        _inputRequest.Headers.Append("Content-Disposition", input);
-    }
-
-    private void ThenTheMappedRequestHasContentMD5Header(byte[] expected)
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.Headers.ContentMD5.ShouldBe(expected);
-    }
-
-    private void GivenTheContentMD5Is(byte[] input)
-    {
-        var base64 = Convert.ToBase64String(input);
-        _inputRequest.Headers.Append("Content-MD5", base64);
-    }
-
-    private void ThenTheMappedRequestHasContentRangeHeader()
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        Assert.NotNull(_mappedRequest.Content.Headers.ContentRange);
-        _mappedRequest.Content.Headers.ContentRange.From.ShouldBe(1);
-        _mappedRequest.Content.Headers.ContentRange.To.ShouldBe(2);
-    }
-
-    private void GivenTheContentRangeIs(string input)
-    {
-        _inputRequest.Headers.Append("Content-Range", input);
-    }
-
-    private void ThenTheMappedRequestHasContentLocationHeader(string expected)
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        Assert.NotNull(_mappedRequest.Content.Headers.ContentLocation);
-        _mappedRequest.Content.Headers.ContentLocation.OriginalString.ShouldBe(expected);
-    }
-
-    private void GivenTheContentLocationIs(string input)
-    {
-        _inputRequest.Headers.Append("Content-Location", input);
-    }
-
-    private void ThenTheMappedRequestHasContentLanguageHeader(string expected)
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.Headers.ContentLanguage.First().ShouldBe(expected);
-    }
-
-    private void GivenTheContentLanguageIs(string input)
-    {
-        _inputRequest.Headers.Append("Content-Language", input);
-    }
-
-    private void ThenTheMappedRequestHasContentEncodingHeader(string expected, string expectedTwo)
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.Headers.ContentEncoding.ToArray()[0].ShouldBe(expected);
-        _mappedRequest.Content.Headers.ContentEncoding.ToArray()[1].ShouldBe(expectedTwo);
-    }
-
-    private void GivenTheContentEncodingIs(string input)
-    {
-        _inputRequest.Headers.Append("Content-Encoding", input);
-    }
-
-    private void GivenTheContentTypeIs(string contentType)
-    {
-        _inputRequest.ContentType = contentType;
+        _downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamHttpVersion(new Version("1.1")).Build();
     }
 
     private void ThenTheMappedRequestHasContentTypeHeader(string expected)
@@ -360,22 +370,6 @@ public class RequestMapperTests : UnitTest
         Assert.NotNull(_mappedRequest.Content);
         Assert.NotNull(_mappedRequest.Content.Headers.ContentType);
         _mappedRequest.Content.Headers.ContentType.MediaType.ShouldBe(expected);
-    }
-
-    private void ThenTheMappedRequestHasContentSize(long expected)
-    {
-        Assert.NotNull(_mappedRequest.Content);
-        _mappedRequest.Content.Headers.ContentLength.ShouldBe(expected);
-    }
-
-    private void GivenTheInputRequestHasMethod(string method)
-    {
-        _inputRequest.Method = method;
-    }
-
-    private void GivenTheInputRequestHasScheme(string scheme)
-    {
-        _inputRequest.Scheme = scheme;
     }
 
     private void GivenTheInputRequestHasHost(string host)
@@ -401,27 +395,8 @@ public class RequestMapperTests : UnitTest
 
     private void GivenTheInputRequestHasAValidUri()
     {
-        GivenTheInputRequestHasScheme("http");
+        _inputRequest.Scheme = "http";
         GivenTheInputRequestHasHost("www.google.com");
-    }
-
-    private void GivenTheInputRequestHasHeaders()
-    {
-        _inputHeaders = new()
-        {
-            new("abc", new StringValues(new string[] { "123", "456" })),
-            new("def", new StringValues(new string[] { "789", "012" })),
-        };
-
-        foreach (var inputHeader in _inputHeaders)
-        {
-            _inputRequest.Headers.Add(inputHeader);
-        }
-    }
-
-    private void GivenTheInputRequestHasNoHeaders()
-    {
-        _inputRequest.Headers.Clear();
     }
 
     private void GivenTheInputRequestHasContent(string content)
@@ -438,50 +413,9 @@ public class RequestMapperTests : UnitTest
         _inputRequest.Headers.TransferEncoding = "chunked";
     }
 
-    private void GivenTheInputRequestHasNullContent()
-    {
-        _inputRequest.Body = null!;
-    }
-
     private void WhenMapped()
     {
         _mappedRequest = _requestMapper.Map(_inputRequest, _downstreamRoute);
-    }
-
-    private void ThenMapThrowsException()
-    {
-        Assert.Throws<NullReferenceException>(() => _requestMapper.Map(_inputRequest, _downstreamRoute));
-    }
-
-    private void ThenTheMappedRequestHasUri(string expectedUri)
-    {
-        Assert.NotNull(_mappedRequest.RequestUri);
-        _mappedRequest.RequestUri.OriginalString.ShouldBe(expectedUri);
-    }
-
-    private void ThenTheMappedRequestHasMethod(string expectedMethod)
-    {
-        _mappedRequest.Method.ToString().ShouldBe(expectedMethod);
-    }
-
-    private void ThenTheMappedRequestHasEachHeader()
-    {
-        _mappedRequest.Headers.Count().ShouldBe(_inputHeaders.Count);
-        foreach (var header in _mappedRequest.Headers)
-        {
-            var inputHeader = _inputHeaders.First(h => h.Key == header.Key);
-            inputHeader.ShouldNotBe(default);
-            inputHeader.Value.Count.ShouldBe(header.Value.Count());
-            foreach (var inputHeaderValue in inputHeader.Value)
-            {
-                Assert.Contains(header.Value, v => v == inputHeaderValue);
-            }
-        }
-    }
-
-    private void ThenTheMappedRequestHasNoHeaders()
-    {
-        _mappedRequest.Headers.Count().ShouldBe(0);
     }
 
     private async Task ThenTheMappedRequestHasContent(string expectedContent)
@@ -495,20 +429,5 @@ public class RequestMapperTests : UnitTest
     {
         Assert.NotNull(_mappedRequest.Content);
         _mappedRequest.Content.Headers.ContentLength.ShouldBe(expectedLength);
-    }
-
-    private void ThenTheMappedRequestHasNoContentLength()
-    {
-        _mappedRequest.Headers.TryGetValues(HeaderNames.ContentLength, out _).ShouldBeFalse();
-    }
-
-    private void ThenTheMappedRequestHasNoContent()
-    {
-        _mappedRequest.Content.ShouldBeNull();
-    }
-
-    private void ThenTheMappedRequestIsNull()
-    {
-        _mappedRequest.ShouldBeNull();
     }
 }

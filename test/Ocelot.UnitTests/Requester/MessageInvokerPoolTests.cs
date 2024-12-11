@@ -19,17 +19,16 @@ public class MessageInvokerPoolTests : UnitTest
     private DownstreamRoute _downstreamRoute1;
     private DownstreamRoute _downstreamRoute2;
     private MessageInvokerPool _pool;
-    private HttpMessageInvoker _firstInvoker;
-    private HttpMessageInvoker _secondInvoker;
     private Mock<IDelegatingHandlerHandlerFactory> _handlerFactory;
     private readonly Mock<IOcelotLoggerFactory> _ocelotLoggerFactory;
     private readonly Mock<IOcelotLogger> _ocelotLogger;
-    private HttpContext _context;
+    private readonly DefaultHttpContext _context;
     private HttpResponseMessage _response;
     private IWebHost _host;
 
     public MessageInvokerPoolTests()
     {
+        _context = new();
         _ocelotLoggerFactory = new Mock<IOcelotLoggerFactory>();
         _ocelotLogger = new Mock<IOcelotLogger>();
         _ocelotLoggerFactory.Setup(x => x.CreateLogger<MessageInvokerPool>()).Returns(_ocelotLogger.Object);
@@ -38,29 +37,42 @@ public class MessageInvokerPoolTests : UnitTest
     [Fact]
     public void If_calling_the_same_downstream_route_twice_should_return_the_same_message_invoker()
     {
-        GivenADownstreamRoute("/super-test");
+        // Arrange
+        _downstreamRoute1 = DownstreamRouteFactory("/super-test");
         AndAHandlerFactory();
         GivenAMessageInvokerPool();
-        WhenGettingMessageInvokerTwice();
-        ThenTheInvokersShouldBeTheSame();
+
+        // Act
+        var firstInvoker = _pool.Get(_downstreamRoute1);
+        var secondInvoker = _pool.Get(_downstreamRoute1);
+
+        // Assert
+        Assert.Equal(firstInvoker, secondInvoker);
     }
 
     [Fact]
     public void If_calling_two_different_downstream_routes_should_return_different_message_invokers()
     {
-        GivenTwoDifferentDownstreamRoutes("/super-test", "/super-test");
+        // Arrange
+        _downstreamRoute1 = DownstreamRouteFactory("/super-test");
+        _downstreamRoute2 = DownstreamRouteFactory("/super-test");
         AndAHandlerFactory();
         GivenAMessageInvokerPool();
-        WhenGettingMessageInvokerForBothRoutes();
-        ThenTheInvokersShouldNotBeTheSame();
+
+        // Act
+        var firstInvoker = _pool.Get(_downstreamRoute1);
+        var secondInvoker = _pool.Get(_downstreamRoute2);
+
+        // Assert
+        Assert.NotEqual(firstInvoker, secondInvoker);
     }
 
     [Fact]
     public async Task If_two_delegating_handlers_are_defined_then_these_should_be_call_in_order()
     {
+        // Arrange
         var fakeOne = new FakeDelegatingHandler();
         var fakeTwo = new FakeDelegatingHandler();
-
         var handlers = new List<Func<DelegatingHandler>>
         {
             () => fakeOne,
@@ -68,20 +80,24 @@ public class MessageInvokerPoolTests : UnitTest
         };
 
         GivenTheFactoryReturns(handlers);
-        GivenADownstreamRoute("/super-test");
+        _downstreamRoute1 = DownstreamRouteFactory("/super-test");
         GivenAMessageInvokerPool();
-        GivenARequest();
+        GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
+
+        // Act
         await WhenICallTheClient("http://www.bbc.co.uk");
+
+        // Assert
         ThenTheFakeAreHandledInOrder(fakeOne, fakeTwo);
-        ThenSomethingIsReturned();
+        _response.ShouldNotBeNull();
     }
 
     [Fact]
     public async Task Should_log_if_ignoring_ssl_errors()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
@@ -90,20 +106,25 @@ public class MessageInvokerPoolTests : UnitTest
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
             .Build();
-
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act
         await WhenICallTheClient("http://www.google.com/");
-        ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged();
+
+        // Assert: Then The DangerousAcceptAnyServerCertificateValidator Warning Is Logged
+        _ocelotLogger.Verify(x => x.LogWarning(
+            It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
+            Times.Once);
     }
 
     [Fact]
     public async Task Should_re_use_cookies_from_container()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, TimeSpan.FromSeconds(90)))
@@ -111,15 +132,18 @@ public class MessageInvokerPoolTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .Build();
-
         GivenADownstreamService();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert
         await WhenICallTheClient("http://localhost:5003");
-        ThenTheCookieIsSet();
+        _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
+
+        // Act, Assert
         await WhenICallTheClient("http://localhost:5003");
-        ThenTheResponseIsOk();
+        _response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Theory]
@@ -140,23 +164,12 @@ public class MessageInvokerPoolTests : UnitTest
             .WithHttpHandlerOptions(handlerOptions)
             .Build();
         GivenTheFactoryReturnsNothing();
-
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
         GivenARequest(route);
+
+        // Act, Assert
         await WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
-    }
-
-    private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
-    {
-        _ocelotLogger.Verify(x => x.LogWarning(
-            It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
-            Times.Once);
-    }
-
-    private void ThenTheCookieIsSet()
-    {
-        _response.Headers.TryGetValues("Set-Cookie", out var test).ShouldBeTrue();
     }
 
     private void GivenADownstreamService()
@@ -199,27 +212,9 @@ public class MessageInvokerPoolTests : UnitTest
         _host.Start();
     }
 
-    private void ThenTheResponseIsOk()
-    {
-        _response.StatusCode.ShouldBe(HttpStatusCode.OK);
-    }
-
     private void GivenARequest(DownstreamRoute downstream)
     {
-        GivenARequest(downstream, "http://localhost:5003");
-    }
-
-    private void GivenARequest(DownstreamRoute downstream, string downstreamUrl)
-    {
-        GivenARequestWithAUrlAndMethod(downstream, downstreamUrl, HttpMethod.Get);
-    }
-
-    private void GivenADownstreamRoute(string path) => _downstreamRoute1 = DownstreamRouteFactory(path);
-
-    private void GivenTwoDifferentDownstreamRoutes(string path1, string path2)
-    {
-        _downstreamRoute1 = DownstreamRouteFactory(path1);
-        _downstreamRoute2 = DownstreamRouteFactory(path2);
+        GivenARequestWithAUrlAndMethod(downstream, "http://localhost:5003", HttpMethod.Get);
     }
 
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
@@ -227,36 +222,12 @@ public class MessageInvokerPoolTests : UnitTest
     private void GivenAMessageInvokerPool() =>
         _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
 
-    private void WhenGettingMessageInvokerTwice()
-    {
-        _firstInvoker = _pool.Get(_downstreamRoute1);
-        _secondInvoker = _pool.Get(_downstreamRoute1);
-    }
-
-    private void WhenGettingMessageInvokerForBothRoutes()
-    {
-        _firstInvoker = _pool.Get(_downstreamRoute1);
-        _secondInvoker = _pool.Get(_downstreamRoute2);
-    }
-
-    private void ThenTheInvokersShouldBeTheSame() => Assert.Equal(_firstInvoker, _secondInvoker);
-
-    private void ThenTheInvokersShouldNotBeTheSame() => Assert.NotEqual(_firstInvoker, _secondInvoker);
-
-    private void GivenARequest(string url) => GivenARequestWithAUrlAndMethod(_downstreamRoute1, url, HttpMethod.Get);
-
-    private void GivenARequest() =>
-        GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
-
     private void GivenARequestWithAUrlAndMethod(DownstreamRoute downstream, string url, HttpMethod method)
     {
-        _context = new DefaultHttpContext();
         _context.Items.UpsertDownstreamRoute(downstream);
         _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
             { RequestUri = new Uri(url), Method = method }));
     }
-
-    private void ThenSomethingIsReturned() => _response.ShouldNotBeNull();
 
     private async Task WhenICallTheClient(string url)
     {
@@ -309,7 +280,7 @@ public class MessageInvokerPoolTests : UnitTest
             .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
     }
 
-    private Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
+    private static Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
     {
         var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
@@ -317,9 +288,7 @@ public class MessageInvokerPoolTests : UnitTest
         return handlerFactory;
     }
 
-    private DownstreamRoute DownstreamRouteFactory(string path)
-    {
-        var downstreamRoute = new DownstreamRouteBuilder()
+    private static DownstreamRoute DownstreamRouteFactory(string path) => new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate(path)
             .WithQosOptions(new QoSOptions(new FileQoSOptions()))
             .WithLoadBalancerKey(string.Empty)
@@ -327,7 +296,4 @@ public class MessageInvokerPoolTests : UnitTest
             .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
-
-        return downstreamRoute;
-    }
 }

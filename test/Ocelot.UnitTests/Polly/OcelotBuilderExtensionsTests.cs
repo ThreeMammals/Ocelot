@@ -14,6 +14,7 @@ public class OcelotBuilderExtensionsTests
     [Fact]
     public void Should_build()
     {
+        // Arrange
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         var contextAccessor = new Mock<IHttpContextAccessor>();
         var services = new ServiceCollection();
@@ -33,10 +34,12 @@ public class OcelotBuilderExtensionsTests
             .AddPolly();
         var provider = services.BuildServiceProvider(true);
 
-        var handler = provider.GetService<QosDelegatingHandlerDelegate>();
-        handler.ShouldNotBeNull();
+        // Act, Assert
+        var del = provider.GetService<QosDelegatingHandlerDelegate>();
+        del.ShouldNotBeNull();
 
-        var delgatingHandler = handler(route, contextAccessor.Object, loggerFactory.Object);
-        delgatingHandler.ShouldNotBeNull();
+        // Act, Assert
+        var handler = del(route, contextAccessor.Object, loggerFactory.Object);
+        handler.ShouldNotBeNull();
     }
 }

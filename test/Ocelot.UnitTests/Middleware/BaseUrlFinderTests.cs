@@ -9,7 +9,6 @@ public class BaseUrlFinderTests : UnitTest
     private BaseUrlFinder _baseUrlFinder;
     private IConfiguration _config;
     private readonly List<KeyValuePair<string, string>> _data;
-    private string _result;
 
     public BaseUrlFinderTests()
     {
@@ -19,16 +18,16 @@ public class BaseUrlFinderTests : UnitTest
     [Fact]
     public void Should_use_default_base_url()
     {
-        WhenIFindTheUrl();
-        ThenTheUrlIs("http://localhost:5000");
+        var result = WhenIFindTheUrl();
+        result.ShouldBe("http://localhost:5000");
     }
 
     [Fact]
     public void Should_use_memory_config_base_url()
     {
         GivenTheMemoryBaseUrlIs("http://baseurlfromconfig.com:5181");
-        WhenIFindTheUrl();
-        ThenTheUrlIs("http://baseurlfromconfig.com:5181");
+        var result = WhenIFindTheUrl();
+        result.ShouldBe("http://baseurlfromconfig.com:5181");
     }
 
     [Fact]
@@ -36,8 +35,8 @@ public class BaseUrlFinderTests : UnitTest
     {
         GivenTheMemoryBaseUrlIs("http://localhost:7000");
         GivenTheFileBaseUrlIs("http://baseurlfromconfig.com:5181");
-        WhenIFindTheUrl();
-        ThenTheUrlIs("http://baseurlfromconfig.com:5181");
+        var result = WhenIFindTheUrl();
+        result.ShouldBe("http://baseurlfromconfig.com:5181");
     }
 
     private void GivenTheMemoryBaseUrlIs(string configValue)
@@ -50,7 +49,7 @@ public class BaseUrlFinderTests : UnitTest
         _data.Add(new KeyValuePair<string, string>("GlobalConfiguration:BaseUrl", configValue));
     }
 
-    private void WhenIFindTheUrl()
+    private string WhenIFindTheUrl()
     {
         var source = new MemoryConfigurationSource
         {
@@ -62,11 +61,6 @@ public class BaseUrlFinderTests : UnitTest
             provider,
         });
         _baseUrlFinder = new BaseUrlFinder(_config);
-        _result = _baseUrlFinder.Find();
-    }
-
-    private void ThenTheUrlIs(string expected)
-    {
-        _result.ShouldBe(expected);
+        return _baseUrlFinder.Find();
     }
 }

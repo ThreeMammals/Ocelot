@@ -20,31 +20,21 @@ public class OcelotPipelineExtensionsTests : UnitTest
     [Fact]
     public void Should_set_up_pipeline()
     {
+        // Arrange
         GivenTheDepedenciesAreSetUp();
-        WhenIBuild();
-        ThenThePipelineIsBuilt();
+
+        // Act
+        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+
+        // Assert
+        _handlers.ShouldNotBeNull();
     }
 
     [Fact]
     public void Should_expand_pipeline()
     {
+        // Arrange
         GivenTheDepedenciesAreSetUp();
-        WhenIExpandBuild();
-        ThenThePipelineIsBuilt();
-    }
-
-    private void ThenThePipelineIsBuilt()
-    {
-        _handlers.ShouldNotBeNull();
-    }
-
-    private void WhenIBuild()
-    {
-        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
-    }
-
-    private void WhenIExpandBuild()
-    {
         var configuration = new OcelotPipelineConfiguration();
         configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
         {
@@ -54,13 +44,17 @@ public class OcelotPipelineExtensionsTests : UnitTest
             app.UseDownstreamUrlCreatorMiddleware();
             app.UseWebSocketsProxyMiddleware();
         });
+
+        // Act
         _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+
+        // Assert
+        _handlers.ShouldNotBeNull();
     }
 
     private void GivenTheDepedenciesAreSetUp()
     {
-        IConfigurationBuilder test = new ConfigurationBuilder();
-        var root = test.Build();
+        var root = new ConfigurationBuilder().Build();
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(root);
         services.AddOcelot();

@@ -8,7 +8,6 @@ public class ResponseAggregatorFactoryTests : UnitTest
 {
     private readonly InMemoryResponseAggregatorFactory _factory;
     private readonly Mock<IDefinedAggregatorProvider> _provider;
-    private Route _route;
     private IResponseAggregator _aggregator;
 
     public ResponseAggregatorFactoryTests()
@@ -21,38 +20,28 @@ public class ResponseAggregatorFactoryTests : UnitTest
     [Fact]
     public void Should_return_simple_json_aggregator()
     {
-        var route = new RouteBuilder()
-            .Build();
+        // Arrange
+        var route = new RouteBuilder().Build();
 
-        GivenRoute(route);
-        WhenIGet();
-        ThenTheAggregatorIs<SimpleJsonResponseAggregator>();
+        // Act
+        _aggregator = _factory.Get(route);
+
+        // Assert
+        _aggregator.ShouldBeOfType<SimpleJsonResponseAggregator>();
     }
 
     [Fact]
     public void Should_return_user_defined_aggregator()
     {
+        // Arrange
         var route = new RouteBuilder()
             .WithAggregator("doesntmatter")
             .Build();
 
-        GivenRoute(route);
-        WhenIGet();
-        ThenTheAggregatorIs<UserDefinedResponseAggregator>();
-    }
+        // Act
+        _aggregator = _factory.Get(route);
 
-    private void GivenRoute(Route route)
-    {
-        _route = route;
-    }
-
-    private void WhenIGet()
-    {
-        _aggregator = _factory.Get(_route);
-    }
-
-    private void ThenTheAggregatorIs<T>()
-    {
-        _aggregator.ShouldBeOfType<T>();
+        // Assert
+        _aggregator.ShouldBeOfType<UserDefinedResponseAggregator>();
     }
 }

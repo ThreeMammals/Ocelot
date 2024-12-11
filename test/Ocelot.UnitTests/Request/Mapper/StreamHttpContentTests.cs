@@ -7,7 +7,7 @@ namespace Ocelot.UnitTests.Request.Mapper;
 
 public class StreamHttpContentTests
 {
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     private const string PayLoad =
         "[{\"_id\":\"65416ef7eafdf7953c4d7319\",\"index\":0,\"guid\":\"254b515d-0569-494d-9bc8-e21c8bd0365e\",\"isActive\":false,\"balance\":\"$1,225.59\",\"picture\":\"http://placehold.it/32x32\",\"age\":26,\"eyeColor\":\"blue\",\"name\":\"FayHatfield\",\"gender\":\"female\",\"company\":\"VIASIA\",\"email\":\"fayhatfield@viasia.com\",\"phone\":\"+1(970)416-2792\",\"address\":\"768MontroseAvenue,Mansfield,NewMexico,8890\",\"about\":\"Duisoccaecatdoloreeiusmoddoipsummollitaliquipnostrudqui.Cillumdoexercitationexercitationexcepteurincididuntadipisicingminimconsecteturofficiaanimdoloreincididuntlaborealiqua.Tempordoloreirurecillumadnullasuntoccaecatsitnulladosit.Sitnostrudullamcolaborisvelitvelitetofficiasitenimipsumaute.\\r\\n\",\"registered\":\"2023-07-03T03:10:08-02:00\",\"latitude\":0.117661,\"longitude\":-65.570177,\"tags\":[\"Lorem\",\"consequat\",\"consectetur\",\"pariatur\",\"fugiat\",\"est\",\"mollit\"],\"friends\":[{\"id\":0,\"name\":\"LynetteMelendez\"},{\"id\":1,\"name\":\"DrakeMay\"},{\"id\":2,\"name\":\"JenningsConrad\"}],\"greeting\":\"Hello,FayHatfield!Youhave3unreadmessages.\",\"favoriteFruit\":\"apple\"}]";
@@ -20,10 +20,14 @@ public class StreamHttpContentTests
     [Fact]
     public async Task Copy_body_to_stream_and_stream_content_should_match_payload()
     {
+        // Arrange
         var sut = StreamHttpContentFactory();
         using var stream = new MemoryStream();
+
+        // Act
         await sut.CopyToAsync(stream);
 
+        // Assert
         stream.Position = 0;
         var result = Encoding.UTF8.GetString(stream.ToArray());
         result.ShouldBe(PayLoad);
@@ -32,12 +36,17 @@ public class StreamHttpContentTests
     [Fact]
     public async Task Copy_body_to_stream_with_unknown_length_and_stream_content_should_match_payload()
     {
+        // Arrange
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
+
+        // Act
         await CopyAsyncTest(
             new StreamHttpContent(_httpContext),
             new object[] { inputStream, outputStream, StreamHttpContent.UnknownLength, false, CancellationToken.None });
+
+        // Assert
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -47,12 +56,17 @@ public class StreamHttpContentTests
     [Fact]
     public async Task Copy_body_to_stream_with_body_length_and_stream_content_should_match_payload()
     {
+        // Arrange
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
+
+        // Act
         await CopyAsyncTest(
             new StreamHttpContent(_httpContext),
             new object[] { inputStream, outputStream, bytes.Length, false, CancellationToken.None });
+
+        // Assert
         inputStream.Position = 0;
         outputStream.Position = 0;
         var result = Encoding.UTF8.GetString(outputStream.ToArray());
@@ -62,9 +76,12 @@ public class StreamHttpContentTests
     [Fact]
     public async Task Should_throw_if_passed_body_length_does_not_match_real_body_length()
     {
+        // Arrange
         var bytes = Encoding.UTF8.GetBytes(PayLoad);
         using var inputStream = new MemoryStream(bytes);
         using var outputStream = new MemoryStream();
+
+        // Act, Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await CopyAsyncTest(
                 new StreamHttpContent(_httpContext),

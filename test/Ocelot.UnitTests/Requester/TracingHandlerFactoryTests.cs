@@ -26,7 +26,10 @@ public class TracingHandlerFactoryTests
     [Fact]
     public void Should_return()
     {
+        // Arrange, Act
         var handler = _factory.Get();
+
+        // Assert
         handler.ShouldBeOfType<OcelotHttpTracingHandler>();
     }
 }
