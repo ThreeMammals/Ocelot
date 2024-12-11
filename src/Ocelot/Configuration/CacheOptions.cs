@@ -20,12 +20,16 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing)
+    /// <param name="enableHeadersHashing">The switcher for headers hashing. If not speciefied, false value is used by default.</param>
+    /// <param name="cleanableHashingRegexes">The list of regex patterns to clean the hash. If not speciefied, an empty list is used by default.</param></param>
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, bool? enableHeadersHashing, List<string>? cleanableHashingRegexes)
     {
         TtlSeconds = ttlSeconds ?? 0;
         Region = region;
         Header = header;
         EnableContentHashing = enableContentHashing ?? false;
+        EnableHeadersHashing = enableHeadersHashing ?? false;
+        CleanableHashingRegexes = cleanableHashingRegexes ?? new();
     }
 
     /// <summary>Time-to-live seconds.</summary>
@@ -39,4 +43,14 @@ public class CacheOptions
     /// <remarks>Default value is <see langword="false"/>. No hashing by default.</remarks>
     /// <value><see langword="true"/> if hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableContentHashing { get; }
+
+    /// <summary>Enables MD5 hash calculation of the <see cref="HttpRequestMessage.Headers"/> of the <see cref="DownstreamRequest.Request"/> object.</summary>
+    /// <remarks>Default value is <see langword="false"/>. No hashing by default.</remarks>
+    /// <value><see langword="true"/> if hashing is enabled, otherwise it is <see langword="false"/>.</value>
+    public bool EnableHeadersHashing { get; }
+
+    /// <summary>The list of regex patterns to clean the hash.</summary>
+    /// <remarks>Default value is an empty list. No cleaning by default.</remarks>
+    /// <value>A <see cref="List{T}"/> of <see cref="string"/> values.</value>
+    public List<string> CleanableHashingRegexes { get; }
 }
