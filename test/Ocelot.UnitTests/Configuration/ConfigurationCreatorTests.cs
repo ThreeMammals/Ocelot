@@ -37,26 +37,34 @@ public class ConfigurationCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_build_configuration_with_no_admin_path()
+    public void Should_build_configuration_with_no_admin_path()
     {
-        this.Given(_ => GivenTheDependenciesAreSetUp())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDepdenciesAreCalledCorrectly())
-            .And(_ => ThenThePropertiesAreSetCorrectly())
-            .And(_ => ThenTheAdminPathIsNull())
-            .BDDfy();
+        // Arrange
+        GivenTheDependenciesAreSetUp();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDepdenciesAreCalledCorrectly();
+        ThenThePropertiesAreSetCorrectly();
+        ThenTheAdminPathIsNull();
     }
 
     [Fact]
-    public void should_build_configuration_with_admin_path()
+    public void Should_build_configuration_with_admin_path()
     {
-        this.Given(_ => GivenTheDependenciesAreSetUp())
-            .And(_ => GivenTheAdminPath())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDepdenciesAreCalledCorrectly())
-            .And(_ => ThenThePropertiesAreSetCorrectly())
-            .And(_ => ThenTheAdminPathIsSet())
-            .BDDfy();
+        // Arrange
+        GivenTheDependenciesAreSetUp();
+        GivenTheAdminPath();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDepdenciesAreCalledCorrectly();
+        ThenThePropertiesAreSetCorrectly();
+        ThenTheAdminPathIsSet();
     }
 
     private void ThenTheAdminPathIsNull()

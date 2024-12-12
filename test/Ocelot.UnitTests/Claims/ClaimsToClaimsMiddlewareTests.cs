@@ -3,6 +3,7 @@ using Ocelot.Claims;
 using Ocelot.Claims.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -17,7 +18,7 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly ClaimsToClaimsMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public ClaimsToClaimsMiddlewareTests()
     {
@@ -31,31 +32,31 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_claims_to_request_correctly()
+    public async Task Should_call_claims_to_request_correctly()
     {
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
+        // Arrange
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
             new RouteBuilder()
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToClaims(new List<ClaimToThing>
+                    .WithClaimsToClaims(new()
                     {
                         new("sub", "UserType", "|", 0),
                     })
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithUpstreamHttpMethod(new() { HttpMethods.Get })
                     .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
+                .WithUpstreamHttpMethod(new() { HttpMethods.Get })
                 .Build());
 
-        this.Given(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-            .And(x => x.GivenTheAddClaimsToRequestReturns())
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenTheClaimsToRequestIsCalledCorrectly())
-            .BDDfy();
-    }
+        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenTheAddClaimsToRequestReturns();
 
-    private async Task WhenICallTheMiddleware()
-    {
+        // Act
         await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheClaimsToRequestIsCalledCorrectly();
     }
 
     private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)

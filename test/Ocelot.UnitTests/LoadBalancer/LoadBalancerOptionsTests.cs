@@ -6,9 +6,12 @@ namespace Ocelot.UnitTests.LoadBalancer;
 public class LoadBalancerOptionsTests
 {
     [Fact]
-    public void should_default_to_no_load_balancer()
+    public void Should_default_to_no_load_balancer()
     {
+        // Arrange, Act
         var options = new LoadBalancerOptionsBuilder().Build();
+
+        // Assert
         options.Type.ShouldBe(nameof(NoLoadBalancer));
     }
 }

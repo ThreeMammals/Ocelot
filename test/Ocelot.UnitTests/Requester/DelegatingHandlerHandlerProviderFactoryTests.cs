@@ -15,8 +15,6 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
     private DelegatingHandlerHandlerFactory _factory;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private DownstreamRoute _downstreamRoute;
-    private Response<List<Func<DelegatingHandler>>> _result;
     private readonly Mock<IQoSFactory> _qosFactory;
     private readonly Mock<ITracingHandlerFactory> _tracingFactory;
     private IServiceProvider _serviceProvider;
@@ -36,14 +34,14 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_follow_ordering_add_specifics()
+    public void Should_follow_ordering_add_specifics()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
@@ -54,32 +52,33 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(6))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(3))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-            .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(6);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(2);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(3);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(4);
+        result.ThenHandlerAtPositionIs<FakeQoSHandler>(5);
     }
 
     [Fact]
-    public void should_follow_ordering_order_specifics_and_globals()
+    public void Should_follow_ordering_order_specifics_and_globals()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
@@ -91,32 +90,33 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerFour, FakeDelegatingHandlerThree>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerFour, FakeDelegatingHandlerThree>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(6))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0)) //first because global not in config
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1)) //first from config
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2)) //second from config
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(3)) //third from config (global)
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-            .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(6);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0); //first because global not in config
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1); //first from config
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(2); //second from config
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(3); //third from config (global)
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(4);
+        result.ThenHandlerAtPositionIs<FakeQoSHandler>(5);
     }
 
     [Fact]
-    public void should_follow_ordering_order_specifics()
+    public void Should_follow_ordering_order_specifics()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
@@ -127,32 +127,33 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(6))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(2))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(3))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(4))
-            .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(5))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(6);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(2);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(3);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(4);
+        result.ThenHandlerAtPositionIs<FakeQoSHandler>(5);
     }
 
     [Fact]
-    public void should_follow_ordering_order_and_only_add_specifics_in_config()
+    public void Should_follow_ordering_order_and_only_add_specifics_in_config()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
@@ -162,57 +163,59 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandlerThree, FakeDelegatingHandlerFour>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(5))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(2))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(3))
-            .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(4))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(5);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerThree>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerFour>(1);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(2);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(3);
+        result.ThenHandlerAtPositionIs<FakeQoSHandler>(4);
     }
 
     [Fact]
-    public void should_follow_ordering_dont_add_specifics()
+    public void Should_follow_ordering_dont_add_specifics()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(4))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
-            .And(x => ThenHandlerAtPositionIs<FakeQoSHandler>(3))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(4);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(2);
+        result.ThenHandlerAtPositionIs<FakeQoSHandler>(3);
     }
 
     [Fact]
-    public void should_apply_re_route_specific()
+    public void Should_apply_re_route_specific()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
@@ -223,176 +226,178 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(2))
-            .And(x => ThenTheDelegatesAreAddedCorrectly())
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(2);
+        result.ThenTheDelegatesAreAddedCorrectly();
     }
 
     [Fact]
-    public void should_all_from_all_routes_provider_and_qos()
+    public void Should_all_from_all_routes_provider_and_qos()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(3))
-            .And(x => ThenTheDelegatesAreAddedCorrectly())
-            .And(x => ThenItIsQosHandler(2))
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(3);
+        result.ThenTheDelegatesAreAddedCorrectly();
+        result.ThenItIsQosHandler(2);
     }
 
     [Fact]
-    public void should_return_provider_with_no_delegates()
+    public void Should_return_provider_with_no_delegates()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheServiceProviderReturnsNothing();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheServiceProviderReturnsNothing())
-            .When(x => WhenIGet())
-            .Then(x => ThenNoDelegatesAreInTheProvider())
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert: Then No Delegates Are In The Provider
+        result.ShouldNotBeNull();
+        result.Data.Count.ShouldBe(0);
     }
 
     [Fact]
-    public void should_return_provider_with_qos_delegate()
+    public void Should_return_provider_with_qos_delegate()
     {
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
-
-        var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
-            .WithLoadBalancerKey(string.Empty)
-            .Build();
-
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheServiceProviderReturnsNothing())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(1))
-            .And(x => ThenItIsQosHandler(0))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_provider_with_qos_delegate_when_timeout_value_set()
-    {
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .Build();
-
-        var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
-            .WithLoadBalancerKey(string.Empty)
-            .Build();
-
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturns(new FakeQoSHandler()))
-            .And(x => GivenTheServiceProviderReturnsNothing())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(1))
-            .And(x => ThenItIsQosHandler(0))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
-    {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(qosOptions)
+            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithLoadBalancerKey(string.Empty)
+            .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheServiceProviderReturnsNothing();
 
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(1);
+        result.ThenItIsQosHandler(0);
+    }
+
+    [Fact]
+    public void Should_return_provider_with_qos_delegate_when_timeout_value_set()
+    {
+        // Arrange
+        var qosOptions = new QoSOptionsBuilder()
+            .WithTimeoutValue(1)
+            .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(qosOptions)
+            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithLoadBalancerKey(string.Empty)
+            .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
+        GivenTheServiceProviderReturnsNothing();
+
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(1);
+        result.ThenItIsQosHandler(0);
+    }
+
+    [Fact]
+    public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
+    {
+        // Arrange
+        var qosOptions = new QoSOptionsBuilder()
+            .WithTimeoutValue(1)
+            .WithDurationOfBreak(1)
+            .WithExceptionsAllowedBeforeBreaking(1)
+            .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+            .Returns(new ErrorResponse<DelegatingHandler>(new AnyError()));
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturnsError())
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(4))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
-            .And(x => ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3))
-            .And(_ => ThenTheWarningIsLogged())
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(4);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(2);
+        result.ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3);
+        ThenTheWarningIsLogged(route);
     }
 
     [Fact]
-    public void should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
+    public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
     {
+        // Arrange
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(1)
             .WithDurationOfBreak(1)
             .WithExceptionsAllowedBeforeBreaking(1)
             .Build();
-
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+            .Returns((ErrorResponse<DelegatingHandler>)null);
+        GivenTheTracingFactoryReturns();
+        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
-        this.Given(x => GivenTheFollowingRequest(route))
-            .And(x => GivenTheQosFactoryReturnsNull())
-            .And(x => GivenTheTracingFactoryReturns())
-            .And(x => GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .When(x => WhenIGet())
-            .Then(x => ThenThereIsDelegatesInProvider(4))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandler>(0))
-            .And(x => ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1))
-            .And(x => ThenHandlerAtPositionIs<FakeTracingHandler>(2))
-            .And(x => ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3))
-            .And(_ => ThenTheWarningIsLogged())
-            .BDDfy();
+        // Act
+        var result = WhenIGet(route);
+
+        // Assert
+        result.ThenThereIsDelegatesInProvider(4);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(0);
+        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1);
+        result.ThenHandlerAtPositionIs<FakeTracingHandler>(2);
+        result.ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3);
+        ThenTheWarningIsLogged(route);
     }
 
-    private void ThenTheWarningIsLogged()
+    private void ThenTheWarningIsLogged(DownstreamRoute route)
     {
-        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Route {_downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")), Times.Once);
-    }
-
-    private void ThenHandlerAtPositionIs<T>(int pos)
-        where T : DelegatingHandler
-    {
-        var delegates = _result.Data;
-        var del = delegates[pos].Invoke();
-        del.ShouldBeOfType<T>();
+        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Route {route.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")), Times.Once);
     }
 
     private void GivenTheTracingFactoryReturns()
@@ -433,14 +438,36 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
         _serviceProvider = _services.BuildServiceProvider(true);
     }
 
-    private void ThenAnErrorIsReturned()
+    private void GivenTheQosFactoryReturns(DelegatingHandler handler)
     {
-        _result.IsError.ShouldBeTrue();
+        _qosFactory
+            .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+            .Returns(new OkResponse<DelegatingHandler>(handler));
     }
 
-    private void ThenTheDelegatesAreAddedCorrectly()
+    private Response<List<Func<DelegatingHandler>>> WhenIGet(DownstreamRoute route)
     {
-        var delegates = _result.Data;
+        _serviceProvider = _services.BuildServiceProvider(true);
+        _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
+        return _factory.Get(route);
+    }
+
+    /// <summary>120 seconds.</summary>
+    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+}
+
+internal static class ResponseExtensions
+{
+    public static void ThenItIsQosHandler(this Response<List<Func<DelegatingHandler>>> result, int i)
+    {
+        var delegates = result.Data;
+        var del = delegates[i].Invoke();
+        del.ShouldBeOfType<FakeQoSHandler>();
+    }
+
+    public static void ThenTheDelegatesAreAddedCorrectly(this Response<List<Func<DelegatingHandler>>> result)
+    {
+        var delegates = result.Data;
 
         var del = delegates[0].Invoke();
         var handler = (FakeDelegatingHandler)del;
@@ -451,62 +478,19 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
         handlerTwo.Order.ShouldBe(2);
     }
 
-    private void GivenTheQosFactoryReturns(DelegatingHandler handler)
+    public static void ThenThereIsDelegatesInProvider(this Response<List<Func<DelegatingHandler>>> result, int count)
     {
-        _qosFactory
-            .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<DelegatingHandler>(handler));
+        result.ShouldNotBeNull();
+        result.Data.Count.ShouldBe(count);
     }
 
-    private void GivenTheQosFactoryReturnsError()
+    public static void ThenHandlerAtPositionIs<T>(this Response<List<Func<DelegatingHandler>>> result, int pos)
+        where T : DelegatingHandler
     {
-        _qosFactory
-            .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new ErrorResponse<DelegatingHandler>(new AnyError()));
+        var delegates = result.Data;
+        var del = delegates[pos].Invoke();
+        del.ShouldBeOfType<T>();
     }
-
-    private void GivenTheQosFactoryReturnsNull()
-    {
-        _qosFactory
-            .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns((ErrorResponse<DelegatingHandler>)null);
-    }
-
-    private void ThenItIsQosHandler(int i)
-    {
-        var delegates = _result.Data;
-        var del = delegates[i].Invoke();
-        del.ShouldBeOfType<FakeQoSHandler>();
-    }
-
-    private void ThenThereIsDelegatesInProvider(int count)
-    {
-        _result.ShouldNotBeNull();
-        _result.Data.Count.ShouldBe(count);
-    }
-
-    private void GivenTheFollowingRequest(DownstreamRoute request)
-    {
-        _downstreamRoute = request;
-    }
-
-    private void WhenIGet()
-    {
-        _serviceProvider = _services.BuildServiceProvider(true);
-        _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
-        _result = _factory.Get(_downstreamRoute);
-    }
-
-    private void ThenNoDelegatesAreInTheProvider()
-    {
-        _result.ShouldNotBeNull();
-        _result.Data.Count.ShouldBe(0);
-    }
-
-    /// <summary>
-    /// 120 seconds.
-    /// </summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
 }
 
 internal class FakeTracingHandler : DelegatingHandler, ITracingHandler

@@ -25,24 +25,35 @@ public class QoSFactoryTests
     }
 
     [Fact]
-    public void should_return_error()
+    public void Should_return_error()
     {
+        // Arrange
         var downstreamRoute = new DownstreamRouteBuilder().Build();
+
+        // Act
         var handler = _factory.Get(downstreamRoute);
+
+        // Assert
         handler.IsError.ShouldBeTrue();
         handler.Errors[0].ShouldBeOfType<UnableToFindQoSProviderError>();
     }
 
     [Fact]
-    public void should_return_handler()
+    public void Should_return_handler()
     {
+        // Arrange
         _services = new ServiceCollection();
-        DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
+
+        static DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
         _services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandlerDelegate);
         var provider = _services.BuildServiceProvider(true);
         _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
         var downstreamRoute = new DownstreamRouteBuilder().Build();
+
+        // Act
         var handler = _factory.Get(downstreamRoute);
+
+        // Assert
         handler.IsError.ShouldBeFalse();
         handler.Data.ShouldBeOfType<FakeDelegatingHandler>();
     }

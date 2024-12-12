@@ -2,20 +2,10 @@ namespace Ocelot.UnitTests.Requester;
 
 public class FakeDelegatingHandler : DelegatingHandler
 {
-    public FakeDelegatingHandler()
-    {
-        Order = 1;
-    }
-
-    public FakeDelegatingHandler(int order)
-    {
-        Order = order;
-    }
-
+    public FakeDelegatingHandler() => Order = 1;
+    public FakeDelegatingHandler(int order) => Order = order;
     public int Order { get; }
-
     public DateTime TimeCalled { get; private set; }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         TimeCalled = DateTime.Now;
@@ -25,15 +15,9 @@ public class FakeDelegatingHandler : DelegatingHandler
 
 public class FakeDelegatingHandlerThree : DelegatingHandler
 {
-    public FakeDelegatingHandlerThree()
-    {
-        Order = 3;
-    }
-
+    public FakeDelegatingHandlerThree() => Order = 3;
     public int Order { get; }
-
     public DateTime TimeCalled { get; private set; }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         TimeCalled = DateTime.Now;
@@ -43,15 +27,9 @@ public class FakeDelegatingHandlerThree : DelegatingHandler
 
 public class FakeDelegatingHandlerFour : DelegatingHandler
 {
-    public FakeDelegatingHandlerFour()
-    {
-        Order = 4;
-    }
-
+    public FakeDelegatingHandlerFour() => Order = 4;
     public int Order { get; }
-
     public DateTime TimeCalled { get; private set; }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         TimeCalled = DateTime.Now;
@@ -61,15 +39,9 @@ public class FakeDelegatingHandlerFour : DelegatingHandler
 
 public class FakeDelegatingHandlerTwo : DelegatingHandler
 {
-    public FakeDelegatingHandlerTwo()
-    {
-        Order = 2;
-    }
-
+    public FakeDelegatingHandlerTwo() => Order = 2;
     public int Order { get; }
-
     public DateTime TimeCalled { get; private set; }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         TimeCalled = DateTime.Now;

@@ -6,70 +6,66 @@ namespace Ocelot.UnitTests.Infrastructure;
 
 public class HttpDataRepositoryTests : UnitTest
 {
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly HttpDataRepository _httpDataRepository;
+    private readonly HttpDataRepository _repository;
     private object _result;
 
     public HttpDataRepositoryTests()
     {
         _httpContext = new DefaultHttpContext();
         _httpContextAccessor = new HttpContextAccessor { HttpContext = _httpContext };
-        _httpDataRepository = new HttpDataRepository(_httpContextAccessor);
+        _repository = new HttpDataRepository(_httpContextAccessor);
     }
 
     /*
     TODO - Additional tests -> Type mistmatch aka Add string, request int
     TODO - Additional tests -> HttpContent null. This should never happen
     */
-
     [Fact]
-    public void get_returns_correct_key_from_http_context()
+    public void Get_returns_correct_key_from_http_context()
     {
-        this.Given(x => x.GivenAHttpContextContaining("key", "string"))
-            .When(x => x.GetIsCalledWithKey<string>("key"))
-            .Then(x => x.ThenTheResultIsAnOkResponse<string>("string"))
-            .BDDfy();
-    }
+        // Arrange
+        _httpContext.Items.Add("key", "string");
 
-    [Fact]
-    public void get_returns_error_response_if_the_key_is_not_found() //Therefore does not return null
-    {
-        this.Given(x => x.GivenAHttpContextContaining("key", "string"))
-            .When(x => x.GetIsCalledWithKey<string>("keyDoesNotExist"))
-            .Then(x => x.ThenTheResultIsAnErrorReposnse<string>("string1"))
-            .BDDfy();
+        // Act
+        _result = _repository.Get<string>("key");
+
+        // Assert
+        ThenTheResultIsAnOkResponse<string>("string");
     }
 
     [Fact]
-    public void should_update()
+    public void Get_returns_error_response_if_the_key_is_not_found() //Therefore does not return null
     {
-        this.Given(x => x.GivenAHttpContextContaining("key", "string"))
-            .And(x => x.UpdateIsCalledWith<string>("key", "new string"))
-            .When(x => x.GetIsCalledWithKey<string>("key"))
-            .Then(x => x.ThenTheResultIsAnOkResponse<string>("new string"))
-            .BDDfy();
+        // Arrange
+        _httpContext.Items.Add("key", "string");
+
+        // Act
+        _result = _repository.Get<string>("keyDoesNotExist");
+
+        // Assert
+        ThenTheResultIsAnErrorReposnse<string>();
     }
 
-    private void UpdateIsCalledWith<T>(string key, string value)
+    [Fact]
+    public void Should_update()
     {
-        _httpDataRepository.Update(key, value);
+        // Arrange
+        _httpContext.Items.Add("key", "string");
+        _repository.Update<string>("key", "new string");
+
+        // Act
+        _result = _repository.Get<string>("key");
+
+        // Assert
+        ThenTheResultIsAnOkResponse<string>("new string");
     }
 
-    private void GivenAHttpContextContaining(string key, object o)
-    {
-        _httpContext.Items.Add(key, o);
-    }
-
-    private void GetIsCalledWithKey<T>(string key)
-    {
-        _result = _httpDataRepository.Get<T>(key);
-    }
-
-    private void ThenTheResultIsAnErrorReposnse<T>(object resultValue)
+    private void ThenTheResultIsAnErrorReposnse<T>()
     {
         _result.ShouldBeOfType<ErrorResponse<T>>();
-        ((ErrorResponse<T>)_result).Data.ShouldBe(default(T));
+        ((ErrorResponse<T>)_result).Data.ShouldBe(default);
         ((ErrorResponse<T>)_result).IsError.ShouldBe(true);
         ((ErrorResponse<T>)_result).Errors.ShouldHaveSingleItem()
             .ShouldBeOfType<CannotFindDataError>()

@@ -1,4 +1,4 @@
-using Ocelot.Configuration;
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
@@ -6,27 +6,29 @@ namespace Ocelot.UnitTests.Cache;
 
 public class CacheOptionsCreatorTests : UnitTest
 {
-    private CacheOptions _cacheOptions;
-    private FileRoute _route;
+    private readonly CacheOptionsCreator _creator = new();
 
     [Fact]
-    public void should_create_region()
+    public void Should_create_region()
     {
+        // Arrange
         var route = new FileRoute
         {
-            UpstreamHttpMethod = new List<string> { "Get" },
+            UpstreamHttpMethod = new() { HttpMethods.Get },
             UpstreamPathTemplate = "/testdummy",
         };
 
-        this.Given(_ => GivenTheRoute(route))
-            .When(_ => WhenICreateTheRegion())
-            .Then(_ => ThenTheRegionIs("Gettestdummy"))
-            .BDDfy();
+        // Act
+        var actual = _creator.Create(route.FileCacheOptions, new FileGlobalConfiguration(), route.UpstreamPathTemplate, route.UpstreamHttpMethod);
+
+        // Assert
+        actual.Region.ShouldBe($"{HttpMethods.Get}testdummy");
     }
 
     [Fact]
-    public void should_use_region()
+    public void Should_use_region()
     {
+        // Arrange
         var route = new FileRoute
         {
             FileCacheOptions = new FileCacheOptions
@@ -35,25 +37,10 @@ public class CacheOptionsCreatorTests : UnitTest
             },
         };
 
-        this.Given(_ => GivenTheRoute(route))
-            .When(_ => WhenICreateTheRegion())
-            .Then(_ => ThenTheRegionIs("region"))
-            .BDDfy();
-    }
+        // Act
+        var actual = _creator.Create(route.FileCacheOptions, new FileGlobalConfiguration(), route.UpstreamPathTemplate, route.UpstreamHttpMethod);
 
-    private void GivenTheRoute(FileRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenICreateTheRegion()
-    {
-        var cacheOptionsCreator = new CacheOptionsCreator();
-        _cacheOptions = cacheOptionsCreator.Create(_route.FileCacheOptions, new FileGlobalConfiguration(), _route.UpstreamPathTemplate, _route.UpstreamHttpMethod);
-    }
-
-    private void ThenTheRegionIs(string expected)
-    {
-        _cacheOptions.Region.ShouldBe(expected);
+        // Assert
+        actual.Region.ShouldBe("region");
     }
 }

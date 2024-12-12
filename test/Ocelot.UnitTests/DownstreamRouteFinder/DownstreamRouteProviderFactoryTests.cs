@@ -36,138 +36,132 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_return_downstream_route_finder()
+    public void Should_return_downstream_route_finder()
     {
-        var routes = new List<Route>
-        {
-            new RouteBuilder().Build(),
-        };
+        // Arrange
+        var route = new RouteBuilder().Build();
+        GivenTheRoutes(route);
 
-        this.Given(_ => GivenTheRoutes(routes))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
-        var routes = new List<Route>
-        {
-            new RouteBuilder().WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build()).Build(),
-        };
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_finder_as_no_service_discovery_given_no_scheme()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme(string.Empty).WithHost("test").WithPort(50).Build();
-        var routes = new List<Route>();
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_finder_as_no_service_discovery_given_no_host()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost(string.Empty).WithPort(50).Build();
-        var routes = new List<Route>();
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_finder_given_no_service_discovery_port()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(0).Build();
-        var routes = new List<Route>();
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_finder_given_no_service_discovery_type()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("localhost").WithPort(50).WithType(string.Empty).Build();
-        var routes = new List<Route>();
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteFinder>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_creator()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
-        var routes = new List<Route>();
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteCreator>())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_return_downstream_route_creator_with_dynamic_re_route()
-    {
-        var spConfig = new ServiceProviderConfigurationBuilder().WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
-        var routes = new List<Route>
-        {
-            new RouteBuilder().Build(),
-        };
-
-        this.Given(_ => GivenTheRoutes(routes, spConfig))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheResultShouldBe<DownstreamRouteCreator>())
-            .BDDfy();
-    }
-
-    private void ThenTheResultShouldBe<T>()
-    {
-        _result.ShouldBeOfType<T>();
-    }
-
-    private void WhenIGet()
-    {
+        // Act
         _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
     }
 
-    private void GivenTheRoutes(List<Route> routes)
+    [Fact]
+    public void Should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
     {
-        _config = new InternalConfiguration(
-            routes,
-            string.Empty,
-            null,
-            string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+        // Arrange
+        var route = new RouteBuilder()
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build())
+            .Build();
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
+        GivenTheRoutes(route, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
     }
 
-    private void GivenTheRoutes(List<Route> routes, ServiceProviderConfiguration config)
+    [Fact]
+    public void Should_return_downstream_route_finder_as_no_service_discovery_given_no_scheme()
+    {
+        // Arrange
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme(string.Empty).WithHost("test").WithPort(50).Build();
+        GivenTheRoutes(null, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
+    }
+
+    [Fact]
+    public void Should_return_downstream_route_finder_as_no_service_discovery_given_no_host()
+    {
+        // Arrange
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost(string.Empty).WithPort(50).Build();
+        GivenTheRoutes(null, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
+    }
+
+    [Fact]
+    public void Should_return_downstream_route_finder_given_no_service_discovery_port()
+    {
+        // Arrange
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost("localhost").WithPort(0).Build();
+        GivenTheRoutes(null, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
+    }
+
+    [Fact]
+    public void Should_return_downstream_route_finder_given_no_service_discovery_type()
+    {
+        // Arrange
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost("localhost").WithPort(50).WithType(string.Empty).Build();
+        GivenTheRoutes(null, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteFinder>();
+    }
+
+    [Fact]
+    public void Should_return_downstream_route_creator()
+    {
+        // Arrange
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
+        GivenTheRoutes(null, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteCreator>();
+    }
+
+    [Fact]
+    public void Should_return_downstream_route_creator_with_dynamic_re_route()
+    {
+        // Arrange
+        var route = new RouteBuilder().Build();
+        var spConfig = new ServiceProviderConfigurationBuilder()
+            .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
+        GivenTheRoutes(route, spConfig);
+
+        // Act
+        _result = _factory.Get(_config);
+
+        // Assert
+        _result.ShouldBeOfType<DownstreamRouteCreator>();
+    }
+
+    private void GivenTheRoutes(Route route, ServiceProviderConfiguration config = null)
     {
         _config = new InternalConfiguration(
-            routes,
+            route == null ? new() : new() { route },
             string.Empty,
             config,
             string.Empty,

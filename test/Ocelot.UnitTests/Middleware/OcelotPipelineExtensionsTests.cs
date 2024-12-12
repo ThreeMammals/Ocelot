@@ -18,35 +18,23 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private RequestDelegate _handlers;
 
     [Fact]
-    public void should_set_up_pipeline()
+    public void Should_set_up_pipeline()
     {
-        this.Given(_ => GivenTheDepedenciesAreSetUp())
-             .When(_ => WhenIBuild())
-             .Then(_ => ThenThePipelineIsBuilt())
-             .BDDfy();
-    }
+        // Arrange
+        GivenTheDepedenciesAreSetUp();
 
-    [Fact]
-    public void should_expand_pipeline()
-    {
-        this.Given(_ => GivenTheDepedenciesAreSetUp())
-             .When(_ => WhenIExpandBuild())
-             .Then(_ => ThenThePipelineIsBuilt())
-             .BDDfy();
-    }
+        // Act
+        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
 
-    private void ThenThePipelineIsBuilt()
-    {
+        // Assert
         _handlers.ShouldNotBeNull();
     }
 
-    private void WhenIBuild()
+    [Fact]
+    public void Should_expand_pipeline()
     {
-        _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
-    }
-
-    private void WhenIExpandBuild()
-    {
+        // Arrange
+        GivenTheDepedenciesAreSetUp();
         var configuration = new OcelotPipelineConfiguration();
         configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
         {
@@ -56,13 +44,17 @@ public class OcelotPipelineExtensionsTests : UnitTest
             app.UseDownstreamUrlCreatorMiddleware();
             app.UseWebSocketsProxyMiddleware();
         });
+
+        // Act
         _handlers = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+
+        // Assert
+        _handlers.ShouldNotBeNull();
     }
 
     private void GivenTheDepedenciesAreSetUp()
     {
-        IConfigurationBuilder test = new ConfigurationBuilder();
-        var root = test.Build();
+        var root = new ConfigurationBuilder().Build();
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(root);
         services.AddOcelot();

@@ -18,7 +18,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     private MultiplexingMiddleware _middleware;
     private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
     private int _count;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
     private readonly Mock<IResponseAggregatorFactory> factory;
     private readonly Mock<IResponseAggregator> aggregator;
     private readonly Mock<IOcelotLoggerFactory> loggerFactory;
@@ -39,24 +39,25 @@ public class MultiplexingMiddlewareTests : UnitTest
     private Task Next(HttpContext context) => Task.FromResult(_count++);
 
     [Fact]
-    public void should_multiplex()
+    public async Task Should_multiplex()
     {
         var route = GivenDefaultRoute(2);
-        this.Given(x => GivenTheFollowing(route))
-            .When(x => WhenIMultiplex())
-            .Then(x => ThePipelineIsCalled(2))
-            .BDDfy();
+        GivenTheFollowing(route);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+        _count.ShouldBe(2);
     }
 
     [Fact]
-    public void should_not_multiplex()
+    public async Task Should_not_multiplex()
     {
         var route = new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().Build()).Build();
+        GivenTheFollowing(route);
 
-        this.Given(x => GivenTheFollowing(route))
-            .When(x => WhenIMultiplex())
-            .Then(x => ThePipelineIsCalled(1))
-            .BDDfy();
+        // Act
+        await _middleware.Invoke(_httpContext);
+        _count.ShouldBe(1);
     }
 
     [Fact]
@@ -94,10 +95,10 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(2));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
-        ThePipelineIsCalled(2);
+        _count.ShouldBe(2);
         AssertUsers(actualContext);
     }
 
@@ -117,10 +118,10 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
-        ThePipelineIsCalled(1);
+        _count.ShouldBe(1);
     }
 
     [Fact]
@@ -136,7 +137,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Once(),
@@ -159,7 +160,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
@@ -182,7 +183,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         mock.Protected().Verify<Task>("MapAsync", Times.Once(),
@@ -203,7 +204,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(0));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
@@ -230,7 +231,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
@@ -251,7 +252,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenTheFollowing(GivenRoutesWithAggregator());
 
         // Act
-        await WhenIMultiplex();
+        await _middleware.Invoke(_httpContext);
 
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
             ItExpr.IsAny<HttpContext>(),
@@ -262,7 +263,7 @@ public class MultiplexingMiddlewareTests : UnitTest
             ItExpr.IsAny<Route>(),
             ItExpr.IsAny<List<HttpContext>>());
 
-        ThePipelineIsCalled(3);
+        _count.ShouldBe(3);
     }
 
     private RequestDelegate AggregateRequestDelegateFactory()
@@ -359,15 +360,5 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         _downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
         _httpContext.Items.UpsertDownstreamRoute(_downstreamRoute);
-    }
-
-    private async Task WhenIMultiplex()
-    {
-        await _middleware.Invoke(_httpContext);
-    }
-
-    private void ThePipelineIsCalled(int expected)
-    {
-        _count.ShouldBe(expected);
     }
 }

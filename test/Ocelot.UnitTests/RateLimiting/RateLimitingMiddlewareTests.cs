@@ -163,7 +163,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         contexts[0].Items.Errors().Single().HttpStatusCode.ShouldBe((int)HttpStatusCode.TooManyRequests);
     }
 
-    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ downstreamRoute)
+    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ holder)
     {
         var contexts = new List<HttpContext>();
         _downstreamResponses.Clear();
@@ -173,9 +173,9 @@ public class RateLimitingMiddlewareTests : UnitTest
             var stream = GetFakeStream($"{i}");
             context.Response.Body = stream;
             context.Response.RegisterForDispose(stream);
-            context.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
-            context.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-            context.Items.UpsertDownstreamRoute(downstreamRoute);
+            context.Items.UpsertDownstreamRoute(holder.Route.DownstreamRoute[0]);
+            context.Items.UpsertTemplatePlaceholderNameAndValues(holder.TemplatePlaceholderNameAndValues);
+            context.Items.UpsertDownstreamRoute(holder);
             var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
             context.Request.Headers.TryAdd("ClientId", "ocelotclient1");
@@ -189,13 +189,13 @@ public class RateLimitingMiddlewareTests : UnitTest
         return contexts;
     }
 
-    private static Stream GetFakeStream(string str)
+    private static MemoryStream GetFakeStream(string str)
     {
         byte[] data = Encoding.ASCII.GetBytes(str);
         return new MemoryStream(data, 0, data.Length);
     }
 
-    private async Task WhenICallTheMiddlewareWithWhiteClient(_DownstreamRouteHolder_ downstreamRoute)
+    private async Task WhenICallTheMiddlewareWithWhiteClient(_DownstreamRouteHolder_ holder)
     {
         const string ClientId = "ocelotclient2";
         for (var i = 0; i < 10; i++)
@@ -204,9 +204,9 @@ public class RateLimitingMiddlewareTests : UnitTest
             var stream = GetFakeStream($"{i}");
             context.Response.Body = stream;
             context.Response.RegisterForDispose(stream);
-            context.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
-            context.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-            context.Items.UpsertDownstreamRoute(downstreamRoute);
+            context.Items.UpsertDownstreamRoute(holder.Route.DownstreamRoute[0]);
+            context.Items.UpsertTemplatePlaceholderNameAndValues(holder.TemplatePlaceholderNameAndValues);
+            context.Items.UpsertDownstreamRoute(holder);
             var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
             request.Headers.Add("ClientId", ClientId);
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));

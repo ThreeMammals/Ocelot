@@ -14,9 +14,6 @@ namespace Ocelot.UnitTests.Multiplexing;
 public class SimpleJsonResponseAggregatorTests : UnitTest
 {
     private readonly SimpleJsonResponseAggregator _aggregator;
-    private List<HttpContext> _downstreamContexts;
-    private HttpContext _upstreamContext;
-    private Route _route;
 
     public SimpleJsonResponseAggregatorTests()
     {
@@ -24,7 +21,7 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
-    public void should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
     {
         var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
 
@@ -58,21 +55,20 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
 
         var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
-
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
+        var upstreamContext = new DefaultHttpContext();
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheContentTypeIs("application/json"))
-            .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-            .BDDfy();
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
     }
 
     [Fact]
-    public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
@@ -97,21 +93,20 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
 
         var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
-
         var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
+        var upstreamContext = new DefaultHttpContext();
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheContentTypeIs("application/json"))
-            .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-            .BDDfy();
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
     }
 
     [Fact]
-    public void should_return_error_if_any_downstreams_have_errored()
+    public async Task Should_return_error_if_any_downstreams_have_errored()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
 
@@ -138,64 +133,36 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         georgeDownstreamContext.Items.SetError(new AnyError());
 
         var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
-
         var expected = "Error";
+        var upstreamContext = new DefaultHttpContext();
 
-        this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-            .And(x => GivenTheRoute(route))
-            .And(x => GivenTheDownstreamContext(downstreamContexts))
-            .When(x => WhenIAggregate())
-            .Then(x => ThenTheContentIs(expected))
-            .And(x => ThenTheErrorIsMapped())
-            .BDDfy();
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheErrorIsMapped(upstreamContext, downstreamContexts);
     }
 
-    private void ThenTheReasonPhraseIs(string expected)
+    private static void ThenTheReasonPhraseIs(DefaultHttpContext upstreamContext, string expected)
     {
-        _upstreamContext.Items.DownstreamResponse().ReasonPhrase.ShouldBe(expected);
+        upstreamContext.Items.DownstreamResponse().ReasonPhrase.ShouldBe(expected);
     }
 
-    private void ThenTheErrorIsMapped()
+    private static void ThenTheErrorIsMapped(DefaultHttpContext upstreamContext, List<HttpContext> downstreamContexts)
     {
-        _upstreamContext.Items.Errors().ShouldBe(_downstreamContexts[1].Items.Errors());
-        _upstreamContext.Items.DownstreamResponse().ShouldBe(_downstreamContexts[1].Items.DownstreamResponse());
+        upstreamContext.Items.Errors().ShouldBe(downstreamContexts[1].Items.Errors());
+        upstreamContext.Items.DownstreamResponse().ShouldBe(downstreamContexts[1].Items.DownstreamResponse());
     }
 
-    private void GivenTheRoute(Route route)
+    private static async Task ThenTheContentIs(DefaultHttpContext upstreamContext, string expected)
     {
-        _route = route;
-    }
-
-    private void GivenTheUpstreamContext(HttpContext upstreamContext)
-    {
-        _upstreamContext = upstreamContext;
-    }
-
-    private void GivenTheDownstreamContext(List<HttpContext> downstreamContexts)
-    {
-        _downstreamContexts = downstreamContexts;
-    }
-
-    private async Task WhenIAggregate()
-    {
-        await _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts);
-    }
-
-    private async Task ThenTheContentIs(string expected)
-    {
-        var content = await _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
+        var content = await upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
         content.ShouldBe(expected);
     }
 
-    private void ThenTheContentTypeIs(string expected)
+    private static void ThenTheContentTypeIs(DefaultHttpContext upstreamContext, string expected)
     {
-        _upstreamContext.Items.DownstreamResponse().Content.Headers.ContentType.MediaType.ShouldBe(expected);
-    }
-
-    private void ThenTheUpstreamContextIsMappedForNonAggregate()
-    {
-        _upstreamContext.Items.DownstreamRequest().ShouldBe(_downstreamContexts[0].Items.DownstreamRequest());
-        _upstreamContext.Items.DownstreamRequest().ShouldBe(_downstreamContexts[0].Items.DownstreamRequest());
-        _upstreamContext.Items.Errors().ShouldBe(_downstreamContexts[0].Items.Errors());
+        upstreamContext.Items.DownstreamResponse().Content.Headers.ContentType.MediaType.ShouldBe(expected);
     }
 }
