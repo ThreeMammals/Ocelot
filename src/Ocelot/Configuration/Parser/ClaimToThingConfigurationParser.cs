@@ -9,17 +9,12 @@ namespace Ocelot.Configuration.Parser;
 public partial class ClaimToThingConfigurationParser : IClaimToThingConfigurationParser
 {
     private const char SplitToken = '>';
-#if NET7_0_OR_GREATER
+
     [GeneratedRegex("Claims\\[.*\\]", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex ClaimRegex();
+
     [GeneratedRegex("value\\[.*\\]", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex IndexRegex();
-#else
-    private static readonly Regex _claimRegex = RegexGlobal.New("Claims\\[.*\\]");
-    private static readonly Regex _indexRegex = RegexGlobal.New("value\\[.*\\]");
-    private static Regex ClaimRegex() => _claimRegex;
-    private static Regex IndexRegex() => _indexRegex;
-#endif
 
     public Response<ClaimToThing> Extract(string existingKey, string value)
     {
