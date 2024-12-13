@@ -181,8 +181,8 @@ Add the following, at minimum, to your startup ``ConfigureServices`` method:
 .. code-block:: csharp
 
     // Map Okta "scp" to "scope" claims instead of http://schemas.microsoft.com/identity/claims/scope to allow Ocelot to read/verify them
-    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("scp");
-    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Add("scp", "scope");
+    JsonWebTokenHandler.DefaultInboundClaimTypeMap.Remove("scp");
+    JsonWebTokenHandler.DefaultInboundClaimTypeMap.Add("scp", "scope");
 
 `Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ contains some code and examples that might help with Okta integration.
 
