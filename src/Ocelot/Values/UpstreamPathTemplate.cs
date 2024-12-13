@@ -5,13 +5,8 @@ namespace Ocelot.Values;
 /// <summary>The model to keep data of upstream path.</summary>
 public partial class UpstreamPathTemplate
 {
-#if NET7_0_OR_GREATER
     [GeneratedRegex("$^", RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex RegexNoTemplate();
-#else
-    private static readonly Regex _regexNoTemplate = RegexGlobal.New("$^", RegexOptions.Singleline);
-    private static Regex RegexNoTemplate() => _regexNoTemplate;
-#endif
     private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
     public UpstreamPathTemplate(string template, int priority, bool containsQueryString, string originalValue)

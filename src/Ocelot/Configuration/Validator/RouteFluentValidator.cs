@@ -111,7 +111,6 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
             || (string.IsNullOrEmpty(primary) && options.AuthenticationProviderKeys.All(supportedSchemes.Contains));
     }
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex("^[0-9]+s", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex SecondsRegex();
     [GeneratedRegex("^[0-9]+m", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
@@ -120,16 +119,6 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
     private static partial Regex HoursRegex();
     [GeneratedRegex("^[0-9]+d", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex DaysRegex();
-#else
-    private static readonly Regex _secondsRegex = RegexGlobal.New("^[0-9]+s");
-    private static readonly Regex _minutesRegex = RegexGlobal.New("^[0-9]+m");
-    private static readonly Regex _hoursRegex = RegexGlobal.New("^[0-9]+h");
-    private static readonly Regex _daysRegex = RegexGlobal.New("^[0-9]+d");
-    private static Regex SecondsRegex() => _secondsRegex;
-    private static Regex MinutesRegex() => _minutesRegex;
-    private static Regex HoursRegex() => _hoursRegex;
-    private static Regex DaysRegex() => _daysRegex;
-#endif
 
     private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
     {
