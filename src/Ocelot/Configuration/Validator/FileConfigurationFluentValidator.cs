@@ -99,13 +99,8 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
         return routesForAggregate.Count() == fileAggregateRoute.RouteKeys.Count;
     }
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex PlaceholderRegex();
-#else
-    private static readonly Regex _placeholderRegex = RegexGlobal.New(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-    private static Regex PlaceholderRegex() => _placeholderRegex;
-#endif
 
     private static bool IsPlaceholderNotDuplicatedIn(string pathTemplate)
     {

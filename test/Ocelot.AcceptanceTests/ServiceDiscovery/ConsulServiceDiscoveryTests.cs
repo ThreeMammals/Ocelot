@@ -594,13 +594,9 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries) => _consulServices.AddRange(serviceEntries);
     private void GivenTheServiceNodesAreRegisteredWithConsul(params Node[] nodes) => _consulNodes.AddRange(nodes);
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex ServiceNameRegex();
-#else
-    private static readonly Regex ServiceNameRegexVar = RegexGlobal.New("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Singleline);
-    private static Regex ServiceNameRegex() => ServiceNameRegexVar;
-#endif
+
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
     {
         _consulHandler.GivenThereIsAServiceRunningOn(url, async context =>
