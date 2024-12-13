@@ -176,7 +176,7 @@ Add the following, at minimum, to your startup ``ConfigureServices`` method:
         });
     services.AddOcelot(configuration);
 
-**Note** In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta ``"scp"`` claim to ``"scope"``:
+**Note** In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta ``"scp"`` claim to ``"scope"``[#f4]_:
 
 .. code-block:: csharp
 
@@ -212,3 +212,4 @@ Please, open `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/
 .. [#f1] Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We support this ``[Obsolete]`` property for backward compatibility and migration reasons. In future releases, the property may be removed as a breaking change.
 .. [#f2] "`Multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__" feature was requested in issues `740 <https://github.com/ThreeMammals/Ocelot/issues/740>`_, `1580 <https://github.com/ThreeMammals/Ocelot/issues/1580>`_ and delivered as a part of `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_ release.
 .. [#f3] We would appreciate any new PRs to add extra acceptance tests for your custom scenarios with `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__.
+.. [#f4] .Net 8 introduced breaking change "`Security token events return a JsonWebToken <https://learn.microsoft.com/en-us/dotnet/core/compatibility/aspnet-core/8.0/securitytoken-events>`__" where ``JwtSecurityToken`` was substituted for `` JsonWebToken`` for performance and reliability improvements and their respective handlers also changed from``JwtSecurityTokenHandler`` to `` JsonWebTokenHandler``. For versions prior to .NET 8, use the previous classes. 
