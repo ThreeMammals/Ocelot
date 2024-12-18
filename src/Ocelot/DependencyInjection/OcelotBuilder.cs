@@ -111,7 +111,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
         Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
-        
+
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
@@ -165,10 +165,10 @@ public class OcelotBuilder : IOcelotBuilder
     /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
     /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
     /// <para>
-    /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called:<br/>
+    /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called<br/>
     /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
     /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
-    /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
+    /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/>.
     /// </para>
     /// </remarks>
     /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
