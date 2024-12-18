@@ -1,6 +1,6 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Infrastructure;
 using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 
 namespace Ocelot.Metadata;
@@ -74,7 +74,7 @@ public static class DownstreamRouteExtensions
         }
 
         return (T)ConvertTo(typeof(T), metadataValue, downstreamRoute.MetadataOptions,
-            jsonSerializerOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            jsonSerializerOptions ?? JsonSerializerOptionsFactory.Web);
     }
 
     /// <summary>

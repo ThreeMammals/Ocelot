@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Serilog;
 using Serilog.Core;
+using System.Text.Json;
 
 namespace Ocelot.Benchmarks;
 
@@ -193,7 +194,7 @@ public class SerilogBenchmarks : ManualConfig
     {
         var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
 
         if (File.Exists(configurationPath))
         {
