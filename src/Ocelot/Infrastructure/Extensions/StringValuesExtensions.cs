@@ -1,17 +1,16 @@
 using Microsoft.Extensions.Primitives;
 
-namespace Ocelot.Infrastructure.Extensions
-{
-    public static class StringValuesExtensions
-    {
-        public static string GetValue(this StringValues stringValues)
-        {
-            if (stringValues.Count == 1)
-            {
-                return stringValues;
-            }
+namespace Ocelot.Infrastructure.Extensions;
 
-            return stringValues.ToArray().LastOrDefault();
+public static class StringValuesExtensions
+{
+    public static string GetValue(this StringValues stringValues)
+    {
+        if (stringValues.Count == 1)
+        {
+            return stringValues;
         }
+
+        return stringValues.ToArray().LastOrDefault();
     }
 }

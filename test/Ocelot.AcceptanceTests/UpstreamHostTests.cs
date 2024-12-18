@@ -1,274 +1,273 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class UpstreamHostTests : IDisposable
 {
-    public class UpstreamHostTests : IDisposable
+    private readonly Steps _steps;
+    private string _downstreamPath;
+    private readonly ServiceHandler _serviceHandler;
+
+    public UpstreamHostTests()
     {
-        private readonly Steps _steps;
-        private string _downstreamPath;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public UpstreamHostTests()
+    [Fact]
+    public void should_return_response_200_with_simple_url_and_hosts_match()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
+            Routes = new List<FileRoute>
+                {
+                    new()
+                    {
+                        DownstreamPathTemplate = "/",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        UpstreamPathTemplate = "/",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHost = "localhost",
+                    },
+                },
+        };
 
-        [Fact]
-        public void should_return_response_200_with_simple_url_and_hosts_match()
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
+                {
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
                         new()
                         {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            UpstreamHost = "localhost",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost",
-                    },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 50000,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "DONTMATCH",
-                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "localhost",
                 },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 50000,
-                            },
+                            Host = "localhost",
+                            Port = 50000,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "DONTMATCH",
                     },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost",
-                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "DONTMATCH",
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed_with_no_host_first()
+    [Fact]
+    public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = 50000,
-                            },
+                            Host = "localhost",
+                            Port = 50000,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "localhost",
-                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "DONTMATCH",
                 },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_response_404_with_simple_url_and_hosts_dont_match()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHost = "127.0.0.20:5000",
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "localhost",
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
 
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    [Fact]
+    public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed_with_no_host_first()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+            Routes = new List<FileRoute>
             {
-                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPath != basePath)
+                new()
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = 50000,
+                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                },
+                new()
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "localhost",
+                },
+            },
+        };
 
-        public void Dispose()
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_response_404_with_simple_url_and_hosts_dont_match()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+            Routes = new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHost = "127.0.0.20:5000",
+                },
+            },
+        };
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunning())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+            .BDDfy();
+    }
+
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        {
+            _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+            if (_downstreamPath != basePath)
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync("downstream path didnt match base path");
+            }
+            else
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        _steps.Dispose();
     }
 }

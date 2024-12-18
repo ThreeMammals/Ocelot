@@ -1,37 +1,36 @@
 ﻿using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Repository
+namespace Ocelot.Configuration.Repository;
+
+/// <summary>
+/// Register as singleton.
+/// </summary>
+public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
 {
-    /// <summary>
-    /// Register as singleton.
-    /// </summary>
-    public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
+    private static readonly object LockObject = new();
+
+    private IInternalConfiguration _internalConfiguration;
+    private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
+
+    public InMemoryInternalConfigurationRepository(IOcelotConfigurationChangeTokenSource changeTokenSource)
     {
-        private static readonly object LockObject = new();
+        _changeTokenSource = changeTokenSource;
+    }
 
-        private IInternalConfiguration _internalConfiguration;
-        private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
+    public Response<IInternalConfiguration> Get()
+    {
+        return new OkResponse<IInternalConfiguration>(_internalConfiguration);
+    }
 
-        public InMemoryInternalConfigurationRepository(IOcelotConfigurationChangeTokenSource changeTokenSource)
+    public Response AddOrReplace(IInternalConfiguration internalConfiguration)
+    {
+        lock (LockObject)
         {
-            _changeTokenSource = changeTokenSource;
+            _internalConfiguration = internalConfiguration;
         }
 
-        public Response<IInternalConfiguration> Get()
-        {
-            return new OkResponse<IInternalConfiguration>(_internalConfiguration);
-        }
-
-        public Response AddOrReplace(IInternalConfiguration internalConfiguration)
-        {
-            lock (LockObject)
-            {
-                _internalConfiguration = internalConfiguration;
-            }
-
-            _changeTokenSource.Activate();
-            return new OkResponse();
-        }
+        _changeTokenSource.Activate();
+        return new OkResponse();
     }
 }

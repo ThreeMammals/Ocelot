@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
-namespace Ocelot.Samples.OcelotBasic.ApiGateway;
+namespace Ocelot.Samples.Basic.ApiGateway;
 
 public class Startup
 {

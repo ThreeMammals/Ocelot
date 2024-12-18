@@ -1,7 +1,6 @@
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public interface IFrameworkDescription
 {
-    public interface IFrameworkDescription
-    {
-        string Get();
-    }
+    string Get();
 }

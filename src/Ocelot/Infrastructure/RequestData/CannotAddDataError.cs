@@ -1,11 +1,10 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.Infrastructure.RequestData
+namespace Ocelot.Infrastructure.RequestData;
+
+public class CannotAddDataError : Error
 {
-    public class CannotAddDataError : Error
+    public CannotAddDataError(string message) : base(message, OcelotErrorCode.CannotAddDataError, 404)
     {
-        public CannotAddDataError(string message) : base(message, OcelotErrorCode.CannotAddDataError, 404)
-        {
-        }
     }
 }

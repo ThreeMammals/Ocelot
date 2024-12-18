@@ -9,23 +9,21 @@ namespace Ocelot.UnitTests.LoadBalancer;
 
 public class RoundRobinTests : UnitTest
 {
-    private readonly HttpContext _httpContext;
-
-    public RoundRobinTests()
-    {
-        _httpContext = new DefaultHttpContext();
-    }
+    private readonly DefaultHttpContext _httpContext = new();
 
     [Fact]
     public async Task Lease_LoopThroughIndexRangeOnce_ShouldGetNextAddress()
     {
+        // Arrange
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
 
-        var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
-        var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
-        var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+        // Act
+        var response0 = await roundRobin.LeaseAsync(_httpContext);
+        var response1 = await roundRobin.LeaseAsync(_httpContext);
+        var response2 = await roundRobin.LeaseAsync(_httpContext);
 
+        // Assert
         response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
         response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
         response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
@@ -35,15 +33,18 @@ public class RoundRobinTests : UnitTest
     [Trait("Feat", "336")]
     public async Task Lease_LoopThroughIndexRangeIndefinitelyButOneSecond_ShouldGoBackToFirstAddressAfterFinishedLast()
     {
+        // Arrange
         var services = GivenServices();
         var roundRobin = GivenLoadBalancer(services);
         var stopWatch = Stopwatch.StartNew();
         while (stopWatch.ElapsedMilliseconds < 1000)
         {
-            var response0 = await WhenIGetTheNextAddressAsync(roundRobin);
-            var response1 = await WhenIGetTheNextAddressAsync(roundRobin);
-            var response2 = await WhenIGetTheNextAddressAsync(roundRobin);
+            // Act
+            var response0 = await roundRobin.LeaseAsync(_httpContext);
+            var response1 = await roundRobin.LeaseAsync(_httpContext);
+            var response2 = await roundRobin.LeaseAsync(_httpContext);
 
+            // Assert
             response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
             response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
             response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
@@ -54,10 +55,17 @@ public class RoundRobinTests : UnitTest
     [Trait("Bug", "2110")]
     public async Task Lease_SelectedServiceIsNull_ShouldReturnError()
     {
+        // Arrange
         var invalidServices = new List<Service> { null };
         var roundRobin = GivenLoadBalancer(invalidServices);
-        var response = await WhenIGetTheNextAddressAsync(roundRobin);
-        ThenServicesAreNullErrorIsReturned(response);
+
+        // Act
+        var response = await roundRobin.LeaseAsync(_httpContext);
+
+        // Assert: Then ServicesAreNullError Is Returned
+        response.ShouldNotBeNull().Data.ShouldBeNull();
+        response.IsError.ShouldBeTrue();
+        response.Errors[0].ShouldBeOfType<ServicesAreNullError>();
     }
 
     //[InlineData(1, 10)]
@@ -123,7 +131,7 @@ public class RoundRobinTests : UnitTest
 
     private async Task GetParallelResponse(Response<ServiceHostAndPort>[] responses, RoundRobin roundRobin, int threadIndex)
     {
-        responses[threadIndex] = await WhenIGetTheNextAddressAsync(roundRobin);
+        responses[threadIndex] = await roundRobin.LeaseAsync(_httpContext);
     }
 
     private static List<Service> GivenServices(int total = 3, [CallerMemberName] string serviceName = null)
@@ -147,15 +155,5 @@ public class RoundRobinTests : UnitTest
                 return Task.FromResult(services);
             },
             serviceName);
-    }
-
-    private Task<Response<ServiceHostAndPort>> WhenIGetTheNextAddressAsync(RoundRobin roundRobin)
-        => roundRobin.LeaseAsync(_httpContext);
-
-    private static void ThenServicesAreNullErrorIsReturned(Response<ServiceHostAndPort> response)
-    {
-        response.ShouldNotBeNull().Data.ShouldBeNull();
-        response.IsError.ShouldBeTrue();
-        response.Errors[0].ShouldBeOfType<ServicesAreNullError>();
     }
 }

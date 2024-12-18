@@ -1,287 +1,286 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public class HttpDelegatingHandlersTests : IDisposable
 {
-    public class HttpDelegatingHandlersTests : IDisposable
+    private readonly Steps _steps;
+    private string _downstreamPath;
+    private readonly ServiceHandler _serviceHandler;
+
+    public HttpDelegatingHandlersTests()
     {
-        private readonly Steps _steps;
-        private string _downstreamPath;
-        private readonly ServiceHandler _serviceHandler;
+        _serviceHandler = new ServiceHandler();
+        _steps = new Steps();
+    }
 
-        public HttpDelegatingHandlersTests()
+    [Fact]
+    public void should_call_re_route_ordered_specific_handlers()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_call_re_route_ordered_specific_handlers()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DelegatingHandlers = new List<string>
-                        {
-                            "FakeHandlerTwo",
-                            "FakeHandler",
+                            Host = "localhost",
+                            Port = port,
                         },
                     },
-                },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => ThenTheOrderedHandlersAreCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_call_global_di_handlers()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                    DelegatingHandlers = new List<string>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        "FakeHandlerTwo",
+                        "FakeHandler",
                     },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => ThenTheHandlersAreCalledCorrectly())
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheOrderedHandlersAreCalledCorrectly())
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_call_global_di_handlers_multiple_times()
+    [Fact]
+    public void should_call_global_di_handlers()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
                 },
-            };
+            },
+        };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheHandlersAreCalledCorrectly())
+            .BDDfy();
+    }
 
-        [Fact]
-        public void should_call_global_di_handlers_with_dependency()
+    [Fact]
+    public void should_call_global_di_handlers_multiple_times()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
         {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new()
                 {
-                    new()
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new()
                         {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
+                            Host = "localhost",
+                            Port = port,
                         },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
                     },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
                 },
-            };
+            },
+        };
 
-            var dependency = new FakeDependency();
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => ThenTheDependencyIsCalled(dependency))
-                .BDDfy();
-        }
+    [Fact]
+    public void should_call_global_di_handlers_with_dependency()
+    {
+        var port = PortFinder.GetRandomPort();
 
-        private static void ThenTheDependencyIsCalled(FakeDependency dependency)
+        var configuration = new FileConfiguration
         {
-            dependency.Called.ShouldBeTrue();
-        }
-
-        private static void ThenTheHandlersAreCalledCorrectly()
-        {
-            FakeHandler.TimeCalled.ShouldBeLessThan(FakeHandlerTwo.TimeCalled);
-        }
-
-        private static void ThenTheOrderedHandlersAreCalledCorrectly()
-        {
-            FakeHandlerTwo.TimeCalled.ShouldBeLessThan(FakeHandler.TimeCalled);
-        }
-
-        public class FakeDependency
-        {
-            public bool Called;
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class FakeHandlerWithDependency : DelegatingHandler
-        {
-            private readonly FakeDependency _dependency;
-
-            public FakeHandlerWithDependency(FakeDependency dependency)
+            Routes = new List<FileRoute>
             {
-                _dependency = dependency;
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                _dependency.Called = true;
-                return base.SendAsync(request, cancellationToken);
-            }
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class FakeHandler : DelegatingHandler
-        {
-            public static DateTime TimeCalled { get; private set; }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                TimeCalled = DateTime.Now;
-                return base.SendAsync(request, cancellationToken);
-            }
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class FakeHandlerTwo : DelegatingHandler
-        {
-            public static DateTime TimeCalled { get; private set; }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                TimeCalled = DateTime.Now;
-                return base.SendAsync(request, cancellationToken);
-            }
-        }
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class FakeHandlerAgain : DelegatingHandler
-        {
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                Console.WriteLine(request.RequestUri);
-
-                //do stuff and optionally call the base handler..
-                return await base.SendAsync(request, cancellationToken);
-            }
-        }
-
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPath != basePath)
+                new()
                 {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
+                    DownstreamPathTemplate = "/",
+                    DownstreamScheme = "http",
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new()
+                        {
+                            Host = "localhost",
+                            Port = port,
+                        },
+                    },
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = new List<string> { "Get" },
+                },
+            },
+        };
+
+        var dependency = new FakeDependency();
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
+            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => _steps.GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
+            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDependencyIsCalled(dependency))
+            .BDDfy();
+    }
+
+    private static void ThenTheDependencyIsCalled(FakeDependency dependency)
+    {
+        dependency.Called.ShouldBeTrue();
+    }
+
+    private static void ThenTheHandlersAreCalledCorrectly()
+    {
+        FakeHandler.TimeCalled.ShouldBeLessThan(FakeHandlerTwo.TimeCalled);
+    }
+
+    private static void ThenTheOrderedHandlersAreCalledCorrectly()
+    {
+        FakeHandlerTwo.TimeCalled.ShouldBeLessThan(FakeHandler.TimeCalled);
+    }
+
+    public class FakeDependency
+    {
+        public bool Called;
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class FakeHandlerWithDependency : DelegatingHandler
+    {
+        private readonly FakeDependency _dependency;
+
+        public FakeHandlerWithDependency(FakeDependency dependency)
+        {
+            _dependency = dependency;
         }
 
-        public void Dispose()
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            _steps?.Dispose();
-            _serviceHandler?.Dispose();
+            _dependency.Called = true;
+            return base.SendAsync(request, cancellationToken);
         }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class FakeHandler : DelegatingHandler
+    {
+        public static DateTime TimeCalled { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            TimeCalled = DateTime.Now;
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class FakeHandlerTwo : DelegatingHandler
+    {
+        public static DateTime TimeCalled { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            TimeCalled = DateTime.Now;
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class FakeHandlerAgain : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Console.WriteLine(request.RequestUri);
+
+            //do stuff and optionally call the base handler..
+            return await base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    {
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        {
+            _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+
+            if (_downstreamPath != basePath)
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync("downstream path didnt match base path");
+            }
+            else
+            {
+                context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsync(responseBody);
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _steps?.Dispose();
+        _serviceHandler?.Dispose();
     }
 }

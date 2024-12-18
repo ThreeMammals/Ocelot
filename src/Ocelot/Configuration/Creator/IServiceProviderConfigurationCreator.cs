@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IServiceProviderConfigurationCreator
 {
-    public interface IServiceProviderConfigurationCreator
-    {
-        ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration);
-    }
+    ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration);
 }

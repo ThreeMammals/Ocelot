@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IDynamicsCreator
 {
-    public interface IDynamicsCreator
-    {
-        List<Route> Create(FileConfiguration fileConfiguration);
-    }
+    List<Route> Create(FileConfiguration fileConfiguration);
 }

@@ -4,14 +4,14 @@ orbs:
 jobs:
   build:
     docker:
-      - image: ocelot2/circleci-build:latest
+      - image: ocelot2/circleci-build:9.24.0
     resource_class: medium+
     steps:
       - checkout
       - run: dotnet dev-certs https && dotnet tool restore && dotnet cake
   release:
     docker:
-      - image: ocelot2/circleci-build:latest
+      - image: ocelot2/circleci-build:9.24.0
     resource_class: medium+
     steps:
       - checkout

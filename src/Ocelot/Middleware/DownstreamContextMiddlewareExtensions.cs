@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Middleware
+namespace Ocelot.Middleware;
+
+public static class DownstreamContextMiddlewareExtensions
 {
-    public static class DownstreamContextMiddlewareExtensions
+    public static IApplicationBuilder UseDownstreamContextMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseDownstreamContextMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ConfigurationMiddleware>();
-        }
+        return builder.UseMiddleware<ConfigurationMiddleware>();
     }
 }

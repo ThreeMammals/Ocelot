@@ -1,9 +1,8 @@
 ﻿using Ocelot.Configuration;
 
-namespace Ocelot.DownstreamRouteFinder.Finder
+namespace Ocelot.DownstreamRouteFinder.Finder;
+
+public interface IDownstreamRouteProviderFactory
 {
-    public interface IDownstreamRouteProviderFactory
-    {
-        IDownstreamRouteProvider Get(IInternalConfiguration config);
-    }
+    IDownstreamRouteProvider Get(IInternalConfiguration config);
 }

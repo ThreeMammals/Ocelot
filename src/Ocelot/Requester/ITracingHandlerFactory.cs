@@ -1,7 +1,6 @@
-﻿namespace Ocelot.Requester
+﻿namespace Ocelot.Requester;
+
+public interface ITracingHandlerFactory
 {
-    public interface ITracingHandlerFactory
-    {
-        ITracingHandler Get();
-    }
+    ITracingHandler Get();
 }

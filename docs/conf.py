@@ -9,7 +9,7 @@
 project = 'Ocelot Gateway'
 copyright = ' 2016-2024, ThreeMammals Ocelot team'
 author = 'Tom Pallister, Raman Maksimchuk'
-release = '23.3'
+release = '23.4'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

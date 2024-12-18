@@ -6,7 +6,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Kubernetes;
 
-namespace Ocelot.Samples.OcelotKube.ApiGateway;
+namespace Ocelot.Samples.Kubernetes.ApiGateway;
 
 public class Startup
 {

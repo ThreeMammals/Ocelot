@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
-public sealed class ClientRateLimitingTests : Steps, IDisposable
+public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
 {
     const int OK = (int)HttpStatusCode.OK;
     const int TooManyRequests = (int)HttpStatusCode.TooManyRequests;
@@ -129,6 +131,53 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
             .And(x => ThenTheResponseBodyShouldBe("101")) // total 101 OK responses
             .BDDfy();
     }
+    
+    [Theory]
+    [Trait("Bug", "1305")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_set_ratelimiting_headers_on_response_when_DisableRateLimitHeaders_set_to(bool disableRateLimitHeaders)
+    {
+        int port = PortFinder.GetRandomPort();
+        var configuration = CreateConfigurationForCheckingHeaders(port, disableRateLimitHeaders);
+        bool exist = !disableRateLimitHeaders;
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(false))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(false))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(false))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(exist))
+            .BDDfy();
+    }
+
+    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
+    {
+        var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
+        var config = GivenConfiguration(route);
+        config.GlobalConfiguration.RateLimitOptions = new FileRateLimitOptions()
+        {
+            DisableRateLimitHeaders = disableRateLimitHeaders,
+            QuotaExceededMessage = "",
+            HttpStatusCode = TooManyRequests,
+        };
+        return config;
+    }
+
+    private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
+    {
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
+        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
+    }
+
+    private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
+        => _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
     {

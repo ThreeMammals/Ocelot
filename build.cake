@@ -14,8 +14,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net6.0;net7.0;net8.0";
-const string LatestFramework = "net8.0";
+const string AllFrameworks = "net8.0;net9.0";
+const string LatestFramework = "net9.0";
 
 var compileConfig = Argument("configuration", Release); // compile
 
@@ -96,7 +96,7 @@ Task("Compile")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // build using .NET 8 SDK only
+			settings.Framework = LatestFramework; // build using .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
@@ -138,7 +138,6 @@ Task("Version")
 Task("GitLogUniqContributors")
 	.Does(() =>
 	{
-        Information("---==< Unique Contributors >==---");
 		var command = "log --format=\"%aN|%aE\" ";
 		// command += IsRunningOnCircleCI() ? "| sort | uniq" :
 		// 	IsRunningInPowershell() ? "| Sort-Object -Unique" : "| sort | uniq";
@@ -159,7 +158,7 @@ Task("GitLogUniqContributors")
 
 Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
-	.IsDependentOn("GitLogUniqContributors")
+	//.IsDependentOn("GitLogUniqContributors")
 	.Does(() =>
 	{
         Information($"Generating release notes at {releaseNotesFile}");
@@ -204,12 +203,14 @@ Task("CreateReleaseNotes")
             var emailInfo = debugUserEmail ? ", " + contributor.Email : string.Empty;
             return $"{stars}  {contributor.Author}{emailInfo}";
         }
-        // foreach (var contributor in summary)
-        // {
-        //     starring.Add(CreateStars(contributor.Commits, contributor.Author));
-        // }
-        // Information("---==< Old Starring >==---");
-        // Information(string.Join(Environment.NewLine, starring));
+
+        Information("------==< Old Starring >==------");
+        foreach (var contributor in summary)
+        {
+            starring.Add(CreateStars(contributor.Commits, contributor.Author));
+        }
+        Information(string.Join(Environment.NewLine, starring));
+
         var commitsGrouping = summary
             .GroupBy(x => x.Commits)
             .Select(CreateCommitsGroupingItem)
@@ -221,7 +222,7 @@ Task("CreateReleaseNotes")
             byFiles: (log, group, fGroup) => CreateStars(group.Commits, fGroup.Contributors.First().Contributor),
             byInsertions: (log, group, fGroup, insGroup) => CreateStars(group.Commits, insGroup.Contributors.First().Contributor),
             byDeletions: (log, group, fGroup, insGroup, contributor) => CreateStars(group.Commits, contributor.Contributor));
-        Information("---==< Starring >==---");
+        Information("------==< New Starring >==------");
         Information(string.Join(Environment.NewLine, starring));
 
         // Honoring aka Top Contributors
@@ -369,12 +370,17 @@ Task("CreateReleaseNotes")
         // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
         // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
         // releaseNotes.Add("");
-        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        releaseNotes.AddRange(starring);
-        releaseNotes.Add("");
+        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        // releaseNotes.AddRange(starring);
+        // releaseNotes.Add("");
         // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
+        // releaseNotes.Add("");
+        // releaseNotes.Add("<details><summary>Logbook</summary>");
+        // releaseNotes.Add("");
+        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
         // releaseNotes.AddRange(commitsHistory);
+        // releaseNotes.Add("</details>");
+        // releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -461,7 +467,7 @@ Task("RunUnitTests")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -485,10 +491,16 @@ Task("RunUnitTests")
 			}
 
 			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-			{
-				RepoToken = repoToken
-			});
+			// CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+			// {
+			// 	RepoToken = repoToken
+			// });
+			Warning($@"Uploading is disabled due to the following reasons:
+			- App: /root/project/tools/csmacnz.Coveralls
+			- Framework: 'Microsoft.NETCore.App', version '6.0.0' (x64)
+			Upgrading csmacnz.Coveralls package to .NET 8-9 is required!!!
+			Repo: https://github.com/csmacnz/coveralls.net
+			Coveralls Language Integrations > .Net : https://docs.coveralls.io/dot-net");
 		}
 		else
 		{
@@ -514,14 +526,13 @@ Task("RunAcceptanceTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
@@ -536,14 +547,13 @@ Task("RunIntegrationTests")
 		var settings = new DotNetTestSettings
 		{
 			Configuration = compileConfig,
-			// Framework = LatestFramework, // .NET 8 SDK only
 			ArgumentCustomization = args => args
 				.Append("--no-restore")
 				.Append("--no-build")
 		};
 		if (target != Release)
 		{
-			settings.Framework = LatestFramework; // .NET 8 SDK only
+			settings.Framework = LatestFramework; // .NET 9 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.AcceptanceTests.Caching;
+using Ocelot.AcceptanceTests.Properties;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
@@ -36,7 +37,7 @@ using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 namespace Ocelot.AcceptanceTests;
 
-public class Steps : IDisposable
+public class Steps : BddfyConfig, IDisposable
 {
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
@@ -55,7 +56,7 @@ public class Steps : IDisposable
     private IWebHost _ocelotHost; // TODO remove because of one reference
     private IOcelotConfigurationChangeTokenSource _changeToken;
 
-    public Steps()
+    public Steps() : base()
     {
         _random = new Random();
         _testId = Guid.NewGuid();
@@ -733,17 +734,6 @@ public class Steps : IDisposable
     {
         for (int i = 0; i < times; i++)
             await action.Invoke(i);
-    }
-
-    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
-    {
-        for (var i = 0; i < times; i++)
-        {
-            const string clientId = "ocelotclient1";
-            var request = new HttpRequestMessage(new HttpMethod("GET"), url);
-            request.Headers.Add("ClientId", clientId);
-            _response = await _ocelotClient.SendAsync(request);
-        }
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)

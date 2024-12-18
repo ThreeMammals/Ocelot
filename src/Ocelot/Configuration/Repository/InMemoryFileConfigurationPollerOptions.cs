@@ -1,7 +1,6 @@
-namespace Ocelot.Configuration.Repository
+namespace Ocelot.Configuration.Repository;
+
+public class InMemoryFileConfigurationPollerOptions : IFileConfigurationPollerOptions
 {
-    public class InMemoryFileConfigurationPollerOptions : IFileConfigurationPollerOptions
-    {
-        public int Delay => 1000;
-    }
+    public int Delay => 1000;
 }

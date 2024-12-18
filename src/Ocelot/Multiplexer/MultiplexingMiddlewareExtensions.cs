@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Multiplexer
+namespace Ocelot.Multiplexer;
+
+public static class MultiplexingMiddlewareExtensions
 {
-    public static class MultiplexingMiddlewareExtensions
+    public static IApplicationBuilder UseMultiplexingMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseMultiplexingMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<MultiplexingMiddleware>();
-        }
+        return builder.UseMiddleware<MultiplexingMiddleware>();
     }
 }

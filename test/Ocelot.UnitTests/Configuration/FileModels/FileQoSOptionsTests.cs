@@ -4,6 +4,7 @@ namespace Ocelot.UnitTests.Configuration.FileModels;
 
 public class FileQoSOptionsTests
 {
+    [Trait("Bug", "1833")]
     [Fact(DisplayName = "1833: Default constructor must assign zero to the TimeoutValue property")]
     public void Cstor_Default_AssignedZeroToTimeoutValue()
     {

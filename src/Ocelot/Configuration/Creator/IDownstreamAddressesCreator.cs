@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IDownstreamAddressesCreator
 {
-    public interface IDownstreamAddressesCreator
-    {
-        List<DownstreamHostAndPort> Create(FileRoute route);
-    }
+    List<DownstreamHostAndPort> Create(FileRoute route);
 }

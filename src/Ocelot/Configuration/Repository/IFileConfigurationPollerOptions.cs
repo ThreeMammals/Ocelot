@@ -1,7 +1,6 @@
-﻿namespace Ocelot.Configuration.Repository
+﻿namespace Ocelot.Configuration.Repository;
+
+public interface IFileConfigurationPollerOptions
 {
-    public interface IFileConfigurationPollerOptions
-    {
-        int Delay { get; }
-    }
+    int Delay { get; }
 }

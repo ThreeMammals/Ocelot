@@ -1,12 +1,11 @@
 using Ocelot.Errors;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class CannotRemovePlaceholderError : Error
 {
-    public class CannotRemovePlaceholderError : Error
+    public CannotRemovePlaceholderError(string message)
+        : base(message, OcelotErrorCode.CannotRemovePlaceholderError, 404)
     {
-        public CannotRemovePlaceholderError(string message)
-            : base(message, OcelotErrorCode.CannotRemovePlaceholderError, 404)
-        {
-        }
     }
 }

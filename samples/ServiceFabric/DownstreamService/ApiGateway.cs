@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.IO;
 
-namespace OcelotApplicationService;
+namespace Ocelot.Samples.ServiceFabric.DownstreamService;
 
 /// <summary>
 /// The FabricRuntime creates an instance of this class for each service type instance. 

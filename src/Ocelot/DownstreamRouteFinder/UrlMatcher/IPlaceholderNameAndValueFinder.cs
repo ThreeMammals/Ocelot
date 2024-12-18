@@ -1,9 +1,8 @@
 ﻿using Ocelot.Responses;
 
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.DownstreamRouteFinder.UrlMatcher;
+
+public interface IPlaceholderNameAndValueFinder
 {
-    public interface IPlaceholderNameAndValueFinder
-    {
-        Response<List<PlaceholderNameAndValue>> Find(string path, string query, string pathTemplate);
-    }
+    Response<List<PlaceholderNameAndValue>> Find(string path, string query, string pathTemplate);
 }

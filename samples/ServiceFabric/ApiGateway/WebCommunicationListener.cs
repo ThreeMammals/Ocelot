@@ -16,7 +16,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OcelotApplicationApiGateway;
+namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
 public class WebCommunicationListener : ICommunicationListener
 {

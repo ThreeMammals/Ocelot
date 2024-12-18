@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Errors.Middleware
+namespace Ocelot.Errors.Middleware;
+
+public static class ExceptionHandlerMiddlewareExtensions
 {
-    public static class ExceptionHandlerMiddlewareExtensions
+    public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ExceptionHandlerMiddleware>();
-        }
+        return builder.UseMiddleware<ExceptionHandlerMiddleware>();
     }
 }

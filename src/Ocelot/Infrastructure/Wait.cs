@@ -1,10 +1,9 @@
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class Wait
 {
-    public class Wait
+    public static Waiter WaitFor(int milliSeconds)
     {
-        public static Waiter WaitFor(int milliSeconds)
-        {
-            return new Waiter(milliSeconds);
-        }
+        return new Waiter(milliSeconds);
     }
 }

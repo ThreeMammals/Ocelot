@@ -1,6 +1,5 @@
-namespace Ocelot.Requester
+namespace Ocelot.Requester;
+
+public class NoQosDelegatingHandler : DelegatingHandler
 {
-    public class NoQosDelegatingHandler : DelegatingHandler
-    {
-    }
 }

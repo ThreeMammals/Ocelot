@@ -114,10 +114,9 @@ public class PollyResiliencePipelineDelegatingHandlerTests
             .WithPriority(1)
             .WithOriginalValue("/").Build();
 
-        var route = new DownstreamRouteBuilder()
+        return new DownstreamRouteBuilder()
             .WithQosOptions(options)
-            .WithUpstreamPathTemplate(upstreamPath).Build();
-
-        return route;
+            .WithUpstreamPathTemplate(upstreamPath)
+            .Build();
     }
 }

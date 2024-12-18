@@ -6,73 +6,72 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ocelot.ManualTest
+namespace Ocelot.ManualTest;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            TestHostBuilder.Create()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
+        TestHostBuilder.Create()
+            .UseKestrel()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config
+                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                    .AddJsonFile("appsettings.json", true, true)
+                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                    .AddJsonFile("ocelot.json", false, false)
+                    .AddEnvironmentVariables();
+            })
+            .ConfigureServices(s =>
+            {
+                s.AddAuthentication();
+                /*.AddJwtBearer("TestKey", x =>
                 {
-                    config
-                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                        .AddJsonFile("appsettings.json", true, true)
-                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("ocelot.json", false, false)
-                        .AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddAuthentication();
-                    /*.AddJwtBearer("TestKey", x =>
-                    {
-                        x.Authority = "test";
-                        x.Audience = "test";
-                    });*/
+                    x.Authority = "test";
+                    x.Audience = "test";
+                });*/
 
-                    s.AddSingleton<QosDelegatingHandlerDelegate>((x, t, z) => new FakeHandler());
-                    s.AddOcelot()
-                       .AddDelegatingHandler<FakeHandler>(true);
-                    /*.AddCacheManager(x =>
-                    {
-                        x.WithDictionaryHandle();
-                    })
-                    .AddOpenTracing(option =>
-                    {
-                        option.CollectorUrl = "http://localhost:9618";
-                        option.Service = "Ocelot.ManualTest";
-                    })
-                    .AddAdministration("/administration", "secret");*/
-                })
-                .ConfigureLogging((hostingContext, logging) =>
+                s.AddSingleton<QosDelegatingHandlerDelegate>((x, t, z) => new FakeHandler());
+                s.AddOcelot()
+                   .AddDelegatingHandler<FakeHandler>(true);
+                /*.AddCacheManager(x =>
                 {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
+                    x.WithDictionaryHandle();
                 })
-                .UseIISIntegration()
-                .Configure(async app =>
+                .AddOpenTracing(option =>
                 {
-                    await app.UseOcelot(options =>
-                    {
-                        options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
-                    });
+                    option.CollectorUrl = "http://localhost:9618";
+                    option.Service = "Ocelot.ManualTest";
                 })
-                .Build()
-                .Run();
-        }
+                .AddAdministration("/administration", "secret");*/
+            })
+            .ConfigureLogging((hostingContext, logging) =>
+            {
+                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                logging.AddConsole();
+            })
+            .UseIISIntegration()
+            .Configure(async app =>
+            {
+                await app.UseOcelot(options =>
+                {
+                    options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
+                });
+            })
+            .Build()
+            .Run();
     }
+}
 
-    public class FakeHandler : DelegatingHandler
+public class FakeHandler : DelegatingHandler
+{
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Console.WriteLine(request.RequestUri);
+        Console.WriteLine(request.RequestUri);
 
-            //do stuff and optionally call the base handler..
-            return await base.SendAsync(request, cancellationToken);
-        }
+        //do stuff and optionally call the base handler..
+        return await base.SendAsync(request, cancellationToken);
     }
 }

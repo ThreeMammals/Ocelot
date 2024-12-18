@@ -48,11 +48,7 @@ public sealed class CancelRequestTests : Steps, IDisposable
         // Assert
         started.NotificationSent.ShouldBeTrue();
         stopped.NotificationSent.ShouldBeFalse();
-#if NET8_0_OR_GREATER
         ex.ShouldNotBeNull().ShouldBeOfType<TaskCanceledException>();
-#else
-        ex.ShouldNotBeNull().ShouldBeOfType<OperationCanceledException>();
-#endif
     }
 
     private Task Cancel(Task t) => Task.Run(_ocelotClient.CancelPendingRequests);

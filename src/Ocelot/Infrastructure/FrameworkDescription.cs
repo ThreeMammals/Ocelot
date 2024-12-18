@@ -1,12 +1,11 @@
 using System.Runtime.InteropServices;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class FrameworkDescription : IFrameworkDescription
 {
-    public class FrameworkDescription : IFrameworkDescription
+    public string Get()
     {
-        public string Get()
-        {
-            return RuntimeInformation.FrameworkDescription;
-        }
+        return RuntimeInformation.FrameworkDescription;
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Samples.Web;
 
-namespace Ocelot.Samples.OcelotBasic.ApiGateway;
+namespace Ocelot.Samples.Basic.ApiGateway;
 
 public class Program
 {

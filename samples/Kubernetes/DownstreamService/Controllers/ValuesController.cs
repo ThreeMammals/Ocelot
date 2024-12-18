@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
-namespace Ocelot.Samples.OcelotKube.DownstreamService.Controllers;
+namespace Ocelot.Samples.Kubernetes.DownstreamService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

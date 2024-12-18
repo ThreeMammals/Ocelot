@@ -3,35 +3,34 @@ using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes.Interfaces;
 
-namespace Ocelot.Provider.Kubernetes
+namespace Ocelot.Provider.Kubernetes;
+
+public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProviderFactory
 {
-    public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProviderFactory
+    /// <summary>
+    /// String constant used for provider type definition.
+    /// </summary>
+    public const string PollKube = nameof(Kubernetes.PollKube);
+
+    public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
+
+    private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
     {
-        /// <summary>
-        /// String constant used for provider type definition.
-        /// </summary>
-        public const string PollKube = nameof(Kubernetes.PollKube);
+        var factory = provider.GetService<IOcelotLoggerFactory>();
+        var kubeClient = provider.GetService<IKubeApiClient>();
+        var serviceBuilder = provider.GetService<IKubeServiceBuilder>();
 
-        public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
-
-        private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
+        var configuration = new KubeRegistryConfiguration
         {
-            var factory = provider.GetService<IOcelotLoggerFactory>();
-            var kubeClient = provider.GetService<IKubeApiClient>();
-            var serviceBuilder = provider.GetService<IKubeServiceBuilder>();
+            KeyOfServiceInK8s = route.ServiceName,
+            KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
+            Scheme = route.DownstreamScheme,
+        };
 
-            var configuration = new KubeRegistryConfiguration
-            {
-                KeyOfServiceInK8s = route.ServiceName,
-                KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
-                Scheme = route.DownstreamScheme,
-            };
+        var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
 
-            var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
- 
-            return PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
-                ? new PollKube(config.PollingInterval, factory, defaultK8sProvider)
-                : defaultK8sProvider;
-        }
+        return PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
+            ? new PollKube(config.PollingInterval, factory, defaultK8sProvider)
+            : defaultK8sProvider;
     }
 }

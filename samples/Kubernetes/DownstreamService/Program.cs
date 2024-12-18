@@ -6,7 +6,7 @@ using Ocelot.Samples.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Ocelot.Samples.OcelotKube.DownstreamService;
+namespace Ocelot.Samples.Kubernetes.DownstreamService;
 
 public class Program
 {

@@ -1,12 +1,11 @@
 using Ocelot.Errors;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.LoadBalancer.LoadBalancers;
+
+public class ServicesAreNullError : Error
 {
-    public class ServicesAreNullError : Error
+    public ServicesAreNullError(string message)
+        : base(message, OcelotErrorCode.ServicesAreNullError, 404)
     {
-        public ServicesAreNullError(string message)
-            : base(message, OcelotErrorCode.ServicesAreNullError, 404)
-        {
-        }
     }
 }

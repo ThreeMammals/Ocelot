@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Ocelot.Samples.Web;
 
-namespace Ocelot.Samples.OcelotKube.ApiGateway;
+namespace Ocelot.Samples.Kubernetes.ApiGateway;
 
 public class Program
 {
