@@ -69,7 +69,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
 
         if (fileConfig.IsError)
         {
-            _logger.LogWarning(() =>$"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+            _logger.LogWarning(() => $"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
             return;
         }
 
@@ -90,15 +90,15 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         _logger.LogInformation("Finished polling");
     }
 
-        /// <summary>
-        /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
-        /// </summary>
-        /// <returns>hash of the config.</returns>
-        private static string ToJson(FileConfiguration config)
-        {
-            var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.Web);
-            return currentHash;
-        }
+    /// <summary>
+    /// We could do object comparison here but performance isnt really a problem. This might be an issue one day!.
+    /// </summary>
+    /// <returns>hash of the config.</returns>
+    private static string ToJson(FileConfiguration config)
+    {
+        var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.Web);
+        return currentHash;
+    }
 
     public void Dispose()
     {

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.Administration;
-using Ocelot.Cache;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -339,18 +338,18 @@ public class AdministrationTests : IDisposable
         _builder.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>().ChangeToken.HasChanged.ShouldBeTrue();
     }
 
-        private static void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)
-        {
-            var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
-            var resultText = File.ReadAllText(ocelotJsonPath);
-            var expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
-            resultText.ShouldBe(expectedText);
+    private static void ThenTheConfigurationIsSavedCorrectly(FileConfiguration expected)
+    {
+        var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
+        var resultText = File.ReadAllText(ocelotJsonPath);
+        var expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
+        resultText.ShouldBe(expectedText);
 
-            var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
-            resultText = File.ReadAllText(environmentSpecificPath);
-            expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
-            resultText.ShouldBe(expectedText);
-        }
+        var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
+        resultText = File.ReadAllText(environmentSpecificPath);
+        expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
+        resultText.ShouldBe(expectedText);
+    }
 
     [Fact]
     public async Task Should_get_file_configuration_edit_and_post_updated_version_redirecting_route()
@@ -520,12 +519,12 @@ public class AdministrationTests : IDisposable
         };
         var content = new FormUrlEncodedContent(formData);
 
-            using var httpClient = new HttpClient();
-            var response = await httpClient.PostAsync($"{url}/connect/token", content);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-            _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
-        }
+        using var httpClient = new HttpClient();
+        var response = await httpClient.PostAsync($"{url}/connect/token", content);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
+    }
 
     private async Task GivenThereIsAnIdentityServerOn(string url, string apiName)
     {
@@ -639,13 +638,13 @@ public class AdministrationTests : IDisposable
         _response = await _httpClientTwo.GetAsync(url);
     }
 
-        private async Task WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
-        {
-            var json = JsonSerializer.Serialize(updatedConfiguration, JsonSerializerOptionsFactory.Web);
-            var content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            _response = await _httpClient.PostAsync(url, content);
-        }
+    private async Task WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
+    {
+        var json = JsonSerializer.Serialize(updatedConfiguration, JsonSerializerOptionsFactory.Web);
+        var content = new StringContent(json);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        _response = await _httpClient.PostAsync(url, content);
+    }
 
     private async Task ThenTheResponseBodyShouldBe(string expected)
     {
@@ -653,9 +652,9 @@ public class AdministrationTests : IDisposable
         content.ShouldBe(expected);
     }
 
-        private async Task ThenTheResponseShouldBe(FileConfiguration expecteds)
-        {
-            var response = JsonSerializer.Deserialize<FileConfiguration>(await _response.Content.ReadAsStringAsync(), JsonSerializerOptionsFactory.Web);
+    private async Task ThenTheResponseShouldBe(FileConfiguration expecteds)
+    {
+        var response = JsonSerializer.Deserialize<FileConfiguration>(await _response.Content.ReadAsStringAsync(), JsonSerializerOptionsFactory.Web);
 
         response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
         response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -696,14 +695,14 @@ public class AdministrationTests : IDisposable
         };
         var content = new FormUrlEncodedContent(formData);
 
-            var response = await _httpClient.PostAsync(tokenUrl, content);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-            _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
-            var configPath = $"{adminPath}/.well-known/openid-configuration";
-            response = await _httpClient.GetAsync(configPath);
-            response.EnsureSuccessStatusCode();
-        }
+        var response = await _httpClient.PostAsync(tokenUrl, content);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
+        var configPath = $"{adminPath}/.well-known/openid-configuration";
+        response = await _httpClient.GetAsync(configPath);
+        response.EnsureSuccessStatusCode();
+    }
 
     private async Task GivenOcelotIsRunningWithIdentityServerSettings(Action<JwtBearerOptions> configOptions)
     {
@@ -826,7 +825,7 @@ public class AdministrationTests : IDisposable
     {
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-            var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
 
         if (File.Exists(configurationPath))
         {

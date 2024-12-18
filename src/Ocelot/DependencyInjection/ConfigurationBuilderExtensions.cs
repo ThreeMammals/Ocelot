@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
-using System.Text;
 using System.Text.Json;
 
 namespace Ocelot.DependencyInjection;
@@ -92,8 +91,8 @@ public static partial class ConfigurationBuilderExtensions
     private static IConfigurationBuilder ApplyMergeOcelotJsonOption(IConfigurationBuilder builder, MergeOcelotJson mergeTo, string json,
         string primaryConfigFile, bool? optional, bool? reloadOnChange)
     {
-        return mergeTo == MergeOcelotJson.ToMemory ? 
-            builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) : 
+        return mergeTo == MergeOcelotJson.ToMemory ?
+            builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json))) :
             AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
     }
 
@@ -133,38 +132,38 @@ public static partial class ConfigurationBuilderExtensions
                 continue;
             }
 
-                var lines = File.ReadAllText(file.FullName);
-                var config = JsonSerializer.Deserialize<FileConfiguration>(lines, JsonSerializerOptionsFactory.Web);
-                if (file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
-                    file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
-                {
-                    fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
-                }
+            var lines = File.ReadAllText(file.FullName);
+            var config = JsonSerializer.Deserialize<FileConfiguration>(lines, JsonSerializerOptionsFactory.Web);
+            if (file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
+                file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+            {
+                fileConfiguration.GlobalConfiguration = config.GlobalConfiguration;
+            }
 
             fileConfiguration.Aggregates.AddRange(config.Aggregates);
             fileConfiguration.Routes.AddRange(config.Routes);
         }
 
-            return JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
-        }
+        return JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
+    }
 
-        /// <summary>
-        /// Adds Ocelot configuration by ready configuration object and writes JSON to the primary configuration file.<br/>
-        /// Finally, adds JSON file as configuration provider.
-        /// </summary>
-        /// <remarks>Use optional arguments for injections and overridings.</remarks>
-        /// <param name="builder">Configuration builder to extend.</param>
-        /// <param name="fileConfiguration">File configuration to add as JSON provider.</param>
-        /// <param name="primaryConfigFile">Primary config file.</param>
-        /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
-        /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
-        /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-        public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
-            string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
-        {
-            var json = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
-            return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
-        }
+    /// <summary>
+    /// Adds Ocelot configuration by ready configuration object and writes JSON to the primary configuration file.<br/>
+    /// Finally, adds JSON file as configuration provider.
+    /// </summary>
+    /// <remarks>Use optional arguments for injections and overridings.</remarks>
+    /// <param name="builder">Configuration builder to extend.</param>
+    /// <param name="fileConfiguration">File configuration to add as JSON provider.</param>
+    /// <param name="primaryConfigFile">Primary config file.</param>
+    /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
+    /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
+    /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
+    public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration,
+        string primaryConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+    {
+        var json = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
+        return AddOcelotJsonFile(builder, json, primaryConfigFile, optional, reloadOnChange);
+    }
 
     /// <summary>
     /// Adds Ocelot configuration by ready configuration object, environment and merge option, reading the required files from the current default folder.
