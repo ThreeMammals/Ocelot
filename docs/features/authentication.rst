@@ -10,8 +10,7 @@ users must register authentication services in their **Startup.cs** as usual but
     public void ConfigureServices(IServiceCollection services)
     {
         const string AuthenticationProviderKey = "MyKey";
-        services
-            .AddAuthentication()
+        services.AddAuthentication()
             .AddJwtBearer(AuthenticationProviderKey, options =>
             {
                 // Custom Authentication setup via options initialization
@@ -21,10 +20,10 @@ users must register authentication services in their **Startup.cs** as usual but
 In this example ``MyKey`` is `the scheme <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/#authentication-scheme>`_ that this provider has been registered with.
 We then map this to a Route in the configuration using the following `AuthenticationOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationOptions&type=code>`_ properties:
 
-* ``AuthenticationProviderKey`` is a string object, obsolete [#f1]_. This is legacy definition when you define :ref:`authentication-single`.
+* ``AuthenticationProviderKey`` is a string object, obsolete [#f1]_. This is legacy definition when you define :ref:`authentication-scheme`.
 * ``AuthenticationProviderKeys`` is an array of strings, the recommended definition of :ref:`authentication-multiple` feature.
 
-.. _authentication-single:
+.. _authentication-scheme:
 
 Single Key aka Authentication Scheme [#f1]_
 -------------------------------------------
@@ -54,8 +53,7 @@ Multiple Authentication Schemes [#f2]_
     | Property: ``AuthenticationOptions.AuthenticationProviderKeys``
 
 In real world of ASP.NET, apps may need to support multiple types of authentication by single Ocelot app instance.
-To register `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`_
-(`authentication provider keys <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationProviderKey&type=code>`_) for each appropriate authentication provider, use and develop this abstract configuration of two or more schemes:
+To register `multiple authentication schemes`_ (`authentication provider keys <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationProviderKey&type=code>`_) for each appropriate authentication provider, use and develop this abstract configuration of two or more schemes:
 
 .. code-block:: csharp
 
@@ -78,7 +76,7 @@ We then map these schemes to a Route in the configuration as shown below.
     "AllowedScopes": []
   }
 
-Afterward, Ocelot applies all steps that are specified for ``AuthenticationProviderKey`` as :ref:`authentication-single`.
+Afterward, Ocelot applies all steps that are specified for ``AuthenticationProviderKey`` as :ref:`authentication-scheme`.
 
 **Note** that the order of the keys in an array definition does matter! We use a "First One Wins" authentication strategy.
 
@@ -95,10 +93,9 @@ If you want to authenticate using JWT tokens maybe from a provider like `Auth0 <
 
     public void ConfigureServices(IServiceCollection services)
     {
-        var authenticationProviderKey = "MyKey";
-        services
-            .AddAuthentication()
-            .AddJwtBearer(authenticationProviderKey, options =>
+        const string AuthenticationProviderKey = "MyKey";
+        services.AddAuthentication()
+            .AddJwtBearer(AuthenticationProviderKey, options =>
             {
                 options.Authority = "test";
                 options.Audience = "test";
@@ -115,11 +112,10 @@ Then map the authentication provider key to a Route in your configuration e.g.
     "AllowedScopes": []
   }
 
-Docs
-^^^^
+**JWT Tokens Docs**
 
-* Microsoft Learn: `Authentication and authorization in minimal APIs <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security>`_
-* Andrew Lock | .NET Escapades: `A look behind the JWT bearer authentication middleware in ASP.NET Core <https://andrewlock.net/a-look-behind-the-jwt-bearer-authentication-middleware-in-asp-net-core/>`_
+    * Microsoft Learn: `Authentication and authorization in minimal APIs <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security>`_
+    * Andrew Lock | .NET Escapades: `A look behind the JWT bearer authentication middleware in ASP.NET Core <https://andrewlock.net/a-look-behind-the-jwt-bearer-authentication-middleware-in-asp-net-core/>`_
 
 Identity Server Bearer Tokens
 -----------------------------
@@ -131,15 +127,14 @@ If you don't understand how to do this, please consult the IdentityServer `docum
 
     public void ConfigureServices(IServiceCollection services)
     {
-        var authenticationProviderKey = "MyKey";
+        const string AuthenticationProviderKey = "MyKey";
         Action<JwtBearerOptions> options = (opt) =>
         {
             opt.Authority = "https://whereyouridentityserverlives.com";
             // ...
         };
-        services
-            .AddAuthentication()
-            .AddJwtBearer(authenticationProviderKey, options);
+        services.AddAuthentication()
+            .AddJwtBearer(AuthenticationProviderKey, options);
         services.AddOcelot();
     }
 
@@ -154,29 +149,30 @@ Then map the authentication provider key to a Route in your configuration e.g.
 
 Auth0 by Okta
 -------------
+
 Yet another identity provider by `Okta <https://www.okta.com/>`_, see `Auth0 Developer Resources <https://developer.auth0.com/>`_.
 
 Add the following to your startup ``Configure`` method:
 
 .. code-block:: csharp
 
-    app.UseAuthentication()
-        .UseOcelot().Wait();
+    app.UseAuthentication();
+    await UseOcelot();
 
 Add the following, at minimum, to your startup ``ConfigureServices`` method:
 
 .. code-block:: csharp
 
-    services
-        .AddAuthentication()
-        .AddJwtBearer(oktaProviderKey, options =>
+    const string OktaProviderKey = "MyKey";
+    services.AddAuthentication()
+        .AddJwtBearer(OktaProviderKey, options =>
         {
             options.Audience = configuration["Authentication:Okta:Audience"]; // Okta Authorization server Audience
             options.Authority = configuration["Authentication:Okta:Server"]; // Okta Authorization Issuer URI URL e.g. https://{subdomain}.okta.com/oauth2/{authidentifier}
         });
     services.AddOcelot(configuration);
 
-**Note** In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta ``"scp"`` claim to ``"scope"``[#f4]_:
+In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta ``scp`` claim to ``scope``:
 
 .. code-block:: csharp
 
@@ -184,7 +180,11 @@ Add the following, at minimum, to your startup ``ConfigureServices`` method:
     JsonWebTokenHandler.DefaultInboundClaimTypeMap.Remove("scp");
     JsonWebTokenHandler.DefaultInboundClaimTypeMap.Add("scp", "scope");
 
-`Issue 446 <https://github.com/ThreeMammals/Ocelot/issues/446>`_ contains some code and examples that might help with Okta integration.
+**Okta Notes**
+
+    1. Issue `446`_ contains some code and examples that might help with Okta integration.
+    2. Here is documentation for better clarity on claims mapping: `Mapping, customizing, and transforming claims in ASP.NET Core`_.
+    3. It is highly advisable to read and understand the :ref:`authentication-warning` related to the critical changes in authentication when utilizing .NET 8. [#f4]_
 
 Allowed Scopes
 --------------
@@ -193,12 +193,22 @@ If you add scopes to **AllowedScopes**, Ocelot will get all the user claims (fro
 
 This is a way to restrict access to a Route on a per scope basis.
 
+.. _authentication-warning:
+
+Warning
+-------
+
+.NET 8 introduced a breaking change [#f4]_ where ``JwtSecurityToken`` was replaced with ``JsonWebToken`` to enhance performance and reliability.
+Consequently, their handlers were changed ``JwtSecurityTokenHandler`` to ``JsonWebTokenHandler``.
+For versions prior to .NET 8, use the previous classes.
+
 Links
 -----
 
 * Microsoft Learn: `Overview of ASP.NET Core authentication <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/>`_
 * Microsoft Learn: `Authorize with a specific scheme in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme>`_
 * Microsoft Learn: `Policy schemes in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/policyschemes>`_
+* Microsoft Learn: `Mapping, customizing, and transforming claims in ASP.NET Core`_
 * Microsoft .NET Blog: `ASP.NET Core Authentication with IdentityServer4 <https://devblogs.microsoft.com/dotnet/asp-net-core-authentication-with-identityserver4/>`_
 
 Future
@@ -209,7 +219,14 @@ Please, open `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/
 
 """"
 
-.. [#f1] Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We support this ``[Obsolete]`` property for backward compatibility and migration reasons. In future releases, the property may be removed as a breaking change.
-.. [#f2] "`Multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__" feature was requested in issues `740 <https://github.com/ThreeMammals/Ocelot/issues/740>`_, `1580 <https://github.com/ThreeMammals/Ocelot/issues/1580>`_ and delivered as a part of `23.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0>`_ release.
-.. [#f3] We would appreciate any new PRs to add extra acceptance tests for your custom scenarios with `multiple authentication schemes <https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes>`__.
+.. [#f1] ":ref:`authentication-scheme`" feature has been an Ocelot artifact for ages. Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We support this ``[Obsolete]`` property for backward compatibility and migration reasons. In future releases, the property may be removed as a breaking change.
+.. [#f2] ":ref:`authentication-multiple`" feature was requested in issues `740`_, `1580`_ and delivered as a part of `23.0`_ release.
+.. [#f3] We would appreciate any new pull requests to add extra acceptance tests for your custom scenarios with `multiple authentication schemes`_.
 .. [#f4] For a complete understanding of .NET 8 breaking change related to JWT tokens, please refer to the Microsoft Learn documentation: "`Security token events return a JsonWebToken <https://learn.microsoft.com/en-us/dotnet/core/compatibility/aspnet-core/8.0/securitytoken-events>`__".
+
+.. _446: https://github.com/ThreeMammals/Ocelot/issues/446
+.. _740: https://github.com/ThreeMammals/Ocelot/issues/740
+.. _1580: https://github.com/ThreeMammals/Ocelot/issues/1580
+.. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
+.. _Mapping, customizing, and transforming claims in ASP.NET Core: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/claims?view=aspnetcore-9.0
+.. _multiple authentication schemes: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme#use-multiple-authentication-schemes
