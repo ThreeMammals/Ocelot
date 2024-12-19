@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.DependencyInjection;
 
@@ -185,13 +186,13 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
             configParts.Add(EnvironmentName(), _envSpecific);
         }
 
-        foreach (var part in configParts)
-        {
-            var filename = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, part.Key));
-            File.WriteAllText(filename, JsonConvert.SerializeObject(part.Value, Formatting.Indented));
-            _files.Add(filename);
+            foreach (var part in configParts)
+            {
+                var filename = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, part.Key));
+                File.WriteAllText(filename, JsonSerializer.Serialize(part.Value, JsonSerializerOptionsFactory.WebWriteIndented));
+                _files.Add(filename);
+            }
         }
-    }
 
     private static FileGlobalConfiguration GetFileGlobalConfigurationData(string requestIdKey = null) => new()
     {

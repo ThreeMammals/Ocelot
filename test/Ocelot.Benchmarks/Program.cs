@@ -17,7 +17,15 @@ public class Program
                 typeof(MsLoggerBenchmarks),
                 typeof(PayloadBenchmarks),
                 typeof(ResponseBenchmarks),
+                typeof(JsonSerializerBenchmark),
             });
-        switcher.Run(args);
+
+        var config = ManualConfig.Create(DefaultConfig.Instance)
+            .AddAnalyser(BenchmarkDotNet.Analysers.EnvironmentAnalyser.Default)
+            .AddExporter(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub)
+            .AddDiagnoser(BenchmarkDotNet.Diagnosers.MemoryDiagnoser.Default)
+            .AddColumn(StatisticColumn.OperationsPerSecond);
+
+        switcher.Run(args, config);
     }
 }
