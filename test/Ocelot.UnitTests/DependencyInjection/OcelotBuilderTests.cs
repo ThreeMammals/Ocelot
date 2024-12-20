@@ -324,9 +324,9 @@ public class OcelotBuilderTests : UnitTest
             .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
 
             // use system text json
-            _serviceProvider.GetServices<IActionResultExecutor<JsonResult>>()
-                .FirstOrDefault(s => s.GetType().Name == "SystemTextJsonResultExecutor")
-                .ShouldNotBeNull();
+        _serviceProvider.GetServices<IActionResultExecutor<JsonResult>>()
+            .FirstOrDefault(s => s.GetType().Name == "SystemTextJsonResultExecutor")
+            .ShouldNotBeNull();
         }
 
     [Fact]

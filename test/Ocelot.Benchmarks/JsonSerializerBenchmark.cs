@@ -76,8 +76,6 @@ public class JsonSerializerBenchmark : ManualConfig
 //    |==============================================================================================================================================|
 //    | MicrosoftSerializeBigData    | 1000  |   646.4 us | 12.72 us |  20.90 us |   645.7 us | 1,546.9 | 110.3516 | 110.3516 | 110.3516 | 350.02 KB |
 //    | NewtonsoftSerializeBigData   | 1000  | 1,033.4 us | 19.37 us |  42.53 us | 1,022.8 us |   967.7 | 109.3750 | 109.3750 | 109.3750 | 837.82 KB |
-
-
 public class User
 {
     public Guid UserId { get; set; }

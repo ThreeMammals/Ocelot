@@ -68,4 +68,3 @@ public class JsonSerializerOptionsFactoryTests : UnitTest
         result.ShouldBeEquivalentTo(new List<string> { "Nice post!", "Interesting." });
     }
 }
-
