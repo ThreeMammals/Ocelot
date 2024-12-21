@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -324,17 +323,11 @@ public class OcelotBuilderTests : UnitTest
             .ShouldNotBeNull()
             .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
 
-        // .AddNewtonsoftJson()
-        _serviceProvider.GetServices<IConfigureOptions<MvcOptions>>()
-            .FirstOrDefault(s => s.GetType().Name == "NewtonsoftJsonMvcOptionsSetup")
+            // use system text json
+        _serviceProvider.GetServices<IActionResultExecutor<JsonResult>>()
+            .FirstOrDefault(s => s.GetType().Name == "SystemTextJsonResultExecutor")
             .ShouldNotBeNull();
-        _serviceProvider.GetService<IActionResultExecutor<JsonResult>>()
-            .ShouldNotBeNull()
-            .GetType().Name.ShouldBe("NewtonsoftJsonResultExecutor");
-        _serviceProvider.GetService<IJsonHelper>()
-            .ShouldNotBeNull()
-            .GetType().Name.ShouldBe("NewtonsoftJsonHelper");
-    }
+        }
 
     [Fact]
     public void Should_use_custom_mvc_builder_no_configuration()
