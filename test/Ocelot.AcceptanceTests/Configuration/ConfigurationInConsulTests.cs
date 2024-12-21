@@ -131,7 +131,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                             {
                                 if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                 {
-                                    var json = JsonSerializer.Serialize(_config, JsonSerializerOptionsFactory.Web);
+                                    var json = JsonSerializer.Serialize(_config, OcelotSerializerOptions.Web);
 
                                     var bytes = Encoding.UTF8.GetBytes(json);
 
@@ -151,9 +151,9 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                                         // var json = reader.ReadToEnd();                                            
                                         var json = await reader.ReadToEndAsync();
 
-                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, JsonSerializerOptionsFactory.Web);
+                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, OcelotSerializerOptions.Web);
 
-                                        var response = JsonSerializer.Serialize(true, JsonSerializerOptionsFactory.Web);
+                                        var response = JsonSerializer.Serialize(true, OcelotSerializerOptions.Web);
 
                                         await context.Response.WriteAsync(response);
                                     }

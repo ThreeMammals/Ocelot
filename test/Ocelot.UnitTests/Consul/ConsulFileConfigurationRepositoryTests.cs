@@ -142,8 +142,8 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
 
     private void ThenTheConfigurationIs(FileConfiguration config)
     {
-        var expected = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.WebWriteIndented);
-        var result = JsonSerializer.Serialize(_getResult.Data, JsonSerializerOptionsFactory.WebWriteIndented);
+        var expected = JsonSerializer.Serialize(config, OcelotSerializerOptions.WebWriteIndented);
+        var result = JsonSerializer.Serialize(_getResult.Data, OcelotSerializerOptions.WebWriteIndented);
         result.ShouldBe(expected);
     }
 
@@ -170,7 +170,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
 
     private void GivenFetchFromConsulSucceeds()
     {
-        var json = JsonSerializer.Serialize(_fileConfiguration, JsonSerializerOptionsFactory.WebWriteIndented);
+        var json = JsonSerializer.Serialize(_fileConfiguration, OcelotSerializerOptions.WebWriteIndented);
         var bytes = Encoding.UTF8.GetBytes(json);
         var kvp = new KVPair("OcelotConfiguration")
         {
@@ -186,7 +186,7 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
 
     private void ThenTheConfigurationIsStoredAs(FileConfiguration config)
     {
-        var json = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.WebWriteIndented);
+        var json = JsonSerializer.Serialize(config, OcelotSerializerOptions.WebWriteIndented);
         var bytes = Encoding.UTF8.GetBytes(json);
         _kvEndpoint.Verify(x => x.Put(It.Is<KVPair>(k => k.Value.SequenceEqual(bytes)), It.IsAny<CancellationToken>()), Times.Once);
     }

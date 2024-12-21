@@ -17,7 +17,7 @@ public static class CustomOcelotMiddleware
         {
             logger.LogInformation(() =>
             {
-                var metadataInJson = JsonSerializer.Serialize(metadata, JsonSerializerOptionsFactory.Web);
+                var metadataInJson = JsonSerializer.Serialize(metadata, OcelotSerializerOptions.Web);
                 var message = $"My custom middleware found some metadata: {metadataInJson}";
                 return message;
             });

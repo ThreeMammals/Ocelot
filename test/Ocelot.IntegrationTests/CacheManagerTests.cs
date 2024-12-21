@@ -112,7 +112,7 @@ public class CacheManagerTests : IDisposable
         var response = await _httpClient.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, OcelotSerializerOptions.Web);
         var configPath = $"{adminPath}/.well-known/openid-configuration";
         response = await _httpClient.GetAsync(configPath);
         response.EnsureSuccessStatusCode();
@@ -162,7 +162,7 @@ public class CacheManagerTests : IDisposable
         // TODO: Turn method as async
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.Web);
 
         if (File.Exists(configurationPath))
         {

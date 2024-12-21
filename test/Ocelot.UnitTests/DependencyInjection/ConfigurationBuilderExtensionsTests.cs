@@ -189,7 +189,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         foreach (var part in configParts)
         {
             var filename = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, part.Key));
-            File.WriteAllText(filename, JsonSerializer.Serialize(part.Value, JsonSerializerOptionsFactory.WebWriteIndented));
+            File.WriteAllText(filename, JsonSerializer.Serialize(part.Value, OcelotSerializerOptions.WebWriteIndented));
             _files.Add(filename);
         }
     }

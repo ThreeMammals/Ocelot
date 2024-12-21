@@ -221,7 +221,7 @@ public class PayloadBenchmarks : ManualConfig
     public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
     {
         var configurationPath = Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.Web);
 
         if (File.Exists(configurationPath))
         {

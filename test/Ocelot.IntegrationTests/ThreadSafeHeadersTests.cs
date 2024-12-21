@@ -119,7 +119,7 @@ public class ThreadSafeHeadersTests : IDisposable
     {
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.Web);
 
         if (File.Exists(configurationPath))
         {

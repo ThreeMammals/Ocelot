@@ -342,12 +342,12 @@ public class AdministrationTests : IDisposable
     {
         var ocelotJsonPath = $"{AppContext.BaseDirectory}ocelot.json";
         var resultText = File.ReadAllText(ocelotJsonPath);
-        var expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
+        var expectedText = JsonSerializer.Serialize(expected, OcelotSerializerOptions.WebWriteIndented);
         resultText.ShouldBe(expectedText);
 
         var environmentSpecificPath = $"{AppContext.BaseDirectory}/ocelot.Production.json";
         resultText = File.ReadAllText(environmentSpecificPath);
-        expectedText = JsonSerializer.Serialize(expected, JsonSerializerOptionsFactory.WebWriteIndented);
+        expectedText = JsonSerializer.Serialize(expected, OcelotSerializerOptions.WebWriteIndented);
         resultText.ShouldBe(expectedText);
     }
 
@@ -523,7 +523,7 @@ public class AdministrationTests : IDisposable
         var response = await httpClient.PostAsync($"{url}/connect/token", content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, OcelotSerializerOptions.Web);
     }
 
     private async Task GivenThereIsAnIdentityServerOn(string url, string apiName)
@@ -640,7 +640,7 @@ public class AdministrationTests : IDisposable
 
     private async Task WhenIPostOnTheApiGateway(string url, FileConfiguration updatedConfiguration)
     {
-        var json = JsonSerializer.Serialize(updatedConfiguration, JsonSerializerOptionsFactory.Web);
+        var json = JsonSerializer.Serialize(updatedConfiguration, OcelotSerializerOptions.Web);
         var content = new StringContent(json);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         _response = await _httpClient.PostAsync(url, content);
@@ -654,7 +654,7 @@ public class AdministrationTests : IDisposable
 
     private async Task ThenTheResponseShouldBe(FileConfiguration expecteds)
     {
-        var response = JsonSerializer.Deserialize<FileConfiguration>(await _response.Content.ReadAsStringAsync(), JsonSerializerOptionsFactory.Web);
+        var response = JsonSerializer.Deserialize<FileConfiguration>(await _response.Content.ReadAsStringAsync(), OcelotSerializerOptions.Web);
 
         response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
         response.GlobalConfiguration.ServiceDiscoveryProvider.Scheme.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Scheme);
@@ -698,7 +698,7 @@ public class AdministrationTests : IDisposable
         var response = await _httpClient.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptionsFactory.Web);
+        _token = JsonSerializer.Deserialize<BearerToken>(responseContent, OcelotSerializerOptions.Web);
         var configPath = $"{adminPath}/.well-known/openid-configuration";
         response = await _httpClient.GetAsync(configPath);
         response.EnsureSuccessStatusCode();
@@ -825,7 +825,7 @@ public class AdministrationTests : IDisposable
     {
         var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
 
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.Web);
 
         if (File.Exists(configurationPath))
         {

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Ocelot.UnitTests;
 
-public class JsonSerializerOptionsFactoryTests : UnitTest
+public class OcelotSerializerOptionsTests : UnitTest
 {
     [Fact]
     public void should_json_path()

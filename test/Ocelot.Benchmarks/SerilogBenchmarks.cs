@@ -194,7 +194,7 @@ public class SerilogBenchmarks : ManualConfig
     {
         var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
 
-        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, JsonSerializerOptionsFactory.Web);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.Web);
 
         if (File.Exists(configurationPath))
         {

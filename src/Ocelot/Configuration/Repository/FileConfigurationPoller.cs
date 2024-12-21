@@ -96,7 +96,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
     /// <returns>hash of the config.</returns>
     private static string ToJson(FileConfiguration config)
     {
-        var currentHash = JsonSerializer.Serialize(config, JsonSerializerOptionsFactory.Web);
+        var currentHash = JsonSerializer.Serialize(config, OcelotSerializerOptions.Web);
         return currentHash;
     }
 

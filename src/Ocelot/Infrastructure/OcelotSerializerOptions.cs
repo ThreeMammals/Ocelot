@@ -5,7 +5,7 @@ using System.Text.Unicode;
 
 namespace Ocelot.Infrastructure;
 
-public static class JsonSerializerOptionsFactory
+public static class OcelotSerializerOptions
 {
     public static readonly JsonSerializerOptions Web = new()
     {
