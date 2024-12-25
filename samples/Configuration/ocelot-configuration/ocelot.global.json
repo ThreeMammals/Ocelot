@@ -1,0 +1,5 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5556" // "https://localhost:7778"
+  }
+}
