@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -33,13 +34,13 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
 
             TrySetGlobalRequestId(httpContext, internalConfiguration);
 
-            Logger.LogDebug("ocelot pipeline started");
+            Logger.LogDebug("Ocelot pipeline started");
 
             await _next.Invoke(httpContext);
         }
         catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
         {
-            Logger.LogDebug("operation canceled");
+            Logger.LogDebug("Operation canceled");
             if (!httpContext.Response.HasStarted)
             {
                 httpContext.Response.StatusCode = 499;
@@ -47,13 +48,13 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         }
         catch (Exception e)
         {
-            Logger.LogDebug("error calling middleware");
+            Logger.LogDebug("Error calling middleware");
             Logger.LogError(() => CreateMessage(httpContext, e), e);
 
             SetInternalServerErrorOnResponse(httpContext);
         }
 
-        Logger.LogDebug("ocelot pipeline finished");
+        Logger.LogDebug("Ocelot pipeline finished");
     }
 
     private void TrySetGlobalRequestId(HttpContext httpContext, IInternalConfiguration configuration)
@@ -76,17 +77,20 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         }
     }
 
-    private static string CreateMessage(HttpContext httpContext, Exception e)
+    private static string CreateMessage(HttpContext context, Exception e)
     {
-        var message =
-            $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";
-
-        if (e.InnerException != null)
+        var original = e;
+        var builder = new StringBuilder()
+            .AppendLine($"{e.GetType().Name} caught in global error handler!");
+        int total = 0;
+        while (e.InnerException != null)
         {
-            message =
-                $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
+            builder.AppendLine(e.InnerException.ToString());
+            e = e.InnerException;
+            total++;
         }
 
-        return $"{message} RequestId: {httpContext.TraceIdentifier}";
+        builder.Append($"DONE reporting of a total {total} inner exception{total.Plural()} for request {context.TraceIdentifier} of the original {original.GetType().Name} below ->");
+        return builder.ToString();
     }
 }

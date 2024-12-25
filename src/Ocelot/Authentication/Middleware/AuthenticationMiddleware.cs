@@ -25,7 +25,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         // reducing nesting, returning early when no authentication is needed.
         if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !downstreamRoute.IsAuthenticated)
         {
-            Logger.LogInformation($"No authentication needed for path '{path}'.");
+            Logger.LogInformation($"No authentication needed for path: {path}");
             await _next(httpContext);
             return;
         }

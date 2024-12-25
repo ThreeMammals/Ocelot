@@ -51,7 +51,7 @@ public class ResponderMiddleware : OcelotMiddleware
             return;
         }
 
-        Logger.LogDebug("no pipeline errors, setting and returning completed response");
+        Logger.LogDebug("No pipeline errors: setting and returning completed response...");
         await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
     }
 

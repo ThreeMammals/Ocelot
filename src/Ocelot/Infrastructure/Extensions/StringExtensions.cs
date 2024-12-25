@@ -30,4 +30,7 @@ public static class StringExtensions
     /// <returns>A <see cref="string"/> witl the last forward slash.</returns>
     public static string LastCharAsForwardSlash(this string source)
         => source.EndsWith(Slash) ? source : source + Slash;
+
+    public static string Plural(this int count) => count == 1 ? string.Empty : "s";
+    public static string Plural(this string source, int count) => count == 1 ? source : string.Concat(source, "s");
 }
