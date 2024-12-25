@@ -1,11 +1,20 @@
 {
   "Routes": [
     {
+      "ServiceName": "downstreamservice",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/values",
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http"
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/nodiscovery/values",
       "DownstreamPathTemplate": "/api/values",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/values",
-      "ServiceName": "downstreamservice",
-      "UpstreamHttpMethod": [ "Get" ]      
+      "DownstreamHostAndPorts": [
+        { "Host": "localhost", "Port": 5561 }
+      ]
     }
   ],
   "GlobalConfiguration": {
