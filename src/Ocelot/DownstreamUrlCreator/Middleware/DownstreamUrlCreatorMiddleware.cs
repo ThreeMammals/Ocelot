@@ -89,7 +89,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             }
         }
 
-        Logger.LogDebug(() => $"Downstream url is {downstreamRequest}");
+        Logger.LogDebug(() => $"Downstream URL: {downstreamRequest}");
 
         await _next.Invoke(httpContext);
     }

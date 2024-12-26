@@ -1,43 +1,23 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Ocelot.Administration;
+﻿using Ocelot.Administration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.Web;
 
-namespace Ocelot.Samples.AdministrationApi;
+// var host = OcelotHostBuilder.Create(args);
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddOcelot(); // single ocelot.json file in read-only mode
+builder.Services
+    .AddOcelot(builder.Configuration)
+    .AddAdministration("/administration", "secret");
+
+if (builder.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        OcelotHostBuilder.Create(args)
-           .UseUrls("http://localhost:5000")
-           .ConfigureAppConfiguration((hostingContext, config) =>
-           {
-               config
-                   .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                   .AddJsonFile("appsettings.json", true, true)
-                   .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                   .AddJsonFile("ocelot.json")
-                   .AddEnvironmentVariables();
-           })
-           .ConfigureServices(s =>
-           {
-               s.AddOcelot()
-                   .AddAdministration("/administration", "secret");
-           })
-           .ConfigureLogging((hostingContext, logging) =>
-           {
-               logging.AddConsole();
-           })
-           .UseIISIntegration()
-           .Configure(app =>
-           {
-               app.UseOcelot().Wait();
-           })
-           .Build()
-           .Run();
-    }
+    builder.Logging.AddConsole();
 }
+
+var app = builder.Build();
+await app.UseOcelot();
+app.Run();

@@ -3,9 +3,7 @@
     {
       "DownstreamPathTemplate": "/api/values",
       "UpstreamPathTemplate": "/EquipmentInterfaces",
-      "UpstreamHttpMethod": [
-        "Get"
-      ],
+      "UpstreamHttpMethod": [ "Get" ],
       "DownstreamScheme": "http",
       "ServiceName": "OcelotServiceApplication/OcelotApplicationService"
     }

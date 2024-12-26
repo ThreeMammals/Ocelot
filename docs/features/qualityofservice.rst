@@ -142,7 +142,7 @@ And finally, if you want to define your own set of exceptions to map, you can us
 
 """"
 
-.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
+.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 .. [#f2] If something doesn't work or you get stuck, please review current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtering by |QoS_label| label.
 .. [#f3] We upgraded `Polly`_ version from v7.x to v8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and delivered by PR `1914`_ as a part of version `23.2`_.
 

@@ -91,7 +91,7 @@ public class DownstreamRoute
     public string ServiceName { get; }
     public string ServiceNamespace { get; }
     public HttpHandlerOptions HttpHandlerOptions { get; }
-    public bool EnableEndpointEndpointRateLimiting { get; }
+    public bool EnableEndpointEndpointRateLimiting { get; } // TODO Naming mistyping
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }

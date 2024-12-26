@@ -1,25 +1,27 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Provider.Kubernetes;
 using Ocelot.Samples.Web;
 
-namespace Ocelot.Samples.Kubernetes.ApiGateway;
+//_ = OcelotHostBuilder.Create(args);
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddOcelot();
+builder.Services
+    .AddOcelot(builder.Configuration)
+    .AddKubernetes();
+
+if (builder.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        OcelotHostBuilder.Create(args)
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config
-                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                    .AddJsonFile("appsettings.json", true, true)
-                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                    .AddJsonFile("ocelot.json", false, false)
-                    .AddEnvironmentVariables();
-            })
-        .UseStartup<Startup>()
-        .Build()
-        .Run();
-    }
+    builder.Logging.AddConsole();
 }
+
+var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+await app.UseOcelot();
+app.Run();

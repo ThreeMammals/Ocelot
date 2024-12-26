@@ -82,7 +82,7 @@ public class AuthorizationMiddleware : OcelotMiddleware
         }
         else
         {
-            Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} route does not require user to be authorized");
+            Logger.LogInformation(() => $"Route to '{downstreamRoute.DownstreamPathTemplate.Value}' does not require user to be authorized");
             await _next.Invoke(httpContext);
         }
     }

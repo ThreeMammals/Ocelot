@@ -34,7 +34,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
         // check if rate limiting is enabled
         if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
         {
-            Logger.LogInformation(() => $"EndpointRateLimiting is not enabled for {downstreamRoute.DownstreamPathTemplate.Value}");
+            Logger.LogInformation(() => $"{nameof(DownstreamRoute.EnableEndpointEndpointRateLimiting)} is not enabled for downstream path: {downstreamRoute.DownstreamPathTemplate.Value}");
             await _next.Invoke(httpContext);
             return;
         }

@@ -33,7 +33,7 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
         var upstreamHeaders = httpContext.Request.Headers
             .ToDictionary(h => h.Key, h => string.Join(';', (IList<string>)h.Value));
 
-        Logger.LogDebug(() => $"Upstream URL path is '{upstreamUrlPath}'.");
+        Logger.LogDebug(() => $"Upstream URL path: {upstreamUrlPath}");
 
         var provider = _factory.Get(internalConfiguration);
         var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
@@ -44,7 +44,7 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
             return;
         }
 
-        Logger.LogDebug(() => $"downstream templates are {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
+        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
 
         // why set both of these on HttpContext
         httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);

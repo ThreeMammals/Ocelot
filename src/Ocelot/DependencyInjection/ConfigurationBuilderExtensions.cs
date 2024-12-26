@@ -204,4 +204,18 @@ public static partial class ConfigurationBuilderExtensions
         File.WriteAllText(primary, json);
         return builder?.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
     }
+
+    /// <summary>
+    /// Adds Ocelot primary configuration file (aka ocelot.json) in read-only mode.
+    /// <para>Adds the file as a JSON configuration provider via the <see cref="JsonConfigurationExtensions.AddJsonFile(IConfigurationBuilder, string, bool, bool)"/> extension.</para>
+    /// </summary>
+    /// <remarks>Use optional arguments for injections and overridings.</remarks>
+    /// <param name="builder">The builder to extend.</param>
+    /// <param name="primaryFile">Primary config file path.</param>
+    /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
+    /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
+    /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
+    public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder,
+        string primaryFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
+        => builder.AddJsonFile(primaryFile ?? PrimaryConfigFile, optional ?? false, reloadOnChange ?? false);
 }

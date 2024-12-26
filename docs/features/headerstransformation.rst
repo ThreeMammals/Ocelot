@@ -45,6 +45,8 @@ If you want to return the `Butterfly APM <https://github.com/liuhaoyang/butterfl
     "AnyKey": "{TraceId}"
   }
 
+.. _ht-find-and-replace:
+
 Find and Replace
 ----------------
 
