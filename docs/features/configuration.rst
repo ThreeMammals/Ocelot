@@ -139,6 +139,9 @@ Ocelot will then save the merged configuration to a file called `ocelot.json`_ a
   If you still require on-the-fly updating of the primary configuration file, ``ocelot.json``, please refer to the :ref:`config-react-to-changes` section.
   Additionally, note that merging partial configuration files (such as ``ocelot.*.json``) on the fly using :doc:`../features/administration` API is not currently implemented.
 
+  **Note 3**: An alternative to static merged configurations could be the construction of the configuration object before passing it as an argument to the :ref:`di-configuration-addocelot` method.
+  Refer to the :ref:`config-build-dynamic-configuration` subsection for details.
+
 Keep files in a folder
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -225,8 +228,60 @@ Beyond the traditional methods of storing configuration in a file vs folder (:re
 
 For further details on managing Ocelot configurations via a Consul instance, please consult the ":ref:`sd-consul-configuration-in-kv`" section.
 
-Follow Redirects aka HttpHandlerOptions 
----------------------------------------
+.. _config-build-dynamic-configuration:
+
+Build Dynamic Configuration
+---------------------------
+
+  **Subject**: the ``FileConfiguration`` type from the ``Ocelot.Configuration.File`` namespace. 
+
+Storing, reading, and writing static configurations may have limitations.
+Therefore, for more flexible and advanced scenarios the ``FileConfiguration`` object can be built from scratch in C# code of Ocelot application startup.
+Additionally after reading static configuration from various sources such as, remote file systems, remote storages or cloudages, you can rewrite options to the configuration.
+
+Ocelot does not provide a fluent syntax to build configuration on fly as other products do.
+However, it is possible to inject a ``FileConfiguration`` object during Ocelot startup using the :ref:`di-configuration-addocelot` methods with a special parameter:
+
+.. code-block:: csharp
+
+    public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration, /* optional */);
+
+The method above will deserialize the object to disk.
+If you prefer to keep the configuration in memory, the following method includes the ``MergeOcelotJson`` parameter:
+
+.. code-block:: csharp
+
+    public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env, MergeOcelotJson mergeTo, /* optional */);
+
+In summary, the final .NET 8+ solution should be written in ``Program.cs`` using `top-level statements <https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/program-structure/top-level-statements>`_:
+
+.. code-block:: csharp
+
+    using Ocelot.Configuration.File;
+    using Ocelot.DependencyInjection;
+    using Ocelot.Middleware;
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Build Ocelot's configuration object on the fly:
+    var ocelotConfig = new FileConfiguration(); // create new or read static state from anywhere
+    // ... initialize or rewrite props: add routes, global config, etc.
+
+    builder.Configuration
+        .SetBasePath(builder.Environment.ContentRootPath)
+        .AddOcelot(ocelotConfig) // MergeOcelotJson.ToFile : writing config JSON back to disk
+        .AddOcelot(ocelotConfig, builder.Environment, MergeOcelotJson.ToMemory); // merging to memory
+    builder.Services
+        .AddOcelot();
+
+    var app = builder.Build();
+    await app.UseOcelot();
+    await app.RunAsync();
+
+As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
+
+Follow Redirects aka ``HttpHandlerOptions`` 
+-------------------------------------------
 
     Class: `FileHttpHandlerOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FileHttpHandlerOptions&type=code>`_
 
