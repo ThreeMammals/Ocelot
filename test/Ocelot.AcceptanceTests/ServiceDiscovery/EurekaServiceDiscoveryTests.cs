@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Steeltoe.Common.Discovery;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -142,7 +144,7 @@ public class EurekaServiceDiscoveryTests : IDisposable
                     },
                 };
 
-                var json = JsonConvert.SerializeObject(applications);
+                var json = JsonSerializer.Serialize(applications, OcelotSerializerOptions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
@@ -194,25 +196,25 @@ public class FakeEurekaService : IServiceInstance
 
 public class Port
 {
-    [JsonProperty("$")]
+    [JsonPropertyName("$")]
     public int value { get; set; }
 
-    [JsonProperty("@enabled")]
+    [JsonPropertyName("@enabled")]
     public string enabled { get; set; }
 }
 
 public class SecurePort
 {
-    [JsonProperty("$")]
+    [JsonPropertyName("$")]
     public int value { get; set; }
 
-    [JsonProperty("@enabled")]
+    [JsonPropertyName("@enabled")]
     public string enabled { get; set; }
 }
 
 public class DataCenterInfo
 {
-    [JsonProperty("@class")]
+    [JsonPropertyName("@class")]
     public string value { get; set; }
 
     public string name { get; set; }
@@ -235,7 +237,7 @@ public class LeaseInfo
 
 public class ValueMetadata
 {
-    [JsonProperty("@class")]
+    [JsonPropertyName("@class")]
     public string value { get; set; }
 }
 

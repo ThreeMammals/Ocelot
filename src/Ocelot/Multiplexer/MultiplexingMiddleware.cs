@@ -1,12 +1,13 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Collections;
+using System.Text.Json;
 using Route = Ocelot.Configuration.Route;
 
 namespace Ocelot.Multiplexer;
@@ -132,14 +133,14 @@ public class MultiplexingMiddleware : OcelotMiddleware
     {
         var processing = new List<Task<HttpContext>>();
         var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
-        var jObject = JToken.Parse(content);
+        using var document = JsonDocument.Parse(content);
 
         foreach (var downstreamRoute in routes.Skip(1))
         {
             var matchAdvancedAgg = routeKeysConfigs.FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
             if (matchAdvancedAgg != null)
             {
-                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jObject, context, downstreamRoute));
+                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, document, context, downstreamRoute));
                 continue;
             }
 
@@ -163,10 +164,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// Processing a route with aggregation.
     /// </summary>
     private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
-        JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
+        JsonDocument document, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
         var processing = new List<Task<HttpContext>>();
-        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
+
+        var values = document.ExtractValuesFromJsonPath(matchAdvancedAgg.JsonPath)
+            .Distinct();
+
         foreach (var value in values)
         {
             var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();

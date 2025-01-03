@@ -3,13 +3,14 @@ using KubeClient.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Testing;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
@@ -160,7 +161,7 @@ public class KubeTests
                     token = values.First();
                 }
 
-                var json = JsonConvert.SerializeObject(endpointEntries);
+                var json = JsonSerializer.Serialize(endpointEntries, OcelotSerializerOptions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 return context.Response.WriteAsync(json);
             }
