@@ -1,9 +1,8 @@
 ![Ocelot Logo](/images/ocelot_logo.png)
 
-[![CircleCI](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main.svg?style=svg)](https://circleci.com/gh/ThreeMammals/Ocelot/tree/main)
-[![Read the Docs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-default)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
+[![develop](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
+[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-default)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
 [![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
-[![.NET](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
 
 ## About
 Ocelot is a .NET [API gateway](https://www.bing.com/search?q=API+gateway).
@@ -47,7 +46,7 @@ A concise list of Ocelot's capabilities, for further details refer to [Documenta
 * [Platform](https://ocelot.readthedocs.io/en/latest/building/building.html?highlight=Platform#building) & Cloud Agnostic [Building](https://ocelot.readthedocs.io/en/latest/building/building.html)
 
 ## Install
-Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net8.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) frameworks. [^4]
+Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net8.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^4]
 
 Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using NuGet package manager:
 ```powershell
@@ -65,24 +64,23 @@ All versions are available [on NuGet](https://www.nuget.org/packages/Ocelot#vers
 - [Read the Docs](https://ocelot.readthedocs.io):
   This includes a lot of information and will be helpful if you want to understand the features Ocelot currently offers.
 - [Ask Ocelot Guru](https://gurubase.io/g/ocelot):
-  It is an Ocelot-focused AI designed to answer your questions.
+  It is an Ocelot-focused AI designed to answer your questions. [^5]
 
 ## Coming up
 You can see what we are working on in the [backlog](https://github.com/ThreeMammals/Ocelot/issues).
 
 ## Contributing
-We love to receive contributions from the community, so please keep them coming. :octocat:
-Pull requests, issues, and commentary welcome!
+We love to receive contributions from the community, so please keep them coming.
+Pull requests, issues, and commentary welcome! :octocat:
 
 Please complete the relevant [template](https://github.com/ThreeMammals/Ocelot/tree/main/.github) for [issues](https://github.com/ThreeMammals/Ocelot/blob/main/.github/ISSUE_TEMPLATE.md) and [pull requests](https://github.com/ThreeMammals/Ocelot/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 Sometimes it's worth getting in touch with us to [discuss](https://github.com/ThreeMammals/Ocelot/discussions) changes before doing any work in case this is something we are already doing or it might not make sense.
-We can also give advice on the easiest way to do things. :octocat: 
+We can also give advice on the easiest way to do things :octocat: 
 
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
 [![label: medium effort][~mediumeffort]](https://github.com/ThreeMammals/Ocelot/labels/medium%20effort)
-[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort). [^5]
-
+[![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort). [^6]
 If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) 
 [![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) :octocat: 
@@ -98,4 +96,5 @@ If you want to contribute for the first time, we suggest looking at a [![label: 
 [^2]: Ocelot supports [Consul](https://www.consul.io/), [Netflix Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka), [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) service discovery providers, as well as special modes like [Dynamic Routing](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing) and [Custom Providers](/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#custom-providers).
 [^3]: Retry policies only via [Polly](/App-vNext/Polly) library.
 [^4]: Starting with version [21.0](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0), the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to migrate to the currently supported [.NET 8 and 9](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) frameworks. Also, new features will be available for all .NET SDKs that we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
-[^5]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) for the repository, which are useful for searching and filtering.
+[^5]: [Ocelot Guru](https://gurubase.io/g/ocelot) is an unofficial tool to get answers regarding Ocelot: please consider it an advanced search tool. Thus, we have an official [Questions & Answers](https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a) category in the [Discussions](https://github.com/ThreeMammals/Ocelot/discussions) space.
+[^6]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) for the repository, which are useful for searching and filtering.
