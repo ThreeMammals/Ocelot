@@ -9,7 +9,7 @@ public class RegExUrlMatcherTests : UnitTest
     private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;
     private string _path;
     private string _downstreamPathTemplate;
-    private Response<UrlMatch> _result;
+    private UrlMatch _result;
     private string _queryString;
     private bool _containsQueryString;
 
@@ -273,12 +273,12 @@ public class RegExUrlMatcherTests : UnitTest
 
     private void ThenTheResultIsTrue()
     {
-        _result.Data.Match.ShouldBeTrue();
+        _result.Match.ShouldBeTrue();
     }
 
     private void ThenTheResultIsFalse()
     {
-        _result.Data.Match.ShouldBeFalse();
+        _result.Match.ShouldBeFalse();
     }
 
     private void GivenThereIsAQueryInTemplate()
