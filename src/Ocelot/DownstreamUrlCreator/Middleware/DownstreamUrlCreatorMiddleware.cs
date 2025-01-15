@@ -26,7 +26,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
         IDownstreamPathPlaceholderReplacer replacer)
-            : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
+        : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
     {
         _next = next;
         _replacer = replacer;
@@ -83,8 +83,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             }
             else
             {
-                RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
-
+                RemoveQueryStringParametersThatHaveBeenUsedInTemplate2(downstreamRequest, placeholders);
                 downstreamRequest.AbsolutePath = dsPath;
             }
         }
@@ -121,9 +120,13 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
     private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
-    private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues)
+    /// <summary>
+    /// Feature <see href="https://github.com/ThreeMammals/Ocelot/pull/467">467</see>:
+    /// Added support for query string parameters in upstream path template.
+    /// </summary>
+    private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
     {
-        foreach (var nAndV in templatePlaceholderNameAndValues)
+        foreach (var nAndV in templatePlaceholders)
         {
             var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
             var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
@@ -143,6 +146,29 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
                 }
             }
         } 
+    }
+
+    private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate2(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
+    {
+        var builder = new StringBuilder();
+        foreach (var nAndV in templatePlaceholders)
+        {
+            var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
+            var parameter = $"{name}={nAndV.Value}";
+            if (!downstreamRequest.Query.Contains(parameter))
+            {
+                continue;
+            }
+
+            int questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
+            builder.Clear()
+                .Append(downstreamRequest.Query)
+                .Replace(parameter, string.Empty)
+                .Remove(--questionMarkOrAmpersand, 1);
+            downstreamRequest.Query = builder.Length > 0
+                ? builder.Remove(0, 1).Insert(0, QuestionMark).ToString()
+                : string.Empty;
+        }
     }
 
     private static string GetPath(string downstreamPath)
