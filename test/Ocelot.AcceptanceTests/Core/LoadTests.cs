@@ -9,6 +9,7 @@ namespace Ocelot.AcceptanceTests.Core;
 /// TODO Move to separate Performance Testing (load testing) project.
 /// It requires the <see cref="Steps"/> class; therefore, both Steps-classes must be moved to the common Testing project.
 /// </summary>
+[Collection(nameof(SequentialTests))]
 public sealed class LoadTests : ConcurrentSteps, IDisposable
 {
     private readonly ServiceHandler _serviceHandler;
