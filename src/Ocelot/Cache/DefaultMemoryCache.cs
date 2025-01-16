@@ -5,12 +5,12 @@ namespace Ocelot.Cache;
 public class DefaultMemoryCache<T> : IOcelotCache<T>
 {
     private readonly IMemoryCache _memoryCache;
-    private readonly Dictionary<string, List<string>> _regions;
+    private readonly ConcurrentDictionary<string, ConcurrentBag<string>> _regions;
 
     public DefaultMemoryCache(IMemoryCache memoryCache)
     {
         _memoryCache = memoryCache;
-        _regions = new Dictionary<string, List<string>>();
+        _regions = new();
     }
 
     public void Add(string key, T value, TimeSpan ttl, string region)
@@ -21,29 +21,29 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
         }
 
         _memoryCache.Set(key, value, ttl);
-
         SetRegion(region, key);
     }
 
     public T Get(string key, string region)
     {
-        if (_memoryCache.TryGetValue(key, out T value))
+        if (TryGetValue(key, region, out T value))
         {
             return value;
         }
 
-        return default(T);
+        return default;
     }
 
     public void ClearRegion(string region)
     {
-        if (_regions.ContainsKey(region))
+        if (_regions.TryGetValue(region, out var keys))
         {
-            var keys = _regions[region];
             foreach (var key in keys)
             {
                 _memoryCache.Remove(key);
             }
+
+            keys.Clear();
         }
     }
 
@@ -59,9 +59,8 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
 
     private void SetRegion(string region, string key)
     {
-        if (_regions.ContainsKey(region))
+        if (_regions.TryGetValue(region, out var current))
         {
-            var current = _regions[region];
             if (!current.Contains(key))
             {
                 current.Add(key);
@@ -69,7 +68,12 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
         }
         else
         {
-            _regions.Add(region, new List<string> { key });
+            _regions.TryAdd(region, new() { key });
         }
+    }
+
+    public bool TryGetValue(string key, string region, out T value)
+    {
+        return _memoryCache.TryGetValue(key, out value);
     }
 }

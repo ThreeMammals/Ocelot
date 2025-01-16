@@ -1,6 +1,6 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Responses;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher;
 
@@ -268,7 +268,11 @@ public class RegExUrlMatcherTests : UnitTest
 
     private void WhenIMatchThePaths()
     {
-        _result = _urlMatcher.Match(_path, _queryString, new UpstreamPathTemplate(_downstreamPathTemplate, 0, _containsQueryString, _downstreamPathTemplate));
+        var upt = new UpstreamPathTemplate(_downstreamPathTemplate, 0, _containsQueryString, _downstreamPathTemplate)
+        {
+            Pattern = new Regex(_downstreamPathTemplate),
+        };
+        _result = _urlMatcher.Match(_path, _queryString, upt);
     }
 
     private void ThenTheResultIsTrue()

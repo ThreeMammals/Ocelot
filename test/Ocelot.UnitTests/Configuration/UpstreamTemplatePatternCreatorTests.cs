@@ -1,19 +1,23 @@
+using Ocelot.Cache;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class UpstreamTemplatePatternCreatorTests : UnitTest
 {
     private FileRoute _fileRoute;
+    private readonly Mock<IOcelotCache<Regex>> _cache;
     private readonly UpstreamTemplatePatternCreator _creator;
     private UpstreamPathTemplate _result;
     private const string MatchEverything = UpstreamTemplatePatternCreator.RegExMatchZeroOrMoreOfEverything;
 
     public UpstreamTemplatePatternCreatorTests()
     {
-        _creator = new UpstreamTemplatePatternCreator();
+        _cache = new();
+        _creator = new UpstreamTemplatePatternCreator(_cache.Object);
     }
 
     [Fact]
