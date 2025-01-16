@@ -5,6 +5,10 @@ using System.Diagnostics;
 
 namespace Ocelot.AcceptanceTests.Core;
 
+/// <summary>
+/// TODO Move to separate Performance Testing (load testing) project.
+/// It requires the <see cref="Steps"/> class; therefore, both Steps-classes must be moved to the common Testing project.
+/// </summary>
 public sealed class LoadTests : ConcurrentSteps, IDisposable
 {
     private readonly ServiceHandler _serviceHandler;
@@ -25,9 +29,8 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
     [Fact]
     [Trait("Feat", "1348")]
     [Trait("Bug", "2246")]
-    public async Task ShouldLoadRegexCachingHeavily_NoOutOfMemoryExceptions_NoMemoryLeaks()
+    public async Task ShouldLoadRegexCachingHeavily_NoMemoryLeaks()
     {
-        var limit = Environment.GetEnvironmentVariable("DOTNET_GCHeapHardLimit");
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/my-gateway/order/{orderNumber}", "/order/{orderNumber}");
         var configuration = GivenConfiguration(route);
@@ -35,56 +38,58 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
         GivenOcelotIsRunning();
         GivenThereIsAServiceRunningOn(port, "/order/", "Hello from Donny");
 
-        var currentProcess = Process.GetCurrentProcess();
-        long memoryUsage = currentProcess.WorkingSet64;
-        float memoryUsageMB = (float)memoryUsage / (1024 * 1024);
-
         // Step 1: Measure memory consumption for constant upstream URL
         GC.Collect();
         var a = GC.GetGCMemoryInfo();
-        long step1TotalMemory = GC.GetTotalMemory(true);
-        long step1TotalBytes = GC.GetTotalAllocatedBytes();
-        long step1ThreadBytes = GC.GetAllocatedBytesForCurrentThread();
+        var totalMemory = ToMegabytes(GC.GetTotalMemory(true));
+        var currentProcess = Process.GetCurrentProcess();
+        var memoryUsage = ToMegabytes(currentProcess.WorkingSet64);
 
-        //.When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
-        //.When(x => RunParallelRequests(100_000, (i) => "/my-gateway/order/" + i))
-        await WhenIDoActionMultipleTimes(10_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/1")); // const url
-
+        // Perform 50% of job for stable indicators
+        await WhenIDoActionMultipleTimes(5_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/1")); // const url
         GC.Collect();
-        step1TotalMemory = GC.GetTotalMemory(true);
-        step1TotalBytes = GC.GetTotalAllocatedBytes();
-        step1ThreadBytes = GC.GetAllocatedBytesForCurrentThread();
-        long memoryUsage1 = currentProcess.WorkingSet64;
-        float memoryUsageMB1 = (float)memoryUsage / (1024 * 1024);
+        var totalMemory0 = ToMegabytes(GC.GetTotalMemory(true));
+        var process0 = Process.GetCurrentProcess();
+        var memoryUsage0 = ToMegabytes(process0.WorkingSet64);
+
+        await WhenIDoActionMultipleTimes(5_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/1")); // const url
 
         await WhenIGetUrlOnTheApiGateway("/my-gateway/order/1");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         ThenTheResponseBodyShouldBe("Hello from Donny");
 
-        // Step 2: Measure memory consumption for varying upstream URL
         GC.Collect();
-        long step2TotalMemory = GC.GetTotalMemory(true);
-        long step2TotalBytes = GC.GetTotalAllocatedBytes();
-        long step2ThreadBytes = GC.GetAllocatedBytesForCurrentThread();
+        var totalMemory1 = ToMegabytes(GC.GetTotalMemory(true));
+        var process1 = Process.GetCurrentProcess();
+        var memoryUsage1 = ToMegabytes(process1.WorkingSet64);
 
+        // Step 2: Measure memory consumption for varying upstream URL
+        // await WhenIDoActionForTime(TimeSpan.FromSeconds(30), (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
         await WhenIDoActionMultipleTimes(10_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
 
         GC.Collect();
-        step2TotalMemory = GC.GetTotalMemory(true);
-        step2TotalBytes = GC.GetTotalAllocatedBytes();
-        step2ThreadBytes = GC.GetAllocatedBytesForCurrentThread();
-        long memoryUsage2 = currentProcess.WorkingSet64;
-        float memoryUsageMB2 = (float)memoryUsage / (1024 * 1024);
+        var totalMemory2 = ToMegabytes(GC.GetTotalMemory(true));
+        var process2 = Process.GetCurrentProcess();
+        var memoryUsage2 = ToMegabytes(process2.WorkingSet64);
+
+        // Assert
+        AssertDelta(totalMemory0, totalMemory1, totalMemory2);
+        AssertDelta(memoryUsage0, memoryUsage1, memoryUsage2);
     }
 
-    private async Task WhenIGetUrlOnTheApiGatewaySequentially(int i)
-    {
-        //int count = i + 1;
-        await WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i);
+    private static float ToMegabytes(long total) => (float)total / (1024 * 1024);
 
-        //ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        //ThenServiceShouldHaveBeenCalledTimes(0, count);
-        //ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[0]}", $"i is {i}");
+    private static void AssertDelta(float value0, float value1, float value2)
+    {
+        if (value1 <= value0)
+            return;
+
+        var delta = value1 - value0;
+        if (value2 <= value1)
+            return;
+
+        var delta2 = value2 - value1;
+        Assert.True(delta2 <= delta); // delta is not growing
     }
 
     private FileRoute GivenRoute(int port, string upstream, string downstream) => new()

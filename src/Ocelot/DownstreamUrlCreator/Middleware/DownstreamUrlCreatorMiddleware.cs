@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -83,7 +82,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             }
             else
             {
-                RemoveQueryStringParametersThatHaveBeenUsedInTemplate2(downstreamRequest, placeholders);
+                RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
                 downstreamRequest.AbsolutePath = dsPath;
             }
         }
@@ -125,30 +124,6 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     /// Added support for query string parameters in upstream path template.
     /// </summary>
     private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
-    {
-        foreach (var nAndV in templatePlaceholders)
-        {
-            var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
-            var value = Regex.Escape(nAndV.Value); // to ensure a placeholder value containing special Regex characters from URL query parameters is safely used in a Regex constructor, it's necessary to escape the value
-            var pattern = $@"\b{name}={value}\b";
-            var rgx = _regex.AddOrUpdate(pattern,
-                        RegexGlobal.New(pattern),
-                        (key, oldValue) => oldValue);
-            if (rgx.IsMatch(downstreamRequest.Query))
-            {
-                var questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);                    
-                downstreamRequest.Query = rgx.Replace(downstreamRequest.Query, string.Empty);
-                downstreamRequest.Query = downstreamRequest.Query.Remove(questionMarkOrAmpersand - 1, 1);
-
-                if (!string.IsNullOrEmpty(downstreamRequest.Query))
-                {
-                    downstreamRequest.Query = QuestionMark + downstreamRequest.Query[1..];
-                }
-            }
-        } 
-    }
-
-    private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate2(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
     {
         var builder = new StringBuilder();
         foreach (var nAndV in templatePlaceholders)

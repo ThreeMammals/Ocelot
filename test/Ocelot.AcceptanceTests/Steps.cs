@@ -24,6 +24,7 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
@@ -731,6 +732,15 @@ public class Steps : IDisposable
     {
         for (int i = 0; i < times; i++)
             await action.Invoke(i);
+    }
+    public static async Task WhenIDoActionForTime(TimeSpan time, Func<int, Task> action)
+    {
+        var watcher = Stopwatch.StartNew();
+        for (int i = 0; watcher.Elapsed < time; i++)
+        {
+            await action.Invoke(i);
+        }
+        watcher.Stop();
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)

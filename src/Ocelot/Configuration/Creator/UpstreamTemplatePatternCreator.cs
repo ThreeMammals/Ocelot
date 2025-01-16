@@ -89,7 +89,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
 
     /// <summary>Time-to-live for caching <see cref="Regex"/> to initialize the <see cref="UpstreamPathTemplate.Pattern"/> property.</summary>
     /// <value>A constant <see cref="TimeSpan"/> structure, default absolute value is 1 minute.</value>
-    public static TimeSpan RegexCachingTTL { get; } = TimeSpan.FromMinutes(1.0D);
+    public static TimeSpan RegexCachingTTL { get; set; } = TimeSpan.FromMinutes(1.0D);
 
     protected Regex GetRegex(string key)
     {
