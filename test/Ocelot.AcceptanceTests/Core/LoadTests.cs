@@ -27,7 +27,7 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
         base.Dispose();
     }
 
-    [Fact]
+    [Fact(Skip = "It should be moved to a separate project. It should be run during release only as an extra check for quality gates.")]
     [Trait("Feat", "1348")]
     [Trait("Bug", "2246")]
     public async Task ShouldLoadRegexCachingHeavily_NoMemoryLeaks()

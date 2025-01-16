@@ -117,7 +117,6 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     }
 
     private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
-    private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
     /// <summary>
     /// Feature <see href="https://github.com/ThreeMammals/Ocelot/pull/467">467</see>:
