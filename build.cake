@@ -725,10 +725,17 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
 			.Distinct();
-		
-		foreach(var artifact in artifacts)
+        var skippable = new List<string>
+        {
+			"ReleaseNotes.md", // skip always
+            "Ocelot.Provider.Eureka", // do not release for version 23.4.3
+            "Ocelot.Provider.Kubernetes",
+            "Ocelot.Tracing.Butterfly",
+            "Ocelot.Tracing.OpenTracing",
+        };
+		foreach (var artifact in artifacts)
 		{
-			if (artifact == "ReleaseNotes.md") 
+            if (skippable.Exists(x => artifact.StartsWith(x)))
 				continue;
 
 			var codePackage = packagesDir + File(artifact);
