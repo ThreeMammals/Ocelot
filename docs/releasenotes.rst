@@ -4,15 +4,16 @@
 .. _@jlukawska: https://github.com/jlukawska
 .. _@kesskalli: https://github.com/kesskalli
 
-.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.2
+.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3
 .. _23.4.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
 .. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
 .. _23.4.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.2
+.. _23.4.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3
 
-.. _1111: https://github.com/ThreeMammals/Ocelot/issues/1111
 .. _1307: https://github.com/ThreeMammals/Ocelot/pull/1307
 .. _1403: https://github.com/ThreeMammals/Ocelot/pull/1403
 .. _2200: https://github.com/ThreeMammals/Ocelot/pull/2200
+.. _2246: https://github.com/ThreeMammals/Ocelot/issues/2246
 
 .. role::  htm(raw)
     :format: html
@@ -33,6 +34,7 @@ The major version `23.4.0`_ includes several patches, the history of which is pr
 
   - `23.4.1`_, on Nov 22, 2024: Routing patch.
   - `23.4.2`_, on Nov 27, 2024: End of .NET 6/7 Support patch.
+  - `23.4.3`_, on Jan 17, 2025: Issue `2246`_ patch.
 
 .. _release-notes:
 
