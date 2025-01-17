@@ -482,5 +482,6 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
         public FileConfiguration Get(string key, string region) => throw new NotImplementedException();
         public void ClearRegion(string region) => throw new NotImplementedException();
         public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
+        public bool TryGetValue(string key, string region, out FileConfiguration value) => throw new NotImplementedException();
     }
 }

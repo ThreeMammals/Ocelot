@@ -1,14 +1,24 @@
+using Ocelot.Cache;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class UpstreamTemplatePatternCreatorTests : UnitTest
 {
-    private readonly UpstreamTemplatePatternCreator _creator = new();
+    private readonly Mock<IOcelotCache<Regex>> _cache;
+    private readonly UpstreamTemplatePatternCreator _creator;
     private const string MatchEverything = UpstreamTemplatePatternCreator.RegExMatchZeroOrMoreOfEverything;
+
+    public UpstreamTemplatePatternCreatorTests()
+    {
+        _cache = new();
+        _creator = new UpstreamTemplatePatternCreator(_cache.Object);
+    }
 
     [Fact]
     public void Should_match_up_to_next_slash()
@@ -295,6 +305,36 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
         // Assert
         result.ShouldMatchWithRegex(requestPath, shouldMatch);
     }
+
+    [Fact]
+    [Trait("Feat", "1348")]
+    [Trait("Bug", "2246")]
+    public void GetRegex_NoKey_ReturnsNull()
+    {
+        // Act
+        var actual = GetRegex.Invoke(_creator, new object[] { string.Empty });
+
+        // Assert
+        actual.ShouldBeNull();
+    }
+
+    [Fact]
+    [Trait("Feat", "1348")]
+    [Trait("Bug", "2246")]
+    public void CreateTemplate_PatternProperty_NullChecks()
+    {
+        // Act
+        string nullTemplate = null;
+        var actual = CreateTemplate.Invoke(_creator, new object[] { nullTemplate, 0, false, null }) as UpstreamPathTemplate;
+
+        // Assert
+        actual.ShouldNotBeNull();
+        actual.Pattern.ShouldNotBeNull().ToString().ShouldBe("$^");
+    }
+
+    private static Type Me { get; } = typeof(UpstreamTemplatePatternCreator);
+    private static MethodInfo GetRegex { get; } = Me.GetMethod(nameof(GetRegex), BindingFlags.NonPublic | BindingFlags.Instance);
+    private static MethodInfo CreateTemplate { get; } = Me.GetMethod(nameof(CreateTemplate), BindingFlags.NonPublic | BindingFlags.Instance);
 }
 
 internal static class UpstreamPathTemplateExtensions

@@ -21,7 +21,7 @@ public class DownstreamRouteFinderTests : UnitTest
     private Response<DownstreamRouteHolder> _result;
     private List<Route> _routesConfig;
     private InternalConfiguration _config;
-    private Response<UrlMatch> _match;
+    private UrlMatch _match;
     private string _upstreamHttpMethod;
     private string _upstreamHost;
     private Dictionary<string, string> _upstreamHeaders;
@@ -67,7 +67,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -120,7 +120,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -164,7 +164,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -210,7 +210,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -257,7 +257,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -310,7 +310,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -352,7 +352,7 @@ public class DownstreamRouteFinderTests : UnitTest
             .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false)));
+        GivenTheUrlMatcherReturns(new UrlMatch(false));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -386,7 +386,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -430,7 +430,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -474,7 +474,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Post";
 
@@ -510,7 +510,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -556,7 +556,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -613,7 +613,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -649,7 +649,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -685,7 +685,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -729,7 +729,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -792,7 +792,7 @@ public class DownstreamRouteFinderTests : UnitTest
             .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         _upstreamHttpMethod = "Get";
 
@@ -856,7 +856,7 @@ public class DownstreamRouteFinderTests : UnitTest
                 .Build(),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(false);
         _upstreamHttpMethod = "Get";
 
@@ -899,7 +899,7 @@ public class DownstreamRouteFinderTests : UnitTest
             .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Never);
     }
 
-    private void GivenTheUrlMatcherReturns(Response<UrlMatch> match)
+    private void GivenTheUrlMatcherReturns(UrlMatch match)
     {
         _match = match;
         _mockUrlMatcher

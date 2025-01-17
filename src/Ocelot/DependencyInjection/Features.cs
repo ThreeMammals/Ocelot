@@ -30,6 +30,7 @@ public static class Features
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddOcelotCache(this IServiceCollection services) => services
+        .AddSingleton<IOcelotCache<Regex>, DefaultMemoryCache<Regex>>()
         .AddSingleton<IOcelotCache<FileConfiguration>, DefaultMemoryCache<FileConfiguration>>()
         .AddSingleton<IOcelotCache<CachedResponse>, DefaultMemoryCache<CachedResponse>>()
         .AddSingleton<ICacheKeyGenerator, DefaultCacheKeyGenerator>()

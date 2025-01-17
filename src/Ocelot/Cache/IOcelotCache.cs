@@ -9,4 +9,6 @@ public interface IOcelotCache<T>
     void ClearRegion(string region);
 
     void AddAndDelete(string key, T value, TimeSpan ttl, string region);
+
+    bool TryGetValue(string key, string region, out T value);
 }

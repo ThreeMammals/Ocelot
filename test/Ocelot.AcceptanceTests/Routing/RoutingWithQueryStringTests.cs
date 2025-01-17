@@ -161,6 +161,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public void Should_return_response_200_with_query_string_upstream_template()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -181,6 +182,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public void Should_return_response_404_with_query_string_upstream_template_no_query_string()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -200,6 +202,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public void Should_return_response_404_with_query_string_upstream_template_different_query_string()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -219,6 +222,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public void Should_return_response_200_with_query_string_upstream_template_multiple_params()
     {
         var subscriptionId = Guid.NewGuid().ToString();

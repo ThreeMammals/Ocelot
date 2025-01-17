@@ -1,5 +1,6 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
+using System.Text.RegularExpressions;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher;
 
@@ -14,12 +15,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/api/v1/aaaaaaaaa/cards";
         const string downstreamPathTemplate = "^(?i)/api/v[^/]+/cards$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
 
     [Fact]
@@ -28,12 +30,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/api/v1/cards";
         const string downstreamPathTemplate = "^(?i)/api/v[^/]+/cards$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -44,12 +47,13 @@ public class RegExUrlMatcherTests : UnitTest
         const string path = "/newThing";
         const string queryString = "?DeviceType=IphoneApp&Browser=moonpigIphone&BrowserString=-&CountryCode=123&DeviceName=iPhone 5 (GSM+CDMA)&OperatingSystem=iPhone OS 7.1.2&BrowserVersion=3708AdHoc&ipAddress=-";
         const string downstreamPathTemplate = regExForwardSlashAndOnePlaceHolder;
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, queryString, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, queryString, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -61,12 +65,13 @@ public class RegExUrlMatcherTests : UnitTest
         const string queryString = "?unitId=2";
         const string downstreamPathTemplate = regExForwardSlashAndOnePlaceHolder;
         const bool containsQueryString = true;
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate, containsQueryString);
 
         // Act
-        var result = _matcher.Match(path, queryString, new UpstreamPathTemplate(downstreamPathTemplate, 0, containsQueryString, downstreamPathTemplate));
+        var result = _matcher.Match(path, queryString, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -78,12 +83,13 @@ public class RegExUrlMatcherTests : UnitTest
         const string queryString = "?unitId=2&productId=2";
         const string downstreamPathTemplate = regExForwardSlashAndOnePlaceHolder;
         const bool containsQueryString = true;
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate, containsQueryString);
 
         // Act
-        var result = _matcher.Match(path, queryString, new UpstreamPathTemplate(downstreamPathTemplate, 0, containsQueryString, downstreamPathTemplate));
+        var result = _matcher.Match(path, queryString, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -93,12 +99,13 @@ public class RegExUrlMatcherTests : UnitTest
         const string regExForwardSlashAndOnePlaceHolder = "^/[0-9a-zA-Z].+";
         const string path = "/";
         const string downstreamPathTemplate = regExForwardSlashAndOnePlaceHolder;
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
 
     [Fact]
@@ -107,12 +114,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/working/";
         const string downstreamPathTemplate = "^/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
 
     [Fact]
@@ -121,12 +129,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/api/vacancy/1/";
         const string downstreamPathTemplate = "^(?i)/vacancy/[^/]+/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
 
     [Fact]
@@ -135,12 +144,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/";
         const string downstreamPathTemplate = "^/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -149,12 +159,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/api/products/2354325435624623464235";
         const string downstreamPathTemplate = "^/api/products/.+$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -163,12 +174,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "/api/values";
         const string downstreamPathTemplate = "^/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
 
     [Fact]
@@ -177,12 +189,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "";
         const string downstreamPathTemplate = "^$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -191,12 +204,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api";
         const string downstreamPathTemplate = "^api$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -205,12 +219,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/";
         const string downstreamPathTemplate = "^api/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -219,12 +234,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/";
         const string downstreamPathTemplate = "^api/product/products/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -233,12 +249,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/1";
         const string downstreamPathTemplate = "^api/product/products/.+$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -247,12 +264,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/1/2";
         const string downstreamPathTemplate = "^api/product/products/[^/]+/.+$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -261,12 +279,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/1/categories/2";
         const string downstreamPathTemplate = "^api/product/products/[^/]+/categories/.+$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -275,12 +294,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/1/categories/2/variant/123";
         const string downstreamPathTemplate = "^api/product/products/[^/]+/categories/[^/]+/variant/.+$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -289,12 +309,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "api/product/products/1/categories/2/variant/";
         const string downstreamPathTemplate = "^api/product/products/[^/]+/categories/[^/]+/variant/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -303,12 +324,13 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "API/product/products/1/categories/2/variant/";
         const string downstreamPathTemplate = "^(?i)api/product/products/[^/]+/categories/[^/]+/variant/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeTrue();
+        result.Match.ShouldBeTrue();
     }
 
     [Fact]
@@ -317,11 +339,18 @@ public class RegExUrlMatcherTests : UnitTest
         // Arrange
         const string path = "API/product/products/1/categories/2/variant/";
         const string downstreamPathTemplate = "^api/product/products/[^/]+/categories/[^/]+/variant/$";
+        var upt = GivenUpstreamPathTemplate(downstreamPathTemplate);
 
         // Act
-        var result = _matcher.Match(path, Empty, new UpstreamPathTemplate(downstreamPathTemplate, 0, false, downstreamPathTemplate));
+        var result = _matcher.Match(path, Empty, upt);
 
         // Assert
-        result.Data.Match.ShouldBeFalse();
+        result.Match.ShouldBeFalse();
     }
+
+    private static UpstreamPathTemplate GivenUpstreamPathTemplate(string downstreamPathTemplate, bool containsQueryString = false)
+        => new(downstreamPathTemplate, 0, containsQueryString, downstreamPathTemplate)
+        {
+            Pattern = new Regex(downstreamPathTemplate),
+        };
 }
