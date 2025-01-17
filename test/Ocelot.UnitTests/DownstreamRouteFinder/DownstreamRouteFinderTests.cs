@@ -20,7 +20,7 @@ public class DownstreamRouteFinderTests : UnitTest
     private Response<DownstreamRouteHolder> _result;
     private List<Route> _routesConfig;
     private InternalConfiguration _config;
-    private Response<UrlMatch> _match;
+    private UrlMatch _match;
     private string _upstreamHttpMethod;
     private string _upstreamHost;
     private Dictionary<string, string> _upstreamHeaders;
@@ -65,7 +65,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
                     .Build(),
             }, string.Empty, serviceProviderConfig))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -113,7 +113,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
                     .Build(),
             }, string.Empty, serviceProviderConfig))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -154,7 +154,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -199,7 +199,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -244,7 +244,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
                 ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -296,7 +296,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
                 ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -334,7 +334,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
                  }, string.Empty, serviceProviderConfig
              ))
-             .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(false))))
+             .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(false)))
              .And(x => x.GivenTheHeadersMatcherReturns(true))
              .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
              .When(x => x.WhenICallTheFinder())
@@ -368,7 +368,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
                 ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -411,7 +411,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
                 ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -454,7 +454,7 @@ public class DownstreamRouteFinderTests : UnitTest
                     .Build(),
             }, string.Empty, serviceProviderConfig
                 ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Post"))
             .When(x => x.WhenICallTheFinder())
@@ -488,7 +488,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -533,7 +533,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -587,7 +587,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -619,7 +619,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -651,7 +651,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -693,7 +693,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
             ))
-            .And(x => x.GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true))))
+            .And(x => x.GivenTheUrlMatcherReturns(new UrlMatch(true)))
             .And(x => x.GivenTheHeadersMatcherReturns(true))
             .And(x => x.GivenTheUpstreamHttpMethodIs("Get"))
             .When(x => x.WhenICallTheFinder())
@@ -756,7 +756,7 @@ public class DownstreamRouteFinderTests : UnitTest
             },
             string.Empty,
             serviceProviderConfig);
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(true);
         GivenTheUpstreamHttpMethodIs("Get");
 
@@ -820,7 +820,7 @@ public class DownstreamRouteFinderTests : UnitTest
                         .Build(),
                 }, string.Empty, serviceProviderConfig
         );
-        GivenTheUrlMatcherReturns(new OkResponse<UrlMatch>(new UrlMatch(true)));
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
         GivenTheHeadersMatcherReturns(false);
         GivenTheUpstreamHttpMethodIs("Get");
 
@@ -889,7 +889,7 @@ public class DownstreamRouteFinderTests : UnitTest
             .Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Never);
     }
 
-    private void GivenTheUrlMatcherReturns(Response<UrlMatch> match)
+    private void GivenTheUrlMatcherReturns(UrlMatch match)
     {
         _match = match;
         _mockUrlMatcher

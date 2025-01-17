@@ -12,7 +12,6 @@ public partial class UpstreamPathTemplate
     private static readonly Regex _regexNoTemplate = RegexGlobal.New("$^", RegexOptions.Singleline);
     private static Regex RegexNoTemplate() => _regexNoTemplate;
 #endif
-    private static readonly ConcurrentDictionary<string, Regex> _regex = new();
 
     public UpstreamPathTemplate(string template, int priority, bool containsQueryString, string originalValue)
     {
@@ -20,19 +19,17 @@ public partial class UpstreamPathTemplate
         Priority = priority;
         ContainsQueryString = containsQueryString;
         OriginalValue = originalValue;
-        Pattern = template == null ? RegexNoTemplate() :
-            _regex.AddOrUpdate(template,
-                RegexGlobal.New(template, RegexOptions.Singleline),
-                (key, oldValue) => oldValue);
     }
 
     public string Template { get; }
-
     public int Priority { get; }
-
     public bool ContainsQueryString { get; }
-
     public string OriginalValue { get; }
 
-    public Regex Pattern { get; }
+    private Regex _pattern;
+    public Regex Pattern
+    {
+        get => _pattern;
+        set => _pattern = Template == null || value == null ? RegexNoTemplate() : value;
+    }
 }

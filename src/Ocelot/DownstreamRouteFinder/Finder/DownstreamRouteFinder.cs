@@ -37,8 +37,7 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
         {
             var urlMatch = _urlMatcher.Match(upstreamUrlPath, upstreamQueryString, route.UpstreamTemplatePattern);
             var headersMatch = _headerMatcher.Match(upstreamHeaders, route.UpstreamHeaderTemplates);
-
-            if (urlMatch.Data.Match && headersMatch)
+            if (urlMatch.Match && headersMatch)
             {
                 downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route, upstreamHeaders));
             }
