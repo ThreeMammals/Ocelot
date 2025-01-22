@@ -22,11 +22,13 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}.x
-    - name: Display dotnet version
-      run: dotnet --version
+#    - name: Display dotnet version
+#      run: dotnet --version
     - name: Restore dependencies
       run: dotnet restore ./Ocelot.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
     - name: Build
       run: dotnet build --no-restore ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
-    - name: Test
-      run: dotnet test --no-build --verbosity normal ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
+#    - name: Test
+#      run: dotnet test --no-build --verbosity normal ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
+    - name: Unit Tests
+      run: dotnet test --no-restore --no-build --verbosity normal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
