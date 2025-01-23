@@ -19,6 +19,8 @@ public class BaseUrlFinder : IBaseUrlFinder
         var baseUrl = _config.GetValue(key, string.Empty);
 
         // Falls back to memory config then finally default..
-        return string.IsNullOrEmpty(baseUrl) ? _config.GetValue("BaseUrl", "http://localhost:5000") : baseUrl;
+        return string.IsNullOrEmpty(baseUrl)
+            ? _config.GetValue(nameof(FileGlobalConfiguration.BaseUrl), "http://localhost:5000")
+            : baseUrl;
     }
 }
