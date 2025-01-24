@@ -312,9 +312,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         => ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
             new DefaultServiceProviderFactory(new() { ValidateScopes = true }));
     private IOcelotBuilder AddKubernetes(IServiceCollection services) => services
-        .Configure(_kubeClientOptionsConfigure)
         .Replace(GetValidateScopesDescriptor())
-        .AddOcelot().AddKubernetes(false);
+        .AddOcelot().AddKubernetes(_kubeClientOptionsConfigure);
 
     private void WithKubernetes(IServiceCollection services) => AddKubernetes(services);
     private void WithKubernetesAndRoundRobin(IServiceCollection services) => AddKubernetes(services)
