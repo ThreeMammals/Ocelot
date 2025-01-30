@@ -73,7 +73,7 @@ If you have services deployed in Kubernetes, you will normally use the naming se
    You have to bind the options configuration section for the DI ``IOptions<KubeClientOptions>`` interface or register a custom action to initialize the options:
 
    .. code-block:: csharp
-    :emphasize-lines: 9, 11
+    :emphasize-lines: 9, 10, 13
 
      Action<KubeClientOptions> configureKubeClient = opts => 
      { 
@@ -83,11 +83,15 @@ If you have services deployed in Kubernetes, you will normally use the naming se
          opts.AllowInsecure = true; 
      };
      builder.Services
-         .Configure(configureKubeClient) // manual binding options via IOptions<KubeClientOptions>
+         .AddOptions<KubeClientOptions>()
+         .Configure(configureKubeClient); // mannual binding options via IOptions<KubeClientOptions>
+     builder.Services
          .AddOcelot(builder.Configuration)
          .AddKubernetes(false); // don't use pod service account, and IOptions<KubeClientOptions> is reused
 
    Finally, it creates the `KubeClient`_ from your options.
+
+     **Note**: For understanding the ``IOptions<TOptions>`` interface, please refer to the Microsoft Learn documentation: `Options pattern in .NET <https://learn.microsoft.com/en-us/dotnet/core/extensions/options>`_.
 
 .. _k8s-addkubernetes-action-method:
 
@@ -215,8 +219,8 @@ If your downstream service resides in a different namespace, you can override th
 
   "Routes": [
     {
-      "ServiceName": "downstreamservice",
-      "ServiceNamespace": "downstream-namespace"
+      "ServiceName": "my-service",
+      "ServiceNamespace": "my-namespace"
     }
   ]
 

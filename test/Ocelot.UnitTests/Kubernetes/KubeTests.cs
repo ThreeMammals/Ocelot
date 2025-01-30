@@ -17,7 +17,7 @@ namespace Ocelot.UnitTests.Kubernetes;
 /// Contains integration tests.
 /// Move to integration testing, and add at least one "happy path" unit test.
 /// </summary>
-public class KubeTests
+public class KubeTests : FileUnitTest
 {
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
@@ -117,7 +117,7 @@ public class KubeTests
         return (client, options, provider, config);
     }
 
-    private EndpointsV1 GivenEndpoints(
+    protected EndpointsV1 GivenEndpoints(
         string namespaces = nameof(KubeTests),
         [CallerMemberName] string serviceName = "test")
     {
@@ -145,7 +145,7 @@ public class KubeTests
         return endpoints;
     }
 
-    private IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
+    protected IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
         EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
     {
         var token = string.Empty;

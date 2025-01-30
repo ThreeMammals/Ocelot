@@ -6,50 +6,59 @@ using Ocelot.Samples.Web;
 
 //_ = OcelotHostBuilder.Create(args);
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddOcelot();
 
 goto Case4; // Your case should be selected here!!!
 
-Case1: // Use a pod service account. Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-bool-method
+// Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-bool-method
+Case1: // Use a pod service account
 builder.Services
     .AddOcelot(builder.Configuration)
     .AddKubernetes();
 goto Start;
 
-Case2: // Don't use a pod service account, manually bind options. Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-bool-method
-Action<KubeClientOptions> configureOptions = opts => 
-{ 
+// Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-bool-method
+Case2: // Don't use a pod service account, manually bind options
+Action<KubeClientOptions> configureOptions = opts =>
+{
     opts.ApiEndPoint = new UriBuilder(Uri.UriSchemeHttps, "my-host", 443).Uri;
     opts.AccessToken = "my-token";
     opts.AuthStrategy = KubeAuthStrategy.BearerToken;
-    opts.AllowInsecure = true; 
+    opts.AllowInsecure = true;
 };
 builder.Services
-    .Configure(configureOptions) // manual binding options via IOptions<KubeClientOptions>
+    .AddOptions<KubeClientOptions>()
+    .Configure(configureOptions); // mannual binding options via IOptions<KubeClientOptions>
+builder.Services
     .AddOcelot().AddKubernetes(false); // don't use pod service account
 goto Start;
 
-Case3: // Use global ServiceDiscoveryProvider json-options. Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
+// Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
+Case3: // Use global ServiceDiscoveryProvider json-options
 Action<KubeClientOptions> myOptions = opts =>
 {
     opts.ApiEndPoint = new UriBuilder(Uri.UriSchemeHttps, "my-host", 443).Uri;
     opts.AccessToken = "my-token";
     opts.AuthStrategy = KubeAuthStrategy.BearerToken;
-    opts.AllowInsecure = false; // here is wrong value!
+    opts.AllowInsecure = true; // here is wrong value!
 };
 builder.Services
     .AddOcelot(builder.Configuration)
-    .AddKubernetes(myOptions, allowInsecure: true /*optional args*/); // configure options with factory-action, and do with optional args
+    .AddKubernetes(myOptions); // configure options with action, without optional args
 goto Start;
 
-Case4: // Use global ServiceDiscoveryProvider json-options. Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
+// Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
+Case4: // Use global ServiceDiscoveryProvider json-options
+Action<KubeClientOptions>? none = null;
 builder.Services
     .AddOcelot(builder.Configuration)
     .AddKubernetes(null, allowInsecure: true /*optional args*/) // shorten version
-    .AddKubernetes(configureOptions: null, allowInsecure: true /*optional args*/); // don't configure options with factory-action, but do with optional args
+    // or
+    .AddKubernetes(none, allowInsecure: true /*optional args*/) // shorten version 2
+    // or
+    .AddKubernetes(configureOptions: null, allowInsecure: true /*optional args*/); // don't configure options with action, but do with optional args
 
 Start:
 

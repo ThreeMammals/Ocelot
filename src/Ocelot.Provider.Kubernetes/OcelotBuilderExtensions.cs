@@ -35,13 +35,14 @@ public static class OcelotBuilderExtensions
 
         KubeApiClient KubeApiClientFactory(IServiceProvider sp)
         {
+            var logger = sp.GetService<ILoggerFactory>();
             if (usePodServiceAccount)
             {
-                return KubeApiClient.CreateFromPodServiceAccount(sp.GetService<ILoggerFactory>());
+                return KubeApiClient.CreateFromPodServiceAccount(logger);
             }
 
             KubeClientOptions options = sp.GetRequiredService<IOptions<KubeClientOptions>>().Value;
-            options.LoggerFactory ??= sp.GetService<ILoggerFactory>();
+            options.LoggerFactory ??= logger;
             return KubeApiClient.Create(options);
         }
     }
@@ -91,7 +92,7 @@ public static class OcelotBuilderExtensions
         List<Assembly> modelTypeAssemblies = null, Dictionary<string, string> environmentVariables = null)
     {
         configureOptions ??= Configure;
-        builder.Services.Configure(configureOptions);
+        builder.Services.AddOptions<KubeClientOptions>().Configure(configureOptions);
         return builder.AddKubernetes(false);
 
         void Configure(KubeClientOptions options)
@@ -99,11 +100,11 @@ public static class OcelotBuilderExtensions
             // Initialize properties with values coming from global ServiceDiscoveryProvider options
             var key = $"{nameof(FileConfiguration.GlobalConfiguration)}:{nameof(FileGlobalConfiguration.ServiceDiscoveryProvider)}";
             var section = builder.Configuration.GetSection(key);
-            var scheme = section.GetValue<string>(nameof(FileServiceDiscoveryProvider.Scheme), defaultScheme ?? Uri.UriSchemeHttps);
-            var host = section.GetValue<string>(nameof(FileServiceDiscoveryProvider.Host), defaultHost ?? IPAddress.Loopback.ToString());
-            var port = section.GetValue<int>(nameof(FileServiceDiscoveryProvider.Port), defaultPort ?? 443);
+            var scheme = section.Str(nameof(FileServiceDiscoveryProvider.Scheme), defaultScheme ?? Uri.UriSchemeHttps);
+            var host = section.Str(nameof(FileServiceDiscoveryProvider.Host), defaultHost ?? IPAddress.Loopback.ToString());
+            var port = section.Int(nameof(FileServiceDiscoveryProvider.Port), defaultPort ?? 443);
             options.ApiEndPoint = new UriBuilder(scheme, host, port).Uri;
-            options.KubeNamespace = section.GetValue<string>(nameof(FileServiceDiscoveryProvider.Namespace), defaultNamespace ?? "default");
+            options.KubeNamespace = section.Str(nameof(FileServiceDiscoveryProvider.Namespace), defaultNamespace ?? "default");
             options.AccessToken = section.GetValue<string>(nameof(FileServiceDiscoveryProvider.Token));
 
             // Initialize properties with values coming from optional arguments
@@ -125,5 +126,17 @@ public static class OcelotBuilderExtensions
             options.Password = password;
             options.Username = username;
         }
+    }
+
+    private static string Str(this IConfigurationSection sec, string key, string defaultValue)
+    {
+        string val = sec.GetValue<string>(key, defaultValue);
+        return string.IsNullOrEmpty(val) ? defaultValue : val;
+    }
+
+    private static int Int(this IConfigurationSection sec, string key, int defaultValue)
+    {
+        int val = sec.GetValue<int>(key, defaultValue);
+        return val <= 0 ? defaultValue : val;
     }
 }

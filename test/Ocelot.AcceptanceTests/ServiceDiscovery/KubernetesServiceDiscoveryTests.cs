@@ -155,6 +155,35 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
+    [Fact]
+    [Trait("Feat", "2256")]
+    public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions()
+    {
+        const string namespaces = nameof(KubernetesServiceDiscoveryTests);
+        const string serviceName = nameof(ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions);
+        var servicePort = PortFinder.GetRandomPort();
+        var downstreamUrl = LoopbackLocalhostUrl(servicePort);
+        var downstream = new Uri(downstreamUrl);
+        var subsetV1 = GivenSubsetAddress(downstream);
+        var endpoints = GivenEndpoints(subsetV1);
+        var route = GivenRouteWithServiceName(namespaces);
+        var configuration = GivenKubeConfiguration(namespaces, route, "txpc696iUhbVoudg164r93CxDTrKRVWG");
+        var downstreamResponse = serviceName;
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
+            .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunningWithServices(AddKubernetesWithNullConfigureOptions))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
+            .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
+            .BDDfy();
+    }
+
+    private void AddKubernetesWithNullConfigureOptions(IServiceCollection services)
+        => services.AddOcelot().AddKubernetes(configureOptions: null);
+
     private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
         int totalServices,
         [CallerMemberName] string serviceName = nameof(ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer))
@@ -245,10 +274,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             LoadBalancerOptions = new() { Type = loadBalancerType },
         };
 
-    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, params FileRoute[] routes)
+    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, FileRoute route, string token = null)
     {
         var u = new Uri(_kubernetesUrl);
-        var configuration = GivenConfiguration(routes);
+        var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider = new()
         {
             Scheme = u.Scheme,
@@ -257,6 +286,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             Type = nameof(Kube),
             PollingInterval = 0,
             Namespace = serviceNamespace,
+            Token = token ?? "Test",
         };
         return configuration;
     }
