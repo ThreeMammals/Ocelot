@@ -1,6 +1,6 @@
 ![Ocelot Logo](/images/ocelot_logo.png)
 
-[![.NET](https://github.com/ThreeMammals/Ocelot/actions/workflows/dotnet.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
 
 <!-- [![Coverage Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot) -->
 
