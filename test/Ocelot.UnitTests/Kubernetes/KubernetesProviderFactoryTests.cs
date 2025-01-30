@@ -12,6 +12,7 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -91,6 +92,12 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         // Impossible to mock the KubeClientOptions.FromPodServiceAccount, so let's write stub here
         Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", IPAddress.Loopback.ToString());
         Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", PortFinder.GetRandomPort().ToString());
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Console.WriteLine($"{nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount)}: Skipping the test because of Linux environment...");
+            return;
+        }
 
         // /var/run/secrets/kubernetes.io/serviceaccount\namespace
         var currentPath = AppContext.BaseDirectory;
