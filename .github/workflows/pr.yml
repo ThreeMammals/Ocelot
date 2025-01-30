@@ -3,11 +3,10 @@
 
 name: PR
 
-on:
-  pull_request:
-    branches-ignore:
-      - main
-      - develop
+on: pull_request
+    # branches-ignore:
+    #   - main
+    #   - develop
 
 jobs:
   build:
