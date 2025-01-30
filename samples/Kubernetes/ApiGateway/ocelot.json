@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "ServiceName": "downstreamservice",
+      "ServiceName": "my-service",
       "UpstreamHttpMethod": [ "Get" ],
       "UpstreamPathTemplate": "/values",
       "DownstreamPathTemplate": "/api/values",
@@ -19,11 +19,12 @@
   ],
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": {
+      "Scheme": "https",
       "Host": "192.168.0.13",
       "Port": 443,
       "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
       "Namespace": "dev",
-      "Type": "kube"
+      "Type": "Kube"
     }
   }
 }
