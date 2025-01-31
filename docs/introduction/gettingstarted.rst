@@ -51,7 +51,7 @@ If you want some example that actually does something use the following:
         }
       ],
       "GlobalConfiguration": {
-        "BaseUrl": "https://localhost:7777"
+        "BaseUrl": "https://api.mybusiness.com"
       }
     }
 
@@ -71,6 +71,7 @@ Program
 Then in your `Program.cs <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs>`_ (with `top-level statements <https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/program-structure/top-level-statements>`_) you will want to have the following.
 
 .. code-block:: csharp
+  :emphasize-lines: 9,11,21
 
     using Ocelot.DependencyInjection;
     using Ocelot.Middleware;
@@ -93,17 +94,22 @@ Then in your `Program.cs <https://github.com/ThreeMammals/Ocelot/blob/main/sampl
     // Add middlewares aka app.Use*()
     var app = builder.Build();
     await app.UseOcelot();
-    app.Run();
+    await app.RunAsync();
 
 The main things to note are
 
 * ``builder.Configuration.AddOcelot()`` adds single `ocelot.json`_ configuration file in read-only mode.
 * ``builder.Services.AddOcelot(builder.Configuration)`` adds Ocelot required and default services [#f1]_
-* ``app.UseOcelot()`` sets up all the Ocelot middlewares. Note, we have to await the threading result before calling ``app.Run()``
+* ``app.UseOcelot()`` sets up all the Ocelot middlewares. Note, we have to await the threading result before calling ``app.RunAsync()``
 * Do not add endpoint mappings (minimal API methods) such as ``app.MapGet()`` because the Ocelot pipeline is not compatible with them!
+
+
+.. _gettingstarted-samples:
 
 Samples
 -------
+
+  **Solution**: `Ocelot.Samples.sln`_
 
 For beginners, we have prepared basic `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ to help Ocelot newbies clone, compile, and get it running.
 
@@ -115,6 +121,7 @@ After running in Visual Studio [#f2]_, you may use ``API.http`` files to send te
 """"
 
 .. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
-.. [#f2] All sample projects are organized as the `Ocelot.Samples.sln <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Ocelot.Samples.sln>`_ file for Visual Studio 2022 IDE.
+.. [#f2] All :ref:`gettingstarted-samples` projects are organized as the `Ocelot.Samples.sln`_ file for Visual Studio 2022 IDE.
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
+.. _Ocelot.Samples.sln: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Ocelot.Samples.sln
