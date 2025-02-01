@@ -1,8 +1,6 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: develop
-
 on:
  push:
    branches: [ "develop" ]
@@ -15,19 +13,20 @@ jobs:
         dotnet-version: [ '8.0', '9.0' ]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Setup .NET ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}.x
-#    - name: Display dotnet version
-#      run: dotnet --version
+#- name: Display dotnet version
+#  run: dotnet --version
     - name: Restore
       run: dotnet restore ./Ocelot.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
     - name: Build
       run: dotnet build --no-restore ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
+#- name: Test
+#  run: dotnet test --no-build --verbosity normal ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Integration Tests
