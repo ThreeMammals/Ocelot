@@ -11,21 +11,35 @@ public class FileRoute : IRoute, ICloneable
         AddQueriesToRequest = new Dictionary<string, string>();
         AuthenticationOptions = new FileAuthenticationOptions();
         ChangeDownstreamPathTemplate = new Dictionary<string, string>();
+        DangerousAcceptAnyServerCertificateValidator = false;
         DelegatingHandlers = new List<string>();
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHostAndPorts = new List<FileHostAndPort>();
+        DownstreamHttpMethod = default; // to be reviewed
+        DownstreamHttpVersion = default; // to be reviewed
+        DownstreamHttpVersionPolicy = default; // to be reviewed
+        DownstreamPathTemplate = default; // to be reviewed 
+        DownstreamScheme = default; // to be reviewed 
         FileCacheOptions = new FileCacheOptions();
         HttpHandlerOptions = new FileHttpHandlerOptions();
+        Key = default; // to be reviewed
         LoadBalancerOptions = new FileLoadBalancerOptions();
         Metadata = new Dictionary<string, string>();
-        Priority = 1;
+        Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
         RateLimitOptions = new FileRateLimitRule();
+        RequestIdKey = default; // to be reviewed
         RouteClaimsRequirement = new Dictionary<string, string>();
+        RouteIsCaseSensitive = default; // to be reviewed
         SecurityOptions = new FileSecurityOptions();
+        ServiceName = default; // to be reviewed
+        ServiceNamespace = default; // to be reviewed
+        Timeout = default; // to be reviewed
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
+        UpstreamHost = default; // to be reviewed
         UpstreamHttpMethod = new List<string>();
+        UpstreamPathTemplate = default; // to be reviewed
     }
 
     public FileRoute(FileRoute from)
@@ -73,11 +87,11 @@ public class FileRoute : IRoute, ICloneable
     public string ServiceName { get; set; }
     public string ServiceNamespace { get; set; }
     public int Timeout { get; set; }
+    public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
     public List<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
-    public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
 
     /// <summary>
     /// Clones this object by making a deep copy.

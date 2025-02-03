@@ -1,11 +1,13 @@
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
+.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _Consul: https://www.consul.io/
+.. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
+
 Configuration
 =============
 
 An example configuration can be found here in `ocelot.json`_.
-There are two sections to the configuration: an array of **Routes** and a **GlobalConfiguration**:
-
-* The **Routes** are the objects that tell Ocelot how to treat an upstream request.
-* The **GlobalConfiguration** is a bit hacky and allows overrides of Route specific settings. It's useful if you do not want to manage lots of Route specific settings.
+There are two major sections to the configuration: an array of ``Routes`` and a ``GlobalConfiguration`` sections:
 
 .. code-block:: json
 
@@ -14,68 +16,137 @@ There are two sections to the configuration: an array of **Routes** and a **Glob
     "GlobalConfiguration": {}
   }
 
-Here is an example Route configuration. You don't need to set all of these things but this is everything that is available at the moment:
+From the :doc:`../introduction/gettingstarted` chapter and its :ref:`getstarted-configuration` section, you may already know that there are four total configuration sections:
 
 .. code-block:: json
 
   {
-    "UpstreamPathTemplate": "/",
-    "UpstreamHeaderTemplates": {}, // dictionary
-    "UpstreamHost": "",
-    "UpstreamHttpMethod": [ "Get" ],
-    "DownstreamPathTemplate": "/",
-    "DownstreamHttpMethod": "",
-    "DownstreamHttpVersion": "",
-    "DownstreamHttpVersionPolicy": "",
-    "AddHeadersToRequest": {},
-    "AddClaimsToRequest": {},
-    "RouteClaimsRequirement": {},
-    "AddQueriesToRequest": {},
-    "RequestIdKey": "",
-    "FileCacheOptions": {
-      "TtlSeconds": 0,
-      "Region": "europe-central"
-    },
-    "RouteIsCaseSensitive": false,
-    "ServiceName": "",
-    "DownstreamScheme": "http",
-    "DownstreamHostAndPorts": [
-      { "Host": "localhost", "Port": 12345 }
-    ],
-    "QoSOptions": {
-      "ExceptionsAllowedBeforeBreaking": 0,
-      "DurationOfBreak": 0,
-      "TimeoutValue": 0
-    },
-    "LoadBalancer": "",
-    "RateLimitOptions": {
-      "ClientWhitelist": [],
-      "EnableRateLimiting": false,
-      "Period": "",
-      "PeriodTimespan": 0,
-      "Limit": 0
-    },
-    "AuthenticationOptions": {
-      "AuthenticationProviderKey": "",
-      "AllowedScopes": []
-    },
-    "HttpHandlerOptions": {
-      "AllowAutoRedirect": true,
-      "UseCookieContainer": true,
-      "UseTracing": true,
-      "MaxConnectionsPerServer": 100
-    },
-    "DangerousAcceptAnyServerCertificateValidator": false,
-    "SecurityOptions": {
-      "IPAllowedList": [],
-      "IPBlockedList": [],
-      "ExcludeAllowedFromBlocked": false
-    },
-    "Metadata": {}
+    "Routes": [], // static routes
+    "DynamicRoutes": [],
+    "GlobalConfiguration": {},
+    "Aggregates": [] // BFF
   }
 
-The actual Route schema for properties can be found in the C# `FileRoute <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileRoute.cs>`_ class.
-If you're interested in learning more about how to utilize these options, read below!
+.. list-table::
+    :widths: 25 75
+    :header-rows: 1
+
+    * - *Section*
+      - *Description*
+    * - ``Routes``
+      - The static objects that tell Ocelot how to treat an upstream request.
+        Once static routes have been loaded during gateway startup, in general, they cannot be changed during the lifetime of the app instance, with a few exceptional use cases.
+    * - ``DynamicRoutes``
+      - This section enables dynamic routing when using a :doc:`../features/servicediscovery` provider.
+        Please refer to the :ref:`routing-dynamic` docs for more details.
+    * - ``GlobalConfiguration``
+      - This section is a bit hacky and allows overrides of static route-specific settings.
+        It is useful if you do not want to manage lots of route-specific settings.
+    * - ``Aggregates``
+      - This section allows specifying aggregated routes that compose multiple normal routes and map their responses into one JSON object.
+        It allows you to start implementing a *Back-end For a Front-end* (BFF) type architecture with Ocelot.
+        Please refer to the :doc:`../features/requestaggregation` chapter for more details.
+
+To fully understand all configuration capabilities, we recommend reading all sections below.
+
+Route Schema
+------------
+
+.. _FileRoute: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileRoute.cs
+
+    Class: `FileRoute`_
+
+Here is the complete route configuration, also known as the *"route schema,"* of top-level properties.
+You do not need to set all of these things, but this is everything that is available at the moment.
+
+.. code-block:: json
+
+    {
+      "AddClaimsToRequest": {}, // dictionary
+      "AddHeadersToRequest": {}, // dictionary
+      "AddQueriesToRequest": {}, // dictionary
+      "AuthenticationOptions": {}, // object
+      "ChangeDownstreamPathTemplate": {}, // dictionary
+      "DangerousAcceptAnyServerCertificateValidator": false,
+      "DelegatingHandlers": [], // array of strings
+      "DownstreamHeaderTransform": {}, // dictionary
+      "DownstreamHostAndPorts": [], // array of FileHostAndPort
+      "DownstreamHttpMethod": "",
+      "DownstreamHttpVersion": "",
+      "DownstreamHttpVersionPolicy": "",
+      "DownstreamPathTemplate": "",
+      "DownstreamScheme": "",
+      "FileCacheOptions": {}, // object
+      "HttpHandlerOptions": {}, // object
+      "Key": "",
+      "LoadBalancerOptions": {}, // object
+      "Metadata": {}, // dictionary
+      "Priority": 1, // integer
+      "QoSOptions": {}, // object
+      "RateLimitOptions": {}, // object
+      "RequestIdKey": "",
+      "RouteClaimsRequirement": {}, // dictionary
+      "RouteIsCaseSensitive": false,
+      "SecurityOptions": {}, // object
+      "ServiceName": "",
+      "ServiceNamespace": "",
+      "Timeout": 0, // integer
+      "UpstreamHeaderTemplates": {}, // dictionary
+      "UpstreamHeaderTransform": {}, // dictionary
+      "UpstreamHost": "",
+      "UpstreamHttpMethod": [], // array of strings
+      "UpstreamPathTemplate": ""
+    },
+
+The actual route schema with all the properties can be found in the C# `FileRoute`_ class.
+
+Dynamic Route Schema
+--------------------
+
+.. _FileDynamicRoute: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileDynamicRoute.cs
+
+    Class: `FileDynamicRoute`_
+
+Here is the complete dynamic route configuration, also known as the *"dynamic route schema,"* of top-level properties.
+
+.. code-block:: json
+
+    {
+    }
+
+The actual dynamic route schema with all the properties can be found in the C# `FileDynamicRoute`_ class.
+
+Aggregate Route Schema
+----------------------
+
+.. _FileAggregateRoute: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileAggregateRoute.cs
+
+    Class: `FileAggregateRoute`_
+
+Here is the complete aggregated route configuration, also known as the *"aggregate route schema,"* of top-level properties.
+
+.. code-block:: json
+
+    {
+    }
+
+The actual aggregated route schema with all the properties can be found in the C# `FileAggregateRoute`_ class.
+
+Global Configuration Schema
+---------------------------
+
+.. _FileGlobalConfiguration: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileGlobalConfiguration.cs
+
+    Class: `FileGlobalConfiguration`_
+
+Here is the complete global configuration, also known as the *"global configuration schema,"* of top-level properties.
+
+.. code-block:: json
+
+    {
+    }
+
+The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
 
 Multiple Environments
 ---------------------
@@ -571,7 +642,3 @@ Now, the route metadata can be accessed through the `DownstreamRoute` object:
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/ocelot.json
-.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
-.. _Consul: https://www.consul.io/
-.. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
