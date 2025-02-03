@@ -20,4 +20,4 @@ if (builder.Environment.IsDevelopment())
 // Add middlewares aka app.Use*()
 var app = builder.Build();
 await app.UseOcelot();
-app.Run();
+await app.RunAsync();

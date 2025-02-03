@@ -1,32 +1,33 @@
+.. _scheme: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/#authentication-scheme
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
+
 Authentication
 ==============
 
-In order to authenticate Routes and subsequently use any of Ocelot's claims based features such as authorization or modifying the request with values from the token,
-users must register authentication services in their **Startup.cs** as usual but they provide `a scheme <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/#authentication-scheme>`_ 
+In order to authenticate routes and subsequently use any of Ocelot's claims based features such as authorization or modifying the request with values from the token,
+users must register authentication services in their `Program`_ as usual but they provide a `scheme`_ 
 (authentication provider key) with each registration e.g.
 
 .. code-block:: csharp
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        const string AuthenticationProviderKey = "MyKey";
-        services.AddAuthentication()
-            .AddJwtBearer(AuthenticationProviderKey, options =>
-            {
-                // Custom Authentication setup via options initialization
-            });
-    }
+    var AuthenticationProviderKey = "MyKey";
+    builder.Services
+        .AddAuthentication()
+        .AddJwtBearer(AuthenticationProviderKey, options =>
+        {
+            // authentication setup via options initialization
+        });
 
-In this example ``MyKey`` is `the scheme <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/#authentication-scheme>`_ that this provider has been registered with.
-We then map this to a Route in the configuration using the following `AuthenticationOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationOptions&type=code>`_ properties:
+In this example ``MyKey`` is the `scheme`_ that this provider has been registered with.
+We then map this to a route in the configuration using the following `AuthenticationOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationOptions&type=code>`_ properties:
 
 * ``AuthenticationProviderKey`` is a string object, obsolete [#f1]_. This is legacy definition when you define :ref:`authentication-scheme`.
 * ``AuthenticationProviderKeys`` is an array of strings, the recommended definition of :ref:`authentication-multiple` feature.
 
 .. _authentication-scheme:
 
-Single Key aka Authentication Scheme [#f1]_
--------------------------------------------
+Single Authentication Scheme [#f1]_
+-----------------------------------
 
     | Property: ``AuthenticationOptions.AuthenticationProviderKey``
 
@@ -39,10 +40,10 @@ We map authentication provider to a Route in the configuration e.g.
     "AllowedScopes": []
   }
 
-When Ocelot runs it will look at this Routes ``AuthenticationProviderKey`` and check that there is an authentication provider registered with the given key.
-If there isn't then Ocelot will not start up. If there is then the Route will use that provider when it executes.
+When Ocelot runs it will look at this routes ``AuthenticationProviderKey`` and check that there is an authentication provider registered with the given key.
+If there isn't then Ocelot will not start up. If there is then the route will use that provider when it executes.
 
-If a Route is authenticated, Ocelot will invoke whatever scheme is associated with it while executing the authentication middleware.
+If a route is authenticated, Ocelot will invoke whatever scheme is associated with it while executing the authentication middleware.
 If the request fails authentication, Ocelot returns a HTTP status code `401 Unauthorized <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401>`_.
 
 .. _authentication-multiple:
@@ -52,22 +53,21 @@ Multiple Authentication Schemes [#f2]_
 
     | Property: ``AuthenticationOptions.AuthenticationProviderKeys``
 
-In real world of ASP.NET, apps may need to support multiple types of authentication by single Ocelot app instance.
-To register `multiple authentication schemes`_ (`authentication provider keys <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationProviderKey&type=code>`_) for each appropriate authentication provider, use and develop this abstract configuration of two or more schemes:
+In the real world of ASP.NET Core, apps may need to support multiple types of authentication by a single Ocelot app instance.
+To register `multiple authentication schemes`_ (`authentication provider keys <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AuthenticationProviderKey&type=code>`_) for each appropriate authentication provider,
+use and develop this abstract configuration of two or more schemes:
 
 .. code-block:: csharp
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        const string DefaultScheme = JwtBearerDefaults.AuthenticationScheme; // Bearer
-        services.AddAuthentication()
-            .AddJwtBearer(DefaultScheme, options => { /* JWT setup */ })
-            // AddJwtBearer, AddCookie, AddIdentityServerAuthentication etc. 
-            .AddMyProvider("MyKey", options => { /* Custom auth setup */ });
-    }
+    var DefaultScheme = JwtBearerDefaults.AuthenticationScheme; // Bearer
+    builder.Services
+        .AddAuthentication()
+        .AddJwtBearer(DefaultScheme, options => { /* JWT setup */ })
+        // AddJwtBearer, AddCookie, AddIdentityServerAuthentication etc. 
+        .AddMyProvider("MyKey", options => { /* Custom auth setup */ });
 
 In this example, the ``MyKey`` and ``Bearer`` schemes represent the keys with which these providers were registered.
-We then map these schemes to a Route in the configuration as shown below.
+We then map these schemes to a route in the configuration as shown below.
 
 .. code-block:: json
 
@@ -78,11 +78,11 @@ We then map these schemes to a Route in the configuration as shown below.
 
 Afterward, Ocelot applies all steps that are specified for ``AuthenticationProviderKey`` as :ref:`authentication-scheme`.
 
-**Note** that the order of the keys in an array definition does matter! We use a "First One Wins" authentication strategy.
+    **Note** that the order of the keys in an array definition does matter! We use a "First One Wins" authentication strategy.
 
-Finally, we would say that registering providers, initializing options, forwarding authentication artifacts can be a "real" coding challenge.
+Finally, we would say that registering providers, initializing options, and forwarding authentication artifacts can be a "real" coding challenge.
 If you're stuck or don't know what to do, just find inspiration in our `acceptance tests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+MultipleAuthSchemesFeatureTests+language%3AC%23&type=code&l=C%23>`_
-(currently for `Identity Server 4 <https://identityserver4.readthedocs.io/>`_ only) [#f3]_.
+(currently for `IdentityServer4 <https://identityserver4.readthedocs.io/>`_ only) [#f3]_.
 
 JWT Tokens
 ----------
@@ -91,19 +91,18 @@ If you want to authenticate using JWT tokens maybe from a provider like `Auth0 <
 
 .. code-block:: csharp
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        const string AuthenticationProviderKey = "MyKey";
-        services.AddAuthentication()
-            .AddJwtBearer(AuthenticationProviderKey, options =>
-            {
-                options.Authority = "test";
-                options.Audience = "test";
-            });
-        services.AddOcelot();
-    }
+    var AuthenticationProviderKey = "MyKey";
+    builder.Services
+        .AddAuthentication()
+        .AddJwtBearer(AuthenticationProviderKey, options =>
+        {
+            options.Authority = "test";
+            options.Audience = "test";
+        });
+    builder.Services
+        .AddOcelot(builder.Configuration);
 
-Then map the authentication provider key to a Route in your configuration e.g.
+Then map the authentication provider key to a route in your configuration e.g.
 
 .. code-block:: json
 
@@ -117,28 +116,29 @@ Then map the authentication provider key to a Route in your configuration e.g.
     * Microsoft Learn: `Authentication and authorization in minimal APIs <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/security>`_
     * Andrew Lock | .NET Escapades: `A look behind the JWT bearer authentication middleware in ASP.NET Core <https://andrewlock.net/a-look-behind-the-jwt-bearer-authentication-middleware-in-asp-net-core/>`_
 
+.. _authentication-identity-server:
+
 Identity Server Bearer Tokens
 -----------------------------
 
-In order to use `IdentityServer <https://github.com/IdentityServer>`_ bearer tokens, register your IdentityServer services as usual in ``ConfigureServices`` with a scheme (key).
+In order to use `IdentityServer <https://github.com/IdentityServer>`_ bearer tokens, register your IdentityServer services as usual in `Program`_ with a `scheme`_ (key).
 If you don't understand how to do this, please consult the IdentityServer `documentation <https://identityserver4.readthedocs.io/>`_.
 
 .. code-block:: csharp
 
-    public void ConfigureServices(IServiceCollection services)
+    var AuthenticationProviderKey = "MyKey";
+    Action<JwtBearerOptions> options = o =>
     {
-        const string AuthenticationProviderKey = "MyKey";
-        Action<JwtBearerOptions> options = (opt) =>
-        {
-            opt.Authority = "https://whereyouridentityserverlives.com";
-            // ...
-        };
-        services.AddAuthentication()
-            .AddJwtBearer(AuthenticationProviderKey, options);
-        services.AddOcelot();
-    }
+        o.Authority = "https://whereyouridentityserverlives.com";
+        // ...
+    };
+    builder.Services
+        .AddAuthentication()
+        .AddJwtBearer(AuthenticationProviderKey, options);
+    builder.Services
+        .AddOcelot(builder.Configuration);
 
-Then map the authentication provider key to a Route in your configuration e.g.
+Then map the authentication provider key to a route in your configuration e.g.
 
 .. code-block:: json
 
@@ -152,25 +152,27 @@ Auth0 by Okta
 
 Yet another identity provider by `Okta <https://www.okta.com/>`_, see `Auth0 Developer Resources <https://developer.auth0.com/>`_.
 
-Add the following to your startup ``Configure`` method:
+Add the following, at minimum, to your startup `Program`_:
 
 .. code-block:: csharp
 
-    app.UseAuthentication();
-    await UseOcelot();
-
-Add the following, at minimum, to your startup ``ConfigureServices`` method:
-
-.. code-block:: csharp
-
-    const string OktaProviderKey = "MyKey";
-    services.AddAuthentication()
-        .AddJwtBearer(OktaProviderKey, options =>
+    var OktaProviderKey = "MyKey";
+    builder.Services
+        .AddAuthentication()
+        .AddJwtBearer(OktaProviderKey, o =>
         {
-            options.Audience = configuration["Authentication:Okta:Audience"]; // Okta Authorization server Audience
-            options.Authority = configuration["Authentication:Okta:Server"]; // Okta Authorization Issuer URI URL e.g. https://{subdomain}.okta.com/oauth2/{authidentifier}
+            var conf = builder.Configuration;
+            o.Audience = conf["Authentication:Okta:Audience"]; // Okta Authorization server Audience
+            o.Authority = conf["Authentication:Okta:Server"]; // Okta Authorization Issuer URI URL e.g. https://{subdomain}.okta.com/oauth2/{authidentifier}
         });
-    services.AddOcelot(configuration);
+    builder.Services
+        .AddOcelot(builder.Configuration);
+
+    var app = builder.Build();
+    await app
+        .UseAuthentication()
+        .UseOcelot();
+    await app.RunAsync();
 
 In order to get Ocelot to view the scope claim from Okta properly, you have to add the following to map the default Okta ``scp`` claim to ``scope``:
 
@@ -189,9 +191,9 @@ In order to get Ocelot to view the scope claim from Okta properly, you have to a
 Allowed Scopes
 --------------
 
-If you add scopes to **AllowedScopes**, Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has at least one of the scopes in the list.
+If you add scopes to ``AllowedScopes``, Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has at least one of the scopes in the list.
 
-This is a way to restrict access to a Route on a per scope basis.
+This is a way to restrict access to a route on a per scope basis.
 
 .. _authentication-warning:
 
@@ -214,8 +216,8 @@ Links
 Future
 ------
 
-We invite you to add more examples, if you have integrated with other identity providers and the integration solution is working.
-Please, open `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell>`_ discussion in the repository.
+We invite you to add more examples if you have integrated with other identity providers and the integration solution is working.
+Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell>`_" discussion in the repository.
 
 """"
 
