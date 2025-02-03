@@ -7,17 +7,17 @@
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Description>This package provides OpenTracing support to Ocelot.</Description>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <!--<PackageIcon>ocelot_logo.png</PackageIcon>-->
     <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
     <None Include="..\..\images\ocelot_logo.png" Pack="true" Visible="true" PackagePath="\" />
-  </ItemGroup>
+  </ItemGroup>-->
   <ItemGroup>
     <PackageReference Include="OpenTracing" Version="0.12.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
