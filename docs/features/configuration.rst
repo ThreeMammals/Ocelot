@@ -1,4 +1,5 @@
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Configuration/Program.cs
 .. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
 .. _Consul: https://www.consul.io/
 .. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
@@ -23,8 +24,8 @@ From the :doc:`../introduction/gettingstarted` chapter and its :ref:`getstarted-
   {
     "Routes": [], // static routes
     "DynamicRoutes": [],
-    "GlobalConfiguration": {},
-    "Aggregates": [] // BFF
+    "Aggregates": [], // BFF
+    "GlobalConfiguration": {}
   }
 
 .. list-table::
@@ -33,21 +34,23 @@ From the :doc:`../introduction/gettingstarted` chapter and its :ref:`getstarted-
 
     * - *Section*
       - *Description*
-    * - ``Routes``
+    * - ``Routes`` with :ref:`config-route-schema`
       - The static objects that tell Ocelot how to treat an upstream request.
         Once static routes have been loaded during gateway startup, in general, they cannot be changed during the lifetime of the app instance, with a few exceptional use cases.
-    * - ``DynamicRoutes``
+    * - ``DynamicRoutes`` with :ref:`config-dynamic-route-schema`
       - This section enables dynamic routing when using a :doc:`../features/servicediscovery` provider.
         Please refer to the :ref:`routing-dynamic` docs for more details.
-    * - ``GlobalConfiguration``
-      - This section is a bit hacky and allows overrides of static route-specific settings.
-        It is useful if you do not want to manage lots of route-specific settings.
-    * - ``Aggregates``
+    * - ``Aggregates`` with :ref:`config-aggregate-route-schema`
       - This section allows specifying aggregated routes that compose multiple normal routes and map their responses into one JSON object.
         It allows you to start implementing a *Back-end For a Front-end* (BFF) type architecture with Ocelot.
         Please refer to the :doc:`../features/requestaggregation` chapter for more details.
+    * - ``GlobalConfiguration`` with :ref:`config-global-configuration-schema`
+      - This section is a bit hacky and allows overrides of static route-specific settings.
+        It is useful if you do not want to manage lots of route-specific settings.
 
 To fully understand all configuration capabilities, we recommend reading all sections below.
+
+.. _config-route-schema:
 
 Route Schema
 ------------
@@ -100,6 +103,8 @@ You do not need to set all of these things, but this is everything that is avail
 
 The actual route schema with all the properties can be found in the C# `FileRoute`_ class.
 
+.. _config-dynamic-route-schema:
+
 Dynamic Route Schema
 --------------------
 
@@ -112,9 +117,16 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 .. code-block:: json
 
     {
+      "DownstreamHttpVersion": "",
+      "DownstreamHttpVersionPolicy": "",
+      "Metadata": {}, // dictionary
+      "RateLimitRule": {},
+      "ServiceName": ""
     }
 
 The actual dynamic route schema with all the properties can be found in the C# `FileDynamicRoute`_ class.
+
+.. _config-aggregate-route-schema:
 
 Aggregate Route Schema
 ----------------------
@@ -128,9 +140,20 @@ Here is the complete aggregated route configuration, also known as the *"aggrega
 .. code-block:: json
 
     {
+      "Aggregator": "",
+      "Priority": 1, // integer
+      "RouteIsCaseSensitive": false,
+      "RouteKeys": [], // array of strings
+      "RouteKeysConfig": [], // array of AggregateRouteConfig
+      "UpstreamHeaderTemplates": {}, // dictionary
+      "UpstreamHost": "",
+      "UpstreamHttpMethod": [], // array of strings
+      "UpstreamPathTemplate": ""
     }
 
 The actual aggregated route schema with all the properties can be found in the C# `FileAggregateRoute`_ class.
+
+.. _config-global-configuration-schema:
 
 Global Configuration Schema
 ---------------------------
@@ -144,9 +167,65 @@ Here is the complete global configuration, also known as the *"global configurat
 .. code-block:: json
 
     {
+      "BaseUrl": "",
+      "CacheOptions": {},
+      "DownstreamHttpVersion": "",
+      "DownstreamHttpVersionPolicy": "",
+      "DownstreamScheme": "",
+      "HttpHandlerOptions": {},
+      "LoadBalancerOptions": {},
+      "MetadataOptions": {},
+      "QoSOptions": {},
+      "RateLimitOptions": {},
+      "RequestIdKey": "",
+      "SecurityOptions": {},
+      "ServiceDiscoveryProvider": {}
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
+
+.. _config-overview:
+
+Configuration Overview
+----------------------
+
+:doc:`../features/dependencyinjection` of the *Configuration* feature in Ocelot allows you to extend, manage, and build Ocelot Core *configuration* **before** the stage of building ASP.NET Core services.
+
+To configure the Ocelot Core and services, use the following abstract algorithm, which must be presented in your `Program`_:
+
+1. **Create application builder**: The ``Microsoft.AspNetCore.Builder.WebApplication`` has three overloaded versions of the ``CreateBuilder()`` methods.
+   Our recommendation is to utilize arguments possibly coming from terminal sessions into an app host; thus, use the ``CreateBuilder(args)`` method.
+
+  .. code-block:: csharp
+
+      var builder = WebApplication.CreateBuilder(args);
+
+2. **Set up the configuration builder**: Utilize the ``WebApplicationBuilder.Configuration`` property, which returns a ``ConfigurationManager`` object implementing the target ``IConfigurationBuilder`` interface.
+
+  .. code-block:: csharp
+
+      builder.Configuration.AddOcelot(...);
+
+3. **Forward configuration to the Ocelot builder**: The ``Ocelot.DependencyInjection.ServiceCollectionExtensions`` class has three overloaded versions of the ``AddOcelot(IServiceCollection)`` methods, which return an ``IOcelotBuilder`` object.
+
+  .. code-block:: csharp
+
+      builder.Services.AddOcelot(builder.Configuration);
+
+4. **Finish the app setup**, add middlewares, and finally run the application: Let's write the final algorithm.
+
+  .. code-block:: csharp
+
+      var builder = WebApplication.CreateBuilder(args); // step 1
+      builder.Configuration.AddOcelot(...); // step 2
+      builder.Services.AddOcelot(builder.Configuration); // step 3
+
+      // Step 4
+      var app = builder.Build();
+      await app.UseOcelot();
+      await app.RunAsync();
+
+For comprehensive documentation of configuration DI-extensions, please refer to the :ref:`di-configuration-overview` section in the :doc:`../features/dependencyinjection` chapter.
 
 Multiple Environments
 ---------------------
@@ -156,28 +235,56 @@ In order to implement this add the following to you:
 
 .. code-block:: csharp
 
-    ConfigureAppConfiguration((context, config) =>
-    {
-        var env = context.HostingEnvironment;
-        config.SetBasePath(env.ContentRootPath)
-            .AddJsonFile("appsettings.json", true, true)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
-            .AddJsonFile("ocelot.json") // primary config file
-            .AddJsonFile($"ocelot.{env.EnvironmentName}.json") // environment file
-            .AddEnvironmentVariables();
-    })
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration
+        .SetBasePath(builder.Environment.ContentRootPath)
+        .AddJsonFile("ocelot.json") // primary config file
+        .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
+    builder.Services
+        .AddOcelot(builder.Configuration);
 
 Ocelot will now use the environment specific configuration and fall back to `ocelot.json`_ if there isn't one.
+Another version of the configuration above, which is based on configuration providers, is the following:
 
-You also need to set the corresponding environment variable which is ``ASPNETCORE_ENVIRONMENT``.
-More info on this can be found in the ASP.NET Core docs: `Use multiple environments in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_.
+.. code-block:: csharp
+
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration
+        .SetBasePath(builder.Environment.ContentRootPath)
+        .AddOcelot() // single ocelot.json file without environment one
+        // or
+        .AddOcelot(builder.Environment)
+        .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
+    builder.Services
+        .AddOcelot(builder.Configuration);
+
+You also need to set the corresponding ``ASPNETCORE_ENVIRONMENT`` variable.
+
+    **Note 1**: More info on configuration can be found in the ASP.NET Core documentation:
+
+    * `Use multiple environments in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments>`_
+    * `Configuration in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/>`_
+
+    **Note 2**: Calling the following configuration methods is rudimentary in ASP.NET Core because of internal encapsulation in the default builder, aka ``CreateBuilder(args)`` method.
+
+    .. code-block:: csharp
+      :emphasize-lines: 3,4,5
+
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration
+            .AddJsonFile("appsettings.json", true, true) // not required
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true) // not required
+            .AddEnvironmentVariables() // not required
+            // ...
+
+    This is explained in the `Default application configuration sources <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-9.0#default-application-configuration-sources>`_ docs; thus, remove these optional methods.
 
 .. _config-merging-files:
 
-Merging Configuration Files
----------------------------
+Merging Files [#f1]_
+--------------------
 
-This feature allows users to have multiple configuration files to make managing large configurations easier. [#f1]_
+This feature allows users to have multiple configuration files to make managing large configurations easier.
 
 Rather than directly adding the configuration e.g., using ``AddJsonFile("ocelot.json")``, you can achieve the same result by invoking ``AddOcelot()`` as shown below:
 
@@ -211,7 +318,7 @@ Ocelot will then save the merged configuration to a file called `ocelot.json`_ a
   Additionally, note that merging partial configuration files (such as ``ocelot.*.json``) on the fly using :doc:`../features/administration` API is not currently implemented.
 
   **Note 3**: An alternative to static merged configurations could be the construction of the configuration object before passing it as an argument to the :ref:`di-configuration-addocelot` method.
-  Refer to the :ref:`config-build-dynamic-configuration` subsection for details.
+  Refer to the :ref:`config-build-from-scratch` subsection for details.
 
 Keep files in a folder
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -252,8 +359,8 @@ This feature proves exceptionally valuable in cloud environments like Azure, AWS
 Furthermore, within Docker container environments, permissions can be scarce, necessitating substantial DevOps efforts to enable file write operations.
 Therefore, save time by leveraging this feature! [#f2]_
 
-Reload JSON Config On Change
-----------------------------
+Reload On Change
+----------------
 
 Ocelot supports reloading the JSON configuration file on change.
 For instance, the following will recreate Ocelot internal configuration when the `ocelot.json`_ file is updated manually:
@@ -290,8 +397,64 @@ For example:
 
 Examining the code within the `ConfigurationBuilderExtensions class <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs>`_ would be helpful for gaining a better understanding of the signatures of the overloaded methods [#f2]_.
 
-Store Configuration in `Consul`_
---------------------------------
+.. _config-react-to-changes:
+
+React to Changes
+----------------
+
+Resolve ``IOcelotConfigurationChangeTokenSource`` interface from the DI container if you wish to react to changes to the Ocelot configuration via the :doc:`../features/administration` API or `ocelot.json`_ being reloaded from the disk.
+You may either poll the change token's ``IChangeToken.HasChanged`` property, or register a callback with the ``RegisterChangeCallback`` method.
+
+How to poll is explained here:
+
+.. code-block:: csharp
+
+    public class ConfigurationNotifyingService : BackgroundService
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly ILogger _logger;
+
+        public ConfigurationNotifyingService(IOcelotConfigurationChangeTokenSource tokenSource, ILogger logger)
+        {
+            _tokenSource = tokenSource;
+            _logger = logger;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (_tokenSource.ChangeToken.HasChanged)
+                {
+                    _logger.LogInformation("Configuration updated");
+                }
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
+    }
+
+How to register a callback is explained here:
+
+.. code-block:: csharp
+
+    public class MyDependencyInjectedClass : IDisposable
+    {
+        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
+        private readonly IDisposable _callbackHolder;
+
+        public MyClass(IOcelotConfigurationChangeTokenSource tokenSource)
+        {
+            _tokenSource    = tokenSource;
+            _callbackHolder = tokenSource.ChangeToken.RegisterChangeCallback(_ => Console.WriteLine("Configuration changed"), null);
+        }
+        public void Dispose()
+        {
+            _callbackHolder.Dispose();
+        }
+    }
+
+Store in `Consul`_
+------------------
 
 As a developer, if you have enabled :doc:`../features/servicediscovery` with `Consul`_ support in Ocelot, you may choose to manage your configuration saving to the *Consul* `KV store`_.
 
@@ -299,10 +462,10 @@ Beyond the traditional methods of storing configuration in a file vs folder (:re
 
 For further details on managing Ocelot configurations via a Consul instance, please consult the ":ref:`sd-consul-configuration-in-kv`" section.
 
-.. _config-build-dynamic-configuration:
+.. _config-build-from-scratch:
 
-Build Dynamic Configuration
----------------------------
+Build From Scratch
+------------------
 
   **Subject**: the ``FileConfiguration`` type from the ``Ocelot.Configuration.File`` namespace. 
 
@@ -351,8 +514,8 @@ In summary, the final .NET 8+ solution should be written in ``Program.cs`` using
 
 As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
 
-Follow Redirects aka ``HttpHandlerOptions`` 
--------------------------------------------
+Follow Redirects (``HttpHandlerOptions``) 
+-----------------------------------------
 
     Class: `FileHttpHandlerOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FileHttpHandlerOptions&type=code>`_
 
@@ -425,64 +588,6 @@ As a team, we highly recommend following these instructions when developing your
 * **Production environments**. **Do not use self-signed certificates at all!**
   System administrators or DevOps engineers must create real valid certificates being signed by hosting or cloud providers.
   **Switch off the feature for all routes!** Remove the **DangerousAcceptAnyServerCertificateValidator** property for all routes in production version of `ocelot.json`_ file!
-
-.. _config-react-to-changes:
-
-React to Configuration Changes
-------------------------------
-
-Resolve ``IOcelotConfigurationChangeTokenSource`` interface from the DI container if you wish to react to changes to the Ocelot configuration via the :doc:`../features/administration` API or `ocelot.json`_ being reloaded from the disk.
-You may either poll the change token's ``IChangeToken.HasChanged`` property, or register a callback with the ``RegisterChangeCallback`` method.
-
-Polling the HasChanged property
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: csharp
-
-    public class ConfigurationNotifyingService : BackgroundService
-    {
-        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
-        private readonly ILogger _logger;
-
-        public ConfigurationNotifyingService(IOcelotConfigurationChangeTokenSource tokenSource, ILogger logger)
-        {
-            _tokenSource = tokenSource;
-            _logger = logger;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                if (_tokenSource.ChangeToken.HasChanged)
-                {
-                    _logger.LogInformation("Configuration updated");
-                }
-                await Task.Delay(1000, stoppingToken);
-            }
-        }
-    }
-    
-Registering a callback
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: csharp
-
-    public class MyDependencyInjectedClass : IDisposable
-    {
-        private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
-        private readonly IDisposable _callbackHolder;
-
-        public MyClass(IOcelotConfigurationChangeTokenSource tokenSource)
-        {
-            _tokenSource    = tokenSource;
-            _callbackHolder = tokenSource.ChangeToken.RegisterChangeCallback(_ => Console.WriteLine("Configuration changed"), null);
-        }
-        public void Dispose()
-        {
-            _callbackHolder.Dispose();
-        }
-    }
 
 .. _config-http-version:
 
