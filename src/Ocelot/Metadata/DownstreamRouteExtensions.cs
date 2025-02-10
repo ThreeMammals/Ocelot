@@ -55,19 +55,18 @@ public static class DownstreamRouteExtensions
     };
 
     /// <summary>
-    /// Extension method to get metadata from a downstream route.
+    /// Gets metadata from a downstream route.
     /// </summary>
     /// <typeparam name="T">The metadata target type.</typeparam>
     /// <param name="downstreamRoute">The current downstream route.</param>
     /// <param name="key">The metadata key in downstream route Metadata dictionary.</param>
     /// <param name="defaultValue">The fallback value if no value found.</param>
     /// <param name="jsonSerializerOptions">Custom json serializer options if needed.</param>
-    /// <returns>The parsed metadata value.</returns>
-    public static T GetMetadata<T>(this DownstreamRoute downstreamRoute, string key, T defaultValue = default,
-        JsonSerializerOptions jsonSerializerOptions = null)
+    /// <returns>A parsed metadata value of the <typeparamref name="T"/> type.</returns>
+    public static T GetMetadata<T>(this DownstreamRoute downstreamRoute, string key,
+        T defaultValue = default, JsonSerializerOptions jsonSerializerOptions = null)
     {
         var metadata = downstreamRoute?.MetadataOptions.Metadata;
-
         if (metadata == null || !metadata.TryGetValue(key, out var metadataValue) || metadataValue == null)
         {
             return defaultValue;

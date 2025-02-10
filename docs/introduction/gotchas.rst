@@ -6,6 +6,8 @@ Hosting Gotchas
 Many errors and incidents (gotchas) are related to web server hosting scenarios.
 Please review deployment and web hosting common user scenarios below depending on your web server.
 
+.. _hosting-gotchas-iis:
+
 IIS
 ---
 
@@ -33,6 +35,8 @@ Probably you will find a ready solution by Ocelot community members.
   :alt: label IIS
   :target: https://github.com/ThreeMammals/Ocelot/labels/IIS
 .. _IIS-related objects: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20IIS&type=code
+
+.. _hosting-gotchas-kestrel:
 
 Kestrel
 -------
