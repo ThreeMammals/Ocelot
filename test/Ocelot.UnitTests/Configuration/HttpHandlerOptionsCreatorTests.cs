@@ -33,7 +33,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 UseTracing = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -53,7 +53,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 UseTracing = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, true, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, true, false, int.MaxValue, DefaultPooledConnectionLifeTime);
         GivenARealTracer();
 
         // Act
@@ -68,7 +68,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     {
         // Arrange
         _fileRoute = new FileRoute();
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -90,7 +90,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 UseTracing = false,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -107,7 +107,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         {
             HttpHandlerOptions = new FileHttpHandlerOptions(),
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -124,10 +124,10 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         {
             HttpHandlerOptions = new FileHttpHandlerOptions
             {
-                UseProxy = false,
+                UseProxy = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -148,7 +148,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             },
         };
 
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, 10, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, 10, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -169,7 +169,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             },
         };
 
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -189,7 +189,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 MaxConnectionsPerServer = 0,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
