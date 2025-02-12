@@ -122,7 +122,7 @@ After running in Visual Studio [#f2]_, you may use ``API.http`` files to send te
 
 """"
 
-.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 .. [#f2] All :ref:`gettingstarted-samples` projects are organized as the `Ocelot.Samples.sln`_ file for Visual Studio 2022 IDE.
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json

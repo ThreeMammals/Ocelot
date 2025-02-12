@@ -316,7 +316,7 @@ Ocelot will then save the merged configuration to a file called `ocelot.json`_ a
   If you still require on-the-fly updating of the primary configuration file, ``ocelot.json``, please refer to the :ref:`config-react-to-changes` section.
   Additionally, note that merging partial configuration files (such as ``ocelot.*.json``) on the fly using :doc:`../features/administration` API is not currently implemented.
 
-  **Note 3**: An alternative to static merged configurations could be the construction of the ``FileConfiguration`` object before passing it as an argument to the :ref:`di-configuration-addocelot` method.
+  **Note 3**: An alternative to static merged configurations could be the construction of the ``FileConfiguration`` object before passing it as an argument to the :ref:`di-configuration-addocelot-methods` method.
   Refer to the :ref:`config-build-from-scratch` subsection for details.
 
 Keep files in a folder
@@ -371,10 +371,10 @@ For instance, the following will recreate Ocelot internal configuration when the
 
 .. _break: http://break.do
 
-  **Note**: Starting from version `23.2`_, most :ref:`di-configuration-addocelot` include optional ``bool?`` arguments, specifically ``optional`` and ``reloadOnChange``.
+  **Note**: Starting from version `23.2`_, most :ref:`di-configuration-addocelot-methods` include optional ``bool?`` arguments, specifically ``optional`` and ``reloadOnChange``.
   Therefore, you have the flexibility to provide these arguments when invoking the native `AddJsonFile method <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.jsonconfigurationextensions.addjsonfile?view=net-9.0-pp#microsoft-extensions-configuration-jsonconfigurationextensions-addjsonfile(microsoft-extensions-configuration-iconfigurationbuilder-system-string-system-boolean-system-boolean)>`_ during the final configuration step (see `AddOcelotJsonFile <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20AddOcelotJsonFile&type=code>`_ implementation).
 
-We recommend using the :ref:`di-configuration-addocelot` to control reloading, rather than relying on the framework's ``AddJsonFile`` method.
+We recommend using the :ref:`di-configuration-addocelot-methods` to control reloading, rather than relying on the framework's ``AddJsonFile`` method.
 For example:
 
 .. code-block:: csharp
@@ -397,7 +397,7 @@ For example:
     config.AddOcelot(configuration, optional: false, reloadOnChange: true); // with configuration object created by your own
     config.AddOcelot(configuration, env, mergeTo, optional: false, reloadOnChange: true); // with configuration object, environment and merging type
 
-Examining the code within the ``ConfigurationBuilderExtensions`` class would be helpful for gaining a better understanding of the signatures of the overloaded :ref:`di-configuration-addocelot`.
+Examining the code within the ``ConfigurationBuilderExtensions`` class would be helpful for gaining a better understanding of the signatures of the overloaded :ref:`di-configuration-addocelot-methods`.
 
 .. _config-react-to-changes:
 
@@ -476,7 +476,7 @@ Therefore, for more flexible and advanced scenarios the ``FileConfiguration`` ob
 Additionally after reading static configuration from various sources such as, remote file systems, remote storages or cloudages, you can rewrite options to the configuration.
 
 Ocelot does not provide a fluent syntax to build configuration on fly as other products do.
-However, it is possible to inject a ``FileConfiguration`` object during Ocelot startup using the :ref:`di-configuration-addocelot` with a special parameter:
+However, it is possible to inject a ``FileConfiguration`` object during Ocelot startup using the :ref:`di-configuration-addocelot-methods` with a special parameter:
 
 .. code-block:: csharp
 
@@ -706,7 +706,7 @@ Dependency Injection
   Class: `ConfigurationBuilderExtensions`_
 
 *Dependency Injection* for this *Configuration* feature in Ocelot is designed to extend and/or control the configuration of the Ocelot Core before the stage of building ASP.NET Core pipeline services.
-The primary methods are :ref:`di-configuration-addocelot` within the ``ConfigurationBuilderExtensions`` class, which offers several overloaded versions with corresponding signatures.
+The primary methods are :ref:`di-configuration-addocelot-methods` within the ``ConfigurationBuilderExtensions`` class, which offers several overloaded versions with corresponding signatures.
 You can utilize these methods in the `Program`_.cs file of your gateway app to configure the Ocelot pipeline and services.
 
 Find additional details in the dedicated :ref:`di-configuration-overview` section and in subsequent sections related to the :doc:`../features/dependencyinjection` chapter.
