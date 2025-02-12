@@ -48,6 +48,8 @@ OpenTracing Status
 The `OpenTracing <https://opentracing.io/>`_ project was archived on January 31, 2022 (see `the article <https://www.cncf.io/blog/2022/01/31/cncf-archives-the-opentracing-project/>`_).
 The Ocelot team will decide on a migration to `OpenTelemetry <https://opentelemetry.io/>`_ which is highly desired.
 
+.. _tr-butterfly:
+
 Butterfly
 ---------
 
