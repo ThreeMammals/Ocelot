@@ -204,8 +204,8 @@ public class OcelotBuilder : IOcelotBuilder
     public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>()
         where TLoadBalancer : ILoadBalancer, new()
     {
-        TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
-            => new();
+        static TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+            => new(); // TODO Not tested by acceptance tests, Assert another constructors with injected params?
         return AddCustomLoadBalancer<TLoadBalancer>(Create);
     }
 

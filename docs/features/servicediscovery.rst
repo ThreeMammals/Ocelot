@@ -4,6 +4,8 @@ Service Discovery
 Ocelot allows you to specify a *service discovery* provider and will use this to find the host and port for the downstream service to which Ocelot forwards the request.
 At the moment this is only supported in the **GlobalConfiguration** section, which means the same *service discovery* provider will be used for all Routes for which you specify a ``ServiceName`` at Route level.
 
+.. _sd-consul:
+
 Consul
 ------
 
@@ -261,6 +263,8 @@ However, the quickest and most streamlined approach is to inherit directly from 
 
 You can refer to `the acceptance test`_ in the repository for an example.
 
+.. _sd-eureka:
+
 Eureka
 ------
 
@@ -414,6 +418,8 @@ An example of this would be as follows:
 This configuration means that if you have a request come into Ocelot on ``/product/*`` then dynamic routing will kick in and Ocelot will use the rate limiting set against the product service in the **DynamicRoutes** section.
 
 Please take a look through all of the docs to understand these options.
+
+.. _sd-custom-providers:
 
 Custom Providers
 ----------------
