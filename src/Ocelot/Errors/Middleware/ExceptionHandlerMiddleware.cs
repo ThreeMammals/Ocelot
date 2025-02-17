@@ -24,57 +24,51 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         _repo = repo;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
         try
         {
-            httpContext.RequestAborted.ThrowIfCancellationRequested();
+            context.RequestAborted.ThrowIfCancellationRequested();
 
-            var internalConfiguration = httpContext.Items.IInternalConfiguration();
-
-            TrySetGlobalRequestId(httpContext, internalConfiguration);
+            var configuration = context.Items.IInternalConfiguration();
+            TrySetGlobalRequestId(context, configuration);
 
             Logger.LogDebug("Ocelot pipeline started");
-
-            await _next.Invoke(httpContext);
+            await _next.Invoke(context);
         }
-        catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
+        catch (OperationCanceledException e) when (context.RequestAborted.IsCancellationRequested)
         {
             Logger.LogDebug("Operation canceled");
-            if (!httpContext.Response.HasStarted)
+            Logger.LogWarning(() => CreateMessage(context, e));
+            if (!context.Response.HasStarted)
             {
-                httpContext.Response.StatusCode = 499;
+                context.Response.StatusCode = 499; // custom Ocelot code
             }
         }
         catch (Exception e)
         {
             Logger.LogDebug("Error calling middleware");
-            Logger.LogError(() => CreateMessage(httpContext, e), e);
-
-            SetInternalServerErrorOnResponse(httpContext);
+            Logger.LogError(() => CreateMessage(context, e), e);
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            }
         }
-
-        Logger.LogDebug("Ocelot pipeline finished");
+        finally
+        {
+            Logger.LogDebug("Ocelot pipeline finished");
+        }
     }
 
-    private void TrySetGlobalRequestId(HttpContext httpContext, IInternalConfiguration configuration)
+    private void TrySetGlobalRequestId(HttpContext context, IInternalConfiguration configuration)
     {
         var key = configuration.RequestId;
-
-        if (!string.IsNullOrEmpty(key) && httpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
+        if (!string.IsNullOrEmpty(key) && context.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
         {
-            httpContext.TraceIdentifier = upstreamRequestIds.First();
+            context.TraceIdentifier = upstreamRequestIds.First();
         }
 
-        _repo.Add("RequestId", httpContext.TraceIdentifier);
-    }
-
-    private static void SetInternalServerErrorOnResponse(HttpContext httpContext)
-    {
-        if (!httpContext.Response.HasStarted)
-        {
-            httpContext.Response.StatusCode = 500;
-        }
+        _repo.Add(nameof(IInternalConfiguration.RequestId), context.TraceIdentifier);
     }
 
     private static string CreateMessage(HttpContext context, Exception e)
