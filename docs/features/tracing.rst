@@ -48,6 +48,8 @@ OpenTracing Status
 The `OpenTracing <https://opentracing.io/>`_ project was archived on January 31, 2022 (see `the article <https://www.cncf.io/blog/2022/01/31/cncf-archives-the-opentracing-project/>`_).
 The Ocelot team will decide on a migration to `OpenTelemetry <https://opentelemetry.io/>`_ which is highly desired.
 
+.. _tr-butterfly:
+
 Butterfly
 ---------
 
@@ -88,4 +90,4 @@ Ocelot will now send tracing information to Butterfly when this Route is called.
 
 """"
 
-.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.

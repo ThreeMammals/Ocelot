@@ -4,6 +4,8 @@ Service Discovery
 Ocelot allows you to specify a *service discovery* provider and will use this to find the host and port for the downstream service to which Ocelot forwards the request.
 At the moment this is only supported in the **GlobalConfiguration** section, which means the same *service discovery* provider will be used for all Routes for which you specify a ``ServiceName`` at Route level.
 
+.. _sd-consul:
+
 Consul
 ------
 
@@ -261,6 +263,8 @@ However, the quickest and most streamlined approach is to inherit directly from 
 
 You can refer to `the acceptance test`_ in the repository for an example.
 
+.. _sd-eureka:
+
 Eureka
 ------
 
@@ -415,6 +419,8 @@ This configuration means that if you have a request come into Ocelot on ``/produ
 
 Please take a look through all of the docs to understand these options.
 
+.. _sd-custom-providers:
+
 Custom Providers
 ----------------
 
@@ -541,7 +547,7 @@ But you can leave this ``Type`` option for compatibility between both designs.
 
 """"
 
-.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 .. [#f2] :ref:`sd-consul-configuration-key` feature was requested in issue `346`_ as a part of version `7.0.0`_.
 .. [#f3] Customization of :ref:`sd-consul-service-builder` was implemented as a part of bug `954`_ fixing and the feature was delivered in version `23.3`_.
 

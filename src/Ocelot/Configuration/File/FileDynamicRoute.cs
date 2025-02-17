@@ -4,8 +4,6 @@ namespace Ocelot.Configuration.File;
 
 public class FileDynamicRoute
 {
-    public string ServiceName { get; set; }
-    public FileRateLimitRule RateLimitRule { get; set; }
     public string DownstreamHttpVersion { get; set; }
 
     /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
@@ -20,4 +18,15 @@ public class FileDynamicRoute
     /// </remarks>
     public string DownstreamHttpVersionPolicy { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
+    public FileRateLimitRule RateLimitRule { get; set; }
+    public string ServiceName { get; set; }
+
+    public FileDynamicRoute()
+    {
+        DownstreamHttpVersion = default;
+        DownstreamHttpVersionPolicy = default;
+        Metadata = new Dictionary<string, string>();
+        RateLimitRule = default;
+        ServiceName = default;
+    }
 }

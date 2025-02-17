@@ -7,12 +7,12 @@ public class BddfyConfig
 {
     public BddfyConfig()
     {
-        // Configurator.Processors.ConsoleReport.RunsOn(story => story.Result != Result.Passed);
-        Configurator.Processors.ConsoleReport.Disable();
-        Configurator.Processors.Add(() => new BddfyProcessor());
+        //// Configurator.Processors.ConsoleReport.RunsOn(story => story.Result != Result.Passed);
+        //Configurator.Processors.ConsoleReport.Disable();
+        //Configurator.Processors.Add(() => new BddfyProcessor());
 
-        //Configurator.BatchProcessors.Add(new BddfyBatchProcessingReporter());
-        Configurator.BatchProcessors.HtmlReport.Disable();
+        ////Configurator.BatchProcessors.Add(new BddfyBatchProcessingReporter());
+        //Configurator.BatchProcessors.HtmlReport.Disable();
     }
 }
 
