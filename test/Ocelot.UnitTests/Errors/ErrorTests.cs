@@ -14,6 +14,6 @@ public class ErrorTests
         var result = error.ToString();
 
         // Assert
-        result.ShouldBe("message");
+        result.ShouldBe("CannotAddDataError: message");
     }
 }

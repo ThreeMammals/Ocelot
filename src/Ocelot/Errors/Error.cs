@@ -13,8 +13,5 @@ public abstract class Error
     public OcelotErrorCode Code { get; }
     public int HttpStatusCode { get; }
 
-    public override string ToString()
-    {
-        return Message;
-    }
+    public override string ToString() => $"{Code}: {Message}";
 }

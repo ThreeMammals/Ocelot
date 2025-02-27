@@ -1,11 +1,11 @@
 ﻿using Ocelot.Errors;
+using Status = System.Net.HttpStatusCode;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
 
 public class UnableToFindDownstreamRouteError : Error
 {
     public UnableToFindDownstreamRouteError(string path, string httpVerb)
-        : base($"Failed to match Route configuration for upstream path: {path}, verb: {httpVerb}.", OcelotErrorCode.UnableToFindDownstreamRouteError, 404)
-    {
-    }
+        : base($"Failed to match route configuration for upstream: {httpVerb} {path}", OcelotErrorCode.UnableToFindDownstreamRouteError, (int)Status.NotFound)
+    { }
 }

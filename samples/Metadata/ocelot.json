@@ -1,0 +1,53 @@
+{
+  "Routes": [
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/ocelot/posts/{id}",
+      "DownstreamPathTemplate": "/todos/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "id": "FindPost",
+        "tags": "tag1, tag2, area1, area2, func1",
+        "plugin1.enabled": "true",
+        "plugin1.values": "[1, 2, 3, 4, 5]",
+        "plugin1.param": "value2",
+        "plugin1.param2": "123",
+        "plugin2/param1": "overwritten-value",
+        "plugin2/data": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"is_student\":false,\"hobbies\":[\"reading\",\"hiking\",\"cooking\"]}"
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/ocelot/docs/{everything}",
+      "DownstreamPathTemplate": "/en/latest/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ]
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/_/{BFF}",
+      "DownstreamPathTemplate": "/_/{BFF}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5555" // "https://localhost:7777"
+  }
+}

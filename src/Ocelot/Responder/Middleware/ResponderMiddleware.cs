@@ -38,10 +38,8 @@ public class ResponderMiddleware : OcelotMiddleware
 
         if (errors.Count > 0)
         {
-            Logger.LogWarning(() =>
-                $"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
+            Logger.LogWarning(() => $"{MiddlewareName} found {errors.Count} error{errors.Count.Plural()} ->{errors.ToErrorString(true, true)}Setting error response for request: {httpContext.Request.Method} {httpContext.Request.Path}");
             await SetErrorResponse(httpContext, errors);
-
             return;
         }
 
