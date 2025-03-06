@@ -8,6 +8,10 @@
     <AssemblyVersion>24.0.0</AssemblyVersion>
     <Copyright>ThreeMammals</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ZstdNet" Version="1.4.5" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />

@@ -24,7 +24,7 @@ namespace Ocelot.Middleware;
 
 public static class OcelotPipelineExtensions
 {
-    public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app, OcelotPipelineConfiguration pipelineConfiguration)
+    public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app, OcelotPipelineConfiguration configuration)
     {
         // this sets up the downstream context and gets the config
         app.UseMiddleware<ConfigurationMiddleware>();
@@ -46,10 +46,10 @@ public static class OcelotPipelineExtensions
             });
 
         // Allow the user to respond with absolutely anything they want.
-        app.UseIfNotNull(pipelineConfiguration.PreErrorResponderMiddleware);
+        app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
 
         // This is registered first so it can catch any errors and issue an appropriate response
-        app.UseMiddleware<ResponderMiddleware>();
+        app.UseMiddleware<ResponderMiddleware>(); // TODO app.UseIfNotNull<ResponderMiddleware>(configuration.ResponderMiddleware);
 
         // Then we get the downstream route information
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
@@ -61,9 +61,9 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<SecurityMiddleware>();
 
         //Expand other branch pipes
-        if (pipelineConfiguration.MapWhenOcelotPipeline != null)
+        if (configuration.MapWhenOcelotPipeline != null)
         {
-            foreach (var pipeline in pipelineConfiguration.MapWhenOcelotPipeline)
+            foreach (var pipeline in configuration.MapWhenOcelotPipeline)
             {
                 // todo why is this asking for an app app?
                 app.MapWhen(pipeline.Key, pipeline.Value);
@@ -85,27 +85,27 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<RequestIdMiddleware>();
 
         // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
-        app.UseIfNotNull(pipelineConfiguration.PreAuthenticationMiddleware);
+        app.UseIfNotNull(configuration.PreAuthenticationMiddleware);
 
         // Now we know where the client is going to go we can authenticate them.
         // We allow the Ocelot middleware to be overriden by whatever the user wants.
-        app.UseIfNotNull<AuthenticationMiddleware>(pipelineConfiguration.AuthenticationMiddleware);
+        app.UseIfNotNull<AuthenticationMiddleware>(configuration.AuthenticationMiddleware);
 
         // The next thing we do is look at any claims transforms in case this is important for authorization
         app.UseMiddleware<ClaimsToClaimsMiddleware>();
 
         // Allow pre authorization logic. The idea being people might want to run something custom before what is built in.
-        app.UseIfNotNull(pipelineConfiguration.PreAuthorizationMiddleware);
+        app.UseIfNotNull(configuration.PreAuthorizationMiddleware);
 
         // Now we have authenticated and done any claims transformation, we can authorize the request by AuthorizationMiddleware.
         // We allow the Ocelot middleware to be overriden by whatever the user wants.
-        app.UseIfNotNull<AuthorizationMiddleware>(pipelineConfiguration.AuthorizationMiddleware);
+        app.UseIfNotNull<AuthorizationMiddleware>(configuration.AuthorizationMiddleware);
 
         // Now we can run the ClaimsToHeadersMiddleware: we allow the Ocelot middleware to be overriden by whatever the user wants.
-        app.UseIfNotNull<ClaimsToHeadersMiddleware>(pipelineConfiguration.ClaimsToHeadersMiddleware);
+        app.UseIfNotNull<ClaimsToHeadersMiddleware>(configuration.ClaimsToHeadersMiddleware);
 
         // Allow the user to implement their own query string manipulation logic
-        app.UseIfNotNull(pipelineConfiguration.PreQueryStringBuilderMiddleware);
+        app.UseIfNotNull(configuration.PreQueryStringBuilderMiddleware);
 
         // Now we can run any claims to query string transformation middleware
         app.UseMiddleware<ClaimsToQueryStringMiddleware>();

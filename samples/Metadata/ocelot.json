@@ -2,6 +2,72 @@
   "Routes": [
     {
       "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/weather/current/{city}",
+      "DownstreamPathTemplate": "/v1/current.json?q={city}&key=4ea9a1d2aafe4e15bbd173615242312",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "api.weatherapi.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 1,
+        "route.name": "weather-current",
+        "cities": "London, Paris, Madrid, Berlin, Rome, Prague, Warsaw, Minsk",
+        "cities.default": "London",
+        "cities.US": "New York, Los Angeles",
+        "temperature-celsius-path": "Response/current/temp_c",
+        "stub-data/location": {
+          "name": "London",
+          "region": "City of London, Greater London",
+          "country": "United Kingdom",
+          "lat": 51.5171,
+          "lon": -0.1062,
+          "tz_id": "Europe/London",
+          "localtime_epoch": 1741269500,
+          "localtime": "2025-03-06 13:58"
+        },
+        "stub-data/current": {
+          "last_updated_epoch": 1741268700,
+          "last_updated": "2025-03-06 13:45",
+          "temp_c": 17.1,
+          "temp_f": 62.8,
+          "is_day": 1,
+          "condition": {
+            "text": "Sunny",
+            "icon": "//cdn.weatherapi.com/weather/64x64/day/113.png",
+            "code": 1000
+          },
+          "wind_mph": 12.1,
+          "wind_kph": 19.4,
+          "wind_degree": 185,
+          "wind_dir": "S",
+          "pressure_mb": 1012.0,
+          "pressure_in": 29.88,
+          "precip_mm": 0.0,
+          "precip_in": 0.0,
+          "humidity": 45,
+          "cloud": 0,
+          "feelslike_c": 17.1,
+          "feelslike_f": 62.8,
+          "windchill_c": 12.8,
+          "windchill_f": 55.0,
+          "heatindex_c": 14.3,
+          "heatindex_f": 57.7,
+          "dewpoint_c": 4.4,
+          "dewpoint_f": 39.9,
+          "vis_km": 10.0,
+          "vis_miles": 6.0,
+          "uv": 2.3,
+          "gust_mph": 14.1,
+          "gust_kph": 22.7
+        },
+        "data/Response": "{\"location\":{\"name\":\"London\",\"region\":\"City of London, Greater London\",\"country\":\"United Kingdom\",\"lat\":51.5171,\"lon\":-0.1062,\"tz_id\":\"Europe/London\",\"localtime_epoch\":1741269500,\"localtime\":\"2025-03-06 13:58\"},\"current\":{\"last_updated_epoch\":1741268700,\"last_updated\":\"2025-03-06 13:45\",\"temp_c\":17.1,\"temp_f\":62.8,\"is_day\":1,\"condition\":{\"text\":\"Sunny\",\"icon\":\"//cdn.weatherapi.com/weather/64x64/day/113.png\",\"code\":1000},\"wind_mph\":12.1,\"wind_kph\":19.4,\"wind_degree\":185,\"wind_dir\":\"S\",\"pressure_mb\":1012.0,\"pressure_in\":29.88,\"precip_mm\":0.0,\"precip_in\":0.0,\"humidity\":45,\"cloud\":0,\"feelslike_c\":17.1,\"feelslike_f\":62.8,\"windchill_c\":12.8,\"windchill_f\":55.0,\"heatindex_c\":14.3,\"heatindex_f\":57.7,\"dewpoint_c\":4.4,\"dewpoint_f\":39.9,\"vis_km\":10.0,\"vis_miles\":6.0,\"uv\":2.3,\"gust_mph\":14.1,\"gust_kph\":22.7}}"
+      } // end of metadata
+    }, // end of route #1 aka 'weather-current'
+    {
+      "UpstreamHttpMethod": [ "Get" ],
       "UpstreamPathTemplate": "/ocelot/posts/{id}",
       "DownstreamPathTemplate": "/todos/{id}",
       "DownstreamScheme": "https",
@@ -12,6 +78,8 @@
         }
       ],
       "Metadata": {
+        "route.id": 2,
+        "route.name": "ocelot-posts",
         "id": "FindPost",
         "tags": "tag1, tag2, area1, area2, func1",
         "plugin1.enabled": "true",
@@ -32,7 +100,11 @@
           "Host": "ocelot.readthedocs.io",
           "Port": 443
         }
-      ]
+      ],
+      "Metadata": {
+        "route.id": 3,
+        "route.name": "ocelot-docs"
+      }
     },
     {
       "UpstreamHttpMethod": [ "Get" ],
@@ -44,7 +116,11 @@
           "Host": "ocelot.readthedocs.io",
           "Port": 443
         }
-      ]
+      ],
+      "Metadata": {
+        "route.id": 4,
+        "route.name": "ocelot-docs-BFF"
+      }
     }
   ],
   "GlobalConfiguration": {

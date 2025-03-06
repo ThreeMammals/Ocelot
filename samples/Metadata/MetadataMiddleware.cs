@@ -9,13 +9,11 @@ namespace Ocelot.Samples.Metadata;
 public class MetadataMiddleware : OcelotMiddleware
 {
     private readonly RequestDelegate _next;
-    //private readonly IMyService _myService;
 
-    public MetadataMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory/*,IMyService myService*/)
+    public MetadataMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory)
         : base(loggerFactory.CreateLogger<MetadataMiddleware>())
     {
         _next = next;
-        //_myService = myService;
     }
 
     public Task Invoke(HttpContext context)
