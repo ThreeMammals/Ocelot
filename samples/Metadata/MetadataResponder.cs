@@ -22,8 +22,8 @@ public class MetadataResponder : HttpContextResponder
 
         // Ensure the route has metadata at all
         var route = context.Items.DownstreamRoute();
-        var metadata = route?.MetadataOptions.Metadata;
-        if ((metadata?.Count ?? 0) == 0)
+        var metadata = route?.MetadataOptions.Metadata ?? new Dictionary<string, string>();
+        if (metadata.Count == 0)
         {
             await base.WriteToUpstreamAsync(context, downstream);
             return;
@@ -34,7 +34,15 @@ public class MetadataResponder : HttpContextResponder
         if (response.Content.Headers.ContentType?.MediaType == "application/json")
         {
             var json = await response.Content.ReadAsStringAsync(context.RequestAborted);
-            json = await ReadJsonAsync(response.Content, context.RequestAborted);
+            json = await ReadCompressedJsonAsync(context.Response, response.Content, context.RequestAborted);
+            if (string.IsNullOrEmpty(json))
+            {
+                // Impossible to decompress content and write to body
+                // Write metadata to the contentEncoding and write original content
+                AddMetadataHeader(context, metadata);
+                await base.WriteToUpstreamAsync(context, downstream);
+                return;
+            }
 
             //var json1 = await JsonNode.ParseAsync(jsonStream, cancellationToken: context.RequestAborted);
             var json1 = JsonObject.Parse(json);
@@ -44,12 +52,20 @@ public class MetadataResponder : HttpContextResponder
                 [nameof(HttpContext.Response)] = json1,
                 [nameof(MetadataOptions.Metadata)] = json2,
             };
+            AddMetadataHeader(context, metadata);
             await WriteJsonAsync(context.Response, response.Content, aggregated, context.RequestAborted);
         }
         else
         {
             await base.WriteToUpstreamAsync(context, downstream);
         }
+    }
+
+    private static void AddMetadataHeader(HttpContext context, IDictionary<string, string> metadata)
+    {
+        var node = JsonSerializer.SerializeToNode(metadata);
+        var header = node?.ToJsonString(JsonSerializerOptions.Web) ?? string.Empty;
+        context.Response.Headers.Append("OC-Route-Metadata", new(header));
     }
 
     private static Encoding DetectEncoding(HttpContent content)
@@ -68,7 +84,7 @@ public class MetadataResponder : HttpContextResponder
         return Encoding.UTF8; // default to UTF-8
     }
 
-    private static async Task<string> ReadJsonAsync(HttpContent content, CancellationToken token)
+    private static async Task<string> ReadCompressedJsonAsync(HttpResponse response, HttpContent content, CancellationToken token)
     {
         var encoding = DetectEncoding(content);
         if (content.Headers.ContentEncoding.Contains("br")) // Brotli compression: https://www.prowaretech.com/articles/current/dot-net/compression-brotli
@@ -81,6 +97,21 @@ public class MetadataResponder : HttpContextResponder
         {
             using var compressed = await content.ReadAsStreamAsync(token);
             var decompressed = await DecompressZstandardAsync(compressed, token);
+            return encoding.GetString(decompressed);
+        }
+        else if (content.Headers.ContentEncoding.Contains("deflate")) // Deflate algorithm compression
+        {
+            // Actually it doesn't work: only MS compressed DeflateStream are supported
+            // Decompressor will generate System.IO.InvalidDataException: The archive entry was compressed using an unsupported compression method.
+            //var compressed = await content.ReadAsStreamAsync(token);
+            //var decompressed = await DecompressDeflateAsync(compressed, token);
+            //return encoding.GetString(decompressed);
+            return string.Empty;
+        }
+        else if (content.Headers.ContentEncoding.Contains("gzip")) // GZip compression
+        {
+            var compressed = await content.ReadAsStreamAsync(token);
+            var decompressed = DecompressGZip(compressed);
             return encoding.GetString(decompressed);
         }
         else // no compression
@@ -102,16 +133,25 @@ public class MetadataResponder : HttpContextResponder
         ct.CharSet = encoding.HeaderName;
         to.ContentType = ct.ToString(); // always -> application/json; charset=utf-8
 
-        if (content.Headers.ContentEncoding.Contains("br")) // Brotli compression
+        var contentEncoding = content.Headers.ContentEncoding;
+        if (contentEncoding.Contains("br")) // Brotli compression
         {
             //var compressed = await CompressBrotliAsync(buffer, token);
             //var data = encoding.GetString(compressed);
             //await to.WriteAsync(data, encoding, token); // client app error: Decompression failed
             to.Headers.ContentEncoding = new("identity"); // don't compress with Brotli algo
         }
-        else if (content.Headers.ContentEncoding.Contains("zstd")) // Zstandard compression (Facebook)
+        else if (contentEncoding.Contains("zstd")) // Zstandard compression (Facebook)
         {
             to.Headers.ContentEncoding = new("identity"); // don't compress with Zstandard algo
+        }
+        else if (contentEncoding.Contains("deflate")) // Deflate compression
+        {
+            // Do nothing, because of impossibility to decompress third-party streams
+        }
+        else if (contentEncoding.Contains("gzip")) // GZip compression
+        {
+            to.Headers.ContentEncoding = new("identity"); // don't compress with GZip algo
         }
         return to.Body.WriteAsync(buffer, 0, buffer.Length, token);
     }
@@ -130,8 +170,8 @@ public class MetadataResponder : HttpContextResponder
     private static async Task<byte[]> DecompressBrotliAsync(Stream input, CancellationToken token)
     {
         using var output = new MemoryStream();
-        using var brotli = new BrotliStream(input, CompressionMode.Decompress);
-        await brotli.CopyToAsync(output, token);
+        using var decompressor = new BrotliStream(input, CompressionMode.Decompress);
+        await decompressor.CopyToAsync(output, token);
         return output.ToArray();
     }
 
@@ -141,6 +181,24 @@ public class MetadataResponder : HttpContextResponder
         using var output = new MemoryStream();
         await using var decompression = new DecompressionStream(input);
         await decompression.CopyToAsync(output, token);
+        return output.ToArray();
+    }
+
+    // https://learn.microsoft.com/en-us/dotnet/api/system.io.compression.deflatestream?view=net-9.0
+    private static async Task<byte[]> DecompressDeflateAsync(Stream input, CancellationToken token)
+    {
+        using var output = new MemoryStream();
+        using var decompressor = new DeflateStream(input, CompressionMode.Decompress);
+        await decompressor.CopyToAsync(output, token);
+        return output.ToArray();
+    }
+
+    // https://learn.microsoft.com/en-us/dotnet/api/system.io.compression.gzipstream?view=net-9.0
+    public static byte[] DecompressGZip(Stream input)
+    {
+        using var output = new MemoryStream();
+        using var decompressor = new GZipStream(input, CompressionMode.Decompress);
+        decompressor.CopyTo(output);
         return output.ToArray();
     }
 }

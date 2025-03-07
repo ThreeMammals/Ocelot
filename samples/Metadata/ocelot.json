@@ -137,7 +137,23 @@
         "route.id": 5,
         "route.name": "test-deflated"
       }
-    } // end of route #5
+    }, // end of route #5
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/test/gzip",
+      "DownstreamPathTemplate": "/gzip",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "postman-echo.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 6,
+        "route.name": "test-gzip"
+      }
+    } // end of route #6
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5139",
