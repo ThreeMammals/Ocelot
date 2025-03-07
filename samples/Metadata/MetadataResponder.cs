@@ -1,24 +1,18 @@
-﻿using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 using Ocelot.Responder;
-using System;
 using System.IO.Compression;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Unicode;
 using ZstdNet;
 
 namespace Ocelot.Samples.Metadata;
 
-public class MetadataContextResponder : HttpContextResponder
+public class MetadataResponder : HttpContextResponder
 {
-    public MetadataContextResponder(IRemoveOutputHeaders removeOutputHeaders)
+    public MetadataResponder(IRemoveOutputHeaders removeOutputHeaders)
         : base(removeOutputHeaders) { }
 
     protected override async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
@@ -91,15 +85,12 @@ public class MetadataContextResponder : HttpContextResponder
         }
         else // no compression
         {
-            using Stream contentStream = await content.ReadAsStreamAsync(token);
-            using MemoryStream memoryStream = new();
-            await contentStream.CopyToAsync(memoryStream, token);
-            byte[] contentBytes = memoryStream.ToArray();
-            return encoding.GetString(contentBytes);
+            var buffer = await content.ReadAsByteArrayAsync(token);
+            return encoding.GetString(buffer);
         }
     }
 
-    private static async Task WriteJsonAsync(HttpResponse to, HttpContent content, JsonObject json, CancellationToken token)
+    private static Task WriteJsonAsync(HttpResponse to, HttpContent content, JsonObject json, CancellationToken token)
     {
         // We will not use original downstrean encoding, so defaults always to UTF8 for upstream
         var encoding = Encoding.UTF8; // DetectEncoding(content);
@@ -122,7 +113,7 @@ public class MetadataContextResponder : HttpContextResponder
         {
             to.Headers.ContentEncoding = new("identity"); // don't compress with Zstandard algo
         }
-        await to.Body.WriteAsync(buffer, token);
+        return to.Body.WriteAsync(buffer, 0, buffer.Length, token);
     }
 
     // https://learn.microsoft.com/en-us/dotnet/api/system.io.compression.brotlistream?view=net-9.0

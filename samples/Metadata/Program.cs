@@ -17,7 +17,7 @@ builder.Configuration
 builder.Services
     .AddOcelot(builder.Configuration)
     .Services.RemoveAll<IHttpResponder>()
-    .TryAddSingleton<IHttpResponder, MetadataContextResponder>();
+    .TryAddSingleton<IHttpResponder, MetadataResponder>();
 
 if (builder.Environment.IsDevelopment())
 {

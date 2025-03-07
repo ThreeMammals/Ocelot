@@ -88,8 +88,8 @@
         "plugin1.param2": "123",
         "plugin2/param1": "overwritten-value",
         "plugin2/data": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"is_student\":false,\"hobbies\":[\"reading\",\"hiking\",\"cooking\"]}"
-      }
-    },
+      } // end of metadata
+    }, // end of route #2 aka 'ocelot-posts'
     {
       "UpstreamHttpMethod": [ "Get" ],
       "UpstreamPathTemplate": "/ocelot/docs/{everything}",
@@ -105,7 +105,7 @@
         "route.id": 3,
         "route.name": "ocelot-docs"
       }
-    },
+    }, // end of route #3 aka 'ocelot-docs'
     {
       "UpstreamHttpMethod": [ "Get" ],
       "UpstreamPathTemplate": "/_/{BFF}",
@@ -121,9 +121,31 @@
         "route.id": 4,
         "route.name": "ocelot-docs-BFF"
       }
-    }
+    }, // end of route #4 aka 'ocelot-docs-BFF'
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/test/deflate",
+      "DownstreamPathTemplate": "/deflate",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "postman-echo.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 5,
+        "route.name": "test-deflated"
+      }
+    } // end of route #5
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:5555" // "https://localhost:7777"
+    "BaseUrl": "http://localhost:5139",
+    "MetadataOptions": {
+      "CurrentCulture": "en-GB",
+      "Metadata": {
+        "app-name": "Ocelot Metadata sample"
+      }
+    }
   }
 }
