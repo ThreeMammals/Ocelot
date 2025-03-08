@@ -732,12 +732,7 @@ The following example demonstrates practical usage of this feature:
   {
     "Routes": [
       {
-        "UpstreamHttpMethod": [ "GET" ],
-        "UpstreamPathTemplate": "/posts/{postId}",
-        "DownstreamPathTemplate": "/api/posts/{postId}",
-        "DownstreamHostAndPorts": [
-          { "Host": "localhost", "Port": 80 }
-        ],
+        // other opts...
         "Metadata": {
           "api-id": "FindPost",
           "my-extension/param1": "overwritten-value",
@@ -749,7 +744,9 @@ The following example demonstrates practical usage of this feature:
       }
     ],
     "GlobalConfiguration": {
+      // other opts...
       "MetadataOptions": {
+        // other metadata opts...
         "Metadata": {
           "instance_name": "dc-1-54abcz",
           "my-extension/param1": "default-value"
@@ -774,9 +771,9 @@ Now, the route *metadata* can be accessed through the `DownstreamRoute <https://
   {
       public static Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
       {
-          var downstreamRoute = context.Items.DownstreamRoute();
-          var param1 = downstreamRoute.GetMetadata<string>("my-extension/param1") ?? throw new ArgumentNullException("my-extension/param1");
-          var param2 = downstreamRoute.GetMetadata<string>("other-extension/param2", "default-value");
+          var route = context.Items.DownstreamRoute();
+          var param1 = route.GetMetadata<string>("my-extension/param1") ?? throw new ArgumentNullException("my-extension/param1");
+          var param2 = route.GetMetadata<string>("other-extension/param2", "default-value");
           // Working with metadata...
           return next();
       }
