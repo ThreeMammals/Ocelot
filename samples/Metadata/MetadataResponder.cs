@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Headers;
+using Ocelot.Metadata;
 using Ocelot.Middleware;
 using Ocelot.Responder;
 using System.IO.Compression;
@@ -17,13 +18,10 @@ public class MetadataResponder : HttpContextResponder
 
     protected override async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
-        //await base.WriteToUpstreamAsync(context, downstream);
-        //return;
-
         // Ensure the route has metadata at all
         var route = context.Items.DownstreamRoute();
-        var metadata = route?.MetadataOptions.Metadata ?? new Dictionary<string, string>();
-        if (metadata.Count == 0)
+        var metadata = route?.MetadataOptions.Metadata;
+        if ((metadata?.Count ?? 0) == 0)
         {
             await base.WriteToUpstreamAsync(context, downstream);
             return;
@@ -33,13 +31,21 @@ public class MetadataResponder : HttpContextResponder
         var response = context.Items.DownstreamResponse();
         if (response.Content.Headers.ContentType?.MediaType == "application/json")
         {
-            var json = await response.Content.ReadAsStringAsync(context.RequestAborted);
-            json = await ReadCompressedJsonAsync(context.Response, response.Content, context.RequestAborted);
+            // Don't process json requested by scripts aka XHR
+            if (route.GetMetadata("disableMetadataJson", false))
+            {
+                AddMetadataHeader(context, metadata!); // but return in the header
+                await base.WriteToUpstreamAsync(context, downstream);
+                return;
+            }
+
+            //var json = await response.Content.ReadAsStringAsync(context.RequestAborted);
+            var json = await ReadCompressedJsonAsync(context.Response, response.Content, context.RequestAborted);
             if (string.IsNullOrEmpty(json))
             {
                 // Impossible to decompress content and write to body
                 // Write metadata to the contentEncoding and write original content
-                AddMetadataHeader(context, metadata);
+                AddMetadataHeader(context, metadata!);
                 await base.WriteToUpstreamAsync(context, downstream);
                 return;
             }
@@ -52,11 +58,12 @@ public class MetadataResponder : HttpContextResponder
                 [nameof(HttpContext.Response)] = json1,
                 [nameof(MetadataOptions.Metadata)] = json2,
             };
-            AddMetadataHeader(context, metadata);
+            AddMetadataHeader(context, metadata!);
             await WriteJsonAsync(context.Response, response.Content, aggregated, context.RequestAborted);
         }
         else
         {
+            AddMetadataHeader(context, metadata!);
             await base.WriteToUpstreamAsync(context, downstream);
         }
     }

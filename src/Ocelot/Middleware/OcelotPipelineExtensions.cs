@@ -49,7 +49,7 @@ public static class OcelotPipelineExtensions
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
 
         // This is registered first so it can catch any errors and issue an appropriate response
-        app.UseMiddleware<ResponderMiddleware>(); // TODO app.UseIfNotNull<ResponderMiddleware>(configuration.ResponderMiddleware);
+        app.UseIfNotNull<ResponderMiddleware>(configuration.ResponderMiddleware);
 
         // Then we get the downstream route information
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
