@@ -6,6 +6,5 @@ namespace Ocelot.Security;
 
 public interface ISecurityPolicy
 {
-    Response Security(DownstreamRoute downstreamRoute, HttpContext context);
-    Task<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context);
+    ValueTask<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context);
 }

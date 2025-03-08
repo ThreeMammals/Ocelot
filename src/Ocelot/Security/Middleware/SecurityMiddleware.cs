@@ -26,7 +26,7 @@ public class SecurityMiddleware : OcelotMiddleware
         {
             foreach (var policy in _securityPolicies)
             {
-                var result = policy.Security(downstreamRoute, httpContext);
+                var result = await policy.SecurityAsync(downstreamRoute, httpContext);
                 if (!result.IsError)
                 {
                     continue;

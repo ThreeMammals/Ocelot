@@ -7,13 +7,13 @@ namespace Ocelot.Security.IPSecurity;
 
 public class IPSecurityPolicy : ISecurityPolicy
 {
-    public Response Security(DownstreamRoute downstreamRoute, HttpContext context)
+    public ValueTask<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context)
     {
         var clientIp = context.Connection.RemoteIpAddress;
         var options = downstreamRoute.SecurityOptions;
         if (options == null || clientIp == null)
         {
-            return new OkResponse();
+            return ValueTask.FromResult(OkResponse);
         }
 
         if (options.IPBlockedList?.Count > 0)
@@ -21,7 +21,7 @@ public class IPSecurityPolicy : ISecurityPolicy
             if (options.IPBlockedList.Contains(clientIp.ToString()))
             {
                 var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP");
-                return new ErrorResponse(error);
+                return ValueTask.FromResult<Response>(new ErrorResponse(error));
             }
         }
 
@@ -30,13 +30,12 @@ public class IPSecurityPolicy : ISecurityPolicy
             if (!options.IPAllowedList.Contains(clientIp.ToString()))
             {
                 var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
-                return new ErrorResponse(error);
+                return ValueTask.FromResult<Response>(new ErrorResponse(error));
             }
         }
 
-        return new OkResponse();
+        return ValueTask.FromResult(OkResponse);
     }
 
-    public Task<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context)
-        => Task.Run(() => Security(downstreamRoute, context));
+    private static Response OkResponse { get; } = new OkResponse();
 }

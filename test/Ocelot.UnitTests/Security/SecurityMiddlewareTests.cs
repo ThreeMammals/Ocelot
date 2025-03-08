@@ -64,8 +64,8 @@ public sealed class SecurityMiddlewareTests : UnitTest
     {
         foreach (var item in _securityPolicyList)
         {
-            Response response = new OkResponse();
-            item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(response);
+            ValueTask<Response> responseTask = ValueTask.FromResult<Response>(new OkResponse());
+            item.Setup(x => x.SecurityAsync(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(responseTask);
         }
     }
 
@@ -77,13 +77,13 @@ public sealed class SecurityMiddlewareTests : UnitTest
             if (i == 0)
             {
                 Error error = new UnauthenticatedError("Not passing security verification");
-                Response response = new ErrorResponse(error);
-                item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(response);
+                ValueTask<Response> responseTask = ValueTask.FromResult<Response>(new ErrorResponse(error));
+                item.Setup(x => x.SecurityAsync(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(responseTask);
             }
             else
             {
-                Response response = new OkResponse();
-                item.Setup(x => x.Security(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(response);
+                ValueTask<Response> responseTask = ValueTask.FromResult<Response>(new OkResponse());
+                item.Setup(x => x.SecurityAsync(_httpContext.Items.DownstreamRoute(), _httpContext)).Returns(responseTask);
             }
         }
     }
