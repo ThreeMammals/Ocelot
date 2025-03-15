@@ -35,10 +35,10 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
 
         if (!response.IsSuccessStatusCode)
         {
-            StatusV1 errorResponse = await response.ReadContentAsAsync<StatusV1>();
-
             if (_logger.IsEnabled(LogLevel.Debug))
             {
+                StatusV1 errorResponse = await response.ReadContentAsAsync<StatusV1>();
+
                 (string resourceKind, string resourceApiVersion) = KubeObjectV1.GetKubeKind<EndpointsV1>();
                 _logger.LogDebug("Failed to retrieve {ResourceApiVersion}/{ResourceKind} {ResourceName} in namespace {ResourceNamespace} ({HttpStatusCode}/{Status}/{StatusReason}): {StatusMessage}",
                     resourceApiVersion,
