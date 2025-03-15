@@ -32,8 +32,7 @@ class MyMiddlewares
                 var defaultCity = route.GetMetadata<string>("cities.default");
                 var citiesUS = route.GetMetadata<string[]>("cities.US");
                 var pathTemperatureCelsius = route.GetMetadata<string>("temperature-celsius-path");
-                var json = route.GetMetadata("data/Response", "{}");
-                var dataResponse = JsonSerializer.Deserialize<WeatherResponse>(json);
+                var dataResponse = route.GetMetadata<WeatherResponse>("data/Response", new());
                 // TODO Refactor Ocelot Metadata helpers and Ocelot Core to support propagation of the JsonElement and JsonNode
                 //var dataLocation = route.GetMetadataElement("stub-data/location", new JsonElement());
                 break;
@@ -49,15 +48,13 @@ class MyMiddlewares
 
                 // Plugin 2 data
                 var p2Param1 = route.GetMetadata("plugin2/param1", "default-value");
-                json = route.GetMetadata("plugin2/data", "{}");
-                var plugin2 = JsonSerializer.Deserialize<PostsPlugin2>(json);
+                var plugin2 = route.GetMetadata<PostsPlugin2>("plugin2/data", new());
                 break;
             case 5: // test-deflate
-                json = route.GetMetadata("data/Response", "{}");
-                var response1 = JsonSerializer.Deserialize<TestDeflateResponse>(json);
+                var response1 = route.GetMetadata<TestDeflateResponse>("data/Response", new());
                 break;
             case 6: // test-gzip
-                json = route.GetMetadata("data/Response", "{}");
+                var json = route.GetMetadata("data/Response", "{}"); // parse data manually
                 var response2 = JsonSerializer.Deserialize<TestGZipResponse>(json);
                 break;
         }

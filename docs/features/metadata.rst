@@ -1,17 +1,17 @@
 Metadata
 ========
 
-  Feature of: :doc:`../features/configuration`
+  Feature of: :doc:`../features/configuration` [#f1]_
 
 Ocelot provides various features such as routing, authentication, caching, load balancing, and more.
 However, some users may encounter situations where Ocelot does not meet their specific needs or they want to customize its behavior.
-In such cases, Ocelot allows users to add metadata to the route configuration.
+In such cases, Ocelot allows users to add *metadata* to the route configuration.
 This property can store any arbitrary data that users can access in middlewares or delegating handlers.
 
 Schema
 ------
 
-As you may already know from the :doc:`../features/configuration` chapter and the :ref:`config-route-metadata` section, the route metadata schema is quite simple which is JSON dictionary:
+As you may already know from the :doc:`../features/configuration` chapter and the :ref:`config-route-metadata` section, the route *metadata* schema is quite simple which is JSON dictionary:
 
 .. code-block:: json
 
@@ -23,7 +23,7 @@ As you may already know from the :doc:`../features/configuration` chapter and th
 
   Class: `FileMetadataOptions`_
 
-But there is **global** metadata configuration: the ``MetadataOptions`` *schema*.
+But there is **global** *metadata* configuration: the ``MetadataOptions`` *schema*.
 You do not need to set all of these things, but this is everything that is available at the moment.
 
 .. code-block:: json
@@ -60,13 +60,12 @@ This configuration type is parsed to a `MetadataOptions <https://github.com/Thre
     * - ``TrimChars``
       - Array of ``char``. Default value is ``[" "]`` aka whitespace.
     * - ``Metadata``
-      - | Parsed as the ``Dictionary<string, string>`` object containing all global metadata which ``string`` values are parsed to a target type value by the :ref:`md-getmetadata-method`.
+      - | Parsed as the ``Dictionary<string, string>`` object containing all global *metadata* which ``string`` values are parsed to a target type value by the :ref:`md-getmetadata-method`.
 
 Configuration
 -------------
 
-By using the metadata, users can implement their own logic and extend the
-functionality of Ocelot e.g.
+By using the *metadata*, users can implement their own logic and extend the functionality of Ocelot e.g.
 
 .. code-block:: json
 
@@ -101,7 +100,7 @@ functionality of Ocelot e.g.
     }
   }
 
-Now, the route metadata can be accessed through the ``DownstreamRoute`` object:
+Now, the route *metadata* can be accessed through the ``DownstreamRoute`` object:
 
 .. code-block:: csharp
   :emphasize-lines: 20
@@ -163,7 +162,7 @@ Now, the route metadata can be accessed through the ``DownstreamRoute`` object:
 ``GetMetadata<T>`` Method
 -------------------------
 
-Ocelot provides one ``DowstreamRoute`` extension method to help you retrieve your metadata values effortlessly.
+Ocelot provides one ``DowstreamRoute`` extension method to help you retrieve your *metadata* values effortlessly.
 With the exception of the types ``string``, ``bool``, ``bool?``, ``string[]`` and numeric, all strings passed as parameters are treated as json strings and an attempt is made to convert them into objects of generic type T.
 If the value is null, then, if not explicitely specified, the default for the chosen target type is returned.
 
@@ -174,24 +173,74 @@ If the value is null, then, if not explicitely specified, the default for the ch
     * - *Method*
       - *Description*
     * - ``GetMetadata<string>``
-      - The metadata value is returned as string without further parsing
+      - The *metadata* value is returned as string without further parsing
     * - ``GetMetadata<string[]>``
-      - | The metadata value is splitted by a given separator (default ``,``) and returned as a string array.
+      - | The *metadata* value is splitted by a given separator (default ``,``) and returned as a string array.
         | **Note**: Several parameters can be set in the global configuration, such as ``Separators`` (default = ``[","]``), ``StringSplitOptions`` (default ``None``) and ``TrimChars``, the characters that should be trimmed (default = ``[' ']``).
     * - ``GetMetadata<TInt>`` 
-      - | The metadata value is parsed to a number. The ``TInt`` is any known numeric type, such as ``byte``, ``sbyte``, ``short``, ``ushort``, ``int``, ``uint``, ``long``, ``ulong``, ``float``, ``double``, ``decimal``.
+      - | The *metadata* value is parsed to a number. The ``TInt`` is any known numeric type, such as ``byte``, ``sbyte``, ``short``, ``ushort``, ``int``, ``uint``, ``long``, ``ulong``, ``float``, ``double``, ``decimal``.
         | **Note**: Some parameters can be set in the global configuration, such as ``NumberStyle`` (default ``Any``) and ``CurrentCulture`` (default ``CultureInfo.CurrentCulture``)
     * - ``GetMetadata<T>``
-      - | The metadata value is converted to the given generic type. The value is treated as a json string and the json serializer tries to deserialize the string to the target type.
+      - | The *metadata* value is converted to the given generic type. The value is treated as a json string and the json serializer tries to deserialize the string to the target type.
         | **Note**: A ``JsonSerializerOptions`` object can be passed as method parameter, ``Web`` is used as default.
     * - ``GetMetadata<bool>``
-      - | Check if the metadata value is a truthy value, otherwise return ``false``.
+      - | Check if the *metadata* value is a truthy value, otherwise return ``false``.
         | **Note**: The truthy values are: ``true``, ``yes``, ``ok``, ``on``, ``enable``, ``enabled``
     * - ``GetMetadata<bool?>``
-      - | Check if the metadata value is a truthy value (return ``true``), or falsy value (return ``false``), otherwise return ``null``.
+      - | Check if the *metadata* value is a truthy value (return ``true``), or falsy value (return ``false``), otherwise return ``null``.
         | **Note**: The known truthy values are: ``true``, ``yes``, ``ok``, ``on``, ``enable``, ``enabled``, ``1``, the known falsy values are: ``false``, ``no``, ``off``, ``disable``, ``disabled``, ``0``
 
 Sample
 ------
 
-To be written...
+The *Metadata* feature is a relatively new :doc:`../features/configuration` feature (anchored in the ":ref:`config-route-metadata`" section) [#f1]_.
+
+To introduce a standardized approach to middleware development, we have prepared a comprehensive sample project:
+
+  | **Project**: `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ / `Metadata <https://github.com/ThreeMammals/Ocelot/tree/main/samples/Metadata>`_
+  | **Solution**: `Ocelot.Samples.sln <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Ocelot.Samples.sln>`_
+
+The solution for the ``Ocelot.Samples.Metadata.csproj`` project includes the following capabilities:
+
+- It has two custom Ocelot middlewares attached: ``PreErrorResponderMiddleware`` and ``ResponderMiddleware``.
+  The ``PreErrorResponderMiddleware`` reads the route *metadata* based on the route ID and parses it.
+  This is an example of how to parse or read the *metadata* of a specific route.
+- The custom ``ResponderMiddleware`` simply calls the base Ocelot middleware (default implementation).
+  Ocelot's ``ResponderMiddleware`` is responsible for writing the final body data into the ``HttpResponse`` of the current ``HttpContext``.
+- The main `Program`_ replaces Ocelot's default ``IHttpResponder`` service with a custom ``MetadataResponder`` service.
+  It attaches both ``PreErrorResponderMiddleware`` and ``ResponderMiddleware`` using the ``OcelotPipelineConfiguration`` argument in the ``UseOcelot`` method.
+- The ``MetadataResponder`` service processes all JSON data when the ``Content-Type`` header has the value ``application/json``.
+  This custom responder service writes the original data into the ``Response`` section and writes the route *metadata* back to the ``Metadata`` section using the following JSON schema:
+
+    .. code-block:: json
+
+      {
+        "Response": {
+          // Original data of the downstream response
+        },
+        "Metadata": {
+          // current route metadata
+        }
+      }
+
+- The ``MetadataResponder`` service always generates the custom ``OC-Route-Metadata`` header, containing the route *metadata* as a plain JSON string for all routes, regardless of the media type of the content.
+  This allows you to parse it on the client side for specific purposes.
+- The ``MetadataResponder`` service attempts to decompress the content body if it is compressed using one of the following algorithms from downstream endpoints: Brotli (``br``), GZip (``gzip``), or Zstandard (``zstd``).
+  However, data compressed with the ``deflate`` algorithm is ignored and transferred to the client as-is because decompressing a third-party algorithm with a custom implementation is not feasible.
+  Finally, the responder service returns uncompressed data and indicates this in the ``Content-Encoding`` header, where the value is always set to ``identity``.
+- Processing JSON data can be disabled for specific routes using the ``disableMetadataJson`` option in the *metadata*.
+  In this case, all JSON data is returned to the client as-is, preserving the original body streams (see the ``/ocelot/docs/`` route).
+
+**Conclusion**: The purpose of this sample is to detect JSON data, process it, and embed a custom ``Metadata`` section while returning the original JSON data in the ``Response`` section.
+This sample and its ``MetadataResponder`` service significantly increase response time due to on-the-fly JSON data processing, leading to degraded overall performance.
+Please consider this as an example of processing *metadata*. For production environments, such processing should be disabled.
+Instead, returning *metadata* in a custom header is likely the best solution if your client needs to know the currently executed route on Ocelot's side.
+
+""""
+
+.. [#f1] This feature was requested in issues `738`_ and `1990`_, and it was released as part of version `23.3`_.
+
+.. _738: https://github.com/ThreeMammals/Ocelot/issues/738
+.. _1990: https://github.com/ThreeMammals/Ocelot/issues/1990
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Metadata/Program.cs
