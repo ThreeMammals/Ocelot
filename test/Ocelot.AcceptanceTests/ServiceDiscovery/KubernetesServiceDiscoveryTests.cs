@@ -1,5 +1,6 @@
 ﻿using KubeClient;
 using KubeClient.Models;
+using KubeClient.ResourceClients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -147,7 +148,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     {
         int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
         var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
-        GivenThereIsAFakeKubernetesProvider(endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
+        GivenThereIsAFakeKubernetesProvider(endpoints, HttpStatusCode.OK, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
 
         HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
 
@@ -293,9 +294,13 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
 
     private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints,
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
-        => GivenThereIsAFakeKubernetesProvider(endpoints, true, 0, 0, serviceName, namespaces);
+        => GivenThereIsAFakeKubernetesProvider(endpoints, responseStatusCode: HttpStatusCode.OK, serviceName, namespaces);
 
-    private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints, bool isStable, int offlineServicesNo, int offlinePerThreads,
+    private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints, HttpStatusCode responseStatusCode,
+        [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
+        => GivenThereIsAFakeKubernetesProvider(endpoints, responseStatusCode, isStable: true, offlineServicesNo: 0, offlinePerThreads: 0, serviceName, namespaces);
+
+    private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints, HttpStatusCode responseStatusCode, bool isStable, int offlineServicesNo, int offlinePerThreads,
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
     {
         _k8sCounter = 0;
@@ -308,23 +313,38 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                 lock (K8sCounterLocker)
                 {
                     _k8sCounter++;
-                    var subset = endpoints.Subsets[0];
 
-                    // Each offlinePerThreads-th request to integrated K8s endpoint should fail
-                    if (!isStable && _k8sCounter % offlinePerThreads == 0 && _k8sCounter >= offlinePerThreads)
+                    if (responseStatusCode == HttpStatusCode.OK)
                     {
-                        while (offlineServicesNo-- > 0)
+                        var subset = endpoints.Subsets[0];
+
+                        // Each offlinePerThreads-th request to integrated K8s endpoint should fail
+                        if (!isStable && _k8sCounter % offlinePerThreads == 0 && _k8sCounter >= offlinePerThreads)
                         {
-                            int index = subset.Addresses.Count - 1; // Random.Shared.Next(0, subset.Addresses.Count - 1);
-                            subset.Addresses.RemoveAt(index);
-                            subset.Ports.RemoveAt(index);
+                            while (offlineServicesNo-- > 0)
+                            {
+                                int index = subset.Addresses.Count - 1; // Random.Shared.Next(0, subset.Addresses.Count - 1);
+                                subset.Addresses.RemoveAt(index);
+                                subset.Ports.RemoveAt(index);
+                            }
+
+                            _k8sServiceGeneration++;
                         }
 
-                        _k8sServiceGeneration++;
+                        endpoints.Metadata.Generation = _k8sServiceGeneration;
+                        json = JsonConvert.SerializeObject(endpoints, KubeResourceClient.SerializerSettings);
                     }
-
-                    endpoints.Metadata.Generation = _k8sServiceGeneration;
-                    json = JsonConvert.SerializeObject(endpoints);
+                    else
+                    {
+                        StatusV1 errorResponse = new()
+                        {
+                            Code = context.Response.StatusCode,
+                            Reason = responseStatusCode.ToString(),
+                            Message = "This is an error response from the fake Kubernetes API.",
+                            Status = StatusV1.FailureStatus,
+                        };
+                        json = JsonConvert.SerializeObject(_k8sServiceGeneration, KubeResourceClient.SerializerSettings);
+                    }
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
@@ -332,6 +352,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     _receivedToken = values.First();
                 }
 
+                context.Response.StatusCode = (int)responseStatusCode;
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
