@@ -15,6 +15,8 @@ namespace Ocelot.Provider.Kubernetes;
 /// </remarks>
 public class Kube : IServiceDiscoveryProvider
 {
+    private static readonly (string ResourceKind, string ResourceApiVersion) EndPointsKubeKind = KubeObjectV1.GetKubeKind<EndpointsV1>();
+
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
@@ -46,9 +48,42 @@ public class Kube : IServiceDiscoveryProvider
             .ToList();
     }
 
-    private Task<EndpointsV1> GetEndpoint() => _kubeApi
-        .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
-        .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+    private async Task<EndpointsV1> GetEndpoint()
+    {
+        string serviceName = _configuration.KeyOfServiceInK8s;
+        string kubeNamespace = _configuration.KubeNamespace;
+
+        try
+        {
+            return await _kubeApi
+                .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
+                .GetAsync(serviceName, kubeNamespace);
+        }
+        catch (KubeApiException kubeApiError)
+        {
+            _logger.LogError(() =>
+            {
+                StatusV1 errorResponse = kubeApiError.Status;
+                string httpStatusCode = "Unknown";
+                if (kubeApiError.InnerException is HttpRequestException httpRequestError)
+                {
+                    httpStatusCode = httpRequestError.StatusCode.ToString();
+                }
+
+                return $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} ({httpStatusCode}/{errorResponse.Status}/{errorResponse.Reason}): {errorResponse.Message}";
+            }, kubeApiError);
+        }
+        catch (HttpRequestException unexpectedRequestError)
+        {
+            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} ({unexpectedRequestError.HttpRequestError}/{unexpectedRequestError.StatusCode}).", unexpectedRequestError);
+        }
+        catch (Exception unexpectedError)
+        {
+            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} (an unexpected error occurred).", unexpectedError);
+        }
+
+        return null;
+    }
 
     private bool CheckErroneousState(EndpointsV1 endpoint)
         => (endpoint?.Subsets?.Count ?? 0) == 0; // null or count is zero
