@@ -1,5 +1,6 @@
 ﻿using KubeClient;
 using KubeClient.Models;
+using KubeClient.ResourceClients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -324,7 +325,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
-                    json = JsonConvert.SerializeObject(endpoints);
+                    json = JsonConvert.SerializeObject(endpoints, KubeResourceClient.SerializerSettings);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
