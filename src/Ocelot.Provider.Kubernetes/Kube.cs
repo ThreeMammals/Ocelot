@@ -70,16 +70,16 @@ public class Kube : IServiceDiscoveryProvider
                     httpStatusCode = httpRequestError.StatusCode.ToString();
                 }
 
-                return $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} ({httpStatusCode}/{errorResponse.Status}/{errorResponse.Reason}): {errorResponse.Message}";
+                return $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' (HTTP.{httpStatusCode}/{errorResponse.Status}/{errorResponse.Reason}): {errorResponse.Message}";
             }, kubeApiError);
         }
         catch (HttpRequestException unexpectedRequestError)
         {
-            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} ({unexpectedRequestError.HttpRequestError}/{unexpectedRequestError.StatusCode}).", unexpectedRequestError);
+            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' ({unexpectedRequestError.HttpRequestError}/HTTP.{unexpectedRequestError.StatusCode}).", unexpectedRequestError);
         }
         catch (Exception unexpectedError)
         {
-            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} {serviceName} in namespace {kubeNamespace} (an unexpected error occurred).", unexpectedError);
+            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' (an unexpected error occurred).", unexpectedError);
         }
 
         return null;
