@@ -61,13 +61,13 @@ public class KubeTests : FileUnitTest
     [InlineData(HttpStatusCode.Forbidden)]
     [InlineData(HttpStatusCode.InternalServerError)]
     [InlineData(HttpStatusCode.NotFound)]
-    [Trait("Feat", "345")]
+    [Trait("PR", "2266")]
     public async Task Should_not_return_service_from_k8s_when_k8s_api_returns_error_response(HttpStatusCode expectedStatusCode)
     {
         // Arrange
         var given = GivenClientAndProvider(out var serviceBuilder);
         serviceBuilder.Setup(x => x.BuildServices(It.IsAny<KubeRegistryConfiguration>(), It.IsAny<EndpointsV1>()))
-            .Returns(new Service[] { new(nameof(Should_return_service_from_k8s), new("localhost", 80), string.Empty, string.Empty, Array.Empty<string>()) });
+            .Returns(new Service[] { new(nameof(Should_not_return_service_from_k8s_when_k8s_api_returns_error_response), new("localhost", 80), string.Empty, string.Empty, Array.Empty<string>()) });
 
         var endpoints = GivenEndpoints();
         using var kubernetes = GivenThereIsAFakeKubeServiceDiscoveryProvider(
@@ -79,7 +79,7 @@ public class KubeTests : FileUnitTest
             out Lazy<string> receivedToken);
 
         string expectedKubeApiErrorMessage = GetKubeApiErrorMessage(serviceName: given.ProviderOptions.KeyOfServiceInK8s, given.ProviderOptions.KubeNamespace, expectedStatusCode);
-        string expectedLogMessage = $"Failed to retrieve v1/Endpoints '{given.ProviderOptions.KeyOfServiceInK8s}' in namespace '{given.ProviderOptions.KubeNamespace}' (HTTP.{expectedStatusCode}/Failure/{expectedStatusCode}): {expectedKubeApiErrorMessage}";
+        string expectedLogMessage = $"Failed to retrieve v1/Endpoints '{given.ProviderOptions.KeyOfServiceInK8s}' in namespace '{given.ProviderOptions.KubeNamespace}': (HTTP.{expectedStatusCode}/Failure/{expectedStatusCode}): {expectedKubeApiErrorMessage}";
         _logger.Setup(logger => logger.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()))
             .Callback((Func<string> messageFactory, Exception exception) =>
             {
