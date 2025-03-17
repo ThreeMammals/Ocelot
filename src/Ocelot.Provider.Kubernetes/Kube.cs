@@ -48,38 +48,40 @@ public class Kube : IServiceDiscoveryProvider
             .ToList();
     }
 
+    private string Message(string details)
+        => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{_configuration.KeyOfServiceInK8s}' in namespace '{_configuration.KubeNamespace}': {details}";
+
     private async Task<EndpointsV1> GetEndpoint()
     {
-        string serviceName = _configuration.KeyOfServiceInK8s;
-        string kubeNamespace = _configuration.KubeNamespace;
-
         try
         {
             return await _kubeApi
                 .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
-                .GetAsync(serviceName, kubeNamespace);
+                .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
         }
-        catch (KubeApiException kubeApiError)
+        catch (KubeApiException ex)
         {
-            _logger.LogError(() =>
+            string Msg()
             {
-                StatusV1 errorResponse = kubeApiError.Status;
-                string httpStatusCode = "Unknown";
-                if (kubeApiError.InnerException is HttpRequestException httpRequestError)
+                StatusV1 status = ex.Status;
+                string httpStatusCode = "-"; // Unknown
+                if (ex.InnerException is HttpRequestException e)
                 {
-                    httpStatusCode = httpRequestError.StatusCode.ToString();
+                    httpStatusCode = e.StatusCode.ToString();
                 }
 
-                return $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' (HTTP.{httpStatusCode}/{errorResponse.Status}/{errorResponse.Reason}): {errorResponse.Message}";
-            }, kubeApiError);
+                return Message($"(HTTP.{httpStatusCode}/{status.Status}/{status.Reason}): {status.Message}");
+            }
+
+            _logger.LogError(Msg, ex);
         }
-        catch (HttpRequestException unexpectedRequestError)
+        catch (HttpRequestException ex)
         {
-            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' ({unexpectedRequestError.HttpRequestError}/HTTP.{unexpectedRequestError.StatusCode}).", unexpectedRequestError);
+            _logger.LogError(() => Message($"({ex.HttpRequestError}/HTTP.{ex.StatusCode})."), ex);
         }
-        catch (Exception unexpectedError)
+        catch (Exception unexpected)
         {
-            _logger.LogError(() => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{serviceName}' in namespace '{kubeNamespace}' (an unexpected error occurred).", unexpectedError);
+            _logger.LogError(() => Message($"(an unexpected ex occurred)."), unexpected);
         }
 
         return null;
