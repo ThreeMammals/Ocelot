@@ -13,7 +13,7 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
     {
     }
 
-    public async Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
+    public Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(serviceName))
         {
@@ -27,7 +27,7 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
                 ServiceName = serviceName,
             });
 
-        return await Http.GetAsync(request, cancellationToken)
+        return Http.GetAsync(request, cancellationToken)
             .ReadContentAsObjectV1Async<EndpointsV1>(operationDescription: $"get {nameof(EndpointsV1)}");
     }
 }
