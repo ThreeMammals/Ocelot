@@ -54,10 +54,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.OpenTracing"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Nacos", "Ocelot.Provider.Nacos\Ocelot.Provider.Nacos.csproj", "{79FC3719-1F5A-4F22-9DE4-91424E401E5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gateway", "Gateway\Gateway.csproj", "{A3017245-AD36-4342-8622-7E1139A6327D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TServer", "TServer\TServer.csproj", "{765A5267-3BC8-4C45-822B-8D8DACB29C3F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,14 +124,6 @@ Global
 		{79FC3719-1F5A-4F22-9DE4-91424E401E5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79FC3719-1F5A-4F22-9DE4-91424E401E5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79FC3719-1F5A-4F22-9DE4-91424E401E5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A3017245-AD36-4342-8622-7E1139A6327D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3017245-AD36-4342-8622-7E1139A6327D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3017245-AD36-4342-8622-7E1139A6327D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3017245-AD36-4342-8622-7E1139A6327D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{765A5267-3BC8-4C45-822B-8D8DACB29C3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{765A5267-3BC8-4C45-822B-8D8DACB29C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{765A5267-3BC8-4C45-822B-8D8DACB29C3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{765A5267-3BC8-4C45-822B-8D8DACB29C3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
