@@ -36,7 +36,7 @@ The first thing you need to do is install the `package`_ that provides |kubernet
     Install-Package Ocelot.Provider.Kubernetes
 
 ``AddKubernetes(bool)`` method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 .. code-block:: csharp
   :emphasize-lines: 3
@@ -84,19 +84,40 @@ If you have services deployed in Kubernetes, you will normally use the naming se
      };
      builder.Services
          .AddOptions<KubeClientOptions>()
-         .Configure(configureKubeClient); // mannual binding options via IOptions<KubeClientOptions>
+         .Configure(configureKubeClient); // manual binding options via IOptions<KubeClientOptions>
      builder.Services
          .AddOcelot(builder.Configuration)
          .AddKubernetes(false); // don't use pod service account, and IOptions<KubeClientOptions> is reused
 
+   .. _break: http://break.do
+
+      **Note**, this could also be written like this (shortened version):
+
+      .. code-block:: csharp
+        :emphasize-lines: 2, 10
+
+        builder.Services
+            .AddKubeClientOptions(opts =>
+            {
+                opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+                opts.AuthStrategy = KubeAuthStrategy.BearerToken;
+                opts.AccessToken = "my-token";
+                opts.AllowInsecure = true;
+            })
+            .AddOcelot(builder.Configuration)
+            .AddKubernetes(false); // don't use pod service account, and client options provided via AddKubeClientOptions
+
    Finally, it creates the `KubeClient`_ from your options.
 
-     **Note**: For understanding the ``IOptions<TOptions>`` interface, please refer to the Microsoft Learn documentation: `Options pattern in .NET <https://learn.microsoft.com/en-us/dotnet/core/extensions/options>`_.
+    **Note 1**: For understanding the ``IOptions<TOptions>`` interface, please refer to the Microsoft Learn documentation: `Options pattern in .NET <https://learn.microsoft.com/en-us/dotnet/core/extensions/options>`_.
+
+    **Note 2**: Please consider this Case 2 as an example of manual setup when you **do not** use a pod service account.
+    We recommend using our official extension method, which receives an ``Action<KubeClientOptions>`` argument with your options: refer to the :ref:`k8s-addkubernetes-action-method` below.
 
 .. _k8s-addkubernetes-action-method:
 
 ``AddKubernetes(Action<KubeClientOptions>)`` method [#f2]_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------------------------------
 
 .. code-block:: csharp
   :emphasize-lines: 3
