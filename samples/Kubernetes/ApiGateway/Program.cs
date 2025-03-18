@@ -10,7 +10,7 @@ builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddOcelot();
 
-goto Case4; // Your case should be selected here!!!
+goto Case5; // Your case should be selected here!!!
 
 // Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-bool-method
 Case1: // Use a pod service account
@@ -36,7 +36,7 @@ builder.Services
 goto Start;
 
 // Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
-Case3: // Use global ServiceDiscoveryProvider json-options
+Case3: // Don't use a pod service account, manually bind options, ignore global ServiceDiscoveryProvider json-options
 Action<KubeClientOptions> myOptions = opts =>
 {
     opts.ApiEndPoint = new UriBuilder(Uri.UriSchemeHttps, "my-host", 443).Uri;
@@ -49,8 +49,21 @@ builder.Services
     .AddKubernetes(myOptions); // configure options with action, without optional args
 goto Start;
 
+Case4: // Don't use a pod service account, manually bind options, ignore global ServiceDiscoveryProvider json-options
+builder.Services
+    .AddKubeClientOptions(opts =>
+    {
+        opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+        opts.AuthStrategy = KubeAuthStrategy.BearerToken;
+        opts.AccessToken = "my-token";
+        opts.AllowInsecure = true;
+    })
+    .AddOcelot(builder.Configuration)
+    .AddKubernetes(false); // don't use pod service account, and client options provided via AddKubeClientOptions
+goto Start;
+
 // Link: https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#addkubernetes-action-kubeclientoptions-method
-Case4: // Use global ServiceDiscoveryProvider json-options
+Case5: // Use global ServiceDiscoveryProvider json-options
 Action<KubeClientOptions>? none = null;
 builder.Services
     .AddOcelot(builder.Configuration)
