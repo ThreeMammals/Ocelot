@@ -30,6 +30,6 @@ If you have sufficient experience with `GraphQL`_ and the mentioned .NET `graphq
   :alt: octocat
   :width: 23
 
-Who knows, maybe you’ll get inspired by the sample development and come up with a design solution in the form of a rough draft of a *GraphQL* feature to implement in Ocelot.
+Who knows, maybe you will get inspired by the sample development and come up with a design solution in the form of a rough draft of a *GraphQL* feature to implement in Ocelot.
 Good luck!
 And welcome to the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository!
