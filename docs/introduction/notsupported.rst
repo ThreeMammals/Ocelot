@@ -53,4 +53,10 @@ Ocelot's configuration can change during runtime so the Swagger and Ocelot infor
 Unless we rolled our own Swagger implementation. 😋
 
 If the developer wants something to easily test against the Ocelot API then we suggest using `Postman <https://www.postman.com/>`_ as a simple way to do this.
-It might even be possible to write something that maps **ocelot.json** to the Postman JSON spec. However we don't intend to do this.
+It might even be possible to write something that maps ``ocelot.json`` to the Postman JSON spec. However we don't intend to do this.
+
+Swagger Alternatives
+--------------------
+
+An alternative would be to use the `MMLib.SwaggerForOcelot | GitHub <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_ community package.
+This package covers some of the common scenarios you might expect from Swagger documentation over API Gateway.
