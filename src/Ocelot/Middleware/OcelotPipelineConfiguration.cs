@@ -13,7 +13,7 @@ public class OcelotPipelineConfiguration
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> PreErrorResponderMiddleware { get; set; }
 
-    /// <summary>This allows the user to completely override the Ocelot's <see cref="Responder.Middleware.ResponderMiddleware"/>.</summary>
+    /// <summary>This allows the user to completely override Ocelot's <see cref="Responder.Middleware.ResponderMiddleware"/>.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> ResponderMiddleware { get; set; }
 
@@ -21,19 +21,19 @@ public class OcelotPipelineConfiguration
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> PreAuthenticationMiddleware { get; set; }
 
-    /// <summary>This allows the user to completely override the Ocelot's <see cref="Authentication.Middleware.AuthenticationMiddleware"/>.</summary>
+    /// <summary>This allows the user to completely override Ocelot's <see cref="Authentication.Middleware.AuthenticationMiddleware"/>.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
 
-    /// <summary>This is to allow the user to run any extra authorization before the Ocelot authentication kicks in.</summary>
+    /// <summary>This is to allow the user to run any extra authorization before the Ocelot authorization kicks in.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> PreAuthorizationMiddleware { get; set; }
 
-    /// <summary>This allows the user to completely override the Ocelot's <see cref="Authorization.Middleware.AuthorizationMiddleware"/>.</summary>
+    /// <summary>This allows the user to completely override Ocelot's <see cref="Authorization.Middleware.AuthorizationMiddleware"/>.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> AuthorizationMiddleware { get; set; }
 
-    /// <summary>This allows the user to completely override the Ocelot's <see cref="Headers.Middleware.ClaimsToHeadersMiddleware"/>.</summary>
+    /// <summary>This allows the user to completely override Ocelot's <see cref="Headers.Middleware.ClaimsToHeadersMiddleware"/>.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> ClaimsToHeadersMiddleware { get; set; }
 
