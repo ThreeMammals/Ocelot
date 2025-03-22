@@ -221,7 +221,7 @@ If necessary, a more intricate upstream header template can be specified, using 
   **Note 1**: Placeholders are not required in ``DownstreamPathTemplate``.
   This scenario can be utilized to mandate a specific header regardless of its value.
 
-  **Note 2**: Additionally, the ``UpstreamHeaderTemplates`` dictionary options are applicable for :doc:`../features/requestaggregation` as well.
+  **Note 2**: Additionally, the ``UpstreamHeaderTemplates`` dictionary options are applicable for :doc:`../features/aggregation` as well.
 
 Priority
 --------

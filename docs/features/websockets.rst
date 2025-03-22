@@ -159,7 +159,7 @@ We have listed what will not work below:
 
 1. :doc:`../features/tracing`
 2. :doc:`../features/requestid`
-3. :doc:`../features/requestaggregation`
+3. :doc:`../features/aggregation`
 4. :doc:`../features/ratelimiting`
 5. :doc:`../features/qualityofservice`
 6. :doc:`../features/middlewareinjection`

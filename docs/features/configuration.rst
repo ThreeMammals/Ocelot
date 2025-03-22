@@ -43,7 +43,7 @@ From the :doc:`../introduction/gettingstarted` chapter and its :ref:`getstarted-
     * - ``Aggregates`` with :ref:`config-aggregate-route-schema`
       - This section allows specifying aggregated routes that compose multiple normal routes and map their responses into one JSON object.
         It allows you to start implementing a *Back-end For a Front-end* (BFF) type architecture with Ocelot.
-        Please refer to the :doc:`../features/requestaggregation` chapter for more details.
+        Please refer to the :doc:`../features/aggregation` chapter for more details.
     * - ``GlobalConfiguration`` with :ref:`config-global-configuration-schema`
       - This section is a bit hacky and allows overrides of static route-specific settings.
         It is useful if you do not want to manage lots of route-specific settings.

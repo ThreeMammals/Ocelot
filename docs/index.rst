@@ -38,6 +38,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     :caption: Features
 
     features/administration
+    features/aggregation
     features/authentication
     features/authorization
     features/caching
@@ -56,7 +57,6 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/middlewareinjection
     features/qualityofservice
     features/ratelimiting
-    features/requestaggregation
     features/requestid
     features/routing
     features/servicediscovery
