@@ -57,7 +57,6 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/middlewareinjection
     features/qualityofservice
     features/ratelimiting
-    features/requestid
     features/routing
     features/servicediscovery
     features/servicefabric

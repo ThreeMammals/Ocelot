@@ -158,7 +158,7 @@ Unfortunately a lot of Ocelot features are non *WebSocket* specific, such as hea
 We have listed what will not work below:
 
 1. :doc:`../features/tracing`
-2. :doc:`../features/requestid`
+2. :doc:`../features/logging` :ref:`lg-request-id`
 3. :doc:`../features/aggregation`
 4. :doc:`../features/ratelimiting`
 5. :doc:`../features/qualityofservice`
