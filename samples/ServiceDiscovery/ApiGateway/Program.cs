@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
@@ -12,26 +13,30 @@ builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddOcelot();
 
-// Initialize from app configuration or hardcode/choose the best option.
+// Perform initialization from application configuration or hardcode/choose the best option.
 bool easyWay = true;
 
 if (easyWay)
 {
-    // Option #1. Define custom finder delegate to instantiate custom provider
-    // by default factory which is ServiceDiscoveryProviderFactory
-    builder.Services.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
-        => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
+    // Design #1: Define a custom finder delegate to instantiate a custom provider 
+    // under the default factory (ServiceDiscoveryProviderFactory).
+    builder.Services
+        .AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute)
+            => new MyServiceDiscoveryProvider(serviceProvider, config, downstreamRoute));
 }
 else
 {
-    // Option #2. Abstract from default factory (ServiceDiscoveryProviderFactory) and from FinderDelegate,
-    // and build custom factory by implementation of the IServiceDiscoveryProviderFactory interface.
-    builder.Services.RemoveAll<IServiceDiscoveryProviderFactory>()
+    // Design #2: Abstract from the default factory (ServiceDiscoveryProviderFactory) and FinderDelegate,
+    // and create your own factory by implementing the IServiceDiscoveryProviderFactory interface.
+    builder.Services
+        .RemoveAll<IServiceDiscoveryProviderFactory>()
         .AddSingleton<IServiceDiscoveryProviderFactory, MyServiceDiscoveryProviderFactory>();
 
-    // Will not be called, but it is required for internal validators, aka life hack
-    builder.Services.AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute) => null);
+    // This will not be called but is required for internal validators. It's also a handy workaround.
+    builder.Services
+        .AddSingleton<ServiceDiscoveryFinderDelegate>((serviceProvider, config, downstreamRoute) => null);
 }
+
 builder.Services
     .AddOcelot(builder.Configuration);
 
@@ -42,4 +47,4 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 await app.UseOcelot();
-app.Run();
+await app.RunAsync();
