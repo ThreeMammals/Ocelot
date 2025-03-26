@@ -289,8 +289,8 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 """"
 
 .. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
-.. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0.0`_
-.. [#f3] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3.0`_
+.. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
+.. [#f3] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
 .. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134
@@ -298,5 +298,5 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 .. _2255: https://github.com/ThreeMammals/Ocelot/issues/2255
 .. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
 .. _13.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
-.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _24.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0

@@ -13,9 +13,9 @@ builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddOcelot();
 builder.Services
-    .AddSingleton(sp =>
+    .AddSingleton(serviceProvider =>
     {
-        var loggerFactory = sp.GetService<ILoggerFactory>();
+        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
         var config = new Jaeger.Configuration(builder.Environment.ApplicationName, loggerFactory);
         var tracer = config.GetTracer();
         GlobalTracer.Register(tracer);
@@ -31,4 +31,4 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 await app.UseOcelot();
-app.Run();
+await app.RunAsync();
