@@ -108,6 +108,6 @@ Ocelot will now send tracing information to `Butterfly`_ whenever this route is 
 
 .. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 
-.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main//samples/Basic/Program.cs
-.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main//samples/Basic/ocelot.json
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
