@@ -68,8 +68,6 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     :caption: Building Ocelot
 
     building/overview
-    building/building
-    building/tests
     building/devprocess
     building/releaseprocess
 
