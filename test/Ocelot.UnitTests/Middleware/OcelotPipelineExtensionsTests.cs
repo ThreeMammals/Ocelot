@@ -38,11 +38,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         var configuration = new OcelotPipelineConfiguration();
         configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
         {
-            app.UseDownstreamRouteFinderMiddleware();
-            app.UseDownstreamRequestInitialiser();
-            app.UseLoadBalancingMiddleware();
-            app.UseDownstreamUrlCreatorMiddleware();
-            app.UseWebSocketsProxyMiddleware();
+            app.UseMiddleware<DownstreamRouteFinderMiddleware>();
+            app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+            app.UseMiddleware<LoadBalancingMiddleware>();
+            app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
+            app.UseMiddleware<WebSocketsProxyMiddleware>();
         });
 
         // Act

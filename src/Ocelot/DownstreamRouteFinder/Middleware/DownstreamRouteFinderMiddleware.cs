@@ -13,9 +13,8 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
 
     public DownstreamRouteFinderMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IDownstreamRouteProviderFactory downstreamRouteFinder
-        )
-            : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
+        IDownstreamRouteProviderFactory downstreamRouteFinder)
+        : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
     {
         _next = next;
         _factory = downstreamRouteFinder;
@@ -39,7 +38,7 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
         var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
         if (response.IsError)
         {
-            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
+            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors because {provider.GetType().Name} returned the following ->{response.Errors.ToErrorString(true)}");
             httpContext.Items.UpsertErrors(response.Errors);
             return;
         }

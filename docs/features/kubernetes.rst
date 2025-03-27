@@ -15,8 +15,8 @@
 |K8sLogo| Kubernetes (K8s) [#f1]_
 =================================
 
-    Sub-feature of: :doc:`../features/servicediscovery`
-    Quick Links: `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
+    | Feature of: :doc:`../features/servicediscovery`
+    | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in pull request `1134`_ because the service did not load balance as expected.
@@ -41,10 +41,10 @@ The first thing you need to do is install the `package`_ that provides |kubernet
 .. code-block:: csharp
   :emphasize-lines: 3
 
-    public static class OcelotBuilderExtensions
-    {
-        public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true);
-    }
+  public static class OcelotBuilderExtensions
+  {
+      public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true);
+  }
 
 This extension-method adds `K8s`_ services **with** or **without** using a pod service account.
 Then add the following to your `Program <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Kubernetes/ApiGateway/Program.cs>`_:
@@ -52,9 +52,9 @@ Then add the following to your `Program <https://github.com/ThreeMammals/Ocelot/
 .. code-block:: csharp
   :emphasize-lines: 3
 
-    builder.Services
-        .AddOcelot(builder.Configuration)
-        .AddKubernetes(); // usePodServiceAccount is true
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddKubernetes(); // usePodServiceAccount is true
 
 If you have services deployed in Kubernetes, you will normally use the naming service to access them.
 
@@ -122,10 +122,10 @@ If you have services deployed in Kubernetes, you will normally use the naming se
 .. code-block:: csharp
   :emphasize-lines: 3
 
-    public static class OcelotBuilderExtensions
-    {
-        public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, Action<KubeClientOptions> configureOptions, /*optional params*/);
-    }
+  public static class OcelotBuilderExtensions
+  {
+      public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, Action<KubeClientOptions> configureOptions, /*optional params*/);
+  }
 
 This extension method adds `K8s`_ services **without** using a pod service account, explicitly calling an action to initialize configuration options for `KubeClient`_.
 It operates in two modes:
@@ -135,14 +135,14 @@ It operates in two modes:
    .. code-block:: csharp
     :emphasize-lines: 8
 
-     Action<KubeClientOptions> configureKubeClient = opts => 
-     {
-         opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
-         // ...
-     };
-     builder.Services
-         .AddOcelot(builder.Configuration)
-         .AddKubernetes(configureKubeClient); // without optional arguments
+    Action<KubeClientOptions> configureKubeClient = opts => 
+    {
+        opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+        // ...
+    };
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddKubernetes(configureKubeClient); // without optional arguments
 
 .. _break: http://break.do
 
@@ -154,11 +154,11 @@ It operates in two modes:
    .. code-block:: csharp
     :emphasize-lines: 3, 5
 
-     builder.Services
-         .AddOcelot(builder.Configuration)
-         .AddKubernetes(null, allowInsecure: true, /*optional args*/) // shortened version
-         // or
-         .AddKubernetes(configureOptions: null, allowInsecure: true, /*optional args*/); // long version
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddKubernetes(null, allowInsecure: true, /*optional args*/) // shortened version
+        // or
+        .AddKubernetes(configureOptions: null, allowInsecure: true, /*optional args*/); // long version
 
 .. _break2: http://break.do
 
@@ -255,7 +255,7 @@ When binding multiple ports, you assign a name to each subset port.
 To allow the ``Kube`` provider to recognize the desired port by its name, you need to specify the ``DownstreamScheme`` with the port's name;
 if not, the collection's first port entry will be chosen by default.
 
-For instance, consider a service on Kubernetes that exposes two ports: ``https`` for **443** and ``http`` for **80**, as follows:
+For instance, consider a service on Kubernetes that exposes two ports: ``https`` for 443 and ``http`` for 80, as follows:
 
 .. code-block:: text
 
@@ -288,9 +288,9 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 
 """"
 
-.. [#f1] :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
-.. [#f2] :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0.0`_
-.. [#f3] :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3.0`_
+.. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
+.. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
+.. [#f3] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
 .. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134
@@ -298,5 +298,5 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 .. _2255: https://github.com/ThreeMammals/Ocelot/issues/2255
 .. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
 .. _13.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
-.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _24.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0

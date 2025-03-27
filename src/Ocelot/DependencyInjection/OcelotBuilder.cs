@@ -204,8 +204,8 @@ public class OcelotBuilder : IOcelotBuilder
     public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>()
         where TLoadBalancer : ILoadBalancer, new()
     {
-        TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
-            => new();
+        static TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+            => new(); // TODO Not tested by acceptance tests, Assert another constructors with injected params?
         return AddCustomLoadBalancer<TLoadBalancer>(Create);
     }
 
@@ -248,6 +248,13 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a <see cref="DelegatingHandler"/> of the <paramref name="delegateType"/> type as a transient service, with the <paramref name="global"/> option to make the handler globally available.
+    /// </summary>
+    /// <param name="delegateType">The type of a <see cref="DelegatingHandler"/> to be registered.</param>
+    /// <param name="global">True if the handler should be globally available.</param>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Generates an exception if the <paramref name="delegateType"/> type does not inherit from the <see cref="DelegatingHandler"/>.</exception>
     public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
     {
         if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType))
@@ -272,6 +279,12 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a <see cref="DelegatingHandler"/> of the <typeparamref name="THandler"/> type as a transient service, with the <paramref name="global"/> option to make the handler globally available.
+    /// </summary>
+    /// <typeparam name="THandler">The type of a <see cref="DelegatingHandler"/> to be registered.</typeparam>
+    /// <param name="global">True if the handler should be globally available.</param>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {
