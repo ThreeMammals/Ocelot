@@ -1,4 +1,4 @@
-﻿using IdentityServer4.Models;
+﻿//using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,98 +24,98 @@ public class AuthenticationSteps : Steps, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public static ApiResource CreateApiResource(
-        string apiName,
-        IEnumerable<string> extraScopes = null) => new()
-    {
-        Name = apiName,
-        Description = $"My {apiName} API",
-        Enabled = true,
-        DisplayName = "test",
-        Scopes = new List<string>(extraScopes ?? Enumerable.Empty<string>())
-        {
-            apiName,
-            $"{apiName}.readOnly",
-        },
-        ApiSecrets = new List<Secret>
-        {
-            new ("secret".Sha256()),
-        },
-        UserClaims = new List<string>
-        {
-            "CustomerId", "LocationId",
-        },
-    };
+    //public static ApiResource CreateApiResource(
+    //    string apiName,
+    //    IEnumerable<string> extraScopes = null) => new()
+    //{
+    //    Name = apiName,
+    //    Description = $"My {apiName} API",
+    //    Enabled = true,
+    //    DisplayName = "test",
+    //    Scopes = new List<string>(extraScopes ?? Enumerable.Empty<string>())
+    //    {
+    //        apiName,
+    //        $"{apiName}.readOnly",
+    //    },
+    //    ApiSecrets = new List<Secret>
+    //    {
+    //        new ("secret".Sha256()),
+    //    },
+    //    UserClaims = new List<string>
+    //    {
+    //        "CustomerId", "LocationId",
+    //    },
+    //};
 
-    protected static Client CreateClientWithSecret(string clientId, Secret secret, AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
-    {
-        var client = DefaultClient(tokenType, apiScopes);
-        client.ClientId = clientId ?? "client";
-        client.ClientSecrets = new Secret[] { secret };
-        return client;
-    }
+    //protected static Client CreateClientWithSecret(string clientId, Secret secret, AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
+    //{
+    //    var client = DefaultClient(tokenType, apiScopes);
+    //    client.ClientId = clientId ?? "client";
+    //    client.ClientSecrets = new Secret[] { secret };
+    //    return client;
+    //}
 
-    protected static Client DefaultClient(AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
-    {
-        apiScopes ??= new string[] { "api" };
-        return new()
-        {
-            ClientId = "client",
-            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-            ClientSecrets = new List<Secret> { new("secret".Sha256()) },
-            AllowedScopes = apiScopes
-                .Union(apiScopes.Select(x => $"{x}.readOnly"))
-                .Union(new string[] { "openid", "offline_access" })
-                .ToList(),
-            AccessTokenType = tokenType,
-            Enabled = true,
-            RequireClientSecret = false,
-            RefreshTokenExpiration = TokenExpiration.Absolute,
-        };
-    }
+    //protected static Client DefaultClient(AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
+    //{
+    //    apiScopes ??= new string[] { "api" };
+    //    return new()
+    //    {
+    //        ClientId = "client",
+    //        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+    //        ClientSecrets = new List<Secret> { new("secret".Sha256()) },
+    //        AllowedScopes = apiScopes
+    //            .Union(apiScopes.Select(x => $"{x}.readOnly"))
+    //            .Union(new string[] { "openid", "offline_access" })
+    //            .ToList(),
+    //        AccessTokenType = tokenType,
+    //        Enabled = true,
+    //        RequireClientSecret = false,
+    //        RefreshTokenExpiration = TokenExpiration.Absolute,
+    //    };
+    //}
 
-    public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, string[] apiScopes, Client[] clients)
-    {
-        apiScopes ??= new string[] { "api" };
-        clients ??= new Client[] { DefaultClient(tokenType, apiScopes) };
-        var builder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .ConfigureServices(services =>
-            {
-                services.AddLogging();
-                services.AddIdentityServer()
-                    .AddDeveloperSigningCredential()
-                    .AddInMemoryApiScopes(apiScopes
-                        .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
-                    .AddInMemoryApiResources(apiScopes
-                        .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
-                        .Select(x => CreateApiResource(x.scope, new string[] { "openid", "offline_access" })))
-                    .AddInMemoryClients(clients)
-                    .AddTestUsers(new()
-                    {
-                        new()
-                        {
-                            Username = "test",
-                            Password = "test",
-                            SubjectId = "registered|1231231",
-                            Claims = new List<Claim>
-                            {
-                                   new("CustomerId", "123"),
-                                   new("LocationId", "321"),
-                            },
-                        },
-                    });
-            })
-            .Configure(app =>
-            {
-                app.UseIdentityServer();
-            });
-        return builder;
-    }
+    //public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, string[] apiScopes, Client[] clients)
+    //{
+    //    apiScopes ??= new string[] { "api" };
+    //    clients ??= new Client[] { DefaultClient(tokenType, apiScopes) };
+    //    var builder = TestHostBuilder.Create()
+    //        .UseUrls(url)
+    //        .UseKestrel()
+    //        .UseContentRoot(Directory.GetCurrentDirectory())
+    //        .UseIISIntegration()
+    //        .UseUrls(url)
+    //        .ConfigureServices(services =>
+    //        {
+    //            services.AddLogging();
+    //            services.AddIdentityServer()
+    //                .AddDeveloperSigningCredential()
+    //                .AddInMemoryApiScopes(apiScopes
+    //                    .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
+    //                .AddInMemoryApiResources(apiScopes
+    //                    .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
+    //                    .Select(x => CreateApiResource(x.scope, new string[] { "openid", "offline_access" })))
+    //                .AddInMemoryClients(clients)
+    //                .AddTestUsers(new()
+    //                {
+    //                    new()
+    //                    {
+    //                        Username = "test",
+    //                        Password = "test",
+    //                        SubjectId = "registered|1231231",
+    //                        Claims = new List<Claim>
+    //                        {
+    //                               new("CustomerId", "123"),
+    //                               new("LocationId", "321"),
+    //                        },
+    //                    },
+    //                });
+    //        })
+    //        .Configure(app =>
+    //        {
+    //            app.UseIdentityServer();
+    //        });
+    //    return builder;
+    //}
 
     internal Task<BearerToken> GivenAuthToken(string url, string apiScope)
     {

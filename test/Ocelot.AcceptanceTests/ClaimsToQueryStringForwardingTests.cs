@@ -1,6 +1,6 @@
-﻿using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Models;
-using IdentityServer4.Test;
+﻿//using IdentityServer4.AccessTokenValidation;
+//using IdentityServer4.Models;
+//using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +15,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
     private IWebHost _servicebuilder;
     private IWebHost _identityServerBuilder;
     private readonly Steps _steps;
-    private readonly Action<IdentityServerAuthenticationOptions> _options;
+    //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private string _downstreamQueryString;
 
@@ -24,30 +24,30 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
         _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
-        _options = o =>
-        {
-            o.Authority = _identityServerRootUrl;
-            o.ApiName = "api";
-            o.RequireHttpsMetadata = false;
-            o.SupportedTokens = SupportedTokens.Both;
-            o.ApiSecret = "secret";
-        };
+        //_options = o =>
+        //{
+        //    o.Authority = _identityServerRootUrl;
+        //    o.ApiName = "api";
+        //    o.RequireHttpsMetadata = false;
+        //    o.SupportedTokens = SupportedTokens.Both;
+        //    o.ApiSecret = "secret";
+        //};
     }
 
-    [Fact]
-    public void should_return_response_200_and_foward_claim_as_query_string()
+    [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
+    public void Should_return_response_200_and_foward_claim_as_query_string()
     {
-        var user = new TestUser
-        {
-            Username = "test",
-            Password = "test",
-            SubjectId = "registered|1231231",
-            Claims = new List<Claim>
-            {
-                new("CustomerId", "123"),
-                new("LocationId", "1"),
-            },
-        };
+        //var user = new TestUser
+        //{
+        //    Username = "test",
+        //    Password = "test",
+        //    SubjectId = "registered|1231231",
+        //    Claims = new List<Claim>
+        //    {
+        //        new("CustomerId", "123"),
+        //        new("LocationId", "1"),
+        //    },
+        //};
 
         var port = PortFinder.GetRandomPort();
 
@@ -88,11 +88,11 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+        this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
+            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -100,20 +100,20 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
             .BDDfy();
     }
 
-    [Fact]
-    public void should_return_response_200_and_foward_claim_as_query_string_and_preserve_original_string()
+    [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
+    public void Should_return_response_200_and_foward_claim_as_query_string_and_preserve_original_string()
     {
-        var user = new TestUser
-        {
-            Username = "test",
-            Password = "test",
-            SubjectId = "registered|1231231",
-            Claims = new List<Claim>
-            {
-                new("CustomerId", "123"),
-                new("LocationId", "1"),
-            },
-        };
+        //var user = new TestUser
+        //{
+        //    Username = "test",
+        //    Password = "test",
+        //    SubjectId = "registered|1231231",
+        //    Claims = new List<Claim>
+        //    {
+        //        new("CustomerId", "123"),
+        //        new("LocationId", "1"),
+        //    },
+        //};
 
         var port = PortFinder.GetRandomPort();
 
@@ -154,11 +154,11 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
+        this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
+            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
             .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -204,81 +204,81 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
         _servicebuilder.Start();
     }
 
-    private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
-    {
-        _identityServerBuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .ConfigureServices(services =>
-            {
-                services.AddLogging();
-                services.AddIdentityServer()
-                    .AddDeveloperSigningCredential()
-                    .AddInMemoryApiScopes(new List<ApiScope>
-                    {
-                        new(apiName, "test"),
-                        new("openid", "test"),
-                        new("offline_access", "test"),
-                        new("api.readOnly", "test"),
-                    })
-                    .AddInMemoryApiResources(new List<ApiResource>
-                    {
-                        new()
-                        {
-                            Name = apiName,
-                            Description = "My API",
-                            Enabled = true,
-                            DisplayName = "test",
-                            Scopes = new List<string>
-                            {
-                                "api",
-                                "openid",
-                                "offline_access",
-                            },
-                            ApiSecrets = new List<Secret>
-                            {
-                                new()
-                                {
-                                    Value = "secret".Sha256(),
-                                },
-                            },
-                            UserClaims = new List<string>
-                            {
-                                "CustomerId", "LocationId", "UserType", "UserId",
-                            },
-                        },
-                    })
-                    .AddInMemoryClients(new List<Client>
-                    {
-                        new()
-                        {
-                            ClientId = "client",
-                            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                            ClientSecrets = new List<Secret> {new("secret".Sha256())},
-                            AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
-                            AccessTokenType = tokenType,
-                            Enabled = true,
-                            RequireClientSecret = false,
-                        },
-                    })
-                    .AddTestUsers(new List<TestUser>
-                    {
-                        user,
-                    });
-            })
-            .Configure(app =>
-            {
-                app.UseIdentityServer();
-            })
-            .Build();
+    //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
+    //{
+    //    _identityServerBuilder = TestHostBuilder.Create()
+    //        .UseUrls(url)
+    //        .UseKestrel()
+    //        .UseContentRoot(Directory.GetCurrentDirectory())
+    //        .UseIISIntegration()
+    //        .UseUrls(url)
+    //        .ConfigureServices(services =>
+    //        {
+    //            services.AddLogging();
+    //            services.AddIdentityServer()
+    //                .AddDeveloperSigningCredential()
+    //                .AddInMemoryApiScopes(new List<ApiScope>
+    //                {
+    //                    new(apiName, "test"),
+    //                    new("openid", "test"),
+    //                    new("offline_access", "test"),
+    //                    new("api.readOnly", "test"),
+    //                })
+    //                .AddInMemoryApiResources(new List<ApiResource>
+    //                {
+    //                    new()
+    //                    {
+    //                        Name = apiName,
+    //                        Description = "My API",
+    //                        Enabled = true,
+    //                        DisplayName = "test",
+    //                        Scopes = new List<string>
+    //                        {
+    //                            "api",
+    //                            "openid",
+    //                            "offline_access",
+    //                        },
+    //                        ApiSecrets = new List<Secret>
+    //                        {
+    //                            new()
+    //                            {
+    //                                Value = "secret".Sha256(),
+    //                            },
+    //                        },
+    //                        UserClaims = new List<string>
+    //                        {
+    //                            "CustomerId", "LocationId", "UserType", "UserId",
+    //                        },
+    //                    },
+    //                })
+    //                .AddInMemoryClients(new List<Client>
+    //                {
+    //                    new()
+    //                    {
+    //                        ClientId = "client",
+    //                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+    //                        ClientSecrets = new List<Secret> {new("secret".Sha256())},
+    //                        AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
+    //                        AccessTokenType = tokenType,
+    //                        Enabled = true,
+    //                        RequireClientSecret = false,
+    //                    },
+    //                })
+    //                .AddTestUsers(new List<TestUser>
+    //                {
+    //                    user,
+    //                });
+    //        })
+    //        .Configure(app =>
+    //        {
+    //            app.UseIdentityServer();
+    //        })
+    //        .Build();
 
-        await _identityServerBuilder.StartAsync();
+    //    await _identityServerBuilder.StartAsync();
 
-        await Steps.VerifyIdentityServerStarted(url);
-    }
+    //    await Steps.VerifyIdentityServerStarted(url);
+    //}
 
     public void Dispose()
     {

@@ -1,5 +1,5 @@
 ﻿using CacheManager.Core;
-using IdentityServer4.AccessTokenValidation;
+//using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -494,33 +494,33 @@ public class Steps : BddfyConfig, IDisposable
 
     // END of Cookies helpers
 
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
-        string authenticationProviderKey)
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot();
-                s.AddAuthentication()
-                    .AddIdentityServerAuthentication(authenticationProviderKey, options);
-            })
-            .Configure(async app => await app.UseOcelot());
+    ///// <summary>
+    ///// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+    ///// </summary>
+    //public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
+    //    string authenticationProviderKey)
+    //{
+    //    _webHostBuilder = TestHostBuilder.Create()
+    //        .ConfigureAppConfiguration((hostingContext, config) =>
+    //        {
+    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+    //            var env = hostingContext.HostingEnvironment;
+    //            config.AddJsonFile("appsettings.json", true, false)
+    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+    //            config.AddJsonFile(_ocelotConfigFileName, true, false);
+    //            config.AddEnvironmentVariables();
+    //        })
+    //        .ConfigureServices(s =>
+    //        {
+    //            s.AddOcelot();
+    //            s.AddAuthentication()
+    //                .AddIdentityServerAuthentication(authenticationProviderKey, options);
+    //        })
+    //        .Configure(async app => await app.UseOcelot());
 
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
+    //    _ocelotServer = new TestServer(_webHostBuilder);
+    //    _ocelotClient = _ocelotServer.CreateClient();
+    //}
 
     public void ThenTheResponseHeaderIs(string key, string value)
     {
