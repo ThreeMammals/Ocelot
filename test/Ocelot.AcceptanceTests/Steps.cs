@@ -1,5 +1,5 @@
-﻿using CacheManager.Core;
-//using IdentityServer4.AccessTokenValidation;
+﻿//using IdentityServer4.AccessTokenValidation;
+using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -517,11 +517,9 @@ public class Steps : BddfyConfig, IDisposable
     //                .AddIdentityServerAuthentication(authenticationProviderKey, options);
     //        })
     //        .Configure(async app => await app.UseOcelot());
-
     //    _ocelotServer = new TestServer(_webHostBuilder);
     //    _ocelotClient = _ocelotServer.CreateClient();
     //}
-
     public void ThenTheResponseHeaderIs(string key, string value)
     {
         var header = _response.Headers.GetValues(key);

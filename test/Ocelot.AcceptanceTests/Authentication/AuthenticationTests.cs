@@ -7,8 +7,9 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
 {
-    private IWebHost _identityServerBuilder;
+    //private readonly IWebHost _identityServerBuilder;
     private readonly string _identityServerRootUrl;
+
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private const string IdentityServer4Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated";
 
@@ -16,6 +17,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
     {
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
+
         //_options = o =>
         //{
         //    o.Authority = _identityServerRootUrl;
@@ -37,6 +39,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
            .And(x => GivenThereIsAConfiguration(configuration))
+
            //.And(x => GivenOcelotIsRunning(_options, "Test"))
            .And(x => GivenThePostHasContent("postContent"))
            .When(x => WhenIPostUrlOnTheApiGateway("/"))
@@ -54,6 +57,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -72,6 +76,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenAuthToken(_identityServerRootUrl, "api2"))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -89,6 +94,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .And(x => GivenThePostHasContent("postContent"))
@@ -107,6 +113,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .And(x => GivenThePostHasContent("postContent"))
@@ -124,10 +131,9 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
     //    await _identityServerBuilder.StartAsync();
     //    await VerifyIdentityServerStarted(url);
     //}
-
     public override void Dispose()
     {
-        _identityServerBuilder?.Dispose();
+        //_identityServerBuilder?.Dispose();
         base.Dispose();
     }
 }

@@ -14,9 +14,10 @@ namespace Ocelot.UnitTests.Consul;
 /// <summary>
 /// TODO Move to integration tests.
 /// </summary>
-public sealed class ConsulTests : UnitTest, IDisposable
+[Collection(nameof(SequentialTests))]
+public class ConsulTests : UnitTest, IDisposable
 {
-    private readonly int _port;
+    private readonly int _consulPort;
     private readonly string _consulHost;
     private readonly string _consulScheme;
     private readonly List<ServiceEntry> _consulServiceEntries;
@@ -32,7 +33,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
 
     public ConsulTests()
     {
-        _port = PortFinder.GetRandomPort();
+        _consulPort = PortFinder.GetRandomPort();
         _consulHost = "localhost";
         _consulScheme = Uri.UriSchemeHttp;
         _consulServiceEntries = new List<ServiceEntry>();
@@ -47,11 +48,12 @@ public sealed class ConsulTests : UnitTest, IDisposable
     public void Dispose()
     {
         _fakeConsulBuilder?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void Arrange([CallerMemberName] string serviceName = null)
     {
-        _config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, serviceName, null);
+        _config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _consulPort, serviceName, null);
         var context = new DefaultHttpContext();
         context.Items.Add(nameof(ConsulRegistryConfiguration), _config);
         _contextAccessor.SetupGet(x => x.HttpContext).Returns(context);
@@ -83,7 +85,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
         var service1 = GivenService(PortFinder.GetRandomPort());
         _consulServiceEntries.Add(service1.ToServiceEntry());
         GivenThereIsAFakeConsulServiceDiscoveryProvider();
-        var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _port, nameof(Should_use_token), token);
+        var config = new ConsulRegistryConfiguration(_consulScheme, _consulHost, _consulPort, nameof(Should_use_token), token);
         _provider = new ConsulProvider(config, _factory.Object, _clientFactory, _serviceBuilder);
 
         // Act
@@ -186,7 +188,7 @@ public sealed class ConsulTests : UnitTest, IDisposable
 
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider([CallerMemberName] string serviceName = "test")
     {
-        string url = $"{_consulScheme}://{_consulHost}:{_port}";
+        string url = $"{_consulScheme}://{_consulHost}:{_consulPort}";
         _fakeConsulBuilder = TestHostBuilder.Create()
             .UseUrls(url)
             .UseKestrel()
@@ -211,6 +213,6 @@ public sealed class ConsulTests : UnitTest, IDisposable
                 });
             })
             .Build();
-        _fakeConsulBuilder.Start();
+        _fakeConsulBuilder.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
     }
 }

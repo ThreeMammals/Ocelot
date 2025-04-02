@@ -598,7 +598,6 @@ public sealed class AggregateTests : Steps, IDisposable
     //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
     //    }
     //}
-
     [Fact]
     [Trait("Bug", "2039")]
     public void Should_return_response_200_with_copied_body_sent_on_multiple_services()

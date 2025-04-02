@@ -11,9 +11,9 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public class AuthorizationTests : AuthenticationSteps, IDisposable
+public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
 {
-    private IWebHost _identityServerBuilder;
+    //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private readonly ServiceHandler _serviceHandler;
@@ -23,6 +23,7 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
         _serviceHandler = new ServiceHandler();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
+
         //_options = o =>
         //{
         //    o.Authority = _identityServerRootUrl;
@@ -85,6 +86,7 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -144,6 +146,7 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -187,6 +190,7 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
             .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -230,6 +234,7 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
             .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -287,11 +292,11 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
         //        },
         //    },
         //};
-
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -468,14 +473,14 @@ public class AuthorizationTests : AuthenticationSteps, IDisposable
 
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-
     private async Task GivenIHaveATokenForApiReadOnlyScope(string url)
         => await GivenAuthToken(url, "api.readOnly");
 
     public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _identityServerBuilder?.Dispose();
+
+        //_identityServerBuilder?.Dispose();
         base.Dispose();
     }
 }

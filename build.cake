@@ -1,4 +1,4 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=5.12.0 // 6.0.0-beta.7 supports .NET 8, 7, 6
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // .NET 8-9
 #tool dotnet:?package=coveralls.net&version=4.0.1
 #tool nuget:?package=ReportGenerator&version=5.2.4
 #addin nuget:?package=Newtonsoft.Json&version=13.0.3
@@ -14,8 +14,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 const string Release = "Release"; // task name, target, and Release config name
+const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
+static string NL = Environment.NewLine;
 
 var compileConfig = Argument("configuration", Release); // compile
 
@@ -50,31 +52,31 @@ var releaseNotes = new List<string>();
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
-bool IsTechnicalRelease = false;
+bool IsTechnicalRelease = true;
 
 var target = Argument("target", "Default");
 var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
-Information("\nTarget: " + target);
-Information("Build: " + compileConfig);
-Information("Solution: " + slnFile);
+Information($"{NL}Target: {target}");
+Information($"Build: {compileConfig}");
+Information($"Solution: {slnFile}");
 
 TaskTeardown(context => {
-	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
+	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}" + NL);
 });
 
 Task("Default")
 	.IsDependentOn("Build");
 
 Task("Build")
-	.IsDependentOn("RunTests");
+	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
 	.IsDependentOn("CreateReleaseNotes");
 
-Task("RunTests")
-	.IsDependentOn("RunUnitTests")
-	.IsDependentOn("RunAcceptanceTests")
-	.IsDependentOn("RunIntegrationTests");
+Task("Tests")
+	.IsDependentOn("UnitTests")
+	.IsDependentOn("IntegrationTests")
+	.IsDependentOn("AcceptanceTests");
 
 Task(Release)
 	.IsDependentOn("Build")
@@ -88,13 +90,14 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		Information("Branch: " + GetBranchName());
 		Information("Build: " + compileConfig);
 		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
 		};
-		if (target != Release)
+		if (target == PullRequest)
 		{
 			settings.Framework = LatestFramework; // build using .NET 9 SDK only
 		}
@@ -121,13 +124,20 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		var nugetVersion = versioning.NuGetVersion;
-		Information("SemVer version number: " + nugetVersion);
+		Information("#########################");
+		Information("# SemVer Information");
+		Information("#========================");
+		Information($"# {nameof(versioning.NuGetVersion)}: {versioning.NuGetVersion}");
+		Information($"# {nameof(versioning.BranchName)}: {versioning.BranchName}");
+		Information($"# {nameof(versioning.MajorMinorPatch)}: {versioning.MajorMinorPatch}");
+		Information($"# {nameof(versioning.SemVer)}: {versioning.SemVer}");
+		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
+		Information("#########################");
 
-		if (IsRunningOnCircleCI())
+		if (IsRunningInCICD())
 		{
 			Information("Persisting version number...");
-			PersistVersion(committedVersion, nugetVersion);
+			PersistVersion(committedVersion, versioning.SemVer);
 		}
 		else
 		{
@@ -139,17 +149,17 @@ Task("GitLogUniqContributors")
 	.Does(() =>
 	{
 		var command = "log --format=\"%aN|%aE\" ";
-		// command += IsRunningOnCircleCI() ? "| sort | uniq" :
+		// command += IsRunningInCICD() ? "| sort | uniq" :
 		// 	IsRunningInPowershell() ? "| Sort-Object -Unique" : "| sort | uniq";
 		List<string> output = GitHelper(command);
 		output.Sort();
 		List<string> contributors = output.Distinct().ToList();
 		contributors.Sort();
         Information($"Detected {contributors.Count} unique contributors:");
-        Information(string.Join(Environment.NewLine, contributors));
+        Information(string.Join(NL, contributors));
 		// TODO Search example in bash: curl -L -H "X-GitHub-Api-Version: 2022-11-28"   "https://api.github.com/search/users?q=Chris+Swinchatt"
-        Information(Environment.NewLine + "Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca");
-        AnsiConsole.Markup("Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca" + Environment.NewLine);
+        Information(NL + "Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca");
+        AnsiConsole.Markup("Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca" + NL);
 		// Powershell life hack: $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 		// https://stackoverflow.com/questions/40098771/changing-powershells-default-output-encoding-to-utf-8
 		// https://stackoverflow.com/questions/49476326/displaying-unicode-in-powershell/49481797#49481797
@@ -164,7 +174,7 @@ Task("CreateReleaseNotes")
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
         var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-        var releaseVersion = versioning.NuGetVersion;
+        var releaseVersion = versioning.SemVer;
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
@@ -209,7 +219,7 @@ Task("CreateReleaseNotes")
         {
             starring.Add(CreateStars(contributor.Commits, contributor.Author));
         }
-        Information(string.Join(Environment.NewLine, starring));
+        Information(string.Join(NL, starring));
 
         var commitsGrouping = summary
             .GroupBy(x => x.Commits)
@@ -223,7 +233,7 @@ Task("CreateReleaseNotes")
             byInsertions: (log, group, fGroup, insGroup) => CreateStars(group.Commits, insGroup.Contributors.First().Contributor),
             byDeletions: (log, group, fGroup, insGroup, contributor) => CreateStars(group.Commits, contributor.Contributor));
         Information("------==< New Starring >==------");
-        Information(string.Join(Environment.NewLine, starring));
+        Information(string.Join(NL, starring));
 
         // Honoring aka Top Contributors
         var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" }; // Ocelot Core team members should not be in Top 3 Chart
@@ -266,7 +276,7 @@ Task("CreateReleaseNotes")
                 return HonorForDeletions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
             });
         Information("---==< TOP Contributors >==---");
-        Information(string.Join(Environment.NewLine, topContributors));
+        Information(string.Join(NL, topContributors));
 
         // local helpers
         static string Place(int i) => ++i == 1 ? "1st" : i == 2 ? "2nd" : i == 3 ? "3rd" : $"{i}th";
@@ -436,129 +446,144 @@ private List<string> GitHelper(string command)
 private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
-
 	EnsureDirectoryExists(packagesDir);
 	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
-
 	var content = System.IO.File.ReadAllText(releaseNotesFile, Encoding.UTF8);
 	if (string.IsNullOrEmpty(content))
 	{
 		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
 	}
-
-	Information("Release notes are >>>\n{0}<<<", content);
-	//Information($"EXITED {nameof(WriteReleaseNotes)}");
+	Information("Release notes are >>>{0}<<<", NL + content);
 }
 
-Task("RunUnitTests")
+private List<string> GetTFMs()
+{
+	var tfms = AllFrameworks.Split(';').ToList();
+	if (target == PullRequest)
+    {
+        tfms.Clear();
+        tfms.Add(LatestFramework);
+    }
+	return tfms;
+}
+Task("UnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetTestSettings
+		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+        // Sequential processing as an emulation of Visual Studio Test Explorer
+		foreach (string tfm in GetTFMs())
 		{
-			Configuration = compileConfig,
-			ResultsDirectory = artifactsForUnitTestsDir,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-				.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
-				.Append("--verbosity:detailed")
-				.Append("--consoleLoggerParameters:ErrorsOnly")
-		};
-		if (target != Release)
-		{
-			settings.Framework = LatestFramework; // .NET 9 SDK only
+			var settings = new DotNetTestSettings
+			{
+				Configuration = compileConfig,
+				ResultsDirectory = artifactsForUnitTestsDir,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+					.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+					.Append("--verbosity:" + verbosity)
+					.Append("--consoleLoggerParameters:ErrorsOnly"),
+				Framework = tfm,
+			};
+			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			EnsureDirectoryExists(artifactsForUnitTestsDir);
+			DotNetTest(unitTestAssemblies, settings); // sequential testing
 		}
-		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
-		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
-		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetTest(unitTestAssemblies, settings);
 
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
 			.First()
 			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information(coverageSummaryFile);
 		Information(artifactsForUnitTestsDir);
-
 		GenerateReport(coverageSummaryFile);
 		
-		if (IsRunningOnCircleCI() && IsMainOrDevelop())
+		Information("##############################");
+		Information("# Coveralls & Code coverage");
+		Information("#=============================");
+		if (IsRunningInCICD() && IsMainOrDevelop())
 		{
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
 			{
-				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
+				Warning($"# Coveralls repo token not found. Set environment variable: {coverallsRepoToken} !!!");
 			}
-
-			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-			// CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-			// {
-			// 	RepoToken = repoToken
-			// });
-			Warning($@"Uploading is disabled due to the following reasons:
-			- App: /root/project/tools/csmacnz.Coveralls
-			- Framework: 'Microsoft.NETCore.App', version '6.0.0' (x64)
-			Upgrading csmacnz.Coveralls package to .NET 8-9 is required!!!
-			Repo: https://github.com/csmacnz/coveralls.net
-			Coveralls Language Integrations > .Net : https://docs.coveralls.io/dot-net");
+			else
+			{
+				Information($"# Uploading test coverage to {coverallsRepo}");
+				// CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+				// {
+				// 	RepoToken = repoToken
+				// });
+				Warning($@"# Uploading is disabled due to the following reasons:
+# - App: /root/project/tools/csmacnz.Coveralls
+# - Framework: 'Microsoft.NETCore.App', version '6.0.0' (x64)
+# Upgrading csmacnz.Coveralls package to .NET 8-9 is required!!!
+# Repo: https://github.com/csmacnz/coveralls.net
+# Coveralls Language Integrations > .Net : https://docs.coveralls.io/dot-net");
+			}
 		}
 		else
 		{
-			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
+			Information("# We are not running on the build server so we won't publish the coverage report to coveralls.io");
 		}
 
 		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
-
-		Information("Sequence Coverage: " + sequenceCoverage);
+		Information("# Sequence Coverage: " + sequenceCoverage);
 	
-		if(double.Parse(sequenceCoverage) < minCodeCoverage)
+		if (double.Parse(sequenceCoverage) < minCodeCoverage)
 		{
-			var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
-			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+			var whereToCheck = !IsRunningInCICD() ? coverallsRepo : artifactsForUnitTestsDir;
+			Warning($"# Code coverage fell below the threshold of {minCodeCoverage}%. You can find the code coverage report at {whereToCheck}");
 		};
+		Information("##############################");
 	});
 
-Task("RunAcceptanceTests")
+Task("AcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetTestSettings
+		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+        // Sequential processing as an emulation of Visual Studio Test Explorer
+		foreach (string tfm in GetTFMs())
 		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-		if (target != Release)
-		{
-			settings.Framework = LatestFramework; // .NET 9 SDK only
+			var settings = new DotNetTestSettings
+			{
+				Configuration = compileConfig,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+					.Append("--verbosity:" + verbosity),
+				Framework = tfm,
+			};
+			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
+			DotNetTest(acceptanceTestAssemblies, settings);
 		}
-		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
-		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
-		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-		DotNetTest(acceptanceTestAssemblies, settings);
 	});
 
-Task("RunIntegrationTests")
+Task("IntegrationTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetTestSettings
+		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+        // Sequential processing as an emulation of Visual Studio Test Explorer
+		foreach (string tfm in GetTFMs())
 		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-		if (target != Release)
-		{
-			settings.Framework = LatestFramework; // .NET 9 SDK only
+			var settings = new DotNetTestSettings
+			{
+				Configuration = compileConfig,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+					.Append("--verbosity:" + verbosity),
+				Framework = tfm,
+			};
+			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			EnsureDirectoryExists(artifactsForIntegrationTestsDir);
+			DotNetTest(integrationTestAssemblies, settings);
 		}
-		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
-		Information($"Settings {nameof(DotNetTestSettings.Framework)}: {frameworkInfo}");
-		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-		DotNetTest(integrationTestAssemblies, settings);
 	});
 
 Task("CreateArtifacts")
@@ -602,7 +627,7 @@ Task("PublishGitHubRelease")
 	.IsDependentOn("CreateArtifacts")
 	.Does(() => 
 	{
-		if (!IsRunningOnCircleCI()) return;
+		if (!IsRunningInCICD()) return;
 
 		dynamic release = CreateGitHubRelease();
 		var path = packagesDir.ToString() + @"/**/*";
@@ -619,9 +644,9 @@ Task("EnsureStableReleaseRequirements")
     {
 		Information("Check if stable release...");
 
-        if (!IsRunningOnCircleCI())
+        if (!IsRunningInCICD())
 		{
-           throw new Exception("Stable release should happen via circleci");
+           throw new Exception("Stable release should happen via CI/CD");
 		}
 
 		Information("Release is stable...");
@@ -636,7 +661,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			System.Threading.Thread.Sleep(5000);
 			EnsureDirectoryExists(packagesDir);
 
-			var releaseUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/" + versioning.NuGetVersion;
+			var releaseUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/" + versioning.SemVer;
 			var releaseInfo = await GetResourceAsync(releaseUrl);
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(releaseInfo)
 				.Value<string>("assets_url");
@@ -665,7 +690,7 @@ Task("PublishToNuget")
 			return;
 		}
 
-		if (IsRunningOnCircleCI())
+		if (IsRunningInCICD())
 		{
 			// stable releases
 			var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_3Mammals");
@@ -762,7 +787,7 @@ private void SetupGitHubClient(System.Net.Http.HttpClient client)
 
 private dynamic CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"main\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using (var client = new System.Net.Http.HttpClient())
@@ -816,7 +841,7 @@ private void CompleteGitHubRelease(dynamic release)
 {
 	int releaseId = release.id;
 	string url = release.url.ToString();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"main\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -846,7 +871,7 @@ private async Task<string> GetResourceAsync(string url)
 		using var response = await client.GetAsync(url);
 		response.EnsureSuccessStatusCode();
 		var content = await response.Content.ReadAsStringAsync();
-		Information("Response is >>>" + Environment.NewLine + content + Environment.NewLine + "<<<");
+		Information("Response is >>>" + NL + content + NL + "<<<");
 		return content;
 	}
 	catch(Exception exception)
@@ -856,14 +881,34 @@ private async Task<string> GetResourceAsync(string url)
 	}
 }
 
+private bool IsRunningInCICD()
+	=> IsRunningOnCircleCI() || IsRunningInGitHubActions();
 private bool IsRunningOnCircleCI()
-{
-    return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
-}
+	=> !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
+private bool IsRunningInGitHubActions()
+	=> Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
 private bool IsMainOrDevelop()
 {
-	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
-
-    return env == "main" || env == "develop";
+	var br = GetBranchName().ToLower();
+    return br == "main" || br == "develop";
+}
+private string GetBranchName()
+{
+	if (IsRunningOnCircleCI())
+	{
+		return Environment.GetEnvironmentVariable("CIRCLE_BRANCH");
+	}
+	else if (IsRunningInGitHubActions())
+	{
+		return GetGitHubBranchName();
+	}
+    return versioning.BranchName;
+}
+private string GetGitHubBranchName()
+{
+	string githubRef = Environment.GetEnvironmentVariable("GITHUB_REF");
+    return (!string.IsNullOrEmpty(githubRef) && githubRef.StartsWith("refs/heads/"))
+        ? githubRef.Substring("refs/heads/".Length)
+        : "Unknown Branch";
 }

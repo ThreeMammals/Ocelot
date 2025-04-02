@@ -7,9 +7,10 @@ namespace Ocelot.Testing;
 public static class PortFinder
 {
     private const int EndPortRange = 45000;
-    private static int CurrentPort = 20000;
-    private static readonly object LockObj = new();
-    private static readonly ConcurrentBag<int> UsedPorts = new();
+    private static volatile int CurrentPort = 20000;
+    private static readonly object SyncRoot = new();
+
+    //private static readonly ConcurrentBag<int> UsedPorts = new();
 
     /// <summary>
     /// Gets a pseudo-random port from the range [<see cref="CurrentPort"/>, <see cref="EndPortRange"/>] for one testing scenario.
@@ -18,10 +19,11 @@ public static class PortFinder
     /// <exception cref="ExceedingPortRangeException">Critical situation where available ports range has been exceeded.</exception>
     public static int GetRandomPort()
     {
-        lock (LockObj)
+        lock (SyncRoot)
         {
             ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
-            return UsePort(CurrentPort++);
+            while (!TryUsePort(CurrentPort++));
+            return CurrentPort++;
         }
     }
 
@@ -34,27 +36,33 @@ public static class PortFinder
     public static int[] GetPorts(int count)
     {
         var ports = new int[count];
-        lock (LockObj)
+        for (int i = 0; i < count; i++)
         {
-            for (int i = 0; i < count; i++, CurrentPort++)
-            {
-                ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
-                ports[i] = UsePort(CurrentPort);
-            }
+            ports[i] = GetRandomPort();
         }
         return ports;
     }
 
-    private static int UsePort(int port)
+    private static bool TryUsePort(int port)
     {
-        UsedPorts.Add(port); // TODO Review or remove, now useless
-
-        var ipe = new IPEndPoint(IPAddress.Loopback, port);
-
-        using var socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-        socket.Bind(ipe);
-        socket.Close();
-        return port;
+        //UsedPorts.Add(port); // TODO Review or remove, now useless
+        Socket? socket = null;
+        try
+        {
+            var ipe = new IPEndPoint(IPAddress.Loopback, port);
+            socket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            socket.Bind(ipe);
+            socket.Close();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            socket?.Dispose();
+        }
     }
 }
 

@@ -10,11 +10,12 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ClaimsToQueryStringForwardingTests : IDisposable
+public sealed class ClaimsToQueryStringForwardingTests : IDisposable
 {
-    private IWebHost _servicebuilder;
-    private IWebHost _identityServerBuilder;
     private readonly Steps _steps;
+    private IWebHost _servicebuilder;
+
+    //private IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private string _downstreamQueryString;
@@ -24,6 +25,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
         _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
+
         //_options = o =>
         //{
         //    o.Authority = _identityServerRootUrl;
@@ -48,9 +50,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
         //        new("LocationId", "1"),
         //    },
         //};
-
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -92,6 +92,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
+
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -114,9 +115,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
         //        new("LocationId", "1"),
         //    },
         //};
-
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -158,6 +157,7 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
+
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
@@ -187,11 +187,8 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
                     _downstreamQueryString = context.Request.QueryString.Value;
 
                     context.Request.Query.TryGetValue("CustomerId", out var customerId);
-
                     context.Request.Query.TryGetValue("LocationId", out var locationId);
-
                     context.Request.Query.TryGetValue("UserType", out var userType);
-
                     context.Request.Query.TryGetValue("UserId", out var userId);
 
                     var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
@@ -274,16 +271,14 @@ public class ClaimsToQueryStringForwardingTests : IDisposable
     //            app.UseIdentityServer();
     //        })
     //        .Build();
-
     //    await _identityServerBuilder.StartAsync();
-
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-
     public void Dispose()
     {
         _servicebuilder?.Dispose();
         _steps.Dispose();
-        _identityServerBuilder?.Dispose();
+
+        //_identityServerBuilder?.Dispose();
     }
 }

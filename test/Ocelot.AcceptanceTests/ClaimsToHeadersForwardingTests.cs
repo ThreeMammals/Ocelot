@@ -12,13 +12,13 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ClaimsToHeadersForwardingTests : IDisposable
+public sealed class ClaimsToHeadersForwardingTests : IDisposable
 {
-    private IWebHost _identityServerBuilder;
-    private readonly Steps _steps;
+    //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private readonly ServiceHandler _serviceHandler;
+    private readonly Steps _steps;
 
     public ClaimsToHeadersForwardingTests()
     {
@@ -26,6 +26,7 @@ public class ClaimsToHeadersForwardingTests : IDisposable
         _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
+
         //_options = o =>
         //{
         //    o.Authority = _identityServerRootUrl;
@@ -50,9 +51,7 @@ public class ClaimsToHeadersForwardingTests : IDisposable
         //        new("LocationId", "1"),
         //    },
         //};
-
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -94,6 +93,7 @@ public class ClaimsToHeadersForwardingTests : IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
+
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -187,16 +187,14 @@ public class ClaimsToHeadersForwardingTests : IDisposable
     //            app.UseIdentityServer();
     //        })
     //        .Build();
-
     //    await _identityServerBuilder.StartAsync();
-
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-
     public void Dispose()
     {
         _serviceHandler?.Dispose();
         _steps.Dispose();
-        _identityServerBuilder?.Dispose();
+
+        //_identityServerBuilder?.Dispose();
     }
 }

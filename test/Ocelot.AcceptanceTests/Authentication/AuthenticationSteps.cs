@@ -116,7 +116,6 @@ public class AuthenticationSteps : Steps, IDisposable
     //        });
     //    return builder;
     //}
-
     internal Task<BearerToken> GivenAuthToken(string url, string apiScope)
     {
         var form = GivenDefaultAuthTokenForm();

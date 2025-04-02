@@ -83,7 +83,6 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //    VerifyIdentityServerStarted(url).GetAwaiter().GetResult();
     //    return this;
     //}
-
     private async Task GivenIHaveTokenWithScope(int index, string scope)
     {
         string url = _identityServerUrls[index];

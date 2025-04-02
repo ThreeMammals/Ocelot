@@ -12,8 +12,9 @@ namespace Ocelot.AcceptanceTests;
 public class ClaimsToDownstreamPathTests : IDisposable
 {
     private IWebHost _servicebuilder;
-    private IWebHost _identityServerBuilder;
     private readonly Steps _steps;
+
+    //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private string _downstreamFinalPath;
@@ -23,6 +24,7 @@ public class ClaimsToDownstreamPathTests : IDisposable
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
         _steps = new Steps();
+
         //_options = o =>
         //{
         //    o.Authority = _identityServerRootUrl;
@@ -42,7 +44,6 @@ public class ClaimsToDownstreamPathTests : IDisposable
         //    Password = "test",
         //    SubjectId = "registered|1231231",
         //};
-
         var port = PortFinder.GetRandomPort();
 
         var configuration = new FileConfiguration
@@ -83,6 +84,7 @@ public class ClaimsToDownstreamPathTests : IDisposable
             .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
             .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
             .And(x => _steps.GivenThereIsAConfiguration(configuration))
+
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
             .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
             .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
@@ -198,11 +200,11 @@ public class ClaimsToDownstreamPathTests : IDisposable
 
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-
     public void Dispose()
     {
         _servicebuilder?.Dispose();
         _steps.Dispose();
-        _identityServerBuilder?.Dispose();
+
+        //_identityServerBuilder?.Dispose();
     }
 }

@@ -1,5 +1,6 @@
 using CacheManager.Core;
 using Consul;
+
 //using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

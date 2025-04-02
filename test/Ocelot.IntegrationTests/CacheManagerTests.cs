@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+
 //using Ocelot.Administration;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
@@ -132,17 +133,15 @@ public class CacheManagerTests : IDisposable
                 };
                 x.AddMvc(option => option.EnableEndpointRouting = false);
                 x.AddOcelot()
-                .AddCacheManager(settings);
-                //.AddAdministration("/administration", "secret");
+                .AddCacheManager(settings);//.AddAdministration("/administration", "secret");
             })
             .ConfigureWebHost(webBuilder =>
-        {
-            webBuilder.UseUrls(_ocelotBaseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .Configure(async app => await app.UseOcelot());
-        });
-
+            {
+                webBuilder.UseUrls(_ocelotBaseUrl)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .Configure(async app => await app.UseOcelot());
+            });
         _builder = _webHostBuilder.Build();
         _builder.Start();
     }

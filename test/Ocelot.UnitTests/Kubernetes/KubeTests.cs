@@ -16,6 +16,7 @@ namespace Ocelot.UnitTests.Kubernetes;
 /// Contains integration tests.
 /// Move to integration testing, and add at least one "happy path" unit test.
 /// </summary>
+[Collection(nameof(SequentialTests))]
 public class KubeTests : FileUnitTest
 {
     static JsonSerializerSettings JsonSerializerSettings => KubeClient.ResourceClients.KubeResourceClient.SerializerSettings;
@@ -242,13 +243,11 @@ public class KubeTests : FileUnitTest
                         Reason = responseStatusCode.ToString(),
                         Code = (int)responseStatusCode,
                         Status = StatusV1.FailureStatus,
-
                     }, JsonSerializerSettings);
                 }
 
                 context.Response.StatusCode = (int)responseStatusCode;
                 context.Response.Headers.Append("Content-Type", "application/json");
-
                 return context.Response.WriteAsync(responseBody);
             }
 
@@ -263,7 +262,7 @@ public class KubeTests : FileUnitTest
             .UseUrls(url)
             .Configure(app => app.Run(ProcessKubernetesRequest))
             .Build();
-        host.Start();
+        host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
         return host;
     }
 

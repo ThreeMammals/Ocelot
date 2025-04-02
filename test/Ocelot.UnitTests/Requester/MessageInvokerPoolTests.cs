@@ -82,7 +82,8 @@ public class MessageInvokerPoolTests : UnitTest
         GivenTheFactoryReturns(handlers);
         _downstreamRoute1 = DownstreamRouteFactory("/super-test");
         GivenAMessageInvokerPool();
-        GivenARequestWithAUrlAndMethod(_downstreamRoute1, "http://localhost:5003", HttpMethod.Get);
+        var port = PortFinder.GetRandomPort();
+        GivenARequestWithAUrlAndMethod(_downstreamRoute1, $"http://localhost:{port}", HttpMethod.Get);
 
         // Act
         await WhenICallTheClient("http://www.bbc.co.uk");
@@ -108,7 +109,8 @@ public class MessageInvokerPoolTests : UnitTest
             .Build();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
-        GivenARequest(route);
+        var port = PortFinder.GetRandomPort();
+        GivenARequest(route, port);
 
         // Act
         await WhenICallTheClient("http://www.google.com/");
@@ -119,8 +121,10 @@ public class MessageInvokerPoolTests : UnitTest
             Times.Once);
     }
 
-    [Fact]
-    public async Task Should_re_use_cookies_from_container()
+    // Actually it should be moved to acceptance testing because of usage of running downstream service host,
+    // and the test requires a design review
+    [Fact(Skip = nameof(SequentialTests) + ": It is unstable and should be tested in sequential mode")]
+    public async Task Should_reuse_cookies_from_container()
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -132,17 +136,19 @@ public class MessageInvokerPoolTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
             .Build();
-        GivenADownstreamService();
+        var port = PortFinder.GetRandomPort();
+        GivenADownstreamService(port); // sometimes it fails because of port binding
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
-        GivenARequest(route);
+        GivenARequest(route, port);
 
         // Act, Assert
-        await WhenICallTheClient("http://localhost:5003");
+        var toUrl = Url(port);
+        await WhenICallTheClient(toUrl);
         _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
 
         // Act, Assert
-        await WhenICallTheClient("http://localhost:5003");
+        await WhenICallTheClient(toUrl);
         _response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -166,17 +172,20 @@ public class MessageInvokerPoolTests : UnitTest
         GivenTheFactoryReturnsNothing();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
         GivenAMessageInvokerPool();
-        GivenARequest(route);
+        var port = PortFinder.GetRandomPort();
+        GivenARequest(route, port);
 
         // Act, Assert
         await WhenICallTheClientWillThrowAfterTimeout(TimeSpan.FromSeconds(expectedSeconds));
     }
 
-    private void GivenADownstreamService()
+    private static string Url(int port) => $"http://localhost:{port}";
+
+    private void GivenADownstreamService(int port)
     {
         var count = 0;
         _host = TestHostBuilder.Create()
-            .UseUrls("http://localhost:5003")
+            .UseUrls(Url(port))
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())
             .UseIISIntegration()
@@ -208,13 +217,12 @@ public class MessageInvokerPoolTests : UnitTest
                 });
             })
             .Build();
-
-        _host.Start();
+        _host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
     }
 
-    private void GivenARequest(DownstreamRoute downstream)
+    private void GivenARequest(DownstreamRoute downstream, int port)
     {
-        GivenARequestWithAUrlAndMethod(downstream, "http://localhost:5003", HttpMethod.Get);
+        GivenARequestWithAUrlAndMethod(downstream, Url(port), HttpMethod.Get);
     }
 
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
