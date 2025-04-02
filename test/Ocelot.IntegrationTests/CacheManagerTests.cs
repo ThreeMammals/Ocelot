@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using Ocelot.Administration;
+//using Ocelot.Administration;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -32,7 +32,7 @@ public class CacheManagerTests : IDisposable
         _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
     }
 
-    [Fact]
+    [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
     public async Task Should_clear_region()
     {
         var initialConfiguration = new FileConfiguration
@@ -44,11 +44,7 @@ public class CacheManagerTests : IDisposable
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 80,
-                        },
+                        new("localhost", 80),
                     },
                     DownstreamScheme = "https",
                     DownstreamPathTemplate = "/",
@@ -63,11 +59,7 @@ public class CacheManagerTests : IDisposable
                 {
                     DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 80,
-                        },
+                        new("localhost", 80),
                     },
                     DownstreamScheme = "https",
                     DownstreamPathTemplate = "/",
@@ -80,7 +72,6 @@ public class CacheManagerTests : IDisposable
                 },
             },
         };
-
         var regionToClear = "gettest";
 
         GivenThereIsAConfiguration(initialConfiguration);
@@ -141,8 +132,8 @@ public class CacheManagerTests : IDisposable
                 };
                 x.AddMvc(option => option.EnableEndpointRouting = false);
                 x.AddOcelot()
-                .AddCacheManager(settings)
-                .AddAdministration("/administration", "secret");
+                .AddCacheManager(settings);
+                //.AddAdministration("/administration", "secret");
             })
             .ConfigureWebHost(webBuilder =>
         {

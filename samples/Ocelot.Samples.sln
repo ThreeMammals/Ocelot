@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot", "..\src\Ocelot\Ocelot.csproj", "{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.AdministrationApi", "Administration\Ocelot.Samples.AdministrationApi.csproj", "{238467FE-19EE-4102-9AF7-51EB2C6F0354}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.Eureka.ApiGateway", "Eureka\ApiGateway\Ocelot.Samples.Eureka.ApiGateway.csproj", "{EA0E146F-2C2B-4176-B6EC-F62A587F5077}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Samples.Eureka.DownstreamService", "Eureka\DownstreamService\Ocelot.Samples.Eureka.DownstreamService.csproj", "{B7317B64-2208-472D-90AC-F42B61956B79}"
@@ -45,10 +43,6 @@ Global
 		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B37314F1-C1B5-4D38-8000-E6E96C0CBD30}.Release|Any CPU.Build.0 = Release|Any CPU
-		{238467FE-19EE-4102-9AF7-51EB2C6F0354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{238467FE-19EE-4102-9AF7-51EB2C6F0354}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{238467FE-19EE-4102-9AF7-51EB2C6F0354}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{238467FE-19EE-4102-9AF7-51EB2C6F0354}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EA0E146F-2C2B-4176-B6EC-F62A587F5077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EA0E146F-2C2B-4176-B6EC-F62A587F5077}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA0E146F-2C2B-4176-B6EC-F62A587F5077}.Release|Any CPU.ActiveCfg = Release|Any CPU

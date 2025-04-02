@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Administration\Ocelot.Administration.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Cache.CacheManager\Ocelot.Cache.CacheManager.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
@@ -52,8 +51,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Shouldly" Version="4.2.1" />
-    <PackageReference Include="IdentityServer4" Version="4.1.2" />
-    <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="Microsoft.Data.SQLite" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.3" />

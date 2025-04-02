@@ -1,6 +1,6 @@
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
+//using IdentityServer4.AccessTokenValidation;
+//using IdentityServer4.Extensions;
+//using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -516,88 +516,88 @@ public sealed class AggregateTests : Steps, IDisposable
             .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "1396")]
-    public void Should_return_response_200_with_user_forwarding()
-    {
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var port3 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/laura", "Laura");
-        var route2 = GivenRoute(port2, "/tom", "Tom");
-        var configuration = GivenConfiguration(route1, route2);
-        var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
-        void configureOptions(IdentityServerAuthenticationOptions o)
-        {
-            o.Authority = identityServerUrl;
-            o.ApiName = "api";
-            o.RequireHttpsMetadata = false;
-            o.SupportedTokens = SupportedTokens.Both;
-            o.ApiSecret = "secret";
-            o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-        }
-        Action<IServiceCollection> configureServices = s =>
-        {
-            s.AddOcelot();
-            s.AddMvcCore(mvc =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .RequireClaim("scope", "api")
-                    .Build();
-                mvc.Filters.Add(new AuthorizeFilter(policy));
-            });
-            s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(configureOptions);
-        };
-        var count = 0;
-        var actualContexts = new HttpContext[2];
-        Action<IApplicationBuilder> configureApp = async (app) =>
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreErrorResponderMiddleware = async (context, next) =>
-                {
-                    var auth = await context.AuthenticateAsync();
-                    context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
-                        ? auth.Principal : null;
-                    await next.Invoke();
-                },
-                AuthorizationMiddleware = (context, next) =>
-                {
-                    actualContexts[count++] = context;
-                    return next.Invoke();
-                },
-            };
-            await app.UseOcelot(configuration);
-        };
-        using (var auth = new AuthenticationTests())
-        {
-            this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
-                .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-                .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => auth.GivenIHaveAToken(identityServerUrl))
-                .And(x => auth.GivenThereIsAConfiguration(configuration))
-                .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
-                .And(x => auth.GivenIHaveAddedATokenToMyRequest())
-                .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-                .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
-                .BDDfy();
-        }
+    //[Fact]
+    //[Trait("Bug", "1396")]
+    //public void Should_return_response_200_with_user_forwarding()
+    //{
+    //    var port1 = PortFinder.GetRandomPort();
+    //    var port2 = PortFinder.GetRandomPort();
+    //    var port3 = PortFinder.GetRandomPort();
+    //    var route1 = GivenRoute(port1, "/laura", "Laura");
+    //    var route2 = GivenRoute(port2, "/tom", "Tom");
+    //    var configuration = GivenConfiguration(route1, route2);
+    //    var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
+    //    void configureOptions(IdentityServerAuthenticationOptions o)
+    //    {
+    //        o.Authority = identityServerUrl;
+    //        o.ApiName = "api";
+    //        o.RequireHttpsMetadata = false;
+    //        o.SupportedTokens = SupportedTokens.Both;
+    //        o.ApiSecret = "secret";
+    //        o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+    //    }
+    //    Action<IServiceCollection> configureServices = s =>
+    //    {
+    //        s.AddOcelot();
+    //        s.AddMvcCore(mvc =>
+    //        {
+    //            var policy = new AuthorizationPolicyBuilder()
+    //                .RequireAuthenticatedUser()
+    //                .RequireClaim("scope", "api")
+    //                .Build();
+    //            mvc.Filters.Add(new AuthorizeFilter(policy));
+    //        });
+    //        s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+    //            .AddIdentityServerAuthentication(configureOptions);
+    //    };
+    //    var count = 0;
+    //    var actualContexts = new HttpContext[2];
+    //    Action<IApplicationBuilder> configureApp = async (app) =>
+    //    {
+    //        var configuration = new OcelotPipelineConfiguration
+    //        {
+    //            PreErrorResponderMiddleware = async (context, next) =>
+    //            {
+    //                var auth = await context.AuthenticateAsync();
+    //                context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
+    //                    ? auth.Principal : null;
+    //                await next.Invoke();
+    //            },
+    //            AuthorizationMiddleware = (context, next) =>
+    //            {
+    //                actualContexts[count++] = context;
+    //                return next.Invoke();
+    //            },
+    //        };
+    //        await app.UseOcelot(configuration);
+    //    };
+    //    using (var auth = new AuthenticationTests())
+    //    {
+    //        this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
+    //            .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+    //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+    //            .And(x => auth.GivenIHaveAToken(identityServerUrl))
+    //            .And(x => auth.GivenThereIsAConfiguration(configuration))
+    //            .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
+    //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
+    //            .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
+    //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+    //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
+    //            .BDDfy();
+    //    }
 
-        // Assert
-        for (var i = 0; i < actualContexts.Length; i++)
-        {
-            var ctx = actualContexts[i].ShouldNotBeNull();
-            ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
-            var user = ctx.User.ShouldNotBeNull();
-            user.IsAuthenticated().ShouldBeTrue();
-            user.Claims.Count().ShouldBeGreaterThan(1);
-            user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
-        }
-    }
+    //    // Assert
+    //    for (var i = 0; i < actualContexts.Length; i++)
+    //    {
+    //        var ctx = actualContexts[i].ShouldNotBeNull();
+    //        ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
+    //        var user = ctx.User.ShouldNotBeNull();
+    //        user.IsAuthenticated().ShouldBeTrue();
+    //        user.Claims.Count().ShouldBeGreaterThan(1);
+    //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
+    //    }
+    //}
 
     [Fact]
     [Trait("Bug", "2039")]
