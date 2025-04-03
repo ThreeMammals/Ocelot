@@ -27,10 +27,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    # - name: Setup .NET 9
-    #   uses: actions/setup-dotnet@v3
-    #   with:
-    #     dotnet-version: 9.0.x
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 9.0.x
     - name: Branch Name
       run: echo "Branch name is ${{ github.ref_name }}"
     - name: Checkout

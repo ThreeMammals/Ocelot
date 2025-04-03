@@ -893,20 +893,11 @@ private bool IsMainOrDevelop()
 }
 private string GetBranchName()
 {
-	if (IsRunningOnCircleCI())
-	{
-		return Environment.GetEnvironmentVariable("CIRCLE_BRANCH");
-	}
-	else if (IsRunningInGitHubActions())
-	{
-		return GetGitHubBranchName();
-	}
-    return versioning.BranchName;
+    return versioning?.BranchName ?? GetGitBranch();
 }
-private string GetGitHubBranchName()
+private string GetGitBranch()
 {
-	string githubRef = Environment.GetEnvironmentVariable("GITHUB_REF");
-    return (!string.IsNullOrEmpty(githubRef) && githubRef.StartsWith("refs/heads/"))
-        ? githubRef.Substring("refs/heads/".Length)
-        : "Unknown Branch";
+	var lines = GitHelper("branch --show-current");
+	var branch = string.Join(string.Empty, lines);
+	return branch ?? "Unknown Branch";
 }
