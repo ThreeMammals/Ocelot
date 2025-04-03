@@ -64,11 +64,9 @@ TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}" + NL);
 });
 
-Task("Default")
-	.IsDependentOn("Build");
-
-Task("Build")
-	.IsDependentOn("Tests");
+Task("Default").IsDependentOn("Build");
+Task("Build").IsDependentOn("Tests");
+Task(PullRequest).IsDependentOn("Tests");
 
 Task("ReleaseNotes")
 	.IsDependentOn("CreateReleaseNotes");
@@ -724,9 +722,9 @@ private GitVersion GetNuGetVersionForCommit()
 {
     GitVersion(new GitVersionSettings{
         UpdateAssemblyInfo = false,
-        OutputType = GitVersionOutput.BuildServer
+        OutputType = GitVersionOutput.BuildServer,
+		Verbosity = IsRunningInCICD() ? GitVersionVerbosity.Minimal : GitVersionVerbosity.Normal,
     });
-
     return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 }
 
@@ -895,20 +893,11 @@ private bool IsMainOrDevelop()
 }
 private string GetBranchName()
 {
-	if (IsRunningOnCircleCI())
-	{
-		return Environment.GetEnvironmentVariable("CIRCLE_BRANCH");
-	}
-	else if (IsRunningInGitHubActions())
-	{
-		return GetGitHubBranchName();
-	}
-    return versioning.BranchName;
+    return versioning?.BranchName ?? GetGitBranch();
 }
-private string GetGitHubBranchName()
+private string GetGitBranch()
 {
-	string githubRef = Environment.GetEnvironmentVariable("GITHUB_REF");
-    return (!string.IsNullOrEmpty(githubRef) && githubRef.StartsWith("refs/heads/"))
-        ? githubRef.Substring("refs/heads/".Length)
-        : "Unknown Branch";
+	var lines = GitHelper("branch --show-current");
+	var branch = string.Join(string.Empty, lines);
+	return branch ?? "Unknown Branch";
 }
