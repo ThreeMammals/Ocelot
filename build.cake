@@ -723,7 +723,7 @@ private GitVersion GetNuGetVersionForCommit()
     GitVersion(new GitVersionSettings{
         UpdateAssemblyInfo = false,
         OutputType = GitVersionOutput.BuildServer,
-		Verbosity = GitVersionVerbosity.Normal,
+		Verbosity = IsRunningInCICD() ? GitVersionVerbosity.Minimal : GitVersionVerbosity.Normal,
     });
     return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 }
