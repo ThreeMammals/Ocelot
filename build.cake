@@ -722,9 +722,9 @@ private GitVersion GetNuGetVersionForCommit()
 {
     GitVersion(new GitVersionSettings{
         UpdateAssemblyInfo = false,
-        OutputType = GitVersionOutput.BuildServer
+        OutputType = GitVersionOutput.BuildServer,
+		Verbosity = GitVersionVerbosity.Normal,
     });
-
     return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 }
 
