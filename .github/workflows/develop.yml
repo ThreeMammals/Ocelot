@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         dotnet-version: [ '8.0', '9.0' ]
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -58,23 +57,23 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: .NET Version 
-        run: dotnet --version
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0.x
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 9.0.x
-      - name: Branch Name
-        run: echo "Branch name is ${{ github.ref_name }}"
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Cake Build
-        uses: cake-build/cake-action@v3
-        with:
-          target: Build
+    - name: .NET Version 
+      run: dotnet --version
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 9.0.x
+    - name: Branch Name
+      run: echo "Branch name is ${{ github.ref_name }}"
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Cake Build
+      uses: cake-build/cake-action@v3
+      with:
+        target: Build

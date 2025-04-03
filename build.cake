@@ -64,11 +64,9 @@ TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}" + NL);
 });
 
-Task("Default")
-	.IsDependentOn("Build");
-
-Task("Build")
-	.IsDependentOn("Tests");
+Task("Default").IsDependentOn("Build");
+Task("Build").IsDependentOn("Tests");
+Task(PullRequest).IsDependentOn("Tests");
 
 Task("ReleaseNotes")
 	.IsDependentOn("CreateReleaseNotes");

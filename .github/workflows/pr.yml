@@ -23,3 +23,21 @@ jobs:
       run: dotnet test --no-restore --no-build --verbosity normal --framework net9.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity normal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+  build-cake:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    # - name: Setup .NET 9
+    #   uses: actions/setup-dotnet@v3
+    #   with:
+    #     dotnet-version: 9.0.x
+    - name: Branch Name
+      run: echo "Branch name is ${{ github.ref_name }}"
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Cake Build
+      uses: cake-build/cake-action@v3
+      with:
+        target: PullRequest
