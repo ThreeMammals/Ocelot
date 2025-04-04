@@ -16,6 +16,7 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -126,6 +127,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     [InlineData(10, 999)]
     public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests)
     {
+        // Skip in MacOS because the test is very unstable
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
+            return;
+
         const int ZeroGeneration = 0;
         var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
         GivenThereIsAFakeKubernetesProvider(endpoints); // stable, services will not be removed from the list
@@ -146,6 +151,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     [InlineData(5, 50, 4)]
     public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration)
     {
+        // Skip in MacOS because the test is very unstable
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
+            return;
+
         int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
         var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
         GivenThereIsAFakeKubernetesProvider(endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list

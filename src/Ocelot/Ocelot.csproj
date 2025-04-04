@@ -7,6 +7,7 @@
     <Description>Ocelot is an API gateway based on .NET stack.</Description>
     <AssemblyTitle>Ocelot</AssemblyTitle>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <Copyright>Three Mammals</Copyright>
     <AssemblyName>Ocelot</AssemblyName>
     <PackageId>Ocelot</PackageId>
     <PackageTags>API Gateway;.NET core</PackageTags>

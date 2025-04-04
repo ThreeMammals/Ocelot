@@ -71,7 +71,7 @@ public class MetadataResponder : HttpContextResponder
     private static void AddMetadataHeader(HttpContext context, IDictionary<string, string> metadata)
     {
         var node = JsonSerializer.SerializeToNode(metadata);
-        var header = node?.ToJsonString(JsonSerializerOptions.Web) ?? string.Empty;
+        var header = node?.ToJsonString(JsonSerializerOptions.Default/*Web*/) ?? string.Empty;
         context.Response.Headers.Append("OC-Route-Metadata", new(header));
     }
 
@@ -132,7 +132,7 @@ public class MetadataResponder : HttpContextResponder
     {
         // We will not use original downstrean encoding, so defaults always to UTF8 for upstream
         var encoding = Encoding.UTF8; // DetectEncoding(content);
-        var serialized = json.ToJsonString(JsonSerializerOptions.Web); // will not require compression
+        var serialized = json.ToJsonString(JsonSerializerOptions.Default/*Web*/); // will not require compression
         var buffer = encoding.GetBytes(serialized);
         to.ContentLength = buffer.Length; // don't use chunked
 

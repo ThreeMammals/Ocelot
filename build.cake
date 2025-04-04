@@ -1,9 +1,9 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // .NET 8-9
-#tool dotnet:?package=coveralls.net&version=4.0.1
-#tool nuget:?package=ReportGenerator&version=5.2.4
-#addin nuget:?package=Newtonsoft.Json&version=13.0.3
-#addin nuget:?package=System.Text.Encodings.Web&version=8.0.0
-#addin nuget:?package=Cake.Coveralls&version=4.0.0
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // released on 1.04.2025 with TFMs net8.0 net9.0
+#tool dotnet:?package=coveralls.net&version=4.0.1 // Outdated! released on 07.08.22 with TFM net6.0
+#tool nuget:?package=ReportGenerator&version=5.4.5 // released on 23.03.2025 with TFM netstandard2.0
+#addin nuget:?package=Newtonsoft.Json&version=13.0.3 // Switch to a MS lib! Outdated! released on 08.03.23 with TFMs net6.0 netstandard2.0
+#addin nuget:?package=System.Text.Encodings.Web&version=9.0.3 // released on 11.03.2025 with TFMs net8.0 net9.0 netstandard2.0
+#addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
 
 #r "Spectre.Console"
 using Spectre.Console
@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+const bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
 const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
 const string AllFrameworks = "net8.0;net9.0";
@@ -20,9 +21,7 @@ const string LatestFramework = "net9.0";
 static string NL = Environment.NewLine;
 
 var compileConfig = Argument("configuration", Release); // compile
-
-// build artifacts
-var artifactsDir = Directory("artifacts");
+var artifactsDir = Directory("artifacts"); // build artifacts
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
@@ -52,7 +51,6 @@ var releaseNotes = new List<string>();
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
-bool IsTechnicalRelease = true;
 
 var target = Argument("target", "Default");
 var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
@@ -64,9 +62,12 @@ TaskTeardown(context => {
 	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}" + NL);
 });
 
-Task("Default").IsDependentOn("Build");
-Task("Build").IsDependentOn("Tests");
-Task(PullRequest).IsDependentOn("Tests");
+Task("Default")
+	.IsDependentOn("Build");
+Task("Build")
+	.IsDependentOn("Tests");
+Task("PullRequest")
+	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
 	.IsDependentOn("CreateReleaseNotes");
@@ -76,7 +77,7 @@ Task("Tests")
 	.IsDependentOn("IntegrationTests")
 	.IsDependentOn("AcceptanceTests");
 
-Task(Release)
+Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
@@ -132,15 +133,15 @@ Task("Version")
 		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
 		Information("#########################");
 
-		if (IsRunningInCICD())
-		{
+		// if (IsRunningInCICD())
+		// {
 			Information("Persisting version number...");
 			PersistVersion(committedVersion, versioning.SemVer);
-		}
-		else
-		{
-			Information("We are not running on build server, so we won't persist the version number.");
-		}
+		// }
+		// else
+		// {
+		// 	Information("We are not running on build server, so we won't persist the version number.");
+		// }
 	});
 
 Task("GitLogUniqContributors")
@@ -305,12 +306,25 @@ Task("CreateReleaseNotes")
                 {
                     var statistics = new List<FilesChangedItem>();
                     var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
-                    static FilesChangedItem CreateFilesChangedItem(System.Text.RegularExpressions.Match m) => new()
-                    {
-                        Files = int.Parse(m.Groups["files"]?.Value ?? "0"),
-                        Insertions = int.Parse(m.Groups["insertions"]?.Value ?? "0"),
-                        Deletions = int.Parse(m.Groups["deletions"]?.Value ?? "0"),
-                    };
+                    static FilesChangedItem CreateFilesChangedItem(System.Text.RegularExpressions.Match m)
+					{
+						FilesChangedItem item = new();
+						if (int.TryParse(m.Groups["files"]?.Value ?? "0", out int files))
+            				item.Files = files;
+						else
+            				item.Files = 0;
+
+						if (int.TryParse(m.Groups["insertions"]?.Value ?? "0", out int insertions))
+            				item.Insertions = insertions;
+						else
+            				item.Insertions = 0;
+
+						if (int.TryParse(m.Groups["deletions"]?.Value ?? "0", out int deletions))
+            				item.Deletions = deletions;
+						else
+            				item.Deletions = 0;
+						return item;
+					}
                     foreach (var author in group.Authors) // Collect statistics from git log & shortlog
                     {
                         if (!statistics.Exists(s => s.Contributor == author))
@@ -489,11 +503,11 @@ Task("UnitTests")
 			DotNetTest(unitTestAssemblies, settings); // sequential testing
 		}
 
+		Information("ArtifactsForUnitTestsDir = " + artifactsForUnitTestsDir);
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
 			.First()
 			.CombineWithFilePath(File("coverage.cobertura.xml"));
-		Information(coverageSummaryFile);
-		Information(artifactsForUnitTestsDir);
+		Information("CoverageSummaryFile = " + coverageSummaryFile);
 		GenerateReport(coverageSummaryFile);
 		
 		Information("##############################");
@@ -504,7 +518,9 @@ Task("UnitTests")
 			var repoToken = EnvironmentVariable(coverallsRepoToken);
 			if (string.IsNullOrEmpty(repoToken))
 			{
-				Warning($"# Coveralls repo token not found. Set environment variable: {coverallsRepoToken} !!!");
+				var err = $"# Coveralls repo token not found. Set environment variable: {coverallsRepoToken} !!!";
+				Warning(err);
+				throw new Exception(err);
 			}
 			else
 			{
@@ -625,15 +641,19 @@ Task("PublishGitHubRelease")
 	.IsDependentOn("CreateArtifacts")
 	.Does(() => 
 	{
-		if (!IsRunningInCICD()) return;
+		// if (!IsRunningInCICD())
+		// {
+		// 	Warning("We are not running on the CI/CD so we won't publish a GitHub release");
+		// 	return;
+		// }
 
 		dynamic release = CreateGitHubRelease();
-		var path = packagesDir.ToString() + @"/**/*";
-		foreach (var file in GetFiles(path))
+		var path = packagesDir.ToString() + @"/**/*Ocelot.*"; // filter out artifacts.txt and ReleaseNotes.md
+		var files = GetFiles(path).ToList();
+		foreach (var file in files)
 		{
 			UploadFileToGitHubRelease(release, file);
 		}
-
 		CompleteGitHubRelease(release);
 	});
 
@@ -688,14 +708,14 @@ Task("PublishToNuget")
 			return;
 		}
 
-		if (IsRunningInCICD())
-		{
-			// stable releases
-			var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_3Mammals");
+		// if (IsRunningInCICD())
+		// {
+		// 	stable releases
+			var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
 			var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 			var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
-		}
+		// }
 	});
 
 Task("Void").Does(() => {});
@@ -705,14 +725,15 @@ RunTarget(target);
 private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 {
 	var dir = System.IO.Directory.GetCurrentDirectory();
-	Information(dir);
+	Information("GenerateReport: Current directory: " + dir);
 
 	var reportSettings = new ProcessArgumentBuilder();
 	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
 	reportSettings.Append($"-reports:" + coverageSummaryFile);
 
-	var toolpath = Context.Tools.Resolve("net7.0/ReportGenerator.dll");
-	Information($"Tool Path : {toolpath.ToString()}");
+	Information($"GenerateReport: Resolving net9.0/ReportGenerator.dll ...");
+	var toolpath = Context.Tools.Resolve("net9.0/ReportGenerator.dll");
+	Information($"GenerateReport: Tool Path: {toolpath.ToString()}" + NL);
 
 	DotNetExecute(toolpath, reportSettings);
 }
@@ -732,7 +753,7 @@ private GitVersion GetNuGetVersionForCommit()
 private void PersistVersion(string committedVersion, string newVersion)
 {
 	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, newVersion));
-	var projectFiles = GetFiles("./**/*.csproj");
+	var projectFiles = GetFiles("./**/*.csproj").ToList();
 	foreach(var projectFile in projectFiles)
 	{
 		var file = projectFile.ToString();
@@ -755,10 +776,10 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
         var skippable = new List<string>
         {
 			"ReleaseNotes.md", // skip always
-            "Ocelot.Provider.Eureka", // do not release for version 23.4.3
-            "Ocelot.Provider.Kubernetes",
-            "Ocelot.Tracing.Butterfly",
-            "Ocelot.Tracing.OpenTracing",
+            // "Ocelot.Provider.Eureka", // do not release for version 23.4.3
+            // "Ocelot.Provider.Kubernetes",
+            // "Ocelot.Tracing.Butterfly",
+            // "Ocelot.Tracing.OpenTracing",
         };
 		foreach (var artifact in artifacts)
 		{
@@ -776,7 +797,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)
 {
-	string token = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY_2");
+	string token = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 	client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 	client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
 	client.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
@@ -822,7 +843,7 @@ private void UploadFileToGitHubRelease(dynamic release, FilePath file)
 		int releaseId = release.id;
 		var fileName = file.GetFilename();
 		string uploadUrl = release.upload_url.ToString();
-		Information($"UploadFileToGitHubRelease: uploadUrl is {uploadUrl}");
+		// Information($"UploadFileToGitHubRelease: uploadUrl is {uploadUrl}");
 		string[] parts = uploadUrl.Replace("{", "").Split(',');
 		uploadUrl = parts[0] + "=" + fileName; // $"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={fileName}"
 		Information($"UploadFileToGitHubRelease: uploadUrl is {uploadUrl}");

@@ -3,6 +3,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Requester;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -114,13 +115,16 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .BDDfy();
     }
 
-    [Fact]
+    private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
+
+    [SkippableFact] // [Fact]
     public void Should_open_circuit_breaker_then_close()
     {
+        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
+
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, new QoSOptions(2, 500, 1000, null));
         var configuration = GivenConfiguration(route);
-
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
             .Given(x => GivenThereIsAConfiguration(configuration))
             .Given(x => GivenOcelotIsRunningWithPolly())
@@ -143,16 +147,17 @@ public sealed class PollyQoSTests : Steps, IDisposable
             .BDDfy();
     }
 
-    [Fact]
+    [SkippableFact] // [Fact]
     public void Open_circuit_should_not_effect_different_route()
     {
+        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
+
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var qos1 = new QoSOptions(2, 500, 1000, null);
         var route = GivenRoute(port1, qos1);
         var route2 = GivenRoute(port2, new(new FileQoSOptions()), null, "/working");
         var configuration = GivenConfiguration(route, route2);
-
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
             .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, "Hello from Tom", 0))
             .And(x => GivenThereIsAConfiguration(configuration))

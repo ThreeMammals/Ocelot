@@ -25,25 +25,32 @@ public static class OcelotBuilderExtensions
     {
         builder.Services
 
-            // Sweet couple
-            .AddSingleton<IKubeApiClient, KubeApiClient>(KubeApiClientFactory) // TODO Revert to .AddKubeClient(usePodServiceAccount) after making KubernetesProviderFactory as IServiceDiscoveryProviderFactory 
-            .AddSingleton(KubernetesProviderFactory.Get) // TODO Must be removed after deprecation of ServiceDiscoveryFinderDelegate in favor of IServiceDiscoveryProviderFactory
+            //.AddSingleton<IKubeApiClient, KubeApiClient>(KubeApiClientFactory) // TODO Revert to .AddKubeClient(usePodServiceAccount) after making KubernetesProviderFactory as IServiceDiscoveryProviderFactory 
+            //.AddKubeApiClientFactory(usePodServiceAccount)
+            //.AddKubeClient(usePodServiceAccount)
+            .AddSingleton<IKubeApiClientFactory, KubeApiClientFactory>()
+            .AddSingleton<IKubeApiClient, KubeApiClient>(ResolveWithKubeApiClientFactory)
 
+            .AddSingleton(KubernetesProviderFactory.Get) // TODO Must be removed after deprecation of ServiceDiscoveryFinderDelegate in favor of IServiceDiscoveryProviderFactory
             .AddSingleton<IKubeServiceBuilder, KubeServiceBuilder>()
             .AddSingleton<IKubeServiceCreator, KubeServiceCreator>();
         return builder;
 
-        KubeApiClient KubeApiClientFactory(IServiceProvider sp)
+        //KubeApiClient KubeApiClientFactory(IServiceProvider sp)
+        //{
+        //    var logger = sp.GetService<ILoggerFactory>();
+        //    if (usePodServiceAccount)
+        //    {
+        //        return KubeApiClient.CreateFromPodServiceAccount(logger);
+        //    }
+        //    KubeClientOptions options = sp.GetRequiredService<IOptions<KubeClientOptions>>().Value;
+        //    options.LoggerFactory ??= logger;
+        //    return KubeApiClient.Create(options);
+        //}
+        KubeApiClient ResolveWithKubeApiClientFactory(IServiceProvider sp)
         {
-            var logger = sp.GetService<ILoggerFactory>();
-            if (usePodServiceAccount)
-            {
-                return KubeApiClient.CreateFromPodServiceAccount(logger);
-            }
-
-            KubeClientOptions options = sp.GetRequiredService<IOptions<KubeClientOptions>>().Value;
-            options.LoggerFactory ??= logger;
-            return KubeApiClient.Create(options);
+            var factory = sp.GetService<IKubeApiClientFactory>();
+            return factory.Get(usePodServiceAccount);
         }
     }
 

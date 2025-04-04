@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -12,7 +13,6 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -82,27 +82,35 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         actual.ShouldBeNull();
     }
 
+    class FakeKubeApiClientFactory : KubeApiClientFactory
+    {
+        public FakeKubeApiClientFactory(ILoggerFactory logger, IOptions<KubeClientOptions> options) : base(logger, options) { }
+        public KubeApiClient Actual { get; private set; }
+        public override KubeApiClient Get(bool usePodServiceAccount)
+        {
+            return Actual = base.Get(usePodServiceAccount);
+        }
+    }
+
     [Fact]
     [Trait("Feat", "2256")]
     public async Task CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount()
     {
         // Arrange
         _builder.AddKubernetes(true); // !!!
-
-        // Impossible to mock the KubeClientOptions.FromPodServiceAccount, so let's write stub here
-        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", IPAddress.Loopback.ToString());
-        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", PortFinder.GetRandomPort().ToString());
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        var serviceAccountPath = Path.Combine(AppContext.BaseDirectory, TestID);
+        var stub = new FakeKubeApiClientFactory(null, null)
         {
-            Console.WriteLine($"{nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount)}: Skipping the test because of Linux environment...");
-            return;
-        }
+            ServiceAccountPath = serviceAccountPath,
+        };
+        var original = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClientFactory));
+        var descriptor = ServiceDescriptor.Describe(original.ServiceType, _ => stub, original.Lifetime);
+        _builder.Services.Replace(descriptor);
 
-        // /var/run/secrets/kubernetes.io/serviceaccount\namespace
-        var currentPath = AppContext.BaseDirectory;
-        var drive = Path.GetPathRoot(currentPath);
-        var serviceAccountPath = Path.Combine(drive, "var", "run", "secrets", "kubernetes.io", "serviceaccount");
+        var expectedHost = IPAddress.Loopback.ToString();
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", expectedHost);
+        int expectedPort = PortFinder.GetRandomPort();
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", expectedPort.ToString());
 
         _folders.Add(serviceAccountPath);
         if (!Directory.Exists(serviceAccountPath))
@@ -123,10 +131,16 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         _files.Add(path);
 
         // Act
-        var actual = CreateProvider(nameof(Kube));
+        var actualProvider = CreateProvider(nameof(Kube));
 
         // Assert
-        actual.ShouldNotBeNull().ShouldBeOfType<Kube>();
+        actualProvider.ShouldNotBeNull().ShouldBeOfType<Kube>();
+        stub.ShouldNotBeNull();
+        stub.Actual.ShouldNotBeNull();
+        stub.Actual.ApiEndPoint.ShouldNotBeNull();
+        stub.Actual.ApiEndPoint.Host.ShouldBe(expectedHost);
+        stub.Actual.ApiEndPoint.Port.ShouldBe(expectedPort);
+        stub.Actual.DefaultNamespace.ShouldNotBeNull(nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
     }
 
     [Fact]

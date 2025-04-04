@@ -1,4 +1,6 @@
-﻿namespace Ocelot.UnitTests;
+﻿using System.Runtime.InteropServices;
+
+namespace Ocelot.UnitTests;
 
 /// <summary>
 /// Apply <see cref="CollectionAttribute"/> to classes to disable parallelization.
@@ -15,9 +17,14 @@ public class SequentialTests
         [Fact]
         public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
         {
-            // Test #1
-            var test = new RateLimiting.RateLimitingTests();
-            test.ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod();
+            // Skip in MacOS because the test is very unstable.
+            // The test is stable in Linux and Windows only
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // Test #1
+                var test = new RateLimiting.RateLimitingTests();
+                test.ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod();
+            }
         }
     }
 

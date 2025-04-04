@@ -1,19 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <VersionPrefix>24.0.0</VersionPrefix>
+    <VersionPrefix>24.0</VersionPrefix>
     <AssemblyVersion>24.0.0</AssemblyVersion>
-    <Copyright>ThreeMammals</Copyright>
+    <Copyright>Three Mammals</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
-
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>
