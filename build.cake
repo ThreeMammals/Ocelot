@@ -27,7 +27,6 @@ var artifactsDir = Directory("artifacts"); // build artifacts
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var minCodeCoverage = 0.80d;
-var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
 var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
 
 // acceptance testing
@@ -515,27 +514,30 @@ Task("UnitTests")
 		Information("#=============================");
 		if (IsRunningInCICD() && IsMainOrDevelop())
 		{
-			var repoToken = EnvironmentVariable(coverallsRepoToken);
+			var repoToken = EnvironmentVariable("OCELOT_COVERALLS_TOKEN");
 			if (string.IsNullOrEmpty(repoToken))
 			{
-				var err = $"# Coveralls repo token not found. Set environment variable: {coverallsRepoToken} !!!";
+				var err = "# Coveralls repo token was not found! Set environment variable: OCELOT_COVERALLS_TOKEN !";
 				Warning(err);
 				throw new Exception(err);
 			}
-			else
+			Information($"# Uploading test coverage to {coverallsRepo}");
+			var gitHEAD = string.Join(string.Empty, GitHelper("rev-parse HEAD")); // git rev-parse HEAD
+			Information($"# HEAD commit is {gitHEAD}");
+			// git log -1 --pretty=format:'%an <%ae>'
+			var gitAuthor = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%an"));
+			var gitEmail = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%ae"));
+			var gitBranch = GetGitBranch();
+			var gitMessage = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%s"));
+			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
 			{
-				Information($"# Uploading test coverage to {coverallsRepo}");
-				// CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-				// {
-				// 	RepoToken = repoToken
-				// });
-				Warning($@"# Uploading is disabled due to the following reasons:
-# - App: /root/project/tools/csmacnz.Coveralls
-# - Framework: 'Microsoft.NETCore.App', version '6.0.0' (x64)
-# Upgrading csmacnz.Coveralls package to .NET 8-9 is required!!!
-# Repo: https://github.com/csmacnz/coveralls.net
-# Coveralls Language Integrations > .Net : https://docs.coveralls.io/dot-net");
-			}
+				RepoToken = repoToken,
+				CommitAuthor = gitAuthor,
+				CommitBranch = gitBranch,
+				CommitEmail = gitEmail,
+				CommitId = gitHEAD,
+				CommitMessage = gitMessage,
+			});
 		}
 		else
 		{
@@ -545,7 +547,6 @@ Task("UnitTests")
 		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		Information("# Sequence Coverage: " + sequenceCoverage);
-	
 		if (double.Parse(sequenceCoverage) < minCodeCoverage)
 		{
 			var whereToCheck = !IsRunningInCICD() ? coverallsRepo : artifactsForUnitTestsDir;

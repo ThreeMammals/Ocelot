@@ -26,6 +26,7 @@ jobs:
   build-cake:
     needs: build
     runs-on: ubuntu-latest
+    environment: build.cake
     steps:
     - name: Setup .NET 9
       uses: actions/setup-dotnet@v3
@@ -41,3 +42,6 @@ jobs:
       uses: cake-build/cake-action@v3
       with:
         target: PullRequest
+      env:
+        OCELOT_COVERALLS_TOKEN: ${{ secrets.OCELOT_COVERALLS_TOKEN }}
+  
