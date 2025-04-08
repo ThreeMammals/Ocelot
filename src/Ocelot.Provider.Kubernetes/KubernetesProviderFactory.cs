@@ -7,9 +7,7 @@ namespace Ocelot.Provider.Kubernetes;
 
 public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProviderFactory
 {
-    /// <summary>
-    /// String constant used for provider type definition.
-    /// </summary>
+    /// <summary>String constant used for provider type definition.</summary>
     public const string PollKube = nameof(Kubernetes.PollKube);
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;

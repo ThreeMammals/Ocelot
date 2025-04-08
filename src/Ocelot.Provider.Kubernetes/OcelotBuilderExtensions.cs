@@ -36,17 +36,6 @@ public static class OcelotBuilderExtensions
             .AddSingleton<IKubeServiceCreator, KubeServiceCreator>();
         return builder;
 
-        //KubeApiClient KubeApiClientFactory(IServiceProvider sp)
-        //{
-        //    var logger = sp.GetService<ILoggerFactory>();
-        //    if (usePodServiceAccount)
-        //    {
-        //        return KubeApiClient.CreateFromPodServiceAccount(logger);
-        //    }
-        //    KubeClientOptions options = sp.GetRequiredService<IOptions<KubeClientOptions>>().Value;
-        //    options.LoggerFactory ??= logger;
-        //    return KubeApiClient.Create(options);
-        //}
         KubeApiClient ResolveWithKubeApiClientFactory(IServiceProvider sp)
         {
             var factory = sp.GetService<IKubeApiClientFactory>();

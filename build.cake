@@ -9,6 +9,7 @@
 using Spectre.Console
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -19,6 +20,11 @@ const string PullRequest = "PullRequest"; // task name, target, and PullRequest 
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
 static string NL = Environment.NewLine;
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+Information("Current Culture: " + CultureInfo.CurrentCulture);
+Information("Current UI Culture: " + CultureInfo.CurrentUICulture);
 
 var compileConfig = Argument("configuration", Release); // compile
 var artifactsDir = Directory("artifacts"); // build artifacts

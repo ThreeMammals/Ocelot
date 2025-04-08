@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Provider.Kubernetes.Interfaces;
 
 namespace Ocelot.Provider.Kubernetes;
 
@@ -24,10 +25,4 @@ public class KubeApiClientFactory : IKubeApiClientFactory
         options.LoggerFactory ??= _logger;
         return KubeApiClient.Create(options);
     }
-}
-
-public interface IKubeApiClientFactory
-{
-    public string ServiceAccountPath { get; set; }
-    KubeApiClient Get(bool usePodServiceAccount);
 }
