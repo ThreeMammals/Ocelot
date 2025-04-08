@@ -7,12 +7,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - name: .NET Version 
+      run: dotnet --version
+    - name: .NET Info
+      run: dotnet --info
+    - name: Check .NET 9
+      id: check-dotnet9
+      run: |
+        DOTNET9_VERSION=$(dotnet --version)
+        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+          echo "dotnet9_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet9_installed=false" >> $GITHUB_ENV
+        fi
     - name: Setup .NET 9
+      if: env.dotnet9_installed == 'false'
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 9.0.x
+    - name: .NET Info
+      run: dotnet --info
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Restore
       run: dotnet restore ./Ocelot.sln -p:TargetFramework=net9.0
     - name: Build

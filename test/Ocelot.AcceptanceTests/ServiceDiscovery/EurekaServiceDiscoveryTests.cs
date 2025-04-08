@@ -2,20 +2,22 @@
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Provider.Eureka;
 using Steeltoe.Common.Discovery;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public class EurekaServiceDiscoveryTests : IDisposable
+public sealed class EurekaServiceDiscoveryTests : Steps
 {
-    private readonly Steps _steps;
     private readonly List<IServiceInstance> _eurekaInstances;
     private readonly ServiceHandler _serviceHandler;
+    private readonly ServiceHandler _eurekaHandler;
 
     public EurekaServiceDiscoveryTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+        _eurekaHandler = new ServiceHandler();
         _eurekaInstances = new List<IServiceInstance>();
     }
 
@@ -23,17 +25,17 @@ public class EurekaServiceDiscoveryTests : IDisposable
     [Trait("Feat", "262")]
     [InlineData(true)]
     [InlineData(false)]
-    public void Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
+    public async Task Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
     {
         Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
-        var eurekaPort = 8761;
         var serviceName = "product";
-        var downstreamServicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-        var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
+        var eurekaPort = 8761;
+        var port = PortFinder.GetRandomPort();
+        var downstreamServiceOneUrl = DownstreamUrl(port);
+        var fakeEurekaServiceDiscoveryUrl = DownstreamUrl(eurekaPort);
 
-        var instanceOne = new FakeEurekaService(serviceName, "localhost", downstreamServicePort, false,
-            new Uri($"http://localhost:{downstreamServicePort}"), new Dictionary<string, string>());
+        var instanceOne = new FakeEurekaService(serviceName, "localhost", port, false,
+            new Uri(downstreamServiceOneUrl), new Dictionary<string, string>());
 
         var configuration = new FileConfiguration
         {
@@ -42,31 +44,30 @@ public class EurekaServiceDiscoveryTests : IDisposable
                 new()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
+                    DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = new() { HttpMethods.Get },
                     ServiceName = serviceName,
-                    LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
+                    LoadBalancerOptions = new() { Type = nameof(LeastConnection) },
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
-                    Type = "Eureka",
+                    Type = nameof(Eureka),
                 },
             },
         };
 
-        this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl))
-            .And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
-            .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithEureka())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests)))
-            .BDDfy();
+        GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl, HttpStatusCode.OK);
+        GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName);
+        GivenTheServicesAreRegisteredWithEureka(instanceOne);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithEureka();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests));
     }
 
     private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
@@ -79,7 +80,7 @@ public class EurekaServiceDiscoveryTests : IDisposable
 
     private void GivenThereIsAFakeEurekaServiceDiscoveryProvider(string url, string serviceName)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        _eurekaHandler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             if (context.Request.Path.Value == "/eureka/apps/")
             {
@@ -149,26 +150,28 @@ public class EurekaServiceDiscoveryTests : IDisposable
         });
     }
 
-    private void GivenEurekaProductServiceOneIsRunning(string url)
+    private void GivenEurekaProductServiceOneIsRunning(string baseUrl, HttpStatusCode statusCode, [CallerMemberName] string responseBody = null)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
         {
             try
             {
-                context.Response.StatusCode = 200;
-                await context.Response.WriteAsync(nameof(EurekaServiceDiscoveryTests));
+                context.Response.StatusCode = (int)statusCode;
+                await context.Response.WriteAsync(responseBody);
             }
             catch (Exception exception)
             {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 await context.Response.WriteAsync(exception.StackTrace);
             }
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        _eurekaHandler?.Dispose();
+        base.Dispose();
     }
 }
 
