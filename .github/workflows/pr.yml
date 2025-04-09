@@ -44,10 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     environment: build.cake
     steps:
+    - name: .NET Version 
+      run: dotnet --version
+    - name: .NET Info
+      run: dotnet --info
+    - name: Check .NET 9
+      id: check-dotnet9
+      run: |
+        DOTNET9_VERSION=$(dotnet --version)
+        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+          echo "dotnet9_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet9_installed=false" >> $GITHUB_ENV
+        fi
     - name: Setup .NET 9
+      if: env.dotnet9_installed == 'false'
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 9.0.x
+    - name: .NET Info
+      run: dotnet --info
     - name: Branch Name
       run: echo "Branch name is ${{ github.ref_name }}"
     - name: Checkout
