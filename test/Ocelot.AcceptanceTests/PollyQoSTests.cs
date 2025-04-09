@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class PollyQoSTests : Steps, IDisposable
+public sealed class PollyQoSTests : Steps
 {
     private readonly ServiceHandler _serviceHandler;
 

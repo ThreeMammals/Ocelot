@@ -8,7 +8,6 @@
     <IsTestProject>true</IsTestProject>
     <AssemblyName>Ocelot.IntegrationTests</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>Ocelot.IntegrationTests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>

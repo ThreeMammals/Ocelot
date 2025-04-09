@@ -7,7 +7,6 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <AssemblyName>Ocelot.UnitTests</AssemblyName>
-    <PackageId>Ocelot.UnitTests</PackageId>
     <OutputType>Exe</OutputType>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>

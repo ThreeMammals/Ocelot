@@ -26,7 +26,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
             "FakeHandler",
         };
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", 200, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -42,7 +42,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", 200, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -58,7 +58,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", 200, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -91,7 +91,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
         var dependency = new FakeDependency();
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", 200, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -209,14 +209,14 @@ public sealed class HttpDelegatingHandlersTests : Steps
         }
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, int statusCode, string responseBody)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
         string baseUrl = DownstreamUrl(port);
         _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
             bool match = _downstreamPath == basePath;
-            context.Response.StatusCode = match ? statusCode : (int)HttpStatusCode.NotFound;
+            context.Response.StatusCode = match ? (int)statusCode : (int)HttpStatusCode.NotFound;
             await context.Response.WriteAsync(match ? responseBody : nameof(HttpStatusCode.NotFound));
         });
     }

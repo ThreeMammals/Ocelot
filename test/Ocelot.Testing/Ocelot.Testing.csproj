@@ -5,6 +5,9 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS.</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

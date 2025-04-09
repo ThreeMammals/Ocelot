@@ -30,11 +30,9 @@ public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
         var globalDelegatingHandlers = _serviceProvider
             .GetServices<GlobalDelegatingHandler>()
             .ToArray();
-
         var routeSpecificHandlers = _serviceProvider
             .GetServices<DelegatingHandler>()
             .ToList();
-
         var handlers = new List<Func<DelegatingHandler>>();
 
         foreach (var handler in globalDelegatingHandlers)
@@ -49,10 +47,9 @@ public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
             }
         }
 
-        if (downstreamRoute.DelegatingHandlers.Any())
+        if (downstreamRoute.DelegatingHandlers.Count != 0)
         {
             var sorted = SortByConfigOrder(downstreamRoute, routeSpecificHandlers);
-
             handlers.AddRange(sorted.Select(handler => (Func<DelegatingHandler>)(() => handler)));
         }
 
@@ -79,7 +76,7 @@ public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
         return new OkResponse<List<Func<DelegatingHandler>>>(handlers);
     }
 
-    private static IEnumerable<DelegatingHandler> SortByConfigOrder(DownstreamRoute request, IEnumerable<DelegatingHandler> routeSpecificHandlers)
+    private static DelegatingHandler[] SortByConfigOrder(DownstreamRoute request, List<DelegatingHandler> routeSpecificHandlers)
     {
         return routeSpecificHandlers
             .Where(x => request.DelegatingHandlers.Contains(x.GetType().Name))
