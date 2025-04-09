@@ -79,11 +79,17 @@ jobs:
         target: PullRequest
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    - name: Env Variables
+    - name: Prepare Coveralls
       run: |
         echo "CoverageSummaryFile env var : $CoverageSummaryFile"
         echo "env var : ${{ env.CoverageSummaryFile }}"
         echo "CAKE_RELEASE_MYVAR : $CAKE_RELEASE_MYVAR"
+        subfolders=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/)
+        echo "$subfolders"
+        first_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
+        echo "$first_folder"
+        full_path="${first_folder%/}/coverage.cobertura.xml"
+        echo "$full_path"
     - name: Coveralls
       uses: coverallsapp/github-action@v2
       #file: a
