@@ -4,46 +4,46 @@ name: PR
 on: pull_request
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
-    steps:
-    - name: .NET Version 
-      run: dotnet --version
-    - name: .NET Info
-      run: dotnet --info
-    - name: Check .NET 8
-      id: check-dotnet8
-      run: |
-        DOTNET8_VERSION=$(dotnet --version)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
-          echo "dotnet8_installed=true" >> $GITHUB_ENV
-        else
-          echo "dotnet8_installed=false" >> $GITHUB_ENV
-        fi
-    - name: Setup .NET 8
-      if: env.dotnet8_installed == 'false'
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
-    - name: .NET Info
-      run: dotnet --info
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Restore
-      run: dotnet restore ./Ocelot.sln -p:TargetFramework=net8.0
-    - name: Build
-      run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
-    - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-    - name: Integration Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
-    - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+  # build:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
+  #     DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+  #   steps:
+  #   - name: .NET Version 
+  #     run: dotnet --version
+  #   - name: .NET Info
+  #     run: dotnet --info
+  #   - name: Check .NET 8
+  #     id: check-dotnet8
+  #     run: |
+  #       DOTNET8_VERSION=$(dotnet --version)
+  #       if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+  #         echo "dotnet8_installed=true" >> $GITHUB_ENV
+  #       else
+  #         echo "dotnet8_installed=false" >> $GITHUB_ENV
+  #       fi
+  #   - name: Setup .NET 8
+  #     if: env.dotnet8_installed == 'false'
+  #     uses: actions/setup-dotnet@v3
+  #     with:
+  #       dotnet-version: 8.0.x
+  #   - name: .NET Info
+  #     run: dotnet --info
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #   - name: Restore
+  #     run: dotnet restore ./Ocelot.sln -p:TargetFramework=net8.0
+  #   - name: Build
+  #     run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
+  #   - name: Unit Tests
+  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #   - name: Integration Tests
+  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+  #   - name: Acceptance Tests
+  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
   build-cake:
-    needs: build
+    #needs: build
     runs-on: ubuntu-latest
     environment: build.cake
     steps:
