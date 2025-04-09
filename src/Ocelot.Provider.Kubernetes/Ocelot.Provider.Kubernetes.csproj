@@ -7,7 +7,7 @@
     <Product>Ocelot Gateway</Product>
     <Description>Provides Ocelot extensions to use Kubernetes service discovery.</Description>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <PackageId>Ocelot.Provider.Eureka</PackageId>
+    <PackageId>Ocelot.Provider.Kubernetes</PackageId>
     <PackageTags>API Gateway;.NET;kubernetes</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Kubernetes</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_logo.png</PackageIconUrl>

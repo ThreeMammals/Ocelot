@@ -67,7 +67,7 @@ public sealed class EurekaServiceDiscoveryTests : Steps
         GivenOcelotIsRunningWithEureka();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests));
+        ThenTheResponseBodyShouldBe(nameof(Should_use_eureka_service_discovery_and_make_request));
     }
 
     private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
