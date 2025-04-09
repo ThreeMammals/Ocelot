@@ -79,6 +79,12 @@ jobs:
         target: PullRequest
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    - name: Env Variables
+      run: |
+        echo "CoverageSummaryFile env var : $CoverageSummaryFile"
+        echo "env var : ${{ env.CoverageSummaryFile }}"
+        echo "CAKE_RELEASE_MYVAR : $CAKE_RELEASE_MYVAR"
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+      #file: a
   

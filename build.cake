@@ -513,6 +513,7 @@ Task("UnitTests")
 			.First()
 			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information("CoverageSummaryFile = " + coverageSummaryFile);
+		Environment.SetEnvironmentVariable("CoverageSummaryFile", coverageSummaryFile);
 		GenerateReport(coverageSummaryFile);
 		
 		Information("##############################");
@@ -549,6 +550,9 @@ Task("UnitTests")
 		{
 			Information("# We are not running on the build server so we won't publish the coverage report to coveralls.io");
 		}
+
+		var var_CoverageSummaryFile = EnvironmentVariable("CoverageSummaryFile");
+		Information("# CoverageSummaryFile env VAR is var_CoverageSummaryFile");
 
 		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
