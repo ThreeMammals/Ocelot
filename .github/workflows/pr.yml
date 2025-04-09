@@ -46,9 +46,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: build.cake
-    env:
-      # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
     steps:
     - name: .NET Version 
       run: dotnet --version
