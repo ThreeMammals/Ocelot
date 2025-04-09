@@ -78,4 +78,4 @@ jobs:
       with:
         target: PullRequest
       env:
-        OCELOT_COVERALLS_TOKEN: ${{ secrets.OCELOT_COVERALLS_TOKEN }}
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

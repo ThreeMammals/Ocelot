@@ -140,10 +140,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-    # - name: Setup .NET
-    #   uses: actions/setup-dotnet@v3
-    #   with:
-    #     dotnet-version: 8.0.x, 9.0.x
     - name: Check .NET 9
       id: check-dotnet9
       run: |
@@ -176,4 +172,4 @@ jobs:
         TEMP_KEY: ${{ secrets.TEMP_KEY }}
         OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
         OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
-        OCELOT_COVERALLS_TOKEN: ${{ secrets.OCELOT_COVERALLS_TOKEN }}
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

@@ -520,10 +520,10 @@ Task("UnitTests")
 		Information("#=============================");
 		if (IsRunningInCICD() && IsMainOrDevelop())
 		{
-			var repoToken = EnvironmentVariable("OCELOT_COVERALLS_TOKEN");
+			var repoToken = EnvironmentVariable("COVERALLS_REPO_TOKEN");
 			if (string.IsNullOrEmpty(repoToken))
 			{
-				var err = "# Coveralls repo token was not found! Set environment variable: OCELOT_COVERALLS_TOKEN !";
+				var err = "# Coveralls repo token was not found! Set environment variable: COVERALLS_REPO_TOKEN !";
 				Warning(err);
 				throw new Exception(err);
 			}

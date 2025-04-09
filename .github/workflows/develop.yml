@@ -133,4 +133,4 @@ jobs:
       with:
         target: Build
       env:
-        OCELOT_COVERALLS_TOKEN: ${{ secrets.OCELOT_COVERALLS_TOKEN }}
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
