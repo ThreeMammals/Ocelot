@@ -1,8 +1,11 @@
 ![Ocelot Logo](https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/ocelot_logo.png)
 
-[![develop](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-default)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
-[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot)
+[![develop Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
+[![ReadTheDocs Status](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-default)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop)
+[![Coveralls Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/develop/LICENSE.md)
+[![NuGet Version](https://img.shields.io/nuget/v/Ocelot.svg)](https://www.nuget.org/packages/Ocelot/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.svg)](https://www.nuget.org/packages/Ocelot/)
 
 ## About
 Ocelot is a .NET [API gateway](https://www.bing.com/search?q=API+gateway).
