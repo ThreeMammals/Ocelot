@@ -1,9 +1,9 @@
 ﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // released on 1.04.2025 with TFMs net8.0 net9.0
-#tool dotnet:?package=coveralls.net&version=4.0.1 // Outdated! released on 07.08.22 with TFM net6.0
+// #tool dotnet:?package=coveralls.net&version=4.0.1 // Outdated! released on 07.08.22 with TFM net6.0
 #tool nuget:?package=ReportGenerator&version=5.4.5 // released on 23.03.2025 with TFM netstandard2.0
 #addin nuget:?package=Newtonsoft.Json&version=13.0.3 // Switch to a MS lib! Outdated! released on 08.03.23 with TFMs net6.0 netstandard2.0
 #addin nuget:?package=System.Text.Encodings.Web&version=9.0.3 // released on 11.03.2025 with TFMs net8.0 net9.0 netstandard2.0
-#addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
+// #addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
 
 #r "Spectre.Console"
 using Spectre.Console
@@ -32,8 +32,6 @@ var artifactsDir = Directory("artifacts"); // build artifacts
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
 var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 0.80d;
-var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
@@ -507,56 +505,61 @@ Task("UnitTests")
 			EnsureDirectoryExists(artifactsForUnitTestsDir);
 			DotNetTest(unitTestAssemblies, settings); // sequential testing
 		}
-
+		
 		Information("ArtifactsForUnitTestsDir = " + artifactsForUnitTestsDir);
 		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
 			.First()
 			.CombineWithFilePath(File("coverage.cobertura.xml"));
 		Information("CoverageSummaryFile = " + coverageSummaryFile);
 		GenerateReport(coverageSummaryFile);
-		
 		Information("##############################");
-		Information("# Coveralls & Code coverage");
+		Information("# Code coverage");
 		Information("#=============================");
-		if (IsRunningInCICD() && IsMainOrDevelop())
-		{
-			var repoToken = EnvironmentVariable("COVERALLS_REPO_TOKEN");
-			if (string.IsNullOrEmpty(repoToken))
-			{
-				var err = "# Coveralls repo token was not found! Set environment variable: COVERALLS_REPO_TOKEN !";
-				Warning(err);
-				throw new Exception(err);
-			}
-			Information($"# Uploading test coverage to {coverallsRepo}");
-			var gitHEAD = string.Join(string.Empty, GitHelper("rev-parse HEAD")); // git rev-parse HEAD
-			Information($"# HEAD commit is {gitHEAD}");
-			// git log -1 --pretty=format:'%an <%ae>'
-			var gitAuthor = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%an"));
-			var gitEmail = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%ae"));
-			var gitBranch = GetGitBranch();
-			var gitMessage = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%s"));
-			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-			{
-				RepoToken = repoToken,
-				CommitAuthor = gitAuthor,
-				CommitBranch = gitBranch,
-				CommitEmail = gitEmail,
-				CommitId = gitHEAD,
-				CommitMessage = gitMessage,
-			});
-		}
-		else
-		{
-			Information("# We are not running on the build server so we won't publish the coverage report to coveralls.io");
-		}
+		const string CoverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
+		// if (IsRunningInCICD() && IsMainOrDevelop())
+		// {
+		// 	var repoToken = EnvironmentVariable("COVERALLS_REPO_TOKEN");
+		// 	if (string.IsNullOrEmpty(repoToken))
+		// 	{
+		// 		var err = "# Coveralls repo token was not found! Set environment variable: COVERALLS_REPO_TOKEN !";
+		// 		Warning(err);
+		// 		throw new Exception(err);
+		// 	}
+		// 	Information($"# Uploading test coverage to {CoverallsRepo}");
+		// 	var gitHEAD = string.Join(string.Empty, GitHelper("rev-parse HEAD")); // git rev-parse HEAD
+		// 	Information($"# HEAD commit is {gitHEAD}");
+		// 	// git log -1 --pretty=format:'%an <%ae>'
+		// 	var gitAuthor = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%an"));
+		// 	var gitEmail = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%ae"));
+		// 	var gitBranch = GetGitBranch();
+		// 	var gitMessage = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%s"));
+		// 	CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
+		// 	{
+		// 		RepoToken = repoToken,
+		// 		CommitAuthor = gitAuthor,
+		// 		CommitBranch = gitBranch,
+		// 		CommitEmail = gitEmail,
+		// 		CommitId = gitHEAD,
+		// 		CommitMessage = gitMessage,
+		// 	});
+		// }
+		// else
+		// {
+			Information($"# CoverallsNet uploading is disabled in favor of Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
+		// }
 
-		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
-		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
-		Information("# Sequence Coverage: " + sequenceCoverage);
-		if (double.Parse(sequenceCoverage) < minCodeCoverage)
+		// Apply code coverage threshold
+		const double MinCodeCoverage = 0.80D; // consider definition of an env var in GitHub Environment vars
+		var lineCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@branch-rate");
+		Information("# Line Coverage: " + lineCoverage);
+		Information("# Branch Coverage: " + branchCoverage);
+		if (double.Parse(lineCoverage) < MinCodeCoverage)
 		{
-			var whereToCheck = !IsRunningInCICD() ? coverallsRepo : artifactsForUnitTestsDir;
-			Warning($"# Code coverage fell below the threshold of {minCodeCoverage}%. You can find the code coverage report at {whereToCheck}");
+			var whereToCheck = !IsRunningInCICD() ? CoverallsRepo : artifactsForUnitTestsDir;
+			var msg = $"# Code coverage fell below the threshold of {MinCodeCoverage}%. You can find the code coverage report at {whereToCheck}";
+			Warning(msg);
+			throw new Exception(msg); // fail the building job step in GitHub Actions
 		};
 		Information("##############################");
 	});
