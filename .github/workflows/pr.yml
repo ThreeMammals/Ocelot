@@ -4,46 +4,46 @@ name: PR
 on: pull_request
 
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-  #     DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
-  #   steps:
-  #   - name: .NET Version 
-  #     run: dotnet --version
-  #   - name: .NET Info
-  #     run: dotnet --info
-  #   - name: Check .NET 8
-  #     id: check-dotnet8
-  #     run: |
-  #       DOTNET8_VERSION=$(dotnet --version)
-  #       if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
-  #         echo "dotnet8_installed=true" >> $GITHUB_ENV
-  #       else
-  #         echo "dotnet8_installed=false" >> $GITHUB_ENV
-  #       fi
-  #   - name: Setup .NET 8
-  #     if: env.dotnet8_installed == 'false'
-  #     uses: actions/setup-dotnet@v3
-  #     with:
-  #       dotnet-version: 8.0.x
-  #   - name: .NET Info
-  #     run: dotnet --info
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
-  #   - name: Restore
-  #     run: dotnet restore ./Ocelot.sln -p:TargetFramework=net8.0
-  #   - name: Build
-  #     run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
-  #   - name: Unit Tests
-  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-  #   - name: Integration Tests
-  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
-  #   - name: Acceptance Tests
-  #     run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
+      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+    steps:
+    - name: .NET Version 
+      run: dotnet --version
+    - name: .NET Info
+      run: dotnet --info
+    - name: Check .NET 8
+      id: check-dotnet8
+      run: |
+        DOTNET8_VERSION=$(dotnet --version)
+        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+          echo "dotnet8_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet8_installed=false" >> $GITHUB_ENV
+        fi
+    - name: Setup .NET 8
+      if: env.dotnet8_installed == 'false'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: .NET Info
+      run: dotnet --info
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Restore
+      run: dotnet restore ./Ocelot.sln -p:TargetFramework=net8.0
+    - name: Build
+      run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
+    - name: Unit Tests
+      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+    - name: Integration Tests
+      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+    - name: Acceptance Tests
+      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
   build-cake:
-    #needs: build
+    needs: build
     runs-on: ubuntu-latest
     environment: build.cake
     steps:
@@ -77,15 +77,12 @@ jobs:
       uses: cake-build/cake-action@v3
       with:
         target: PullRequest
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      # env:
+      #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     - name: Prepare Coveralls
       run: |
-        echo "CoverageSummaryFile env var : $CoverageSummaryFile"
-        echo "env var : ${{ env.CoverageSummaryFile }}"
-        echo "CAKE_RELEASE_MYVAR : $CAKE_RELEASE_MYVAR"
-        # subfolders=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/)
-        # echo "$subfolders"
+        echo "git-branch is ${{ env.GITHUB_REF }}"
+        echo "git-commit is ${{ env.GITHUB_SHA }}"
         coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
         echo "Detected first folder : $coverage_1st_folder"
         coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
@@ -103,4 +100,7 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         file: ${{ env.COVERALLS_coverage_file }}
+        compare-ref: develop
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
   
