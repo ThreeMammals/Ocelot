@@ -46,6 +46,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: build.cake
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_REF: ${{ github.ref }}
+      GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Version 
       run: dotnet --version
@@ -77,13 +82,11 @@ jobs:
       uses: cake-build/cake-action@v3
       with:
         target: PullRequest
-      # env:
-      #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     - name: Prepare Coveralls
       run: |
-        echo "git-branch is ${{ env.GITHUB_REF }}"
-        echo "git-commit is ${{ env.GITHUB_REF_NAME }}"
-        echo "git-commit is ${{ env.GITHUB_SHA }}"
+        echo "GITHUB_REF is ${{ env.GITHUB_REF }}"
+        echo "GITHUB_REF_NAME is ${{ env.GITHUB_REF_NAME }}"
+        echo "GITHUB_SHA is ${{ env.GITHUB_SHA }}"
         coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
         echo "Detected first folder : $coverage_1st_folder"
         coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
@@ -102,8 +105,3 @@ jobs:
       with:
         file: ${{ env.COVERALLS_coverage_file }}
         compare-ref: develop
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        GITHUB_SHA: ${{ github.sha }}
-        GITHUB_REF: ${{ github.ref }}
-        GITHUB_REF_NAME: ${{ github.ref_name }}
