@@ -16,7 +16,7 @@ Welcome
 
 Welcome to the Ocelot `24.0`_ documentation!
 
-It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
+It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
 .. The major version `23.4.0`_ includes several patches, the history of which is provided below.
 

@@ -186,8 +186,10 @@ Task("CreateReleaseNotes")
         releaseNotes = new List<string> { releaseHeader };
         if (IsTechnicalRelease)
         {
+#pragma warning disable CS0162
             WriteReleaseNotes();
             return;
+#pragma warning restore CS0162
         }
 
         const bool debugUserEmail = false;
@@ -651,11 +653,11 @@ Task("PublishGitHubRelease")
 	.IsDependentOn("CreateArtifacts")
 	.Does(() => 
 	{
-		// if (!IsRunningInCICD())
-		// {
-		// 	Warning("We are not running on the CI/CD so we won't publish a GitHub release");
-		// 	return;
-		// }
+		if (!IsRunningInCICD())
+		{
+			Warning("We are not running on the CI/CD so we won't publish a GitHub release");
+			return;
+		}
 
 		dynamic release = CreateGitHubRelease();
 		var path = packagesDir.ToString() + @"/**/*Ocelot.*"; // filter out artifacts.txt and ReleaseNotes.md
@@ -714,18 +716,23 @@ Task("PublishToNuget")
     {
 		if (IsTechnicalRelease)
 		{
+#pragma warning disable CS0162
 			Information("Skipping of publishing to NuGet because of technical release...");
 			return;
+#pragma warning restore CS0162
 		}
 
-		// if (IsRunningInCICD())
-		// {
-		// 	stable releases
+		if (IsRunningInCICD())
+		{
 			var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
 			var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 			var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
-		// }
+		}
+		else
+		{
+			Warning("We are not running on the CI/CD so we won't publish NuGet packages.");
+		}
 	});
 
 Task("Void").Does(() => {});
