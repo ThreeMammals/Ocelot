@@ -14,7 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-const bool IsTechnicalRelease = false;
+bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
 const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
 const string AllFrameworks = "net8.0;net9.0";
@@ -186,10 +186,8 @@ Task("CreateReleaseNotes")
         releaseNotes = new List<string> { releaseHeader };
         if (IsTechnicalRelease)
         {
-#pragma warning disable CS0162
             WriteReleaseNotes();
             return;
-#pragma warning restore CS0162
         }
 
         const bool debugUserEmail = false;
@@ -279,7 +277,7 @@ Task("CreateReleaseNotes")
                 var place = Place(log.Count);
                 return HonorForDeletions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
             });
-        Information("---==< TOP Contributors >==---");
+        Information("------==< TOP Contributors >==------");
         Information(string.Join(NL, topContributors));
 
         // local helpers
@@ -394,20 +392,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        // releaseNotes.Add("");
-        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        // releaseNotes.AddRange(starring);
-        // releaseNotes.Add("");
-        // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // releaseNotes.Add("");
-        // releaseNotes.Add("<details><summary>Logbook</summary>");
-        // releaseNotes.Add("");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
-        // releaseNotes.AddRange(commitsHistory);
-        // releaseNotes.Add("</details>");
-        // releaseNotes.Add("");
+        releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -716,10 +714,8 @@ Task("PublishToNuget")
     {
 		if (IsTechnicalRelease)
 		{
-#pragma warning disable CS0162
 			Information("Skipping of publishing to NuGet because of technical release...");
 			return;
-#pragma warning restore CS0162
 		}
 
 		if (IsRunningInCICD())

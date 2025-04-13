@@ -41,7 +41,7 @@ What's New?
 
 - `DevOps`_: The CI/CD infrastructure was migrated from CircleCI to GitHub Actions by `@raman-m`_.
 
-  **Official notice to the community!**
+  **Official Notice to the Community Regarding CircleCI**
 
   Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
   But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
@@ -59,7 +59,7 @@ What's New?
   As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
   Regardless, we remain on GitHub!
 
-  **Technical information**
+  **Technical Information**
 
   .. _PR: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/pr.yml
   .. _Develop: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/develop.yml
