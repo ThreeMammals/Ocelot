@@ -324,12 +324,9 @@ public class Steps : BddfyConfig, IDisposable
                 s.AddOcelot()
                     .AddCacheManager((x) =>
                     {
-                        x.WithMicrosoftLogging(_ =>
-                            {
-                                //log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithJsonSerializer()
-                            .WithHandle(typeof(InMemoryJsonHandle<>));
+                        //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
+                        x.WithJsonSerializer();
+                        x.WithHandle(typeof(InMemoryJsonHandle<>));
                     });
             })
             .Configure(async app => await app.UseOcelot());
