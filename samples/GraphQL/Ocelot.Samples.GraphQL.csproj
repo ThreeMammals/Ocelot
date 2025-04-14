@@ -23,8 +23,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="8.2.1" />
-    <PackageReference Include="GraphQL.NewtonsoftJson" Version="8.2.1" />
+    <PackageReference Include="GraphQL" Version="8.5.0" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" Version="8.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
