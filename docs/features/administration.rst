@@ -1,25 +1,38 @@
-.. _IdentityServer4: https://github.com/IdentityServer/IdentityServer4
-.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Administration/Program.cs
+.. _IdentityServer: https://github.com/DuendeArchive/IdentityServer4
+.. _IdentityServer4: https://www.nuget.org/packages/IdentityServer4
+.. _Program: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4/blob/main/sample/Program.cs
+.. _Ocelot.Administration: https://www.nuget.org/packages/Ocelot.Administration
+.. _Ocelot.Administration.IdentityServer4: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 
 Administration
 ==============
 
-Ocelot supports changing configuration during runtime via an authenticated HTTP API.
-This can be authenticated in two ways either using Ocelot's internal `IdentityServer4`_ (for authenticating requests to the administration API only) or hooking the administration API authentication into your own `IdentityServer4`_.
+  | NuGet package: `IdentityServer4`_ by `IdentityServer org <https://github.com/IdentityServer>`_ (archived on March 6, 2025)
+  | Ocelot extension package: `Ocelot.Administration`_ with version 23.4.3
 
-The first thing you need to do if you want to use the administration API is bring in the relevant `Ocelot.Administration <https://www.nuget.org/packages/Ocelot.Administration>`_ package:
+Ocelot supports changing configuration during runtime via an authenticated HTTP API.
+This can be authenticated in two ways either using Ocelot's internal `IdentityServer`_ (for authenticating requests to the :ref:`administration-api` only) or hooking the :ref:`administration-api` authentication into your own `IdentityServer`_.
+
+The first thing you need to do if you want to use the :ref:`administration-api` is bring in the relevant `Ocelot.Administration <https://www.nuget.org/packages/Ocelot.Administration>`_ package:
 
 .. code-block:: powershell
 
     Install-Package Ocelot.Administration
 
-This will bring down everything needed by the administration API.
+This will bring down everything needed by the :ref:`administration-api`.
 
-Providing your own IdentityServer
----------------------------------
+  **Warning!** Currently, the *Administration* feature relies solely on the `IdentityServer4`_ package, whose `repository <https://github.com/DuendeArchive/IdentityServer4>`_ was archived by its owner on July 31, 2024 (for the first time) and again on March 6, 2025.
+  The Ocelot team will deprecate the upcoming `Ocelot.Administration.IdentityServer4`_ extension package after the release of Ocelot version `24.0`_.
+  However, `the repository <https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4>`_ will remain available, allowing for potential future patches.
 
-All you need to do to hook into your own `IdentityServer4`_ is add the following configuration options with authentication to your `Program`_.
-After that, we must pass these options to the ``AddAdministration()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_, as shown below:
+.. _ad-your-own-identityserver:
+
+Your Own IdentityServer [#f1]_
+------------------------------
+
+All you need to do to hook into your own `IdentityServer`_ is add the following configuration options with authentication to your `Program`_.
+After that, we must pass these options to the ``AddAdministration()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f2]_, as shown below:
 
 .. code-block:: csharp
 
@@ -37,17 +50,18 @@ After that, we must pass these options to the ``AddAdministration()`` extension 
         .AddOcelot(builder.Configuration)
         .AddAdministration("/administration", options);
 
-You now need to get a token from your `IdentityServer4`_ and use in subsequent requests to Ocelot's administration API.
+You now need to get a token from your `IdentityServer`_ and use in subsequent requests to Ocelot's :ref:`administration-api`.
 
-This feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
-It is useful because the `IdentityServer4`_ authentication middleware needs the URL of the server.
-If you are using the internal `IdentityServer4`_, it might not always be possible to have the Ocelot URL.
+  **Note**: This feature is useful because the `IdentityServer`_ authentication middleware needs the URL of the server.
+  If you are using the :ref:`ad-internal-identityserver`, it might not always be possible to have the Ocelot URL.
+
+.. _ad-internal-identityserver:
 
 Internal IdentityServer
 -----------------------
 
 The API is authenticated using Bearer tokens that you request from Ocelot itself.
-This is provided by the amazing `IdentityServer4`_ project that the .NET community has been using for several years.
+This is provided by the amazing `IdentityServer`_ project that the .NET community has been using for several years.
 Check it out.
 
 In order to enable the administration section, you need to do a few things. First of all, add this to your initial `Program`_.
@@ -55,9 +69,9 @@ In order to enable the administration section, you need to do a few things. Firs
 The path can be anything you want and it is obviously recommended don't use a URL you would like to route through with Ocelot as this will not work.
 The administration uses the ``MapWhen`` functionality of ASP.NET Core and all requests to ``{root}/administration`` will be sent there not to the Ocelot middleware.
 
-The secret is the client secret that Ocelot's internal `IdentityServer4`_ will use to authenticate requests to the administration API.
+The secret is the client secret that Ocelot's internal `IdentityServer`_ will use to authenticate requests to the :ref:`administration-api`.
 This can be whatever you want it to be!
-In order to pass this secret string as parameter, we must call the ``AddAdministration()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f1]_, as shown below:
+In order to pass this secret string as parameter, we must call the ``AddAdministration()`` extension of the ``OcelotBuilder`` being returned by ``AddOcelot()`` [#f2]_, as shown below:
 
 .. code-block:: csharp
 
@@ -65,7 +79,7 @@ In order to pass this secret string as parameter, we must call the ``AddAdminist
         .AddOcelot(builder.Configuration)
         .AddAdministration("/administration", "secret");
 
-In order for the administration API to work, Ocelot and `IdentityServer4`_ must be able to call themselves for validation.
+In order for the :ref:`administration-api` to work, Ocelot and `IdentityServer`_ must be able to call themselves for validation.
 This means that you need to add the base URL of Ocelot to the global configuration if it is not the default ``http://localhost:5000``.
 
 Please note, if you are using something like Docker to host Ocelot, it might not be able to call back to ``localhost``, etc., and you need to know what you are doing with Docker networking in this scenario.
@@ -92,7 +106,7 @@ Obviously these will need to be changed if you are running Ocelot on a different
 
 The scripts show you how to request a Bearer token from Ocelot and then use it to GET the existing configuration and POST a configuration.
 
-If you are running multiple Ocelot instances in a cluster then you need to use a certificate to sign the Bearer tokens used to access the administration API.
+If you are running multiple Ocelot instances in a cluster then you need to use a certificate to sign the Bearer tokens used to access the :ref:`administration-api`.
 
 In order to do this, you need to add two more environmental variables for each Ocelot in the cluster:
 
@@ -110,7 +124,7 @@ Administration API
 * **POST** ``{adminPath}/connect/token``
 
     This gets a token for use with the admin area using the client credentials we talk about setting above.
-    Under the hood this calls into an `IdentityServer4`_ hosted within Ocelot.
+    Under the hood this calls into an `IdentityServer`_ hosted within Ocelot.
 
     The body of the request is form-data as follows:
 
@@ -143,4 +157,5 @@ Administration API
 
 """"
 
-.. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f1] The ":ref:`ad-your-own-identityserver`" feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
+.. [#f2] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
