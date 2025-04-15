@@ -15,6 +15,7 @@ release = '24.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx_copybutton'
 ]
 
 templates_path = ['_templates']
