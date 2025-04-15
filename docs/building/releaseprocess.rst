@@ -1,10 +1,15 @@
+.. _Gitflow Workflow: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+.. _GitHub Flow: https://docs.github.com/en/get-started/using-github/github-flow
+.. _develop: https://github.com/ThreeMammals/Ocelot/tree/develop
+.. _main: https://github.com/ThreeMammals/Ocelot/tree/main
+
 Release Process
 ===============
 
-* The *release process* is optimized when using Gitflow branching, as detailed here: `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_.
-  It's important to note that the Ocelot team does not utilize `GitHub Flow <https://docs.github.com/en/get-started/using-github/github-flow>`_, which, despite being quicker, does not align with the efficiency required for Ocelot's delivery.
-* Contributors are free to manage their pull requests and feature branches as they see fit to contribute to the `develop <https://github.com/ThreeMammals/Ocelot/tree/develop>`_ branch.
-* Maintainers have the autonomy to handle pull requests and merges. Any merges to the `main <https://github.com/ThreeMammals/Ocelot/tree/main>`_ branch will trigger the release of packages to GitHub and NuGet.
+* The *release process* is optimized when using Gitflow branching, as detailed here: `Gitflow Workflow`_.
+  It's important to note that the Ocelot team does not utilize `GitHub Flow`_, which, despite being quicker, does not align with the efficiency required for Ocelot's delivery.
+* Contributors are free to manage their pull requests and feature branches as they see fit to contribute to the `develop`_ branch.
+* Maintainers have the autonomy to handle pull requests and merges. Any merges to the `main`_ branch will trigger the release of packages to GitHub and NuGet.
 * In conclusion, while users should adhere to the guidelines in :doc:`../building/devprocess`, maintainers should follow the procedures outlined in :doc:`../building/releaseprocess`.
 
 Ocelot project follows this *release process* to incorporate work into NuGet packages:
@@ -49,4 +54,5 @@ The maintainers' primary focus during the final merge is to identify any securit
 Quality Gates
 -------------
 
-    To be developed...
+  To be developed...
+
