@@ -71,7 +71,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     :maxdepth: 3
     :caption: Building Ocelot
 
-    building/overview
+    building/building
     building/devprocess
     building/releaseprocess
 
