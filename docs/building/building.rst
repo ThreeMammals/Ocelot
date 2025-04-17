@@ -57,10 +57,29 @@ To run a desired target task, you need to specify its *name*:
 
 For example,
 
-- ``dotnet cake --target=Build`` runs a local build, performing compilation and testing only.
-- ``dotnet cake --target=Version`` checks the next version to be tagged in the Git repository during the next release, without performing compilation or testing tasks.
-- ``dotnet cake --target=CreateReleaseNotes`` generates Release Notes artifacts in the ``/artifacts/Packages`` folder using the ``ReleaseNotes.md`` template file.
-- ``dotnet cake --target=Release`` creates a release, consisting of the following steps: compilation, testing, generating release notes, creating .nupkg files, publishing `NuGet`_ packages, and finally, making a GitHub release.
+- .. code-block:: shell
+
+    dotnet cake --target=Build
+
+  It runs a local build, performing compilation and testing only.
+
+- .. code-block:: shell
+
+    dotnet cake --target=Version
+  
+  It checks the next version to be tagged in the Git repository during the next release, without performing compilation or testing tasks.
+
+- .. code-block:: shell
+
+    dotnet cake --target=CreateReleaseNotes
+  
+  It generates Release Notes artifacts in the ``/artifacts/Packages`` folder using the ``ReleaseNotes.md`` template file.
+
+- .. code-block:: shell
+
+    dotnet cake --target=Release
+
+  It creates a release, consisting of the following steps: compilation, testing, generating release notes, creating .nupkg files, publishing `NuGet`_ packages, and finally, making a GitHub release.
 
 .. _dotnet-tools.json: https://github.com/ThreeMammals/Ocelot/blob/main/.config/dotnet-tools.json
 
