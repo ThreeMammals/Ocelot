@@ -48,7 +48,7 @@ What's New?
   This legal issue and technical incident were unforeseen on our part because Ocelot is *open-source software* (OSS), and forcibly stopping the project's build process and blocking accounts appears to be an unfortunate breach of OSS principles.
   We strongly believe that any developer or user, from any country, should be able to use software providers that support the OSS movement by offering free or other cost-free plans and serving the accounts of these users, OSS teams, and OSS projects 24/7, 365 days a year.
   We consider this legal issue and the resulting technical incidents involving CircleCI to be a serious breach of OSS principles and an act of discrimination against Ocelot users, developers, and customers who rely on Ocelot OSS, ultimately causing delays to the current release.
-  As a team, we do not recommend using CircleCI for OSS projects, as there is no guarantee that these projects will not face discrimination from this U.S. company.
+  As a team, **we do not recommend using CircleCI for OSS projects**, as there is no guarantee that these projects will not face discrimination from this U.S. company.
 
   For all developers, team leads, architects, and managers of any OSS projects—at least on GitHub—we recommend utilizing the built-in GitHub Actions CI/CD infrastructure.
   Since its founding, GitHub has supported OSS projects. Today, GitHub provides 2,000 minutes of free CI/CD build time per month for OSS repositories (public repos).
@@ -179,7 +179,8 @@ Contributing
 
 .. |octocat| image:: images/octocat.png
   :alt: octocat
-  :height: 30
+  :height: 25
+  :class: img-valign-middle
   :target: https://github.com/ThreeMammals/Ocelot/
 .. _Pull requests: https://github.com/ThreeMammals/Ocelot/pulls
 .. _issues: https://github.com/ThreeMammals/Ocelot/issues

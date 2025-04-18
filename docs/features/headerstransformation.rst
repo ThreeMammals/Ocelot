@@ -197,7 +197,8 @@ but we hope *global* transformations will be included in the next upcoming `rele
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle
 
 Any ideas and proposals can be shared in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository! |octocat|
 

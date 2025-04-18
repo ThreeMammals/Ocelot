@@ -1,3 +1,7 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
 .. _Ocelot: https://github.com/ThreeMammals/Ocelot
 .. _Cake: https://cakebuild.net
 .. _Bash: https://www.gnu.org/software/bash
@@ -114,22 +118,26 @@ You may need to adjust the platform flag depending on your system.
 With CI/CD
 ----------
 .. _workflows: https://github.com/ThreeMammals/Ocelot/tree/main/.github/workflows 
-.. _PR: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/pr.yml
-.. _Develop: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/develop.yml
-.. _Release: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/release.yml
+.. _PR: https://github.com/ThreeMammals/Ocelot/actions/workflows/pr.yml
+.. _Develop: https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml
+.. _Release: https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml
 .. _Coveralls: https://coveralls.io
 .. |ReleaseButton| image:: https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg
-   :target: https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml
-   :alt: Release Status
+  :target: https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml
+  :alt: Release Status
+  :class: img-valign-textbottom
 .. |DevelopButton| image:: https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg
-   :target: https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml
-   :alt: Development Status
+  :target: https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml
+  :alt: Development Status
+  :class: img-valign-textbottom
 .. |DevelopCoveralls| image:: https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop
-   :target: https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop
-   :alt: Coveralls Status
+  :target: https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop
+  :alt: Coveralls Status
+  :class: img-valign-textbottom
 .. |ReleaseCoveralls| image:: https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main
-   :target: https://coveralls.io/github/ThreeMammals/Ocelot?branch=main
-   :alt: Coveralls Status
+  :target: https://coveralls.io/github/ThreeMammals/Ocelot?branch=main
+  :alt: Coveralls Status
+  :class: img-valign-textbottom
 .. _break2: http://break.do
 
   | Folder: ./.github/`workflows`_
@@ -142,7 +150,9 @@ Starting from version `24.0`_, all pull requests, development commits, and relea
 There are three `workflows`_: one for pull requests (`PR`_), one for the ``develop`` branch (`Develop`_), and one for the ``main`` branch (`Release`_).
 
   **Note**: Each workflow has a dedicated status badge in the `Ocelot README`_:
-  the `Release`_ |ReleaseButton| button and the `Develop`_ |DevelopButton| button, with the `PR`_ status being published directly in a pull request under the "Checks" tab.
+  the |ReleaseButton|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml}{Release}` button and
+  the |DevelopButton|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml}{Develop}` button,
+  with the `PR`_ status being published directly in a pull request under the "Checks" tab.
 
 The `PR`_ workflow will track code coverage using `Coveralls`_.
 After opening a pull request or submitting a new commit to a pull request, `Coveralls`_ will publish a short message with the current code coverage once the top commit is built.
@@ -164,11 +174,13 @@ Documentation
 .. _README: https://github.com/ThreeMammals/Ocelot/blob/main/docs/readme.md
 .. _Ocelot README: https://github.com/ThreeMammals/Ocelot/blob/main/README.md
 .. |ReleaseDocs| image:: https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square
-   :target: https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest
-   :alt: ReadTheDocs Status
+  :target: https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest
+  :alt: ReadTheDocs Status
+  :class: img-valign-middle
 .. |DevelopDocs| image:: https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square
-   :target: https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop
-   :alt: ReadTheDocs Status
+  :target: https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop
+  :alt: ReadTheDocs Status
+  :class: img-valign-middle
 .. _break3: http://break.do
 
   | Folder: ./`docs`_

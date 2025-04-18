@@ -1,3 +1,8 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+
 Hosting Gotchas
 ===============
 
@@ -11,8 +16,8 @@ Please review deployment and web hosting common user scenarios below depending o
 IIS
 ---
 
-    | Repository Label: |image-IIS| `IIS <https://github.com/ThreeMammals/Ocelot/labels/IIS>`_
-    | Microsoft Learn: `Host ASP.NET Core on Windows with IIS <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/>`_
+  | Repository Label: |image-IIS|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/IIS}{IIS}`
+  | Microsoft Learn: `Host ASP.NET Core on Windows with IIS <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/>`_
 
 We **do not** recommend to deploy Ocelot app to IIS environments, but if you do, keep in mind the gotchas below.
 
@@ -28,11 +33,12 @@ The community constanly reports `issues related to IIS <https://github.com/Three
 If you have some troubles in IIS environment to host Ocelot app, first of all, read open/closed issues, and after that, search for `IIS-related objects`_ in the repository.
 Probably you will find a ready solution by Ocelot community members. 
 
-    Finally, we have special label |image-IIS| for all `IIS-related objects`_.
+    Finally, there is the special |image-IIS|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/IIS}{IIS}` label for all `IIS-related objects`_.
     Feel free to put this label onto `issues <https://github.com/ThreeMammals/Ocelot/labels/IIS>`_, `pull requests <https://github.com/ThreeMammals/Ocelot/pulls?q=is%3Apr+label%3AIIS+>`_, `discussions <https://github.com/ThreeMammals/Ocelot/discussions?discussions_q=label%3AIIS>`_, etc.
 
 .. |image-IIS| image:: ../images/label-IIS-c5def5.svg
   :alt: label IIS
+  :class: img-valign-bottom
   :target: https://github.com/ThreeMammals/Ocelot/labels/IIS
 .. _IIS-related objects: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20IIS&type=code
 
@@ -41,8 +47,8 @@ Probably you will find a ready solution by Ocelot community members.
 Kestrel
 -------
 
-    | Repository Label: |image-Kestrel| `Kestrel <https://github.com/ThreeMammals/Ocelot/labels/Kestrel>`_
-    | Microsoft Learn: `Kestrel web server in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel>`_
+  | Repository Label: |image-Kestrel|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/Kestrel}{Kestrel}`
+  | Microsoft Learn: `Kestrel web server in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel>`_
 
 We **do** recommend to deploy Ocelot app to self-hosting environments, aka Kestrel vs Docker.
 We try to optimize Ocelot web app for Kestrel & Docker hosting scenarios, but keep in mind the following gotchas.
@@ -77,11 +83,12 @@ As a quick fix, use this configuration recipe:
 
 .. _break: http://break.do
 
-    Finally, we have special label |image-Kestrel| for all `Kestrel-related objects <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20Kestrel&type=code>`_.
+    Finally, there is the special |image-Kestrel|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/Kestrel}{Kestrel}` label for all `Kestrel-related objects <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20Kestrel&type=code>`_.
     Feel free to put this label onto `issues <https://github.com/ThreeMammals/Ocelot/labels/Kestrel>`__, `pull requests <https://github.com/ThreeMammals/Ocelot/pulls?q=is%3Apr+label%3AKestrel+>`__, `discussions <https://github.com/ThreeMammals/Ocelot/discussions?discussions_q=label%3AKestrel>`__, etc.
 
 .. |image-Kestrel| image:: ../images/label-Kestrel-c5def5.svg
   :alt: label Kestrel
+  :class: img-valign-bottom
   :target: https://github.com/ThreeMammals/Ocelot/labels/Kestrel
 
 """"

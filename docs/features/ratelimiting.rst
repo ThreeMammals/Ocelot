@@ -127,4 +127,5 @@ We encourage you to share your thoughts with us in the `Discussions <https://git
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle

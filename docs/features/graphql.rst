@@ -28,7 +28,8 @@ If you have sufficient experience with `GraphQL`_ and the mentioned .NET `graphq
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle
 
 Who knows, maybe you will get inspired by the sample development and come up with a design solution in the form of a rough draft of a *GraphQL* feature to implement in Ocelot.
 Good luck!

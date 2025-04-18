@@ -1,11 +1,19 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
 .. _Polly: https://www.thepollyproject.org
 .. _documentation: https://www.pollydocs.org
+.. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
+  :target: https://github.com/ThreeMammals/Ocelot/labels/QoS
+  :alt: label QoS
+  :class: img-valign-textbottom
 
 Quality of Service
 ==================
 
-  Label: |QoS_label|
+  Repository Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
 
 Ocelot currently supports a single *Quality of Service* (QoS) capability.
 It allows you to configure, on a per-route basis, the application of a circuit breaker when making requests to downstream services.
@@ -162,5 +170,3 @@ Finally, to define your own set of exceptions for mapping, you can apply the fol
 .. _2073: https://github.com/ThreeMammals/Ocelot/pull/2073
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
-.. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
-   :target: https://github.com/ThreeMammals/Ocelot/labels/QoS

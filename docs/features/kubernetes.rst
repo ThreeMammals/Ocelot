@@ -1,11 +1,16 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
 .. |K8sLogo| image:: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png
   :alt: K8s Logo
   :height: 50
+  :class: img-valign-bottom
   :target: https://kubernetes.io
-
-.. |kubernetes| image:: https://kubernetes.io/images/nav_logo2.svg
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
   :alt: kubernetes logo
-  :height: 17
+  :height: 30
+  :class: img-valign-middle
   :target: https://kubernetes.io
 
 .. _KubeClient: https://www.nuget.org/packages/KubeClient
@@ -29,7 +34,7 @@ For a comprehensive understanding, it is essential refer to the `KubeClient`_ do
 Install
 -------
 
-The first thing you need to do is install the `package`_ that provides |kubernetes| support in Ocelot:
+The first thing you need to do is install the `package`_ that provides |logo-kubernetes| support in Ocelot:
 
 .. code-block:: powershell
 

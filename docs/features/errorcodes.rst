@@ -60,4 +60,5 @@ We expect you to share your use case with us in the `Discussions <https://github
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle

@@ -149,7 +149,8 @@ In any case, if the current overridden middleware does not provide enough pipeli
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle
 
 """"
 

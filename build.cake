@@ -92,6 +92,7 @@ Task("Compile")
 	.IsDependentOn("Version")
 	.Does(() =>
 	{	
+		PreprocessReadMe();
 		Information("Branch: " + GetBranchName());
 		Information("Build: " + compileConfig);
 		Information("Solution: " + slnFile);
@@ -181,7 +182,7 @@ Task("CreateReleaseNotes")
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
         Information("{1} Last release tag is " + lastRelease);
-        var body = System.IO.File.ReadAllText("./ReleaseNotes.md");
+        var body = System.IO.File.ReadAllText("./ReleaseNotes.md", System.Text.Encoding.UTF8);
         var releaseHeader = string.Format(body, releaseVersion, lastRelease);
         releaseNotes = new List<string> { releaseHeader };
         if (IsTechnicalRelease)
@@ -466,7 +467,7 @@ private void WriteReleaseNotes()
 	var content = System.IO.File.ReadAllText(releaseNotesFile, Encoding.UTF8);
 	if (string.IsNullOrEmpty(content))
 	{
-		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
+		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release", System.Text.Encoding.UTF8);
 	}
 	Information("Release notes are >>>{0}<<<", NL + content);
 }
@@ -654,7 +655,7 @@ Task("PublishGitHubRelease")
 		if (!IsRunningInCICD())
 		{
 			Warning("We are not running on the CI/CD so we won't publish a GitHub release");
-			return;
+			//return;
 		}
 
 		dynamic release = CreateGitHubRelease();
@@ -717,23 +718,59 @@ Task("PublishToNuget")
 			Information("Skipping of publishing to NuGet because of technical release...");
 			return;
 		}
-
-		if (IsRunningInCICD())
-		{
-			var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
-			var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
-			var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
-			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
-		}
-		else
+		if (!IsRunningInCICD())
 		{
 			Warning("We are not running on the CI/CD so we won't publish NuGet packages.");
+			//return;
 		}
+		var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
+		var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
+		var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
+		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 	});
 
 Task("Void").Does(() => {});
 
 RunTarget(target);
+
+private void PreprocessReadMe()
+{
+	const string READMEmd = "./README.md";
+	const string RTD_NuGet_Valid_Domain = "[ReadTheDocs][~docspassing]";
+	const string RTD_Version_Latest  = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)";
+	const string RTD_Version_Develop = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)";
+	Information($"Processing {READMEmd} ...");
+    var body = System.IO.File.ReadAllText(READMEmd, System.Text.Encoding.UTF8);
+	var RTD_IsReplaced = false;
+	if (body.Contains(RTD_Version_Latest))
+	{
+		Information($"  {READMEmd}: Detected ReadTheDocs LATEST version marker -> {RTD_Version_Latest}");
+		body = body.Replace(RTD_Version_Latest, RTD_NuGet_Valid_Domain);
+		RTD_IsReplaced = true;
+	}
+	if (body.Contains(RTD_Version_Develop))
+	{
+		Information($"  {READMEmd}: Detected ReadTheDocs DEVELOP version marker -> {RTD_Version_Develop}");
+		body = body.Replace(RTD_Version_Develop, RTD_NuGet_Valid_Domain);
+		RTD_IsReplaced = true;
+	}
+	if (RTD_IsReplaced)
+	{
+		Information($"  {READMEmd}: ReadTheDocs badge has been replaced with -> {RTD_NuGet_Valid_Domain}");
+	}	
+
+	const string IMG_Octocat_HTML = "<img src=\"https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png\" alt=\"octocat\" height=\"25\" />";
+	const string IMG_NuGet_Valid_MD = "![octocat](https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat-25px.png)";
+	if (body.Contains(IMG_Octocat_HTML))
+	{
+		Information($"  {READMEmd}: Detected Octocat HTML IMG-tag -> " + IMG_Octocat_HTML);
+		body = body.Replace(IMG_Octocat_HTML, IMG_NuGet_Valid_MD);
+		Information($"  {READMEmd}: Octocat HTML IMG-tag has been replaced with -> " + IMG_NuGet_Valid_MD);
+	}
+	Information($"  {READMEmd}: Writing the body of the {READMEmd}...");
+	System.IO.File.WriteAllText(READMEmd, body, System.Text.Encoding.UTF8);
+	Information($"DONE Processing {READMEmd}{NL}");
+}
 
 private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 {
@@ -772,17 +809,17 @@ private void PersistVersion(string committedVersion, string newVersion)
 		var file = projectFile.ToString();
 		Information(string.Format("Updating {0}...", file));
 
-		var updatedProjectFile = System.IO.File.ReadAllText(file)
+		var updatedProjectFile = System.IO.File.ReadAllText(file, System.Text.Encoding.UTF8)
 			.Replace(committedVersion, newVersion);
 
-		System.IO.File.WriteAllText(file, updatedProjectFile);
+		System.IO.File.WriteAllText(file, updatedProjectFile, System.Text.Encoding.UTF8);
 	}
 }
 
 /// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information("PublishPackages: Publishing to NuGet...");
+		Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
         var artifacts = System.IO.File
             .ReadAllLines(artifactsFile)
 			.Distinct();
@@ -794,17 +831,30 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
             // "Ocelot.Tracing.Butterfly",
             // "Ocelot.Tracing.OpenTracing",
         };
+		var errors = new List<string>();
 		foreach (var artifact in artifacts)
 		{
             if (skippable.Exists(x => artifact.StartsWith(x)))
 				continue;
 
 			var codePackage = packagesDir + File(artifact);
-			Information("PublishPackages: Pushing package " + codePackage + "...");
-			DotNetNuGetPush(
-				codePackage,
-				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl }
-			);
+			Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
+			try
+			{
+				DotNetNuGetPush(codePackage,
+					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl });
+			}
+			catch (Exception e)
+			{
+				errors.Add(e.Message);
+			}
+		}
+		if (errors.Count > 0)
+		{
+			Information($"{nameof(PublishPackages)}: Errors >>>");
+			var err = string.Join(NL, errors);
+			Warning(err);
+			throw new Exception(err);
 		}
 }
 
@@ -819,7 +869,7 @@ private void SetupGitHubClient(System.Net.Http.HttpClient client)
 
 private dynamic CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"main\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using (var client = new System.Net.Http.HttpClient())
@@ -841,7 +891,8 @@ private dynamic CreateGitHubRelease()
 
 private string ReleaseNotesAsJson()
 {
-	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(System.IO.File.ReadAllText(releaseNotesFile));
+	var body = System.IO.File.ReadAllText(releaseNotesFile, System.Text.Encoding.UTF8);
+	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(body);
 }
 
 private void UploadFileToGitHubRelease(dynamic release, FilePath file)
@@ -873,7 +924,7 @@ private void CompleteGitHubRelease(dynamic release)
 {
 	int releaseId = release.id;
 	string url = release.url.ToString();
-	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"main\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 

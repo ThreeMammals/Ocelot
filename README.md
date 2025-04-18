@@ -1,12 +1,15 @@
-![Ocelot Logo](https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/ocelot_logo.png)
+﻿![Ocelot Logo](https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/ocelot_logo.png)
 
 [![Release Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
 [![Development Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-[![ReadTheDocs Status](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
-[![Coveralls Status](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
+[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
+[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
 [![NuGet](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=NuGet&color=blue)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
+
+[~docspassing]: https://img.shields.io/badge/Docs-passing-44CC11?style=flat-square
+[~docsfailing]: https://img.shields.io/badge/Docs-failing-red?style=flat-square
 
 ## About
 Ocelot is a .NET [API gateway](https://www.bing.com/search?q=API+gateway).
@@ -64,22 +67,24 @@ All versions are available [on NuGet](https://www.nuget.org/packages/Ocelot#vers
 
 ## Documentation
 - [RST-sources](https://github.com/ThreeMammals/Ocelot/tree/develop/docs):
-  This includes the source code of the documentation as **.rst**-files, which are up to date for current development.
+  This includes the source code for the documentation (in reStructuredText format, .rst files), which is up to date for the current [development](https://github.com/ThreeMammals/Ocelot/tree/develop/).
+  And the rendered HTML documentation is available [here](https://ocelot.readthedocs.io/en/develop/).
 - [Read the Docs](https://ocelot.readthedocs.io):
-  This includes a lot of information and will be helpful if you want to understand the features Ocelot currently offers.
+  This official website, in HTML format, contains a wealth of information and will be helpful if you want to understand the [features](#features) that Ocelot currently offers.
+  The rendered HTML documentation, which is currently in [development](https://github.com/ThreeMammals/Ocelot/tree/develop/docs), is available [here](https://ocelot.readthedocs.io/en/develop/).
 - [Ask Ocelot Guru](https://gurubase.io/g/ocelot):
-  It is an Ocelot-focused AI designed to answer your questions. [^5]
+  It is an AI focused on Ocelot, designed to answer your questions. [^5]
 
 ## Coming up
 You can see what we are working on in the [backlog](https://github.com/ThreeMammals/Ocelot/issues).
 
 ## Contributing
 We love to receive contributions from the community, so please keep them coming.
-Pull requests, issues, and commentary welcome! <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="20" />
+Pull requests, issues, and commentary welcome! <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="25" />
 
 Please complete the relevant [template](https://github.com/ThreeMammals/Ocelot/tree/main/.github) for [issues](https://github.com/ThreeMammals/Ocelot/blob/main/.github/ISSUE_TEMPLATE.md) and [pull requests](https://github.com/ThreeMammals/Ocelot/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 Sometimes it's worth getting in touch with us to [discuss](https://github.com/ThreeMammals/Ocelot/discussions) changes before doing any work in case this is something we are already doing or it might not make sense.
-We can also give advice on the easiest way to do things <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="20" />
+We can also give advice on the easiest way to do things <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="25" />
 
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
@@ -87,7 +92,7 @@ Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](htt
 [![label: large effort][~largeeffort]](https://github.com/ThreeMammals/Ocelot/labels/large%20effort). [^6]
 If you want to contribute for the first time, we suggest looking at a [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted) 
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort) 
-[![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="20" />
+[![label: good first issue][~goodfirstissue]](https://github.com/ThreeMammals/Ocelot/labels/good%20first%20issue) <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="25" />
 
 [~helpwanted]: https://img.shields.io/badge/-help%20wanted-128A0C.svg
 [~smalleffort]: https://img.shields.io/badge/-small%20effort-fef2c0.svg
