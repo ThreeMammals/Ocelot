@@ -299,10 +299,10 @@ We are pleased to invite you to run logging benchmarks on your machine by follow
 7. Wait for 3+ minutes to complete the benchmark and get the final results.
 8. Read and analyze your benchmark session results.
 
-.. Indicators
-.. ^^^^^^^^^^
-
-.. ``To be developed...``
+..
+      Indicators
+      ^^^^^^^^^^
+      To be developed...
 
 """"
 

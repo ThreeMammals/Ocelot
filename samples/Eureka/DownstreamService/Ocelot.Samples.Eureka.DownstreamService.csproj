@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.8" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />

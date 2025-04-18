@@ -103,7 +103,8 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
             {
                 s.AddOcelot()
                     .AddCacheManager(x => x
-                        .WithMicrosoftLogging(_ => { /*log.AddConsole(LogLevel.Debug);*/ })
+
+                        //.WithMicrosoftLogging(_ => { /*log.AddConsole(LogLevel.Debug);*/ })
                         .WithJsonSerializer()
                         .WithHandle(typeof(InMemoryJsonHandle<>)))
                     .AddConsul()

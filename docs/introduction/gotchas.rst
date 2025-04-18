@@ -11,7 +11,7 @@ Please review deployment and web hosting common user scenarios below depending o
 IIS
 ---
 
-    | Repository Label: |image-IIS|
+    | Repository Label: |image-IIS| `IIS <https://github.com/ThreeMammals/Ocelot/labels/IIS>`_
     | Microsoft Learn: `Host ASP.NET Core on Windows with IIS <https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/>`_
 
 We **do not** recommend to deploy Ocelot app to IIS environments, but if you do, keep in mind the gotchas below.
@@ -41,7 +41,7 @@ Probably you will find a ready solution by Ocelot community members.
 Kestrel
 -------
 
-    | Repository Label: |image-Kestrel|
+    | Repository Label: |image-Kestrel| `Kestrel <https://github.com/ThreeMammals/Ocelot/labels/Kestrel>`_
     | Microsoft Learn: `Kestrel web server in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel>`_
 
 We **do** recommend to deploy Ocelot app to self-hosting environments, aka Kestrel vs Docker.

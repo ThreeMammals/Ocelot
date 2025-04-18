@@ -1,7 +1,9 @@
 name: Release
 on:
   push:
-    branches: [ "release/24.0" ] # main
+    branches:
+      - main
+      #- 'release/24.0'
 env:
   WORKFLOW_VAR: Release # ${{ vars.WORKFLOW_VAR }}
 jobs:
