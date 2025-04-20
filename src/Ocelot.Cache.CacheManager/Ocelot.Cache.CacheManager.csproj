@@ -10,7 +10,7 @@
     <PackageId>Ocelot.Cache.CacheManager</PackageId>
     <PackageTags>API Gateway;.NET</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Cache.CacheManager</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -23,7 +23,7 @@
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
     <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
@@ -36,7 +36,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\ocelot_logo.png">
+    <None Include="..\ocelot_icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

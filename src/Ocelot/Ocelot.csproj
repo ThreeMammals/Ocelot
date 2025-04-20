@@ -10,7 +10,7 @@
     <PackageId>Ocelot</PackageId>
     <PackageTags>API Gateway;.NET Core;.NET</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -24,7 +24,7 @@
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
     <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageReleaseNotes>Upgrade to .NET 9 with supported TFMs (net8.0;net9.0)</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -69,7 +69,7 @@
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\ocelot_logo.png">
+    <None Include="..\ocelot_icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

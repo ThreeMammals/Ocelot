@@ -33,6 +33,25 @@ This major release upgrades `Ocelot`_ package `TFMs <https://learn.microsoft.com
 Thus, the current Ocelot `supported frameworks <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ are .NET 8 LTS and .NET 9 STS.
 According to the `.NET Support Policy <https://dotnet.microsoft.com/en-us/platform/support/policy>`_, the Ocelot team has discontinued support of .NET 6 and .NET 7 by providing the version `23.4.3`_ which targets those .NET versions.
 
+Official Notice to the Community Regarding CircleCI
+---------------------------------------------------
+
+Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
+But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
+This legal issue and technical incident were unforeseen on our part because Ocelot is *open-source software* (OSS), and forcibly stopping the project's build process and blocking accounts appears to be an unfortunate breach of OSS principles.
+We strongly believe that any developer or user, from any country, should be able to use software providers that support the OSS movement by offering free or other cost-free plans and serving the accounts of these users, OSS teams, and OSS projects 24/7, 365 days a year.
+We consider this legal issue and the resulting technical incidents involving CircleCI to be a serious breach of OSS principles and an act of discrimination against Ocelot users, developers, and customers who rely on Ocelot OSS, ultimately causing delays to the current release.
+As a team, **we do not recommend using CircleCI for OSS projects**, as there is no guarantee that these projects will not face discrimination from this U.S. company.
+
+For all developers, team leads, architects, and managers of any OSS projects—at least on GitHub—we recommend utilizing the built-in GitHub Actions CI/CD infrastructure.
+Since its founding, GitHub has supported OSS projects. Today, GitHub provides 2,000 minutes of free CI/CD build time per month for OSS repositories (public repos).
+Also, we strongly believe that GitHub will never violate its OSS policies without a notice period, nor fail to inform owners and maintainers that certain policies must be met by Ocelot's owners.
+In addition, we want to acknowledge that we are monitoring U.S. government regulations.
+Unfortunately, we must state that some GitHub products are unavailable in certain countries, even if the project is OSS and GitHub claims these products are free for OSS.
+Since the Ocelot team does not utilize these non-critical products (we prefer to energize our brains rather than rely on AI-driven products), and since the Ocelot project is currently well-served by GitHub Co, the Ocelot team affirms that Ocelot will remain on GitHub as long as its OSS-friendly policies continue.
+As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
+Regardless, we remain on GitHub!
+
 What's New?
 -----------
 
@@ -41,36 +60,18 @@ What's New?
 
 - `DevOps`_: The CI/CD infrastructure was migrated from CircleCI to GitHub Actions by `@raman-m`_.
 
-  **Official Notice to the Community Regarding CircleCI**
-
-  Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
-  But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
-  This legal issue and technical incident were unforeseen on our part because Ocelot is *open-source software* (OSS), and forcibly stopping the project's build process and blocking accounts appears to be an unfortunate breach of OSS principles.
-  We strongly believe that any developer or user, from any country, should be able to use software providers that support the OSS movement by offering free or other cost-free plans and serving the accounts of these users, OSS teams, and OSS projects 24/7, 365 days a year.
-  We consider this legal issue and the resulting technical incidents involving CircleCI to be a serious breach of OSS principles and an act of discrimination against Ocelot users, developers, and customers who rely on Ocelot OSS, ultimately causing delays to the current release.
-  As a team, **we do not recommend using CircleCI for OSS projects**, as there is no guarantee that these projects will not face discrimination from this U.S. company.
-
-  For all developers, team leads, architects, and managers of any OSS projects—at least on GitHub—we recommend utilizing the built-in GitHub Actions CI/CD infrastructure.
-  Since its founding, GitHub has supported OSS projects. Today, GitHub provides 2,000 minutes of free CI/CD build time per month for OSS repositories (public repos).
-  Also, we strongly believe that GitHub will never violate its OSS policies without a notice period, nor fail to inform owners and maintainers that certain policies must be met by Ocelot's owners.
-  In addition, we want to acknowledge that we are monitoring U.S. government regulations.
-  Unfortunately, we must state that some GitHub products are unavailable in certain countries, even if the project is OSS and GitHub claims these products are free for OSS.
-  Since the Ocelot team does not utilize these non-critical products (we prefer to energize our brains rather than rely on AI-driven products), and since the Ocelot project is currently well-served by GitHub Co, the Ocelot team affirms that Ocelot will remain on GitHub as long as its OSS-friendly policies continue.
-  As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
-  Regardless, we remain on GitHub!
-
-  **Technical Information**
-
   .. _PR: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/pr.yml
   .. _Develop: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/develop.yml
   .. _Release: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/release.yml
   .. _three workflows: https://github.com/ThreeMammals/Ocelot/tree/main/.github/workflows
-  .. _GitHub Actions: https://docs.github.com/en/actions
+  .. _documentation: https://docs.github.com/en/actions
+  .. _GitHub Actions: https://github.com/features/actions
   .. _Coveralls: https://coveralls.io/
   .. _ThreeMammals/Ocelot: https://coveralls.io/github/ThreeMammals/Ocelot
 
-  Starting from version `24.0`_, all pull requests, development commits, and releases will be built using `GitHub Actions`_ workflows.
+  Starting from version `24.0`_, all pull requests, development commits, and releases will be built using `GitHub Actions`_ workflows (`documentation`_).
   We currently have `three workflows`_: one for pull requests (`PR`_), one for the ``develop`` branch (`Develop`_), and one for the ``main`` branch (`Release`_).
+  All workflow runs are available on the `Actions dashboard <https://github.com/ThreeMammals/Ocelot/actions>`_.
 
   The `PR`_ workflow will track code coverage using `Coveralls`_.
   After opening a pull request or submitting a new commit to a pull request, `Coveralls`_ will publish a short message with the current code coverage once the top commit is built.

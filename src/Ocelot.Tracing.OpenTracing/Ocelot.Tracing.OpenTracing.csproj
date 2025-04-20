@@ -8,7 +8,7 @@
     <PackageId>Ocelot.Tracing.OpenTracing</PackageId>
     <PackageTags>API Gateway;.NET;OpenTracing</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.OpenTracing</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Description>This package provides methods for integrating OpenTracing with Ocelot.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -20,7 +20,7 @@
     <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
@@ -30,7 +30,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\ocelot_logo.png">
+    <None Include="..\ocelot_icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

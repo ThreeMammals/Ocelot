@@ -10,7 +10,7 @@
     <PackageId>Ocelot.Tracing.Butterfly</PackageId>
     <PackageTags>API Gateway;.NET Core;.NET;Butterfly;ButterflyAPM</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.Butterfly</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -23,7 +23,7 @@
     <NoWarn>1591</NoWarn>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
     <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
     <Product>Ocelot Gateway</Product>
     <Company>Three Mammals</Company>
@@ -37,7 +37,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\ocelot_logo.png">
+    <None Include="..\ocelot_icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
