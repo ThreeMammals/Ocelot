@@ -127,6 +127,7 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
+		versioning.NuGetVersion ??= (target == Release) ? versioning.MajorMinorPatch : versioning.SemVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -137,15 +138,15 @@ Task("Version")
 		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
 		Information("#########################");
 
-		// if (IsRunningInCICD())
-		// {
-			Information("Persisting version number...");
-			PersistVersion(committedVersion, versioning.SemVer);
-		// }
-		// else
-		// {
-		// 	Information("We are not running on build server, so we won't persist the version number.");
-		// }
+		if (IsRunningInCICD())
+		{
+			Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
+			PersistVersion(committedVersion, versioning.NuGetVersion);
+		}
+		else
+		{
+			Information("We are not running on build server, so we will not persist the version number.");
+		}
 	});
 
 Task("GitLogUniqContributors")
@@ -177,7 +178,7 @@ Task("CreateReleaseNotes")
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
         var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-        var releaseVersion = versioning.SemVer;
+        var releaseVersion = versioning.NuGetVersion;
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
@@ -690,7 +691,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			System.Threading.Thread.Sleep(5000);
 			EnsureDirectoryExists(packagesDir);
 
-			var releaseUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/" + versioning.SemVer;
+			var releaseUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/" + versioning.NuGetVersion;
 			var releaseInfo = await GetResourceAsync(releaseUrl);
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(releaseInfo)
 				.Value<string>("assets_url");
@@ -869,7 +870,8 @@ private void SetupGitHubClient(System.Net.Http.HttpClient client)
 
 private dynamic CreateGitHubRelease()
 {
-	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
+	var body = ReleaseNotesAsJson();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using (var client = new System.Net.Http.HttpClient())
@@ -924,7 +926,8 @@ private void CompleteGitHubRelease(dynamic release)
 {
 	int releaseId = release.id;
 	string url = release.url.ToString();
-	var json = $"{{ \"tag_name\": \"{versioning.SemVer}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.SemVer}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
+	string body = ReleaseNotesAsJson();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
