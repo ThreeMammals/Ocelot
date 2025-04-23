@@ -152,6 +152,31 @@ public class LoadBalancerMiddlewareTests : UnitTest
         _httpContext.Items.DownstreamRequest().Scheme.ShouldBeEquivalentTo("https");
     }
 
+    [Fact]
+    public async Task Should_set_service_prefix()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .Build();
+        var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
+            .Build();
+        GivenTheDownStreamUrlIs("http://my.url/prefix/abc?q=123");
+        GivenTheConfigurationIs(serviceProviderConfig);
+        GivenTheDownStreamRouteIs(downstreamRoute, new List<PlaceholderNameAndValue>());
+
+        // Arrange: Given The Load Balancer Returns Ok
+        _loadBalancer.Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("abc", 123, "https", "prefix")));
+
+        // Act
+        _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Items.DownstreamRequest().ServicePathPrefix.ShouldBeEquivalentTo("prefix");
+    }
+
     private void GivenTheConfigurationIs(ServiceProviderConfiguration config)
     {
         var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null, null);

@@ -18,9 +18,13 @@ public class ServiceHostAndPort : IEquatable<ServiceHostAndPort>
     public ServiceHostAndPort(string downstreamHost, int downstreamPort, string scheme)
         : this(downstreamHost, downstreamPort) => Scheme = scheme;
 
+    public ServiceHostAndPort(string downstreamHost, int downstreamPort, string scheme, string pathPrefix)
+        : this(downstreamHost, downstreamPort, scheme) => PathPrefix = pathPrefix;
+
     public string DownstreamHost { get; }
     public int DownstreamPort { get; }
     public string Scheme { get; }
+    public string PathPrefix { get; } = string.Empty;
 
     public override string ToString()
         => $"{Scheme}:{DownstreamHost}:{DownstreamPort}";

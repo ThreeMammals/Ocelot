@@ -37,7 +37,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         var placeholders = httpContext.Items.TemplatePlaceholderNameAndValues();
         var response = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
         var downstreamRequest = httpContext.Items.DownstreamRequest();
-        var upstreamPath = downstreamRequest.AbsolutePath;
+        var upstreamPath = downstreamRequest.Path;
 
         if (response.IsError)
         {
@@ -67,14 +67,14 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, placeholders, response);
 
             // TODO Check this works again hope there is a test..
-            downstreamRequest.AbsolutePath = path;
+            downstreamRequest.Path = path;
             downstreamRequest.Query = query;
         }
         else
         {
             if (dsPath.Contains(QuestionMark))
             {
-                downstreamRequest.AbsolutePath = GetPath(dsPath);
+                downstreamRequest.Path = GetPath(dsPath);
                 var newQuery = GetQueryString(dsPath);
                 downstreamRequest.Query = string.IsNullOrEmpty(downstreamRequest.Query)
                     ? newQuery
@@ -83,7 +83,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             else
             {
                 RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
-                downstreamRequest.AbsolutePath = dsPath;
+                downstreamRequest.Path = dsPath;
             }
         }
 

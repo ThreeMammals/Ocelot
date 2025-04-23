@@ -16,7 +16,7 @@ public class DownstreamRequest
         Scheme = _request.RequestUri.Scheme;
         Host = _request.RequestUri.Host;
         Port = _request.RequestUri.Port;
-        AbsolutePath = _request.RequestUri.AbsolutePath;
+        Path = _request.RequestUri.AbsolutePath;
         Query = _request.RequestUri.Query;
     }
 
@@ -32,7 +32,9 @@ public class DownstreamRequest
 
     public int Port { get; set; }
 
-    public string AbsolutePath { get; set; }
+    public string Path { get; set; }
+
+    public string ServicePathPrefix { get; set; } = string.Empty;
 
     public string Query { get; set; }
 
@@ -42,37 +44,35 @@ public class DownstreamRequest
 
     public HttpRequestMessage ToHttpRequestMessage()
     {
-        var uriBuilder = new UriBuilder
-        {
-            Port = Port,
-            Host = Host,
-            Path = AbsolutePath,
-            Query = RemoveLeadingQuestionMark(Query),
-            Scheme = Scheme,
-        };
-
-        _request.RequestUri = uriBuilder.Uri;
+        var uri = CreateUri();
+        
+        _request.RequestUri = uri;
         _request.Method = new HttpMethod(Method);
         return _request;
     }
 
     public string ToUri()
     {
-        var uriBuilder = new UriBuilder
-        {
-            Port = Port,
-            Host = Host,
-            Path = AbsolutePath,
-            Query = RemoveLeadingQuestionMark(Query),
-            Scheme = Scheme,
-        };
-
-        return uriBuilder.Uri.AbsoluteUri;
+        return CreateUri().AbsoluteUri;
     }
 
     public override string ToString()
     {
         return ToUri();
+    }
+
+    private Uri CreateUri()
+    {
+        var uriBuilder = new UriBuilder
+        {
+            Port = Port,
+            Host = Host,
+            Path = string.IsNullOrEmpty(ServicePathPrefix) ? Path : $"{ServicePathPrefix.TrimEnd('/')}/{Path.TrimStart('/')}",
+            Query = RemoveLeadingQuestionMark(Query),
+            Scheme = Scheme,
+        };
+
+        return uriBuilder.Uri;
     }
 
     private static string RemoveLeadingQuestionMark(string query)

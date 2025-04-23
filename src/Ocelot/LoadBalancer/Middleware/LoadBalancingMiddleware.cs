@@ -46,6 +46,7 @@ public class LoadBalancingMiddleware : OcelotMiddleware
 
         //todo check downstreamRequest is ok
         downstreamRequest.Host = hostAndPort.Data.DownstreamHost;
+        downstreamRequest.ServicePathPrefix = hostAndPort.Data.PathPrefix;
 
         if (hostAndPort.Data.DownstreamPort > 0)
         {
