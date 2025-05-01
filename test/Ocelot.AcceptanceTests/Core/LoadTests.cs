@@ -65,7 +65,7 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
         var memoryUsage1 = ToMegabytes(process1.WorkingSet64);
 
         // Step 2: Measure memory consumption for varying upstream URL
-        // await WhenIDoActionForTime(TimeSpan.FromSeconds(30), (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
+        // await WhenIDoActionForTime(TimeSpan.FromSeconds(30), (i) => WhenIGetUrlOnTheApiGatewayWithRequestId("/my-gateway/order/" + i)); // varying url
         await WhenIDoActionMultipleTimes(10_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
 
         GC.Collect();

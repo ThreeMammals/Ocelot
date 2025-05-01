@@ -231,6 +231,25 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .BDDfy();
     }
 
+    private async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
+    {
+        var result = await Wait.WaitFor(2000).UntilAsync(async () =>
+        {
+            try
+            {
+                _response = await _ocelotClient.GetAsync(url);
+                _response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        });
+
+        result.ShouldBeTrue();
+    }
+
     [Theory]
     [Trait("PR", "1944")]
     [Trait("Bugs", "849 1496")]

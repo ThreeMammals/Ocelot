@@ -2,17 +2,21 @@ using Butterfly.Client.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Tracing.Butterfly;
 using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ButterflyTracingTests : IDisposable
+public sealed class ButterflyTracingTests : Steps
 {
     private IWebHost _serviceOneBuilder;
     private IWebHost _serviceTwoBuilder;
     private IWebHost _fakeButterfly;
-    private readonly Steps _steps;
     private string _downstreamPathOne;
     private string _downstreamPathTwo;
     private int _butterflyCalled;
@@ -21,11 +25,10 @@ public class ButterflyTracingTests : IDisposable
     public ButterflyTracingTests(ITestOutputHelper output)
     {
         _output = output;
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_forward_tracing_information_from_ocelot_and_downstream_services()
+    public void Should_forward_tracing_information_from_ocelot_and_downstream_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -80,25 +83,24 @@ public class ButterflyTracingTests : IDisposable
         this.Given(x => GivenFakeButterfly(butterflyUrl))
             .And(x => GivenServiceOneIsRunning($"http://localhost:{port1}", "/api/values", 200, "Hello from Laura", butterflyUrl))
             .And(x => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", butterflyUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api002/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
             .BDDfy();
 
         var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => _butterflyCalled >= 4);
 
         _output.WriteLine($"_butterflyCalled is {_butterflyCalled}");
-
         commandOnAllStateMachines.ShouldBeTrue();
     }
 
     [Fact]
-    public void should_return_tracing_header()
+    public void Should_return_tracing_header()
     {
         var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
@@ -137,14 +139,46 @@ public class ButterflyTracingTests : IDisposable
 
         this.Given(x => GivenFakeButterfly(butterflyUrl))
             .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
-            .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheTraceHeaderIsSet("Trace-Id"))
+            .And(x => ThenTheResponseHeaderIs("Tom", "Laura"))
             .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
+    {
+        var builder = TestHostBuilder.Create()
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", true, false)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile(_ocelotConfigFileName, true, false);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureServices(s =>
+            {
+                s.AddOcelot()
+                    .AddButterfly(option =>
+                    {
+                        //this is the url that the butterfly collector server is running on...
+                        option.CollectorUrl = butterflyUrl;
+                        option.Service = "Ocelot";
+                    });
+            })
+            .Configure(async app =>
+            {
+                app.Use(async (_, next) => { await next.Invoke(); });
+                await app.UseOcelot();
+            });
+
+        _ocelotServer = new TestServer(builder);
+        _ocelotClient = _ocelotServer.CreateClient();
     }
 
     private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
@@ -247,11 +281,11 @@ public class ButterflyTracingTests : IDisposable
         _serviceTwoBuilder.Start();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceOneBuilder?.Dispose();
         _serviceTwoBuilder?.Dispose();
         _fakeButterfly?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

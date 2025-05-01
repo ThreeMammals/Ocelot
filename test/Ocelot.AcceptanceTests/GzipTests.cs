@@ -1,25 +1,31 @@
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using System.IO.Compression;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public class GzipTests : IDisposable
+public sealed class GzipTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public GzipTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        base.Dispose();
     }
 
     [Fact]
-    public void should_return_response_200_with_simple_url()
+    public void Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -45,13 +51,29 @@ public class GzipTests : IDisposable
         var input = "people";
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura", "\"people\""))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .And(x => _steps.GivenThePostHasGzipContent(input))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input)))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
+    }
+
+    private static HttpContent GivenThePostHasGzipContent(object input)
+    {
+        var json = JsonConvert.SerializeObject(input);
+        var jsonBytes = Encoding.UTF8.GetBytes(json);
+        var ms = new MemoryStream();
+        using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))
+        {
+            gzip.Write(jsonBytes, 0, jsonBytes.Length);
+        }
+
+        ms.Position = 0;
+        var content = new StreamContent(ms);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        content.Headers.ContentEncoding.Add("gzip");
+        return content;
     }
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expected)
@@ -87,11 +109,5 @@ public class GzipTests : IDisposable
                 await context.Response.WriteAsync("downstream path didnt match base path");
             }
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
     }
 }

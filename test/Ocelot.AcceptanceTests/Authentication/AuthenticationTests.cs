@@ -41,8 +41,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
            .And(x => GivenThereIsAConfiguration(configuration))
 
            //.And(x => GivenOcelotIsRunning(_options, "Test"))
-           .And(x => GivenThePostHasContent("postContent"))
-           .When(x => WhenIPostUrlOnTheApiGateway("/"))
+           .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
            .BDDfy();
     }
@@ -97,8 +96,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
     }
@@ -116,8 +114,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
     }

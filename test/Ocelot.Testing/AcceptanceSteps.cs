@@ -1,6 +1,4 @@
-﻿//using IdentityServer4.AccessTokenValidation;
-//using CacheManager.Core;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -9,9 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-//using Ocelot.AcceptanceTests.Caching;
-//using Ocelot.AcceptanceTests.Properties;
-//using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -19,12 +14,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-//using Ocelot.Provider.Eureka;
-//using Ocelot.Provider.Polly;
-//using Ocelot.Tracing.Butterfly;
-//using Ocelot.Tracing.OpenTracing;
-//using Serilog;
-//using Serilog.Core;
 using Shouldly;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -39,23 +28,14 @@ namespace Ocelot.Testing;
 
 public class AcceptanceSteps : IDisposable
 {
-    public const string RequestIdKey = "Oc-RequestId";
+    protected IWebHost? _ocelotHost;
+    protected TestServer? _ocelotServer;
+    protected HttpClient? _ocelotClient;
+    protected HttpResponseMessage? _response;
 
-    protected TestServer _ocelotServer;
-    protected HttpClient _ocelotClient;
-    protected HttpResponseMessage _response;
     protected readonly Guid _testId;
     protected readonly string _ocelotConfigFileName;
-
-    // TODO Merge both members
-    protected IWebHostBuilder _webHostBuilder;
-    protected IWebHostBuilder _ocelotBuilder;
-
-    private HttpContent _postContent;
-    //private BearerToken _token;
-    private readonly Random _random;
-    private IWebHost _ocelotHost; // TODO remove because of one reference
-    private IOcelotConfigurationChangeTokenSource _changeToken;
+    protected readonly Random _random;
 
     public AcceptanceSteps() : base()
     {
@@ -82,74 +62,11 @@ public class AcceptanceSteps : IDisposable
     protected static FileRoute GivenDefaultRoute(int port) => new()
     {
         DownstreamPathTemplate = "/",
-        DownstreamHostAndPorts = new() { Localhost(port) },
+        DownstreamHostAndPorts = [ Localhost(port) ],
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [ HttpMethods.Get ],
     };
-
-    public async Task ThenConfigShouldBe(FileConfiguration fileConfig)
-    {
-        var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-        var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
-
-        var internalConfig = internalConfigRepo.Get();
-        var config = await internalConfigCreator.Create(fileConfig);
-
-        internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
-    }
-
-    //public async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
-    //{
-    //    var result = await Wait.WaitFor(timeoutMs).UntilAsync(async () =>
-    //    {
-    //        var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-    //        var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
-    //        var internalConfig = internalConfigRepo.Get();
-    //        var config = await internalConfigCreator.Create(fileConfig);
-    //        return internalConfig.Data.RequestId == config.Data.RequestId;
-    //    });
-    //    result.ShouldBe(true);
-    //}
-
-    ///// <summary>
-    ///// TODO Move to <see cref="WebSocketTests"/>. See references.
-    ///// </summary>
-    ///// <returns>Task.</returns>
-    //public async Task StartFakeOcelotWithWebSockets()
-    //{
-    //    _ocelotBuilder = TestHostBuilder.Create();
-    //    _ocelotBuilder.ConfigureServices(s =>
-    //    {
-    //        s.AddSingleton(_ocelotBuilder);
-    //        s.AddOcelot();
-    //    });
-    //    _ocelotBuilder.UseKestrel()
-    //        .UseUrls("http://localhost:5000")
-    //        .UseContentRoot(Directory.GetCurrentDirectory())
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, false, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureLogging((hostingContext, logging) =>
-    //        {
-    //            logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-    //            logging.AddConsole();
-    //        })
-    //        .Configure(async app =>
-    //        {
-    //            app.UseWebSockets();
-    //            await app.UseOcelot();
-    //        })
-    //        .UseIISIntegration();
-    //    _ocelotHost = _ocelotBuilder.Build();
-    //    await _ocelotHost.StartAsync();
-    //}
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
         => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
@@ -209,33 +126,11 @@ public class AcceptanceSteps : IDisposable
         }
     }
 
-    public void ThenTheResponseBodyHeaderIs(string key, string value)
-    {
-        var header = _response.Content.Headers.GetValues(key);
-        header.First().ShouldBe(value);
-    }
+    public void GivenOcelotIsRunning() => StartOcelot(WithBasicConfiguration);
 
-    public void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
+    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string? environmentName = null)
     {
-        StartOcelot((_, config) => config.AddJsonFile(_ocelotConfigFileName, false, shouldReload));
-    }
-
-    public void GivenIHaveAChangeToken()
-    {
-        _changeToken = _ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
-    }
-
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    public void GivenOcelotIsRunning()
-    {
-        StartOcelot((_, config) => config.AddJsonFile(_ocelotConfigFileName, false, false));
-    }
-
-    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string environmentName = null)
-    {
-        _webHostBuilder = TestHostBuilder.Create()
+        var builder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 var env = hostingContext.HostingEnvironment;
@@ -249,371 +144,126 @@ public class AcceptanceSteps : IDisposable
             .Configure(WithUseOcelot)
             .UseEnvironment(environmentName ?? nameof(AcceptanceSteps));
 
-        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotServer = new TestServer(builder);
         _ocelotClient = _ocelotServer.CreateClient();
     }
-
-    public void ThenTheTraceHeaderIsSet(string key)
-    {
-        var header = _response.Headers.GetValues(key);
-        header.First().ShouldNotBeNullOrEmpty();
-    }
-
-    //internal void GivenOcelotIsRunningUsingButterfly(string butterflyUrl)
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, true, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s =>
-    //        {
-    //            s.AddOcelot()
-    //                .AddButterfly(option =>
-    //                {
-    //                    //this is the url that the butterfly collector server is running on...
-    //                    option.CollectorUrl = butterflyUrl;
-    //                    option.Service = "Ocelot";
-    //                });
-    //        })
-    //        .Configure(async app =>
-    //        {
-    //            app.Use(async (_, next) => { await next.Invoke(); });
-    //            await app.UseOcelot();
-    //        });
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
-
-    //public async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
-    //{
-    //    var result = await Wait.WaitFor(2000).UntilAsync(async () =>
-    //    {
-    //        try
-    //        {
-    //            _response = await _ocelotClient.GetAsync(url);
-    //            _response.EnsureSuccessStatusCode();
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    });
-    //    result.ShouldBeTrue();
-    //}
-
-    //public void GivenOcelotIsRunningUsingJsonSerializedCache()
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, false, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s =>
-    //        {
-    //            s.AddOcelot()
-    //                .AddCacheManager((x) =>
-    //                {
-    //                    //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
-    //                    x.WithJsonSerializer();
-    //                    x.WithHandle(typeof(InMemoryJsonHandle<>));
-    //                });
-    //        })
-    //        .Configure(async app => await app.UseOcelot());
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
 
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
-
-    public void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> callback)
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot(); })
-            .Configure(async app =>
-            {
-                app.UseMiddleware<T>(callback);
-                await app.UseOcelot();
-            });
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithHandlerRegisteredInDi<THandler>(bool global = false)
-        where THandler : DelegatingHandler
-    {
-        GivenOcelotIsRunningWithServices(s => s
-            .AddOcelot()
-            .AddDelegatingHandler<THandler>(global));
-    }
 
     // #
     // # Cookies helpers
     // #
     public void GivenIAddCookieToMyRequest(string cookie)
-        => _ocelotClient.DefaultRequestHeaders.Add("Set-Cookie", cookie);
+        => _ocelotClient.ShouldNotBeNull().DefaultRequestHeaders.Add("Set-Cookie", cookie);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
         => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
         => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
-
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
-    {
-        var header = new CookieHeaderValue(cookie, value);
-        return WhenIGetUrlOnTheApiGateway(url, header);
-    }
-
+        => WhenIGetUrlOnTheApiGateway(url, new CookieHeaderValue(cookie, value));
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Add("Cookie", cookie.ToString());
-        return _ocelotClient.SendAsync(requestMessage);
+        return _ocelotClient.ShouldNotBeNull().SendAsync(requestMessage);
     }
-
     // END of Cookies helpers
 
-    ///// <summary>
-    ///// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    ///// </summary>
-    //public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
-    //    string authenticationProviderKey)
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, true, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s =>
-    //        {
-    //            s.AddOcelot();
-    //            s.AddAuthentication()
-    //                .AddIdentityServerAuthentication(authenticationProviderKey, options);
-    //        })
-    //        .Configure(async app => await app.UseOcelot());
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
     public void ThenTheResponseHeaderIs(string key, string value)
     {
-        var header = _response.Headers.GetValues(key);
+        var header = _response.ShouldNotBeNull().Headers.GetValues(key);
         header.First().ShouldBe(value);
     }
 
     public void ThenTheReasonPhraseIs(string expected)
     {
-        _response.ReasonPhrase.ShouldBe(expected);
+        _response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
     }
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
         => GivenOcelotIsRunningWithServices(configureServices, null);
 
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices, Action<IApplicationBuilder> configureApp/*, bool validateScopes*/)
+    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection>? configureServices, Action<IApplicationBuilder>? configureApp/*, bool validateScopes*/)
     {
-        _webHostBuilder = TestHostBuilder.Create() // ValidateScopes = true
+        var builder = TestHostBuilder.Create() // ValidateScopes = true
             .ConfigureAppConfiguration(WithBasicConfiguration)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot);
-        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotServer = new TestServer(builder);
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config)
-    {
-        var env = hosting.HostingEnvironment;
-        config.SetBasePath(env.ContentRootPath);
-        config.AddJsonFile("appsettings.json", true, false)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-        config.AddJsonFile(_ocelotConfigFileName, true, false);
-        config.AddEnvironmentVariables();
-    }
-
+    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config) => config
+        .SetBasePath(hosting.HostingEnvironment.ContentRootPath)
+        .AddOcelot(_ocelotConfigFileName, false, false);
     public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
     public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
-
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    public void GivenOcelotIsRunning(OcelotPipelineConfiguration ocelotPipelineConfig)
-    {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, false)
-            .AddJsonFile(_ocelotConfigFileName, false, false)
-            .AddEnvironmentVariables();
-
-        var configuration = builder.Build();
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureServices(s => { s.AddSingleton(_webHostBuilder); });
-
-        _ocelotServer = new TestServer(_webHostBuilder
-            .UseConfiguration(configuration)
-            .ConfigureServices(s => { s.AddOcelot(configuration); })
-            .ConfigureLogging(l =>
-            {
-                l.AddConsole();
-                l.AddDebug();
-            })
-            .Configure(async a => await a.UseOcelot(ocelotPipelineConfig)));
-
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
+    public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
 
     public void GivenIHaveAddedATokenToMyRequest(string token, string scheme = "Bearer")
     {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
         _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
-    //public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
-    //{
-    //    new ("client_id", "client"),
-    //    new ("client_secret", "secret"),
-    //    new ("scope", "api"),
-    //    new ("username", "test"),
-    //    new ("password", "test"),
-    //    new ("grant_type", "password"),
-    //};
-
-    //internal Task<BearerToken> GivenIHaveAToken(string url)
-    //{
-    //    var form = GivenDefaultAuthTokenForm();
-    //    return GivenIHaveATokenWithForm(url, form);
-    //}
-
-    //internal async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
-    //{
-    //    var tokenUrl = $"{url}/connect/token";
-    //    var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
-    //    var content = new FormUrlEncodedContent(formData);
-    //    using var httpClient = new HttpClient();
-    //    var response = await httpClient.PostAsync(tokenUrl, content);
-    //    var responseContent = await response.Content.ReadAsStringAsync();
-    //    response.EnsureSuccessStatusCode();
-    //    _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
-    //    return _token;
-    //}
-
-    public static async Task VerifyIdentityServerStarted(string url)
-    {
-        using var httpClient = new HttpClient();
-        var response = await httpClient.GetAsync($"{url}/.well-known/openid-configuration");
-        await response.Content.ReadAsStringAsync();
-        response.EnsureSuccessStatusCode();
-    }
-
-    //public void GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .UseKestrel()
-    //        .ConfigureAppConfiguration((_, config) =>
-    //        {
-    //            config.AddJsonFile(appsettingsFileName, false, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, false, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s => { s.AddOcelot(); })
-    //        .ConfigureLogging(logging =>
-    //        {
-    //            logging.ClearProviders();
-    //            logging.AddSerilog(logger);
-    //        })
-    //        .Configure(async app =>
-    //        {
-    //            app.Use(async (context, next) =>
-    //            {
-    //                var loggerFactory = context.RequestServices.GetService<IOcelotLoggerFactory>();
-    //                var ocelotLogger = loggerFactory.CreateLogger<AcceptanceSteps>();
-    //                ocelotLogger.LogDebug(() => $"DEBUG: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
-    //                ocelotLogger.LogTrace(() => $"TRACE: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
-    //                ocelotLogger.LogInformation(() =>
-    //                    $"INFORMATION: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
-    //                ocelotLogger.LogWarning(() => $"WARNING: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
-    //                ocelotLogger.LogError(() => $"ERROR: {nameof(ocelotLogger)},  {nameof(loggerFactory)}",
-    //                    new Exception("test"));
-    //                ocelotLogger.LogCritical(() => $"CRITICAL: {nameof(ocelotLogger)},  {nameof(loggerFactory)}",
-    //                    new Exception("test"));
-    //                await next.Invoke();
-    //            });
-    //            await app.UseOcelot();
-    //        });
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
-
-    //public void GivenOcelotIsRunningWithEureka()
-    //    => GivenOcelotIsRunningWithServices(s => s.AddOcelot().AddEureka());
-
-    //public void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunningWithServices(WithPolly);
-    //public static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
-
     public async Task WhenIGetUrlOnTheApiGateway(string url)
-        => _response = await _ocelotClient.GetAsync(url);
+        => _response = await _ocelotClient!.GetAsync(url);
 
     public Task<HttpResponseMessage> WhenIGetUrl(string url)
-        => _ocelotClient.GetAsync(url);
+        => _ocelotClient!.GetAsync(url);
 
-    public async Task WhenIGetUrlWithBodyOnTheApiGateway(string url, string body)
+    public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = new StringContent(body),
         };
-        _response = await _ocelotClient.SendAsync(request);
+        _response = await _ocelotClient!.SendAsync(request);
     }
 
-    public async Task WhenIGetUrlWithFormOnTheApiGateway(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
+    public async Task WhenIGetUrlOnTheApiGatewayWithForm(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
     {
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
         content.Add(dataContent, name);
         content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = content,
         };
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
         _response = await _ocelotClient.SendAsync(request);
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
         _response = await _ocelotClient.SendAsync(httpRequestMessage);
     }
 
     public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         _response = await _ocelotClient.SendAsync(httpRequestMessage);
+    }
+    public async Task WhenIPostUrlOnTheApiGateway(string url, string content)
+    {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        var postContent = new StringContent(content);
+        _response = await _ocelotClient.PostAsync(url, postContent);
+    }
+    public async Task WhenIPostUrlOnTheApiGateway(string url, string content, string contentType)
+    {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
+        _response = await _ocelotClient.PostAsync(url, postContent);
     }
 
     public void GivenIAddAHeader(string key, string value)
     {
+        ArgumentNullException.ThrowIfNull(_ocelotClient);
         _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
@@ -638,215 +288,31 @@ public class AcceptanceSteps : IDisposable
         watcher.Stop();
     }
 
-    public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)
-    {
-        _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
-        _response = await _ocelotClient.GetAsync(url);
-    }
-
-    public async Task WhenIPostUrlOnTheApiGateway(string url)
-    {
-        _response = await _ocelotClient.PostAsync(url, _postContent);
-    }
-
-    public void GivenThePostHasContent(string postContent)
-    {
-        _postContent = new StringContent(postContent);
-    }
-
-    public void GivenThePostHasContentType(string postContent)
-    {
-        _postContent.Headers.ContentType = new MediaTypeHeaderValue(postContent);
-    }
-
-    public void GivenThePostHasGzipContent(object input)
-    {
-        var json = JsonConvert.SerializeObject(input);
-        var jsonBytes = Encoding.UTF8.GetBytes(json);
-        var ms = new MemoryStream();
-        using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))
-        {
-            gzip.Write(jsonBytes, 0, jsonBytes.Length);
-        }
-
-        ms.Position = 0;
-        var content = new StreamContent(ms);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        content.Headers.ContentEncoding.Add("gzip");
-        _postContent = content;
-    }
-
     public void ThenTheResponseBodyShouldBe(string expectedBody)
-        => _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
+        => _response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
+    public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody)
+    {
+        _response.ShouldNotBeNull();
+        var body = await _response.Content.ReadAsStringAsync();
+        body.ShouldBe(expectedBody);
+    }
+
     public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
-        => _response.Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
+        => _response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
+    public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody, string customMessage)
+    {
+        _response.ShouldNotBeNull();
+        var body = await _response.Content.ReadAsStringAsync();
+        body.ShouldBe(expectedBody, customMessage);
+    }
 
     public void ThenTheContentLengthIs(int expected)
-        => _response.Content.Headers.ContentLength.ShouldBe(expected);
+        => _response.ShouldNotBeNull().Content.Headers.ContentLength.ShouldBe(expected);
 
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
-        => _response.StatusCode.ShouldBe(expected);
+        => _response.ShouldNotBeNull().StatusCode.ShouldBe(expected);
     public void ThenTheStatusCodeShouldBe(int expected)
-        => ((int)_response.StatusCode).ShouldBe(expected);
-
-    public void ThenTheRequestIdIsReturned()
-        => _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
-
-    public void ThenTheRequestIdIsReturned(string expected)
-        => _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
-
-    public void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
-    {
-        var numberOfRequests = 100;
-        var aggregateUrl = "/";
-        var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
-        var tomUrl = "/tom";
-        var tomExpected = "{Hello from Tom}";
-        var lauraUrl = "/laura";
-        var lauraExpected = "{Hello from Laura}";
-        var random = new Random();
-
-        var aggregateTasks = new Task[numberOfRequests];
-
-        for (var i = 0; i < numberOfRequests; i++)
-        {
-            aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
-        }
-
-        var tomTasks = new Task[numberOfRequests];
-
-        for (var i = 0; i < numberOfRequests; i++)
-        {
-            tomTasks[i] = Fire(tomUrl, tomExpected, random);
-        }
-
-        var lauraTasks = new Task[numberOfRequests];
-
-        for (var i = 0; i < numberOfRequests; i++)
-        {
-            lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
-        }
-
-        Task.WaitAll(lauraTasks);
-        Task.WaitAll(tomTasks);
-        Task.WaitAll(aggregateTasks);
-    }
-
-    private async Task Fire(string url, string expectedBody, Random random)
-    {
-        var request = new HttpRequestMessage(new HttpMethod("GET"), url);
-        await Task.Delay(random.Next(0, 2));
-        var response = await _ocelotClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
-        content.ShouldBe(expectedBody);
-    }
-
-    public void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(fake);
-                s.AddOcelot();
-            })
-            .Configure(async app => await app.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void TheChangeTokenShouldBeActive(bool itShouldBeActive)
-    {
-        _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
-    }
-
-    //public void GivenOcelotIsRunningWithLogger()
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, false, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s =>
-    //        {
-    //            s.AddOcelot();
-    //            s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();
-    //        })
-    //        .Configure(async app => await app.UseOcelot());
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
-
-    //internal void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
-    //{
-    //    _webHostBuilder = TestHostBuilder.Create()
-    //        .ConfigureAppConfiguration((hostingContext, config) =>
-    //        {
-    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-    //            var env = hostingContext.HostingEnvironment;
-    //            config.AddJsonFile("appsettings.json", true, false)
-    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-    //            config.AddJsonFile(_ocelotConfigFileName, true, false);
-    //            config.AddEnvironmentVariables();
-    //        })
-    //        .ConfigureServices(s =>
-    //        {
-    //            s.AddOcelot()
-    //                .AddOpenTracing();
-    //            s.AddSingleton(fakeTracer);
-    //        })
-    //        .Configure(async app =>
-    //        {
-    //            app.Use(async (_, next) => { await next.Invoke(); });
-    //            await app.UseOcelot();
-    //        });
-    //    _ocelotServer = new TestServer(_webHostBuilder);
-    //    _ocelotClient = _ocelotServer.CreateClient();
-    //}
-
-    //public void ThenWarningShouldBeLogged(int howMany)
-    //{
-    //    var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
-    //    loggerFactory.Verify(Times.Exactly(howMany));
-    //}
-
-    //internal class MockLoggerFactory : IOcelotLoggerFactory
-    //{
-    //    private Mock<IOcelotLogger> _logger;
-
-    //    public IOcelotLogger CreateLogger<T>()
-    //    {
-    //        if (_logger != null)
-    //        {
-    //            return _logger.Object;
-    //        }
-
-    //        _logger = new Mock<IOcelotLogger>();
-    //        _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
-    //        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
-
-    //        return _logger.Object;
-    //    }
-
-    //    public void Verify(Times howMany)
-    //    {
-    //        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), howMany);
-    //    }
-    //}
+        => ((int)_response.ShouldNotBeNull().StatusCode).ShouldBe(expected);
 
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.

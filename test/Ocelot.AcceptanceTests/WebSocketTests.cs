@@ -1,21 +1,26 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public class WebSocketTests : IDisposable
+public class WebSocketTests : Steps
 {
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
-    public WebSocketTests()
+    public WebSocketTests() : base()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
         _firstRecieved = new List<string>();
         _secondRecieved = new List<string>();
     }
@@ -47,8 +52,8 @@ public class WebSocketTests : IDisposable
             },
         };
 
-        this.Given(_ => _steps.GivenThereIsAConfiguration(config))
-            .And(_ => _steps.StartFakeOcelotWithWebSockets())
+        this.Given(_ => GivenThereIsAConfiguration(config))
+            .And(_ => StartFakeOcelotWithWebSockets())
             .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
             .When(_ => StartClient("ws://localhost:5000/"))
             .Then(_ => ThenTheReceivedCountIs(10))
@@ -90,13 +95,48 @@ public class WebSocketTests : IDisposable
             },
         };
 
-        this.Given(_ => _steps.GivenThereIsAConfiguration(config))
-            .And(_ => _steps.StartFakeOcelotWithWebSockets())
+        this.Given(_ => GivenThereIsAConfiguration(config))
+            .And(_ => StartFakeOcelotWithWebSockets())
             .And(_ => StartFakeDownstreamService($"http://{downstreamHost}:{downstreamPort}", "/ws"))
             .And(_ => StartSecondFakeDownstreamService($"http://{secondDownstreamHost}:{secondDownstreamPort}", "/ws"))
             .When(_ => WhenIStartTheClients())
             .Then(_ => ThenBothDownstreamServicesAreCalled())
             .BDDfy();
+    }
+
+    private async Task StartFakeOcelotWithWebSockets()
+    {
+        var builder = TestHostBuilder.Create();
+        builder.ConfigureServices(s =>
+        {
+            s.AddSingleton(builder);
+            s.AddOcelot();
+        });
+        builder.UseKestrel()
+            .UseUrls("http://localhost:5000")
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", true, false)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile(_ocelotConfigFileName, false, false);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureLogging((hostingContext, logging) =>
+            {
+                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                logging.AddConsole();
+            })
+            .Configure(async app =>
+            {
+                app.UseWebSockets();
+                await app.UseOcelot();
+            })
+            .UseIISIntegration();
+        _ocelotHost = builder.Build();
+        await _ocelotHost.StartAsync();
     }
 
     private void ThenBothDownstreamServicesAreCalled()
@@ -324,10 +364,9 @@ public class WebSocketTests : IDisposable
         _firstRecieved.Count.ShouldBe(count);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }

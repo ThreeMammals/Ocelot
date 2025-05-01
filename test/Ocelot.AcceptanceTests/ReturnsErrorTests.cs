@@ -1,16 +1,23 @@
-﻿using Ocelot.Configuration.File;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class ReturnsErrorTests : IDisposable
+public sealed class ReturnsErrorTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public ReturnsErrorTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
+    }
+
+    public override void Dispose()
+    {
+        _serviceHandler?.Dispose();
+        base.Dispose();
     }
 
     [Fact]
@@ -38,10 +45,10 @@ public sealed class ReturnsErrorTests : IDisposable
                 },
         };
 
-        this.Given(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+        this.Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
 
@@ -49,7 +56,6 @@ public sealed class ReturnsErrorTests : IDisposable
     public void Should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -73,10 +79,10 @@ public sealed class ReturnsErrorTests : IDisposable
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
             .BDDfy();
     }
 
@@ -84,7 +90,6 @@ public sealed class ReturnsErrorTests : IDisposable
     public void Should_log_warning_if_downstream_service_returns_internal_server_error()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -108,11 +113,20 @@ public sealed class ReturnsErrorTests : IDisposable
         };
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithLogger())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenWarningShouldBeLogged(1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningWithLogger())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenWarningShouldBeLogged(1))
             .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningWithLogger()
+    {
+        GivenOcelotIsRunningWithServices(s =>
+        {
+            s.AddOcelot();
+            s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();
+        });
     }
 
     private void GivenThereIsAServiceRunningOn(string url)
@@ -120,10 +134,31 @@ public sealed class ReturnsErrorTests : IDisposable
         _serviceHandler.GivenThereIsAServiceRunningOn(url, context => throw new Exception("BLAMMMM"));
     }
 
-    public void Dispose()
+    private void ThenWarningShouldBeLogged(int howMany)
     {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+        var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+        loggerFactory.Verify(Times.Exactly(howMany));
+    }
+
+    internal class MockLoggerFactory : IOcelotLoggerFactory
+    {
+        private Mock<IOcelotLogger> _logger;
+
+        public IOcelotLogger CreateLogger<T>()
+        {
+            if (_logger != null)
+            {
+                return _logger.Object;
+            }
+
+            _logger = new Mock<IOcelotLogger>();
+            _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
+            _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
+
+            return _logger.Object;
+        }
+
+        public void Verify(Times howMany)
+            => _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), howMany);
     }
 }

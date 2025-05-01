@@ -1,27 +1,26 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
 using Ocelot.Responses;
 
 namespace Ocelot.AcceptanceTests;
 
-public class StartupTests : IDisposable
+public class StartupTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
     private string _downstreamPath;
 
     public StartupTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
+    public void Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -47,11 +46,16 @@ public class StartupTests : IDisposable
         var fakeRepo = new FakeFileConfigurationRepository();
 
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
+    {
+        GivenOcelotIsRunningWithServices(s => s.AddSingleton(fake).AddOcelot());
     }
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
@@ -73,10 +77,10 @@ public class StartupTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 
     private class FakeFileConfigurationRepository : IFileConfigurationRepository

@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
-public sealed class RoutingTests : Steps, IDisposable
+public sealed class RoutingTests : Steps
 {
     private readonly ServiceHandler _serviceHandler;
     private string _downstreamPath;
@@ -315,8 +315,7 @@ public sealed class RoutingTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
     }
@@ -535,8 +534,7 @@ public sealed class RoutingTests : Steps, IDisposable
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, nameof(HttpStatusCode.Created)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .And(x => ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.Created)))
             .BDDfy();

@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Provider.Polly;
 using Ocelot.Requester;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -45,8 +48,7 @@ public sealed class PollyQoSTests : Steps
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty, 10))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
@@ -61,8 +63,7 @@ public sealed class PollyQoSTests : Steps
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 2100))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .BDDfy();
     }
@@ -200,6 +201,9 @@ public sealed class PollyQoSTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .BDDfy();
     }
+
+    private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunningWithServices(WithPolly);
+    private static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
     private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
     {

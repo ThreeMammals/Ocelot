@@ -19,7 +19,7 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class AggregateTests : Steps, IDisposable
+public sealed class AggregateTests : Steps
 {
     private readonly ServiceHandler _serviceHandler;
     private readonly string[] _downstreamPaths;
@@ -516,6 +516,49 @@ public sealed class AggregateTests : Steps, IDisposable
             .BDDfy();
     }
 
+    private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+    {
+        var numberOfRequests = 100;
+        var aggregateUrl = "/";
+        var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
+        var tomUrl = "/tom";
+        var tomExpected = "{Hello from Tom}";
+        var lauraUrl = "/laura";
+        var lauraExpected = "{Hello from Laura}";
+        var random = new Random();
+
+        var aggregateTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
+        }
+
+        var tomTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            tomTasks[i] = Fire(tomUrl, tomExpected, random);
+        }
+
+        var lauraTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
+        }
+
+        Task.WaitAll(lauraTasks);
+        Task.WaitAll(tomTasks);
+        Task.WaitAll(aggregateTasks);
+    }
+
+    private async Task Fire(string url, string expectedBody, Random random)
+    {
+        var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+        await Task.Delay(random.Next(0, 2));
+        var response = await _ocelotClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+        content.ShouldBe(expectedBody);
+    }
+
     //[Fact]
     //[Trait("Bug", "1396")]
     //public void Should_return_response_200_with_user_forwarding()
@@ -580,7 +623,7 @@ public sealed class AggregateTests : Steps, IDisposable
     //            .And(x => auth.GivenThereIsAConfiguration(configuration))
     //            .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
     //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
-    //            .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
+    //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
     //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
     //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
     //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
@@ -616,7 +659,7 @@ public sealed class AggregateTests : Steps, IDisposable
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlWithBodyOnTheApiGateway("/", requestBody))
+            .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
@@ -646,7 +689,7 @@ public sealed class AggregateTests : Steps, IDisposable
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
+            .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
@@ -726,7 +769,8 @@ public sealed class AggregateTests : Steps, IDisposable
         where TAggregator : class, IDefinedAggregator
         where TDependency : class
     {
-        _webHostBuilder = TestHostBuilder.Create()
+        var builder = TestHostBuilder.Create();
+        builder
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -738,14 +782,14 @@ public sealed class AggregateTests : Steps, IDisposable
             })
             .ConfigureServices(s =>
             {
-                s.AddSingleton(_webHostBuilder);
+                s.AddSingleton(builder);
                 s.AddSingleton<TDependency>();
                 s.AddOcelot()
                     .AddSingletonDefinedAggregator<TAggregator>();
             })
             .Configure(async b => await b.UseOcelot());
 
-        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotServer = new TestServer(builder);
         _ocelotClient = _ocelotServer.CreateClient();
     }
 

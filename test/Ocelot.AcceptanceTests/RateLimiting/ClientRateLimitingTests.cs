@@ -156,7 +156,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
             .BDDfy();
     }
 
-    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
+    private static FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
     {
         var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
         var config = GivenConfiguration(route);
@@ -190,17 +190,17 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
         });
     }
 
-    private FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
+    private static FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
     {
         DownstreamPathTemplate = downstream ?? "/api/ClientRateLimit",
         DownstreamHostAndPorts = new()
         {
-            new("localhost", port),
+            Localhost(port),
         },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
         UpstreamHttpMethod = new() { HttpMethods.Get },
-        RequestIdKey = RequestIdKey,
+        RequestIdKey = "Oc-RequestId",
         RateLimitOptions = new FileRateLimitRule
         {
             EnableRateLimiting = true,

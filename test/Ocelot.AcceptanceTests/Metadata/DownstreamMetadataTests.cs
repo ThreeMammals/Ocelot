@@ -220,22 +220,22 @@ public class DownstreamMetadataTests : IDisposable
         switch (currentType)
         {
             case { } t when t == typeof(StringDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<StringDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<StringDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(StringArrayDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<StringArrayDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<StringArrayDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(BoolDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<BoolDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<BoolDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(DoubleDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<DoubleDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<DoubleDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(SuperDataContainerDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<SuperDataContainerDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<SuperDataContainerDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(IntDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithHandlerRegisteredInDi<IntDownStreamMetadataHandler>();
+                _steps.GivenOcelotIsRunningWithDelegatingHandler<IntDownStreamMetadataHandler>();
                 break;
             default:
                 throw new NotImplementedException();

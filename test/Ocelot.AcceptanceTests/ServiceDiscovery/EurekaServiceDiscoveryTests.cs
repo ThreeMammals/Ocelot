@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Provider.Eureka;
 using Steeltoe.Common.Discovery;
@@ -69,6 +70,9 @@ public sealed class EurekaServiceDiscoveryTests : Steps
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         ThenTheResponseBodyShouldBe(nameof(Should_use_eureka_service_discovery_and_make_request));
     }
+
+    private void GivenOcelotIsRunningWithEureka()
+        => GivenOcelotIsRunningWithServices(s => s.AddOcelot().AddEureka());
 
     private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
     {
@@ -195,6 +199,7 @@ public class FakeEurekaService : IServiceInstance
     public IDictionary<string, string> Metadata { get; }
 }
 
+#pragma warning disable IDE1006 // Naming Styles
 public class Port
 {
     [JsonProperty("$")]
@@ -203,7 +208,6 @@ public class Port
     [JsonProperty("@enabled")]
     public string enabled { get; set; }
 }
-
 public class SecurePort
 {
     [JsonProperty("$")]
@@ -212,36 +216,26 @@ public class SecurePort
     [JsonProperty("@enabled")]
     public string enabled { get; set; }
 }
-
 public class DataCenterInfo
 {
     [JsonProperty("@class")]
     public string value { get; set; }
-
     public string name { get; set; }
 }
-
 public class LeaseInfo
 {
     public int renewalIntervalInSecs { get; set; }
-
     public int durationInSecs { get; set; }
-
     public long registrationTimestamp { get; set; }
-
     public long lastRenewalTimestamp { get; set; }
-
     public int evictionTimestamp { get; set; }
-
     public long serviceUpTimestamp { get; set; }
 }
-
 public class ValueMetadata
 {
     [JsonProperty("@class")]
     public string value { get; set; }
 }
-
 public class Instance
 {
     public string instanceId { get; set; }
@@ -265,21 +259,19 @@ public class Instance
     public string lastDirtyTimestamp { get; set; }
     public string actionType { get; set; }
 }
-
 public class Application
 {
     public string name { get; set; }
     public List<Instance> instance { get; set; }
 }
-
 public class Applications
 {
     public string versions__delta { get; set; }
     public string apps__hashcode { get; set; }
     public List<Application> application { get; set; }
 }
-
 public class EurekaApplications
 {
     public Applications applications { get; set; }
 }
+#pragma warning restore IDE1006 // Naming Styles

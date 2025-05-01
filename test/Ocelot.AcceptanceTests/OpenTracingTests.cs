@@ -2,7 +2,16 @@ using Butterfly.Client.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Tracing.Butterfly;
+using Ocelot.Tracing.OpenTracing;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
@@ -11,12 +20,11 @@ using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests;
 
-public class OpenTracingTests : IDisposable
+public class OpenTracingTests : Steps
 {
     private IWebHost _serviceOneBuilder;
     private IWebHost _serviceTwoBuilder;
     private IWebHost _fakeOpenTracing;
-    private readonly Steps _steps;
     private string _downstreamPathOne;
     private string _downstreamPathTwo;
     private readonly ITestOutputHelper _output;
@@ -24,7 +32,6 @@ public class OpenTracingTests : IDisposable
     public OpenTracingTests(ITestOutputHelper output)
     {
         _output = output;
-        _steps = new Steps();
     }
 
     [Fact]
@@ -79,20 +86,19 @@ public class OpenTracingTests : IDisposable
 
         var tracingPort = PortFinder.GetRandomPort();
         var tracingUrl = $"http://localhost:{tracingPort}";
-
         var fakeTracer = new FakeTracer();
 
         this.Given(_ => GivenFakeOpenTracing(tracingUrl))
             .And(_ => GivenServiceOneIsRunning($"http://localhost:{port1}", "/api/values", 200, "Hello from Laura", tracingUrl))
             .And(_ => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", tracingUrl))
-            .And(_ => _steps.GivenThereIsAConfiguration(configuration))
-            .And(_ => _steps.GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
-            .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-            .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .When(_ => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
-            .Then(_ => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/api002/values"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe("Hello from Tom"))
             .And(_ => ThenTheTracerIsCalled(fakeTracer))
             .BDDfy();
     }
@@ -133,21 +139,52 @@ public class OpenTracingTests : IDisposable
         };
 
         var butterflyPort = PortFinder.GetRandomPort();
-
         var butterflyUrl = $"http://localhost:{butterflyPort}";
-
         var fakeTracer = new FakeTracer();
 
         this.Given(x => GivenFakeOpenTracing(butterflyUrl))
             .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
-            .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheTraceHeaderIsSet("Trace-Id"))
+            .And(x => ThenTheResponseHeaderIs("Tom", "Laura"))
             .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
+    {
+        GivenOcelotIsRunningWithServices(s =>
+        {
+            s.AddOcelot().AddOpenTracing();
+            s.AddSingleton(fakeTracer);
+        });
+
+        //var builder = TestHostBuilder.Create()
+        //    .ConfigureAppConfiguration((hostingContext, config) =>
+        //    {
+        //        config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+        //        var env = hostingContext.HostingEnvironment;
+        //        config.AddJsonFile("appsettings.json", true, false)
+        //            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+        //        config.AddJsonFile(_ocelotConfigFileName, true, false);
+        //        config.AddEnvironmentVariables();
+        //    })
+        //    .ConfigureServices(s =>
+        //    {
+        //        s.AddOcelot()
+        //            .AddOpenTracing();
+        //        s.AddSingleton(fakeTracer);
+        //    })
+        //    .Configure(async app =>
+        //    {
+        //        app.Use(async (_, next) => { await next.Invoke(); });
+        //        await app.UseOcelot();
+        //    });
+        //_ocelotServer = new TestServer(builder);
+        //_ocelotClient = _ocelotServer.CreateClient();
     }
 
     private void ThenTheTracerIsCalled(FakeTracer fakeTracer)
@@ -258,16 +295,16 @@ public class OpenTracingTests : IDisposable
         _serviceTwoBuilder.Start();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceOneBuilder?.Dispose();
         _serviceTwoBuilder?.Dispose();
         _fakeOpenTracing?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }
 
-internal class FakeTracer : ITracer
+internal class FakeTracer : OpenTracing.ITracer
 {
     public IScopeManager ScopeManager => throw new NotImplementedException();
 
@@ -301,85 +338,37 @@ internal class FakeTracer : ITracer
 
 internal class FakeSpanBuilder : ISpanBuilder
 {
-    public ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext) => throw new NotImplementedException();
 
-    public ISpanBuilder AsChildOf(ISpanContext parent)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder AsChildOf(ISpanContext parent) => throw new NotImplementedException();
 
-    public ISpanBuilder AsChildOf(ISpan parent)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder AsChildOf(ISpan parent) => throw new NotImplementedException();
 
-    public ISpanBuilder IgnoreActiveSpan()
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder IgnoreActiveSpan() => throw new NotImplementedException();
 
-    public ISpan Start()
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan Start() => throw new NotImplementedException();
 
-    public IScope StartActive()
-    {
-        throw new NotImplementedException();
-    }
+    public IScope StartActive() => throw new NotImplementedException();
 
-    public IScope StartActive(bool finishSpanOnDispose)
-    {
-        return new FakeScope(finishSpanOnDispose);
-    }
+    public IScope StartActive(bool finishSpanOnDispose) => new FakeScope(finishSpanOnDispose);
 
-    public ISpanBuilder WithStartTimestamp(DateTimeOffset timestamp)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithStartTimestamp(DateTimeOffset timestamp) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(string key, string value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(string key, string value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(string key, bool value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(string key, bool value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(string key, int value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(string key, int value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(string key, double value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(string key, double value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(BooleanTag tag, bool value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(BooleanTag tag, bool value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(IntOrStringTag tag, string value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(IntOrStringTag tag, string value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(IntTag tag, int value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(IntTag tag, int value) => throw new NotImplementedException();
 
-    public ISpanBuilder WithTag(StringTag tag, string value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpanBuilder WithTag(StringTag tag, string value) => throw new NotImplementedException();
 }
 
 internal class FakeScope : IScope
@@ -406,89 +395,39 @@ internal class FakeSpan : ISpan
 {
     public ISpanContext Context => new FakeSpanContext();
 
-    public void Finish()
-    {
-    }
+    public void Finish() { }
 
-    public void Finish(DateTimeOffset finishTimestamp)
-    {
-        throw new NotImplementedException();
-    }
+    public void Finish(DateTimeOffset finishTimestamp) => throw new NotImplementedException();
 
-    public string GetBaggageItem(string key)
-    {
-        throw new NotImplementedException();
-    }
+    public string GetBaggageItem(string key) => throw new NotImplementedException();
 
-    public ISpan Log(IEnumerable<KeyValuePair<string, object>> fields)
-    {
-        return this;
-    }
+    public ISpan Log(IEnumerable<KeyValuePair<string, object>> fields) => this;
 
-    public ISpan Log(DateTimeOffset timestamp, IEnumerable<KeyValuePair<string, object>> fields)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan Log(DateTimeOffset timestamp, IEnumerable<KeyValuePair<string, object>> fields) => throw new NotImplementedException();
 
-    public ISpan Log(string @event)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan Log(string @event) => throw new NotImplementedException();
 
-    public ISpan Log(DateTimeOffset timestamp, string @event)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan Log(DateTimeOffset timestamp, string @event) => throw new NotImplementedException();
 
-    public ISpan SetBaggageItem(string key, string value)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan SetBaggageItem(string key, string value) => throw new NotImplementedException();
 
-    public ISpan SetOperationName(string operationName)
-    {
-        throw new NotImplementedException();
-    }
+    public ISpan SetOperationName(string operationName) => throw new NotImplementedException();
 
-    public ISpan SetTag(string key, string value)
-    {
-        return this;
-    }
+    public ISpan SetTag(string key, string value) => this;
 
-    public ISpan SetTag(string key, bool value)
-    {
-        return this;
-    }
+    public ISpan SetTag(string key, bool value) => this;
 
-    public ISpan SetTag(string key, int value)
-    {
-        return this;
-    }
+    public ISpan SetTag(string key, int value) => this;
 
-    public ISpan SetTag(string key, double value)
-    {
-        return this;
-    }
+    public ISpan SetTag(string key, double value) => this;
 
-    public ISpan SetTag(BooleanTag tag, bool value)
-    {
-        return this;
-    }
+    public ISpan SetTag(BooleanTag tag, bool value) => this;
 
-    public ISpan SetTag(IntOrStringTag tag, string value)
-    {
-        return this;
-    }
+    public ISpan SetTag(IntOrStringTag tag, string value) => this;
 
-    public ISpan SetTag(IntTag tag, int value)
-    {
-        return this;
-    }
+    public ISpan SetTag(IntTag tag, int value) => this;
 
-    public ISpan SetTag(StringTag tag, string value)
-    {
-        return this;
-    }
+    public ISpan SetTag(StringTag tag, string value) => this;
 }
 
 internal class FakeSpanContext : ISpanContext
@@ -501,18 +440,12 @@ internal class FakeSpanContext : ISpanContext
 
     public string SpanId => FakeSpanId;
 
-    public IEnumerable<KeyValuePair<string, string>> GetBaggageItems()
-    {
-        throw new NotImplementedException();
-    }
+    public IEnumerable<KeyValuePair<string, string>> GetBaggageItems() => throw new NotImplementedException();
 }
 
 public class Wait
 {
-    public static Waiter WaitFor(int milliSeconds)
-    {
-        return new Waiter(milliSeconds);
-    }
+    public static Waiter WaitFor(int milliSeconds) => new Waiter(milliSeconds);
 }
 
 public class Waiter // TODO Move to Ocelot.Testing project

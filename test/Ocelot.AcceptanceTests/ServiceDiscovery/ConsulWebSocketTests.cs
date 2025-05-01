@@ -22,7 +22,6 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
     private readonly List<string> _firstRecieved;
     private readonly List<ServiceEntry> _serviceEntries;
     private readonly ServiceHandler _serviceHandler;
-    private IWebHost _ocelotHost;
 
     public ConsulWebSocketTests()
     {
@@ -111,10 +110,11 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
 
     private async Task StartFakeOcelotWithWebSocketsWithConsul()
     {
-        _ocelotBuilder = TestHostBuilder.Create()
+        var builder = TestHostBuilder.Create();
+        builder
             .ConfigureServices(s =>
             {
-                s.AddSingleton(_ocelotBuilder);
+                s.AddSingleton(builder);
                 s.AddOcelot().AddConsul();
             })
             .UseKestrel()
@@ -140,7 +140,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
                 await app.UseOcelot();
             })
             .UseIISIntegration();
-        _ocelotHost = _ocelotBuilder.Build(); // new TestServer(_webHostBuilder); ???
+        _ocelotHost = builder.Build(); // new TestServer(_webHostBuilder); ???
         await _ocelotHost.StartAsync();
     }
 

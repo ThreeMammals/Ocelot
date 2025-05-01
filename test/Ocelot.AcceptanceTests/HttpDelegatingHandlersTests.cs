@@ -60,7 +60,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
+            .And(x => GivenOcelotIsRunningWithDelegatingHandler<FakeHandlerAgain>(true))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))

@@ -17,8 +17,8 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
 public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDisposable
 {
-    private IWebHost _builder;
-    private IWebHost _fakeConsulBuilder;
+    private IWebHost _host;
+    private IWebHost _fakeConsul;
     private FileConfiguration _config;
     private readonly List<ServiceEntry> _consulServices;
 
@@ -354,7 +354,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
 
     private void GivenOcelotIsRunningUsingConsulToStoreConfig()
     {
-        _webHostBuilder = TestHostBuilder.Create()
+        var builder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -367,14 +367,14 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
             .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
             .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
 
-        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotServer = new TestServer(builder);
         _ocelotClient = _ocelotServer.CreateClient();
         Thread.Sleep(1000);
     }
 
     private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
     {
-        _fakeConsulBuilder = TestHostBuilder.Create()
+        _fakeConsul = TestHostBuilder.Create()
                         .UseUrls(url)
                         .UseKestrel()
                         .UseContentRoot(Directory.GetCurrentDirectory())
@@ -428,7 +428,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                             });
                         })
                         .Build();
-        return _fakeConsulBuilder.StartAsync();
+        return _fakeConsul.StartAsync();
     }
 
     public class FakeConsulGetResponse
@@ -449,7 +449,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
 
     private Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
     {
-        _builder = TestHostBuilder.Create()
+        _host = TestHostBuilder.Create()
             .UseUrls(url)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -466,13 +466,13 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                 });
             })
             .Build();
-        return _builder.StartAsync();
+        return _host.StartAsync();
     }
 
     public override void Dispose()
     {
-        _builder?.Dispose();
-        _fakeConsulBuilder?.Dispose();
+        _host?.Dispose();
+        _fakeConsul?.Dispose();
         base.Dispose();
     }
 

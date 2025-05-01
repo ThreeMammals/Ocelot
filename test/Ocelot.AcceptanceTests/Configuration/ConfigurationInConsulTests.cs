@@ -89,7 +89,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
 
     private void GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache()
     {
-        _webHostBuilder = TestHostBuilder.Create()
+        var builder = TestHostBuilder.Create()
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
@@ -112,7 +112,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
             })
             .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
 
-        _ocelotServer = new TestServer(_webHostBuilder);
+        _ocelotServer = new TestServer(builder);
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
