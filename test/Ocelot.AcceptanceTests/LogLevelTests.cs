@@ -27,8 +27,10 @@ public sealed class LogLevelTests : Steps
     public LogLevelTests()
     {
         _serviceHandler = new ServiceHandler();
-        _logFileName = $"ocelot_logs_{Guid.NewGuid()}.log";
-        _appSettingsFileName = $"appsettings_{Guid.NewGuid()}.json";
+        _logFileName = $"ocelot_logs_{TestID}.log";
+        _appSettingsFileName = $"appsettings_{TestID}.json";
+        Files.Add(_logFileName);
+        Files.Add(_appSettingsFileName);
     }
 
     private void ThenMessagesAreLogged(string[] notAllowedMessageTypes, string[] allowedMessageTypes)
@@ -70,7 +72,7 @@ public sealed class LogLevelTests : Steps
             },
         };
 
-        var logger = GetLogger(level);
+        using var logger = GetLogger(level);
         this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
@@ -78,7 +80,6 @@ public sealed class LogLevelTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => Dispose())
             .Then(x => logger.Dispose())
             .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
             .BDDfy();
@@ -126,26 +127,38 @@ public sealed class LogLevelTests : Steps
     }
 
     [Fact]
-    public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "ERROR" }, new[] { "CRITICAL" }, LogLevel.Critical);
+    public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "WARNING", "ERROR" ],
+        [ "CRITICAL" ], LogLevel.Critical);
 
     [Fact]
-    public void If_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "DEBUG" }, new[] { "CRITICAL", "ERROR" }, LogLevel.Error);
+    public void If_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "WARNING", "DEBUG" ],
+        [ "CRITICAL", "ERROR" ], LogLevel.Error);
 
     [Fact]
-    public void If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING" }, LogLevel.Warning);
+    public void If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "DEBUG" ],
+        [ "CRITICAL", "ERROR", "WARNING" ], LogLevel.Warning);
     
     [Fact]
-    public void If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(new[] { "TRACE", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Information);
+    public void If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(
+        [ "TRACE", "DEBUG" ],
+        [ "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Information);
 
     [Fact]
-    public void If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(new[] { "TRACE" }, new[] { "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Debug);
+    public void If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(
+        [ "TRACE" ],
+        [ "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Debug);
 
     [Fact]  
-    public void If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(Array.Empty<string>(), new[] { "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Trace);
+    public void If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(
+        [],
+        [ "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Trace);
 
     private Logger GetLogger(LogLevel logLevel)
     {
-        var logFilePath = ResetLogFile();
+        var logFilePath = GetLogFilePath();
         UpdateAppSettings(logLevel);
         var logger = logLevel switch
         {
@@ -187,17 +200,6 @@ public sealed class LogLevelTests : Steps
         File.WriteAllText(appSettingsFilePath, appSettings);
     }
 
-    private string ResetLogFile()
-    {
-        var logFilePath = GetLogFilePath();
-        if (File.Exists(logFilePath))
-        {
-            File.Delete(logFilePath);
-        }
-
-        return logFilePath;
-    }
-
     private string GetLogFilePath()
     {
         var logFilePath = Path.Combine(AppContext.BaseDirectory, _logFileName);
@@ -216,7 +218,6 @@ public sealed class LogLevelTests : Steps
     public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        ResetLogFile();
         base.Dispose();
     }
 }
