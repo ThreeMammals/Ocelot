@@ -3,96 +3,95 @@ using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
 {
-    public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
+    private readonly IPlaceholders _placeholders;
+    private readonly IOcelotLogger _logger;
+
+    public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory)
     {
-        private readonly IPlaceholders _placeholders;
-        private readonly IOcelotLogger _logger;
+        _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
+        _placeholders = placeholders;
+    }
 
-        public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory)
+    public HeaderTransformations Create(FileRoute fileRoute)
+    {
+        var upstream = new List<HeaderFindAndReplace>();
+        var addHeadersToUpstream = new List<AddHeader>();
+
+        foreach (var input in fileRoute.UpstreamHeaderTransform)
         {
-            _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
-            _placeholders = placeholders;
-        }
-
-        public HeaderTransformations Create(FileRoute fileRoute)
-        {
-            var upstream = new List<HeaderFindAndReplace>();
-            var addHeadersToUpstream = new List<AddHeader>();
-
-            foreach (var input in fileRoute.UpstreamHeaderTransform)
+            if (input.Value.Contains(","))
             {
-                if (input.Value.Contains(","))
+                var hAndr = Map(input);
+                if (!hAndr.IsError)
                 {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        upstream.Add(hAndr.Data);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
+                    upstream.Add(hAndr.Data);
                 }
                 else
                 {
-                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
+                    _logger.LogWarning(() => $"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
                 }
             }
-
-            var downstream = new List<HeaderFindAndReplace>();
-            var addHeadersToDownstream = new List<AddHeader>();
-
-            foreach (var input in fileRoute.DownstreamHeaderTransform)
+            else
             {
-                if (input.Value.Contains(","))
+                addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
+            }
+        }
+
+        var downstream = new List<HeaderFindAndReplace>();
+        var addHeadersToDownstream = new List<AddHeader>();
+
+        foreach (var input in fileRoute.DownstreamHeaderTransform)
+        {
+            if (input.Value.Contains(","))
+            {
+                var hAndr = Map(input);
+                if (!hAndr.IsError)
                 {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        downstream.Add(hAndr.Data);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
+                    downstream.Add(hAndr.Data);
                 }
                 else
                 {
-                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
+                    _logger.LogWarning(() => $"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
                 }
             }
-
-            return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
-        }
-
-        private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
-        {
-            var findAndReplace = input.Value.Split(',');
-
-            var replace = findAndReplace[1].TrimStart();
-
-            var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
-            if (startOfPlaceholder > -1)
+            else
             {
-                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder);
+                addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
+            }
+        }
 
-                var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder - startOfPlaceholder + 1);
+        return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
+    }
 
-                var value = _placeholders.Get(placeholder);
+    private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
+    {
+        var findAndReplace = input.Value.Split(',');
 
-                if (value.IsError)
-                {
-                    return new ErrorResponse<HeaderFindAndReplace>(value.Errors);
-                }
+        var replace = findAndReplace[1].TrimStart();
 
-                replace = replace.Replace(placeholder, value.Data);
+        var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
+        if (startOfPlaceholder > -1)
+        {
+            var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder);
+
+            var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder - startOfPlaceholder + 1);
+
+            var value = _placeholders.Get(placeholder);
+
+            if (value.IsError)
+            {
+                return new ErrorResponse<HeaderFindAndReplace>(value.Errors);
             }
 
-            var hAndr = new HeaderFindAndReplace(input.Key, findAndReplace[0], replace, 0);
-
-            return new OkResponse<HeaderFindAndReplace>(hAndr);
+            replace = replace.Replace(placeholder, value.Data);
         }
+
+        var hAndr = new HeaderFindAndReplace(input.Key, findAndReplace[0], replace, 0);
+
+        return new OkResponse<HeaderFindAndReplace>(hAndr);
     }
 }

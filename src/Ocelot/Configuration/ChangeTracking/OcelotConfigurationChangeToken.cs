@@ -1,72 +1,71 @@
 using Microsoft.Extensions.Primitives;
 
-namespace Ocelot.Configuration.ChangeTracking
+namespace Ocelot.Configuration.ChangeTracking;
+
+public class OcelotConfigurationChangeToken : IChangeToken
 {
-    public class OcelotConfigurationChangeToken : IChangeToken
+    public const double PollingIntervalSeconds = 1;
+
+    private readonly ICollection<CallbackWrapper> _callbacks = new List<CallbackWrapper>();
+    private readonly object _lock = new();
+    private DateTime? _timeChanged;
+
+    public IDisposable RegisterChangeCallback(Action<object> callback, object state)
     {
-        public const double PollingIntervalSeconds = 1;
+        lock (_lock)
+        {
+            var wrapper = new CallbackWrapper(callback, state, _callbacks, _lock);
+            _callbacks.Add(wrapper);
+            return wrapper;
+        }
+    }
 
-        private readonly ICollection<CallbackWrapper> _callbacks = new List<CallbackWrapper>();
-        private readonly object _lock = new();
-        private DateTime? _timeChanged;
+    public void Activate()
+    {
+        lock (_lock)
+        {
+            _timeChanged = DateTime.UtcNow;
+            foreach (var wrapper in _callbacks)
+            {
+                wrapper.Invoke();
+            }
+        }
+    }
 
-        public IDisposable RegisterChangeCallback(Action<object> callback, object state)
+    // Token stays active for PollingIntervalSeconds after a change (could be parameterised) - otherwise HasChanged would be true forever.
+    // Taking suggestions for better ways to reset HasChanged back to false.
+    public bool HasChanged => _timeChanged.HasValue && (DateTime.UtcNow - _timeChanged.Value).TotalSeconds < PollingIntervalSeconds;
+
+    public bool ActiveChangeCallbacks => true;
+
+    private class CallbackWrapper : IDisposable
+    {
+        private readonly ICollection<CallbackWrapper> _callbacks;
+        private readonly object _lock;
+
+        public CallbackWrapper(Action<object> callback, object state, ICollection<CallbackWrapper> callbacks, object @lock)
+        {
+            _callbacks = callbacks;
+            _lock = @lock;
+            Callback = callback;
+            State = state;
+        }
+
+        public void Invoke()
+        {
+            Callback.Invoke(State);
+        }
+
+        public void Dispose()
         {
             lock (_lock)
             {
-                var wrapper = new CallbackWrapper(callback, state, _callbacks, _lock);
-                _callbacks.Add(wrapper);
-                return wrapper;
+                _callbacks.Remove(this);
             }
         }
 
-        public void Activate()
-        {
-            lock (_lock)
-            {
-                _timeChanged = DateTime.UtcNow;
-                foreach (var wrapper in _callbacks)
-                {
-                    wrapper.Invoke();
-                }
-            }
-        }
+        public Action<object> Callback { get; }
 
-        // Token stays active for PollingIntervalSeconds after a change (could be parameterised) - otherwise HasChanged would be true forever.
-        // Taking suggestions for better ways to reset HasChanged back to false.
-        public bool HasChanged => _timeChanged.HasValue && (DateTime.UtcNow - _timeChanged.Value).TotalSeconds < PollingIntervalSeconds;
-
-        public bool ActiveChangeCallbacks => true;
-
-        private class CallbackWrapper : IDisposable
-        {
-            private readonly ICollection<CallbackWrapper> _callbacks;
-            private readonly object _lock;
-
-            public CallbackWrapper(Action<object> callback, object state, ICollection<CallbackWrapper> callbacks, object @lock)
-            {
-                _callbacks = callbacks;
-                _lock = @lock;
-                Callback = callback;
-                State = state;
-            }
-
-            public void Invoke()
-            {
-                Callback.Invoke(State);
-            }
-
-            public void Dispose()
-            {
-                lock (_lock)
-                {
-                    _callbacks.Remove(this);
-                }
-            }
-
-            public Action<object> Callback { get; }
-
-            public object State { get; }
-        }
+        public object State { get; }
     }
 }

@@ -1,53 +1,70 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
+.. _Polly: https://www.thepollyproject.org
+.. _documentation: https://www.pollydocs.org
+.. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
+  :target: https://github.com/ThreeMammals/Ocelot/labels/QoS
+  :alt: label QoS
+  :class: img-valign-textbottom
+
 Quality of Service
 ==================
 
-    Label: `QoS <https://github.com/ThreeMammals/Ocelot/labels/QoS>`_
+  Repository Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
 
-Ocelot currently supports a single **QoS** capability.
-It allows you to configure, on a per-route basis, the use of a circuit breaker when making requests to downstream services.
-This feature leverages a superb .NET library known as `Polly`_. For more information, visit their `official repository <https://github.com/App-vNext/Polly>`_.
+Ocelot currently supports a single *Quality of Service* (QoS) capability.
+It allows you to configure, on a per-route basis, the application of a circuit breaker when making requests to downstream services.
+This feature leverages a well-regarded .NET library known as `Polly`_.
+For more details, visit the Polly library's official `repository <https://github.com/App-vNext/Polly>`_.
 
 Installation
 ------------
 
-To use the :doc:`../features/administration` API, the first step is to import the relevant NuGet `package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
+To utilize the :ref:`administration-api`, begin by importing the appropriate `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
 
 .. code-block:: powershell
 
     Install-Package Ocelot.Provider.Polly
 
-Next, within your ``ConfigureServices`` method, to incorporate `Polly`_ services, invoke the ``AddPolly()`` extension on the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_ as shown below:
+Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPolly()`` extension on the ``OcelotBuilder``, as shown below [#f1]_:
 
 .. code-block:: csharp
+  :emphasize-lines: 5
 
-    services.AddOcelot()
-        .AddPolly();
+  using Ocelot.Provider.Polly;
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddPolly();
 
 .. _qos-configuration:
 
 Configuration
 -------------
 
-Then add the following section to a Route configuration: 
+Then add the following section to a route configuration: 
 
 .. code-block:: json
 
   "QoSOptions": {
     "ExceptionsAllowedBeforeBreaking": 3,
-    "DurationOfBreak": 1000,
-    "TimeoutValue": 5000
+    "DurationOfBreak": 1000, // ms
+    "TimeoutValue": 5000 // ms
   }
 
-- You must set a number equal or greater than ``2`` against ``ExceptionsAllowedBeforeBreaking`` for this rule to be implemented. [#f2]_
-- ``DurationOfBreak`` means the circuit breaker will stay open for 1 second after it is tripped.
-- ``TimeoutValue`` means if a request takes more than 5 seconds, it will automatically be timed out. 
+- To implement this rule, you must set a value of **2** or higher for ``ExceptionsAllowedBeforeBreaking``. [#f2]_
+- ``DurationOfBreak`` indicates that the circuit breaker will remain open for **1** second after being triggered.
+- ``TimeoutValue`` specifies that if a request exceeds **5** seconds, it will automatically time out.
 
 .. _qos-circuit-breaker-strategy:
 
 Circuit Breaker strategy
 ------------------------
 
-The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be configured independently of ``TimeoutValue``:
+The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be configured independently from ``TimeoutValue``:
 
 .. code-block:: json
 
@@ -56,7 +73,7 @@ The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be c
     "DurationOfBreak": 1000
   }
 
-Alternatively, you may omit ``DurationOfBreak`` to default to the implicit 5 seconds as per Polly `documentation <https://www.pollydocs.org/>`_:
+Alternatively, you can omit ``DurationOfBreak``, which will default to the implicit 5-second setting as specified in Polly's `documentation`_:
 
 .. code-block:: json
 
@@ -71,12 +88,12 @@ This setup activates only the `Circuit breaker <https://www.pollydocs.org/strate
 Timeout strategy
 ----------------
 
-The ``TimeoutValue`` can be configured independently from the ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` settings:
+The ``TimeoutValue`` can be configured independently from the ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` options:
 
 .. code-block:: json
 
   "QoSOptions": {
-    "TimeoutValue": 5000
+    "TimeoutValue": 5000 // ms
   }
 
 This setup activates only the `Timeout <https://www.pollydocs.org/strategies/timeout.html>`_ strategy.
@@ -84,71 +101,72 @@ This setup activates only the `Timeout <https://www.pollydocs.org/strategies/tim
 Notes
 -----
 
-1. Without a QoS section, QoS will not be utilized, and Ocelot will impose a default timeout of **90** seconds for all downstream requests.
-   To request configurability, please open an issue. [#f2]_
+1. If a *QoS* section is not included, *QoS* will not be applied, and Ocelot will enforce a default timeout of **90** `seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+90+language%3AC%23&type=code&l=C%23>`_ for all downstream requests.
+   To request additional configurability, consider opening an issue. [#f3]_
 
-2. `Polly`_ V7 syntax is no longer supported as of version `23.2`_. [#f3]_
+2. The `Polly`_ V7 syntax is no longer supported as of version `23.2`_. [#f4]_
 
-3. For `Polly`_ version 8 and above, the following constraints on values are specified in `the documentation <https://www.pollydocs.org/>`_:
+3. Starting with `Polly`_ V8, the `documentation`_ outlines the following constraints on values:
 
    * The ``ExceptionsAllowedBeforeBreaking`` value must be **2** or higher.
    * The ``DurationOfBreak`` value must exceed **500** milliseconds, defaulting to **5000** milliseconds (5 seconds) if unspecified or if the value is **500** milliseconds or less.
    * The ``TimeoutValue`` must be over **10** milliseconds.
 
-   Consult the `Resilience strategies <https://www.pollydocs.org/strategies/index.html>`_ documentation for a detailed understanding of each option.
+   Refer to the `Resilience strategies <https://www.pollydocs.org/strategies/index.html>`_ documentation for a comprehensive explanation of each option.
 
 .. _qos-extensibility:
 
-Extensibility [#f3]_
+Extensibility [#f4]_
 --------------------
 
-If you want to use your ``ResiliencePipeline<T>`` provider, you can use the following syntax:
+To use your ``ResiliencePipeline<T>`` provider, you can apply the following syntax:
 
 .. code-block:: csharp
+  :emphasize-lines: 3
 
-    services.AddOcelot()
-        .AddPolly<MyProvider>();
-   // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
-   // Note: you can use standard provider PollyQoSResiliencePipelineProvider
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddPolly<MyProvider>();
+  // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
+  // Note: you can use standard provider PollyQoSResiliencePipelineProvider
 
-If, in addition, you want to use your own ``DelegatingHandler``, you can use the following syntax:
-
-.. code-block:: csharp
-
-    services.AddOcelot()
-        .AddPolly<MyProvider>(MyQosDelegatingHandlerDelegate);
-   // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
-   // Note: you can use standard provider PollyQoSResiliencePipelineProvider
-   // MyQosDelegatingHandlerDelegate is a delegate use to get a DelegatingHandler
-
-And finally, if you want to define your own set of exceptions to map, you can use the following syntax:
+Additionally, if you want to utilize your own ``DelegatingHandler``, the following syntax can be applied:
 
 .. code-block:: csharp
+  :emphasize-lines: 3
 
-    services.AddOcelot()
-        .AddPolly<MyProvider>(MyErrorMapping);
-    // MyProvider should implement IPollyQoSResiliencePipelineProvider<HttpResponseMessage> 
-    // Note: you can use standard provider PollyQoSResiliencePipelineProvider
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddPolly<MyProvider>(MyQosDelegatingHandlerDelegate);
+  // MyQosDelegatingHandlerDelegate is a delegate use to get a DelegatingHandler. Refer to Ocelot's PollyResiliencePipelineDelegatingHandler
 
-    // MyErrorMapping is a Dictionary<Type, Func<Exception, Error>>, eg:
-    private static readonly Dictionary<Type, Func<Exception, Error>> MyErrorMapping = new()
-    {
-        {typeof(TaskCanceledException), CreateError},
-        {typeof(TimeoutRejectedException), CreateError},
-        {typeof(BrokenCircuitException), CreateError},
-        {typeof(BrokenCircuitException<HttpResponseMessage>), CreateError},
-    };
-    private static Error CreateError(Exception e) => new RequestTimedOutError(e);
+Finally, to define your own set of exceptions for mapping, you can apply the following syntax:
+
+.. code-block:: csharp
+  :emphasize-lines: 11
+
+  static Error CreateError(Exception e) => new RequestTimedOutError(e);
+  Dictionary<Type, Func<Exception, Error>> MyErrorMapping = new()
+  {
+      {typeof(TaskCanceledException), CreateError},
+      {typeof(TimeoutRejectedException), CreateError},
+      {typeof(BrokenCircuitException), CreateError},
+      {typeof(BrokenCircuitException<HttpResponseMessage>), CreateError},
+  };
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddPolly<MyProvider>(MyErrorMapping);
+  // Note: Default error mapping is defined in the DefaultErrorMapping field of the Ocelot.Provider.Polly.OcelotBuilderExtensions class
 
 """"
 
-.. [#f1] :ref:`di-the-addocelot-method` adds default ASP.NET services to DI container. You could call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of :doc:`../features/dependencyinjection` feature.
-.. [#f2] If something doesn't work or you get stuck, please review current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtering by |QoS_label| label.
-.. [#f3] We upgraded `Polly`_ version from v7.x to v8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and delivered by PR `1914`_ as a part of version `23.2`_.
+.. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f2] If something doesn't work or you're stuck, consider reviewing the current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtered by the |QoS_label| label.
+.. [#f3] Recently, surrounding the release of version `24.0`_, we opened pull request `2073`_ to address the issue of default timeout configurations. This is a high-priority pull request, and the feature will be included in an upcoming major or minor release (excluding patches).
+.. [#f4] We upgraded `Polly`_ from version 7.x to 8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and implemented through pull request `1914`_, as part of version `23.2`_.
 
-.. _Polly: https://www.thepollyproject.org
 .. _1875: https://github.com/ThreeMammals/Ocelot/issues/1875
 .. _1914: https://github.com/ThreeMammals/Ocelot/pull/1914
+.. _2073: https://github.com/ThreeMammals/Ocelot/pull/2073
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
-.. |QoS_label| image:: https://img.shields.io/badge/-QoS-D3ADAF.svg
-   :target: https://github.com/ThreeMammals/Ocelot/labels/QoS
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0

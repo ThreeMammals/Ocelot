@@ -1,48 +1,27 @@
 ﻿using Ocelot.Middleware;
-using Ocelot.Responses;
+using Ocelot.Headers;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Headers;
+
+public class RemoveHeadersTests : UnitTest
 {
-    public class RemoveHeadersTests : UnitTest
+    private readonly RemoveOutputHeaders _removeOutputHeaders = new();
+
+    [Fact]
+    public void Should_remove_header()
     {
-        private List<Header> _headers;
-        private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
-        private Response _result;
-
-        public RemoveHeadersTests()
+        // Arrange
+        var headers = new List<Header>
         {
-            _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
-        }
+            new("Transfer-Encoding", new List<string> {"chunked"}),
+        };
 
-        [Fact]
-        public void should_remove_header()
-        {
-            var headers = new List<Header>
-            {
-                new("Transfer-Encoding", new List<string> {"chunked"}),
-            };
+        // Act
+        var result = _removeOutputHeaders.Remove(headers);
 
-            this.Given(x => x.GivenAHttpContext(headers))
-                .When(x => x.WhenIRemoveTheHeaders())
-                .Then(x => x.TheHeaderIsNoLongerInTheContext())
-                .BDDfy();
-        }
-
-        private void GivenAHttpContext(List<Header> headers)
-        {
-            _headers = headers;
-        }
-
-        private void WhenIRemoveTheHeaders()
-        {
-            _result = _removeOutputHeaders.Remove(_headers);
-        }
-
-        private void TheHeaderIsNoLongerInTheContext()
-        {
-            _result.IsError.ShouldBeFalse();
-            _headers.ShouldNotContain(x => x.Key == "Transfer-Encoding");
-            _headers.ShouldNotContain(x => x.Key == "transfer-encoding");
-        }
+        // Assert
+        result.IsError.ShouldBeFalse();
+        headers.ShouldNotContain(x => x.Key == "Transfer-Encoding");
+        headers.ShouldNotContain(x => x.Key == "transfer-encoding");
     }
 }

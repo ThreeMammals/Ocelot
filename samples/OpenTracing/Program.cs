@@ -1,55 +1,34 @@
-﻿using Jaeger;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.Web;
 using Ocelot.Tracing.OpenTracing;
 using OpenTracing.Util;
-using System.IO;
 
-namespace Ocelot.Samples.OpenTracing;
+//_ = OcelotHostBuilder.Create(args);
+var builder = WebApplication.CreateBuilder(args);
 
-public static class Program
-{
-    public static void Main(string[] args)
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddOcelot();
+builder.Services
+    .AddSingleton(serviceProvider =>
     {
-        OcelotHostBuilder.Create(args)
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config
-                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json",
-                        optional: true, reloadOnChange: false)
-                    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
-                    .AddEnvironmentVariables();
-            })
-            .ConfigureServices((context, services) =>
-            {
-                services.AddSingleton(sp =>
-                {
-                    var loggerFactory = sp.GetService<ILoggerFactory>();
-                    var config = new Jaeger.Configuration(context.HostingEnvironment.ApplicationName, loggerFactory);
-                    var tracer = config.GetTracer();
-                    GlobalTracer.Register(tracer);
-                    return tracer;
-                })
-                .AddOcelot()
-                .AddOpenTracing();
-            })
-            .ConfigureLogging(logging =>
-            {
-                logging.AddConsole();
-            })
-            .Configure(async app =>
-            {
-                await app.UseOcelot();
-            })
-            .Build()
-            .Run();
-    }
+        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+        var config = new Jaeger.Configuration(builder.Environment.ApplicationName, loggerFactory);
+        var tracer = config.GetTracer();
+        GlobalTracer.Register(tracer);
+        return tracer;
+    })
+    .AddOcelot(builder.Configuration)
+    .AddOpenTracing();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddConsole();
 }
+
+var app = builder.Build();
+await app.UseOcelot();
+await app.RunAsync();

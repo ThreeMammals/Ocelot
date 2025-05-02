@@ -1,0 +1,44 @@
+@HostHttp = http://localhost:5139
+
+GET {{HostAddress}}/ocelot/docs/
+Accept: application/json
+### Route #1 aka 'ocelot-docs'
+
+GET {{HostAddress}}/weather/current/London
+Accept: application/json
+### route #3 aka 'weather-current'
+
+GET {{HostAddress}}/ocelot/posts/3
+Accept: application/json
+### Route #4 aka 'ocelot-posts'
+
+GET {{HostAddress}}/test/deflate
+Accept: application/json
+### Route #5
+
+GET {{HostAddress}}/test/gzip
+Accept: application/json
+### Route #6
+
+##############################################
+@HostHttps = https://localhost:7252
+
+GET {{HostHttps}}/ocelot/docs/
+Accept: application/json
+### Route #1 aka 'ocelot-docs'
+
+GET {{HostHttps}}/weather/current/London
+Accept: application/json
+### route #3 aka 'weather-current'
+
+GET {{HostHttps}}/ocelot/posts/3
+Accept: application/json
+### Route #4 aka 'ocelot-posts'
+
+GET {{HostHttps}}/test/deflate
+Accept: application/json
+### Route #5
+
+GET {{HostHttps}}/test/gzip
+Accept: application/json
+### Route #6

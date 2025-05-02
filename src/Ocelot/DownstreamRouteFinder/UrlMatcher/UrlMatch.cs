@@ -1,12 +1,11 @@
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
-{
-    public class UrlMatch
-    {
-        public UrlMatch(bool match)
-        {
-            Match = match;
-        }
+namespace Ocelot.DownstreamRouteFinder.UrlMatcher;
 
-        public bool Match { get; }
+public class UrlMatch
+{
+    public UrlMatch(bool match)
+    {
+        Match = match;
     }
+
+    public bool Match { get; }
 }

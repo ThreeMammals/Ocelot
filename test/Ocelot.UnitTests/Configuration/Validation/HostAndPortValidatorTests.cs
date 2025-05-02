@@ -1,74 +1,49 @@
-using FluentValidation.Results;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 
-namespace Ocelot.UnitTests.Configuration.Validation
+namespace Ocelot.UnitTests.Configuration.Validation;
+
+public class HostAndPortValidatorTests : UnitTest
 {
-    public class HostAndPortValidatorTests : UnitTest
+    private readonly HostAndPortValidator _validator;
+
+    public HostAndPortValidatorTests()
     {
-        private HostAndPortValidator _validator;
-        private ValidationResult _result;
-        private FileHostAndPort _hostAndPort;
+        _validator = new HostAndPortValidator();
+    }
 
-        public HostAndPortValidatorTests()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Should_be_invalid_because_host_empty(string host)
+    {
+        // Arrange
+        var hostAndPort = new FileHostAndPort
         {
-            _validator = new HostAndPortValidator();
-        }
+            Host = host,
+        };
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void should_be_invalid_because_host_empty(string host)
+        // Act
+        var result = _validator.Validate(hostAndPort);
+
+        // Assert
+        result.IsValid.ShouldBeFalse();
+        result.Errors[0].ErrorMessage.ShouldBe("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!");
+    }
+
+    [Fact]
+    public void Should_be_valid_because_host_set()
+    {
+        // Arrange
+        var hostAndPort = new FileHostAndPort
         {
-            var fileHostAndPort = new FileHostAndPort
-            {
-                Host = host,
-            };
+            Host = "test",
+        };
 
-            this.Given(_ => GivenThe(fileHostAndPort))
-               .When(_ => WhenIValidate())
-               .Then(_ => ThenTheResultIsInValid())
-               .And(_ => ThenTheErorrIs())
-               .BDDfy();
-        }
+        // Act
+        var result = _validator.Validate(hostAndPort);
 
-        [Fact]
-        public void should_be_valid_because_host_set()
-        {
-            var fileHostAndPort = new FileHostAndPort
-            {
-                Host = "test",
-            };
-
-            this.Given(_ => GivenThe(fileHostAndPort))
-                .When(_ => WhenIValidate())
-                .Then(_ => ThenTheResultIsValid())
-                .BDDfy();
-        }
-
-        private void GivenThe(FileHostAndPort hostAndPort)
-        {
-            _hostAndPort = hostAndPort;
-        }
-
-        private void WhenIValidate()
-        {
-            _result = _validator.Validate(_hostAndPort);
-        }
-
-        private void ThenTheResultIsValid()
-        {
-            _result.IsValid.ShouldBeTrue();
-        }
-
-        private void ThenTheErorrIs()
-        {
-            _result.Errors[0].ErrorMessage.ShouldBe("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!");
-        }
-
-        private void ThenTheResultIsInValid()
-        {
-            _result.IsValid.ShouldBeFalse();
-        }
+        // Assert
+        result.IsValid.ShouldBeTrue();
     }
 }

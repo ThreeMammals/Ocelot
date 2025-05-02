@@ -1,38 +1,33 @@
-﻿using HTTPlease;
+﻿using KubeClient.Http;
 using KubeClient.Models;
 using KubeClient.ResourceClients;
 using Ocelot.Provider.Kubernetes.Interfaces;
 
-namespace Ocelot.Provider.Kubernetes
+namespace Ocelot.Provider.Kubernetes;
+
+public class EndPointClientV1 : KubeResourceClient, IEndPointClient
 {
-    public class EndPointClientV1 : KubeResourceClient, IEndPointClient
+    private static readonly HttpRequest Collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+
+    public EndPointClientV1(IKubeApiClient client) : base(client)
     {
-        private readonly HttpRequest _collection;
+    }
 
-        public EndPointClientV1(IKubeApiClient client) : base(client)
+    public Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(serviceName))
         {
-            _collection = KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+            throw new ArgumentNullException(nameof(serviceName));
         }
 
-        public async Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(serviceName))
+        var request = Collection
+            .WithTemplateParameters(new
             {
-                throw new ArgumentNullException(nameof(serviceName));
-            }
+                Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
+                ServiceName = serviceName,
+            });
 
-            var request = _collection
-                .WithTemplateParameters(new
-                {
-                    Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
-                    ServiceName = serviceName,
-                });
-
-            var response = await Http.GetAsync(request, cancellationToken);
-
-            return response.IsSuccessStatusCode
-                ? await response.ReadContentAsAsync<EndpointsV1>()
-                : null;
-        }
+        return Http.GetAsync(request, cancellationToken)
+            .ReadContentAsObjectV1Async<EndpointsV1>(operationDescription: $"get {nameof(EndpointsV1)}");
     }
 }

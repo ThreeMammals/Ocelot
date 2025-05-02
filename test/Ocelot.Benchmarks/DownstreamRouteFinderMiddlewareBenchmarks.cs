@@ -8,59 +8,58 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Benchmarks
+namespace Ocelot.Benchmarks;
+
+[SimpleJob(launchCount: 1, warmupCount: 2, iterationCount: 5)]
+[Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]
+public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
 {
-    [SimpleJob(launchCount: 1, warmupCount: 2, iterationCount: 5)]
-    [Config(typeof(DownstreamRouteFinderMiddlewareBenchmarks))]
-    public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
+    private DownstreamRouteFinderMiddleware _middleware;
+    private RequestDelegate _next;
+    private HttpContext _httpContext;
+
+    public DownstreamRouteFinderMiddlewareBenchmarks()
     {
-        private DownstreamRouteFinderMiddleware _middleware;
-        private RequestDelegate _next;
-        private HttpContext _httpContext;
+        AddColumn(StatisticColumn.AllStatistics);
+        AddDiagnoser(MemoryDiagnoser.Default);
+        AddValidator(BaselineValidator.FailOnError);
+    }
 
-        public DownstreamRouteFinderMiddlewareBenchmarks()
+    [GlobalSetup]
+    public void SetUp()
+    {
+        var serviceCollection = new ServiceCollection();
+        var config = new ConfigurationRoot(new List<IConfigurationProvider>());
+        var builder = new OcelotBuilder(serviceCollection, config);
+        var services = serviceCollection.BuildServiceProvider(true);
+        var loggerFactory = services.GetService<IOcelotLoggerFactory>();
+        var drpf = services.GetService<IDownstreamRouteProviderFactory>();
+
+        _next = async context =>
         {
-            AddColumn(StatisticColumn.AllStatistics);
-            AddDiagnoser(MemoryDiagnoser.Default);
-            AddValidator(BaselineValidator.FailOnError);
-        }
+            await Task.CompletedTask;
+            throw new Exception("BOOM");
+        };
 
-        [GlobalSetup]
-        public void SetUp()
+        _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf);
+
+        var httpContext = new DefaultHttpContext
         {
-            var serviceCollection = new ServiceCollection();
-            var config = new ConfigurationRoot(new List<IConfigurationProvider>());
-            var builder = new OcelotBuilder(serviceCollection, config);
-            var services = serviceCollection.BuildServiceProvider(true);
-            var loggerFactory = services.GetService<IOcelotLoggerFactory>();
-            var drpf = services.GetService<IDownstreamRouteProviderFactory>();
-
-            _next = async context =>
+            Request =
             {
-                await Task.CompletedTask;
-                throw new Exception("BOOM");
-            };
+                Path = new PathString("/test"),
+                QueryString = new QueryString("?a=b"),
+            },
+        };
+        httpContext.Request.Headers.Append("Host", "most");
+        httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null, null));
 
-            _middleware = new DownstreamRouteFinderMiddleware(_next, loggerFactory, drpf);
+        _httpContext = httpContext;
+    }
 
-            var httpContext = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Path = new PathString("/test"),
-                    QueryString = new QueryString("?a=b"),
-                },
-            };
-            httpContext.Request.Headers.Append("Host", "most");
-            httpContext.Items.SetIInternalConfiguration(new InternalConfiguration(new List<Route>(), null, null, null, null, null, null, null, null, null));
-
-            _httpContext = httpContext;
-        }
-
-        [Benchmark(Baseline = true)]
-        public async Task Baseline()
-        {
-            await _middleware.Invoke(_httpContext);
-        }
+    [Benchmark(Baseline = true)]
+    public async Task Baseline()
+    {
+        await _middleware.Invoke(_httpContext);
     }
 }

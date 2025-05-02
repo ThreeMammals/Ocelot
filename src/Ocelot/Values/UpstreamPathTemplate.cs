@@ -1,26 +1,30 @@
-namespace Ocelot.Values
+using Ocelot.Infrastructure;
+
+namespace Ocelot.Values;
+
+/// <summary>The model to keep data of upstream path.</summary>
+public partial class UpstreamPathTemplate
 {
-    public class UpstreamPathTemplate
+    [GeneratedRegex("$^", RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    private static partial Regex RegexNoTemplate();
+
+    public UpstreamPathTemplate(string template, int priority, bool containsQueryString, string originalValue)
     {
-        public UpstreamPathTemplate(string template, int priority, bool containsQueryString, string originalValue)
-        {
-            Template = template;
-            Priority = priority;
-            ContainsQueryString = containsQueryString;
-            OriginalValue = originalValue;
-            Pattern = template == null ?
-                new Regex("$^", RegexOptions.Compiled | RegexOptions.Singleline) :
-                new Regex(template, RegexOptions.Compiled | RegexOptions.Singleline);
-        }
+        Template = template;
+        Priority = priority;
+        ContainsQueryString = containsQueryString;
+        OriginalValue = originalValue;
+    }
 
-        public string Template { get; }
+    public string Template { get; }
+    public int Priority { get; }
+    public bool ContainsQueryString { get; }
+    public string OriginalValue { get; }
 
-        public int Priority { get; }
-
-        public bool ContainsQueryString { get; }
-
-        public string OriginalValue { get; }
-
-        public Regex Pattern { get; }
+    private Regex _pattern;
+    public Regex Pattern
+    {
+        get => _pattern;
+        set => _pattern = Template == null || value == null ? RegexNoTemplate() : value;
     }
 }

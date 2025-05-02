@@ -1,11 +1,10 @@
 ﻿using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Repository
-{
-    public interface IInternalConfigurationRepository
-    {
-        Response<IInternalConfiguration> Get();
+namespace Ocelot.Configuration.Repository;
 
-        Response AddOrReplace(IInternalConfiguration internalConfiguration);
-    }
+public interface IInternalConfigurationRepository
+{
+    Response<IInternalConfiguration> Get();
+
+    Response AddOrReplace(IInternalConfiguration internalConfiguration);
 }

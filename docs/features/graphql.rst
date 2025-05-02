@@ -1,3 +1,6 @@
+.. _GraphQL: https://graphql.org/
+.. _Ocelot.Samples.GraphQL: https://github.com/ThreeMammals/Ocelot/tree/main/samples/GraphQL
+.. _graphql-dotnet: https://github.com/graphql-dotnet/graphql-dotnet
 .. |GraphQL Logo| image:: https://avatars.githubusercontent.com/u/13958777
   :alt: GraphQL Logo
   :width: 40
@@ -5,25 +8,29 @@
 |GraphQL Logo| GraphQL
 ======================
 
-Ocelot doesn't directly support `GraphQL <https://graphql.org/>`_, but so many people have asked about it.
-We wanted to show how easy it is to integrate the `GraphQL for .NET <https://github.com/graphql-dotnet/graphql-dotnet>`_ library. 
+Ocelot does not directly support `GraphQL`_, but many people have asked about it.
+We wanted to show how easy it is to integrate the `GraphQL for .NET <https://github.com/graphql-dotnet/graphql-dotnet>`_ library.
 
+Sample
+------
 
-Please see the sample project `OcelotGraphQL <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OcelotGraphQL>`_.
-Using a combination of the `graphql-dotnet <https://github.com/graphql-dotnet/graphql-dotnet>`_ project and Ocelot :doc:`../features/delegatinghandlers` features, this is pretty easy to do. 
-However we do not intend to integrate more closely with **GraphQL** at the moment.
-Check out the samples `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/GraphQL/README.md>`_ and that should give you enough instruction on how to do this!
+  **Sample**: `Ocelot.Samples.GraphQL`_
+
+Please see the sample project `Ocelot.Samples.GraphQL`_.
+Using a combination of the `graphql-dotnet`_ project and Ocelot :doc:`../features/delegatinghandlers` feature, this is pretty easy to do.
+However, we do not intend to integrate more closely with `GraphQL`_ at the moment.
+Check out the sample's `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/GraphQL/README.md>`_ for detailed instructions on how to do this.
 
 Future
 ------
 
-If you have sufficient experience with GraphQL and mentioned .NET `package <https://github.com/graphql-dotnet/graphql-dotnet>`_, we would welcome your contribution to the sample. |octocat|
+If you have sufficient experience with `GraphQL`_ and the mentioned .NET `graphql-dotnet`_ package, we would welcome your contribution to the sample. |octocat|
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
-  :width: 23
+  :height: 25
+  :class: img-valign-middle
 
-Who knows, maybe you'll get inspired by the sample development and come up with some design solution in the form of a rough draft of GraphQL feature to implement in Ocelot.
+Who knows, maybe you will get inspired by the sample development and come up with a design solution in the form of a rough draft of a *GraphQL* feature to implement in Ocelot.
 Good luck!
-
-And, welcome to `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository!
+And welcome to the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository!

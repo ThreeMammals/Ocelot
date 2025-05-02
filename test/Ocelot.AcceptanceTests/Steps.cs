@@ -1,5 +1,5 @@
-﻿using CacheManager.Core;
-using IdentityServer4.AccessTokenValidation;
+﻿//using IdentityServer4.AccessTokenValidation;
+using CacheManager.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Caching;
+using Ocelot.AcceptanceTests.Properties;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
@@ -24,17 +25,17 @@ using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using Serilog;
 using Serilog.Core;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
-using static Ocelot.AcceptanceTests.HttpDelegatingHandlersTests;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 namespace Ocelot.AcceptanceTests;
 
-public class Steps : IDisposable
+public class Steps : BddfyConfig, IDisposable
 {
     protected TestServer _ocelotServer;
     protected HttpClient _ocelotClient;
@@ -53,7 +54,7 @@ public class Steps : IDisposable
     private IWebHost _ocelotHost; // TODO remove because of one reference
     private IOcelotConfigurationChangeTokenSource _changeToken;
 
-    public Steps()
+    public Steps() : base()
     {
         _random = new Random();
         _testId = Guid.NewGuid();
@@ -323,12 +324,9 @@ public class Steps : IDisposable
                 s.AddOcelot()
                     .AddCacheManager((x) =>
                     {
-                        x.WithMicrosoftLogging(_ =>
-                            {
-                                //log.AddConsole(LogLevel.Debug);
-                            })
-                            .WithJsonSerializer()
-                            .WithHandle(typeof(InMemoryJsonHandle<>));
+                        //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
+                        x.WithJsonSerializer();
+                        x.WithHandle(typeof(InMemoryJsonHandle<>));
                     });
             })
             .Configure(async app => await app.UseOcelot());
@@ -362,109 +360,12 @@ public class Steps : IDisposable
         _ocelotClient = _ocelotServer.CreateClient();
     }
 
-    public void GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<TOne, TWo>()
-        where TOne : DelegatingHandler
-        where TWo : DelegatingHandler
+    public void GivenOcelotIsRunningWithHandlerRegisteredInDi<THandler>(bool global = false)
+        where THandler : DelegatingHandler
     {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddOcelot()
-                    .AddDelegatingHandler<TOne>()
-                    .AddDelegatingHandler<TWo>();
-            })
-            .Configure(async a => await a.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne, TWo>()
-        where TOne : DelegatingHandler
-        where TWo : DelegatingHandler
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddOcelot()
-                    .AddDelegatingHandler<TOne>(true)
-                    .AddDelegatingHandler<TWo>(true);
-            })
-            .Configure(async a => await a.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithHandlerRegisteredInDi<TOne>(bool global = false)
-        where TOne : DelegatingHandler
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddOcelot()
-                    .AddDelegatingHandler<TOne>(global);
-            })
-            .Configure(async a => await a.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
-    public void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<TOne>(FakeDependency dependency)
-        where TOne : DelegatingHandler
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddSingleton(dependency);
-                s.AddOcelot()
-                    .AddDelegatingHandler<TOne>(true);
-            })
-            .Configure(async a => await a.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        GivenOcelotIsRunningWithServices(s => s
+            .AddOcelot()
+            .AddDelegatingHandler<THandler>(global));
     }
 
     // #
@@ -492,34 +393,32 @@ public class Steps : IDisposable
 
     // END of Cookies helpers
 
-    /// <summary>
-    /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
-    /// </summary>
-    public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
-        string authenticationProviderKey)
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot();
-                s.AddAuthentication()
-                    .AddIdentityServerAuthentication(authenticationProviderKey, options);
-            })
-            .Configure(async app => await app.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-    }
-
+    ///// <summary>
+    ///// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+    ///// </summary>
+    //public void GivenOcelotIsRunning(Action<IdentityServerAuthenticationOptions> options,
+    //    string authenticationProviderKey)
+    //{
+    //    _webHostBuilder = TestHostBuilder.Create()
+    //        .ConfigureAppConfiguration((hostingContext, config) =>
+    //        {
+    //            config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+    //            var env = hostingContext.HostingEnvironment;
+    //            config.AddJsonFile("appsettings.json", true, false)
+    //                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+    //            config.AddJsonFile(_ocelotConfigFileName, true, false);
+    //            config.AddEnvironmentVariables();
+    //        })
+    //        .ConfigureServices(s =>
+    //        {
+    //            s.AddOcelot();
+    //            s.AddAuthentication()
+    //                .AddIdentityServerAuthentication(authenticationProviderKey, options);
+    //        })
+    //        .Configure(async app => await app.UseOcelot());
+    //    _ocelotServer = new TestServer(_webHostBuilder);
+    //    _ocelotClient = _ocelotServer.CreateClient();
+    //}
     public void ThenTheResponseHeaderIs(string key, string value)
     {
         var header = _response.Headers.GetValues(key);
@@ -732,16 +631,14 @@ public class Steps : IDisposable
         for (int i = 0; i < times; i++)
             await action.Invoke(i);
     }
-
-    public async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(string url, int times)
+    public static async Task WhenIDoActionForTime(TimeSpan time, Func<int, Task> action)
     {
-        for (var i = 0; i < times; i++)
+        var watcher = Stopwatch.StartNew();
+        for (int i = 0; watcher.Elapsed < time; i++)
         {
-            const string clientId = "ocelotclient1";
-            var request = new HttpRequestMessage(new HttpMethod("GET"), url);
-            request.Headers.Add("ClientId", clientId);
-            _response = await _ocelotClient.SendAsync(request);
+            await action.Invoke(i);
         }
+        watcher.Stop();
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, string requestId)

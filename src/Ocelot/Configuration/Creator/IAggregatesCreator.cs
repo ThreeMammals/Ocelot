@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IAggregatesCreator
 {
-    public interface IAggregatesCreator
-    {
-        List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes);
-    }
+    List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes);
 }

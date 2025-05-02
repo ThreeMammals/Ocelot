@@ -1,46 +1,45 @@
 using System.Diagnostics;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class Waiter
 {
-    public class Waiter
+    private readonly int _milliSeconds;
+
+    public Waiter(int milliSeconds)
     {
-        private readonly int _milliSeconds;
+        _milliSeconds = milliSeconds;
+    }
 
-        public Waiter(int milliSeconds)
+    public bool Until(Func<bool> condition)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var passed = false;
+        while (stopwatch.ElapsedMilliseconds < _milliSeconds)
         {
-            _milliSeconds = milliSeconds;
-        }
-
-        public bool Until(Func<bool> condition)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var passed = false;
-            while (stopwatch.ElapsedMilliseconds < _milliSeconds)
+            if (condition.Invoke())
             {
-                if (condition.Invoke())
-                {
-                    passed = true;
-                    break;
-                }
+                passed = true;
+                break;
             }
-
-            return passed;
         }
 
-        public bool Until<T>(Func<bool> condition)
+        return passed;
+    }
+
+    public bool Until<T>(Func<bool> condition)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var passed = false;
+        while (stopwatch.ElapsedMilliseconds < _milliSeconds)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var passed = false;
-            while (stopwatch.ElapsedMilliseconds < _milliSeconds)
+            if (condition.Invoke())
             {
-                if (condition.Invoke())
-                {
-                    passed = true;
-                    break;
-                }
+                passed = true;
+                break;
             }
-
-            return passed;
         }
+
+        return passed;
     }
 }

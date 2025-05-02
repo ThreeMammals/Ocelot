@@ -18,42 +18,41 @@ public class HttpContextResponder : IHttpResponder
         _removeOutputHeaders = removeOutputHeaders;
     }
 
-    public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response)
+    public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse downstream)
     {
-        _removeOutputHeaders.Remove(response.Headers);
+        _removeOutputHeaders.Remove(downstream.Headers);
 
-        foreach (var httpResponseHeader in response.Headers)
+        foreach (var httpResponseHeader in downstream.Headers)
         {
             AddHeaderIfDoesntExist(context, httpResponseHeader);
         }
 
-        SetStatusCode(context, (int)response.StatusCode);
+        SetStatusCode(context, (int)downstream.StatusCode);
 
-        context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = response.ReasonPhrase;
+        context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = downstream.ReasonPhrase;
 
         // As of 5.0 HttpResponse.Content never returns null.
         // https://github.com/dotnet/runtime/blame/8fc68f626a11d646109a758cb0fc70a0aa7826f1/src/libraries/System.Net.Http/src/System/Net/Http/HttpResponseMessage.cs#L46
         // TODO: Check if it applies to ocelot custom implementation
-        if (response.Content is null)
+        if (downstream.Content is null)
         {
             return;
         }
 
-        foreach (var httpResponseHeader in response.Content.Headers)
+        foreach (var httpResponseHeader in downstream.Content.Headers)
         {
             AddHeaderIfDoesntExist(context, new Header(httpResponseHeader.Key, httpResponseHeader.Value));
         }
 
-        if (response.Content.Headers.ContentLength != null)
+        if (downstream.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
-                new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
+                new Header("Content-Length", new[] { downstream.Content.Headers.ContentLength.ToString() }));
         }
 
-        if (response.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
+        if (downstream.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
         {
-            await using var content = await response.Content.ReadAsStreamAsync();
-            await content.CopyToAsync(context.Response.Body, context.RequestAborted);
+            await WriteToUpstreamAsync(context, downstream);
         }
     }
 
@@ -62,19 +61,24 @@ public class HttpContextResponder : IHttpResponder
         SetStatusCode(context, statusCode);
     }
 
-    public async Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response)
+    public async Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse downstream)
     {
-        if (response.Content.Headers.ContentLength != null)
+        if (downstream.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
-                new Header("Content-Length", new[] { response.Content.Headers.ContentLength.ToString() }));
+                new Header("Content-Length", new[] { downstream.Content.Headers.ContentLength.ToString() }));
         }
 
         if (context.Response.ContentLength != 0)
         {
-            await using var content = await response.Content.ReadAsStreamAsync();
-            await content.CopyToAsync(context.Response.Body, context.RequestAborted);
+            await WriteToUpstreamAsync(context, downstream);
         }
+    }
+
+    protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
+    {
+        await using var content = await downstream.Content.ReadAsStreamAsync();
+        await content.CopyToAsync(context.Response.Body, context.RequestAborted);
     }
 
     private static void SetStatusCode(HttpContext context, int statusCode)
@@ -89,7 +93,8 @@ public class HttpContextResponder : IHttpResponder
     {
         if (!context.Response.Headers.ContainsKey(httpResponseHeader.Key))
         {
-            context.Response.Headers.Append(httpResponseHeader.Key,
+            context.Response.Headers.Append(
+                httpResponseHeader.Key,
                 new StringValues(httpResponseHeader.Values.ToArray()));
         }
     }

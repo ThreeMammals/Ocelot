@@ -14,20 +14,12 @@ internal class MockWebSocket : WebSocket
     private string closeStatusDescription;
     private WebSocketState state;
     private readonly string subProtocol;
-    private readonly ConcurrentQueue<MessageData> receiveBuffers = new ConcurrentQueue<MessageData>();
-    private readonly AsyncAutoResetEvent receiveEvent = new AsyncAutoResetEvent(false);
+    private readonly ConcurrentQueue<MessageData> receiveBuffers = new();
+    private readonly AsyncAutoResetEvent receiveEvent = new(false);
     private bool disposedValue;
 
-    public MockWebSocket(string subProtocol = null)
-    {
-        this.subProtocol = subProtocol;
-    }
-
-    public void SetState(WebSocketState state)
-    {
-        this.state = state;
-    }
-
+    public MockWebSocket(string subProtocol = null) => this.subProtocol = subProtocol;
+    public void SetState(WebSocketState state) => this.state = state;
     public EventHandler<MessageDataEventArgs> MessageSent { get; set; }
 
     public Task InvokeReceiveAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
@@ -43,17 +35,10 @@ internal class MockWebSocket : WebSocket
     }
 
     public override WebSocketCloseStatus? CloseStatus => closeStatus;
-
     public override string CloseStatusDescription => closeStatusDescription;
-
     public override WebSocketState State => state;
-
     public override string SubProtocol => subProtocol;
-
-    public override void Abort()
-    {
-        throw new NotImplementedException();
-    }
+    public override void Abort() => throw new NotImplementedException();
 
     public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription,
         CancellationToken cancellationToken)
@@ -62,7 +47,7 @@ internal class MockWebSocket : WebSocket
         closeStatusDescription = statusDescription;
         receiveBuffers.Enqueue(new MessageData()
         {
-            Buffer = new ArraySegment<byte>(new byte[] { }),
+            Buffer = new ArraySegment<byte>(Array.Empty<byte>()),
             EndOfMessage = true,
             MessageType = WebSocketMessageType.Close,
         });
@@ -70,11 +55,7 @@ internal class MockWebSocket : WebSocket
         return Task.CompletedTask;
     }
 
-    public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription,
-        CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     public override async Task<WebSocketReceiveResult> ReceiveAsync(
         ArraySegment<byte> buffer,
@@ -89,8 +70,7 @@ internal class MockWebSocket : WebSocket
         var endOfMessage = true;
         var messageType = WebSocketMessageType.Close;
 
-        MessageData received = null;
-        if (receiveBuffers.TryPeek(out received))
+        if (receiveBuffers.TryPeek(out MessageData received))
         {
             messageType = received.MessageType;
             if (received.Buffer.Count <= buffer.Count)

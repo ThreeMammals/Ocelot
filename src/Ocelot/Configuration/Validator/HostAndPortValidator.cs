@@ -1,15 +1,14 @@
 using FluentValidation;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Validator
+namespace Ocelot.Configuration.Validator;
+
+public class HostAndPortValidator : AbstractValidator<FileHostAndPort>
 {
-    public class HostAndPortValidator : AbstractValidator<FileHostAndPort>
+    public HostAndPortValidator()
     {
-        public HostAndPortValidator()
-        {
-            RuleFor(r => r.Host)
-                .NotEmpty()
-                .WithMessage("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!");
-        }
+        RuleFor(r => r.Host)
+            .NotEmpty()
+            .WithMessage("When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using Route.Host or Ocelot cannot find your service!");
     }
 }

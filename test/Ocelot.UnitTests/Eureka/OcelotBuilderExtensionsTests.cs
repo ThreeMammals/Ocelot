@@ -35,7 +35,8 @@ public sealed class OcelotBuilderExtensionsTests : UnitTest
 
     [Fact]
     [Trait("PR", "734")]
-    [Trait("Feat", "324, 844")]
+    [Trait("Feat", "324")]
+    [Trait("Feat", "844")]
     public void AddEureka_NoExceptions_ShouldSetUpEureka()
     {
         // Arrange
@@ -51,7 +52,8 @@ public sealed class OcelotBuilderExtensionsTests : UnitTest
 
     [Fact]
     [Trait("PR", "734")]
-    [Trait("Feat", "324, 844")]
+    [Trait("Feat", "324")]
+    [Trait("Feat", "844")]
     public void AddEureka_DefaultServices_HappyPath()
     {
         // Arrange, Act

@@ -34,63 +34,35 @@ public class OcelotBuilderExtensionsTests : UnitTest
     [Fact]
     public void AddConsul_ShouldSetUpConsul()
     {
-        // Arrange
-        Exception ex = null;
-        try
-        {
-            // Act
-            var builder = _services.AddOcelot(_configRoot);
-            builder.AddConsul();
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
+        // Arrange, Act
+        var builder = _services.AddOcelot(_configRoot)
+            .AddConsul();
 
         // Assert
-        ex.ShouldBeNull();
+        builder.ShouldNotBeNull();
     }
 
     [Fact]
     public void AddConfigStoredInConsul_ShouldSetUpConsul()
     {
-        // Arrange
-        Exception ex = null;
-        try
-        {
-            // Act
-            var builder = _services.AddOcelot(_configRoot);
-            builder.AddConsul().AddConfigStoredInConsul();
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
+        // Arrange, Act
+        var builder = _services.AddOcelot(_configRoot)
+            .AddConsul()
+            .AddConfigStoredInConsul();
 
         // Assert
-        ex.ShouldBeNull();
+        builder.ShouldNotBeNull();
     }
 
     [Fact]
     public void AddConsulGeneric_TServiceBuilder_ShouldSetUpConsul()
     {
-        // Arrange
-        Exception ex = null;
-        IOcelotBuilder builder = null;
-        try
-        {
-            // Act
-            builder = _services
-                .AddOcelot(_configRoot)
-                .AddConsul<FakeConsulServiceBuilder>();
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
+        // Arrange, Act
+        var builder = _services
+            .AddOcelot(_configRoot)
+            .AddConsul<FakeConsulServiceBuilder>();
 
         // Assert
-        ex.ShouldBeNull();
         builder.ShouldNotBeNull();
         builder.Services.SingleOrDefault(s => s.ServiceType == typeof(IConsulServiceBuilder)).ShouldNotBeNull();
     }

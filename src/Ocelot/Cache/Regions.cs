@@ -1,12 +1,11 @@
-namespace Ocelot.Cache
-{
-    public class Regions
-    {
-        public Regions(List<string> value)
-        {
-            Value = value;
-        }
+namespace Ocelot.Cache;
 
-        public List<string> Value { get; }
+public class Regions
+{
+    public Regions(List<string> value)
+    {
+        Value = value;
     }
+
+    public List<string> Value { get; }
 }

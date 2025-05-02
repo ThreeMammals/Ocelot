@@ -1,6 +1,7 @@
 using CacheManager.Core;
 using Consul;
-using IdentityServer4.Extensions;
+
+//using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -102,7 +103,8 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
             {
                 s.AddOcelot()
                     .AddCacheManager(x => x
-                        .WithMicrosoftLogging(_ => { /*log.AddConsole(LogLevel.Debug);*/ })
+
+                        //.WithMicrosoftLogging(_ => { /*log.AddConsole(LogLevel.Debug);*/ })
                         .WithJsonSerializer()
                         .WithHandle(typeof(InMemoryJsonHandle<>)))
                     .AddConsul()
@@ -138,7 +140,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
 
                                     var kvp = new FakeConsulGetResponse(base64);
 
-                                    await context.Response.WriteJsonAsync(new[] { kvp });
+                                    //await context.Response.WriteJsonAsync(new[] { kvp });
                                 }
                                 else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
                                 {
@@ -164,7 +166,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                                 }
                                 else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
                                 {
-                                    await context.Response.WriteJsonAsync(_consulServices);
+                                    //await context.Response.WriteJsonAsync(_consulServices);
                                 }
                             });
                         });

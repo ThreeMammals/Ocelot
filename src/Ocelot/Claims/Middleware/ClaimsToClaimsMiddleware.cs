@@ -2,42 +2,41 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Claims.Middleware
+namespace Ocelot.Claims.Middleware;
+
+public class ClaimsToClaimsMiddleware : OcelotMiddleware
 {
-    public class ClaimsToClaimsMiddleware : OcelotMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IAddClaimsToRequest _addClaimsToRequest;
+
+    public ClaimsToClaimsMiddleware(RequestDelegate next,
+        IOcelotLoggerFactory loggerFactory,
+        IAddClaimsToRequest addClaimsToRequest)
+            : base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
     {
-        private readonly RequestDelegate _next;
-        private readonly IAddClaimsToRequest _addClaimsToRequest;
+        _next = next;
+        _addClaimsToRequest = addClaimsToRequest;
+    }
 
-        public ClaimsToClaimsMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IAddClaimsToRequest addClaimsToRequest)
-                : base(loggerFactory.CreateLogger<ClaimsToClaimsMiddleware>())
+    public async Task Invoke(HttpContext httpContext)
+    {
+        var downstreamRoute = httpContext.Items.DownstreamRoute();
+
+        if (downstreamRoute.ClaimsToClaims.Any())
         {
-            _next = next;
-            _addClaimsToRequest = addClaimsToRequest;
-        }
+            Logger.LogDebug("this route has instructions to convert claims to other claims");
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
+            var result = _addClaimsToRequest.SetClaimsOnContext(downstreamRoute.ClaimsToClaims, httpContext);
 
-            if (downstreamRoute.ClaimsToClaims.Any())
+            if (result.IsError)
             {
-                Logger.LogDebug("this route has instructions to convert claims to other claims");
+                Logger.LogDebug("error converting claims to other claims, setting pipeline error");
 
-                var result = _addClaimsToRequest.SetClaimsOnContext(downstreamRoute.ClaimsToClaims, httpContext);
-
-                if (result.IsError)
-                {
-                    Logger.LogDebug("error converting claims to other claims, setting pipeline error");
-
-                    httpContext.Items.UpsertErrors(result.Errors);
-                    return;
-                }
+                httpContext.Items.UpsertErrors(result.Errors);
+                return;
             }
-
-            await _next.Invoke(httpContext);
         }
+
+        await _next.Invoke(httpContext);
     }
 }

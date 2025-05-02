@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
-using Ocelot.Testing;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
 
@@ -17,8 +16,11 @@ namespace Ocelot.UnitTests.Kubernetes;
 /// Contains integration tests.
 /// Move to integration testing, and add at least one "happy path" unit test.
 /// </summary>
-public class KubeTests
+[Collection(nameof(SequentialTests))]
+public class KubeTests : FileUnitTest
 {
+    static JsonSerializerSettings JsonSerializerSettings => KubeClient.ResourceClients.KubeResourceClient.SerializerSettings;
+
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
 
@@ -43,6 +45,7 @@ public class KubeTests
             given.ClientOptions.ApiEndPoint.ToString(),
             given.ProviderOptions.KubeNamespace,
             given.ProviderOptions.KeyOfServiceInK8s,
+            responseStatusCode: HttpStatusCode.OK,
             endpoints,
             out Lazy<string> receivedToken);
 
@@ -52,6 +55,66 @@ public class KubeTests
         // Assert
         services.ShouldNotBeNull().Count.ShouldBe(1);
         receivedToken.Value.ShouldBe($"Bearer {nameof(Should_return_service_from_k8s)}");
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.NotFound)]
+    [Trait("PR", "2266")]
+    public async Task Should_not_return_service_from_k8s_when_k8s_api_returns_error_response(HttpStatusCode expectedStatusCode)
+    {
+        // Arrange
+        var given = GivenClientAndProvider(out var serviceBuilder);
+        serviceBuilder.Setup(x => x.BuildServices(It.IsAny<KubeRegistryConfiguration>(), It.IsAny<EndpointsV1>()))
+            .Returns(new Service[] { new(nameof(Should_not_return_service_from_k8s_when_k8s_api_returns_error_response), new("localhost", 80), string.Empty, string.Empty, Array.Empty<string>()) });
+
+        var endpoints = GivenEndpoints();
+        using var kubernetes = GivenThereIsAFakeKubeServiceDiscoveryProvider(
+            given.ClientOptions.ApiEndPoint.ToString(),
+            given.ProviderOptions.KubeNamespace,
+            given.ProviderOptions.KeyOfServiceInK8s,
+            expectedStatusCode,
+            endpoints,
+            out Lazy<string> receivedToken);
+
+        string expectedKubeApiErrorMessage = GetKubeApiErrorMessage(serviceName: given.ProviderOptions.KeyOfServiceInK8s, given.ProviderOptions.KubeNamespace, expectedStatusCode);
+        string expectedLogMessage = $"Failed to retrieve v1/Endpoints '{given.ProviderOptions.KeyOfServiceInK8s}' in namespace '{given.ProviderOptions.KubeNamespace}': (HTTP.{expectedStatusCode}/Failure/{expectedStatusCode}): {expectedKubeApiErrorMessage}";
+        _logger.Setup(logger => logger.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()))
+            .Callback((Func<string> messageFactory, Exception exception) =>
+            {
+                messageFactory.ShouldNotBeNull();
+
+                string logMessage = messageFactory();
+                logMessage.ShouldNotBeNullOrWhiteSpace();
+
+                // This is a little fragile, as it may change if other entries are logged due to implementation changes.
+                // Unfortunately, the use of a factory delegate for the log message, combined with reuse of Kube's logger for Retry.OperationAsync makes this tricky to test any other way so this is probably the best we can do for now.
+                if (logMessage.StartsWith("Ocelot Retry strategy"))
+                {
+                    return;
+                }
+
+                logMessage.ShouldBe(expectedLogMessage);
+
+                exception.ShouldNotBeNull();
+                KubeApiException kubeApiException = exception.ShouldBeOfType<KubeApiException>();
+                StatusV1 errorResponse = kubeApiException.Status;
+                errorResponse.Status.ShouldBe(StatusV1.FailureStatus);
+                errorResponse.Code.ShouldBe((int)expectedStatusCode);
+                errorResponse.Reason.ShouldBe(expectedStatusCode.ToString());
+                errorResponse.Message.ShouldNotBeNullOrWhiteSpace();
+            })
+            .Verifiable($"IOcelotLogger.LogError() was not called.");
+
+        // Act
+        var services = await given.Provider.GetAsync();
+
+        // Assert
+        services.ShouldNotBeNull().Count.ShouldBe(0);
+        receivedToken.Value.ShouldBe($"Bearer {nameof(Should_not_return_service_from_k8s_when_k8s_api_returns_error_response)}");
+        _logger.Verify();
     }
 
     [Fact] // This is not unit test! LoL :) This should be an integration test or even an acceptance test...
@@ -117,7 +180,7 @@ public class KubeTests
         return (client, options, provider, config);
     }
 
-    private EndpointsV1 GivenEndpoints(
+    protected EndpointsV1 GivenEndpoints(
         string namespaces = nameof(KubeTests),
         [CallerMemberName] string serviceName = "test")
     {
@@ -145,8 +208,14 @@ public class KubeTests
         return endpoints;
     }
 
-    private IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
+    protected IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
         EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
+    {
+        return GivenThereIsAFakeKubeServiceDiscoveryProvider(url, namespaces, serviceName, HttpStatusCode.OK, endpointEntries, out receivedToken);
+    }
+
+    protected IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
+        HttpStatusCode responseStatusCode, EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
     {
         var token = string.Empty;
         receivedToken = new(() => token);
@@ -155,14 +224,31 @@ public class KubeTests
         {
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
+                string responseBody;
+
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
                 {
                     token = values.First();
                 }
 
-                var json = JsonConvert.SerializeObject(endpointEntries);
+                if (responseStatusCode == HttpStatusCode.OK)
+                {
+                    responseBody = JsonConvert.SerializeObject(endpointEntries, JsonSerializerSettings);
+                }
+                else
+                {
+                    responseBody = JsonConvert.SerializeObject(new StatusV1
+                    {
+                        Message = GetKubeApiErrorMessage(serviceName, namespaces, responseStatusCode),
+                        Reason = responseStatusCode.ToString(),
+                        Code = (int)responseStatusCode,
+                        Status = StatusV1.FailureStatus,
+                    }, JsonSerializerSettings);
+                }
+
+                context.Response.StatusCode = (int)responseStatusCode;
                 context.Response.Headers.Append("Content-Type", "application/json");
-                return context.Response.WriteAsync(json);
+                return context.Response.WriteAsync(responseBody);
             }
 
             return Task.CompletedTask;
@@ -176,7 +262,12 @@ public class KubeTests
             .UseUrls(url)
             .Configure(app => app.Run(ProcessKubernetesRequest))
             .Build();
-        host.Start();
+        host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
         return host;
+    }
+
+    private static string GetKubeApiErrorMessage(string serviceName, string kubeNamespace, HttpStatusCode responseStatusCode)
+    {
+        return $"Failed to retrieve v1/Endpoints '{serviceName}' in namespace '{kubeNamespace}' (HTTP.{responseStatusCode}/Failure/{responseStatusCode}): This is an error response for HTTP status code {(int)responseStatusCode} ('{responseStatusCode}') from the fake Kubernetes API.";
     }
 }

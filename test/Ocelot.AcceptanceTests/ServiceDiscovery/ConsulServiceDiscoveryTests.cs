@@ -7,6 +7,7 @@ using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
@@ -396,7 +397,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     [InlineData(true, nameof(LeastConnectionAnalyzer))] // extended scenario using analyzer
     [InlineData(false, nameof(RoundRobin))]
     [InlineData(true, nameof(RoundRobinAnalyzer))]
-    public void ShouldReturnDifferentServicesWhenSequentiallylyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
+    public void ShouldReturnDifferentServicesWhenSequentiallyRequestingToDifferentServices(bool withAnalyzer, string loadBalancer)
     {
         var consulPort = PortFinder.GetRandomPort();
         var ports = PortFinder.GetPorts(Bug2119ServiceNames.Length);
@@ -593,13 +594,9 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     private void GivenTheServicesAreRegisteredWithConsul(params ServiceEntry[] serviceEntries) => _consulServices.AddRange(serviceEntries);
     private void GivenTheServiceNodesAreRegisteredWithConsul(params Node[] nodes) => _consulNodes.AddRange(nodes);
 
-#if NET7_0_OR_GREATER
-    [GeneratedRegex("/v1/health/service/(?<serviceName>[^/]+)")]
+    [GeneratedRegex("/v1/health/service/(?<serviceName>[^/]+)", RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex ServiceNameRegex();
-#else
-    private static readonly Regex ServiceNameRegexVar = new("/v1/health/service/(?<serviceName>[^/]+)");
-    private static Regex ServiceNameRegex() => ServiceNameRegexVar;
-#endif
+
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(string url)
     {
         _consulHandler.GivenThereIsAServiceRunningOn(url, async context =>
