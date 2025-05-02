@@ -52,14 +52,14 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             }
             catch (OperationCanceledException)
             {
-                await TryCloseWebSocket(destination, WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellationToken);
+                await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellationToken);
                 return;
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await TryCloseWebSocket(destination, WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellationToken);
+                    await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellationToken);
                     return;
                 }
 
@@ -68,7 +68,7 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await TryCloseWebSocket(destination, source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                await destination.TryCloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
                 return;
             }
 
@@ -156,16 +156,5 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
                 PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
                 PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
         }
-    }
-
-    private static async Task<bool> TryCloseWebSocket(WebSocket webSocket, WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellation)
-    {
-        if (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
-        {
-            await webSocket.CloseOutputAsync(closeStatus, statusDescription, cancellation);
-            return true;
-        }
-
-        return false;
     }
 }
