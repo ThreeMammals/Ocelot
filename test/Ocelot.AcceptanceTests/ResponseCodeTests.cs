@@ -2,22 +2,19 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ResponseCodeTests : IDisposable
+public sealed class ResponseCodeTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public ResponseCodeTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
     public void ShouldReturnResponse304WhenServiceReturns304()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -40,11 +37,11 @@ public class ResponseCodeTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/inline.132.bundle.js", 304))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/inline.132.bundle.js", 304))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified))
             .BDDfy();
     }
 
@@ -56,10 +53,9 @@ public class ResponseCodeTests : IDisposable
         }));
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }

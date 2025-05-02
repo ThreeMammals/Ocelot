@@ -3,22 +3,19 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class CaseSensitiveRoutingTests : IDisposable
+public sealed class CaseSensitiveRoutingTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public CaseSensitiveRoutingTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_return_response_200_when_global_ignore_case_sensitivity_set()
+    public void Should_return_response_200_when_global_ignore_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -41,19 +38,18 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_route_ignore_case_sensitivity_set()
+    public void Should_return_response_200_when_route_ignore_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -77,19 +73,18 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_404_when_route_respect_case_sensitivity_set()
+    public void Should_return_response_404_when_route_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -113,19 +108,18 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_route_respect_case_sensitivity_set()
+    public void Should_return_response_200_when_route_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -149,19 +143,18 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_404_when_global_respect_case_sensitivity_set()
+    public void Should_return_response_404_when_global_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -185,19 +178,18 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_global_respect_case_sensitivity_set()
+    public void Should_return_response_200_when_global_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -221,11 +213,11 @@ public class CaseSensitiveRoutingTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/api/products/1", 200, "Some Product"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
@@ -238,9 +230,9 @@ public class CaseSensitiveRoutingTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

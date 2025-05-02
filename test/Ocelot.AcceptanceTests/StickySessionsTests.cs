@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class StickySessionsTests : Steps, IDisposable
+public sealed class StickySessionsTests : Steps
 {
     private readonly int[] _counters;
 #if NET9_0_OR_GREATER

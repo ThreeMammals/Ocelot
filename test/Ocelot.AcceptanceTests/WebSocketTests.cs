@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public class WebSocketTests : Steps
+public sealed class WebSocketTests : Steps
 {
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;

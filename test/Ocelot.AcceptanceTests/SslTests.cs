@@ -3,23 +3,20 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class SslTests : IDisposable
+public sealed class SslTests : Steps
 {
-    private readonly Steps _steps;
     private string _downstreamPath;
     private readonly ServiceHandler _serviceHandler;
 
     public SslTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_dangerous_accept_any_server_certificate_validator()
+    public void Should_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -43,20 +40,19 @@ public class SslTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Hello from Laura", port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
     [Fact]
-    public void should_not_dangerous_accept_any_server_certificate_validator()
+    public void Should_not_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -80,11 +76,11 @@ public class SslTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Hello from Laura", port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
 
@@ -107,9 +103,9 @@ public class SslTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

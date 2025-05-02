@@ -6,22 +6,19 @@ using System.Security.Authentication;
 
 namespace Ocelot.AcceptanceTests;
 
-public class HttpTests : IDisposable
+public sealed class HttpTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public HttpTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_return_response_200_when_using_http_one()
+    public void Should_return_response_200_when_using_http_one()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -46,19 +43,18 @@ public class HttpTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http1))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_using_http_one_point_one()
+    public void Should_return_response_200_when_using_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -83,19 +79,18 @@ public class HttpTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http1))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_using_http_two_point_zero()
+    public void Should_return_response_200_when_using_http_two_point_zero()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -124,20 +119,19 @@ public class HttpTests : IDisposable
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http2))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+        this.Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
+    public void Should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -166,20 +160,19 @@ public class HttpTests : IDisposable
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http2))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http2))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
             .BDDfy();
     }
 
     //TODO: does this test make any sense?
     [Fact]
-    public void should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
+    public void Should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -208,12 +201,12 @@ public class HttpTests : IDisposable
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", port, HttpProtocols.Http1))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
     }
 
@@ -259,9 +252,9 @@ public class HttpTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

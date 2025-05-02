@@ -3,22 +3,19 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class MethodTests : IDisposable
+public sealed class MethodTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public MethodTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_return_response_200_when_get_converted_to_post()
+    public void Should_return_response_200_when_get_converted_to_post()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -42,19 +39,18 @@ public class MethodTests : IDisposable
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", "POST"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_get_converted_to_post_with_content()
+    public void Should_return_response_200_when_get_converted_to_post_with_content()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -81,20 +77,19 @@ public class MethodTests : IDisposable
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "POST"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", "POST"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
     }
 
     [Fact]
-    public void should_return_response_200_when_get_converted_to_get_with_content()
+    public void Should_return_response_200_when_get_converted_to_get_with_content()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -121,12 +116,12 @@ public class MethodTests : IDisposable
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}/", "/", "GET"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", httpContent))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(expected))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", "GET"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", httpContent))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
     }
 
@@ -148,9 +143,9 @@ public class MethodTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

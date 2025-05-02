@@ -4,22 +4,19 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ReasonPhraseTests : IDisposable
+public sealed class ReasonPhraseTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public ReasonPhraseTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
-    public void should_return_reason_phrase()
+    public void Should_return_reason_phrase()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -42,11 +39,11 @@ public class ReasonPhraseTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .And(_ => _steps.ThenTheReasonPhraseIs("some reason"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", "some reason"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(_ => ThenTheReasonPhraseIs("some reason"))
             .BDDfy();
     }
 
@@ -60,9 +57,9 @@ public class ReasonPhraseTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }

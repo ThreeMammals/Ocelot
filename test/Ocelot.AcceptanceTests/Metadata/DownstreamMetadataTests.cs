@@ -7,9 +7,8 @@ using System.Globalization;
 namespace Ocelot.AcceptanceTests.Metadata;
 
 [Trait("Feat", "738")]
-public class DownstreamMetadataTests : IDisposable
+public sealed class DownstreamMetadataTests : Steps
 {
-    private readonly Steps _steps;
     private readonly ServiceHandler _serviceHandler;
 
     public enum StringArrayConfig
@@ -30,14 +29,13 @@ public class DownstreamMetadataTests : IDisposable
 
     public DownstreamMetadataTests()
     {
-        _steps = new Steps();
         _serviceHandler = new ServiceHandler();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        _steps?.Dispose();
         _serviceHandler?.Dispose();
+        base.Dispose();
     }
 
     [Theory]
@@ -59,21 +57,21 @@ public class DownstreamMetadataTests : IDisposable
                 new()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort> { new() { Host = "localhost", Port = port, }, },
+                    DownstreamHostAndPorts = [ Localhost(port) ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Metadata = sourceDictionary,
-                    DelegatingHandlers = new List<string> { currentType.Name, },
+                    DelegatingHandlers = [ currentType.Name ],
                 },
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(currentType))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
@@ -125,17 +123,17 @@ public class DownstreamMetadataTests : IDisposable
                 new()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort> { new() { Host = "localhost", Port = port, }, },
+                    DownstreamHostAndPorts = [ Localhost(port) ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Metadata = sourceDictionary,
-                    DelegatingHandlers = new List<string> { nameof(StringArrayDownStreamMetadataHandler) },
+                    DelegatingHandlers = [ nameof(StringArrayDownStreamMetadataHandler) ],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
             {
-                MetadataOptions = new FileMetadataOptions
+                MetadataOptions = new()
                 {
                     Separators = separators,
                     TrimChars = trimChars,
@@ -144,11 +142,11 @@ public class DownstreamMetadataTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler)))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
@@ -173,17 +171,17 @@ public class DownstreamMetadataTests : IDisposable
                 new()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort> { new() { Host = "localhost", Port = port, }, },
+                    DownstreamHostAndPorts = [ Localhost(port) ],
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Metadata = sourceDictionary,
-                    DelegatingHandlers = new List<string> { nameof(IntDownStreamMetadataHandler) },
+                    DelegatingHandlers = [nameof(IntDownStreamMetadataHandler)],
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                MetadataOptions = new FileMetadataOptions
+                MetadataOptions = new()
                 {
                     NumberStyle = numberStyles.ToString(),
                     CurrentCulture = cultureName,
@@ -191,11 +189,11 @@ public class DownstreamMetadataTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway($"/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
     }
 
@@ -220,22 +218,22 @@ public class DownstreamMetadataTests : IDisposable
         switch (currentType)
         {
             case { } t when t == typeof(StringDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<StringDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<StringDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(StringArrayDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<StringArrayDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<StringArrayDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(BoolDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<BoolDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<BoolDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(DoubleDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<DoubleDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<DoubleDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(SuperDataContainerDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<SuperDataContainerDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<SuperDataContainerDownStreamMetadataHandler>();
                 break;
             case { } t when t == typeof(IntDownStreamMetadataHandler):
-                _steps.GivenOcelotIsRunningWithDelegatingHandler<IntDownStreamMetadataHandler>();
+                GivenOcelotIsRunningWithDelegatingHandler<IntDownStreamMetadataHandler>();
                 break;
             default:
                 throw new NotImplementedException();

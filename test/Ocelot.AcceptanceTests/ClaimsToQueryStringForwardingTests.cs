@@ -10,9 +10,8 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class ClaimsToQueryStringForwardingTests : IDisposable
+public sealed class ClaimsToQueryStringForwardingTests : Steps
 {
-    private readonly Steps _steps;
     private IWebHost _servicebuilder;
 
     //private IWebHost _identityServerBuilder;
@@ -22,7 +21,6 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
 
     public ClaimsToQueryStringForwardingTests()
     {
-        _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
 
@@ -89,15 +87,15 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
-            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            //.And(x => GivenOcelotIsRunning(_options, "Test"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
             .BDDfy();
     }
 
@@ -154,15 +152,15 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
             .And(_ => ThenTheQueryStringIs("?test=1&test=2&CustomerId=123&LocationId=1&UserId=1231231&UserType=registered"))
             .BDDfy();
     }
@@ -274,11 +272,10 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
     //    await _identityServerBuilder.StartAsync();
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-    public void Dispose()
+    public override void Dispose()
     {
-        _servicebuilder?.Dispose();
-        _steps.Dispose();
-
         //_identityServerBuilder?.Dispose();
+        _servicebuilder?.Dispose();
+        base.Dispose();
     }
 }

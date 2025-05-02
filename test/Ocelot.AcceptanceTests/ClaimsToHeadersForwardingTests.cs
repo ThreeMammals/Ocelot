@@ -12,18 +12,16 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class ClaimsToHeadersForwardingTests : IDisposable
+public sealed class ClaimsToHeadersForwardingTests : Steps
 {
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
     private readonly ServiceHandler _serviceHandler;
-    private readonly Steps _steps;
 
     public ClaimsToHeadersForwardingTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
 
@@ -90,15 +88,15 @@ public sealed class ClaimsToHeadersForwardingTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
-            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            //.And(x => GivenOcelotIsRunning(_options, "Test"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
             .BDDfy();
     }
 
@@ -190,11 +188,10 @@ public sealed class ClaimsToHeadersForwardingTests : IDisposable
     //    await _identityServerBuilder.StartAsync();
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-    public void Dispose()
+    public override void Dispose()
     {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-
         //_identityServerBuilder?.Dispose();
+        _serviceHandler?.Dispose();
+        base.Dispose();
     }
 }

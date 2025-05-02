@@ -5,9 +5,8 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class TwoDownstreamServicesTests : IDisposable
+public sealed class TwoDownstreamServicesTests : Steps
 {
-    private readonly Steps _steps;
     private readonly List<ServiceEntry> _serviceEntries;
     private string _downstreamPathOne;
     private string _downstreamPathTwo;
@@ -16,20 +15,18 @@ public class TwoDownstreamServicesTests : IDisposable
     public TwoDownstreamServicesTests()
     {
         _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
         _serviceEntries = new List<ServiceEntry>();
     }
 
     [Fact]
-    public void should_fix_issue_194()
+    public void Should_fix_issue_194()
     {
         var consulPort = PortFinder.GetRandomPort();
         var servicePort1 = PortFinder.GetRandomPort();
         var servicePort2 = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{servicePort1}";
-        var downstreamServiceTwoUrl = $"http://localhost:{servicePort2}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
+        var downstreamServiceOneUrl = DownstreamUrl(servicePort1);
+        var downstreamServiceTwoUrl = DownstreamUrl(servicePort2);
+        var fakeConsulServiceDiscoveryUrl = DownstreamUrl(consulPort);
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -79,14 +76,14 @@ public class TwoDownstreamServicesTests : IDisposable
         this.Given(x => x.GivenProductServiceOneIsRunning(downstreamServiceOneUrl, "/api/user/info", 200, "user"))
             .And(x => x.GivenProductServiceTwoIsRunning(downstreamServiceTwoUrl, "/api/product/info", 200, "product"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/user/info?id=1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("user"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/product/info?id=1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("product"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/api/user/info?id=1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("user"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api/product/info?id=1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("product"))
             .BDDfy();
     }
 
@@ -143,9 +140,9 @@ public class TwoDownstreamServicesTests : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _steps.Dispose();
+        base.Dispose();
     }
 }
