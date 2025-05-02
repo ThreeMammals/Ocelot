@@ -7,20 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ocelot.Configuration.ChangeTracking;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.Logging;
 using Ocelot.Middleware;
 using Shouldly;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
-using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 using CookieHeaderValue = Microsoft.Net.Http.Headers.CookieHeaderValue;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
@@ -325,9 +318,7 @@ public class AcceptanceSteps : IDisposable
 
     private bool _disposedValue;
 
-    /// <summary>
-    /// Protected implementation of Dispose pattern.
-    /// </summary>
+    /// <summary>Protected implementation of Dispose pattern.</summary>
     /// <param name="disposing">Flag to trigger actual disposing operation.</param>
     protected virtual void Dispose(bool disposing)
     {
