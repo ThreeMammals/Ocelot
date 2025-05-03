@@ -11,7 +11,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
     private readonly string _identityServerRootUrl;
 
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
-    private const string IdentityServer4Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated";
+    public const string IdentityServer4Skip = "TODO: Redevelopment required due to IdentityServer4 being deprecated.";
 
     public AuthenticationTests()
     {

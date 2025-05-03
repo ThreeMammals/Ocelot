@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Ocelot.Testing;
 
@@ -13,4 +14,10 @@ public sealed class TestHostBuilder : WebHostBuilder
 
     public static void WithEnabledValidateScopes(ServiceProviderOptions options)
         => options.ValidateScopes = true;
+
+    public static IHostBuilder CreateHost()
+        => Host.CreateDefaultBuilder().UseDefaultServiceProvider(WithEnabledValidateScopes);
+
+    public static IHostBuilder CreateHost(Action<ServiceProviderOptions> configure)
+        => Host.CreateDefaultBuilder().UseDefaultServiceProvider(configure + WithEnabledValidateScopes);
 }

@@ -317,6 +317,8 @@ public class AcceptanceSteps : IDisposable
     public void ThenTheStatusCodeShouldBe(int expected)
         => ((int)response.ShouldNotBeNull().StatusCode).ShouldBe(expected);
 
+    #region Dispose pattern
+
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.
     /// </summary>
@@ -348,5 +350,29 @@ public class AcceptanceSteps : IDisposable
         }
 
         _disposedValue = true;
+    }
+    #endregion
+
+    protected async Task<IHost> GivenOcelotHostIsRunning(
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
+        Action<IServiceCollection>? configureServices,
+        Action<IApplicationBuilder>? configureApp,
+        Action<IWebHostBuilder>? configureHost)
+    {
+        void ConfigureWeb(IWebHostBuilder webBuilder)
+        {
+            webBuilder
+                .UseKestrel()
+                .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
+                .ConfigureServices(configureServices ?? WithAddOcelot)
+                .Configure(configureApp ?? WithUseOcelot);
+            configureHost?.Invoke(webBuilder);
+        }
+        var host = TestHostBuilder
+            .CreateHost()
+            .ConfigureWebHost(ConfigureWeb)
+            .Build();
+        await host.StartAsync();
+        return host;
     }
 }
