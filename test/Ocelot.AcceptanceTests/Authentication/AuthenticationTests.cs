@@ -28,7 +28,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         //};
     }
 
-    private void Void() { }
+    private static void Void() { }
 
     [Fact(Skip = IdentityServer4Skip)]
     public void Should_return_401_using_identity_server_access_token()
@@ -36,7 +36,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
+        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
            .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -52,13 +52,13 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
+        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken())
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -71,13 +71,13 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
+        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenAuthToken(_identityServerRootUrl, "api2"))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
             .BDDfy();
@@ -89,13 +89,13 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
+        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken())
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
@@ -107,13 +107,13 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultAuthRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
+        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
             .And(x => x.GivenThereIsAServiceRunningOn(DownstreamServiceUrl(port), HttpStatusCode.Created, string.Empty))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken())
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
@@ -133,6 +133,8 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         //_identityServerBuilder?.Dispose();
         base.Dispose();
     }
+
+    private async Task GivenIHaveAToken() => _token = await GivenIHaveAToken(_identityServerRootUrl);
 }
 
 [AttributeUsage(AttributeTargets.Class)]

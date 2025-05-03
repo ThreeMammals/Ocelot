@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authentication;
 
-public class AuthenticationSteps : Steps, IDisposable
+public class AuthenticationSteps : Steps
 {
+    protected BearerToken _token;
     private readonly ServiceHandler _serviceHandler;
 
     public AuthenticationSteps() : base()
@@ -116,15 +118,47 @@ public class AuthenticationSteps : Steps, IDisposable
     //        });
     //    return builder;
     //}
-    internal Task<BearerToken> GivenAuthToken(string url, string apiScope)
+    protected void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(_token);
+    public void GivenIHaveAddedATokenToMyRequest(BearerToken token) => GivenIHaveAddedATokenToMyRequest(token.AccessToken, "Bearer");
+
+    public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
+    {
+        new ("client_id", "client"),
+        new ("client_secret", "secret"),
+        new ("scope", "api"),
+        new ("username", "test"),
+        new ("password", "test"),
+        new ("grant_type", "password"),
+    };
+
+    public async Task<BearerToken> GivenIHaveAToken(string url)
+    {
+        var form = GivenDefaultAuthTokenForm();
+        return _token = await GivenIHaveATokenWithForm(url, form);
+    }
+
+    public static async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
+    {
+        var tokenUrl = $"{url}/connect/token";
+        var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
+        var content = new FormUrlEncodedContent(formData);
+
+        using var httpClient = new HttpClient();
+        var response = await httpClient.PostAsync(tokenUrl, content);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
+        return JsonConvert.DeserializeObject<BearerToken>(responseContent) ?? new();
+    }
+
+    internal async Task<BearerToken> GivenAuthToken(string url, string apiScope)
     {
         var form = GivenDefaultAuthTokenForm();
         form.RemoveAll(x => x.Key == "scope");
         form.Add(new("scope", apiScope));
-        return GivenIHaveATokenWithForm(url, form);
+        return _token = await GivenIHaveATokenWithForm(url, form);
     }
 
-    internal Task<BearerToken> GivenAuthToken(string url, string apiScope, string client)
+    internal static Task<BearerToken> GivenAuthToken(string url, string apiScope, string client)
     {
         var form = GivenDefaultAuthTokenForm();
 

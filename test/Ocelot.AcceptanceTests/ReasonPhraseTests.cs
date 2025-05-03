@@ -43,7 +43,7 @@ public sealed class ReasonPhraseTests : Steps
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(_ => ThenTheReasonPhraseIs("some reason"))
+            .And(_ => ThenTheResponseReasonPhraseIs("some reason"))
             .BDDfy();
     }
 

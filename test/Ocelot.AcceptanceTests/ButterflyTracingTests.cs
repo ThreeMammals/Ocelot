@@ -144,7 +144,7 @@ public sealed class ButterflyTracingTests : Steps
             .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheTraceHeaderIsSet("Trace-Id"))
+            .And(x => ThenTheResponseHeaderExists("Trace-Id"))
             .And(x => ThenTheResponseHeaderIs("Tom", "Laura"))
             .BDDfy();
     }

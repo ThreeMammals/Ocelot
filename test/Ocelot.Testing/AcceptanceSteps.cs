@@ -85,9 +85,7 @@ public class AcceptanceSteps : IDisposable
         foreach (var file in Files)
         {
             if (!File.Exists(file))
-            {
                 continue;
-            }
 
             try
             {
@@ -143,9 +141,8 @@ public class AcceptanceSteps : IDisposable
 
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
 
-    // #
-    // # Cookies helpers
-    // #
+    #region Cookies
+
     public void GivenIAddCookieToMyRequest(string cookie)
         => _ocelotClient.ShouldNotBeNull().DefaultRequestHeaders.Add("Set-Cookie", cookie);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
@@ -160,18 +157,31 @@ public class AcceptanceSteps : IDisposable
         requestMessage.Headers.Add("Cookie", cookie.ToString());
         return _ocelotClient.ShouldNotBeNull().SendAsync(requestMessage);
     }
-    // END of Cookies helpers
+    #endregion
 
-    public void ThenTheResponseHeaderIs(string key, string value)
-    {
-        var header = _response.ShouldNotBeNull().Headers.GetValues(key);
-        header.First().ShouldBe(value);
-    }
+    #region Headers
 
-    public void ThenTheReasonPhraseIs(string expected)
+    public void ThenTheResponseHeaderIs(string key, string value) => ThenTheResponseHeaderExists(key).First().ShouldBe(value);
+    public void ThenTheResponseContentHeaderIs(string key, string value) => ThenTheResponseContentHeaderExists(key).First().ShouldBe(value);
+
+    public IEnumerable<string> ThenTheResponseHeaderExists(string key)
     {
-        _response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
+        _response.ShouldNotBeNull().Headers.Contains(key).ShouldBeTrue();
+        var header = _response.Headers.GetValues(key);
+        header.Any(string.IsNullOrEmpty).ShouldBeFalse();
+        return header;
     }
+    public IEnumerable<string> ThenTheResponseContentHeaderExists(string key)
+    {
+        _response.ShouldNotBeNull().Content.Headers.Contains(key).ShouldBeTrue();
+        var header = _response.Content.Headers.GetValues(key);
+        header.Any(string.IsNullOrEmpty).ShouldBeFalse();
+        return header;
+    }
+    #endregion
+
+    public void ThenTheResponseReasonPhraseIs(string expected)
+        => _response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
         => GivenOcelotIsRunningWithServices(configureServices, null);

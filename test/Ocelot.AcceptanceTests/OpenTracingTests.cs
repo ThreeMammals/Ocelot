@@ -35,7 +35,7 @@ public class OpenTracingTests : Steps
     }
 
     [Fact]
-    public void should_forward_tracing_information_from_ocelot_and_downstream_services()
+    public void Should_forward_tracing_information_from_ocelot_and_downstream_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -85,12 +85,12 @@ public class OpenTracingTests : Steps
         };
 
         var tracingPort = PortFinder.GetRandomPort();
-        var tracingUrl = $"http://localhost:{tracingPort}";
+        var tracingUrl = DownstreamUrl(tracingPort);
         var fakeTracer = new FakeTracer();
 
         this.Given(_ => GivenFakeOpenTracing(tracingUrl))
-            .And(_ => GivenServiceOneIsRunning($"http://localhost:{port1}", "/api/values", 200, "Hello from Laura", tracingUrl))
-            .And(_ => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", tracingUrl))
+            .And(_ => GivenServiceOneIsRunning(DownstreamUrl(port1), "/api/values", 200, "Hello from Laura", tracingUrl))
+            .And(_ => GivenServiceTwoIsRunning(DownstreamUrl(port2), "/api/values", 200, "Hello from Tom", tracingUrl))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api001/values"))
@@ -104,7 +104,7 @@ public class OpenTracingTests : Steps
     }
 
     [Fact]
-    public void should_return_tracing_header()
+    public void Should_return_tracing_header()
     {
         var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
@@ -139,17 +139,17 @@ public class OpenTracingTests : Steps
         };
 
         var butterflyPort = PortFinder.GetRandomPort();
-        var butterflyUrl = $"http://localhost:{butterflyPort}";
+        var butterflyUrl = DownstreamUrl(butterflyPort);
         var fakeTracer = new FakeTracer();
 
         this.Given(x => GivenFakeOpenTracing(butterflyUrl))
-            .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
+            .And(x => GivenServiceOneIsRunning(DownstreamUrl(port), "/api/values", 200, "Hello from Laura", butterflyUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
             .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheTraceHeaderIsSet("Trace-Id"))
+            .And(x => ThenTheResponseHeaderExists("Trace-Id"))
             .And(x => ThenTheResponseHeaderIs("Tom", "Laura"))
             .BDDfy();
     }

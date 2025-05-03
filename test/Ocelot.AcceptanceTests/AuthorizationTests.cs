@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
+public sealed class AuthorizationTests : AuthenticationSteps
 {
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
@@ -305,7 +305,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
             .BDDfy();
     }
 
-    private void Void() { }
+    private static void Void() { }
 
     private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
     {

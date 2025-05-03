@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Ocelot.AcceptanceTests;
 
-internal class BearerToken
+public class BearerToken
 {
     [JsonProperty("access_token")]
     public string AccessToken { get; set; }

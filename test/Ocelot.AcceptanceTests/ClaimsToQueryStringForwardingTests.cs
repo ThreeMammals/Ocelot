@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class ClaimsToQueryStringForwardingTests : Steps
+public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
 {
     private IWebHost _servicebuilder;
 

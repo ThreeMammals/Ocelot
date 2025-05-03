@@ -35,13 +35,13 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, HelloLauraContent, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
@@ -59,18 +59,18 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
         var headerExpires = "Expires";
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
             .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
-            .And(x => ThenTheResponseBodyHeaderIs(headerExpires, "-1"))
+            .And(x => ThenTheResponseContentHeaderIs(headerExpires, "-1"))
             .BDDfy();
     }
 
@@ -84,13 +84,13 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, HelloLauraContent, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingJsonSerializedCache())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
@@ -135,13 +135,13 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, HelloLauraContent, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, null, null))
             .And(x => GivenTheCacheExpires())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -165,7 +165,7 @@ public sealed class CachingTests : Steps
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(DownstreamUrl(port)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
@@ -199,7 +199,7 @@ public sealed class CachingTests : Steps
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(DownstreamUrl(port)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
@@ -233,7 +233,7 @@ public sealed class CachingTests : Steps
         var headerExpires = "Expires";
 
         // Add to cache
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -241,14 +241,14 @@ public sealed class CachingTests : Steps
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
 
             // Read from cache
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
             .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
 
             // Clean cache by the header and cache new content
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
+            .Given(x => x.GivenTheServiceNowReturns(DownstreamUrl(port), HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
             .And(x => GivenIAddAHeader(options.Header, "123"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
