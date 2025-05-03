@@ -98,7 +98,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     {
         // Assume default scheme token is attached as "Authorization" header, for example "Bearer"
         // But default authentication setup should be ignored in multiple schemes scenario
-        _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "failed");
+        ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "failed");
 
         for (int i = 0; i < schemes.Length && i < _tokens.Length; i++)
         {

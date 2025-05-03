@@ -9,7 +9,7 @@ public class RateLimitingSteps : Steps
             const string clientId = "ocelotclient1";
             var request = new HttpRequestMessage(new HttpMethod("GET"), url);
             request.Headers.Add("ClientId", clientId);
-            _response = await _ocelotClient.SendAsync(request);
+            response = await ocelotClient.SendAsync(request);
         }
     }
 }

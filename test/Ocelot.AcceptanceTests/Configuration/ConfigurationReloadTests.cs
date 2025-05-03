@@ -46,8 +46,8 @@ public sealed class ConfigurationReloadTests : Steps
     {
         var result = await Wait.WaitFor(timeoutMs).UntilAsync(async () =>
         {
-            var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-            var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+            var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+            var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
             var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
             return internalConfig.Data.RequestId == config.Data.RequestId;
@@ -68,8 +68,8 @@ public sealed class ConfigurationReloadTests : Steps
 
     private async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {
-        var internalConfigCreator = _ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-        var internalConfigRepo = _ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+        var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+        var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
         var internalConfig = internalConfigRepo.Get();
         var config = await internalConfigCreator.Create(fileConfig);
         internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
@@ -104,12 +104,12 @@ public sealed class ConfigurationReloadTests : Steps
 
     private void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
     {
-        StartOcelot((_, config) => config.AddOcelot(_ocelotConfigFileName, false, shouldReload));
+        StartOcelot((_, config) => config.AddOcelot(ocelotConfigFileName, false, shouldReload));
     }
 
     private void GivenIHaveAChangeToken()
     {
-        _changeToken = _ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
+        _changeToken = ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
     }
 
     private void TheChangeTokenShouldBeActive(bool itShouldBeActive)

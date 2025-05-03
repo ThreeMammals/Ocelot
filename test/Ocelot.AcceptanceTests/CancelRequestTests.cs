@@ -51,7 +51,7 @@ public sealed class CancelRequestTests : Steps, IDisposable
         ex.ShouldNotBeNull().ShouldBeOfType<TaskCanceledException>();
     }
 
-    private Task Cancel(Task t) => Task.Run(_ocelotClient.CancelPendingRequests);
+    private Task Cancel(Task t) => Task.Run(ocelotClient.CancelPendingRequests);
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, Notifier startedNotifier, Notifier stoppedNotifier)
     {

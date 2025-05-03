@@ -96,7 +96,7 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
+                config.AddJsonFile(ocelotConfigFileName, true, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s =>
@@ -112,8 +112,8 @@ public sealed class ConfigurationInConsulTests : Steps, IDisposable
             })
             .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)

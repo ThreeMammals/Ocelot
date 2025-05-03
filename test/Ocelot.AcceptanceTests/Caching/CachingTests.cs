@@ -106,7 +106,7 @@ public sealed class CachingTests : Steps
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s =>
@@ -121,8 +121,8 @@ public sealed class CachingTests : Steps
             })
             .Configure(async app => await app.UseOcelot());
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     [Fact]

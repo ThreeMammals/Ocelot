@@ -172,7 +172,7 @@ public class ConcurrentSteps : Steps, IDisposable
 
     private async Task GetParallelResponse(string url, int threadIndex)
     {
-        var response = await _ocelotClient.GetAsync(url);
+        var response = await ocelotClient.GetAsync(url);
         var content = await response.Content.ReadAsStringAsync();
         var counterString = content.Contains(':')
             ? content.Split(':')[0] // let the first fragment is counter value

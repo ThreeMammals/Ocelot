@@ -161,8 +161,8 @@ public sealed class RequestIdTests : Steps
 
     private async Task WhenIGetUrlOnTheApiGatewayWithRequestId(string url, string requestId)
     {
-        _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
-        _response = await _ocelotClient.GetAsync(url);
+        ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(RequestIdKey, requestId);
+        response = await ocelotClient.GetAsync(url);
     }
 
     private void GivenThereIsAServiceRunningOn(string url)
@@ -176,9 +176,9 @@ public sealed class RequestIdTests : Steps
     }
 
     private void ThenTheRequestIdIsReturned()
-        => _response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
+        => response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
     private void ThenTheRequestIdIsReturned(string expected)
-        => _response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
+        => response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
 
     public override void Dispose()
     {

@@ -121,7 +121,7 @@ public sealed class WebSocketTests : Steps
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureLogging((hostingContext, logging) =>
@@ -135,8 +135,8 @@ public sealed class WebSocketTests : Steps
                 await app.UseOcelot();
             })
             .UseIISIntegration();
-        _ocelotHost = builder.Build();
-        await _ocelotHost.StartAsync();
+        ocelotHost = builder.Build();
+        await ocelotHost.StartAsync();
     }
 
     private void ThenBothDownstreamServicesAreCalled()

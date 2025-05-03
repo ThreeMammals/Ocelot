@@ -29,7 +29,7 @@ public class Steps : AcceptanceSteps
             .ConfigureAppConfiguration(WithBasicConfiguration)
             .ConfigureServices(WithAddOcelot)
             .Configure(async a => await a.UseOcelot(pipelineConfig));
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 }

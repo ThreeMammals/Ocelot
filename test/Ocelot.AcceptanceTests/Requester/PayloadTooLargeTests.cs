@@ -105,7 +105,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                         var env = hostingContext.HostingEnvironment;
                         config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                        config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
+                        config.AddJsonFile(ocelotConfigFileName, optional: true, reloadOnChange: false);
                         config.AddEnvironmentVariables();
                     })
                     .ConfigureServices(s =>
@@ -120,7 +120,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
             }).Build();
         _realServer.Start();
 
-        _ocelotClient = new HttpClient
+        ocelotClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:5001"),
         };
@@ -145,7 +145,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
                     var env = hostingContext.HostingEnvironment;
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile(_ocelotConfigFileName, optional: true, reloadOnChange: false);
+                    config.AddJsonFile(ocelotConfigFileName, optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
                 .ConfigureServices(s =>
@@ -160,7 +160,7 @@ public sealed class PayloadTooLargeTests : Steps, IDisposable
             }).Build();
         _realServer.Start();
 
-        _ocelotClient = new HttpClient
+        ocelotClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:5001"),
         };

@@ -525,7 +525,6 @@ public sealed class AggregateTests : Steps
         var tomExpected = "{Hello from Tom}";
         var lauraUrl = "/laura";
         var lauraExpected = "{Hello from Laura}";
-        var random = new Random();
 
         var aggregateTasks = new Task[numberOfRequests];
         for (var i = 0; i < numberOfRequests; i++)
@@ -554,7 +553,7 @@ public sealed class AggregateTests : Steps
     {
         var request = new HttpRequestMessage(new HttpMethod("GET"), url);
         await Task.Delay(random.Next(0, 2));
-        var response = await _ocelotClient.SendAsync(request);
+        var response = await ocelotClient.SendAsync(request);
         var content = await response.Content.ReadAsStringAsync();
         content.ShouldBe(expectedBody);
     }
@@ -777,7 +776,7 @@ public sealed class AggregateTests : Steps
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
+                config.AddJsonFile(ocelotConfigFileName, true, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s =>
@@ -789,8 +788,8 @@ public sealed class AggregateTests : Steps
             })
             .Configure(async b => await b.UseOcelot());
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)

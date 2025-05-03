@@ -10,20 +10,18 @@ using System.Collections.Concurrent;
 
 namespace Ocelot.IntegrationTests;
 
-public class ThreadSafeHeadersTests : IDisposable
+public class ThreadSafeHeadersTests : AcceptanceSteps
 {
     private readonly HttpClient _httpClient;
     private IWebHost _builder;
     private IWebHostBuilder _webHostBuilder;
     private readonly string _ocelotBaseUrl;
     private IWebHost _downstreamBuilder;
-    private readonly Random _random;
     private readonly ConcurrentBag<ThreadSafeHeadersTestResult> _results;
 
     public ThreadSafeHeadersTests()
     {
         _results = new ConcurrentBag<ThreadSafeHeadersTestResult>();
-        _random = new Random();
         _httpClient = new HttpClient();
         _ocelotBaseUrl = "http://localhost:5001";
         _httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
@@ -148,8 +146,8 @@ public class ThreadSafeHeadersTests : IDisposable
         for (var i = 0; i < times; i++)
         {
             var urlCopy = url;
-            var random = _random.Next(0, 50);
-            tasks[i] = GetForThreadSafeHeadersTest(urlCopy, random);
+            var rint = random.Next(0, 50);
+            tasks[i] = GetForThreadSafeHeadersTest(urlCopy, rint);
         }
 
         Task.WaitAll(tasks);

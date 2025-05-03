@@ -237,8 +237,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         {
             try
             {
-                _response = await _ocelotClient.GetAsync(url);
-                _response.EnsureSuccessStatusCode();
+                response = await ocelotClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
                 return true;
             }
             catch (Exception)
@@ -435,14 +435,14 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(0, count);
             ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[0]}", $"i is {i}");
-            _responses[2 * i] = _response;
+            _responses[2 * i] = response;
 
             // Step 2
             await WhenIGetUrlOnTheApiGateway("/customers/api/customers");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(1, count);
             ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[1]}", $"i is {i}");
-            _responses[(2 * i) + 1] = _response;
+            _responses[(2 * i) + 1] = response;
         };
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
@@ -586,7 +586,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var t = cookie != null
             ? WhenIGetUrlOnTheApiGateway(url, cookie)
             : WhenIGetUrl(url);
-        _response = await t;
+        response = await t;
     }
 
     private void ThenTheTokenIs(string token)

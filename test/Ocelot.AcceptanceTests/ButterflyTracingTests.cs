@@ -158,7 +158,7 @@ public sealed class ButterflyTracingTests : Steps
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
+                config.AddJsonFile(ocelotConfigFileName, true, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s =>
@@ -177,8 +177,8 @@ public sealed class ButterflyTracingTests : Steps
                 await app.UseOcelot();
             });
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)

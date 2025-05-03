@@ -21,21 +21,21 @@ namespace Ocelot.Testing;
 
 public class AcceptanceSteps : IDisposable
 {
-    protected IWebHost? _ocelotHost;
-    protected TestServer? _ocelotServer;
-    protected HttpClient? _ocelotClient;
-    protected HttpResponseMessage? _response;
+    protected IWebHost? ocelotHost;
+    protected TestServer? ocelotServer;
+    protected HttpClient? ocelotClient;
+    protected HttpResponseMessage? response;
 
-    protected readonly Guid _testId;
-    protected readonly string _ocelotConfigFileName;
-    protected readonly Random _random;
+    private readonly Guid _testId;
+    protected readonly Random random;
+    protected readonly string ocelotConfigFileName;
 
     public AcceptanceSteps() : base()
     {
-        _random = new Random();
         _testId = Guid.NewGuid();
-        _ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
-        Files = new() { _ocelotConfigFileName };
+        random = new Random();
+        ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
+        Files = new() { ocelotConfigFileName };
         Folders = new();
     }
 
@@ -62,7 +62,7 @@ public class AcceptanceSteps : IDisposable
     };
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
-        => GivenThereIsAConfiguration(fileConfiguration, _ocelotConfigFileName);
+        => GivenThereIsAConfiguration(fileConfiguration, ocelotConfigFileName);
     public void GivenThereIsAConfiguration(FileConfiguration from, string toFile)
     {
         var json = SerializeJson(from, ref toFile);
@@ -75,7 +75,7 @@ public class AcceptanceSteps : IDisposable
     }
     protected string SerializeJson(FileConfiguration from, ref string toFile)
     {
-        toFile ??= _ocelotConfigFileName;
+        toFile ??= ocelotConfigFileName;
         Files.Add(toFile); // register for disposing
         return JsonConvert.SerializeObject(from, Formatting.Indented);
     }
@@ -135,8 +135,8 @@ public class AcceptanceSteps : IDisposable
             .Configure(WithUseOcelot)
             .UseEnvironment(environmentName ?? nameof(AcceptanceSteps));
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
@@ -144,18 +144,18 @@ public class AcceptanceSteps : IDisposable
     #region Cookies
 
     public void GivenIAddCookieToMyRequest(string cookie)
-        => _ocelotClient.ShouldNotBeNull().DefaultRequestHeaders.Add("Set-Cookie", cookie);
+        => ocelotClient.ShouldNotBeNull().DefaultRequestHeaders.Add("Set-Cookie", cookie);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, string cookie, string value)
-        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
+        => response = await WhenIGetUrlOnTheApiGateway(url, cookie, value);
     public async Task WhenIGetUrlOnTheApiGatewayWithCookie(string url, CookieHeaderValue cookie)
-        => _response = await WhenIGetUrlOnTheApiGateway(url, cookie);
+        => response = await WhenIGetUrlOnTheApiGateway(url, cookie);
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, string cookie, string value)
         => WhenIGetUrlOnTheApiGateway(url, new CookieHeaderValue(cookie, value));
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Add("Cookie", cookie.ToString());
-        return _ocelotClient.ShouldNotBeNull().SendAsync(requestMessage);
+        return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage);
     }
     #endregion
 
@@ -166,22 +166,22 @@ public class AcceptanceSteps : IDisposable
 
     public IEnumerable<string> ThenTheResponseHeaderExists(string key)
     {
-        _response.ShouldNotBeNull().Headers.Contains(key).ShouldBeTrue();
-        var header = _response.Headers.GetValues(key);
+        response.ShouldNotBeNull().Headers.Contains(key).ShouldBeTrue();
+        var header = response.Headers.GetValues(key);
         header.Any(string.IsNullOrEmpty).ShouldBeFalse();
         return header;
     }
     public IEnumerable<string> ThenTheResponseContentHeaderExists(string key)
     {
-        _response.ShouldNotBeNull().Content.Headers.Contains(key).ShouldBeTrue();
-        var header = _response.Content.Headers.GetValues(key);
+        response.ShouldNotBeNull().Content.Headers.Contains(key).ShouldBeTrue();
+        var header = response.Content.Headers.GetValues(key);
         header.Any(string.IsNullOrEmpty).ShouldBeFalse();
         return header;
     }
     #endregion
 
     public void ThenTheResponseReasonPhraseIs(string expected)
-        => _response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
+        => response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
 
     public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
         => GivenOcelotIsRunningWithServices(configureServices, null);
@@ -192,28 +192,28 @@ public class AcceptanceSteps : IDisposable
             .ConfigureAppConfiguration(WithBasicConfiguration)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot);
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config) => config
         .SetBasePath(hosting.HostingEnvironment.ContentRootPath)
-        .AddOcelot(_ocelotConfigFileName, false, false);
+        .AddOcelot(ocelotConfigFileName, false, false);
     public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
     public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
     public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
 
     public void GivenIHaveAddedATokenToMyRequest(string token, string scheme = "Bearer")
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
-        _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
+        ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url)
-        => _response = await _ocelotClient!.GetAsync(url);
+        => response = await ocelotClient.ShouldNotBeNull().GetAsync(url);
 
     public Task<HttpResponseMessage> WhenIGetUrl(string url)
-        => _ocelotClient!.GetAsync(url);
+        => ocelotClient.ShouldNotBeNull().GetAsync(url);
 
     public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
     {
@@ -221,7 +221,7 @@ public class AcceptanceSteps : IDisposable
         {
             Content = new StringContent(body),
         };
-        _response = await _ocelotClient!.SendAsync(request);
+        response = await ocelotClient.ShouldNotBeNull().SendAsync(request);
     }
 
     public async Task WhenIGetUrlOnTheApiGatewayWithForm(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
@@ -234,40 +234,40 @@ public class AcceptanceSteps : IDisposable
         {
             Content = content,
         };
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
-        _response = await _ocelotClient.SendAsync(request);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
+        response = await ocelotClient.SendAsync(request);
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        _response = await _ocelotClient.SendAsync(httpRequestMessage);
+        response = await ocelotClient.SendAsync(httpRequestMessage);
     }
 
     public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        _response = await _ocelotClient.SendAsync(httpRequestMessage);
+        response = await ocelotClient.SendAsync(httpRequestMessage);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content)
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content);
-        _response = await _ocelotClient.PostAsync(url, postContent);
+        response = await ocelotClient.PostAsync(url, postContent);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content, string contentType)
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
-        _response = await _ocelotClient.PostAsync(url, postContent);
+        response = await ocelotClient.PostAsync(url, postContent);
     }
 
     public void GivenIAddAHeader(string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(_ocelotClient);
-        _ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
+        ArgumentNullException.ThrowIfNull(ocelotClient);
+        ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
     public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
@@ -292,30 +292,30 @@ public class AcceptanceSteps : IDisposable
     }
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
-        => _response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
+        => response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
     public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody)
     {
-        _response.ShouldNotBeNull();
-        var body = await _response.Content.ReadAsStringAsync();
+        response.ShouldNotBeNull();
+        var body = await response.Content.ReadAsStringAsync();
         body.ShouldBe(expectedBody);
     }
 
     public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
-        => _response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
+        => response.ShouldNotBeNull().Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
     public async Task ThenTheResponseBodyShouldBeAsync(string expectedBody, string customMessage)
     {
-        _response.ShouldNotBeNull();
-        var body = await _response.Content.ReadAsStringAsync();
+        response.ShouldNotBeNull();
+        var body = await response.Content.ReadAsStringAsync();
         body.ShouldBe(expectedBody, customMessage);
     }
 
     public void ThenTheContentLengthIs(int expected)
-        => _response.ShouldNotBeNull().Content.Headers.ContentLength.ShouldBe(expected);
+        => response.ShouldNotBeNull().Content.Headers.ContentLength.ShouldBe(expected);
 
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
-        => _response.ShouldNotBeNull().StatusCode.ShouldBe(expected);
+        => response.ShouldNotBeNull().StatusCode.ShouldBe(expected);
     public void ThenTheStatusCodeShouldBe(int expected)
-        => ((int)_response.ShouldNotBeNull().StatusCode).ShouldBe(expected);
+        => ((int)response.ShouldNotBeNull().StatusCode).ShouldBe(expected);
 
     /// <summary>
     /// Public implementation of Dispose pattern callable by consumers.
@@ -339,10 +339,10 @@ public class AcceptanceSteps : IDisposable
 
         if (disposing)
         {
-            _ocelotClient?.Dispose();
-            _ocelotServer?.Dispose();
-            _ocelotHost?.Dispose();
-            _response?.Dispose();
+            ocelotClient?.Dispose();
+            ocelotServer?.Dispose();
+            ocelotHost?.Dispose();
+            response?.Dispose();
             DeleteFiles();
             DeleteFolders();
         }

@@ -34,7 +34,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
     public override void Dispose()
     {
         _serviceHandler?.Dispose();
-        _ocelotHost?.Dispose();
+        ocelotHost?.Dispose();
         base.Dispose();
     }
 
@@ -126,7 +126,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
                 var env = hostingContext.HostingEnvironment;
                 config.AddJsonFile("appsettings.json", true, false)
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureLogging((hostingContext, logging) =>
@@ -140,8 +140,8 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
                 await app.UseOcelot();
             })
             .UseIISIntegration();
-        _ocelotHost = builder.Build(); // new TestServer(_webHostBuilder); ???
-        await _ocelotHost.StartAsync();
+        ocelotHost = builder.Build(); // new TestServer(_webHostBuilder); ???
+        await ocelotHost.StartAsync();
     }
 
     private void ThenBothDownstreamServicesAreCalled()

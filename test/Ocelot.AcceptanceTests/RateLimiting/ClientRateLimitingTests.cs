@@ -171,13 +171,13 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
 
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
-        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
-        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
-        _response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
     }
 
     private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
-        => _response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
+        => response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
     {

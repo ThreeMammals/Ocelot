@@ -208,7 +208,7 @@ public sealed class PollyQoSTests : Steps
     private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
     {
         var field = typeof(MessageInvokerPool).GetField("_requestTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
-        var service = _ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
+        var service = ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
         field.SetValue(service, defaultTimeoutSeconds); // hack the value of default 90 seconds
     }
 

@@ -136,7 +136,7 @@ public sealed class ReturnsErrorTests : Steps
 
     private void ThenWarningShouldBeLogged(int howMany)
     {
-        var loggerFactory = (MockLoggerFactory)_ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+        var loggerFactory = (MockLoggerFactory)ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
         loggerFactory.Verify(Times.Exactly(howMany));
     }
 

@@ -388,8 +388,8 @@ public class CustomMiddlewareTests : Steps
                 app.UseMiddleware<T>(callback);
                 await app.UseOcelot();
             });
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     private void ThenTheCounterIs(int expected)

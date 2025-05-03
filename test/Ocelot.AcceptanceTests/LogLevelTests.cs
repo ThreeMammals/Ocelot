@@ -92,7 +92,7 @@ public sealed class LogLevelTests : Steps
             .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddJsonFile(appsettingsFileName, false, false);
-                config.AddJsonFile(_ocelotConfigFileName, false, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
                 config.AddEnvironmentVariables();
             })
             .ConfigureServices(s => { s.AddOcelot(); })
@@ -122,8 +122,8 @@ public sealed class LogLevelTests : Steps
                 await app.UseOcelot();
             });
 
-        _ocelotServer = new TestServer(builder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     [Fact]
