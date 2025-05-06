@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -29,7 +30,8 @@ public sealed class ConfigurationMergeTests : Steps
         Arrange();
 
         // Act
-        StartOcelot((context, config) => config
+        GivenOcelotIsRunning((context, config) => config
+            .SetBasePath(context.HostingEnvironment.ContentRootPath)
             .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, _globalConfigFileName, null, false, false));
 
         // Assert
@@ -62,10 +64,12 @@ public sealed class ConfigurationMergeTests : Steps
         GivenThereIsAConfiguration(environmentConfig, environmentPath);
 
         // Act
-        StartOcelot((context, config) => config
-            .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
-            .AddJsonFile(environmentPath),
-            "Env");
+        GivenOcelotIsRunning(
+            (context, config) => config
+                .SetBasePath(context.HostingEnvironment.ContentRootPath)
+                .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
+                .AddJsonFile(environmentPath),
+            null, null, host => host.UseEnvironment("Env"), null, null);
 
         // Assert
         TheOcelotPrimaryConfigFileExists(false);

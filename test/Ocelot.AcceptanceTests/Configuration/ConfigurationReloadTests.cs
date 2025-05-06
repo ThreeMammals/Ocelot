@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Creator;
@@ -104,7 +105,9 @@ public sealed class ConfigurationReloadTests : Steps
 
     private void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
     {
-        StartOcelot((_, config) => config.AddOcelot(ocelotConfigFileName, false, shouldReload));
+        GivenOcelotIsRunning((context, config) => config
+            .SetBasePath(context.HostingEnvironment.ContentRootPath)
+            .AddOcelot(ocelotConfigFileName, false, shouldReload));
     }
 
     private void GivenIHaveAChangeToken()

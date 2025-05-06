@@ -80,64 +80,57 @@ public class AcceptanceSteps : IDisposable
         return JsonConvert.SerializeObject(from, Formatting.Indented);
     }
 
-    protected virtual void DeleteFiles()
-    {
-        foreach (var file in Files)
-        {
-            if (!File.Exists(file))
-                continue;
+    #region GivenOcelotIsRunning
 
-            try
-            {
-                File.Delete(file);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-    }
+    public void GivenOcelotIsRunning()
+        => GivenOcelotIsRunning(null, null, null, null, null, null);
+    public void GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
+        => GivenOcelotIsRunning(configureDelegate, null, null, null, null, null);
 
-    protected virtual void DeleteFolders()
-    {
-        foreach (var folder in Folders)
-        {
-            try
-            {
-                var f = new DirectoryInfo(folder);
-                if (f.Exists && f.FullName != AppContext.BaseDirectory)
-                {
-                    f.Delete(true);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-    }
-
-    public void GivenOcelotIsRunning() => StartOcelot(WithBasicConfiguration);
-
-    protected void StartOcelot(Action<WebHostBuilderContext, IConfigurationBuilder> configureAddOcelot, string? environmentName = null)
+    protected void GivenOcelotIsRunning(
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
+        Action<IServiceCollection>? configureServices,
+        Action<IApplicationBuilder>? configureApp,
+        Action<IWebHostBuilder>? configureWebHost,
+        Action<TestServer>? configureServer,
+        Action<HttpClient>? configureClient)
     {
         var builder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                var env = hostingContext.HostingEnvironment;
-                config.SetBasePath(env.ContentRootPath);
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                configureAddOcelot.Invoke(hostingContext, config); // config.AddOcelot(...);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(WithAddOcelot)
-            .Configure(WithUseOcelot)
-            .UseEnvironment(environmentName ?? nameof(AcceptanceSteps));
+            .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
+            .ConfigureServices(configureServices ?? WithAddOcelot)
+            .Configure(configureApp ?? WithUseOcelot);
+        configureWebHost?.Invoke(builder);
 
         ocelotServer = new TestServer(builder);
+        configureServer?.Invoke(ocelotServer);
+
         ocelotClient = ocelotServer.CreateClient();
+        configureClient?.Invoke(ocelotClient);
     }
+
+    protected async Task<IHost> GivenOcelotHostIsRunning(
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
+        Action<IServiceCollection>? configureServices,
+        Action<IApplicationBuilder>? configureApp,
+        Action<IWebHostBuilder>? configureHost)
+    {
+        void ConfigureWeb(IWebHostBuilder webBuilder)
+        {
+            webBuilder
+                .UseKestrel()
+                .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
+                .ConfigureServices(configureServices ?? WithAddOcelot)
+                .Configure(configureApp ?? WithUseOcelot);
+            configureHost?.Invoke(webBuilder);
+        }
+        var host = TestHostBuilder
+            .CreateHost()
+            .ConfigureWebHost(ConfigureWeb)
+            .Build();
+        await host.StartAsync();
+        return host;
+    }
+    #endregion
 
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
 
@@ -266,8 +259,10 @@ public class AcceptanceSteps : IDisposable
 
     public void GivenIAddAHeader(string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        ocelotClient.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
+        key.ShouldNotBeNullOrEmpty();
+        value.ShouldNotBeNullOrEmpty();
+        ocelotClient.ShouldNotBeNull()
+            .DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
     public static void WhenIDoActionMultipleTimes(int times, Action<int> action)
@@ -351,28 +346,42 @@ public class AcceptanceSteps : IDisposable
 
         _disposedValue = true;
     }
-    #endregion
 
-    protected async Task<IHost> GivenOcelotHostIsRunning(
-        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
-        Action<IServiceCollection>? configureServices,
-        Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? configureHost)
+    protected virtual void DeleteFiles()
     {
-        void ConfigureWeb(IWebHostBuilder webBuilder)
+        foreach (var file in Files)
         {
-            webBuilder
-                .UseKestrel()
-                .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
-                .ConfigureServices(configureServices ?? WithAddOcelot)
-                .Configure(configureApp ?? WithUseOcelot);
-            configureHost?.Invoke(webBuilder);
+            if (!File.Exists(file))
+                continue;
+
+            try
+            {
+                File.Delete(file);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
-        var host = TestHostBuilder
-            .CreateHost()
-            .ConfigureWebHost(ConfigureWeb)
-            .Build();
-        await host.StartAsync();
-        return host;
     }
+
+    protected virtual void DeleteFolders()
+    {
+        foreach (var folder in Folders)
+        {
+            try
+            {
+                var f = new DirectoryInfo(folder);
+                if (f.Exists && f.FullName != AppContext.BaseDirectory)
+                {
+                    f.Delete(true);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+    }
+    #endregion
 }
