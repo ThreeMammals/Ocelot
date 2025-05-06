@@ -88,14 +88,14 @@ public class AcceptanceSteps : IDisposable
     public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
     public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
 
-    public void GivenOcelotIsRunning()
+    public int GivenOcelotIsRunning()
         => GivenOcelotIsRunning(null, null, null, null, null, null);
-    public void GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
+    public int GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         => GivenOcelotIsRunning(configureDelegate, null, null, null, null, null);
-    public void GivenOcelotIsRunning(Action<IServiceCollection> configureServices)
+    public int GivenOcelotIsRunning(Action<IServiceCollection> configureServices)
         => GivenOcelotIsRunning(null, configureServices, null, null, null, null);
 
-    protected void GivenOcelotIsRunning(
+    protected int GivenOcelotIsRunning(
         Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
         Action<IServiceCollection>? configureServices,
         Action<IApplicationBuilder>? configureApp,
@@ -103,17 +103,22 @@ public class AcceptanceSteps : IDisposable
         Action<TestServer>? configureServer,
         Action<HttpClient>? configureClient)
     {
+        int port = PortFinder.GetRandomPort();
+        var baseUrl = DownstreamUrl(port);
         var builder = TestHostBuilder.Create()
             .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
             .ConfigureServices(configureServices ?? WithAddOcelot)
-            .Configure(configureApp ?? WithUseOcelot);
+            .Configure(configureApp ?? WithUseOcelot)
+            .UseUrls(baseUrl); // run Ocelot on specific port, rather than on std 80 port of TestServer
         configureWebHost?.Invoke(builder);
-
-        ocelotServer = new TestServer(builder);
+        ocelotServer = new(builder)
+        {
+            BaseAddress = new(baseUrl) // will create Oc client with this base address, including port
+        };
         configureServer?.Invoke(ocelotServer);
-
         ocelotClient = ocelotServer.CreateClient();
         configureClient?.Invoke(ocelotClient);
+        return port;
     }
 
     protected async Task<IHost> GivenOcelotHostIsRunning(
