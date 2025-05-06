@@ -122,7 +122,7 @@ public sealed class ReturnsErrorTests : Steps
 
     private void GivenOcelotIsRunningWithLogger()
     {
-        GivenOcelotIsRunningWithServices(s =>
+        GivenOcelotIsRunning(s =>
         {
             s.AddOcelot();
             s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();

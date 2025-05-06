@@ -18,7 +18,7 @@ public class Steps : AcceptanceSteps
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddOcelot()
             .AddDelegatingHandler<THandler>(global));
     }

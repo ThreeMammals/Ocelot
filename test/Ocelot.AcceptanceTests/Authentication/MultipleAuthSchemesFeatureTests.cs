@@ -114,7 +114,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //private void GivenOcelotIsRunningWithIdentityServerAuthSchemes(string validScope, params string[] schemes)
     //{
     //    const string DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-    //    GivenOcelotIsRunningWithServices(services =>
+    //    GivenOcelotIsRunning(services =>
     //    {
     //        services.AddOcelot();
     //        var auth = services

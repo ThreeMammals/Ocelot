@@ -156,7 +156,7 @@ public class OpenTracingTests : Steps
 
     private void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
     {
-        GivenOcelotIsRunningWithServices(s =>
+        GivenOcelotIsRunning(s =>
         {
             s.AddOcelot().AddOpenTracing();
             s.AddSingleton(fakeTracer);

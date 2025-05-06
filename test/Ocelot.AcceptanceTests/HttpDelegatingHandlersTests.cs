@@ -117,7 +117,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         where THandler1 : DelegatingHandler
         where THandler2 : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddOcelot()
             .AddDelegatingHandler<THandler1>()
             .AddDelegatingHandler<THandler2>());
@@ -127,7 +127,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         where THandler1 : DelegatingHandler
         where THandler2 : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddOcelot()
             .AddDelegatingHandler<THandler1>(true)
             .AddDelegatingHandler<THandler2>(true));
@@ -136,7 +136,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
     private void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<THandler>(FakeDependency dependency)
         where THandler : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddSingleton(dependency)
             .AddOcelot()
             .AddDelegatingHandler<THandler>(true));

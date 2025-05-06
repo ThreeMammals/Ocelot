@@ -72,7 +72,7 @@ public sealed class EurekaServiceDiscoveryTests : Steps
     }
 
     private void GivenOcelotIsRunningWithEureka()
-        => GivenOcelotIsRunningWithServices(s => s.AddOcelot().AddEureka());
+        => GivenOcelotIsRunning(s => s.AddOcelot().AddEureka());
 
     private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
     {

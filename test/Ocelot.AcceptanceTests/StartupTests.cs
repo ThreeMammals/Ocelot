@@ -55,7 +55,7 @@ public class StartupTests : Steps
 
     private void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
     {
-        GivenOcelotIsRunningWithServices(s => s.AddSingleton(fake).AddOcelot());
+        GivenOcelotIsRunning(s => s.AddSingleton(fake).AddOcelot());
     }
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)

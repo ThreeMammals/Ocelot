@@ -202,7 +202,7 @@ public sealed class PollyQoSTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunningWithServices(WithPolly);
+    private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunning(WithPolly);
     private static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
     private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)

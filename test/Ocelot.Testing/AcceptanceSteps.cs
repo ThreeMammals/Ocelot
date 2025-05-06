@@ -81,11 +81,19 @@ public class AcceptanceSteps : IDisposable
     }
 
     #region GivenOcelotIsRunning
+    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config) => config
+        .SetBasePath(hosting.HostingEnvironment.ContentRootPath)
+        .AddOcelot(ocelotConfigFileName, false, false);
+    public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
+    public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
+    public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
 
     public void GivenOcelotIsRunning()
         => GivenOcelotIsRunning(null, null, null, null, null, null);
     public void GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         => GivenOcelotIsRunning(configureDelegate, null, null, null, null, null);
+    public void GivenOcelotIsRunning(Action<IServiceCollection> configureServices)
+        => GivenOcelotIsRunning(null, configureServices, null, null, null, null);
 
     protected void GivenOcelotIsRunning(
         Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
@@ -176,26 +184,6 @@ public class AcceptanceSteps : IDisposable
     public void ThenTheResponseReasonPhraseIs(string expected)
         => response.ShouldNotBeNull().ReasonPhrase.ShouldBe(expected);
 
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection> configureServices)
-        => GivenOcelotIsRunningWithServices(configureServices, null);
-
-    public void GivenOcelotIsRunningWithServices(Action<IServiceCollection>? configureServices, Action<IApplicationBuilder>? configureApp/*, bool validateScopes*/)
-    {
-        var builder = TestHostBuilder.Create() // ValidateScopes = true
-            .ConfigureAppConfiguration(WithBasicConfiguration)
-            .ConfigureServices(configureServices ?? WithAddOcelot)
-            .Configure(configureApp ?? WithUseOcelot);
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
-
-    public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config) => config
-        .SetBasePath(hosting.HostingEnvironment.ContentRootPath)
-        .AddOcelot(ocelotConfigFileName, false, false);
-    public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
-    public static void WithUseOcelot(IApplicationBuilder app) => app.UseOcelot().Wait();
-    public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
-
     public void GivenIHaveAddedATokenToMyRequest(string token, string scheme = "Bearer")
     {
         ArgumentNullException.ThrowIfNull(ocelotClient);
@@ -261,8 +249,7 @@ public class AcceptanceSteps : IDisposable
     {
         key.ShouldNotBeNullOrEmpty();
         value.ShouldNotBeNullOrEmpty();
-        ocelotClient.ShouldNotBeNull()
-            .DefaultRequestHeaders.TryAddWithoutValidation(key, value);
+        ocelotClient.ShouldNotBeNull().DefaultRequestHeaders.TryAddWithoutValidation(key, value);
     }
 
     public static void WhenIDoActionMultipleTimes(int times, Action<int> action)

@@ -620,7 +620,7 @@ public sealed class AggregateTests : Steps
     //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
     //            .And(x => auth.GivenIHaveAToken(identityServerUrl))
     //            .And(x => auth.GivenThereIsAConfiguration(configuration))
-    //            .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
+    //            .And(x => auth.GivenOcelotIsRunning(configureServices, configureApp))
     //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
     //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
     //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
