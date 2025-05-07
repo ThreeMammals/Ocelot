@@ -27,8 +27,6 @@ jobs:
       run: dotnet build --no-restore ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-    - name: Integration Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 

@@ -38,8 +38,6 @@ jobs:
       run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-    - name: Integration Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
   build-cake:

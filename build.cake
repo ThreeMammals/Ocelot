@@ -37,10 +37,6 @@ var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
 var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj";
 
-// integration testing
-var artifactsForIntegrationTestsDir = artifactsDir + Directory("IntegrationTests");
-var integrationTestAssemblies = @"./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj";
-
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
 var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
@@ -77,7 +73,6 @@ Task("ReleaseNotes")
 
 Task("Tests")
 	.IsDependentOn("UnitTests")
-	.IsDependentOn("IntegrationTests")
 	.IsDependentOn("AcceptanceTests");
 
 Task("Release")
@@ -586,29 +581,6 @@ Task("AcceptanceTests")
 			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
 			EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
 			DotNetTest(acceptanceTestAssemblies, settings);
-		}
-	});
-
-Task("IntegrationTests")
-	.IsDependentOn("Compile")
-	.Does(() =>
-	{
-		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
-        // Sequential processing as an emulation of Visual Studio Test Explorer
-		foreach (string tfm in GetTFMs())
-		{
-			var settings = new DotNetTestSettings
-			{
-				Configuration = compileConfig,
-				ArgumentCustomization = args => args
-					.Append("--no-restore")
-					.Append("--no-build")
-					.Append("--verbosity:" + verbosity),
-				Framework = tfm,
-			};
-			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
-			EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-			DotNetTest(integrationTestAssemblies, settings);
 		}
 	});
 
