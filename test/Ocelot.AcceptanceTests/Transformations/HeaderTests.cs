@@ -1,38 +1,21 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Ocelot.AcceptanceTests;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using System.Net;
+using System.Net.Sockets;
 
-//[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Ocelot.AcceptanceTests.Transformations;
 
 // Old integration tests
 public sealed class HeaderTests : Steps
 {
-    //private readonly HttpClient _httpClient;
-    //private IWebHost _builder;
-    //private IWebHostBuilder _webHostBuilder;
-    //private readonly string _ocelotBaseUrl;
-    //private IWebHost _downstreamBuilder;
-    //private HttpResponseMessage _response;
+    public const string X_Forwarded_For = "X-Forwarded-For";
     private readonly ServiceHandler _handler;
 
     public HeaderTests()
     {
-        //_httpClient = new HttpClient();
-        //_ocelotBaseUrl = $"http://localhost:{port}";
-        //_httpClient.BaseAddress = new Uri(_ocelotBaseUrl);
         _handler = new ServiceHandler();
     }
 
-    [Fact]
+    [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -40,150 +23,41 @@ public sealed class HeaderTests : Steps
         {
             Routes = new List<FileRoute>
             {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    UpstreamHeaderTransform = new Dictionary<string,string>
-                    {
-                        {"X-Forwarded-For", "{RemoteIpAddress}"},
-                    },
-                    HttpHandlerOptions = new FileHttpHandlerOptions
-                    {
-                        AllowAutoRedirect = false,
-                    },
-                },
+                GivenDefaultRoute(port)
+                    .WithUpstreamHeaderTransform(X_Forwarded_For, "{RemoteIpAddress}")
+                    .WithHttpHandlerOptions(new() { AllowAutoRedirect = false }),
             },
         };
 
-        GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200, "X-Forwarded-For");
+        GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, X_Forwarded_For);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
+
+        //var remoteIpAddress = Dns.GetHostAddresses("dns.google").First(a => a.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6).ToString();
+        //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        await ThenXForwardedForIsSet();
+        var expectedIP = Dns.GetHostAddresses(string.Empty)
+            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
+            .ToString();
+        await ThenTheResponseBodyShouldBeAsync(/*remoteIpAddress*/expectedIP);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string headerKey)
+    private void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string headerKey)
     {
-        /*
-        _downstreamBuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    if (context.Request.Headers.TryGetValue(headerKey, out var values))
-                    {
-                        var result = values.First();
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(result);
-                    }
-                });
-            })
-            .Build();
-        _downstreamBuilder.Start();
-        */
         _handler.GivenThereIsAServiceRunningOn(url, async context =>
         {
             if (context.Request.Headers.TryGetValue(headerKey, out var values))
             {
                 var result = values.First();
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(result);
             }
         });
     }
 
-    /*
-    private void GivenOcelotIsRunning()
-    {
-        _webHostBuilder = TestHostBuilder.Create()
-            .UseUrls(_ocelotBaseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                config.AddJsonFile("ocelot.json", false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(x => x.AddOcelot())
-            .Configure(async app => await app.UseOcelot());
-
-        _builder = _webHostBuilder.Build();
-        _builder.Start();
-    }
-
-    private static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
-    {
-        var configurationPath = $"{Directory.GetCurrentDirectory()}/ocelot.json";
-
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
-
-        if (File.Exists(configurationPath))
-        {
-            File.Delete(configurationPath);
-        }
-
-        File.WriteAllText(configurationPath, jsonConfiguration);
-
-        _ = File.ReadAllText(configurationPath);
-
-        configurationPath = $"{AppContext.BaseDirectory}/ocelot.json";
-
-        if (File.Exists(configurationPath))
-        {
-            File.Delete(configurationPath);
-        }
-
-        File.WriteAllText(configurationPath, jsonConfiguration);
-
-        _ = File.ReadAllText(configurationPath);
-    }
-    private async Task WhenIGetUrlOnTheApiGateway(string url)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        _response = await _httpClient.SendAsync(request);
-    }
-
-    private void ThenTheStatusCodeShouldBe(HttpStatusCode code)
-    {
-        _response.StatusCode.ShouldBe(code);
-    }
-    */
-
-    private async Task ThenXForwardedForIsSet()
-    {
-        var windowsOrMac = "::1";
-        var linux = "127.0.0.1";
-        var header = await response.Content.ReadAsStringAsync();
-        var passed = header == windowsOrMac || header == linux;
-        passed.ShouldBeTrue();
-    }
-
     public override void Dispose()
     {
-        //_builder?.Dispose();
-        //_httpClient?.Dispose();
-        //_downstreamBuilder?.Dispose();
         _handler?.Dispose();
         base.Dispose();
     }

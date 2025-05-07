@@ -78,20 +78,11 @@ public class Placeholders : IPlaceholders
         // this can blow up so adding try catch and return error
         try
         {
-            var con = _contextAccessor.HttpContext.Connection;
-            var req = _contextAccessor.HttpContext.Request;
-            var ip = con?.RemoteIpAddress ?? con?.LocalIpAddress;
-
-            // Reading from Host header: direct client-to-gateway connection scenario
-            ip ??= IPAddress.TryParse(req.Host.ToString(), out var parsedIp) ? parsedIp
-                : Dns.GetHostAddresses(req.Host.ToString()).First(a => a.AddressFamily != AddressFamily.InterNetworkV6);
-
-            // Reading from X-Forwarded-For header: forwarded by a "gateway in the middle" connection scenario
-            var forwarded = req.Headers.TryGetValue("X-Forwarded-For", out var values) ? values.ToString() : string.Empty;
-            ip ??= IPAddress.TryParse(forwarded, out parsedIp) ? parsedIp : IPAddress.Loopback;
-
-            var remoteIdAddress = ip?.ToString() ?? "localhost";
-            return new OkResponse<string>(remoteIdAddress);
+            var ip = _contextAccessor.HttpContext.Connection.RemoteIpAddress
+                ?? Dns.GetHostAddresses(string.Empty).FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6); // detect localhost network interface, a lifehack
+            return ip != null
+                ? new OkResponse<string>(ip.ToString())
+                : new ErrorResponse<string>(new CouldNotFindPlaceholderError("{RemoteIpAddress}"));
         }
         catch
         {

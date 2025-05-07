@@ -21,4 +21,21 @@ public static class FileRouteExtensions
         route.UpstreamHttpMethod.AddRange(methods);
         return route;
     }
+
+    public static FileRoute WithUpstreamHeaderTransform(this FileRoute route, params KeyValuePair<string, string>[] pairs)
+    {
+        route.UpstreamHeaderTransform = new(pairs);
+        return route;
+    }
+    public static FileRoute WithUpstreamHeaderTransform(this FileRoute route, string key, string value)
+    {
+        route.UpstreamHeaderTransform.TryAdd(key, value);
+        return route;
+    }
+
+    public static FileRoute WithHttpHandlerOptions(this FileRoute route, FileHttpHandlerOptions options)
+    {
+        route.HttpHandlerOptions = options;
+        return route;
+    }
 }

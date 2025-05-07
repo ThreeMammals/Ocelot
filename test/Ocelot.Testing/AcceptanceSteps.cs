@@ -172,7 +172,8 @@ public class AcceptanceSteps : IDisposable
 
     public IEnumerable<string> ThenTheResponseHeaderExists(string key)
     {
-        response.ShouldNotBeNull().Headers.Contains(key).ShouldBeTrue();
+        response.ShouldNotBeNull();
+        response.Headers.Contains(key).ShouldBeTrue();
         var header = response.Headers.GetValues(key);
         header.Any(string.IsNullOrEmpty).ShouldBeFalse();
         return header;
