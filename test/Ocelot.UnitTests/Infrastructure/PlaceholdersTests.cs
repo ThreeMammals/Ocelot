@@ -22,6 +22,7 @@ public class PlaceholdersTests
         _finder = new Mock<IBaseUrlFinder>();
         _repo = new Mock<IRequestScopedDataRepository>();
         _accessor = new Mock<IHttpContextAccessor>();
+
         //_loggerFactory = new Mock<IOcelotLoggerFactory>();
         _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
     }
