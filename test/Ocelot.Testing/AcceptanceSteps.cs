@@ -47,7 +47,7 @@ public class AcceptanceSteps : IDisposable
     protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
     protected static string LoopbackLocalhostUrl(int port, int loopbackIndex = 0) => $"{Uri.UriSchemeHttp}://127.0.0.{++loopbackIndex}:{port}";
 
-    protected static FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
+    protected virtual FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
     {
         Routes = new(routes),
     };
@@ -94,6 +94,12 @@ public class AcceptanceSteps : IDisposable
         => GivenOcelotIsRunning(configureDelegate, null, null, null, null, null);
     public int GivenOcelotIsRunning(Action<IServiceCollection> configureServices)
         => GivenOcelotIsRunning(null, configureServices, null, null, null, null);
+    public int GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate, Action<IServiceCollection> configureServices)
+        => GivenOcelotIsRunning(configureDelegate, configureServices, null, null, null, null);
+    public int GivenOcelotIsRunning(Action<IApplicationBuilder>? configureApp)
+        => GivenOcelotIsRunning(null, null, configureApp, null, null, null);
+    public int GivenOcelotIsRunning(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate, Action<IServiceCollection> configureServices, Action<IApplicationBuilder>? configureApp)
+        => GivenOcelotIsRunning(configureDelegate, configureServices, configureApp, null, null, null);
 
     protected int GivenOcelotIsRunning(
         Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
@@ -250,6 +256,8 @@ public class AcceptanceSteps : IDisposable
         var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
         response = await ocelotClient.PostAsync(url, postContent);
     }
+    public async Task WhenIDeleteUrlOnTheApiGateway(string url)
+        => response = await ocelotClient.ShouldNotBeNull().DeleteAsync(url);
 
     public void GivenIAddAHeader(string key, string value)
     {

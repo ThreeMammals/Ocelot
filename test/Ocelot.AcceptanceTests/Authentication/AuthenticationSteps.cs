@@ -11,7 +11,7 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 public class AuthenticationSteps : Steps
 {
-    protected BearerToken _token;
+    protected BearerToken token;
     private readonly ServiceHandler _serviceHandler;
 
     public AuthenticationSteps() : base()
@@ -118,7 +118,7 @@ public class AuthenticationSteps : Steps
     //        });
     //    return builder;
     //}
-    protected void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(_token);
+    protected void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);
     public void GivenIHaveAddedATokenToMyRequest(BearerToken token) => GivenIHaveAddedATokenToMyRequest(token.AccessToken, "Bearer");
 
     public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
@@ -134,7 +134,7 @@ public class AuthenticationSteps : Steps
     public async Task<BearerToken> GivenIHaveAToken(string url)
     {
         var form = GivenDefaultAuthTokenForm();
-        return _token = await GivenIHaveATokenWithForm(url, form);
+        return token = await GivenIHaveATokenWithForm(url, form);
     }
 
     public static async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
@@ -155,7 +155,7 @@ public class AuthenticationSteps : Steps
         var form = GivenDefaultAuthTokenForm();
         form.RemoveAll(x => x.Key == "scope");
         form.Add(new("scope", apiScope));
-        return _token = await GivenIHaveATokenWithForm(url, form);
+        return token = await GivenIHaveATokenWithForm(url, form);
     }
 
     internal static Task<BearerToken> GivenAuthToken(string url, string apiScope, string client)

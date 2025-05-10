@@ -58,7 +58,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -77,7 +77,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
             .BDDfy();
@@ -95,7 +95,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
@@ -113,7 +113,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest(_token))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
@@ -134,7 +134,7 @@ public sealed class AuthenticationTests : AuthenticationSteps, IDisposable
         base.Dispose();
     }
 
-    private async Task GivenIHaveAToken() => _token = await GivenIHaveAToken(_identityServerRootUrl);
+    private async Task GivenIHaveAToken() => token = await GivenIHaveAToken(_identityServerRootUrl);
 }
 
 [AttributeUsage(AttributeTargets.Class)]

@@ -568,7 +568,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         },
     };
 
-    private static FileConfiguration GivenServiceDiscovery(int consulPort, params FileRoute[] routes)
+    private FileConfiguration GivenServiceDiscovery(int consulPort, params FileRoute[] routes)
     {
         var config = GivenConfiguration(routes);
         config.GlobalConfiguration.ServiceDiscoveryProvider = new()

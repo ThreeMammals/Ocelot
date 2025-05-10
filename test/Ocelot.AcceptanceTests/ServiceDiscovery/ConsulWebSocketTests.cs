@@ -13,6 +13,7 @@ using Ocelot.Provider.Consul;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -292,9 +293,9 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
         await Task.WhenAll(sending, receiving);
     }
 
-    private async Task StartFakeDownstreamService(string url, string path)
+    private Task StartFakeDownstreamService(string url, string path)
     {
-        await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
+        async Task TheMiddleware(HttpContext context, Func<Task> next)
         {
             if (context.Request.Path == path)
             {
@@ -312,12 +313,13 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
             {
                 await next();
             }
-        });
+        }
+        return StartWebSocketsDownstreamServiceAsync(url, TheMiddleware);
     }
 
-    private async Task StartSecondFakeDownstreamService(string url, string path)
+    private Task StartSecondFakeDownstreamService(string url, string path)
     {
-        await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
+        async Task The2ndMiddleware(HttpContext context, Func<Task> next)
         {
             if (context.Request.Path == path)
             {
@@ -335,7 +337,8 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
             {
                 await next();
             }
-        });
+        }
+        return StartWebSocketsDownstreamServiceAsync(url, The2ndMiddleware);
     }
 
     private static async Task Echo(WebSocket webSocket)

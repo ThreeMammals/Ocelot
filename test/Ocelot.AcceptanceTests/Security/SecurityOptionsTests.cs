@@ -140,7 +140,7 @@ public sealed class SecurityOptionsTests: Steps
         });
     }
 
-    private static FileConfiguration GivenGlobalConfiguration(FileRoute route, string allowed, string blocked, bool exclude = true)
+    private FileConfiguration GivenGlobalConfiguration(FileRoute route, string allowed, string blocked, bool exclude = true)
     {
         var config = GivenConfiguration(route);
         config.GlobalConfiguration.SecurityOptions = new FileSecurityOptions

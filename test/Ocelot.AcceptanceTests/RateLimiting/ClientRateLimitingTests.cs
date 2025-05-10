@@ -156,7 +156,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
             .BDDfy();
     }
 
-    private static FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
+    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
     {
         var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
         var config = GivenConfiguration(route);
@@ -211,7 +211,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps, IDisposable
         },
     };
 
-    private static FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
+    private FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
     {
         var config = GivenConfiguration(routes);
         config.GlobalConfiguration = new()

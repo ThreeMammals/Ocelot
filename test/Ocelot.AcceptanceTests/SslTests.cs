@@ -86,7 +86,7 @@ public sealed class SslTests : Steps
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, int port)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, "mycert.pfx", "password", port, async context =>
+        _serviceHandler.GivenThereIsAHttpsServiceRunningOn(baseUrl, basePath, "mycert.pfx", "password", port, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 

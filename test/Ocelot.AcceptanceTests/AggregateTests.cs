@@ -768,28 +768,11 @@ public sealed class AggregateTests : Steps
         where TAggregator : class, IDefinedAggregator
         where TDependency : class
     {
-        var builder = TestHostBuilder.Create();
-        builder
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(builder);
-                s.AddSingleton<TDependency>();
-                s.AddOcelot()
-                    .AddSingletonDefinedAggregator<TAggregator>();
-            })
-            .Configure(async b => await b.UseOcelot());
-
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
+        static void WithSpecificAggregators(IServiceCollection services) => services
+            .AddSingleton<TDependency>()
+            .AddOcelot()
+            .AddSingletonDefinedAggregator<TAggregator>();
+        GivenOcelotIsRunning(WithSpecificAggregators);
     }
 
     private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
@@ -808,9 +791,9 @@ public sealed class AggregateTests : Steps
         Key = key,
     };
 
-    private static new FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    protected override FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
-        var obj = Steps.GivenConfiguration(routes);
+        var obj = base.GivenConfiguration(routes);
         obj.Aggregates.Add(
             new()
             {

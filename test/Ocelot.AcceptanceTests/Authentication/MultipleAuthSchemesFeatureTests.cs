@@ -55,7 +55,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //    var configuration = GivenConfiguration(route);
     //    var responseBody = nameof(Should_authenticate_using_identity_server_with_multiple_schemes);
 
-    //    this.Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody))
+    //    this.Given(x => GivenThereIsAHttpsServiceRunningOn(port, HttpStatusCode.OK, responseBody))
     //        .And(x => Setup(authSchemes.Length)
     //            .GivenIdentityServerWithScopes(0, "invalid", "unknown")
     //            .GivenIdentityServerWithScopes(1, "api1", "api2"))

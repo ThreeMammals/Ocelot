@@ -8,12 +8,12 @@ public sealed class CancelRequestTests : Steps, IDisposable
 
     public CancelRequestTests()
     {
-        _serviceHandler = new ServiceHandler();
+        _serviceHandler = new();
     }
 
     public override void Dispose()
     {
-        _serviceHandler?.Dispose();
+        _serviceHandler.Dispose();
         base.Dispose();
     }
 

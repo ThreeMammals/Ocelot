@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -265,9 +266,9 @@ public sealed class WebSocketTests : Steps
         await Task.WhenAll(sending, receiving);
     }
 
-    private async Task StartFakeDownstreamService(string url, string path)
+    private Task StartFakeDownstreamService(string url, string path)
     {
-        await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
+        async Task TheMiddleware(HttpContext context, Func<Task> next)
         {
             if (context.Request.Path == path)
             {
@@ -285,12 +286,13 @@ public sealed class WebSocketTests : Steps
             {
                 await next();
             }
-        });
+        }
+        return StartWebSocketsDownstreamServiceAsync(url, TheMiddleware);
     }
 
-    private async Task StartSecondFakeDownstreamService(string url, string path)
+    private Task StartSecondFakeDownstreamService(string url, string path)
     {
-        await _serviceHandler.StartFakeDownstreamService(url, async (context, next) =>
+        async Task The2ndMiddleware(HttpContext context, Func<Task> next)
         {
             if (context.Request.Path == path)
             {
@@ -308,7 +310,8 @@ public sealed class WebSocketTests : Steps
             {
                 await next();
             }
-        });
+        }
+        return StartWebSocketsDownstreamServiceAsync(url, The2ndMiddleware);
     }
 
     private static async Task Echo(WebSocket webSocket)
