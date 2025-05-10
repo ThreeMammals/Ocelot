@@ -1,31 +1,31 @@
 ﻿using Ocelot.DependencyInjection;
 
-namespace Ocelot.UnitTests;
+namespace Ocelot.Testing;
 
 public class FileUnitTest : UnitTest, IDisposable
 {
-    protected string _primaryConfigFileName;
-    protected string _globalConfigFileName;
-    protected string _environmentConfigFileName;
-    protected readonly List<string> _files;
-    protected readonly List<string> _folders;
+    protected string primaryConfigFileName;
+    protected string globalConfigFileName;
+    protected string environmentConfigFileName;
+    protected readonly List<string> files;
+    protected readonly List<string> folders;
 
     protected FileUnitTest() : this(null) { }
 
-    protected FileUnitTest(string folder)
+    protected FileUnitTest(string? folder)
     {
         folder ??= TestID;
         Directory.CreateDirectory(folder);
-        _folders = new() { folder };
+        folders = new() { folder };
 
-        _primaryConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
-        _globalConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
-        _environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, EnvironmentName()));
-        _files = new()
+        primaryConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        globalConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, EnvironmentName()));
+        files = new()
         {
-            _primaryConfigFileName,
-            _globalConfigFileName,
-            _environmentConfigFileName,
+            primaryConfigFileName,
+            globalConfigFileName,
+            environmentConfigFileName,
         };
     }
 
@@ -61,7 +61,7 @@ public class FileUnitTest : UnitTest, IDisposable
 
     protected void DeleteFiles()
     {
-        foreach (var file in _files)
+        foreach (var file in files)
         {
             try
             {
@@ -80,7 +80,7 @@ public class FileUnitTest : UnitTest, IDisposable
 
     protected void DeleteFolders()
     {
-        foreach (var folder in _folders)
+        foreach (var folder in folders)
         {
             try
             {
@@ -96,7 +96,4 @@ public class FileUnitTest : UnitTest, IDisposable
             }
         }
     }
-
-    protected void TheOcelotPrimaryConfigFileExists(bool expected)
-        => File.Exists(_primaryConfigFileName).ShouldBe(expected);
 }

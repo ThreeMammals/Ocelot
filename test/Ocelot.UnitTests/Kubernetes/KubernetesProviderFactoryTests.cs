@@ -112,7 +112,7 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         int expectedPort = PortFinder.GetRandomPort();
         Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", expectedPort.ToString());
 
-        _folders.Add(serviceAccountPath);
+        folders.Add(serviceAccountPath);
         if (!Directory.Exists(serviceAccountPath))
         {
             Directory.CreateDirectory(serviceAccountPath);
@@ -120,15 +120,15 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
 
         var path = Path.Combine(serviceAccountPath, "namespace");
         await File.WriteAllTextAsync(path, nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
-        _files.Add(path);
+        files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "token");
         await File.WriteAllTextAsync(path, TestID);
-        _files.Add(path);
+        files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "ca.crt");
         await CreateCertificate(path);
-        _files.Add(path);
+        files.Add(path);
 
         // Act
         var actualProvider = CreateProvider(nameof(Kube));

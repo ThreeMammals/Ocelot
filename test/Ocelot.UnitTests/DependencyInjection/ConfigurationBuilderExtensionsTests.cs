@@ -125,13 +125,13 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
     public void Should_merge_files_with_null_environment()
     {
         // Arrange
-        _environmentConfigFileName = null; // Ups!
+        environmentConfigFileName = null; // Ups!
         const IWebHostEnvironment NullEnvironment = null; // Wow!
         GivenMultipleConfigurationFiles(TestID, false);
 
         // Act
         _configRoot = new ConfigurationBuilder()
-            .AddOcelot(TestID, NullEnvironment, MergeOcelotJson.ToMemory, _primaryConfigFileName, _globalConfigFileName, _environmentConfigFileName, false, false)
+            .AddOcelot(TestID, NullEnvironment, MergeOcelotJson.ToMemory, primaryConfigFileName, globalConfigFileName, environmentConfigFileName, false, false)
             .Build();
 
         // Assert
@@ -189,7 +189,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         {
             var filename = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, part.Key));
             File.WriteAllText(filename, JsonConvert.SerializeObject(part.Value, Formatting.Indented));
-            _files.Add(filename);
+            files.Add(filename);
         }
     }
 
@@ -243,21 +243,21 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
     private void GivenTheEnvironmentIs(string folder, [CallerMemberName] string testName = null)
     {
         _hostingEnvironment.SetupGet(x => x.EnvironmentName).Returns(testName);
-        _environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, testName));
-        _files.Add(_environmentConfigFileName);
+        environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, testName));
+        files.Add(environmentConfigFileName);
     }
 
     private void WhenIAddOcelotConfigurationWithCombinedFileConfiguration()
     {
         _configRoot = new ConfigurationBuilder()
-            .AddOcelot(_combinedFileConfiguration, _primaryConfigFileName, false, false)
+            .AddOcelot(_combinedFileConfiguration, primaryConfigFileName, false, false)
             .Build();
     }
 
     private void WhenIAddOcelotConfiguration(string folder, MergeOcelotJson mergeOcelotJson = MergeOcelotJson.ToFile)
     {
         _configRoot = new ConfigurationBuilder()
-            .AddOcelot(folder, _hostingEnvironment.Object, mergeOcelotJson, _primaryConfigFileName, _globalConfigFileName, _environmentConfigFileName, false, false)
+            .AddOcelot(folder, _hostingEnvironment.Object, mergeOcelotJson, primaryConfigFileName, globalConfigFileName, environmentConfigFileName, false, false)
             .Build();
     }
 
@@ -313,4 +313,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         fc.Routes.ShouldNotContain(x => x.DownstreamPathTemplate == _envSpecific.Routes[0].DownstreamPathTemplate);
         fc.Routes.ShouldNotContain(x => x.Key == _envSpecific.Routes[0].Key);
     }
+
+    private void TheOcelotPrimaryConfigFileExists(bool expected)
+        => File.Exists(primaryConfigFileName).ShouldBe(expected);
 }
