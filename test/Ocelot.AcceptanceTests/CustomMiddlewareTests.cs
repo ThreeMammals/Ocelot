@@ -11,11 +11,9 @@ namespace Ocelot.AcceptanceTests;
 public class CustomMiddlewareTests : Steps
 {
     private int _counter;
-    private readonly ServiceHandler _serviceHandler;
 
     public CustomMiddlewareTests()
     {
-        _serviceHandler = new ServiceHandler();
         _counter = 0;
     }
 
@@ -399,8 +397,7 @@ public class CustomMiddlewareTests : Steps
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath)
     {
-        var url = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             if (string.IsNullOrEmpty(basePath))
             {
@@ -410,15 +407,8 @@ public class CustomMiddlewareTests : Steps
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             }
-
             return Task.CompletedTask;
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 
     public class FakeMiddleware

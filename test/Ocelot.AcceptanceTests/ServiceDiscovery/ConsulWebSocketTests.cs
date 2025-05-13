@@ -13,20 +13,17 @@ using Ocelot.Provider.Consul;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class ConsulWebSocketTests : Steps, IDisposable
+public sealed class ConsulWebSocketTests : Steps
 {
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;
     private readonly List<ServiceEntry> _serviceEntries;
-    private readonly ServiceHandler _serviceHandler;
 
     public ConsulWebSocketTests()
     {
-        _serviceHandler = new ServiceHandler();
         _firstRecieved = new List<string>();
         _secondRecieved = new List<string>();
         _serviceEntries = new List<ServiceEntry>();
@@ -34,7 +31,6 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
 
     public override void Dispose()
     {
-        _serviceHandler?.Dispose();
         ocelotHost?.Dispose();
         base.Dispose();
     }
@@ -170,16 +166,17 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
 
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider(int port, string serviceName)
     {
-        var url = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        Task MapServicePath(HttpContext context)
         {
             if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
             {
                 var json = JsonConvert.SerializeObject(_serviceEntries);
                 context.Response.Headers.Append("Content-Type", "application/json");
-                await context.Response.WriteAsync(json);
+                return context.Response.WriteAsync(json);
             }
-        });
+            return Task.CompletedTask;
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapServicePath);
     }
 
     private async Task WhenIStartTheClients()
@@ -314,7 +311,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
                 await next();
             }
         }
-        return StartWebSocketsDownstreamServiceAsync(url, TheMiddleware);
+        return GivenWebSocketServiceIsRunningOnAsync(url, TheMiddleware);
     }
 
     private Task StartSecondFakeDownstreamService(string url, string path)
@@ -338,7 +335,7 @@ public sealed class ConsulWebSocketTests : Steps, IDisposable
                 await next();
             }
         }
-        return StartWebSocketsDownstreamServiceAsync(url, The2ndMiddleware);
+        return GivenWebSocketServiceIsRunningOnAsync(url, The2ndMiddleware);
     }
 
     private static async Task Echo(WebSocket webSocket)

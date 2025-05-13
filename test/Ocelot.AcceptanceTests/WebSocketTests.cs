@@ -17,11 +17,9 @@ public sealed class WebSocketTests : Steps
 {
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;
-    private readonly ServiceHandler _serviceHandler;
 
     public WebSocketTests() : base()
     {
-        _serviceHandler = new ServiceHandler();
         _firstRecieved = new List<string>();
         _secondRecieved = new List<string>();
     }
@@ -287,7 +285,7 @@ public sealed class WebSocketTests : Steps
                 await next();
             }
         }
-        return StartWebSocketsDownstreamServiceAsync(url, TheMiddleware);
+        return GivenWebSocketServiceIsRunningOnAsync(url, TheMiddleware);
     }
 
     private Task StartSecondFakeDownstreamService(string url, string path)
@@ -311,7 +309,7 @@ public sealed class WebSocketTests : Steps
                 await next();
             }
         }
-        return StartWebSocketsDownstreamServiceAsync(url, The2ndMiddleware);
+        return GivenWebSocketServiceIsRunningOnAsync(url, The2ndMiddleware);
     }
 
     private static async Task Echo(WebSocket webSocket)
@@ -365,11 +363,5 @@ public sealed class WebSocketTests : Steps
     private void ThenTheReceivedCountIs(int count)
     {
         _firstRecieved.Count.ShouldBe(count);
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 }

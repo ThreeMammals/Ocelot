@@ -36,9 +36,9 @@ public class Placeholders : IPlaceholders
 
     public Response<string> Get(string key)
     {
-        if (_placeholders.ContainsKey(key))
+        if (_placeholders.TryGetValue(key, out Func<Response<string>> valueFunc))
         {
-            var response = _placeholders[key].Invoke();
+            var response = valueFunc.Invoke();
             if (!response.IsError)
             {
                 return new OkResponse<string>(response.Data);

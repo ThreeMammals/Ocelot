@@ -70,8 +70,10 @@ public class PlaceholdersTests
     public void Should_return_downstream_base_url_when_port_is_not_80_or_443()
     {
         // Arrange
-        var httpRequest = new HttpRequestMessage();
-        httpRequest.RequestUri = new Uri("http://www.bbc.co.uk");
+        var httpRequest = new HttpRequestMessage
+        {
+            RequestUri = new("http://www.bbc.co.uk"),
+        };
         var request = new DownstreamRequest(httpRequest);
 
         // Act
@@ -85,8 +87,10 @@ public class PlaceholdersTests
     public void Should_return_downstream_base_url_when_port_is_80_or_443()
     {
         // Arrange
-        var httpRequest = new HttpRequestMessage();
-        httpRequest.RequestUri = new Uri("http://www.bbc.co.uk:123");
+        var httpRequest = new HttpRequestMessage
+        {
+            RequestUri = new("http://www.bbc.co.uk:123"),
+        };
         var request = new DownstreamRequest(httpRequest);
 
         // Act

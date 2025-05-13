@@ -44,7 +44,8 @@ public class AcceptanceSteps : IDisposable
     protected string TestID { get => _testId.ToString("N"); }
 
     protected static FileHostAndPort Localhost(int port) => new("localhost", port);
-    protected static string DownstreamUrl(int port) => $"{Uri.UriSchemeHttp}://localhost:{port}";
+    protected static string DownstreamUrl(int port) => DownstreamUrl(port, Uri.UriSchemeHttp);
+    protected static string DownstreamUrl(int port, string scheme) => $"{scheme ?? Uri.UriSchemeHttp}://localhost:{port}";
     protected static string LoopbackLocalhostUrl(int port, int loopbackIndex = 0) => $"{Uri.UriSchemeHttp}://127.0.0.{++loopbackIndex}:{port}";
 
     protected virtual FileConfiguration GivenConfiguration(params FileRoute[] routes) => new()
@@ -52,13 +53,15 @@ public class AcceptanceSteps : IDisposable
         Routes = new(routes),
     };
 
-    protected static FileRoute GivenDefaultRoute(int port) => new()
+    protected static FileRoute GivenDefaultRoute(int port) => GivenRoute(port);
+    protected static FileRoute GivenCatchAllRoute(int port) => GivenRoute(port, "/{everything}", "/{everything}");
+    protected static FileRoute GivenRoute(int port, string? upstream = null, string? downstream = null) => new()
     {
-        DownstreamPathTemplate = "/",
+        DownstreamPathTemplate = downstream ?? "/",
         DownstreamHostAndPorts = [ Localhost(port) ],
         DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [ HttpMethods.Get ],
+        UpstreamPathTemplate = upstream ?? "/",
+        UpstreamHttpMethod = [HttpMethods.Get],
     };
 
     public void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)

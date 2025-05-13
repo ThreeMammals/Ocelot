@@ -12,8 +12,6 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
 {
-    private IWebHost _servicebuilder;
-
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
@@ -53,18 +51,14 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new()
-                           {
-                               Host = "localhost",
-                               Port = port,
-                           },
+                           Localhost(port),
                        },
                        DownstreamScheme = "http",
                        UpstreamPathTemplate = "/users/{userId}",
                        UpstreamHttpMethod = new List<string> { "Get" },
                        AuthenticationOptions = new FileAuthenticationOptions
                        {
-                           AuthenticationProviderKey = "Test",
+                           AuthenticationProviderKeys = ["Test"],
                            AllowedScopes = new List<string>
                            {
                                "openid", "offline_access", "api",
@@ -79,7 +73,7 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -97,30 +91,16 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
         _downstreamFinalPath.ShouldBe(path);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        _servicebuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    _downstreamFinalPath = context.Request.Path.Value;
-
-                    var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
-
-                    var responseBody = $"UserId: {userId}";
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-
-        _servicebuilder.Start();
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            _downstreamFinalPath = context.Request.Path.Value;
+            var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
+            var responseBody = $"UserId: {userId}";
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        });
     }
 
     //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
@@ -200,7 +180,6 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
     public override void Dispose()
     {
         //_identityServerBuilder?.Dispose();
-        _servicebuilder?.Dispose();
         base.Dispose();
     }
 }

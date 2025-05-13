@@ -8,7 +8,6 @@ using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
-[Collection(nameof(SequentialTests))]
 public sealed class ConfigurationReloadTests : Steps
 {
     private readonly FileConfiguration _initialConfig;
@@ -45,7 +44,7 @@ public sealed class ConfigurationReloadTests : Steps
 
     private async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
     {
-        var result = await Wait.WaitFor(timeoutMs).UntilAsync(async () =>
+        var result = await Wait.For(timeoutMs).UntilAsync(async () =>
         {
             var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
             var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();

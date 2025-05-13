@@ -8,11 +8,8 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class HttpTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public HttpTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
@@ -43,7 +40,7 @@ public sealed class HttpTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -79,7 +76,7 @@ public sealed class HttpTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -119,7 +116,7 @@ public sealed class HttpTests : Steps
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http2))
+        this.Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
@@ -160,7 +157,7 @@ public sealed class HttpTests : Steps
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http2))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
@@ -201,7 +198,7 @@ public sealed class HttpTests : Steps
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"{DownstreamUrl(port)}/", "/", port, HttpProtocols.Http1))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
@@ -210,7 +207,7 @@ public sealed class HttpTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int port, HttpProtocols protocols)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpProtocols protocols)
     {
         void options(KestrelServerOptions serverOptions)
         {
@@ -220,16 +217,16 @@ public sealed class HttpTests : Steps
             });
         }
 
-        _serviceHandler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
+        handler.GivenThereIsAServiceRunningOnWithKestrelOptions(DownstreamUrl(port), basePath, options, async context =>
         {
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
             var reader = new StreamReader(context.Request.Body);
             var body = await reader.ReadToEndAsync();
             await context.Response.WriteAsync(body);
         });
     }
 
-    private void GivenThereIsAServiceUsingHttpsRunningOn(string baseUrl, string basePath, int port, HttpProtocols protocols)
+    private void GivenThereIsAServiceUsingHttpsRunningOn(int port, string basePath, HttpProtocols protocols)
     {
         void options(KestrelServerOptions serverOptions)
         {
@@ -243,18 +240,12 @@ public sealed class HttpTests : Steps
             });
         }
 
-        _serviceHandler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
+        handler.GivenThereIsAServiceRunningOnWithKestrelOptions(DownstreamUrl(port), basePath, options, async context =>
         {
             context.Response.StatusCode = 200;
             var reader = new StreamReader(context.Request.Body);
             var body = await reader.ReadToEndAsync();
             await context.Response.WriteAsync(body);
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 }

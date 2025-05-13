@@ -10,7 +10,7 @@ using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
+public sealed class LoadBalancerTests : ConcurrentSteps
 {
     [Theory]
     [Trait("Feat", "211")]

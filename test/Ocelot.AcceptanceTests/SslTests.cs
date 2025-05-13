@@ -5,42 +5,17 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class SslTests : Steps
 {
-    private string _downstreamPath;
-    private readonly ServiceHandler _serviceHandler;
-
     public SslTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
     public void Should_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "https",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DangerousAcceptAnyServerCertificateValidator = true,
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Hello from Laura", port))
+        var route = GivenSslRoute(port, true);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -53,30 +28,9 @@ public sealed class SslTests : Steps
     public void Should_not_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "https",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DangerousAcceptAnyServerCertificateValidator = false,
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Hello from Laura", port))
+        var route = GivenSslRoute(port, false);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -84,28 +38,22 @@ public sealed class SslTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, int port)
+    private static FileRoute GivenSslRoute(int port, bool validatorEnabled)
     {
-        _serviceHandler.GivenThereIsAHttpsServiceRunningOn(baseUrl, basePath, "mycert.pfx", "password", port, async context =>
-        {
-            _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-            if (_downstreamPath != basePath)
-            {
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync("downstream path didnt match base path");
-            }
-            else
-            {
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync(responseBody);
-            }
-        });
+        var route = GivenDefaultRoute(port);
+        route.DownstreamScheme = Uri.UriSchemeHttps;
+        route.DangerousAcceptAnyServerCertificateValidator = validatorEnabled;
+        return route;
     }
 
-    public override void Dispose()
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        _serviceHandler?.Dispose();
-        base.Dispose();
+        handler.GivenThereIsAHttpsServiceRunningOn(DownstreamUrl(port), basePath, "mycert.pfx", "password", port, async context =>
+        {
+            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+            bool oK = downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            await context.Response.WriteAsync(oK ? responseBody : "downstream path didn't match base path");
+        });
     }
 }

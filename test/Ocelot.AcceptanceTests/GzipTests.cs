@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Ocelot.Configuration.File;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,48 +8,18 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class GzipTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public GzipTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 
     [Fact]
     public void Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Post" },
-                    },
-                },
-        };
-
+        var route = GivenDefaultRoute(port).WithMethods(HttpMethods.Post);
+        var configuration = GivenConfiguration(route);
         var input = "people";
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura", "\"people\""))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura", "\"people\""))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input)))
@@ -59,7 +28,7 @@ public sealed class GzipTests : Steps
             .BDDfy();
     }
 
-    private static HttpContent GivenThePostHasGzipContent(object input)
+    private static StreamContent GivenThePostHasGzipContent(object input)
     {
         var json = JsonConvert.SerializeObject(input);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
@@ -76,9 +45,9 @@ public sealed class GzipTests : Steps
         return content;
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expected)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody, string expected)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             if (context.Request.Headers.TryGetValue("Content-Encoding", out var contentEncoding))
             {
@@ -87,25 +56,20 @@ public sealed class GzipTests : Steps
                 string text = null;
                 using (var decompress = new GZipStream(context.Request.Body, CompressionMode.Decompress))
                 {
-                    using (var sr = new StreamReader(decompress))
-                    {
-                        // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
-                        // text = sr.ReadToEnd();
-                        text = await sr.ReadToEndAsync();
-                    }
+                    using var sr = new StreamReader(decompress);
+                    text = await sr.ReadToEndAsync();
                 }
-
                 if (text != expected)
                 {
                     throw new Exception("not gzipped");
                 }
 
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(responseBody);
             }
             else
             {
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 await context.Response.WriteAsync("downstream path didnt match base path");
             }
         });

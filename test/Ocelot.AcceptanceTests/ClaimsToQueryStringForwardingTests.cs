@@ -13,8 +13,6 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
 {
-    private IWebHost _servicebuilder;
-
     //private IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
@@ -88,7 +86,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -153,7 +151,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -171,33 +169,20 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
         _downstreamQueryString.ShouldBe(queryString);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        _servicebuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    _downstreamQueryString = context.Request.QueryString.Value;
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            _downstreamQueryString = context.Request.QueryString.Value;
+            context.Request.Query.TryGetValue("CustomerId", out var customerId);
+            context.Request.Query.TryGetValue("LocationId", out var locationId);
+            context.Request.Query.TryGetValue("UserType", out var userType);
+            context.Request.Query.TryGetValue("UserId", out var userId);
 
-                    context.Request.Query.TryGetValue("CustomerId", out var customerId);
-                    context.Request.Query.TryGetValue("LocationId", out var locationId);
-                    context.Request.Query.TryGetValue("UserType", out var userType);
-                    context.Request.Query.TryGetValue("UserId", out var userId);
-
-                    var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-
-        _servicebuilder.Start();
+            var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        });
     }
 
     //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
@@ -276,7 +261,6 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
     public override void Dispose()
     {
         //_identityServerBuilder?.Dispose();
-        _servicebuilder?.Dispose();
         base.Dispose();
     }
 }

@@ -20,10 +20,9 @@ using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
+public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 {
     private readonly string _kubernetesUrl;
-    private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
     private readonly Action<KubeClientOptions> _kubeClientOptionsConfigure;
 
@@ -37,13 +36,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             opts.AuthStrategy = KubeAuthStrategy.BearerToken;
             opts.AllowInsecure = true;
         };
-        _kubernetesHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _kubernetesHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -309,7 +301,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
     {
         _k8sCounter = 0;
-        _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")

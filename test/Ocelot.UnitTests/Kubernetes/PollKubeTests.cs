@@ -45,25 +45,18 @@ public class PollKubeTests : UnitTest
     private void WhenIGetTheServices(int expected)
     {
         _provider = new PollKube(_delay, _factory.Object, _kubeServiceDiscoveryProvider.Object);
-
-        var result = Wait.WaitFor(3000).Until(() =>
+        var result = Wait.For(3_000).Until(() =>
         {
             try
             {
                 _result = _provider.GetAsync().GetAwaiter().GetResult();
-                if (_result.Count == expected)
-                {
-                    return true;
-                }
-
-                return false;
+                return _result.Count == expected;
             }
             catch (Exception)
             {
                 return false;
             }
         });
-
         result.ShouldBeTrue();
     }
 }

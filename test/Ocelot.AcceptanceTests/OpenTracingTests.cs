@@ -1,32 +1,19 @@
 using Butterfly.Client.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
-using System.Diagnostics;
 using Xunit.Abstractions;
 
 namespace Ocelot.AcceptanceTests;
 
 public class OpenTracingTests : Steps
 {
-    private IWebHost _serviceOneBuilder;
-    private IWebHost _serviceTwoBuilder;
-    private IWebHost _fakeOpenTracing;
-    private string _downstreamPathOne;
-    private string _downstreamPathTwo;
     private readonly ITestOutputHelper _output;
 
     public OpenTracingTests(ITestOutputHelper output)
@@ -85,12 +72,10 @@ public class OpenTracingTests : Steps
         };
 
         var tracingPort = PortFinder.GetRandomPort();
-        var tracingUrl = DownstreamUrl(tracingPort);
         var fakeTracer = new FakeTracer();
-
-        this.Given(_ => GivenFakeOpenTracing(tracingUrl))
-            .And(_ => GivenServiceOneIsRunning(DownstreamUrl(port1), "/api/values", 200, "Hello from Laura", tracingUrl))
-            .And(_ => GivenServiceTwoIsRunning(DownstreamUrl(port2), "/api/values", 200, "Hello from Tom", tracingUrl))
+        this.Given(_ => GivenFakeOpenTracing(tracingPort))
+            .And(_ => GivenServiceIsRunning(port1, "/api/values", HttpStatusCode.OK, "Hello from Laura", tracingPort, "Service One"))
+            .And(_ => GivenServiceIsRunning(port2, "/api/values", HttpStatusCode.OK, "Hello from Tom", tracingPort, "Service Two"))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api001/values"))
@@ -139,11 +124,9 @@ public class OpenTracingTests : Steps
         };
 
         var butterflyPort = PortFinder.GetRandomPort();
-        var butterflyUrl = DownstreamUrl(butterflyPort);
         var fakeTracer = new FakeTracer();
-
-        this.Given(x => GivenFakeOpenTracing(butterflyUrl))
-            .And(x => GivenServiceOneIsRunning(DownstreamUrl(port), "/api/values", 200, "Hello from Laura", butterflyUrl))
+        this.Given(x => GivenFakeOpenTracing(butterflyPort))
+            .And(x => GivenServiceIsRunning(port, "/api/values", HttpStatusCode.OK, "Hello from Laura", butterflyPort, "Service One"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningUsingOpenTracing(fakeTracer))
             .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
@@ -161,159 +144,48 @@ public class OpenTracingTests : Steps
             s.AddOcelot().AddOpenTracing();
             s.AddSingleton(fakeTracer);
         });
-
-        //var builder = TestHostBuilder.Create()
-        //    .ConfigureAppConfiguration((hostingContext, config) =>
-        //    {
-        //        config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-        //        var env = hostingContext.HostingEnvironment;
-        //        config.AddJsonFile("appsettings.json", true, false)
-        //            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-        //        config.AddJsonFile(ocelotConfigFileName, true, false);
-        //        config.AddEnvironmentVariables();
-        //    })
-        //    .ConfigureServices(s =>
-        //    {
-        //        s.AddOcelot()
-        //            .AddOpenTracing();
-        //        s.AddSingleton(fakeTracer);
-        //    })
-        //    .Configure(async app =>
-        //    {
-        //        app.Use(async (_, next) => { await next.Invoke(); });
-        //        await app.UseOcelot();
-        //    });
-        //ocelotServer = new TestServer(builder);
-        //ocelotClient = ocelotServer.CreateClient();
     }
 
     private void ThenTheTracerIsCalled(FakeTracer fakeTracer)
     {
-        var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => fakeTracer.BuildSpanCalled >= 2);
-
+        var commandOnAllStateMachines = Wait.For(10_000).Until(() => fakeTracer.BuildSpanCalled >= 2);
         _output.WriteLine($"fakeTracer.BuildSpanCalled is {fakeTracer.BuildSpanCalled}");
-
         commandOnAllStateMachines.ShouldBeTrue();
     }
 
-    private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
+    private void GivenServiceIsRunning(int port, string basePath, HttpStatusCode statusCode, string responseBody, int butterflyPort, string serviceName)
     {
-        _serviceOneBuilder = TestHostBuilder.Create()
-            .UseUrls(baseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .ConfigureServices(services =>
+        void WithButterfly(IServiceCollection services) => services
+            .AddButterfly(option =>
             {
-                services.AddButterfly(option =>
-                {
-                    option.CollectorUrl = butterflyUrl;
-                    option.Service = "Service One";
-                    option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
-                });
-            })
-            .Configure(app =>
-            {
-                app.UsePathBase(basePath);
-                app.Run(async context =>
-                {
-                    _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                    if (_downstreamPathOne != basePath)
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync("downstream path didnt match base path");
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    }
-                });
-            })
-            .Build();
-
-        _serviceOneBuilder.Start();
+                option.CollectorUrl = DownstreamUrl(butterflyPort);
+                option.Service = serviceName;
+                option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
+            });
+        handler.GivenThereIsAServiceRunningOn(DownstreamUrl(port), basePath, WithButterfly, context =>
+        {
+            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                ? context.Request.PathBase.Value : context.Request.Path.Value;
+            bool oK = downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            return context.Response.WriteAsync(oK ? responseBody : "downstream path didn't match base path");
+        });
     }
 
-    private void GivenFakeOpenTracing(string baseUrl)
+    private void GivenFakeOpenTracing(int port)
     {
-        _fakeOpenTracing = TestHostBuilder.Create()
-            .UseUrls(baseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    await context.Response.WriteAsync("OK...");
-                });
-            })
-            .Build();
-
-        _fakeOpenTracing.Start();
-    }
-
-    private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
-    {
-        _serviceTwoBuilder = TestHostBuilder.Create()
-            .UseUrls(baseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .ConfigureServices(services =>
-            {
-                services.AddButterfly(option =>
-                {
-                    option.CollectorUrl = butterflyUrl;
-                    option.Service = "Service Two";
-                    option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
-                });
-            })
-            .Configure(app =>
-            {
-                app.UsePathBase(basePath);
-                app.Run(async context =>
-                {
-                    _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                    if (_downstreamPathTwo != basePath)
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync("downstream path didnt match base path");
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = statusCode;
-                        await context.Response.WriteAsync(responseBody);
-                    }
-                });
-            })
-            .Build();
-
-        _serviceTwoBuilder.Start();
-    }
-
-    public override void Dispose()
-    {
-        _serviceOneBuilder?.Dispose();
-        _serviceTwoBuilder?.Dispose();
-        _fakeOpenTracing?.Dispose();
-        base.Dispose();
+        handler.GivenThereIsAServiceRunningOn(port, context => context.Response.WriteAsync("OK..."));
     }
 }
 
 internal class FakeTracer : OpenTracing.ITracer
 {
     public IScopeManager ScopeManager => throw new NotImplementedException();
-
     public ISpan ActiveSpan => throw new NotImplementedException();
 
     public ISpanBuilder BuildSpan(string operationName)
     {
         BuildSpanCalled++;
-
         return new FakeSpanBuilder();
     }
 
@@ -322,7 +194,6 @@ internal class FakeTracer : OpenTracing.ITracer
     public ISpanContext Extract<TCarrier>(IFormat<TCarrier> format, TCarrier carrier)
     {
         ExtractCalled++;
-
         return null;
     }
 
@@ -339,35 +210,20 @@ internal class FakeTracer : OpenTracing.ITracer
 internal class FakeSpanBuilder : ISpanBuilder
 {
     public ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext) => throw new NotImplementedException();
-
     public ISpanBuilder AsChildOf(ISpanContext parent) => throw new NotImplementedException();
-
     public ISpanBuilder AsChildOf(ISpan parent) => throw new NotImplementedException();
-
     public ISpanBuilder IgnoreActiveSpan() => throw new NotImplementedException();
-
     public ISpan Start() => throw new NotImplementedException();
-
     public IScope StartActive() => throw new NotImplementedException();
-
     public IScope StartActive(bool finishSpanOnDispose) => new FakeScope(finishSpanOnDispose);
-
     public ISpanBuilder WithStartTimestamp(DateTimeOffset timestamp) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(string key, string value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(string key, bool value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(string key, int value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(string key, double value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(BooleanTag tag, bool value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(IntOrStringTag tag, string value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(IntTag tag, int value) => throw new NotImplementedException();
-
     public ISpanBuilder WithTag(StringTag tag, string value) => throw new NotImplementedException();
 }
 
@@ -394,106 +250,30 @@ internal class FakeScope : IScope
 internal class FakeSpan : ISpan
 {
     public ISpanContext Context => new FakeSpanContext();
-
     public void Finish() { }
-
     public void Finish(DateTimeOffset finishTimestamp) => throw new NotImplementedException();
-
     public string GetBaggageItem(string key) => throw new NotImplementedException();
-
     public ISpan Log(IEnumerable<KeyValuePair<string, object>> fields) => this;
-
     public ISpan Log(DateTimeOffset timestamp, IEnumerable<KeyValuePair<string, object>> fields) => throw new NotImplementedException();
-
     public ISpan Log(string @event) => throw new NotImplementedException();
-
     public ISpan Log(DateTimeOffset timestamp, string @event) => throw new NotImplementedException();
-
     public ISpan SetBaggageItem(string key, string value) => throw new NotImplementedException();
-
     public ISpan SetOperationName(string operationName) => throw new NotImplementedException();
-
     public ISpan SetTag(string key, string value) => this;
-
     public ISpan SetTag(string key, bool value) => this;
-
     public ISpan SetTag(string key, int value) => this;
-
     public ISpan SetTag(string key, double value) => this;
-
     public ISpan SetTag(BooleanTag tag, bool value) => this;
-
     public ISpan SetTag(IntOrStringTag tag, string value) => this;
-
     public ISpan SetTag(IntTag tag, int value) => this;
-
     public ISpan SetTag(StringTag tag, string value) => this;
 }
 
 internal class FakeSpanContext : ISpanContext
 {
     public static string FakeTraceId = "FakeTraceId";
-
     public static string FakeSpanId = "FakeSpanId";
-
     public string TraceId => FakeTraceId;
-
     public string SpanId => FakeSpanId;
-
     public IEnumerable<KeyValuePair<string, string>> GetBaggageItems() => throw new NotImplementedException();
-}
-
-public class Wait
-{
-    public static Waiter WaitFor(int milliSeconds) => new Waiter(milliSeconds);
-}
-
-public class Waiter // TODO Move to Ocelot.Testing project
-{
-    private readonly int _milliSeconds;
-
-    public Waiter(int milliSeconds)
-    {
-        _milliSeconds = milliSeconds;
-    }
-
-    // TODO Replace with async version in tests
-    public bool Until(Func<bool> condition)
-    {
-        Task<bool> WrappedCondition() => Task.FromResult(condition.Invoke());
-        return UntilAsync(WrappedCondition).GetAwaiter().GetResult();
-    }
-
-    public async Task<bool> UntilAsync(Func<Task<bool>> condition)
-    {
-        var stopwatch = Stopwatch.StartNew();
-        while (stopwatch.ElapsedMilliseconds < _milliSeconds)
-        {
-            if (await condition.Invoke())
-            {
-                stopwatch.Stop();
-                return true;
-            }
-        }
-
-        stopwatch.Stop();
-        return false;
-    }
-
-    public bool Until<T>(Func<bool> condition)
-    {
-        var stopwatch = Stopwatch.StartNew();
-        var passed = false;
-        while (stopwatch.ElapsedMilliseconds < _milliSeconds)
-        {
-            if (condition.Invoke())
-            {
-                passed = true;
-                break;
-            }
-        }
-
-        stopwatch.Stop();
-        return passed;
-    }
 }

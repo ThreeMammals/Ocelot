@@ -5,11 +5,8 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class CaseSensitiveRoutingTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public CaseSensitiveRoutingTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
@@ -38,7 +35,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -73,7 +70,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -108,7 +105,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -143,7 +140,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -178,7 +175,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -213,7 +210,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/products/1", 200, "Some Product"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/products/1", 200, "Some Product"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/PRODUCTS/1"))
@@ -221,18 +218,12 @@ public sealed class CaseSensitiveRoutingTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, int statusCode, string responseBody)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             context.Response.StatusCode = statusCode;
             await context.Response.WriteAsync(responseBody);
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 }

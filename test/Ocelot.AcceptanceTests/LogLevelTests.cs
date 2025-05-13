@@ -17,7 +17,6 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class LogLevelTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
     private readonly string _logFileName;
     private readonly string _appSettingsFileName;
 
@@ -26,7 +25,6 @@ public sealed class LogLevelTests : Steps
 
     public LogLevelTests()
     {
-        _serviceHandler = new ServiceHandler();
         _logFileName = $"ocelot_logs_{TestID}.log";
         _appSettingsFileName = $"appsettings_{TestID}.json";
         Files.Add(_logFileName);
@@ -73,7 +71,7 @@ public sealed class LogLevelTests : Steps
         };
 
         using var logger = GetLogger(level);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -206,18 +204,12 @@ public sealed class LogLevelTests : Steps
         return logFilePath;
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl)
+    private void GivenThereIsAServiceRunningOn(int port)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Response.StatusCode = 200;
-            await context.Response.WriteAsync(string.Empty);
+            return context.Response.WriteAsync(string.Empty);
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 }

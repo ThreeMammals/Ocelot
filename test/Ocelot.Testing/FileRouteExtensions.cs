@@ -10,7 +10,7 @@ public static class FileRouteExtensions
         return route;
     }
 
-    public static FileRoute SetPriority(this FileRoute route, int priority)
+    public static FileRoute WithPriority(this FileRoute route, int priority)
     {
         route.Priority = priority;
         return route;
@@ -36,6 +36,18 @@ public static class FileRouteExtensions
     public static FileRoute WithHttpHandlerOptions(this FileRoute route, FileHttpHandlerOptions options)
     {
         route.HttpHandlerOptions = options;
+        return route;
+    }
+
+    public static FileRoute WithKey(this FileRoute route, string? key)
+    {
+        route.Key = key;
+        return route;
+    }
+
+    public static FileRoute WithUpstreamHost(this FileRoute route, string? upstreamHost)
+    {
+        route.UpstreamHost = upstreamHost;
         return route;
     }
 }

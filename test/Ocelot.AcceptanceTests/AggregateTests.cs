@@ -21,19 +21,11 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class AggregateTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
     private readonly string[] _downstreamPaths;
 
     public AggregateTests()
     {
-        _serviceHandler = new ServiceHandler();
         _downstreamPaths = new string[3];
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -130,8 +122,7 @@ public sealed class AggregateTests : Steps
         };
 
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-
-        this.Given(x => x.GivenServiceIsRunning($"http://localhost:{port}", 200, "some_data"))
+        this.Given(x => x.GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
@@ -565,8 +556,8 @@ public sealed class AggregateTests : Steps
     //    var port1 = PortFinder.GetRandomPort();
     //    var port2 = PortFinder.GetRandomPort();
     //    var port3 = PortFinder.GetRandomPort();
-    //    var route1 = GivenRoute(port1, "/laura", "Laura");
-    //    var route2 = GivenRoute(port2, "/tom", "Tom");
+    //    var route1 = GivenRouteWithKey(port1, "/laura", "Laura");
+    //    var route2 = GivenRouteWithKey(port2, "/tom", "Tom");
     //    var configuration = GivenConfiguration(route1, route2);
     //    var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
     //    void configureOptions(IdentityServerAuthenticationOptions o)
@@ -709,12 +700,12 @@ public sealed class AggregateTests : Steps
             .ToString();
     }
 
-    private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
+    private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
-            context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsync(responseBody);
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
         });
     }
 
@@ -744,8 +735,7 @@ public sealed class AggregateTests : Steps
 
     private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Action<HttpContext> processContext)
     {
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value

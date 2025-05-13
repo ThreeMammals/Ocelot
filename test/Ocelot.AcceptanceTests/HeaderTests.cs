@@ -6,11 +6,9 @@ namespace Ocelot.AcceptanceTests;
 public sealed class HeaderTests : Steps
 {
     private int _count;
-    private readonly ServiceHandler _serviceHandler;
 
     public HeaderTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
@@ -43,7 +41,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Laz"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Laz"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Laz", "D"))
@@ -83,7 +81,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Location", "http://www.bbc.co.uk/"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -126,7 +124,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -169,7 +167,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 302, "Location", $"http://localhost:{port}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -216,7 +214,7 @@ public sealed class HeaderTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 302, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -255,7 +253,7 @@ public sealed class HeaderTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/sso/test", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => WhenIGetUrlOnTheApiGateway("/sso/test"))
@@ -297,7 +295,7 @@ public sealed class HeaderTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/sso/test", 200))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => WhenIGetUrlOnTheApiGateway("/sso/test"))
@@ -335,7 +333,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Accept"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Accept"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
@@ -371,7 +369,7 @@ public sealed class HeaderTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", 200, "Accept"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Accept"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Accept", "text/html"))
@@ -383,15 +381,15 @@ public sealed class HeaderTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
             if (_count == 0)
             {
                 context.Response.Cookies.Append("test", "0");
                 _count++;
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 return Task.CompletedTask;
             }
 
@@ -399,7 +397,7 @@ public sealed class HeaderTests : Steps
             {
                 if (cookieValue == "0")
                 {
-                    context.Response.StatusCode = statusCode;
+                    context.Response.StatusCode = (int)statusCode;
                     return Task.CompletedTask;
                 }
             }
@@ -408,47 +406,41 @@ public sealed class HeaderTests : Steps
             {
                 if (headerValue == "test=1; path=/")
                 {
-                    context.Response.StatusCode = statusCode;
+                    context.Response.StatusCode = (int)statusCode;
                     return Task.CompletedTask;
                 }
             }
 
-            context.Response.StatusCode = 500;
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             return Task.CompletedTask;
         });
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string headerKey)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             if (context.Request.Headers.TryGetValue(headerKey, out var values))
             {
                 var result = values.First();
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 await context.Response.WriteAsync(result);
             }
         });
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string headerKey, string headerValue)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string headerKey, string headerValue)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
             context.Response.OnStarting(() =>
             {
                 context.Response.Headers.Append(headerKey, headerValue);
-                context.Response.StatusCode = statusCode;
+                context.Response.StatusCode = (int)statusCode;
                 return Task.CompletedTask;
             });
 
             return Task.CompletedTask;
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 }

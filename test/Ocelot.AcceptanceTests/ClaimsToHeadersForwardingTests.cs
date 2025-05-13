@@ -18,11 +18,9 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
-    private readonly ServiceHandler _serviceHandler;
 
     public ClaimsToHeadersForwardingTests()
     {
-        _serviceHandler = new ServiceHandler();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
 
@@ -89,7 +87,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), 200))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -101,9 +99,9 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, async context =>
         {
             var customerId = context.Request.Headers.First(x => x.Key == "CustomerId").Value.First();
             var locationId = context.Request.Headers.First(x => x.Key == "LocationId").Value.First();
@@ -111,7 +109,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
             var userId = context.Request.Headers.First(x => x.Key == "UserId").Value.First();
 
             var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
-            context.Response.StatusCode = statusCode;
+            context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsync(responseBody);
         });
     }
@@ -192,7 +190,6 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
     public override void Dispose()
     {
         //_identityServerBuilder?.Dispose();
-        _serviceHandler?.Dispose();
         base.Dispose();
     }
 }

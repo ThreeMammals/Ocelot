@@ -9,8 +9,6 @@ namespace Ocelot.AcceptanceTests.Metadata;
 [Trait("Feat", "738")]
 public sealed class DownstreamMetadataTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public enum StringArrayConfig
     {
         Default = 1,
@@ -29,13 +27,6 @@ public sealed class DownstreamMetadataTests : Steps
 
     public DownstreamMetadataTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 
     [Theory]
@@ -67,7 +58,7 @@ public sealed class DownstreamMetadataTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(currentType))
             .When(x => WhenIGetUrlOnTheApiGateway($"/"))
@@ -142,7 +133,7 @@ public sealed class DownstreamMetadataTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler)))
             .When(x => WhenIGetUrlOnTheApiGateway($"/"))
@@ -189,7 +180,7 @@ public sealed class DownstreamMetadataTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port)))
+        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
             .When(x => WhenIGetUrlOnTheApiGateway($"/"))
@@ -197,15 +188,10 @@ public sealed class DownstreamMetadataTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string url)
+    private static Task MapOK(HttpContext context)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(
-            url,
-            context =>
-            {
-                context.Response.StatusCode = 200;
-                return Task.CompletedTask;
-            });
+        context.Response.StatusCode = 200;
+        return Task.CompletedTask;
     }
 
     /// <summary>

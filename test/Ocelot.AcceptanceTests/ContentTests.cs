@@ -11,17 +11,8 @@ public sealed class ContentTests : Steps
     private long _memoryUsageAfterCallToService;
     private bool _contentTypeHeaderExists;
 
-    private readonly ServiceHandler _serviceHandler;
-
     public ContentTests() : base()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -29,7 +20,7 @@ public sealed class ContentTests : Steps
     {
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.OK, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -46,7 +37,7 @@ public sealed class ContentTests : Steps
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, HttpMethods.Post);
         var contentType = "application/json";
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.Created, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent", contentType))
@@ -60,7 +51,7 @@ public sealed class ContentTests : Steps
     {
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, HttpMethods.Post);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", HttpStatusCode.Created, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
@@ -77,7 +68,7 @@ public sealed class ContentTests : Steps
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port);
         var dummyDatFilePath = GenerateDummyDatFile(100);
-        this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn($"http://localhost:{port}", "/", dummyDatFilePath))
+        this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn(port, "/", dummyDatFilePath))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -109,21 +100,21 @@ public sealed class ContentTests : Steps
         _contentTypeHeaderExists.ShouldBe(false);
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode statusCode, string responseBody)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
             _contentType = context.Request.ContentType;
             _contentLength = context.Request.ContentLength;
             _contentTypeHeaderExists = context.Request.Headers.TryGetValue("Content-Type", out var value);
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(responseBody);
+            return context.Response.WriteAsync(responseBody);
         });
     }
 
-    private void GivenThereIsAServiceWithPayloadRunningOn(string baseUrl, string basePath, string dummyDatFilePath)
+    private void GivenThereIsAServiceWithPayloadRunningOn(int port, string basePath, string dummyDatFilePath)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await using var fileStream = File.OpenRead(dummyDatFilePath);

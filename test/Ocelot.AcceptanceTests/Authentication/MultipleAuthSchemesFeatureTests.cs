@@ -11,32 +11,31 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 [Trait("PR", "1870")]
 [Trait("Issues", "740 1580")]
-public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisposable
+public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
 {
-    private IWebHost[] _identityServers;
+    //private IWebHost[] _identityServers;
     private string[] _identityServerUrls;
     private BearerToken[] _tokens;
 
     public MultipleAuthSchemesFeatureTests() : base()
     {
-        _identityServers = Array.Empty<IWebHost>();
+        //_identityServers = Array.Empty<IWebHost>();
         _identityServerUrls = Array.Empty<string>();
         _tokens = Array.Empty<BearerToken>();
     }
 
     public override void Dispose()
     {
-        foreach (var server in _identityServers)
-        {
-            server.Dispose();
-        }
-
+        //foreach (var server in _identityServers)
+        //{
+        //    server.Dispose();
+        //}
         base.Dispose();
     }
 
     private MultipleAuthSchemesFeatureTests Setup(int totalSchemes)
     {
-        _identityServers = new IWebHost[totalSchemes];
+        //_identityServers = new IWebHost[totalSchemes];
         _identityServerUrls = new string[totalSchemes];
         _tokens = new BearerToken[totalSchemes];
         return this;
@@ -49,7 +48,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //public void Should_authenticate_using_identity_server_with_multiple_schemes(string scheme1, string scheme2)
     //{
     //    var port = PortFinder.GetRandomPort();
-    //    var route = GivenDefaultAuthRoute(port, authProviderKey: string.Empty);
+    //    var route = GivenAuthRoute(port, authProviderKey: string.Empty);
     //    var authSchemes = new string[] { scheme1, scheme2 };
     //    route.AuthenticationOptions.AuthenticationProviderKeys = authSchemes;
     //    var configuration = GivenConfiguration(route);

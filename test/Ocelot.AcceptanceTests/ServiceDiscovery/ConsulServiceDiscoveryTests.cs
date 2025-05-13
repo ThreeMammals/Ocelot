@@ -233,7 +233,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private async Task WhenIGetUrlOnTheApiGatewayWaitingForTheResponseToBeOk(string url)
     {
-        var result = await Wait.WaitFor(2000).UntilAsync(async () =>
+        var result = await Wait.For(2_000).UntilAsync(async () =>
         {
             try
             {
@@ -246,7 +246,6 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
                 return false;
             }
         });
-
         result.ShouldBeTrue();
     }
 
@@ -285,9 +284,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
         // Ocelot request for http://us-shop/ should find 'product-us' in Consul, call /products and return "Phone chargers with US plug"
         // Ocelot request for http://eu-shop/ should find 'product-eu' in Consul, call /products and return "Phone chargers with EU plug"
-        _handlers = new ServiceHandler[2] { new(), new() };
-        this.Given(x => _handlers[0].GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortUS), "/products", MapGet("/products", responseBodyUS)))
-            .Given(x => _handlers[1].GivenThereIsAServiceRunningOn(DownstreamUrl(servicePortEU), "/products", MapGet("/products", responseBodyEU)))
+        this.Given(x => handler.GivenThereIsAServiceRunningOn(servicePortUS, "/products", MapGet("/products", responseBodyUS)))
+            .Given(x => handler.GivenThereIsAServiceRunningOn(servicePortEU, "/products", MapGet("/products", responseBodyEU)))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))

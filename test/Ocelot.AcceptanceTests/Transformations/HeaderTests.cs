@@ -8,11 +8,9 @@ namespace Ocelot.AcceptanceTests.Transformations;
 public sealed class HeaderTests : Steps
 {
     public const string X_Forwarded_For = "X-Forwarded-For";
-    private readonly ServiceHandler _handler;
 
     public HeaderTests()
     {
-        _handler = new ServiceHandler();
     }
 
     [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
@@ -29,7 +27,7 @@ public sealed class HeaderTests : Steps
             },
         };
 
-        GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK, X_Forwarded_For);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, X_Forwarded_For);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -43,22 +41,18 @@ public sealed class HeaderTests : Steps
         await ThenTheResponseBodyShouldBeAsync(/*remoteIpAddress*/expectedIP);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string headerKey)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string headerKey)
     {
-        _handler.GivenThereIsAServiceRunningOn(url, async context =>
+        Task MapStatusAndHeader(HttpContext context)
         {
             if (context.Request.Headers.TryGetValue(headerKey, out var values))
             {
                 var result = values.First();
                 context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(result);
+                return context.Response.WriteAsync(result);
             }
-        });
-    }
-
-    public override void Dispose()
-    {
-        _handler?.Dispose();
-        base.Dispose();
+            return Task.CompletedTask;
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapStatusAndHeader);
     }
 }

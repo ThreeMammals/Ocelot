@@ -6,11 +6,9 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 public sealed class ServiceFabricTests : Steps
 {
     private string _downstreamPath;
-    private readonly ServiceHandler _serviceHandler;
 
     public ServiceFabricTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
@@ -43,7 +41,7 @@ public sealed class ServiceFabricTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/a?b=c"))
@@ -80,7 +78,7 @@ public sealed class ServiceFabricTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
@@ -117,7 +115,7 @@ public sealed class ServiceFabricTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
@@ -159,7 +157,7 @@ public sealed class ServiceFabricTests : Steps
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), downstreamUrl, 200, "Hello from Felix Boers", query))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, downstreamUrl, 200, "Hello from Felix Boers", query))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway(url))
@@ -168,9 +166,9 @@ public sealed class ServiceFabricTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expectedQueryString)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, int statusCode, string responseBody, string expectedQueryString)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
@@ -193,11 +191,5 @@ public sealed class ServiceFabricTests : Steps
                 }
             }
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 }

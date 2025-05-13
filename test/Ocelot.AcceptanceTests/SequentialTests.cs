@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Ocelot.AcceptanceTests;
+﻿namespace Ocelot.AcceptanceTests;
 
 /// <summary>
 /// Apply <see cref="CollectionAttribute"/> to classes to disable parallelization.

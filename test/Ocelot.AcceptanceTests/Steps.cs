@@ -14,15 +14,18 @@ namespace Ocelot.AcceptanceTests;
 public class Steps : AcceptanceSteps
 {
     private readonly List<IWebHost> _hosts;
+    protected readonly ServiceHandler handler;
 
     public Steps() : base()
     {
         _hosts = new();
+        handler = new();
         BddfyConfig.Configure();
     }
 
     public override void Dispose()
     {
+        handler.Dispose();
         _hosts.ForEach(h => h?.Dispose());
         base.Dispose();
         GC.SuppressFinalize(this);
@@ -44,34 +47,21 @@ public class Steps : AcceptanceSteps
         ocelotClient = ocelotServer.CreateClient();
     }
 
-    public Task StartWebSocketsDownstreamServiceAsync(string url, Func<HttpContext, Func<Task>, Task> middleware)
-    {
-        var host = TestHostBuilder.Create()
-            .ConfigureServices(s => { })
-            .UseKestrel()
-            .UseUrls(url)
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureLogging((hostingContext, logging) =>
-            {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-            })
-            .Configure(app =>
-            {
-                app.UseWebSockets();
-                app.Use(middleware);
-            })
-            .UseIISIntegration()
-            .Build();
-        _hosts.Add(host);
-        return host.StartAsync();
-    }
+    public Task GivenWebSocketServiceIsRunningOnAsync(string url, Func<HttpContext, Func<Task>, Task> middleware) =>
+        handler.GivenThereIsAServiceRunningOnAsync(url,
+            (context, config) => config
+                .SetBasePath(context.HostingEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", true, false)
+                .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, false)
+                .AddEnvironmentVariables(),
+            (context, logging) => logging
+                .AddConfiguration(context.Configuration.GetSection("Logging"))
+                .AddConsole(),
+            null, // no services
+            app => app.UseWebSockets().Use(middleware),
+            web => web.UseUrls(url)
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+        );
 }

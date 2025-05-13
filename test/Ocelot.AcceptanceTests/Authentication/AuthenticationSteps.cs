@@ -12,18 +12,9 @@ namespace Ocelot.AcceptanceTests.Authentication;
 public class AuthenticationSteps : Steps
 {
     protected BearerToken token;
-    private readonly ServiceHandler _serviceHandler;
 
     public AuthenticationSteps() : base()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     //public static ApiResource CreateApiResource(
@@ -171,36 +162,20 @@ public class AuthenticationSteps : Steps
         return GivenIHaveATokenWithForm(url, form);
     }
 
-    public static FileRoute GivenDefaultAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null) => new()
+    public static FileRoute GivenAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null)
     {
-        DownstreamPathTemplate = "/",
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { upstreamHttpMethod ?? HttpMethods.Get },
-        AuthenticationOptions = new()
-        {
-            AuthenticationProviderKeys = new string[] { authProviderKey ?? "Test" },
-        },
-    };
+        var r = GivenDefaultRoute(port).WithMethods(upstreamHttpMethod ?? HttpMethods.Get);
+        r.AuthenticationOptions.AuthenticationProviderKeys = [authProviderKey ?? "Test"];
+        return r;
+    }
 
     protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody)
     {
-        var url = DownstreamServiceUrl(port);
-        GivenThereIsAServiceRunningOn(url, statusCode, responseBody);
-    }
-
-    protected void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string responseBody)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        Task MapStatus(HttpContext context)
         {
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(responseBody);
-        });
+            return context.Response.WriteAsync(responseBody);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
     }
-
-    protected static string DownstreamServiceUrl(int port) => string.Concat("http://localhost:", port);
 }

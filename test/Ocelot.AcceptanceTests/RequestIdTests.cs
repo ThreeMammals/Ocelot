@@ -1,45 +1,21 @@
-﻿using Ocelot.Configuration.File;
-
-namespace Ocelot.AcceptanceTests;
+﻿namespace Ocelot.AcceptanceTests;
 
 public sealed class RequestIdTests : Steps
 {
     public const string RequestIdKey = "Oc-RequestId";
-    private readonly ServiceHandler _serviceHandler;
 
     public RequestIdTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
     public void Should_use_default_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = RequestIdKey,
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+        var route = GivenDefaultRoute(port);
+        route.RequestIdKey = RequestIdKey;
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -51,30 +27,10 @@ public sealed class RequestIdTests : Steps
     public void Should_use_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
         var requestId = Guid.NewGuid().ToString();
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId))
@@ -86,34 +42,11 @@ public sealed class RequestIdTests : Steps
     public void Should_use_global_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                RequestIdKey = RequestIdKey,
-            },
-        };
-
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.RequestIdKey = RequestIdKey;
         var requestId = Guid.NewGuid().ToString();
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId))
@@ -125,33 +58,10 @@ public sealed class RequestIdTests : Steps
     public void Should_use_global_request_id_create_and_forward()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        DownstreamScheme = "http",
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                RequestIdKey = RequestIdKey,
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.RequestIdKey = RequestIdKey;
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -165,9 +75,9 @@ public sealed class RequestIdTests : Steps
         response = await ocelotClient.GetAsync(url);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url)
+    private void GivenThereIsAServiceRunningOn(int port)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Request.Headers.TryGetValue(RequestIdKey, out var requestId);
             context.Response.Headers[RequestIdKey] = requestId.First();
@@ -179,10 +89,4 @@ public sealed class RequestIdTests : Steps
         => response.Headers.GetValues(RequestIdKey).First().ShouldNotBeNullOrEmpty();
     private void ThenTheRequestIdIsReturned(string expected)
         => response.Headers.GetValues(RequestIdKey).First().ShouldBe(expected);
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
-    }
 }

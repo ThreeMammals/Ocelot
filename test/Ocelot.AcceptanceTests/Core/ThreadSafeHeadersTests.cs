@@ -7,19 +7,11 @@ namespace Ocelot.AcceptanceTests.Core;
 // Old integration tests
 public sealed class ThreadSafeHeadersTests : Steps
 {
-    private readonly ServiceHandler _handler;
     private readonly ConcurrentBag<ThreadSafeHeadersTestResult> _results;
 
     public ThreadSafeHeadersTests()
     {
-        _handler = new ServiceHandler();
-        _results = new ConcurrentBag<ThreadSafeHeadersTestResult>();
-    }
-
-    public override void Dispose()
-    {
-        _handler?.Dispose();
-        base.Dispose();
+        _results = new();
     }
 
     [Fact]
@@ -29,19 +21,20 @@ public sealed class ThreadSafeHeadersTests : Steps
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOn(DownstreamUrl(port), HttpStatusCode.OK);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
         GivenOcelotIsRunning();
         WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300);
         ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
-    private void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
     {
-        _handler.GivenThereIsAServiceRunningOn(url, context =>
+        Task MapGet(HttpContext context)
         {
             var header = context.Request.Headers[headerKey];
             context.Response.StatusCode = (int)statusCode;
             return context.Response.WriteAsync(header[0]);
-        });
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapGet);
     }
 
     private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
