@@ -13,22 +13,9 @@ namespace Ocelot.AcceptanceTests;
 
 public class Steps : AcceptanceSteps
 {
-    private readonly List<IWebHost> _hosts;
-    protected readonly ServiceHandler handler;
-
     public Steps() : base()
     {
-        _hosts = new();
-        handler = new();
         BddfyConfig.Configure();
-    }
-
-    public override void Dispose()
-    {
-        handler.Dispose();
-        _hosts.ForEach(h => h?.Dispose());
-        base.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)

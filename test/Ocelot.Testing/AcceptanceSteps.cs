@@ -29,14 +29,16 @@ public class AcceptanceSteps : IDisposable
     private readonly Guid _testId;
     protected readonly Random random;
     protected readonly string ocelotConfigFileName;
+    protected readonly ServiceHandler handler;
 
-    public AcceptanceSteps() : base()
+    public AcceptanceSteps()
     {
         _testId = Guid.NewGuid();
         random = new Random();
         ocelotConfigFileName = $"{_testId:N}-{ConfigurationBuilderExtensions.PrimaryConfigFile}";
         Files = new() { ocelotConfigFileName };
         Folders = new();
+        handler = new();
     }
 
     protected List<string> Files { get; }
@@ -344,6 +346,7 @@ public class AcceptanceSteps : IDisposable
             ocelotServer?.Dispose();
             ocelotHost?.Dispose();
             response?.Dispose();
+            handler.Dispose();
             DeleteFiles();
             DeleteFolders();
         }
@@ -367,6 +370,7 @@ public class AcceptanceSteps : IDisposable
                 Console.WriteLine(e);
             }
         }
+        Files.Clear();
     }
 
     protected virtual void DeleteFolders()
@@ -386,6 +390,7 @@ public class AcceptanceSteps : IDisposable
                 Console.WriteLine(e);
             }
         }
+        Folders.Clear();
     }
     #endregion
 }

@@ -295,7 +295,6 @@ public sealed class RoutingWithQueryStringTests : Steps
     //    UpstreamPathTemplate = upstream,
     //    UpstreamHttpMethod = new() { HttpMethods.Get },
     //};
-
     private void GivenThereIsAServiceRunningOn(int port, string basePath, string queryString, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
