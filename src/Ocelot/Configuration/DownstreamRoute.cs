@@ -1,3 +1,4 @@
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Values;
 
@@ -23,6 +24,7 @@ public class DownstreamRoute
         CacheOptions cacheOptions,
         LoadBalancerOptions loadBalancerOptions,
         RateLimitOptions rateLimitOptions,
+        IEnumerable<GlobalRateLimitOptions> globalRateLimitOption,
         Dictionary<string, string> routeClaimsRequirement,
         List<ClaimToThing> claimsToQueries,
         List<ClaimToThing> claimsToHeaders,
@@ -81,6 +83,50 @@ public class DownstreamRoute
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
+
+        string path = UpstreamPathTemplate.OriginalValue;
+        string method = DownstreamHttpMethod ?? "GET";
+
+        GlobalRateLimitOptions grp = globalRateLimitOption.FirstOrDefault(g =>
+            g.Pattern.IsMatch(path) &&
+            g.Methods.Contains(method));
+
+        if (grp != null && !RateLimitOptions.EnableRateLimiting)
+        {
+            EnableEndpointEndpointRateLimiting = true;
+            RateLimitOptions = new RateLimitOptionsBuilder()
+                .WithDisableRateLimitHeaders(grp.DisableRateLimitHeaders)
+                .WithEnableRateLimiting(grp.EnableRateLimiting)
+                .WithHttpStatusCode(grp.HttpStatusCode)
+                .WithQuotaExceededMessage(grp.QuotaExceededMessage)
+                .WithRateLimitRule(new RateLimitRule(grp.Period, ParsePeriodTimespan(grp.Period), grp.Limit))
+                .WithClientWhiteList(() => [])
+                .Build();
+        }
+    }
+
+    private double ParsePeriodTimespan(string period)
+    {
+        if (string.IsNullOrWhiteSpace(period))
+        {
+            throw new ArgumentException("Period is required", nameof(period));
+        }
+
+        char unit = period[^1]; // separate latest character
+        string numberPart = period[..^1]; // all characters except latest
+        if (!double.TryParse(numberPart, out var value))
+        {
+            throw new ArgumentException($"Invalid period number: {period}", nameof(period));
+        }
+
+        return unit switch
+        {
+            's' => value, // seconds
+            'm' => value * 60, // minutes
+            'h' => value * 3600, // hour
+            'd' => value * 86400, // day
+            _ => throw new ArgumentException($"Invalid period unit: {unit}", nameof(period)),
+        };
     }
 
     public string Key { get; }
@@ -128,6 +174,7 @@ public class DownstreamRoute
     /// </list>
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
+
     public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
     public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }

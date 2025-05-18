@@ -35,7 +35,10 @@ public class Program
 
                 s.AddSingleton<QosDelegatingHandlerDelegate>((x, t, z) => new FakeHandler());
                 s.AddOcelot()
-                   .AddDelegatingHandler<FakeHandler>(true);
+                    .AddDelegatingHandler<FakeHandler>(true);
+
+                s.AddRateLimiting();
+
                 /*.AddCacheManager(x =>
                 {
                     x.WithDictionaryHandle();
@@ -57,7 +60,7 @@ public class Program
             {
                 await app.UseOcelot(options =>
                 {
-                    options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
+                    // options.PreAuthenticationMiddleware = CustomOcelotMiddleware.Invoke;
                 });
             })
             .Build()
