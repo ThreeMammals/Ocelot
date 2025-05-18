@@ -95,7 +95,7 @@ Global Rate Limiting
 
 Ocelot now supports defining Global Rate Limiting rules for groups of routes. These rules are inserted before the existing rate limiting middleware and will add a `RateLimitRule` to any route that has no explicit rate limiting configured and whose `DownstreamPathTemplate` matches one of the global rule patterns.
 
-## Configuration in JSON
+Configuration in JSON
 
 In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules` array:
 
