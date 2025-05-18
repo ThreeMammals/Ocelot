@@ -84,25 +84,27 @@ public class DownstreamRoute
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
 
-        string path = UpstreamPathTemplate.OriginalValue;
+        string path = UpstreamPathTemplate?.OriginalValue ?? string.Empty;
         string method = DownstreamHttpMethod ?? "GET";
 
-        GlobalRateLimitOptions grp = globalRateLimitOption.FirstOrDefault(g =>
+        GlobalRateLimitOptions globalRateLimit = globalRateLimitOption?.FirstOrDefault(g =>
             g.Pattern.IsMatch(path) &&
             g.Methods.Contains(method));
 
-        if (grp != null && !RateLimitOptions.EnableRateLimiting)
+        if (globalRateLimit == null || RateLimitOptions.EnableRateLimiting)
         {
-            EnableEndpointEndpointRateLimiting = true;
-            RateLimitOptions = new RateLimitOptionsBuilder()
-                .WithDisableRateLimitHeaders(grp.DisableRateLimitHeaders)
-                .WithEnableRateLimiting(grp.EnableRateLimiting)
-                .WithHttpStatusCode(grp.HttpStatusCode)
-                .WithQuotaExceededMessage(grp.QuotaExceededMessage)
-                .WithRateLimitRule(new RateLimitRule(grp.Period, ParsePeriodTimespan(grp.Period), grp.Limit))
-                .WithClientWhiteList(() => [])
-                .Build();
+            return;
         }
+
+        EnableEndpointEndpointRateLimiting = true;
+        RateLimitOptions = new RateLimitOptionsBuilder()
+            .WithDisableRateLimitHeaders(globalRateLimit.DisableRateLimitHeaders)
+            .WithEnableRateLimiting(globalRateLimit.EnableRateLimiting)
+            .WithHttpStatusCode(globalRateLimit.HttpStatusCode)
+            .WithQuotaExceededMessage(globalRateLimit.QuotaExceededMessage)
+            .WithRateLimitRule(new RateLimitRule(globalRateLimit.Period, ParsePeriodTimespan(globalRateLimit.Period), globalRateLimit.Limit))
+            .WithClientWhiteList(() => [])
+            .Build();
     }
 
     private double ParsePeriodTimespan(string period)
