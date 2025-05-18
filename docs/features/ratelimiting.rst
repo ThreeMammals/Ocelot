@@ -101,17 +101,16 @@ In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules`
 
 .. code-block:: json
 
-{
-    "GlobalRateLimitRules": [
-        {
-            "Pattern": "/api/users/",
-            "Limit": 10,
-            "Period": "1m",
-            "PeriodTimespan": 1,
-            "QuotaExceededMessage": "Global limit exceeded. Try again later."
-        }
-    ]
-}
+   "GlobalRateLimitRules": [
+       {
+           "Pattern": "/api/users/",
+           "Limit": 10,
+           "Period": "1m",
+           "PeriodTimespan": 1,
+           "QuotaExceededMessage": "Global limit exceeded. Try again later."
+       }
+   ]
+
 
 Fields in each global rule:
 
