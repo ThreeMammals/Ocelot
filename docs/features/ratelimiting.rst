@@ -100,25 +100,25 @@ In your configuration file (e.g., ocelot.json), add the GlobalRateLimitRules arr
 .. code-block:: json
 
 {
-"Routes": [
-/* definitions of routes without explicit rate limiting /
-],
-"GlobalRateLimitRules": [
-{
-"Pattern": "/api/users/",
-"Limit": 10,
-"Period": "1m",
-"PeriodTimespan": 1,
-"QuotaExceededMessage": "Global limit exceeded. Try again later."
-},
-{
-"Pattern": "/api/posts/*",
-"Limit": 5,
-"Period": "30s",
-"PeriodTimespan": 30,
-"QuotaExceededMessage": "Too many post requests."
-}
-]
+    "Routes": [
+        /* definitions of routes without explicit rate limiting */
+    ],
+    "GlobalRateLimitRules": [
+        {
+            "Pattern": "/api/users/*",
+            "Limit": 10,
+            "Period": "1m",
+            "PeriodTimespan": 1,
+            "QuotaExceededMessage": "Global limit exceeded. Try again later."
+        },
+        {
+            "Pattern": "/api/posts/*",
+            "Limit": 5,
+            "Period": "30s",
+            "PeriodTimespan": 30,
+            "QuotaExceededMessage": "Too many post requests."
+        }
+    ]
 }
 
 Fields in each global rule:
@@ -152,7 +152,6 @@ With the injected rule present, the existing rate limiting middleware applies it
 If the number of requests exceeds the configured Limit, Ocelot returns an HTTP 429 response with the specified QuotaExceededMessage.
 
 Note: There is no need to modify RateLimitMiddleware itself—adding the rule to the route’s configuration automatically includes it in the rate limiting pipeline.
-
 Ocelot vs ASP.NET
 -----------------
 
