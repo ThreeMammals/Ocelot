@@ -87,18 +87,20 @@ Notes
 3. *Rate limiting* is now built into ASP.NET Core 7+, as detailed in the :ref:`rl-ocelot-vs-asp-net` topic below.
    Our team believes that the ASP.NET ``RateLimiter`` facilitates global limitations through its *rate-limiting* policies.
 
-.. _rl-ocelot-vs-asp-net:
 
-Global Rate Limiting
------
-Ocelot now supports defining Global Rate Limiting rules for groups of routes. These rules are inserted before the existing rate limiting middleware and will add a RateLimitRule to any route that has no explicit rate limiting configured and whose DownstreamPathTemplate matches one of the global rule patterns.
+.. \_global-rate-limiting:
 
-Configuration in JSON
+# Global Rate Limiting
 
-In your configuration file (e.g., ocelot.json), add the GlobalRateLimitRules array:
+Ocelot now supports defining Global Rate Limiting rules for groups of routes. These rules are inserted before the existing rate limiting middleware and will add a `RateLimitRule` to any route that has no explicit rate limiting configured and whose `DownstreamPathTemplate` matches one of the global rule patterns.
+
+## Configuration in JSON
+
+In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules` array:
 
 .. code-block:: json
 
+```
 {
     "Routes": [
         /* definitions of routes without explicit rate limiting */
@@ -120,38 +122,45 @@ In your configuration file (e.g., ocelot.json), add the GlobalRateLimitRules arr
         }
     ]
 }
+```
 
 Fields in each global rule:
 
-Pattern: The downstream path template pattern to match (using Ocelot’s syntax).
+.. list-table::
+\:header-rows: 1
 
-Limit: The maximum number of requests allowed per period.
+* * Field
+  * Description
+* * **Pattern**
+  * The downstream path template pattern to match (using Ocelot’s syntax).
+* * **Limit**
+  * The maximum number of requests allowed per period.
+* * **Period**
+  * A human-readable string representing the time window (e.g., `"1m"`, `"30s"`).
+* * **PeriodTimespan**
+  * The numeric value corresponding to `Period` (e.g., 1 for 1 minute).
+* * **QuotaExceededMessage**
+  * The error message returned when the limit is exceeded.
 
-Period: A human-readable string representing the time window (e.g., "1m", "30s").
+## Behavior
 
-PeriodTimespan: The numeric value corresponding to Period (e.g., 1 for 1 minute).
+1. **Loading Configuration**: Ocelot reads the `GlobalRateLimitRules` array when loading its configuration.
 
-QuotaExceededMessage: The error message returned when the limit is exceeded.
+2. **Injecting Rules into Routes**:
 
-Behavior
+   * Before the rate limiting middleware executes, the Configuration Builder iterates over all routes.
+   * For each route that does **not** have an explicit rate limiting rule:
 
-Loading Configuration: Ocelot reads the GlobalRateLimitRules array when loading its configuration.
+     * If its `DownstreamPathTemplate` matches the `Pattern` of a global rule, a new `RateLimitRule` is created with that rule’s settings and added to the route.
 
-Injecting Rules into Routes:
+3. **Middleware Execution**:
 
-Before the rate limiting middleware executes, the Configuration Builder iterates over all routes.
+   * With the injected rule present, the existing rate limiting middleware applies it like any other rule.
+   * If the number of requests exceeds the configured `Limit`, Ocelot returns an HTTP 429 response with the specified `QuotaExceededMessage`.
 
-For each route that does not have an explicit rate limiting rule:
+> **Note:** There is no need to modify `RateLimitMiddleware` itself—adding the rule to the route’s configuration automatically includes it in the rate limiting pipeline.
 
-If its DownstreamPathTemplate matches the Pattern of a global rule, a new RateLimitRule is created with that rule’s settings and added to the route.
-
-Middleware Execution:
-
-With the injected rule present, the existing rate limiting middleware applies it like any other rule.
-
-If the number of requests exceeds the configured Limit, Ocelot returns an HTTP 429 response with the specified QuotaExceededMessage.
-
-Note: There is no need to modify RateLimitMiddleware itself—adding the rule to the route’s configuration automatically includes it in the rate limiting pipeline.
+.. _rl-ocelot-vs-asp-net:
 Ocelot vs ASP.NET
 -----------------
 
