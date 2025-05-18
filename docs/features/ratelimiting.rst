@@ -103,11 +103,18 @@ In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules`
 
    "GlobalRateLimitRules": [
        {
-           "Pattern": "/api/users/",
+           "Pattern": "/api/users/*",
            "Limit": 10,
            "Period": "1m",
            "PeriodTimespan": 1,
            "QuotaExceededMessage": "Global limit exceeded. Try again later."
+       },
+       {
+           "Pattern": "/api/posts/*",
+           "Limit": 5,
+           "Period": "30s",
+           "PeriodTimespan": 30,
+           "QuotaExceededMessage": "Too many post requests."
        }
    ]
 
