@@ -102,9 +102,6 @@ In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules`
 .. code-block:: json
 
 {
-    "Routes": [
-        /* definitions of routes without explicit rate limiting */
-    ],
     "GlobalRateLimitRules": [
         {
             "Pattern": "/api/users/*",
@@ -125,16 +122,22 @@ In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules`
 
 Fields in each global rule:
 
-+----------------------+-------------------------------------------------------------------------------+
-| Field                | Description                                                                   |
-+======================+===============================================================================+
-| Pattern              | The downstream path template pattern to match (using Ocelot’s syntax).        |
-| Limit                | The maximum number of requests allowed per period.                            |
-| Period               | A human-readable string representing the time window (e.g., `"1m"`, `"30s"`). |
-| PeriodTimespan       | The numeric value corresponding to `Period` (e.g., 1 for 1 minute).           |
-| QuotaExceededMessage | The error message returned when the limit is exceeded.                        |
-+----------------------+-------------------------------------------------------------------------------+
+.. list-table::
+    :widths: 25 75
+    :header-rows: 1
 
+    * - *Field*
+      - *Description*
+    * - ``Pattern``
+      - The downstream path template pattern to match (using Ocelot’s syntax).
+    * - ``Limit``
+      - The maximum number of requests allowed per period.
+    * - ``Period``
+      - A human-readable string representing the time window (e.g., `"1m"`, `"30s"`).
+    * - ``PeriodTimespan``
+      - The numeric value corresponding to `Period` (e.g., 1 for 1 minute).
+    * - ``QuotaExceededMessage``
+      - The error message returned when the limit is exceeded.
 
 Behavior
 -----
