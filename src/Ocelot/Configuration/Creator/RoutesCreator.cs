@@ -102,7 +102,6 @@ public class RoutesCreator : IRoutesCreator
         var qosOptions = _qosOptionsCreator.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
         var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
-
         var globalRateLimitOption = _globalRateLimitOptionsCreator.Create(globalConfiguration);
 
         var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);

@@ -107,12 +107,9 @@ public class DownstreamRoute
             .Build();
     }
 
-    private double ParsePeriodTimespan(string period)
+    private static double ParsePeriodTimespan(string period)
     {
-        if (string.IsNullOrWhiteSpace(period))
-        {
-            throw new ArgumentException("Period is required", nameof(period));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(period, nameof(period));
 
         char unit = period[^1]; // separate latest character
         string numberPart = period[..^1]; // all characters except latest
@@ -176,7 +173,6 @@ public class DownstreamRoute
     /// </list>
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
-
     public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
     public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
