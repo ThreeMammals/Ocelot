@@ -19,9 +19,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\Ocelot.Testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Ocelot.Testing" Version="24.0.0" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
