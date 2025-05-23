@@ -1,3 +1,4 @@
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Values;
 
@@ -23,6 +24,7 @@ public class DownstreamRoute
         CacheOptions cacheOptions,
         LoadBalancerOptions loadBalancerOptions,
         RateLimitOptions rateLimitOptions,
+        IEnumerable<GlobalRateLimitOptions> globalRateLimitOption,
         Dictionary<string, string> routeClaimsRequirement,
         List<ClaimToThing> claimsToQueries,
         List<ClaimToThing> claimsToHeaders,
@@ -81,6 +83,49 @@ public class DownstreamRoute
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
+
+        string path = UpstreamPathTemplate?.OriginalValue ?? string.Empty;
+        string method = DownstreamHttpMethod ?? "GET";
+
+        GlobalRateLimitOptions globalRateLimit = globalRateLimitOption?.FirstOrDefault(g =>
+            g.Pattern.IsMatch(path) &&
+            g.Methods.Contains(method));
+
+        if (globalRateLimit == null || RateLimitOptions.EnableRateLimiting)
+        {
+            return;
+        }
+
+        EnableEndpointEndpointRateLimiting = true;
+        RateLimitOptions = new RateLimitOptionsBuilder()
+            .WithDisableRateLimitHeaders(globalRateLimit.DisableRateLimitHeaders)
+            .WithEnableRateLimiting(globalRateLimit.EnableRateLimiting)
+            .WithHttpStatusCode(globalRateLimit.HttpStatusCode)
+            .WithQuotaExceededMessage(globalRateLimit.QuotaExceededMessage)
+            .WithRateLimitRule(new RateLimitRule(globalRateLimit.Period, ParsePeriodTimespan(globalRateLimit.Period), globalRateLimit.Limit))
+            .WithClientWhiteList(() => [])
+            .Build();
+    }
+
+    private static double ParsePeriodTimespan(string period)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(period, nameof(period));
+
+        char unit = period[^1]; // separate latest character
+        string numberPart = period[..^1]; // all characters except latest
+        if (!double.TryParse(numberPart, out var value))
+        {
+            throw new ArgumentException($"Invalid period number: {period}", nameof(period));
+        }
+
+        return unit switch
+        {
+            's' => value, // seconds
+            'm' => value * 60, // minutes
+            'h' => value * 3600, // hour
+            'd' => value * 86400, // day
+            _ => throw new ArgumentException($"Invalid period unit: {unit}", nameof(period)),
+        };
     }
 
     public string Key { get; }
