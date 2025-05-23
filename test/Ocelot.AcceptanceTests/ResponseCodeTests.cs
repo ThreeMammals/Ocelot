@@ -1,65 +1,33 @@
-using Ocelot.Configuration.File;
+using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ResponseCodeTests : IDisposable
+public sealed class ResponseCodeTests : Steps
 {
-    private readonly Steps _steps;
-    private readonly ServiceHandler _serviceHandler;
-
     public ResponseCodeTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
     public void ShouldReturnResponse304WhenServiceReturns304()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/{everything}",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/inline.132.bundle.js", 304))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified))
+        var route = GivenCatchAllRoute(port);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/inline.132.bundle.js", HttpStatusCode.NotModified))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified))
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, (context) => Task.Run(() =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
-            context.Response.StatusCode = statusCode;
-        }));
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-        GC.SuppressFinalize(this);
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(statusCode.ToString());
+        });
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -9,16 +10,20 @@ namespace Ocelot.UnitTests.Infrastructure;
 
 public class PlaceholdersTests
 {
-    private readonly Placeholders _placeholders;
     private readonly Mock<IBaseUrlFinder> _finder;
     private readonly Mock<IRequestScopedDataRepository> _repo;
     private readonly Mock<IHttpContextAccessor> _accessor;
+    /*private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IOcelotLogger> _logger;*/
+    private readonly Placeholders _placeholders;
 
     public PlaceholdersTests()
     {
-        _accessor = new Mock<IHttpContextAccessor>();
-        _repo = new Mock<IRequestScopedDataRepository>();
         _finder = new Mock<IBaseUrlFinder>();
+        _repo = new Mock<IRequestScopedDataRepository>();
+        _accessor = new Mock<IHttpContextAccessor>();
+
+        //_loggerFactory = new Mock<IOcelotLoggerFactory>();
         _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
     }
 
@@ -65,8 +70,10 @@ public class PlaceholdersTests
     public void Should_return_downstream_base_url_when_port_is_not_80_or_443()
     {
         // Arrange
-        var httpRequest = new HttpRequestMessage();
-        httpRequest.RequestUri = new Uri("http://www.bbc.co.uk");
+        var httpRequest = new HttpRequestMessage
+        {
+            RequestUri = new("http://www.bbc.co.uk"),
+        };
         var request = new DownstreamRequest(httpRequest);
 
         // Act
@@ -80,8 +87,10 @@ public class PlaceholdersTests
     public void Should_return_downstream_base_url_when_port_is_80_or_443()
     {
         // Arrange
-        var httpRequest = new HttpRequestMessage();
-        httpRequest.RequestUri = new Uri("http://www.bbc.co.uk:123");
+        var httpRequest = new HttpRequestMessage
+        {
+            RequestUri = new("http://www.bbc.co.uk:123"),
+        };
         var request = new DownstreamRequest(httpRequest);
 
         // Act
@@ -208,5 +217,19 @@ public class PlaceholdersTests
 
         // Assert
         result.IsError.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Get_GetRemoteIpAddress()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext { Connection = { RemoteIpAddress = IPAddress.Any } };
+        _accessor.Setup(x => x.HttpContext).Returns(httpContext);
+
+        // Act
+        var result = _placeholders.Get("{RemoteIpAddress}");
+
+        // Assert
+        result.Data.ShouldBe(httpContext.Connection.RemoteIpAddress.ToString());
     }
 }

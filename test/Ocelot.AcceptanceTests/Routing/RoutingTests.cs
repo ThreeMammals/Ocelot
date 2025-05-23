@@ -1,25 +1,16 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
 using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
-public sealed class RoutingTests : Steps, IDisposable
+public sealed class RoutingTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
     private string _downstreamPath;
     private string _downstreamQuery;
 
     public RoutingTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -27,7 +18,7 @@ public sealed class RoutingTests : Steps, IDisposable
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/api/v{apiVersion}/cards", "/api/v{apiVersion}/cards")
-            .SetPriority(1);
+            .WithPriority(1);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/v1/aaaaaaaaa/cards", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -51,7 +42,7 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_200_with_forward_slash_and_placeholder_only()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/{url}", "/{url}");
+        var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -67,8 +58,8 @@ public sealed class RoutingTests : Steps, IDisposable
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/{url}", "/{url}");
-        var route2 = GivenRoute(port2, "/", "/");
+        var route1 = GivenCatchAllRoute(port1);
+        var route2 = GivenDefaultRoute(port2);
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/test", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -84,8 +75,8 @@ public sealed class RoutingTests : Steps, IDisposable
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/{url}", "/{url}");
-        var route2 = GivenRoute(port2, "/", "/");
+        var route1 = GivenCatchAllRoute(port1);
+        var route2 = GivenDefaultRoute(port2);
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -101,8 +92,8 @@ public sealed class RoutingTests : Steps, IDisposable
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/", "/");
-        var route2 = GivenRoute(port2, "/{url}", "/{url}");
+        var route1 = GivenDefaultRoute(port1);
+        var route2 = GivenCatchAllRoute(port2);
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -117,7 +108,7 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_200_with_nothing_and_placeholder_only()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/{url}", "/{url}");
+        var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -132,7 +123,7 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/", "/");
+        var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -248,10 +239,10 @@ public sealed class RoutingTests : Steps, IDisposable
     [Theory]
     [Trait("Bug", "683")]
     [InlineData("/products/{productId}", "/products/{productId}", "/products/")]
-    public void Should_return_response_200_with_empty_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL)
+    public void Should_return_response_200_with_empty_placeholder(string downstream, string upstream, string requestURL)
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, upstreamPathTemplate, downstreamPathTemplate);
+        var route = GivenRoute(port, upstream, downstream);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, requestURL, HttpStatusCode.OK, "Hello from Aly"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -310,13 +301,12 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_201_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/", "/").WithMethods(HttpMethods.Post);
+        var route = GivenDefaultRoute(port).WithMethods(HttpMethods.Post);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .BDDfy();
     }
@@ -530,13 +520,12 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/", "/").WithMethods(HttpMethods.Get, HttpMethods.Post);
+        var route = GivenDefaultRoute(port).WithMethods(HttpMethods.Get, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, nameof(HttpStatusCode.Created)))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .And(x => GivenThePostHasContent("postContent"))
-            .When(x => WhenIPostUrlOnTheApiGateway("/"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .And(x => ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.Created)))
             .BDDfy();
@@ -547,7 +536,7 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_return_response_200_with_simple_url_and_any_upstream_http_method()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/", "/").WithMethods();
+        var route = GivenDefaultRoute(port).WithMethods();
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -600,7 +589,7 @@ public sealed class RoutingTests : Steps, IDisposable
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route1 = GivenRoute(port1, "/goods/{url}", "/goods/{url}")
-            .SetPriority(0);
+            .WithPriority(0);
         var route2 = GivenRoute(port2, "/goods/delete", "/goods/delete");
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port2, "/goods/delete", HttpStatusCode.OK, "Hello from Laura"))
@@ -617,7 +606,7 @@ public sealed class RoutingTests : Steps, IDisposable
     public void Should_match_multiple_paths_with_catch_all()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/{everything}", "/{everything}");
+        var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/test/toot", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -710,26 +699,17 @@ public sealed class RoutingTests : Steps, IDisposable
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, HttpHandler);
+        handler.GivenThereIsAServiceRunningOn(port, basePath, HttpHandler);
 
-        async Task HttpHandler(HttpContext context)
+        Task HttpHandler(HttpContext context)
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value + context.Request.Path.Value
                 : context.Request.Path.Value;
             _downstreamQuery = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty;
-
-            if (_downstreamPath != basePath)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                await context.Response.WriteAsync("Downstream path didn't match base path");
-            }
-            else
-            {
-                context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(responseBody);
-            }
+            bool oK = _downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            return context.Response.WriteAsync(oK ? responseBody : "Downstream path didn't match base path");
         }
     }
 
@@ -742,13 +722,4 @@ public sealed class RoutingTests : Steps, IDisposable
     {
         _downstreamQuery.ShouldBe(expectedQueryString);
     }
-
-    private static FileRoute GivenRoute(int port, string upstream, string downstream) => new()
-    {
-        DownstreamPathTemplate = downstream,
-        DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = { Localhost(port) },
-        UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
-    };
 }

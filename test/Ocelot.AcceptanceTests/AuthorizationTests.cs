@@ -11,16 +11,14 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
+public sealed class AuthorizationTests : AuthenticationSteps
 {
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
-    private readonly ServiceHandler _serviceHandler;
 
     public AuthorizationTests()
     {
-        _serviceHandler = new ServiceHandler();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
 
@@ -83,7 +81,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
         };
 
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -143,7 +141,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
         };
 
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -187,7 +185,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
         };
 
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -231,7 +229,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
         };
 
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -293,7 +291,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
         //    },
         //};
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, "Hello from Laura"))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenIHaveAToken(_identityServerRootUrl))
             .And(x => GivenThereIsAConfiguration(configuration))
 
@@ -305,16 +303,7 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
             .BDDfy();
     }
 
-    private void Void() { }
-
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
-    {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-        {
-            context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsync(responseBody);
-        });
-    }
+    private static void Void() { }
 
     //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType)
     //{
@@ -478,8 +467,6 @@ public sealed class AuthorizationTests : AuthenticationSteps, IDisposable
 
     public override void Dispose()
     {
-        _serviceHandler?.Dispose();
-
         //_identityServerBuilder?.Dispose();
         base.Dispose();
     }

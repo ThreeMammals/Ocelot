@@ -8,11 +8,9 @@ namespace Ocelot.AcceptanceTests;
 public sealed class HttpDelegatingHandlersTests : Steps
 {
     private string _downstreamPath;
-    private readonly ServiceHandler _serviceHandler;
 
     public HttpDelegatingHandlersTests()
     {
-        _serviceHandler = new ServiceHandler();
     }
 
     [Fact]
@@ -60,7 +58,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithHandlerRegisteredInDi<FakeHandlerAgain>(true))
+            .And(x => GivenOcelotIsRunningWithDelegatingHandler<FakeHandlerAgain>(true))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -117,7 +115,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         where THandler1 : DelegatingHandler
         where THandler2 : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddOcelot()
             .AddDelegatingHandler<THandler1>()
             .AddDelegatingHandler<THandler2>());
@@ -127,7 +125,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         where THandler1 : DelegatingHandler
         where THandler2 : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddOcelot()
             .AddDelegatingHandler<THandler1>(true)
             .AddDelegatingHandler<THandler2>(true));
@@ -136,7 +134,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
     private void GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<THandler>(FakeDependency dependency)
         where THandler : DelegatingHandler
     {
-        GivenOcelotIsRunningWithServices(s => s
+        GivenOcelotIsRunning(s => s
             .AddSingleton(dependency)
             .AddOcelot()
             .AddDelegatingHandler<THandler>(true));
@@ -211,19 +209,12 @@ public sealed class HttpDelegatingHandlersTests : Steps
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        string baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
             bool match = _downstreamPath == basePath;
             context.Response.StatusCode = match ? (int)statusCode : (int)HttpStatusCode.NotFound;
-            await context.Response.WriteAsync(match ? responseBody : nameof(HttpStatusCode.NotFound));
+            return context.Response.WriteAsync(match ? responseBody : nameof(HttpStatusCode.NotFound));
         });
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 }

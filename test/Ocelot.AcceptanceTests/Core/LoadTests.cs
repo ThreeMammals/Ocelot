@@ -7,25 +7,15 @@ namespace Ocelot.AcceptanceTests.Core;
 
 /// <summary>
 /// TODO Move to separate Performance Testing (load testing) project.
-/// It requires the <see cref="Steps"/> class; therefore, both Steps-classes must be moved to the common Testing project.
 /// </summary>
 [Collection(nameof(SequentialTests))]
-public sealed class LoadTests : ConcurrentSteps, IDisposable
+public sealed class LoadTests : ConcurrentSteps
 {
-    private readonly ServiceHandler _serviceHandler;
     private string _downstreamPath;
     private string _downstreamQuery;
 
     public LoadTests()
-    {
-        _serviceHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
-    }
+    { }
 
     [Fact(Skip = "It should be moved to a separate project. It should be run during release only as an extra check for quality gates.")]
     [Trait("Feat", "1348")]
@@ -34,6 +24,8 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/my-gateway/order/{orderNumber}", "/order/{orderNumber}");
+        route.LoadBalancerOptions.Type = nameof(NoLoadBalancer);
+
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -65,7 +57,7 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
         var memoryUsage1 = ToMegabytes(process1.WorkingSet64);
 
         // Step 2: Measure memory consumption for varying upstream URL
-        // await WhenIDoActionForTime(TimeSpan.FromSeconds(30), (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
+        // await WhenIDoActionForTime(TimeSpan.FromSeconds(30), (i) => WhenIGetUrlOnTheApiGatewayWithRequestId("/my-gateway/order/" + i)); // varying url
         await WhenIDoActionMultipleTimes(10_000, (i) => WhenIGetUrlOnTheApiGateway("/my-gateway/order/" + i)); // varying url
 
         GC.Collect();
@@ -93,22 +85,11 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
         Assert.True(delta2 <= delta); // delta is not growing
     }
 
-    private FileRoute GivenRoute(int port, string upstream, string downstream) => new()
-    {
-        DownstreamPathTemplate = string.IsNullOrEmpty(downstream) ? "/" : downstream,
-        DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = string.IsNullOrEmpty(upstream) ? "/" : upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
-        LoadBalancerOptions = new() { Type = nameof(NoLoadBalancer) },
-        DownstreamHostAndPorts = new() { Localhost(port) },
-    };
-
     private void GivenThereIsAServiceRunningOn(int port, string basePath, string responseBody)
     {
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, MapGet);
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapGet);
 
-        async Task MapGet(HttpContext context)
+        Task MapGet(HttpContext context)
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value + context.Request.Path.Value
@@ -116,7 +97,7 @@ public sealed class LoadTests : ConcurrentSteps, IDisposable
             _downstreamQuery = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty;
             var isOK = _downstreamPath.StartsWith(basePath);
             context.Response.StatusCode = isOK ? (int)HttpStatusCode.OK : (int)HttpStatusCode.NotFound;
-            await context.Response.WriteAsync(isOK ? responseBody : nameof(HttpStatusCode.NotFound));
+            return context.Response.WriteAsync(isOK ? responseBody : nameof(HttpStatusCode.NotFound));
         }
     }
 }

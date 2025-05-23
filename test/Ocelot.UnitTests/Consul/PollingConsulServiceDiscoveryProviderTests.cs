@@ -62,7 +62,7 @@ public class PollingConsulServiceDiscoveryProviderTests : UnitTest
     private void WhenIGetTheServices(int expected)
     {
         var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object);
-        var result = Wait.WaitFor(3000).Until(() =>
+        var result = Wait.For(3_000).Until(() =>
         {
             try
             {
@@ -74,7 +74,6 @@ public class PollingConsulServiceDiscoveryProviderTests : UnitTest
                 return false;
             }
         });
-
         result.ShouldBeTrue();
     }
 
