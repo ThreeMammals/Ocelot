@@ -149,8 +149,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
         route.QoSOptions = new FileQoSOptions
         {
             TimeoutValue = 1,
@@ -170,8 +170,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_qos_options_specified_globally_and_has_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
         var configuration = GivenAConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
         {
@@ -192,8 +192,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
         route.QoSOptions = new FileQoSOptions
         {
             TimeoutValue = 1,
@@ -214,8 +214,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
         var configuration = GivenAConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
         {
@@ -237,10 +237,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_aggregates_are_valid()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
-        var route2 = GivenDefaultRoute("/tom", "/");
-        route2.Key = "Tom";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
+        var route2 = GivenDefaultRoute("/tom", "/")
+            .WithKey("Tom");
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -264,11 +264,11 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_aggregates_are_duplicate_of_routes()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
-        var route2 = GivenDefaultRoute("/tom", "/");
-        route2.Key = "Tom";
-        route2.UpstreamHost = "localhost";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
+        var route2 = GivenDefaultRoute("/tom", "/")
+            .WithKey("Tom")
+            .WithUpstreamHost("localhost");
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -293,11 +293,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_aggregates_are_not_duplicate_of_routes()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
-        var route2 = GivenDefaultRoute("/tom", "/");
-        route2.Key = "Tom";
-        route2.UpstreamHttpMethod = new() { "Post" };
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
+        var route2 = GivenDefaultRoute("/tom", "/")
+            .WithKey("Tom").WithMethods("Post");
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -321,10 +320,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_aggregates_are_duplicate_of_aggregates()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
-        var route2 = GivenDefaultRoute("/lol", "/");
-        route2.Key = "Tom";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
+        var route2 = GivenDefaultRoute("/lol", "/")
+            .WithKey("Tom");
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -355,8 +354,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_routes_dont_exist_for_aggregate()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
         var configuration = GivenAConfiguration(route);
         configuration.Aggregates = new()
         {
@@ -381,10 +380,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_aggregate_has_routes_with_specific_request_id_keys()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/");
-        route.Key = "Laura";
-        var route2 = GivenDefaultRoute("/tom", "/");
-        route2.Key = "Tom";
+        var route = GivenDefaultRoute("/laura", "/")
+            .WithKey("Laura");
+        var route2 = GivenDefaultRoute("/tom", "/")
+            .WithKey("Tom");
         route2.RequestIdKey = "should_fail";
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -553,10 +552,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_with_duplicate_routes_all_verbs_but_different_hosts()
     {
         // Arrange
-        var route = GivenDefaultRoute();
-        route.UpstreamHost = "host1";
-        var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHost = "host2";
+        var route = GivenDefaultRoute()
+            .WithUpstreamHost("host1");
+        var duplicate = GivenDefaultRoute(null, "/www/test/")
+            .WithUpstreamHost("host2");
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -603,13 +602,13 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_not_valid_with_duplicate_routes_with_duplicated_upstreamhosts()
     {
         // Arrange
-        var route = GivenDefaultRoute();
-        route.UpstreamHttpMethod = new();
-        route.UpstreamHost = "upstreamhost";
+        var route = GivenDefaultRoute()
+            .WithMethods()
+            .WithUpstreamHost("upstreamhost");
 
-        var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHttpMethod = new();
-        duplicate.UpstreamHost = "upstreamhost";
+        var duplicate = GivenDefaultRoute(null, "/www/test/")
+            .WithMethods()
+            .WithUpstreamHost("upstreamhost");
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -624,13 +623,12 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_with_duplicate_routes_but_different_upstreamhosts()
     {
         // Arrange
-        var route = GivenDefaultRoute();
-        route.UpstreamHttpMethod = new();
-        route.UpstreamHost = "upstreamhost111";
-
-        var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHttpMethod = new();
-        duplicate.UpstreamHost = "upstreamhost222";
+        var route = GivenDefaultRoute()
+            .WithMethods()
+            .WithUpstreamHost("upstreamhost111");
+        var duplicate = GivenDefaultRoute(null, "/www/test/")
+            .WithMethods()
+            .WithUpstreamHost("upstreamhost222");
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -644,12 +642,11 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
     {
         // Arrange
-        var route = GivenDefaultRoute();
-        route.UpstreamHttpMethod = new();
-        route.UpstreamHost = "upstreamhost";
-
-        var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHttpMethod = new();
+        var route = GivenDefaultRoute()
+            .WithMethods()
+            .WithUpstreamHost("upstreamhost");
+        var duplicate = GivenDefaultRoute(null, "/www/test/")
+            .WithMethods();
         GivenAConfiguration(route, duplicate);
 
         // Act

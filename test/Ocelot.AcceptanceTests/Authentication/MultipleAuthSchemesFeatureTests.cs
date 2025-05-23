@@ -11,32 +11,31 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 [Trait("PR", "1870")]
 [Trait("Issues", "740 1580")]
-public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisposable
+public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
 {
-    private IWebHost[] _identityServers;
+    //private IWebHost[] _identityServers;
     private string[] _identityServerUrls;
     private BearerToken[] _tokens;
 
     public MultipleAuthSchemesFeatureTests() : base()
     {
-        _identityServers = Array.Empty<IWebHost>();
+        //_identityServers = Array.Empty<IWebHost>();
         _identityServerUrls = Array.Empty<string>();
         _tokens = Array.Empty<BearerToken>();
     }
 
     public override void Dispose()
     {
-        foreach (var server in _identityServers)
-        {
-            server.Dispose();
-        }
-
+        //foreach (var server in _identityServers)
+        //{
+        //    server.Dispose();
+        //}
         base.Dispose();
     }
 
     private MultipleAuthSchemesFeatureTests Setup(int totalSchemes)
     {
-        _identityServers = new IWebHost[totalSchemes];
+        //_identityServers = new IWebHost[totalSchemes];
         _identityServerUrls = new string[totalSchemes];
         _tokens = new BearerToken[totalSchemes];
         return this;
@@ -49,13 +48,13 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //public void Should_authenticate_using_identity_server_with_multiple_schemes(string scheme1, string scheme2)
     //{
     //    var port = PortFinder.GetRandomPort();
-    //    var route = GivenDefaultAuthRoute(port, authProviderKey: string.Empty);
+    //    var route = GivenAuthRoute(port, authProviderKey: string.Empty);
     //    var authSchemes = new string[] { scheme1, scheme2 };
     //    route.AuthenticationOptions.AuthenticationProviderKeys = authSchemes;
     //    var configuration = GivenConfiguration(route);
     //    var responseBody = nameof(Should_authenticate_using_identity_server_with_multiple_schemes);
 
-    //    this.Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody))
+    //    this.Given(x => GivenThereIsAHttpsServiceRunningOn(port, HttpStatusCode.OK, responseBody))
     //        .And(x => Setup(authSchemes.Length)
     //            .GivenIdentityServerWithScopes(0, "invalid", "unknown")
     //            .GivenIdentityServerWithScopes(1, "api1", "api2"))
@@ -65,7 +64,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //        .And(x => GivenThereIsAConfiguration(configuration))
     //        .And(x => GivenOcelotIsRunningWithIdentityServerAuthSchemes("api2", authSchemes))
     //        .And(x => GivenIHaveAddedAllAuthHeaders(authSchemes))
-    //        .When(x => WhenIGetUrlOnTheApiGateway("/"))
+    //        .When(x => WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
     //        .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
     //        .And(x => ThenTheResponseBodyShouldBe(responseBody))
     //        .BDDfy();
@@ -98,7 +97,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     {
         // Assume default scheme token is attached as "Authorization" header, for example "Bearer"
         // But default authentication setup should be ignored in multiple schemes scenario
-        _ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "failed");
+        ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "failed");
 
         for (int i = 0; i < schemes.Length && i < _tokens.Length; i++)
         {
@@ -114,7 +113,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps, IDisp
     //private void GivenOcelotIsRunningWithIdentityServerAuthSchemes(string validScope, params string[] schemes)
     //{
     //    const string DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-    //    GivenOcelotIsRunningWithServices(services =>
+    //    GivenOcelotIsRunning(services =>
     //    {
     //        services.AddOcelot();
     //        var auth = services

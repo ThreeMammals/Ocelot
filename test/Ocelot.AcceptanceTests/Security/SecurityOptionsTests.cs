@@ -5,17 +5,8 @@ namespace Ocelot.AcceptanceTests.Security;
 
 public sealed class SecurityOptionsTests: Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public SecurityOptionsTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -131,16 +122,15 @@ public sealed class SecurityOptionsTests: Steps
 
     private void GivenThereIsAServiceRunningOn(int port, IPAddress ipAddess)
     {
-        string url = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Connection.RemoteIpAddress = ipAddess;
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            await context.Response.WriteAsync("Hello from Fabrizio");
+            return context.Response.WriteAsync("Hello from Fabrizio");
         });
     }
 
-    private static FileConfiguration GivenGlobalConfiguration(FileRoute route, string allowed, string blocked, bool exclude = true)
+    private FileConfiguration GivenGlobalConfiguration(FileRoute route, string allowed, string blocked, bool exclude = true)
     {
         var config = GivenConfiguration(route);
         config.GlobalConfiguration.SecurityOptions = new FileSecurityOptions
