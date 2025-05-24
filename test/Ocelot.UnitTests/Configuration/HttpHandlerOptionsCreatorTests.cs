@@ -206,6 +206,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         _httpHandlerOptions.UseTracing.ShouldBe(expected.UseTracing);
         _httpHandlerOptions.UseProxy.ShouldBe(expected.UseProxy);
         _httpHandlerOptions.MaxConnectionsPerServer.ShouldBe(expected.MaxConnectionsPerServer);
+        _httpHandlerOptions.EnableMultipleHttp2Connections.ShouldBe(expected.EnableMultipleHttp2Connections);
     }
 
     private void GivenARealTracer()
