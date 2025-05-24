@@ -1,147 +1,151 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Globalization;
 
-namespace Ocelot.RateLimiting.Middleware
+namespace Ocelot.RateLimiting.Middleware;
+
+public class RateLimitingMiddleware : OcelotMiddleware
 {
-    public class RateLimitingMiddleware : OcelotMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IRateLimiting _limiter;
+    private readonly IHttpContextAccessor _contextAccessor;
+
+    public RateLimitingMiddleware(
+        RequestDelegate next,
+        IOcelotLoggerFactory factory,
+        IRateLimiting limiter,
+        IHttpContextAccessor contextAccessor)
+        : base(factory.CreateLogger<RateLimitingMiddleware>())
     {
-        private readonly RequestDelegate _next;
-        private readonly IRateLimiting _limiter;
+        _next = next;
+        _limiter = limiter;
+        _contextAccessor = contextAccessor;
+    }
 
-        public RateLimitingMiddleware(
-            RequestDelegate next,
-            IOcelotLoggerFactory factory,
-            IRateLimiting limiter)
-            : base(factory.CreateLogger<RateLimitingMiddleware>())
+    public async Task Invoke(HttpContext httpContext)
+    {
+        var downstreamRoute = httpContext.Items.DownstreamRoute();
+
+        var options = downstreamRoute.RateLimitOptions;
+
+        // check if rate limiting is enabled
+        if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
         {
-            _next = next;
-            _limiter = limiter;
-        }
-
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-            var options = downstreamRoute.RateLimitOptions;
-
-            // check if rate limiting is enabled
-            if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
-            {
-                Logger.LogInformation(() => $"EndpointRateLimiting is not enabled for {downstreamRoute.DownstreamPathTemplate.Value}");
-                await _next.Invoke(httpContext);
-                return;
-            }
-
-            // compute identity from request
-            var identity = SetIdentity(httpContext, options);
-
-            // check white list
-            if (IsWhitelisted(identity, options))
-            {
-                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
-                await _next.Invoke(httpContext);
-                return;
-            }
-
-            var rule = options.RateLimitRule;
-            if (rule.Limit > 0)
-            {
-                // increment counter
-                var counter = _limiter.ProcessRequest(identity, options);
-
-                // check if limit is reached
-                if (counter.TotalRequests > rule.Limit)
-                {
-                    var retryAfter = _limiter.RetryAfter(counter, rule); // compute retry after value based on counter state
-                    LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute); // log blocked request virtually
-
-                    // break execution
-                    var ds = ReturnQuotaExceededResponse(httpContext, options, retryAfter.ToString(CultureInfo.InvariantCulture));
-                    httpContext.Items.UpsertDownstreamResponse(ds);
-
-                    // Set Error
-                    httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.HttpStatusCode));
-                    return;
-                }
-            }
-
-            //set X-Rate-Limit headers for the longest period
-            if (!options.DisableRateLimitHeaders)
-            {
-                var headers = _limiter.GetHeaders(httpContext, identity, options);
-                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
-            }
-
+            Logger.LogInformation(() => $"{nameof(DownstreamRoute.EnableEndpointEndpointRateLimiting)} is not enabled for downstream path: {downstreamRoute.DownstreamPathTemplate.Value}");
             await _next.Invoke(httpContext);
+            return;
         }
 
-        public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext, RateLimitOptions option)
+        // compute identity from request
+        var identity = SetIdentity(httpContext, options);
+
+        // check white list
+        if (IsWhitelisted(identity, options))
         {
-            var clientId = "client";
-            if (httpContext.Request.Headers.Keys.Contains(option.ClientIdHeader))
+            Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+            await _next.Invoke(httpContext);
+            return;
+        }
+
+        var rule = options.RateLimitRule;
+        if (rule.Limit > 0)
+        {
+            // increment counter
+            var counter = _limiter.ProcessRequest(identity, options);
+
+            // check if limit is reached
+            if (counter.TotalRequests > rule.Limit)
             {
-                clientId = httpContext.Request.Headers[option.ClientIdHeader].First();
-            }
+                var retryAfter = _limiter.RetryAfter(counter, rule); // compute retry after value based on counter state
+                LogBlockedRequest(httpContext, identity, counter, rule, downstreamRoute); // log blocked request virtually
 
-            return new ClientRequestIdentity(
-                clientId,
-                httpContext.Request.Path.ToString().ToLowerInvariant(),
-                httpContext.Request.Method.ToLowerInvariant()
-                );
+                // break execution
+                var ds = ReturnQuotaExceededResponse(httpContext, options, retryAfter.ToString(CultureInfo.InvariantCulture));
+                httpContext.Items.UpsertDownstreamResponse(ds);
+
+                // Set Error
+                httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.HttpStatusCode));
+                return;
+            }
         }
 
-        public bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        // Set X-Rate-Limit headers for the longest period
+        if (!options.DisableRateLimitHeaders)
         {
-            if (option.ClientWhitelist.Contains(requestIdentity.ClientId))
+            var originalContext = _contextAccessor?.HttpContext;
+            if (originalContext != null)
             {
-                return true;
+                var headers = _limiter.GetHeaders(originalContext, identity, options);
+                originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
-
-            return false;
         }
 
-        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
+        await _next.Invoke(httpContext);
+    }
+
+    public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext, RateLimitOptions option)
+    {
+        var clientId = "client";
+        if (httpContext.Request.Headers.Keys.Contains(option.ClientIdHeader))
         {
-            Logger.LogInformation(
-                () => $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {downstreamRoute.UpstreamPathTemplate.OriginalValue}, TraceIdentifier {httpContext.TraceIdentifier}.");
+            clientId = httpContext.Request.Headers[option.ClientIdHeader].First();
         }
 
-        public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
+        return new ClientRequestIdentity(
+            clientId,
+            httpContext.Request.Path.ToString().ToLowerInvariant(),
+            httpContext.Request.Method.ToLowerInvariant()
+            );
+    }
+
+    public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
+        => option.ClientWhitelist.Contains(requestIdentity.ClientId);
+
+    public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute downstreamRoute)
+    {
+        Logger.LogInformation(
+            () => $"Request {identity.HttpVerb}:{identity.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {downstreamRoute.UpstreamPathTemplate.OriginalValue}, TraceIdentifier {httpContext.TraceIdentifier}.");
+    }
+
+    public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
+    {
+        var message = GetResponseMessage(option);
+        var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode)
         {
-            var message = GetResponseMessage(option);
+            Content = new StringContent(message),
+        };
 
-            var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode);
-
-            http.Content = new StringContent(message);
-
-            if (!option.DisableRateLimitHeaders)
-            {
-                http.Headers.TryAddWithoutValidation("Retry-After", retryAfter); // in seconds, not date string
-            }
-
-            return new DownstreamResponse(http);
-        }
-
-        private static string GetResponseMessage(RateLimitOptions option)
+        if (!option.DisableRateLimitHeaders)
         {
-            var message = string.IsNullOrEmpty(option.QuotaExceededMessage)
-                ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
-                : option.QuotaExceededMessage;
-            return message;
+            http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter); // in seconds, not date string
+            httpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfter;
         }
 
-        private static Task SetRateLimitHeaders(object rateLimitHeaders)
-        {
-            var headers = (RateLimitHeaders)rateLimitHeaders;
+        return new DownstreamResponse(http);
+    }
 
-            headers.Context.Response.Headers["X-Rate-Limit-Limit"] = headers.Limit;
-            headers.Context.Response.Headers["X-Rate-Limit-Remaining"] = headers.Remaining;
-            headers.Context.Response.Headers["X-Rate-Limit-Reset"] = headers.Reset;
+    private static string GetResponseMessage(RateLimitOptions option)
+    {
+        var message = string.IsNullOrEmpty(option.QuotaExceededMessage)
+            ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
+            : option.QuotaExceededMessage;
+        return message;
+    }
 
-            return Task.CompletedTask;
-        }
+    /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>
+    /// <remarks>More details in <see cref="RateLimitingHeaders"/> docs.</remarks>
+    /// <param name="state">Captured state as a <see cref="RateLimitHeaders"/> object.</param>
+    /// <returns>The <see cref="Task.CompletedTask"/> object.</returns>
+    private static Task SetRateLimitHeaders(object state)
+    {
+        var limitHeaders = (RateLimitHeaders)state;
+        var headers = limitHeaders.Context.Response.Headers;
+        headers[RateLimitingHeaders.X_Rate_Limit_Limit] = limitHeaders.Limit;
+        headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = limitHeaders.Remaining;
+        headers[RateLimitingHeaders.X_Rate_Limit_Reset] = limitHeaders.Reset;
+        return Task.CompletedTask;
     }
 }

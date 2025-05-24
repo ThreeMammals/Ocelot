@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -41,15 +42,19 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
+    public async Task ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
     {
+        // Arrange
         List<object> actual = new();
-        this.Given(x => x.GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual))
-            .And(x => x.AndDoNotSetupProtocolsAndHeaders())
-            .And(x => x.AndDoNotConnectReally(null))
-            .When(x => x.WhenInvokeWithHttpContext())
-            .Then(x => x.ThenIgnoredAllSslWarnings(actual))
-            .BDDfy();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally(null);
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        ThenIgnoredAllSslWarnings(actual);
     }
 
     private void GivenPropertyDangerousAcceptAnyServerCertificateValidator(bool enabled, List<object> actual)
@@ -100,11 +105,6 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         serverSocket.SetupGet(x => x.CloseStatus).Returns(WebSocketCloseStatus.Empty);
     }
 
-    private async Task WhenInvokeWithHttpContext()
-    {
-        await _middleware.Invoke(_context.Object);
-    }
-
     private void ThenIgnoredAllSslWarnings(List<object> actual)
     {
         var route = _context.Object.Items.DownstreamRoute();
@@ -130,15 +130,19 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [InlineData("http", "ws")]
     [InlineData("https", "wss")]
     [InlineData("ftp", "ftp")]
-    public void ShouldReplaceNonWsSchemes(string scheme, string expectedScheme)
+    public async Task ShouldReplaceNonWsSchemes(string scheme, string expectedScheme)
     {
+        // Arrange
         List<object> actual = new();
-        this.Given(x => x.GivenNonWebsocketScheme(scheme, actual))
-            .And(x => x.AndDoNotSetupProtocolsAndHeaders())
-            .And(x => x.AndDoNotConnectReally((uri, token) => actual.Add(uri)))
-            .When(x => x.WhenInvokeWithHttpContext())
-            .Then(x => x.ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual))
-            .BDDfy();
+        GivenNonWebsocketScheme(scheme, actual);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally((uri, token) => actual.Add(uri));
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual);
     }
 
     private void GivenNonWebsocketScheme(string scheme, List<object> actual)
@@ -148,8 +152,8 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder().Build();
         var items = new Dictionary<object, object>
         {
-            { "DownstreamRequest", request },
-            { "DownstreamRoute", route },
+            { nameof(DownstreamRequest), request },
+            { nameof(DownstreamRoute), route },
         };
         _context.SetupGet(x => x.Items).Returns(items);
 

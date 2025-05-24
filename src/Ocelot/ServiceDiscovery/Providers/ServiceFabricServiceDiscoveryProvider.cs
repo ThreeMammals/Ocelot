@@ -1,27 +1,26 @@
 ﻿using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Values;
 
-namespace Ocelot.ServiceDiscovery.Providers
+namespace Ocelot.ServiceDiscovery.Providers;
+
+public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
-    public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider
+    private readonly ServiceFabricConfiguration _configuration;
+
+    public ServiceFabricServiceDiscoveryProvider(ServiceFabricConfiguration configuration)
     {
-        private readonly ServiceFabricConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public ServiceFabricServiceDiscoveryProvider(ServiceFabricConfiguration configuration)
+    public Task<List<Service>> GetAsync()
+    {
+        return Task.FromResult(new List<Service>
         {
-            _configuration = configuration;
-        }
-
-        public Task<List<Service>> GetAsync()
-        {
-            return Task.FromResult(new List<Service>
-            {
-                new(_configuration.ServiceName,
-                    new ServiceHostAndPort(_configuration.HostName, _configuration.Port),
-                    "doesnt matter with service fabric",
-                    "doesnt matter with service fabric",
-                    new List<string>()),
-            });
-        }
+            new(_configuration.ServiceName,
+                new ServiceHostAndPort(_configuration.HostName, _configuration.Port),
+                "doesnt matter with service fabric",
+                "doesnt matter with service fabric",
+                new List<string>()),
+        });
     }
 }

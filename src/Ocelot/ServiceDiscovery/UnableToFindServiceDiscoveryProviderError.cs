@@ -1,11 +1,10 @@
 using Ocelot.Errors;
 
-namespace Ocelot.ServiceDiscovery
+namespace Ocelot.ServiceDiscovery;
+
+public class UnableToFindServiceDiscoveryProviderError : Error
 {
-    public class UnableToFindServiceDiscoveryProviderError : Error
+    public UnableToFindServiceDiscoveryProviderError(string message) : base(message, OcelotErrorCode.UnableToFindServiceDiscoveryProviderError, 404)
     {
-        public UnableToFindServiceDiscoveryProviderError(string message) : base(message, OcelotErrorCode.UnableToFindServiceDiscoveryProviderError, 404)
-        {
-        }
     }
 }

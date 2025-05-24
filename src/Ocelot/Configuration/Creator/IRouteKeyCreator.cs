@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IRouteKeyCreator
 {
-    public interface IRouteKeyCreator
-    {
-        string Create(FileRoute fileRoute);
-    }
+    string Create(FileRoute fileRoute);
 }

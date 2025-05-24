@@ -1,9 +1,7 @@
-using System;
 using System.Diagnostics.Tracing;
 using System.Fabric;
-using System.Threading.Tasks;
 
-namespace OcelotApplicationService;
+namespace Ocelot.Samples.ServiceFabric.DownstreamService;
 
 [EventSource(Name = "MyCompany-ServiceOcelotApplication-OcelotService")]
 internal sealed class ServiceEventSource : EventSource

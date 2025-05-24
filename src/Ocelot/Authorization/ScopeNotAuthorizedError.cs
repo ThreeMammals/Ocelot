@@ -1,12 +1,11 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.Authorization
+namespace Ocelot.Authorization;
+
+public class ScopeNotAuthorizedError : Error
 {
-    public class ScopeNotAuthorizedError : Error
+    public ScopeNotAuthorizedError(string message)
+        : base(message, OcelotErrorCode.ScopeNotAuthorizedError, 403)
     {
-        public ScopeNotAuthorizedError(string message)
-            : base(message, OcelotErrorCode.ScopeNotAuthorizedError, 403)
-        {
-        }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Metadata;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
 
@@ -28,12 +26,16 @@ public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
 
         // Apply configuration checks
         // ... if (_config.Host)
+
         if (_downstreamRoute.ServiceName.Equals("downstream-service"))
         {
+            var instance = _downstreamRoute.GetMetadata<string>("instance");
+            var srv = instance.Split(':');
+
             //For this example we simply do a manual match to a single service
             var service = new Service(
                 name: "downstream-service",
-                hostAndPort: new ServiceHostAndPort("localhost", 5001),
+                hostAndPort: new ServiceHostAndPort(srv[0], int.Parse(srv[1])),
                 id: "downstream-service-1",
                 version: "1.0",
                 tags: new string[] { "downstream", "hardcoded" }

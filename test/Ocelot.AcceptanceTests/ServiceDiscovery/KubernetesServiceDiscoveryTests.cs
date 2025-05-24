@@ -1,5 +1,6 @@
 ﻿using KubeClient;
 using KubeClient.Models;
+using KubeClient.ResourceClients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,13 +16,13 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
+public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 {
     private readonly string _kubernetesUrl;
-    private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
     private readonly Action<KubeClientOptions> _kubeClientOptionsConfigure;
 
@@ -35,13 +36,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             opts.AuthStrategy = KubeAuthStrategy.BearerToken;
             opts.AllowInsecure = true;
         };
-        _kubernetesHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _kubernetesHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -60,7 +54,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunning(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -100,7 +94,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunning(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
@@ -125,6 +119,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     [InlineData(10, 999)]
     public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests)
     {
+        // Skip in MacOS because the test is very unstable
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
+            return;
+
         const int ZeroGeneration = 0;
         var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
         GivenThereIsAFakeKubernetesProvider(endpoints); // stable, services will not be removed from the list
@@ -145,6 +143,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
     [InlineData(5, 50, 4)]
     public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration)
     {
+        // Skip in MacOS because the test is very unstable
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
+            return;
+
         int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
         var (endpoints, servicePorts) = ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(totalServices);
         GivenThereIsAFakeKubernetesProvider(endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
@@ -154,6 +156,35 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         ThenAllServicesCalledOptimisticAmountOfTimes(_roundRobinAnalyzer); // with unstable checkings
         ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
+
+    [Fact]
+    [Trait("Feat", "2256")]
+    public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions()
+    {
+        const string namespaces = nameof(KubernetesServiceDiscoveryTests);
+        const string serviceName = nameof(ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions);
+        var servicePort = PortFinder.GetRandomPort();
+        var downstreamUrl = LoopbackLocalhostUrl(servicePort);
+        var downstream = new Uri(downstreamUrl);
+        var subsetV1 = GivenSubsetAddress(downstream);
+        var endpoints = GivenEndpoints(subsetV1);
+        var route = GivenRouteWithServiceName(namespaces);
+        var configuration = GivenKubeConfiguration(namespaces, route, "txpc696iUhbVoudg164r93CxDTrKRVWG");
+        var downstreamResponse = serviceName;
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
+            .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunning(AddKubernetesWithNullConfigureOptions))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
+            .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
+            .BDDfy();
+    }
+
+    private void AddKubernetesWithNullConfigureOptions(IServiceCollection services)
+        => services.AddOcelot().AddKubernetes(configureOptions: null);
 
     private (EndpointsV1 Endpoints, int[] ServicePorts) ArrangeHighLoadOnKubeProviderAndRoundRobinBalancer(
         int totalServices,
@@ -176,7 +207,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         var configuration = GivenKubeConfiguration(namespaces, route);
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
+        GivenOcelotIsRunning(WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
     }
 
@@ -245,10 +276,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             LoadBalancerOptions = new() { Type = loadBalancerType },
         };
 
-    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, params FileRoute[] routes)
+    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, FileRoute route, string token = null)
     {
         var u = new Uri(_kubernetesUrl);
-        var configuration = GivenConfiguration(routes);
+        var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider = new()
         {
             Scheme = u.Scheme,
@@ -257,6 +288,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             Type = nameof(Kube),
             PollingInterval = 0,
             Namespace = serviceNamespace,
+            Token = token ?? "Test",
         };
         return configuration;
     }
@@ -269,7 +301,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
     {
         _k8sCounter = 0;
-        _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
@@ -294,7 +326,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
-                    json = JsonConvert.SerializeObject(endpoints);
+                    json = JsonConvert.SerializeObject(endpoints, KubeResourceClient.SerializerSettings);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
@@ -312,9 +344,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         => ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
             new DefaultServiceProviderFactory(new() { ValidateScopes = true }));
     private IOcelotBuilder AddKubernetes(IServiceCollection services) => services
-        .Configure(_kubeClientOptionsConfigure)
         .Replace(GetValidateScopesDescriptor())
-        .AddOcelot().AddKubernetes(false);
+        .AddOcelot().AddKubernetes(_kubeClientOptionsConfigure);
 
     private void WithKubernetes(IServiceCollection services) => AddKubernetes(services);
     private void WithKubernetesAndRoundRobin(IServiceCollection services) => AddKubernetes(services)

@@ -1,62 +1,61 @@
 ﻿using Ocelot.Configuration.Creator;
 
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration;
+
+public class HttpHandlerOptionsBuilder
 {
-    public class HttpHandlerOptionsBuilder
+    private bool _allowAutoRedirect;
+    private bool _useCookieContainer;
+    private bool _useTracing;
+    private bool _useProxy;
+    private int _maxConnectionPerServer;
+    private TimeSpan _pooledConnectionLifetime = TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+    private bool _enableMultipleHttp2Connections;
+
+    public HttpHandlerOptionsBuilder WithAllowAutoRedirect(bool input)
     {
-        private bool _allowAutoRedirect;
-        private bool _useCookieContainer;
-        private bool _useTracing;
-        private bool _useProxy;
-        private int _maxConnectionPerServer;
-        private TimeSpan _pooledConnectionLifetime = TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
-        private bool _enableMultipleHttp2Connections;
+        _allowAutoRedirect = input;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithAllowAutoRedirect(bool input)
-        {
-            _allowAutoRedirect = input;
-            return this;
-        }
+    public HttpHandlerOptionsBuilder WithUseCookieContainer(bool input)
+    {
+        _useCookieContainer = input;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithUseCookieContainer(bool input)
-        {
-            _useCookieContainer = input;
-            return this;
-        }
+    public HttpHandlerOptionsBuilder WithUseTracing(bool input)
+    {
+        _useTracing = input;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithUseTracing(bool input)
-        {
-            _useTracing = input;
-            return this;
-        }
+    public HttpHandlerOptionsBuilder WithUseProxy(bool useProxy)
+    {
+        _useProxy = useProxy;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithUseProxy(bool useProxy)
-        {
-            _useProxy = useProxy;
-            return this;
-        }
+    public HttpHandlerOptionsBuilder WithUseMaxConnectionPerServer(int maxConnectionPerServer)
+    {
+        _maxConnectionPerServer = maxConnectionPerServer;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithUseMaxConnectionPerServer(int maxConnectionPerServer)
-        {
-            _maxConnectionPerServer = maxConnectionPerServer;
-            return this;
-        }
+    public HttpHandlerOptionsBuilder WithPooledConnectionLifetimeSeconds(TimeSpan pooledConnectionLifetime)
+    {
+        _pooledConnectionLifetime = pooledConnectionLifetime;
+        return this;
+    }
 
-        public HttpHandlerOptionsBuilder WithPooledConnectionLifetimeSeconds(TimeSpan pooledConnectionLifetime)
-        {
-            _pooledConnectionLifetime = pooledConnectionLifetime;
-            return this;
-        }
 
-        public HttpHandlerOptionsBuilder WithEnableMultipleHttp2Connections(bool enableMultipleHttp2Connections)
-        {
-            _enableMultipleHttp2Connections = enableMultipleHttp2Connections;
-            return this;
-        }
-
-        public HttpHandlerOptions Build()
-        {
-            return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer, _pooledConnectionLifetime, _enableMultipleHttp2Connections);
-        }
+    public HttpHandlerOptionsBuilder WithEnableMultipleHttp2Connections(bool enableMultipleHttp2Connections)
+    {
+        _enableMultipleHttp2Connections = enableMultipleHttp2Connections;
+        return this;
+    }
+    public HttpHandlerOptions Build()
+    {
+        return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer, _pooledConnectionLifetime);
     }
 }

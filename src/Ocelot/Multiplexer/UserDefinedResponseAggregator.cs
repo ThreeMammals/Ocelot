@@ -2,32 +2,31 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Middleware;
 
-namespace Ocelot.Multiplexer
+namespace Ocelot.Multiplexer;
+
+public class UserDefinedResponseAggregator : IResponseAggregator
 {
-    public class UserDefinedResponseAggregator : IResponseAggregator
+    private readonly IDefinedAggregatorProvider _provider;
+
+    public UserDefinedResponseAggregator(IDefinedAggregatorProvider provider)
     {
-        private readonly IDefinedAggregatorProvider _provider;
+        _provider = provider;
+    }
 
-        public UserDefinedResponseAggregator(IDefinedAggregatorProvider provider)
+    public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamResponses)
+    {
+        var aggregator = _provider.Get(route);
+
+        if (!aggregator.IsError)
         {
-            _provider = provider;
+            var aggregateResponse = await aggregator.Data
+                .Aggregate(downstreamResponses);
+
+            originalContext.Items.UpsertDownstreamResponse(aggregateResponse);
         }
-
-        public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamResponses)
+        else
         {
-            var aggregator = _provider.Get(route);
-
-            if (!aggregator.IsError)
-            {
-                var aggregateResponse = await aggregator.Data
-                    .Aggregate(downstreamResponses);
-
-                originalContext.Items.UpsertDownstreamResponse(aggregateResponse);
-            }
-            else
-            {
-                originalContext.Items.UpsertErrors(aggregator.Errors);
-            }
+            originalContext.Items.UpsertErrors(aggregator.Errors);
         }
     }
 }
