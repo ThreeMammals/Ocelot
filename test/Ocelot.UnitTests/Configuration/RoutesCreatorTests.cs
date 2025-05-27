@@ -17,6 +17,7 @@ public class RoutesCreatorTests : UnitTest
     private readonly Mock<IQoSOptionsCreator> _qosoCreator;
     private readonly Mock<IRouteOptionsCreator> _rroCreator;
     private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
+    private readonly Mock<IGlobalRateLimitOptionsCreator> _grloCreator = new();
     private readonly Mock<ICacheOptionsCreator> _coCreator;
     private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
     private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
@@ -76,6 +77,7 @@ public class RoutesCreatorTests : UnitTest
             _qosoCreator.Object,
             _rroCreator.Object,
             _rloCreator.Object,
+            _grloCreator.Object,
             _coCreator.Object,
             _hhoCreator.Object,
             _hfarCreator.Object,
