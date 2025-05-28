@@ -1,21 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
-public sealed class RoutingWithQueryStringTests : Steps, IDisposable
+public sealed class RoutingWithQueryStringTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public RoutingWithQueryStringTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -25,8 +15,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
-            "/api/units/{subscriptionId}/{unitId}/updates");
+            "/api/units/{subscriptionId}/{unitId}/updates",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
@@ -48,8 +38,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unit}",
-            "/api/units/{subscriptionId}/updates?unit={unit}");
+            "/api/units/{subscriptionId}/updates?unit={unit}",
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unit}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
@@ -68,8 +58,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         const string userId = "webley";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/persons?personId={userId}",
-            "/users?userId={userId}");
+            "/users?userId={userId}",
+            "/persons?personId={userId}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userId}", "Hello from @webley"))
@@ -88,8 +78,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         const string uid = "webley";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/persons?personId={uid}",
-            "/users?userId={uid}");
+            "/users?userId={uid}",
+            "/persons?personId={uid}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
@@ -108,8 +98,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         const string userid = "webley";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/persons?personId={userid}",
-            "/users?userId={userid}");
+            "/users?userId={userid}",
+            "/persons?personId={userid}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userid}&userId={userid}", "Hello from @webley"))
@@ -129,8 +119,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/contracts?{everythingelse}",
-            "/contracts?{everythingelse}");
+            "/contracts?{everythingelse}",
+            "/api/contracts?{everythingelse}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", $"?{expected}", "Hello from @sunilk3"))
@@ -148,7 +138,7 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var subscriptionId = Guid.NewGuid().ToString();
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/{everything}", "/{everything}");
+        var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
@@ -168,8 +158,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/units/{subscriptionId}/{unitId}/updates",
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+            "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
@@ -189,8 +179,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/units/{subscriptionId}/{unitId}/updates",
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+            "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
@@ -209,8 +199,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/units/{subscriptionId}/{unitId}/updates",
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+            "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
@@ -229,8 +219,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var unitId = Guid.NewGuid().ToString();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/api/units/{subscriptionId}/{unitId}/updates",
-            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
+            "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
+            "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
@@ -252,8 +242,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         const string everything = "something=9874565";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            "/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}",
-            "/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}");
+            "/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}",
+            "/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port,
@@ -281,8 +271,8 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
         var queryValue = "2" + idValue + "12";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
-            $"/cpx/t1/{{{idName}}}",
-            $"/safe/{{{idName}}}");
+            $"/safe/{{{idName}}}",
+            $"/cpx/t1/{{{idName}}}");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
@@ -294,33 +284,24 @@ public sealed class RoutingWithQueryStringTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private static FileRoute GivenRoute(int port, string downstream, string upstream) => new()
-    {
-        DownstreamPathTemplate = downstream,
-        DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
-    };
-
+    //private static FileRoute GivenRouteWithKey(int port, string downstream, string upstream) => new()
+    //{
+    //    DownstreamPathTemplate = downstream,
+    //    DownstreamScheme = Uri.UriSchemeHttp,
+    //    DownstreamHostAndPorts = new()
+    //    {
+    //        new("localhost", port),
+    //    },
+    //    UpstreamPathTemplate = upstream,
+    //    UpstreamHttpMethod = new() { HttpMethods.Get },
+    //};
     private void GivenThereIsAServiceRunningOn(int port, string basePath, string queryString, string responseBody)
     {
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
-            if (context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString)
-            {
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await context.Response.WriteAsync("downstream path didnt match base path");
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status200OK;
-                await context.Response.WriteAsync(responseBody);
-            }
+            bool failed = context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString;
+            context.Response.StatusCode = failed ? StatusCodes.Status500InternalServerError : StatusCodes.Status200OK;
+            return context.Response.WriteAsync(failed ? "downstream path didnt match base path" : responseBody);
         });
     }
 }

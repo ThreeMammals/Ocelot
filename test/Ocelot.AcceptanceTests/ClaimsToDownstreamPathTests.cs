@@ -5,15 +5,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ClaimsToDownstreamPathTests : IDisposable
+public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
 {
-    private IWebHost _servicebuilder;
-    private readonly Steps _steps;
-
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
@@ -23,7 +21,6 @@ public class ClaimsToDownstreamPathTests : IDisposable
     {
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
-        _steps = new Steps();
 
         //_options = o =>
         //{
@@ -45,7 +42,6 @@ public class ClaimsToDownstreamPathTests : IDisposable
         //    SubjectId = "registered|1231231",
         //};
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -55,18 +51,14 @@ public class ClaimsToDownstreamPathTests : IDisposable
                        DownstreamPathTemplate = "/users/{userId}",
                        DownstreamHostAndPorts = new List<FileHostAndPort>
                        {
-                           new()
-                           {
-                               Host = "localhost",
-                               Port = port,
-                           },
+                           Localhost(port),
                        },
                        DownstreamScheme = "http",
                        UpstreamPathTemplate = "/users/{userId}",
                        UpstreamHttpMethod = new List<string> { "Get" },
                        AuthenticationOptions = new FileAuthenticationOptions
                        {
-                           AuthenticationProviderKey = "Test",
+                           AuthenticationProviderKeys = ["Test"],
                            AllowedScopes = new List<string>
                            {
                                "openid", "offline_access", "api",
@@ -81,15 +73,15 @@ public class ClaimsToDownstreamPathTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
-            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/users"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("UserId: 1231231"))
+            //.And(x => GivenOcelotIsRunning(_options, "Test"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/users"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("UserId: 1231231"))
             .And(x => ThenTheDownstreamPathIs("/users/1231231"))
             .BDDfy();
     }
@@ -99,30 +91,16 @@ public class ClaimsToDownstreamPathTests : IDisposable
         _downstreamFinalPath.ShouldBe(path);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        _servicebuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    _downstreamFinalPath = context.Request.Path.Value;
-
-                    var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
-
-                    var responseBody = $"UserId: {userId}";
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-
-        _servicebuilder.Start();
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            _downstreamFinalPath = context.Request.Path.Value;
+            var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
+            var responseBody = $"UserId: {userId}";
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        });
     }
 
     //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
@@ -197,14 +175,11 @@ public class ClaimsToDownstreamPathTests : IDisposable
     //        .Build();
 
     //    await _identityServerBuilder.StartAsync();
-
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-    public void Dispose()
+    public override void Dispose()
     {
-        _servicebuilder?.Dispose();
-        _steps.Dispose();
-
         //_identityServerBuilder?.Dispose();
+        base.Dispose();
     }
 }

@@ -5,16 +5,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class ClaimsToQueryStringForwardingTests : IDisposable
+public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
 {
-    private readonly Steps _steps;
-    private IWebHost _servicebuilder;
-
     //private IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
@@ -22,7 +20,6 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
 
     public ClaimsToQueryStringForwardingTests()
     {
-        _steps = new Steps();
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
 
@@ -89,15 +86,15 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
-            //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            //.And(x => GivenOcelotIsRunning(_options, "Test"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
             .BDDfy();
     }
 
@@ -154,15 +151,15 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200))
-            .And(x => _steps.GivenIHaveAToken(_identityServerRootUrl))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
+            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))
-            .And(x => _steps.GivenIHaveAddedATokenToMyRequest())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
             .And(_ => ThenTheQueryStringIs("?test=1&test=2&CustomerId=123&LocationId=1&UserId=1231231&UserType=registered"))
             .BDDfy();
     }
@@ -172,33 +169,20 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
         _downstreamQueryString.ShouldBe(queryString);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, int statusCode)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        _servicebuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    _downstreamQueryString = context.Request.QueryString.Value;
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            _downstreamQueryString = context.Request.QueryString.Value;
+            context.Request.Query.TryGetValue("CustomerId", out var customerId);
+            context.Request.Query.TryGetValue("LocationId", out var locationId);
+            context.Request.Query.TryGetValue("UserType", out var userType);
+            context.Request.Query.TryGetValue("UserId", out var userId);
 
-                    context.Request.Query.TryGetValue("CustomerId", out var customerId);
-                    context.Request.Query.TryGetValue("LocationId", out var locationId);
-                    context.Request.Query.TryGetValue("UserType", out var userType);
-                    context.Request.Query.TryGetValue("UserId", out var userId);
-
-                    var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-
-        _servicebuilder.Start();
+            var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        });
     }
 
     //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
@@ -274,11 +258,9 @@ public sealed class ClaimsToQueryStringForwardingTests : IDisposable
     //    await _identityServerBuilder.StartAsync();
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-    public void Dispose()
+    public override void Dispose()
     {
-        _servicebuilder?.Dispose();
-        _steps.Dispose();
-
         //_identityServerBuilder?.Dispose();
+        base.Dispose();
     }
 }

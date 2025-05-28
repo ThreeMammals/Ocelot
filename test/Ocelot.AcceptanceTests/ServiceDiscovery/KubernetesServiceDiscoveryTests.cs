@@ -20,10 +20,9 @@ using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposable
+public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 {
     private readonly string _kubernetesUrl;
-    private readonly ServiceHandler _kubernetesHandler;
     private string _receivedToken;
     private readonly Action<KubeClientOptions> _kubeClientOptionsConfigure;
 
@@ -37,13 +36,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
             opts.AuthStrategy = KubeAuthStrategy.BearerToken;
             opts.AllowInsecure = true;
         };
-        _kubernetesHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _kubernetesHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -62,7 +54,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunning(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -102,7 +94,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(WithKubernetes))
+            .And(_ => GivenOcelotIsRunning(WithKubernetes))
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
@@ -182,7 +174,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunningWithServices(AddKubernetesWithNullConfigureOptions))
+            .And(_ => GivenOcelotIsRunning(AddKubernetesWithNullConfigureOptions))
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -215,7 +207,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         var configuration = GivenKubeConfiguration(namespaces, route);
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunningWithServices(WithKubernetesAndRoundRobin);
+        GivenOcelotIsRunning(WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
     }
 
@@ -309,7 +301,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps, IDisposab
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests), string namespaces = nameof(KubernetesServiceDiscoveryTests))
     {
         _k8sCounter = 0;
-        _kubernetesHandler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
             await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
