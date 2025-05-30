@@ -51,7 +51,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         var subsetV1 = GivenSubsetAddress(downstream);
         var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
-        var configuration = GivenKubeConfiguration(namespaces, discoveryType, route);
+        var configuration = GivenKubeConfiguration(namespaces, route, discoveryType);
         var downstreamResponse = serviceName;
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -91,7 +91,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         route.DownstreamScheme = downstreamScheme; // !!! Warning !!! Select port by name as scheme
         route.UpstreamPathTemplate = "/api/example/{url}";
         route.ServiceName = serviceName; // "example-web"
-        var configuration = GivenKubeConfiguration(namespaces, nameof(Kube), route);
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(Kube));
 
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -171,7 +171,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         var subsetV1 = GivenSubsetAddress(downstream);
         var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
-        var configuration = GivenKubeConfiguration(namespaces, route, "txpc696iUhbVoudg164r93CxDTrKRVWG");
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(Kube), "txpc696iUhbVoudg164r93CxDTrKRVWG");
         var downstreamResponse = serviceName;
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -206,7 +206,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
-        var configuration = GivenKubeConfiguration(namespaces, nameof(Kube), route);
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(Kube));
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithKubernetesAndRoundRobin);

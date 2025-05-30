@@ -31,7 +31,7 @@ public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProvide
         };
 
         if (WatchKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
-            return new WatchKube(configuration, factory, kubeClient, serviceBuilder);
+            return new WatchKube(configuration, factory, kubeClient, serviceBuilder, Scheduler.Default);
 
         var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
 

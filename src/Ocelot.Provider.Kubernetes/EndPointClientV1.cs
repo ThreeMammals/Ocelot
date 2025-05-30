@@ -11,7 +11,7 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
         KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
 
     private static readonly HttpRequest EndpointsWatchRequest =
-        KubeRequest.Create("api/v1/namespaces/{Namespace}/endpoints/{ServiceName}");
+        KubeRequest.Create("api/v1/watch/namespaces/{Namespace}/endpoints/{ServiceName}");
 
     public EndPointClientV1(IKubeApiClient client) : base(client)
     {
