@@ -42,6 +42,8 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "1375 1237 925 920")]
+    [Trait("PR", "1377")] // https://github.com/ThreeMammals/Ocelot/pull/1377
     public async Task ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
     {
         // Arrange
@@ -127,6 +129,8 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     }
 
     [Theory]
+    [Trait("Bug", "1509 1683")]
+    [Trait("PR", "1689")] // https://github.com/ThreeMammals/Ocelot/pull/1689
     [InlineData("http", "ws")]
     [InlineData("https", "wss")]
     [InlineData("ftp", "ftp")]
@@ -177,4 +181,22 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         request.Scheme.ShouldBe(expectedScheme);
         ((Uri)actual.Last()).Scheme.ShouldBe(expectedScheme);
     }
+
+    //[Fact]
+    //[Trait("Bug", "930")]
+    //[Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    //public async Task ShouldBe___()
+    //{
+    //    // Arrange
+    //    List<object> actual = new();
+    //    GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual);
+    //    AndDoNotSetupProtocolsAndHeaders();
+    //    AndDoNotConnectReally(null);
+
+    //    // Act
+    //    await _middleware.Invoke(_context.Object);
+
+    //    // Assert
+    //    ThenIgnoredAllSslWarnings(actual);
+    //}
 }

@@ -17,11 +17,13 @@ public sealed class WebSocketTests : Steps
 {
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;
+    private readonly IWebSocketsFactory _factory;
 
     public WebSocketTests() : base()
     {
         _firstRecieved = new List<string>();
         _secondRecieved = new List<string>();
+        _factory = new WebSocketsFactory(); // concrete class, so, we perform real integration testing
     }
 
     [Fact]
@@ -164,8 +166,7 @@ public sealed class WebSocketTests : Steps
 
     private async Task StartClient(string url)
     {
-        var client = new ClientWebSocketProxy();
-
+        var client = _factory.CreateClient();
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
         var sending = Task.Run(async () =>
@@ -216,8 +217,7 @@ public sealed class WebSocketTests : Steps
     {
         await Task.Delay(500);
 
-        var client = new ClientWebSocketProxy();
-
+        var client = _factory.CreateClient();
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
         var sending = Task.Run(async () =>
