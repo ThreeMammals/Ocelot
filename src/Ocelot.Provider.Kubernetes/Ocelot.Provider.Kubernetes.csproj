@@ -1,55 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <NoPackageAnalysis>true</NoPackageAnalysis>
-        <Product>Ocelot Gateway</Product>
-        <Description>Provides Ocelot extensions to use Kubernetes service discovery.</Description>
-        <VersionPrefix>0.0.0-dev</VersionPrefix>
-        <PackageId>Ocelot.Provider.Kubernetes</PackageId>
-        <PackageTags>API Gateway;.NET;kubernetes</PackageTags>
-        <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Kubernetes</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
-        <PackageReleaseNotes></PackageReleaseNotes>
-        <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
-        <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
-        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-        <Authors>Tom Pallister, Raman Maksimchuk</Authors>
-        <Company>Three Mammals</Company>
-        <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <NoWarn>1591</NoWarn>
-        <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
-        <PackageIcon>ocelot_icon.png</PackageIcon>
-        <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
-        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    </PropertyGroup>
-    <ItemGroup>
-        <None Include="..\..\LICENSE.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-        <None Include="..\ocelot_icon.png">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="KubeClient" Version="3.0.2" />
-        <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="3.0.2" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <InternalsVisibleTo Include="Ocelot.UnitTests" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <Product>Ocelot Gateway</Product>
+    <Description>Provides Ocelot extensions to use Kubernetes service discovery.</Description>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <PackageId>Ocelot.Provider.Kubernetes</PackageId>
+    <PackageTags>API Gateway;.NET;kubernetes</PackageTags>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Kubernetes</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
+    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
+    <Company>Three Mammals</Company>
+    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>1591</NoWarn>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\ocelot_icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="KubeClient" Version="3.0.2" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="3.0.2" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ocelot.UnitTests" />
+  </ItemGroup>
 </Project>
