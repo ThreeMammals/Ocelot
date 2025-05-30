@@ -35,7 +35,14 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         _factory = factory;
     }
 
-    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
+    public Task Invoke(HttpContext context)
+    {
+        var request = context.Items.DownstreamRequest();
+        var route = context.Items.DownstreamRoute();
+        return Proxy(context, request, route);
+    }
+
+    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         var buffer = new byte[bufferSize];
@@ -44,18 +51,18 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             WebSocketReceiveResult result;
             try
             {
-                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
             }
             catch (OperationCanceledException)
             {
-                await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellationToken);
+                await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
                 return;
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellationToken);
+                    await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                     return;
                 }
 
@@ -64,22 +71,15 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await destination.TryCloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                await destination.TryCloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 
             if (destination.State == WebSocketState.Open)
             {
-                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellation);
             }
         }
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-        var downstreamRequest = httpContext.Items.DownstreamRequest();
-        var downstreamRoute = httpContext.Items.DownstreamRoute();
-        await Proxy(httpContext, downstreamRequest, downstreamRoute);
     }
 
     private async Task Proxy(HttpContext context, DownstreamRequest request, DownstreamRoute route)
