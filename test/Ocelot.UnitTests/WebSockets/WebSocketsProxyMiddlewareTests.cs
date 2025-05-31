@@ -5,6 +5,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.WebSockets;
+using System.Linq.Expressions;
 using System.Net.Security;
 using System.Net.WebSockets;
 
@@ -42,6 +43,104 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     }
 
     [Fact]
+    public async Task Proxy_NotIsWebSocketRequest_ThrownException()
+    {
+        // Arrange
+        List<object> messages = new();
+        GivenNonWebsocketScheme(Uri.UriSchemeHttps, messages);
+        _context.SetupGet(x => x.WebSockets.IsWebSocketRequest).Returns(false);
+
+        // Act
+        Task action() => _middleware.Invoke(_context.Object);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(action);
+        Assert.NotNull(ex);
+    }
+
+    [Fact]
+    public async Task Proxy_ThereAreWebSocketRequestedProtocols_AddedSubProtocols()
+    {
+        // Arrange
+        List<object> messages = new();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndSetupProtocolsAndHeaders(
+            new() { Uri.UriSchemeHttps, Uri.UriSchemeWs, Uri.UriSchemeWss },
+            null);
+        AndDoNotConnectReally(null);
+        var options = new Mock<IClientWebSocketOptions>();
+        _client.SetupGet(x => x.Options)
+            .Returns(options.Object).Verifiable();
+        var actualProtos = new List<string>();
+        options.Setup(x => x.AddSubProtocol(It.IsAny<string>()))
+            .Callback<string>(actualProtos.Add).Verifiable();
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        _client.VerifyGet(x => x.Options, Times.Exactly(3));
+        options.Verify(x => x.AddSubProtocol(It.IsAny<string>()), Times.Exactly(3));
+        Assert.Equal(3, actualProtos.Count);
+    }
+
+    [Fact]
+    public async Task Proxy_ThereAreHeaders_SetRequestHeaders()
+    {
+        // Arrange
+        List<object> messages = new();
+        HeaderDictionary headers = new()
+        {
+            { "TestMe", nameof(Proxy_ThereAreHeaders_SetRequestHeaders) },
+        };
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndSetupProtocolsAndHeaders(null, headers);
+        AndDoNotConnectReally(null);
+        var options = new Mock<IClientWebSocketOptions>();
+        _client.SetupGet(x => x.Options).Returns(options.Object).Verifiable();
+        var actual = new Dictionary<string, string>();
+        options.Setup(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()))
+            .Callback<string, string>(actual.Add).Verifiable();
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        _client.VerifyGet(x => x.Options, Times.Exactly(1));
+        options.Verify(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1));
+        Assert.Single(actual);
+        Assert.True(actual.ContainsKey("TestMe"));
+        Assert.Equal(nameof(Proxy_ThereAreHeaders_SetRequestHeaders), actual["TestMe"]);
+    }
+
+    [Fact]
+    public async Task Proxy_ThereAreHeaders_ThrownExceptionButCaughtIt()
+    {
+        // Arrange
+        List<object> messages = new();
+        HeaderDictionary headers = new()
+        {
+            { "TestMe", nameof(Proxy_ThereAreHeaders_ThrownExceptionButCaughtIt) },
+        };
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndSetupProtocolsAndHeaders(null, headers);
+        AndDoNotConnectReally(null);
+        var options = new Mock<IClientWebSocketOptions>();
+        _client.SetupGet(x => x.Options).Returns(options.Object).Verifiable();
+        var actual = new Dictionary<string, string>();
+        options.Setup(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new ArgumentException()); // !!!
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        _client.VerifyGet(x => x.Options, Times.Exactly(1));
+        options.Verify(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1));
+        Assert.Empty(actual);
+    }
+
+    [Fact]
     [Trait("Bug", "1375 1237 925 920")]
     [Trait("PR", "1377")] // https://github.com/ThreeMammals/Ocelot/pull/1377
     public async Task ShouldIgnoreAllSslWarningsWhenDangerousAcceptAnyServerCertificateValidatorIsTrue()
@@ -59,33 +158,33 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         ThenIgnoredAllSslWarnings(actual);
     }
 
-    private void GivenPropertyDangerousAcceptAnyServerCertificateValidator(bool enabled, List<object> actual)
+    private void GivenPropertyDangerousAcceptAnyServerCertificateValidator(bool enabled, List<object> messages)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri.UriSchemeWs}://localhost:12345");
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            new UriBuilder(Uri.UriSchemeWs, "localhost", PortFinder.GetRandomPort()).Uri);
         var downstream = new DownstreamRequest(request);
         var route = new DownstreamRouteBuilder()
             .WithDangerousAcceptAnyServerCertificateValidator(enabled)
             .Build();
         _context.SetupGet(x => x.Items).Returns(new Dictionary<object, object>
         {
-            { "DownstreamRequest", downstream },
-            { "DownstreamRoute", route },
+            { nameof(DownstreamRequest), downstream },
+            { nameof(DownstreamRoute), route },
         });
-
         _client.SetupSet(x => x.Options.RemoteCertificateValidationCallback = It.IsAny<RemoteCertificateValidationCallback>())
-            .Callback<RemoteCertificateValidationCallback>(actual.Add);
-
+            .Callback<RemoteCertificateValidationCallback>(messages.Add);
         _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
-            .Callback<Func<string>>(y => actual.Add(y.Invoke()));
+            .Callback<Func<string>>(y => messages.Add(y.Invoke()));
     }
 
-    private void AndDoNotSetupProtocolsAndHeaders()
+    private void AndDoNotSetupProtocolsAndHeaders() => AndSetupProtocolsAndHeaders(null, null);
+    private void AndSetupProtocolsAndHeaders(List<string> protos = null, HeaderDictionary headers = null)
     {
-        _context.SetupGet(x => x.WebSockets.WebSocketRequestedProtocols).Returns(new List<string>());
-        _context.SetupGet(x => x.Request.Headers).Returns(new HeaderDictionary());
+        _context.SetupGet(x => x.WebSockets.WebSocketRequestedProtocols).Returns(protos ?? new());
+        _context.SetupGet(x => x.Request.Headers).Returns(headers ?? new());
     }
 
-    private void AndDoNotConnectReally(Action<Uri, CancellationToken> callbackConnectAsync)
+    private Mock<WebSocket> DoNotConnectReally(Action<Uri, CancellationToken> callbackConnectAsync, out Mock<WebSocket> server)
     {
         Action<Uri, CancellationToken> doNothing = (u, t) => { };
         _client.Setup(x => x.ConnectAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
@@ -94,6 +193,13 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         var serverSocket = new Mock<WebSocket>();
         _client.Setup(x => x.ToWebSocket()).Returns(clientSocket.Object);
         _context.Setup(x => x.WebSockets.AcceptWebSocketAsync(It.IsAny<string>())).ReturnsAsync(serverSocket.Object);
+        server = serverSocket;
+        return clientSocket;
+    }
+
+    private void AndDoNotConnectReally(Action<Uri, CancellationToken> callbackConnectAsync)
+    {
+        var clientSocket = DoNotConnectReally(callbackConnectAsync, out var serverSocket);
 
         var happyEnd = new WebSocketReceiveResult(1, WebSocketMessageType.Close, true);
         clientSocket.Setup(x => x.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
@@ -149,7 +255,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         ThenNonWsSchemesAreReplaced(scheme, expectedScheme, actual);
     }
 
-    private void GivenNonWebsocketScheme(string scheme, List<object> actual)
+    private void GivenNonWebsocketScheme(string scheme, List<object> messages)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{scheme}://localhost:12345");
         var request = new DownstreamRequest(requestMessage);
@@ -162,7 +268,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         _context.SetupGet(x => x.Items).Returns(items);
 
         _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
-            .Callback<Func<string>>(myFunc => actual.Add(myFunc.Invoke()));
+            .Callback<Func<string>>(myFunc => messages.Add(myFunc.Invoke()));
     }
 
     private void ThenNonWsSchemesAreReplaced(string scheme, string expectedScheme, List<object> actual)
@@ -182,21 +288,166 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         ((Uri)actual.Last()).Scheme.ShouldBe(expectedScheme);
     }
 
-    //[Fact]
-    //[Trait("Bug", "930")]
-    //[Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
-    //public async Task ShouldBe___()
-    //{
-    //    // Arrange
-    //    List<object> actual = new();
-    //    GivenPropertyDangerousAcceptAnyServerCertificateValidator(true, actual);
-    //    AndDoNotSetupProtocolsAndHeaders();
-    //    AndDoNotConnectReally(null);
+    private static WebSocketCloseStatus[] AndBothSocketsGenerateExceptionWhenReceiveAsync(Mock<WebSocket> clientSocket, Mock<WebSocket> serverSocket, Exception error, Func<Task> closing)
+    {
+        var actual = new WebSocketCloseStatus[2];
+        var cresult = clientSocket.Setup(x => x.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(error);
+        clientSocket.SetupGet(x => x.State).Returns(WebSocketState.Open);
+        clientSocket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(closing)
+            .Callback<WebSocketCloseStatus, string, CancellationToken>((s, d, t) => actual[0] = s);
 
-    //    // Act
-    //    await _middleware.Invoke(_context.Object);
+        var sresult = serverSocket.Setup(x => x.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(error);
+        serverSocket.SetupGet(x => x.State).Returns(WebSocketState.Open);
+        serverSocket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(closing)
+            .Callback<WebSocketCloseStatus, string, CancellationToken>((s, d, t) => actual[1] = s);
+        return actual;
+    }
 
-    //    // Assert
-    //    ThenIgnoredAllSslWarnings(actual);
-    //}
+    private static void ThenBothSocketsClosedOutputTimes(Mock<WebSocket> clientSocket, Mock<WebSocket> serverSocket, Times howMany)
+    {
+        clientSocket.Verify(
+            x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            howMany);
+        serverSocket.Verify(
+            x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            howMany);
+    }
+
+    [Fact]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    public async Task PumpWebSocket_OperationCanceledException_ClosedDestinationSocket()
+    {
+        // Arrange
+        bool closed = false;
+        Task Closing()
+        {
+            closed = true;
+            return Task.CompletedTask;
+        }
+
+        var messages = new List<object>();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndDoNotSetupProtocolsAndHeaders();
+        var clientSocket = DoNotConnectReally(null, out var serverSocket);
+        var error = new OperationCanceledException();
+        var actual = AndBothSocketsGenerateExceptionWhenReceiveAsync(clientSocket, serverSocket, error, Closing);
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        ThenBothSocketsClosedOutputTimes(clientSocket, serverSocket, Times.Once());
+        Assert.True(closed);
+        Assert.All(actual, s => Assert.Equal(WebSocketCloseStatus.EndpointUnavailable, s));
+    }
+
+    [Fact]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    public async Task PumpWebSocket_WebSocketException_ClosedDestinationSocket()
+    {
+        // Arrange
+        bool closed = false;
+        Task Closing()
+        {
+            closed = true;
+            return Task.CompletedTask;
+        }
+
+        var messages = new List<object>();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndDoNotSetupProtocolsAndHeaders();
+        var clientSocket = DoNotConnectReally(null, out var serverSocket);
+        var error = new WebSocketException(WebSocketError.ConnectionClosedPrematurely);
+        var actual = AndBothSocketsGenerateExceptionWhenReceiveAsync(clientSocket, serverSocket, error, Closing);
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        ThenBothSocketsClosedOutputTimes(clientSocket, serverSocket, Times.Once());
+        Assert.True(closed);
+        Assert.All(actual, s => Assert.Equal(WebSocketCloseStatus.EndpointUnavailable, s));
+    }
+
+    [Fact]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    public async Task PumpWebSocket_WebSocketExceptionAndNotConnectionClosedPrematurely_Rethrown()
+    {
+        // Arrange
+        bool closed = false;
+        Task Closing()
+        {
+            closed = true;
+            return Task.CompletedTask;
+        }
+
+        var messages = new List<object>();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndDoNotSetupProtocolsAndHeaders();
+        var clientSocket = DoNotConnectReally(null, out var serverSocket);
+        var error = new WebSocketException(WebSocketError.InvalidState); // !!!
+        var actual = AndBothSocketsGenerateExceptionWhenReceiveAsync(clientSocket, serverSocket, error, Closing);
+
+        // Act
+        Task action() => _middleware.Invoke(_context.Object);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<WebSocketException>(action);
+        Assert.Equal(WebSocketError.InvalidState, ex.WebSocketErrorCode);
+        ThenBothSocketsClosedOutputTimes(clientSocket, serverSocket, Times.Never());
+        Assert.False(closed);
+        Assert.All(actual, s => Assert.Equal(0, (int)s));
+    }
+
+    [Fact]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    public async Task PumpWebSocket_IsOpen_SentToDestination()
+    {
+        // Arrange
+        var messages = new List<object>();
+        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
+        AndDoNotSetupProtocolsAndHeaders();
+        var clientSocket = DoNotConnectReally(null, out var serverSocket);
+
+        int clientCount = 0, serverCount = 0;
+        var open = new WebSocketReceiveResult(1, WebSocketMessageType.Binary, true);
+        var close = new WebSocketReceiveResult(1, WebSocketMessageType.Close, true);
+        clientSocket.Setup(x => x.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => clientCount++ < 1 ? open : close);
+        serverSocket.Setup(x => x.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => serverCount++ < 1 ? open : close);
+        clientSocket.SetupGet(x => x.State).Returns(() => clientCount < 1 ? WebSocketState.Open : WebSocketState.Closed);
+        serverSocket.SetupGet(x => x.State).Returns(() => serverCount < 1 ? WebSocketState.Open : WebSocketState.Closed);
+        clientSocket.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
+        serverSocket.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
+        clientSocket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        serverSocket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        clientSocket.SetupGet(x => x.CloseStatus).Returns(WebSocketCloseStatus.Empty);
+        serverSocket.SetupGet(x => x.CloseStatus).Returns(WebSocketCloseStatus.Empty);
+        clientSocket.SetupGet(x => x.CloseStatusDescription).Returns("closed");
+        serverSocket.SetupGet(x => x.CloseStatusDescription).Returns("closed");
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        Expression<Func<WebSocket, Task>> closeOutputAsync =
+            x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>());
+        Expression<Func<WebSocket, Task>> sendAsync =
+            x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>());
+        clientSocket.Verify(closeOutputAsync, Times.Never());
+        serverSocket.Verify(closeOutputAsync, Times.Once());
+        clientSocket.Verify(sendAsync, Times.Never());
+        serverSocket.Verify(sendAsync, Times.Once());
+        Assert.Equal(2, clientCount);
+        Assert.Equal(2, serverCount);
+    }
 }
