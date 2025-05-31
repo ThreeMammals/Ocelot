@@ -21,12 +21,14 @@ public sealed class ConsulWebSocketTests : Steps
     private readonly List<string> _secondRecieved;
     private readonly List<string> _firstRecieved;
     private readonly List<ServiceEntry> _serviceEntries;
+    private readonly IWebSocketsFactory _factory;
 
     public ConsulWebSocketTests()
     {
         _firstRecieved = new List<string>();
         _secondRecieved = new List<string>();
         _serviceEntries = new List<ServiceEntry>();
+        _factory = new WebSocketsFactory(); // concrete class, so, we perform real integration testing
     }
 
     public override void Dispose()
@@ -190,8 +192,7 @@ public sealed class ConsulWebSocketTests : Steps
 
     private async Task StartClient(string url)
     {
-        IClientWebSocket client = new ClientWebSocketProxy();
-
+        var client = _factory.CreateClient();
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
         var sending = Task.Run(async () =>
@@ -242,8 +243,7 @@ public sealed class ConsulWebSocketTests : Steps
     {
         await Task.Delay(500);
 
-        IClientWebSocket client = new ClientWebSocketProxy();
-
+        var client = _factory.CreateClient();
         await client.ConnectAsync(new Uri(url), CancellationToken.None);
 
         var sending = Task.Run(async () =>
