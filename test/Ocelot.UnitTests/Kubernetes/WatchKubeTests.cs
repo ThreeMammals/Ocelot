@@ -137,6 +137,34 @@ public class WatchKubeTests
         _logger.Verify(x => x.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()));
     }
 
+    [Fact]
+    [Trait("Feat ", "2168")]
+    public async Task Dispose_OnSubscriptionCancellation_LogsInformation()
+    {
+        // Arrange
+        var observable = Observable.Create<IResourceEventV1<EndpointsV1>>(observer =>
+        {
+            observer.OnCompleted();
+            return Mock.Of<IDisposable>();
+        });
+        _endpointClient
+            .Setup(x => x.Watch(
+                It.Is<string>(s => s == _config.KeyOfServiceInK8s),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(observable);
+
+        // Act
+        var watchKube = CreateWatchKube();
+        _testScheduler.Start();
+        var services = await watchKube.GetAsync();
+
+        // Assert
+        services.ShouldBeEmpty();
+        _testScheduler.Clock.ShouldBe(TimeSpan.FromSeconds(WatchKube.FirstResultsFetchingTimeoutSeconds).Ticks);
+        _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Once);
+    }
+
     private WatchKube CreateWatchKube() => new(_config,
         _loggerFactoryMock.Object,
         _kubeApiClientMock.Object,
@@ -145,8 +173,8 @@ public class WatchKubeTests
 
     private IResourceEventV1<EndpointsV1>[] CreateOneEvent(ResourceEventType eventType)
     {
-        var resourceEvent = new ResourceEventV1<EndpointsV1>() { EventType = eventType, Resource = CreateEndpoints(), };
-        return new IResourceEventV1<EndpointsV1>[] { resourceEvent };
+        var resourceEvent = new ResourceEventV1<EndpointsV1> { EventType = eventType, Resource = CreateEndpoints(), };
+        return [resourceEvent];
     }
 
     private EndpointsV1 CreateEndpoints()

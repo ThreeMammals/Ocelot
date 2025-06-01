@@ -25,8 +25,9 @@ public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProvide
         var configuration = new KubeRegistryConfiguration
         {
             KeyOfServiceInK8s = route.ServiceName,
-            KubeNamespace =
-                string.IsNullOrEmpty(route.ServiceNamespace) ? config.Namespace : route.ServiceNamespace,
+            KubeNamespace = string.IsNullOrEmpty(route.ServiceNamespace)
+                ? config.Namespace
+                : route.ServiceNamespace,
             Scheme = route.DownstreamScheme,
         };
 
