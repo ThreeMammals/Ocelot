@@ -158,6 +158,7 @@ public class WatchKubeTests
         var watchKube = CreateWatchKube();
         _testScheduler.Start();
         var services = await watchKube.GetAsync();
+        watchKube.Dispose();
 
         // Assert
         services.ShouldBeEmpty();

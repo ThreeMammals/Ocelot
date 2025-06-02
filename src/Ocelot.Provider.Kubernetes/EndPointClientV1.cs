@@ -46,7 +46,8 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
         return ObserveEvents<EndpointsV1>(
             EndpointsWatchRequest.WithTemplateParameters(new
             {
-                ServiceName = serviceName, Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
+                ServiceName = serviceName,
+                Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
             }),
             "watch v1/Endpoints '" + serviceName + "' in namespace " +
             (kubeNamespace ?? KubeClient.DefaultNamespace));
