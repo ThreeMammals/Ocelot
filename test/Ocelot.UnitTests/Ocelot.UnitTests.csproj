@@ -79,6 +79,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="6.0.1" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>
   <!-- Conditionally obtain references for the net 8.0 target -->

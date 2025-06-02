@@ -49,4 +49,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ocelot.UnitTests" />
+  </ItemGroup>
 </Project>
