@@ -17,7 +17,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         int ocelotPort = PortFinder.GetRandomPort();
         var ocelotUrl = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
         await StartFakeOcelotWithWebSockets(ocelotPort, null);
-        await GivenWebSocketsServiceIsRunningAsync(DownstreamUrl(port), "/ws", EchoAsync, CancellationToken.None);
+        await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancellationToken.None);
         await StartClient(ocelotUrl);
         ThenTheReceivedCountIs(10);
 
@@ -37,8 +37,8 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         int ocelotPort = PortFinder.GetRandomPort();
         this.Given(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => StartFakeOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(DownstreamUrl(port1), "/ws", EchoAsync, CancellationToken.None))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(DownstreamUrl(port2), "/ws", MessageAsync, CancellationToken.None))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync, CancellationToken.None))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync, CancellationToken.None))
             .When(_ => WhenIStartTheClients(ocelotPort))
             .Then(_ => ThenBothDownstreamServicesAreCalled())
             .BDDfy();

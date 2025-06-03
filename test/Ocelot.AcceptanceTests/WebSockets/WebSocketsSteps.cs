@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,28 +22,26 @@ public class WebSocketsSteps : Steps
 
     public override void Dispose()
     {
-        _ocelotHost.Dispose();
+        _ocelotHost?.Dispose();
         base.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    protected Task GivenWebSocketServiceIsRunningOnAsync(string url, Func<HttpContext, Func<Task>, Task> middleware) =>
-    handler.GivenThereIsAServiceRunningOnAsync(url,
-        (context, config) => config
-            .SetBasePath(context.HostingEnvironment.ContentRootPath)
-            .AddJsonFile("appsettings.json", true, false)
-            .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, false)
-            .AddEnvironmentVariables(),
-        (context, logging) => logging
-            .AddConfiguration(context.Configuration.GetSection("Logging"))
-            .AddConsole(),
-        null, // no services
-        app => app.UseWebSockets().Use(middleware),
-        web => web.UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-    );
+    protected static void WithConsole(WebHostBuilderContext context, ILoggingBuilder logging) => logging
+        .AddConfiguration(context.Configuration.GetSection("Logging"))
+        .AddConsole();
+    protected static void WithConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config) => config
+        .SetBasePath(hosting.HostingEnvironment.ContentRootPath);
+    protected static void WithoutServices(IServiceCollection services) { }
+
+    protected Task GivenWebSocketServiceIsRunningOnAsync(string url, Action<KestrelServerOptions> options, Func<HttpContext, Func<Task>, Task> middleware) =>
+        handler.GivenThereIsAServiceRunningOnAsync(url,
+            WithConfiguration,
+            WithConsole,
+            WithoutServices,
+            app => app.UseWebSockets().Use(middleware),
+            web => web.UseUrls(url).ConfigureKestrel(options).UseKestrel() // UseKestrelHttpsConfiguration()
+        );
 
     protected void ThenBothDownstreamServicesAreCalled()
     {
@@ -52,7 +51,7 @@ public class WebSocketsSteps : Steps
         _secondRecieved.ForEach(x => x.ShouldBe("chocolate"));
     }
 
-    protected Task GivenWebSocketsServiceIsRunningAsync(string url, string path, Func<WebSocket, CancellationToken, Task> webSocketHandler, CancellationToken token)
+    protected Task GivenWebSocketsServiceIsRunningAsync(int port, string path, Func<WebSocket, CancellationToken, Task> webSocketHandler, CancellationToken token)
     {
         async Task TheMiddleware(HttpContext context, Func<Task> next)
         {
@@ -71,7 +70,36 @@ public class WebSocketsSteps : Steps
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
         }
-        return GivenWebSocketServiceIsRunningOnAsync(url, TheMiddleware);
+        void NoOptions(KestrelServerOptions options)
+        {
+        }
+        var url = DownstreamUrl(port);
+        return GivenWebSocketServiceIsRunningOnAsync(url, NoOptions, TheMiddleware);
+    }
+
+    protected Task GivenWebSocketsHttp2ServiceIsRunningAsync(int port, Func<WebSocket, CancellationToken, Task> webSocketHandler, CancellationToken token)
+    {
+        async Task TheMiddleware(HttpContext context, Func<Task> next)
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                await webSocketHandler(webSocket, token);
+            }
+            else
+            {
+                await next();
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            }
+        }
+        void WithOptions(KestrelServerOptions options) => options
+            .ListenAnyIP(port, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+                listenOptions.UseHttps("mycert.pfx", "password");
+            });
+        var url = DownstreamUrl(port, Uri.UriSchemeHttps);
+        return GivenWebSocketServiceIsRunningOnAsync(url, WithOptions, TheMiddleware);
     }
 
     protected static async Task EchoAsync(WebSocket ws, CancellationToken token)

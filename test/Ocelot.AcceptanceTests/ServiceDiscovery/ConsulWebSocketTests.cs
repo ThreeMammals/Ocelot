@@ -77,8 +77,8 @@ public sealed class ConsulWebSocketTests : WebSocketsSteps
             .And(_ => StartFakeOcelotWithWebSockets(ocelotPort, WithConsul))
             .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, serviceName))
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(DownstreamUrl(downstreamPort), "/ws", EchoAsync, CancellationToken.None))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(DownstreamUrl(secondDownstreamPort), "/ws", MessageAsync, CancellationToken.None))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(downstreamPort, "/ws", EchoAsync, CancellationToken.None))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(secondDownstreamPort, "/ws", MessageAsync, CancellationToken.None))
             .When(_ => WhenIStartTheClients(ocelotPort))
             .Then(_ => ThenBothDownstreamServicesAreCalled())
             .BDDfy();
