@@ -66,9 +66,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         int port = PortFinder.GetRandomPort();
         await GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync, cts.Token);
 
-        //var echoEndpoint = new Uri("wss://ws.postman-echo.com/raw");
-        var echoEndpoint = new UriBuilder(Uri.UriSchemeWss, "localhost" /*"threemammals.com"*/, port).Uri;
-
+        var echoEndpoint = new UriBuilder(Uri.UriSchemeWss, /*"localhost"*/ "threemammals.com", port).Uri;
 #if NET9_0_OR_GREATER
         // Keep-Alive strategy is PING/PONG
         // KeepAliveInterval is a positive finite TimeSpan, -AND-
@@ -85,8 +83,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         _ws.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
         using var handler = new HttpClientHandler
         {
-            // TODO Copilot prompt -> Linux Ubuntu How to add host (loopback address) to the local DNS subsystem?
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true, // see TODO should be commented
+            // ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true,
             PreAuthenticate = true,
             Credentials = new NetworkCredential("tom@threemammals.com", "password"),
         };
