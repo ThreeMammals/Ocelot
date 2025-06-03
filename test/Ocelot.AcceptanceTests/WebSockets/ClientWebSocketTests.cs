@@ -56,17 +56,18 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     /// <summary>It tests the following stack: HTTP/2, SSL, WebSocket.</summary>
     /// <remarks>HTTP/2 always requires an SSL certificate.</remarks>
     /// <returns>A <see cref="Task"/> object.</returns>
-    [Fact(Skip = $"TEST {nameof(Http20CLient_DirectConnection_ShouldConnect)} is skipped")]
+    //[Fact(Skip = $"TEST {nameof(Http20CLient_DirectConnection_ShouldConnect)} is skipped")]
+    [Fact]
     public async Task Http20CLient_DirectConnection_ShouldConnect()
     {
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(300_500);
+        cts.CancelAfter(3_500);
 
         int port = PortFinder.GetRandomPort();
         await GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync, cts.Token);
 
         //var echoEndpoint = new Uri("wss://ws.postman-echo.com/raw");
-        var echoEndpoint = new UriBuilder(Uri.UriSchemeWss, /*"localhost"*/ "threemammals.com", port).Uri;
+        var echoEndpoint = new UriBuilder(Uri.UriSchemeWss, "localhost" /*"threemammals.com"*/, port).Uri;
 
 #if NET9_0_OR_GREATER
         // Keep-Alive strategy is PING/PONG

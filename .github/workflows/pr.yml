@@ -10,10 +10,20 @@ jobs:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
     steps:
-    - name: .NET Version 
-      run: dotnet --version
     - name: .NET Info
       run: dotnet --info
+    - name: Add threemammals.com DNS record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
     - name: Check .NET 8
       id: check-dotnet8
       run: |
