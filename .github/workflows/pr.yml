@@ -10,10 +10,20 @@ jobs:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
     steps:
-    - name: .NET Version 
-      run: dotnet --version
     - name: .NET Info
       run: dotnet --info
+    - name: Add threemammals.com DNS-record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
     - name: Check .NET 8
       id: check-dotnet8
       run: |
@@ -32,6 +42,27 @@ jobs:
       run: dotnet --info
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Install mycert.pfx certificate
+      run: |
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        if [ -f "$pfx" ]; then
+          echo mycert.pfx file found
+        fi
+        echo Converting PFX to PEM format...
+        openssl version
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        echo Moving the certificate to the trusted CA store...
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        echo Updating the trusted certificates...
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        echo Verifying installation by listing in /etc/ssl/certs/ folder...
+        sudo ls /etc/ssl/certs/ | grep mycert
+        echo Verifying installation by openssl for $cert file...
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
     - name: Restore
       run: dotnet restore ./Ocelot.sln -p:TargetFramework=net8.0
     - name: Build
@@ -50,8 +81,6 @@ jobs:
       GITHUB_REF: ${{ github.ref }}
       GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
-    - name: .NET Version 
-      run: dotnet --version
     - name: .NET Info
       run: dotnet --info
     - name: Check .NET 9
@@ -76,6 +105,22 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - name: Add threemammals.com DNS-record
+      run: |
+        sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+        ping -c 1 threemammals.com
+    - name: Install mycert.pfx certificate
+      run: |
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        sudo ls /etc/ssl/certs/ | grep mycert
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
     - name: Cake Build
       uses: cake-build/cake-action@v3
       with:

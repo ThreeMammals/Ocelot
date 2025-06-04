@@ -13,7 +13,7 @@ namespace Ocelot.WebSockets;
 
 public class WebSocketsProxyMiddleware : OcelotMiddleware
 {
-    private static readonly string[] NotForwardedWebSocketHeaders = new[]
+    public static readonly string[] NotForwardedWebSocketHeaders = new[]
     {
         "Connection", "Host", "Upgrade",
         "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
@@ -35,31 +35,34 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         _factory = factory;
     }
 
-    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
+    public Task Invoke(HttpContext context)
     {
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        var request = context.Items.DownstreamRequest();
+        var route = context.Items.DownstreamRoute();
+        return Proxy(context, request, route);
+    }
 
+    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         var buffer = new byte[bufferSize];
         while (true)
         {
             WebSocketReceiveResult result;
             try
             {
-                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
             }
             catch (OperationCanceledException)
             {
-                await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
                 return;
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
+                    await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                     return;
                 }
 
@@ -68,37 +71,22 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                await destination.TryCloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 
-            await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+            if (destination.State == WebSocketState.Open)
+            {
+                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellation);
+            }
         }
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-        var downstreamRequest = httpContext.Items.DownstreamRequest();
-        var downstreamRoute = httpContext.Items.DownstreamRoute();
-        await Proxy(httpContext, downstreamRequest, downstreamRoute);
     }
 
     private async Task Proxy(HttpContext context, DownstreamRequest request, DownstreamRoute route)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (route == null)
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(route);
 
         if (!context.WebSockets.IsWebSocketRequest)
         {
@@ -118,13 +106,13 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             client.Options.AddSubProtocol(protocol);
         }
 
-        foreach (var headerEntry in context.Request.Headers)
+        foreach (var header in context.Request.Headers)
         {
-            if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
+            if (!NotForwardedWebSocketHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
-                    client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                    client.Options.SetRequestHeader(header.Key, header.Value);
                 }
                 catch (ArgumentException)
                 {
@@ -140,18 +128,17 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         if (!scheme.StartsWith(Uri.UriSchemeWs))
         {
             Logger.LogWarning(() => string.Format(InvalidSchemeWarningFormat, scheme, request.ToUri()));
-            request.Scheme = scheme == Uri.UriSchemeHttp ? Uri.UriSchemeWs
+            request.Scheme = scheme == Uri.UriSchemeHttp
+                ? Uri.UriSchemeWs
                 : scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : scheme;
         }
 
         var destinationUri = new Uri(request.ToUri());
         await client.ConnectAsync(destinationUri, context.RequestAborted);
 
-        using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
-        {
-            await Task.WhenAll(
-                PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
-                PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
-        }
+        using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
+        await Task.WhenAll(
+            PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
+            PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
     }
 }
