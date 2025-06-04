@@ -74,7 +74,7 @@ public sealed class ConsulWebSocketTests : WebSocketsSteps
         };
         int ocelotPort = PortFinder.GetRandomPort();
         this.Given(_ => GivenThereIsAConfiguration(config))
-            .And(_ => StartFakeOcelotWithWebSockets(ocelotPort, WithConsul))
+            .And(_ => StartOcelotWithWebSockets(ocelotPort, WithConsul))
             .And(_ => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, serviceName))
             .And(_ => GivenTheServicesAreRegisteredWithConsul(serviceEntryOne, serviceEntryTwo))
             .And(_ => GivenWebSocketsServiceIsRunningAsync(downstreamPort, "/ws", EchoAsync, CancellationToken.None))

@@ -92,12 +92,7 @@ public class WebSocketsSteps : Steps
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
         }
-        void WithOptions(KestrelServerOptions options) => options
-            .ListenAnyIP(port, listenOptions =>
-            {
-                listenOptions.Protocols = HttpProtocols.Http2;
-                listenOptions.UseHttps("mycert.pfx", "password");
-            });
+        void WithOptions(KestrelServerOptions options) => options.ListenAnyIP(port, WithHttp2);
         var url = DownstreamUrl(port, Uri.UriSchemeHttps);
         return GivenWebSocketServiceIsRunningOnAsync(url, WithOptions, TheMiddleware);
     }
@@ -241,15 +236,31 @@ public class WebSocketsSteps : Steps
         return Task.WhenAll(firstClient, secondClient);
     }
 
-    protected async Task StartFakeOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices)
+    protected Task StartOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices)
+        => StartOcelotWithWebSockets(port, Uri.UriSchemeHttp, configureServices);
+    protected async Task StartOcelotWithWebSockets(int port, string scheme, Action<IServiceCollection> configureServices)
     {
-        var url = new UriBuilder(Uri.UriSchemeHttp, "localhost", port).ToString();
-        static void WithWebSockets(IApplicationBuilder app) => app.UseWebSockets().UseOcelot().Wait();
+        var url = DownstreamUrl(port, scheme);
         void ConfigureWebHost(IWebHostBuilder b) => b
             .UseUrls(url)
-            .ConfigureLogging((hosting, logging) => logging
-                .AddConfiguration(hosting.Configuration.GetSection("Logging"))
-                .AddConsole());
+            .ConfigureLogging(WithConsole);
         _ocelotHost = await GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot, WithWebSockets, ConfigureWebHost);
+    }
+
+    protected static void WithWebSockets(IApplicationBuilder app)
+        => app.UseWebSockets().UseOcelot().Wait();
+    protected static void WithHttp2(ListenOptions options)
+    {
+        options.Protocols = HttpProtocols.Http2;
+        options.UseHttps("mycert.pfx", "password");
+    }
+    protected async Task StartHttp2OcelotWithWebSockets(int port)
+    {
+        void WithOptions(KestrelServerOptions o) => o.ListenAnyIP(port, WithHttp2);
+        var url = DownstreamUrl(port, Uri.UriSchemeHttps);
+        void ConfigureWebHost(IWebHostBuilder b) => b.UseUrls(url)
+            .ConfigureLogging(WithConsole)
+            .ConfigureKestrel(WithOptions).UseKestrel(); // UseKestrelHttpsConfiguration()
+        _ocelotHost = await GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, ConfigureWebHost);
     }
 }
