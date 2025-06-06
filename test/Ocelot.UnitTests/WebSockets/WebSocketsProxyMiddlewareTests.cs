@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -8,12 +9,13 @@ using Ocelot.WebSockets;
 using System.Linq.Expressions;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.WebSockets;
 
 public class WebSocketsProxyMiddlewareTests : UnitTest
 {
-    private readonly WebSocketsProxyMiddleware _middleware;
+    private WebSocketsProxyMiddleware _middleware;
 
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<RequestDelegate> _next;
@@ -320,7 +322,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [Fact]
     [Trait("Bug", "930")]
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
-    public async Task PumpWebSocket_OperationCanceledException_ClosedDestinationSocket()
+    public async Task PumpAsync_OperationCanceledException_ClosedDestinationSocket()
     {
         // Arrange
         bool closed = false;
@@ -349,7 +351,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [Fact]
     [Trait("Bug", "930")]
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
-    public async Task PumpWebSocket_WebSocketException_ClosedDestinationSocket()
+    public async Task PumpAsync_WebSocketException_ClosedDestinationSocket()
     {
         // Arrange
         bool closed = false;
@@ -378,38 +380,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [Fact]
     [Trait("Bug", "930")]
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
-    public async Task PumpWebSocket_WebSocketExceptionAndNotConnectionClosedPrematurely_Rethrown()
-    {
-        // Arrange
-        bool closed = false;
-        Task Closing()
-        {
-            closed = true;
-            return Task.CompletedTask;
-        }
-
-        var messages = new List<object>();
-        GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
-        AndDoNotSetupProtocolsAndHeaders();
-        var clientSocket = DoNotConnectReally(null, out var serverSocket);
-        var error = new WebSocketException(WebSocketError.InvalidState); // !!!
-        var actual = AndBothSocketsGenerateExceptionWhenReceiveAsync(clientSocket, serverSocket, error, Closing);
-
-        // Act
-        Task action() => _middleware.Invoke(_context.Object);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<WebSocketException>(action);
-        Assert.Equal(WebSocketError.InvalidState, ex.WebSocketErrorCode);
-        ThenBothSocketsClosedOutputTimes(clientSocket, serverSocket, Times.Never());
-        Assert.False(closed);
-        Assert.All(actual, s => Assert.Equal(0, (int)s));
-    }
-
-    [Fact]
-    [Trait("Bug", "930")]
-    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
-    public async Task PumpWebSocket_IsOpen_SentToDestination()
+    public async Task PumpAsync_IsOpen_SentToDestination()
     {
         // Arrange
         var messages = new List<object>();
@@ -449,5 +420,80 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         serverSocket.Verify(sendAsync, Times.Once());
         Assert.Equal(2, clientCount);
         Assert.Equal(2, serverCount);
+    }
+
+    private static readonly Type Me = typeof(WebSocketsProxyMiddleware);
+    private Mock<WebSocketsProxyMiddleware> MockMiddleware()
+    {
+        static Task Next(HttpContext context) => Task.Delay(10);
+        RequestDelegate requestDelegate = Next;
+        var mock = new Mock<WebSocketsProxyMiddleware>(requestDelegate, _loggerFactory.Object, _factory.Object) { CallBase = true };
+        mock.Protected()
+            .Setup<Task>("TryCloseOutputAsync", It.IsAny<WebSocket>(), It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
+            .Returns(Task.CompletedTask).Verifiable();
+
+        _middleware = mock.Object;
+        return mock;
+    }
+
+    [Fact]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    public async Task TryCloseOutputAsync_NoState_NoClosing()
+    {
+        // Arrange
+        //var mock = MockMiddleware();
+        var socket = new Mock<WebSocket>();
+        socket.SetupGet(x => x.State)
+            .Returns(WebSocketState.None);
+        socket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask).Verifiable();
+
+        // Act
+        var method = Me.GetMethod("TryCloseOutputAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var actual = (Task)method.Invoke(_middleware, [ socket.Object, WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None ]);
+        await actual;
+
+        // Assert
+        Assert.True(actual.IsCompleted);
+        Assert.Equal(Task.CompletedTask, actual);
+        socket.Verify(
+            x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never());
+    }
+
+    [Theory]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    [InlineData(WebSocketState.Open)]
+    [InlineData(WebSocketState.CloseReceived)]
+    public async Task TryCloseOutputAsync_MatchingState_HappyPath(WebSocketState state)
+    {
+        bool closed = false;
+        Task Closing()
+        {
+            closed = true;
+            return Task.CompletedTask;
+        }
+
+        // Arrange
+        var socket = new Mock<WebSocket>();
+        socket.SetupGet(x => x.State)
+            .Returns(state);
+        socket.Setup(x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Closing).Verifiable();
+
+        // Act
+        var method = Me.GetMethod("TryCloseOutputAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var actual = (Task)method.Invoke(_middleware, [socket.Object, WebSocketCloseStatus.Empty, string.Empty, CancellationToken.None]);
+        await actual;
+
+        // Assert
+        Assert.True(actual.IsCompleted);
+        Assert.Equal(Task.CompletedTask, actual);
+        socket.Verify(
+            x => x.CloseOutputAsync(It.IsAny<WebSocketCloseStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once());
+        Assert.True(closed);
     }
 }

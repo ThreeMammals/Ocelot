@@ -42,36 +42,37 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         return Proxy(context, request, route);
     }
 
-    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
+    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         var buffer = new byte[bufferSize];
         while (true)
         {
-            WebSocketReceiveResult result;
+            WebSocketReceiveResult result = default;
             try
             {
                 result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
             }
             catch (OperationCanceledException)
             {
-                await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
+                await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
                 return;
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await destination.TryCloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
-                    return;
+                    await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                 }
 
-                throw;
+                // The logging level has been decreased from level 4 (Error) to level 3 (Warning) due to the high number of disconnecting events for sensitive WebSocket connections in unstable networks.
+                Logger.LogWarning(() => $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {e.WebSocketErrorCode}");
+                return;
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await destination.TryCloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
+                await TryCloseOutputAsync(destination, source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 
@@ -94,7 +95,6 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
-
         if (route.DangerousAcceptAnyServerCertificateValidator)
         {
             client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
@@ -138,7 +138,16 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
         using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
         await Task.WhenAll(
-            PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
-            PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
+            PumpAsync(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
+            PumpAsync(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
     }
+
+    /// <summary>
+    /// Closes the WebSocket only if its state is <see cref="WebSocketState.Open"/> or <see cref="WebSocketState.CloseReceived"/>.
+    /// </summary>
+    /// <returns>The underlying closing task if the <paramref name="webSocket"/> <see cref="WebSocket.State"/> matches; otherwise, the <see cref="Task.CompletedTask"/>.</returns>
+    protected virtual Task TryCloseOutputAsync(WebSocket webSocket, WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellation)
+        => (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
+            ? webSocket.CloseOutputAsync(closeStatus, statusDescription, cancellation)
+            : Task.CompletedTask;
 }
