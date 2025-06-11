@@ -26,20 +26,20 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
     public const string IgnoredSslWarningFormat = $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{{0}}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{{1}}'.";
     public const string InvalidSchemeWarningFormat = "Invalid scheme has detected which will be replaced! Scheme '{0}' of the downstream '{1}'.";
 
-    public WebSocketsProxyMiddleware(IOcelotLoggerFactory loggerFactory,
+    public WebSocketsProxyMiddleware(IOcelotLoggerFactory logging,
         RequestDelegate next,
         IWebSocketsFactory factory)
-        : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+        : base(logging.CreateLogger<WebSocketsProxyMiddleware>())
     {
         _next = next;
         _factory = factory;
     }
 
-    public Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context)
     {
         var request = context.Items.DownstreamRequest();
         var route = context.Items.DownstreamRoute();
-        return Proxy(context, request, route);
+        await Proxy(context, request, route);
     }
 
     protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
@@ -56,23 +56,28 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             catch (OperationCanceledException)
             {
                 await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
-                return;
+                //await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
+                return; // we don't rethrow timeout/cancellation errors
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
                     await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
+                    //await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                 }
 
+                // DON'T THROW, NEVER! Just log the warning...
                 // The logging level has been decreased from level 4 (Error) to level 3 (Warning) due to the high number of disconnecting events for sensitive WebSocket connections in unstable networks.
                 Logger.LogWarning(() => $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {e.WebSocketErrorCode}");
-                return;
+                return; // swallow the error
+                //throw;
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 await TryCloseOutputAsync(destination, source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
+                //await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 

@@ -18,11 +18,12 @@ public class WebSocketsSteps : Steps
     private readonly WebSocketsFactory _factory = new();
     private readonly List<string> _secondRecieved = new();
     protected readonly List<string> _firstRecieved = new();
-    private IHost _ocelotHost;
+
+    protected IHost Host { get; private set; }
 
     public override void Dispose()
     {
-        _ocelotHost?.Dispose();
+        Host?.Dispose();
         base.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -244,7 +245,7 @@ public class WebSocketsSteps : Steps
         void ConfigureWebHost(IWebHostBuilder b) => b
             .UseUrls(url)
             .ConfigureLogging(WithConsole);
-        _ocelotHost = await GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot, WithWebSockets, ConfigureWebHost);
+        Host = await GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot, WithWebSockets, ConfigureWebHost);
     }
 
     protected static void WithWebSockets(IApplicationBuilder app)
@@ -261,6 +262,6 @@ public class WebSocketsSteps : Steps
         void ConfigureWebHost(IWebHostBuilder b) => b.UseUrls(url)
             .ConfigureLogging(WithConsole)
             .ConfigureKestrel(WithOptions).UseKestrel(); // UseKestrelHttpsConfiguration()
-        _ocelotHost = await GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, ConfigureWebHost);
+        Host = await GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, ConfigureWebHost);
     }
 }

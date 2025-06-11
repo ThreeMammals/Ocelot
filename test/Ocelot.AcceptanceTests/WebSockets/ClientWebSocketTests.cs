@@ -1,4 +1,9 @@
-﻿using Ocelot.Configuration.File;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Ocelot.AcceptanceTests.Logging;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -130,6 +135,80 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
 
         var actual = await WhenISendAndReceiveEchoMessage();
         Assert.Equal(Expected(), actual);
+    }
+
+    [Theory]
+    [Trait("Bug", "930")]
+    [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
+    [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx")] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
+    [InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/
+    [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
+    public async Task Http11Client_ConnectionClosedPrematurely_ShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
+    {
+        static void WithExtraLogging(IServiceCollection services) => services.AddOcelot()
+            .Services.RemoveAll<IOcelotLoggerFactory>()
+            .AddSingleton<IOcelotLoggerFactory, TestLoggerFactory<ClientWebSocketTests>>();
+
+        var route = GivenWsRoute(scheme, host, port, path);
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAConfiguration(configuration);
+        int ocelotPort = PortFinder.GetRandomPort();
+        await StartOcelotWithWebSockets(ocelotPort, WithExtraLogging);
+        GivenOptions();
+
+        var ocelot = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
+        await _ws.ConnectAsync(ocelot, _cts.Token);
+
+        //var ex = await WhenISendAndReceiveEchoMessage();
+        var upload = Encoding.UTF8.GetBytes(Expected());
+        await _ws.SendAsync(upload, WebSocketMessageType.Text, true, _cts.Token);
+        var echo = new byte[1024];
+        var result = await _ws.ReceiveAsync(echo, _cts.Token);
+
+        // Act
+        var exc = await Assert.ThrowsAsync<TaskCanceledException>(() =>
+        {
+            _cts.Cancel();
+            return _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, Expected() + " has been sent", _cts.Token);
+        });
+        _ws.Abort(); // !!! after cancellation of operations, let the connection be disposed aka finalized
+        await Task.Delay(1_000);
+
+        var factory = Host.Services.GetService<IOcelotLoggerFactory>();
+        var logger = (factory as TestLoggerFactory<ClientWebSocketTests>).Logger;
+        Assert.NotNull(logger);
+        logger.Messages.ShouldNotBeEmpty();
+
+        // STEPS TO REPRODUCE with old code, based on commit: https://github.com/ThreeMammals/Ocelot/commit/0b794b39e26d8bb538006eb5834b841c893c6611
+        // Bug930_StepsToReproduce(logger);
+        logger.Exceptions.ShouldBeEmpty(); // no errors on Ocelot's side, as they were swallowed in favor of logging a warning
+        logger.Messages.ShouldNotContain(m => m.Contains(Bug930RootCause)); // no bug
+        logger.Logbook.Contains(Bug930RootCause).ShouldBeFalse(); // no bug in the log
+        try
+        {
+            logger.Messages.ShouldContain(m => m.Contains(Bugfix930ExpectedMessage)); // logged warning
+            logger.Logbook.Contains(Bugfix930ExpectedMessage).ShouldBeTrue(); // logged warning
+        }
+        catch // Be tolerant of attempted assertions, as they sometimes fail when the 'ConnectionClosedPrematurely' exception is not generated, thus the logbook is empty
+        {
+        }
+    }
+
+    public const string Bug930RootCause = "The WebSocket is in an invalid state ('Aborted') for this operation. Valid states are: 'Open, CloseReceived'";
+    public const string Bugfix930ExpectedMessage = "WebSocketException when WebSocketErrorCode is ConnectionClosedPrematurely";
+    private static void Bug930_StepsToReproduce(MemoryLogger logger)
+    {
+        logger.Exceptions.ShouldNotBeEmpty();
+        string PrintExceptions() => string.Join(Environment.NewLine,
+            logger.Exceptions.Select(e => $"{e.GetType().Name}: {e.Message}"));
+        logger.Exceptions.ShouldContain(e => e.GetType() == typeof(WebSocketException), PrintExceptions());
+        logger.Exceptions.Count(e => e.GetType() == typeof(WebSocketException)).ShouldBe(1, PrintExceptions());
+        logger.Exceptions.Count.ShouldBe(1, PrintExceptions());
+        var ex = logger.Exceptions.First();
+        ex.ShouldBeOfType<WebSocketException>();
+        ex.Message.ShouldBe(Bug930RootCause);
+        logger.Messages.ShouldContain(m => m.Contains(Bug930RootCause));
+        logger.Logbook.Contains(Bug930RootCause).ShouldBeTrue();
     }
 
     private static string Expected([CallerMemberName] string testName = null)
