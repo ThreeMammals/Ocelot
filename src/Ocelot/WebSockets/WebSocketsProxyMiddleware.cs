@@ -56,7 +56,6 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             catch (OperationCanceledException)
             {
                 await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
-                //await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
                 return; // we don't rethrow timeout/cancellation errors
             }
             catch (WebSocketException e)
@@ -64,20 +63,17 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
                     await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
-                    //await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                 }
 
                 // DON'T THROW, NEVER! Just log the warning...
                 // The logging level has been decreased from level 4 (Error) to level 3 (Warning) due to the high number of disconnecting events for sensitive WebSocket connections in unstable networks.
                 Logger.LogWarning(() => $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {e.WebSocketErrorCode}");
                 return; // swallow the error
-                //throw;
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 await TryCloseOutputAsync(destination, source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
-                //await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 

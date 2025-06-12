@@ -189,8 +189,9 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
             logger.Messages.ShouldContain(m => m.Contains(Bugfix930ExpectedMessage)); // logged warning
             logger.Logbook.Contains(Bugfix930ExpectedMessage).ShouldBeTrue(); // logged warning
         }
-        catch // Be tolerant of attempted assertions, as they sometimes fail when the 'ConnectionClosedPrematurely' exception is not generated, thus the logbook is empty
+        catch
         {
+            // Be tolerant of attempted assertions, as they sometimes fail when the 'ConnectionClosedPrematurely' exception is not generated, thus the logbook is empty
         }
     }
 
