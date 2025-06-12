@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <VersionPrefix>0.0.0-dev</VersionPrefix>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <AssemblyName>Ocelot.ManualTest</AssemblyName>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
@@ -45,17 +45,18 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ocelot.Testing" Version="24.0.0" />
+    <PackageReference Include="Ocelot.Administration.IdentityServer4" Version="24.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.6" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>
 </Project>

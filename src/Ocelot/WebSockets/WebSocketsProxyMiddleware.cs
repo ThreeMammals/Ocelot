@@ -13,7 +13,7 @@ namespace Ocelot.WebSockets;
 
 public class WebSocketsProxyMiddleware : OcelotMiddleware
 {
-    private static readonly string[] NotForwardedWebSocketHeaders = new[]
+    public static readonly string[] NotForwardedWebSocketHeaders = new[]
     {
         "Connection", "Host", "Upgrade",
         "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
@@ -26,79 +26,69 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
     public const string IgnoredSslWarningFormat = $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{{0}}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{{1}}'.";
     public const string InvalidSchemeWarningFormat = "Invalid scheme has detected which will be replaced! Scheme '{0}' of the downstream '{1}'.";
 
-    public WebSocketsProxyMiddleware(IOcelotLoggerFactory loggerFactory,
+    public WebSocketsProxyMiddleware(IOcelotLoggerFactory logging,
         RequestDelegate next,
         IWebSocketsFactory factory)
-        : base(loggerFactory.CreateLogger<WebSocketsProxyMiddleware>())
+        : base(logging.CreateLogger<WebSocketsProxyMiddleware>())
     {
         _next = next;
         _factory = factory;
     }
 
-    private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
+    public async Task Invoke(HttpContext context)
     {
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        var request = context.Items.DownstreamRequest();
+        var route = context.Items.DownstreamRoute();
+        await Proxy(context, request, route);
+    }
 
+    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         var buffer = new byte[bufferSize];
         while (true)
         {
-            WebSocketReceiveResult result;
+            WebSocketReceiveResult result = default;
             try
             {
-                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellation);
             }
             catch (OperationCanceledException)
             {
-                await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
-                return;
+                await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, nameof(OperationCanceledException), cancellation);
+                return; // we don't rethrow timeout/cancellation errors
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await destination.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, cancellationToken);
-                    return;
+                    await TryCloseOutputAsync(destination, WebSocketCloseStatus.EndpointUnavailable, $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {nameof(WebSocketError.ConnectionClosedPrematurely)}", cancellation);
                 }
 
-                throw;
+                // DON'T THROW, NEVER! Just log the warning...
+                // The logging level has been decreased from level 4 (Error) to level 3 (Warning) due to the high number of disconnecting events for sensitive WebSocket connections in unstable networks.
+                Logger.LogWarning(() => $"{nameof(WebSocketException)} when {nameof(e.WebSocketErrorCode)} is {e.WebSocketErrorCode}");
+                return; // swallow the error
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                await TryCloseOutputAsync(destination, source.CloseStatus.Value, source.CloseStatusDescription, cancellation);
                 return;
             }
 
-            await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+            if (destination.State == WebSocketState.Open)
+            {
+                await destination.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellation);
+            }
         }
-    }
-
-    public async Task Invoke(HttpContext httpContext)
-    {
-        var downstreamRequest = httpContext.Items.DownstreamRequest();
-        var downstreamRoute = httpContext.Items.DownstreamRoute();
-        await Proxy(httpContext, downstreamRequest, downstreamRoute);
     }
 
     private async Task Proxy(HttpContext context, DownstreamRequest request, DownstreamRoute route)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
-        if (route == null)
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(route);
 
         if (!context.WebSockets.IsWebSocketRequest)
         {
@@ -106,7 +96,6 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
-
         if (route.DangerousAcceptAnyServerCertificateValidator)
         {
             client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
@@ -118,13 +107,13 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             client.Options.AddSubProtocol(protocol);
         }
 
-        foreach (var headerEntry in context.Request.Headers)
+        foreach (var header in context.Request.Headers)
         {
-            if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
+            if (!NotForwardedWebSocketHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
-                    client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                    client.Options.SetRequestHeader(header.Key, header.Value);
                 }
                 catch (ArgumentException)
                 {
@@ -140,18 +129,26 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         if (!scheme.StartsWith(Uri.UriSchemeWs))
         {
             Logger.LogWarning(() => string.Format(InvalidSchemeWarningFormat, scheme, request.ToUri()));
-            request.Scheme = scheme == Uri.UriSchemeHttp ? Uri.UriSchemeWs
+            request.Scheme = scheme == Uri.UriSchemeHttp
+                ? Uri.UriSchemeWs
                 : scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : scheme;
         }
 
         var destinationUri = new Uri(request.ToUri());
         await client.ConnectAsync(destinationUri, context.RequestAborted);
 
-        using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
-        {
-            await Task.WhenAll(
-                PumpWebSocket(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
-                PumpWebSocket(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
-        }
+        using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
+        await Task.WhenAll(
+            PumpAsync(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
+            PumpAsync(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
     }
+
+    /// <summary>
+    /// Closes the WebSocket only if its state is <see cref="WebSocketState.Open"/> or <see cref="WebSocketState.CloseReceived"/>.
+    /// </summary>
+    /// <returns>The underlying closing task if the <paramref name="webSocket"/> <see cref="WebSocket.State"/> matches; otherwise, the <see cref="Task.CompletedTask"/>.</returns>
+    protected virtual Task TryCloseOutputAsync(WebSocket webSocket, WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellation)
+        => (webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.CloseReceived)
+            ? webSocket.CloseOutputAsync(closeStatus, statusDescription, cancellation)
+            : Task.CompletedTask;
 }
