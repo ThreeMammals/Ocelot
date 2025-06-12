@@ -1,11 +1,10 @@
 ﻿using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Ocelot.ManualTest;
+namespace Ocelot.ManualTest.Middlewares;
 
-public static class CustomOcelotMiddleware
+public class MetadataMiddleware
 {
     public static Task Invoke(HttpContext context, Func<Task> next)
     {
@@ -16,8 +15,8 @@ public static class CustomOcelotMiddleware
         {
             logger.LogInformation(() =>
             {
-                var metadataInJson = JsonSerializer.Serialize(metadata);
-                var message = $"My custom middleware found some metadata: {metadataInJson}";
+                var metadataInJson = JsonSerializer.Serialize(metadata, JsonSerializerOptions.Web);
+                var message = $"{nameof(MetadataMiddleware)} found some metadata: {metadataInJson}";
                 return message;
             });
         }
@@ -28,7 +27,6 @@ public static class CustomOcelotMiddleware
     private static IOcelotLogger GetLogger(HttpContext context)
     {
         var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
-        var logger = loggerFactory.CreateLogger<Program>();
-        return logger;
+        return loggerFactory.CreateLogger<MetadataMiddleware>();
     }
 }

@@ -39,7 +39,7 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         catch (OperationCanceledException e) when (context.RequestAborted.IsCancellationRequested)
         {
             Logger.LogDebug("Operation canceled");
-            Logger.LogWarning(() => CreateMessage(context, e));
+            Logger.LogWarning(() => CreateMessage(context, e, true));
             if (!context.Response.HasStarted)
             {
                 context.Response.StatusCode = 499; // custom Ocelot code
@@ -71,7 +71,7 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         _repo.Add(nameof(IInternalConfiguration.RequestId), context.TraceIdentifier);
     }
 
-    private static string CreateMessage(HttpContext context, Exception e)
+    private static string CreateMessage(HttpContext context, Exception e, bool includeException = false)
     {
         var original = e;
         var builder = new StringBuilder()
@@ -85,6 +85,11 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
         }
 
         builder.Append($"DONE reporting of a total {total} inner exception{total.Plural()} for request {context.TraceIdentifier} of the original {original.GetType().Name} below ->");
+        if (includeException)
+        {
+            builder.Append(Environment.NewLine + original.ToString());
+        }
+
         return builder.ToString();
     }
 }
