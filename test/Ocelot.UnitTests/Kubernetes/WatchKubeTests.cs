@@ -9,6 +9,8 @@ using System.Reactive.Linq;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
+[Trait("Feat", "2168")]
+[Trait("PR", "2174")] // https://github.com/ThreeMammals/Ocelot/pull/2174
 public class WatchKubeTests
 {
     private readonly Mock<IOcelotLoggerFactory> _loggerFactoryMock = new();
@@ -52,7 +54,6 @@ public class WatchKubeTests
     [InlineData(ResourceEventType.Bookmark, 1)]
     [InlineData(ResourceEventType.Error, 0)]
     [InlineData(ResourceEventType.Deleted, 0)]
-    [Trait("Feat ", "2168")]
     public async Task GetAsync_EndpointsEventObserved_ServicesReturned(ResourceEventType eventType,
         int expectedServicesCount)
     {
@@ -76,7 +77,6 @@ public class WatchKubeTests
     }
 
     [Fact]
-    [Trait("Feat ", "2168")]
     public async Task GetAsync_NoEventsAfterTimeout_EmptyServicesReturned()
     {
         // Arrange
@@ -99,7 +99,6 @@ public class WatchKubeTests
     }
 
     [Fact]
-    [Trait("Feat ", "2168")]
     public async Task GetAsync_WatchFailed_RetriedAfterDelay()
     {
         // Arrange
@@ -138,7 +137,6 @@ public class WatchKubeTests
     }
 
     [Fact]
-    [Trait("Feat ", "2168")]
     public async Task Dispose_OnSubscriptionCancellation_LogsInformation()
     {
         // Arrange

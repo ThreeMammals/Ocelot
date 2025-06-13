@@ -17,39 +17,31 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
     {
     }
 
-    public Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null,
-        CancellationToken cancellationToken = default)
+    public Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(serviceName))
-        {
-            throw new ArgumentNullException(nameof(serviceName));
-        }
+        ArgumentNullException.ThrowIfNullOrEmpty(serviceName);
 
-        var request = EndpointsRequest
-            .WithTemplateParameters(new
-            {
-                Namespace = kubeNamespace ?? KubeClient.DefaultNamespace, ServiceName = serviceName,
-            });
+        var request = EndpointsRequest.WithTemplateParameters(new
+        {
+            Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
+            ServiceName = serviceName,
+        });
 
         return Http.GetAsync(request, cancellationToken)
-            .ReadContentAsObjectV1Async<EndpointsV1>(operationDescription: $"get {nameof(EndpointsV1)}");
+            .ReadContentAsObjectV1Async<EndpointsV1>(operationDescription: $"{nameof(GetAsync)} {nameof(EndpointsV1)}");
     }
 
-    public IObservable<IResourceEventV1<EndpointsV1>> Watch(string serviceName, string kubeNamespace,
-        CancellationToken cancellationToken = default)
+    public IObservable<IResourceEventV1<EndpointsV1>> Watch(string serviceName, string kubeNamespace, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(serviceName))
-        {
-            throw new ArgumentNullException(nameof(serviceName));
-        }
+        ArgumentNullException.ThrowIfNullOrEmpty(serviceName);
 
-        return ObserveEvents<EndpointsV1>(
-            EndpointsWatchRequest.WithTemplateParameters(new
-            {
-                ServiceName = serviceName,
-                Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
-            }),
-            "watch v1/Endpoints '" + serviceName + "' in namespace " +
-            (kubeNamespace ?? KubeClient.DefaultNamespace));
+        var request = EndpointsWatchRequest.WithTemplateParameters(new
+        {
+            ServiceName = serviceName,
+            Namespace = kubeNamespace ?? KubeClient.DefaultNamespace,
+        });
+
+        return ObserveEvents<EndpointsV1>(request,
+            $"{nameof(Watch)} {nameof(EndpointsV1)} for '{serviceName}' in the namespace '{kubeNamespace ?? KubeClient.DefaultNamespace}'");
     }
 }

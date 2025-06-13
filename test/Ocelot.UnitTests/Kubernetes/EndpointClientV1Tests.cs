@@ -4,6 +4,8 @@ using Ocelot.Provider.Kubernetes;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
+[Trait("Feat", "2168")]
+[Trait("PR", "2174")] // https://github.com/ThreeMammals/Ocelot/pull/2174
 public class EndpointClientV1Tests
 {
     private readonly EndPointClientV1 _endpointClient;
@@ -30,7 +32,7 @@ public class EndpointClientV1Tests
         var watchCall = () => _endpointClient.GetAsync(serviceName, null, CancellationToken.None);
 
         // Assert
-        var e = await watchCall.ShouldThrowAsync<ArgumentNullException>();
+        var e = await watchCall.ShouldThrowAsync<ArgumentException>();
         e.ParamName.ShouldBe(nameof(serviceName));
     }
 
@@ -43,7 +45,7 @@ public class EndpointClientV1Tests
         var watchCall = () => _endpointClient.Watch(serviceName, null, CancellationToken.None);
         
         // Assert
-        watchCall.ShouldThrow<ArgumentNullException>().ParamName.ShouldBe(nameof(serviceName));
+        watchCall.ShouldThrow<ArgumentException>().ParamName.ShouldBe(nameof(serviceName));
     }
 
     [Fact]

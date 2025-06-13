@@ -191,6 +191,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Fact]
     [Trait("Feat", "2168")]
+    [Trait("PR", "2174")] // https://github.com/ThreeMammals/Ocelot/pull/2174
     public void ShouldReturnServicesFromK8s_OneWatchRequestUpdatesServicesInfo()
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);

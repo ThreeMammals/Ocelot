@@ -19,7 +19,7 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
     private readonly IScheduler _scheduler;
     
     private readonly IDisposable _subscription;
-    private readonly TaskCompletionSource _firstResultsCompletionSource;
+    private TaskCompletionSource _firstResultsCompletionSource;
     
     private List<Service> _services = new();
 
@@ -36,17 +36,16 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
         _serviceBuilder = serviceBuilder;
         _scheduler = scheduler;
 
-        _firstResultsCompletionSource = new TaskCompletionSource();
         SetFirstResultsCompletedAfterDelay();
         _subscription = CreateSubscription();
     }
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        // wait for first results fetching
+        // Wait for first results fetching
         await _firstResultsCompletionSource.Task;
 
-        if (_services is not { Count: > 0 })
+        if (_services.Count == 0) // should not be null
         {
             _logger.LogWarning(() => GetMessage("Subscription to service endpoints gave no results!"));
         }
@@ -54,35 +53,42 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
         return _services;
     }
 
-    private void SetFirstResultsCompletedAfterDelay() => Observable
-        .Timer(TimeSpan.FromSeconds(FirstResultsFetchingTimeoutSeconds), _scheduler)
-        .Subscribe(_ => _firstResultsCompletionSource.TrySetResult());
+    private void SetFirstResultsCompletedAfterDelay()
+    {
+        _firstResultsCompletionSource = new();
+        Observable
+            .Timer(TimeSpan.FromSeconds(FirstResultsFetchingTimeoutSeconds), _scheduler)
+            .Subscribe(_ => _firstResultsCompletionSource.TrySetResult());
+    }
 
-    private IDisposable CreateSubscription() =>
-        _kubeApi
+    private void OnNext(IResourceEventV1<EndpointsV1> endpointEvent)
+    {
+        _services = endpointEvent.EventType switch
+        {
+            ResourceEventType.Deleted or ResourceEventType.Error => new(),
+            _ when (endpointEvent.Resource?.Subsets?.Count ?? 0) == 0 => new(),
+            _ => _serviceBuilder.BuildServices(_configuration, endpointEvent.Resource).ToList(),
+        };
+        _firstResultsCompletionSource.TrySetResult();
+    }
+
+    // Called only when subscription canceled in Dispose
+    private void OnCompleted() => _logger.LogInformation(() => GetMessage("Subscription to service endpoints completed"));
+    private void OnException(Exception ex) => _logger.LogError(() => GetMessage("Endpoints subscription error occured."), ex);
+
+    private IDisposable CreateSubscription() => _kubeApi
             .EndpointsV1()
             .Watch(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace)
-            .Do(_ => { }, ex => _logger.LogError(() => GetMessage("Endpoints subscription error occured."), ex))
+            .Do(_ => { }, OnException)
             .RetryAfter(TimeSpan.FromSeconds(FailedSubscriptionRetrySeconds), _scheduler)
-            .Subscribe(
-                onNext: endpointEvent =>
-                {
-                    _services = endpointEvent.EventType switch
-                    {
-                        ResourceEventType.Deleted or ResourceEventType.Error => new(),
-                        _ when (endpointEvent.Resource?.Subsets?.Count ?? 0) == 0 => new(),
-                        _ => _serviceBuilder.BuildServices(_configuration, endpointEvent.Resource).ToList(),
-                    };
-                    _firstResultsCompletionSource.TrySetResult();
-                },
-                onCompleted: () =>
-                {
-                    // called only when subscription canceled in Dispose
-                    _logger.LogInformation(() => GetMessage("Subscription to service endpoints completed"));
-                });
+            .Subscribe(OnNext, OnCompleted);
 
     private string GetMessage(string message)
         => $"{nameof(WatchKube)} provider. Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; {message}";
 
-    public void Dispose() => _subscription.Dispose();
+    public void Dispose()
+    {
+        _subscription.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
