@@ -1,4 +1,5 @@
 ﻿using KubeClient;
+using KubeClient.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -44,13 +45,18 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
     [Trait("Bug", "977")]
     [InlineData(typeof(Kube))]
     [InlineData(typeof(PollKube))]
+    [InlineData(typeof(WatchKube))]
     public void CreateProvider_ClientHasOriginalLifetimeWithEnabledScopesValidation_ShouldResolveProvider(Type providerType)
     {
         // Arrange
         _builder.AddKubernetes();
+        var endpointClient = new Mock<IEndPointClient>();
+        endpointClient.Setup(x => x.Watch(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Mock.Of<IObservable<IResourceEventV1<EndpointsV1>>>());
+        
         var kubeClient = new Mock<IKubeApiClient>();
         kubeClient.Setup(x => x.ResourceClient(It.IsAny<Func<IKubeApiClient, IEndPointClient>>()))
-            .Returns(Mock.Of<IEndPointClient>());
+            .Returns(endpointClient.Object);
         var descriptor = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClient));
         _builder.Services.Replace(ServiceDescriptor.Describe(descriptor.ServiceType, _ => kubeClient.Object, descriptor.Lifetime));
 
@@ -65,6 +71,7 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
     [Trait("Bug", "977")]
     [InlineData(nameof(Kube))]
     [InlineData(nameof(PollKube))]
+    [InlineData(nameof(WatchKube))]
     public void CreateProvider_ClientHasScopedLifetimeWithEnabledScopesValidation_ShouldFailToResolve(string providerType)
     {
         // Arrange

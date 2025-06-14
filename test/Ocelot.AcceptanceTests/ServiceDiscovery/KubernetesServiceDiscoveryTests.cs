@@ -38,8 +38,10 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         };
     }
 
-    [Fact]
-    public void ShouldReturnServicesFromK8s()
+    [Theory]
+    [InlineData(nameof(Kube))]
+    [InlineData(nameof(WatchKube))]
+    public void ShouldReturnServicesFromK8s(string discoveryType)
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
         const string serviceName = nameof(ShouldReturnServicesFromK8s);
@@ -49,12 +51,13 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         var subsetV1 = GivenSubsetAddress(downstream);
         var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, route, discoveryType);
         var downstreamResponse = serviceName;
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning(WithKubernetes))
+            .When(_ => GivenWatchReceivedEvent())
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
@@ -89,7 +92,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         route.DownstreamScheme = downstreamScheme; // !!! Warning !!! Select port by name as scheme
         route.UpstreamPathTemplate = "/api/example/{url}";
         route.ServiceName = serviceName; // "example-web"
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(Kube));
 
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
@@ -157,9 +160,11 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(nameof(Kube))]
+    [InlineData(nameof(WatchKube))]
     [Trait("Feat", "2256")]
-    public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions()
+    public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions(string discoveryType)
     {
         const string namespaces = nameof(KubernetesServiceDiscoveryTests);
         const string serviceName = nameof(ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions);
@@ -169,18 +174,71 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         var subsetV1 = GivenSubsetAddress(downstream);
         var endpoints = GivenEndpoints(subsetV1);
         var route = GivenRouteWithServiceName(namespaces);
-        var configuration = GivenKubeConfiguration(namespaces, route, "txpc696iUhbVoudg164r93CxDTrKRVWG");
+        var configuration = GivenKubeConfiguration(namespaces, route, discoveryType, "txpc696iUhbVoudg164r93CxDTrKRVWG");
         var downstreamResponse = serviceName;
         this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
             .And(x => x.GivenThereIsAFakeKubernetesProvider(endpoints, serviceName, namespaces))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning(AddKubernetesWithNullConfigureOptions))
+            .When(_ => GivenWatchReceivedEvent())
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "2168")]
+    [Trait("PR", "2174")] // https://github.com/ThreeMammals/Ocelot/pull/2174
+    public void ShouldReturnServicesFromK8s_OneWatchRequestUpdatesServicesInfo()
+    {
+        const string namespaces = nameof(KubernetesServiceDiscoveryTests);
+        const string serviceName = nameof(ShouldReturnServicesFromK8s_OneWatchRequestUpdatesServicesInfo);
+        (EndpointsV1 endpoints, string downstreamUrl) = GetServiceInstance();
+        (EndpointsV1 updatedEndpoints, string updateDownstreamUrl) = GetServiceInstance();
+
+        ResourceEventV1<EndpointsV1>[] events =
+        [
+            new() { EventType = ResourceEventType.Added, Resource = endpoints },
+            new() { EventType = ResourceEventType.Modified, Resource = updatedEndpoints }
+        ];
+        
+        var route = GivenRouteWithServiceName(namespaces);
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(WatchKube));
+        
+        var downstreamResponse = serviceName;
+        var updatedDownstreamResponse = "updated_content" + serviceName;
+        this.Given(x => GivenServiceInstanceIsRunning(downstreamUrl, downstreamResponse))
+            .Given(x => GivenServiceInstanceIsRunning(updateDownstreamUrl, updatedDownstreamResponse))
+            .And(x => x.GivenThereIsAFakeKubernetesProvider(events, serviceName, namespaces))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunning(WithKubernetes))
+            .When(_ => GivenWatchReceivedEvent())
+            .When(_ => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
+            .Then(_ => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .Then(_ => ThenAllResponseBodiesShouldBe(downstreamResponse))
+            .And(_ => ThenK8sShouldBeCalledExactly(1))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
+            .When(_ => GivenWatchReceivedEvent())
+            .Given(_ => GivenDelay(100))
+            .When(_ => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
+            .Then(_ => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .Then(_ => ThenAllResponseBodiesShouldBe(updatedDownstreamResponse))
+            .And(_ => ThenK8sShouldBeCalledExactly(1))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(20))
+            .BDDfy();
+
+        (EndpointsV1 Endpoints, string DownstreamUrl) GetServiceInstance()
+        {
+            var servicePort = PortFinder.GetRandomPort();
+            var downstreamUrl = LoopbackLocalhostUrl(servicePort);
+            var downstream = new Uri(downstreamUrl);
+            var subset = GivenSubsetAddress(downstream);
+            var endpoints = GivenEndpoints(subset);
+            return (endpoints, downstreamUrl);
+        }
     }
 
     private void AddKubernetesWithNullConfigureOptions(IServiceCollection services)
@@ -204,7 +262,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(namespaces, serviceName, nameof(RoundRobinAnalyzer)); // !!!
-        var configuration = GivenKubeConfiguration(namespaces, route);
+        var configuration = GivenKubeConfiguration(namespaces, route, nameof(Kube));
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithKubernetesAndRoundRobin);
@@ -229,6 +287,11 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     private void ThenTheTokenIs(string token)
     {
         _receivedToken.ShouldBe(token);
+    }
+
+    private void ThenK8sShouldBeCalledExactly(int totalRequests)
+    {
+        _k8sCounter.ShouldBe(totalRequests);
     }
 
     private EndpointsV1 GivenEndpoints(EndpointSubsetV1 subset, [CallerMemberName] string serviceName = "")
@@ -276,7 +339,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             LoadBalancerOptions = new() { Type = loadBalancerType },
         };
 
-    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, FileRoute route, string token = null)
+    private FileConfiguration GivenKubeConfiguration(string serviceNamespace, FileRoute route, string type, string token = null)
     {
         var u = new Uri(_kubernetesUrl);
         var configuration = GivenConfiguration(route);
@@ -285,7 +348,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             Scheme = u.Scheme,
             Host = u.Host,
             Port = u.Port,
-            Type = nameof(Kube),
+            Type = type,
             PollingInterval = 0,
             Namespace = serviceNamespace,
             Token = token ?? "Test",
@@ -337,12 +400,63 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
+
+            await GivenHandleWatchRequest(context, 
+                [new() { EventType = ResourceEventType.Added, Resource = endpoints }],
+                namespaces,
+                serviceName);
         });
+    }
+    
+    private void GivenThereIsAFakeKubernetesProvider(ResourceEventV1<EndpointsV1>[] events,
+        [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests),
+        string namespaces = nameof(KubernetesServiceDiscoveryTests))
+    {
+        _k8sCounter = 0;
+        handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, (c) => GivenHandleWatchRequest(c, events, namespaces, serviceName));
+    }
+
+    private void GivenWatchReceivedEvent() => _k8sWatchResetEvent.Set();
+
+    private static Task GivenDelay(int milliseconds) => Task.Delay(TimeSpan.FromMilliseconds(milliseconds));
+    
+    private async Task GivenHandleWatchRequest(HttpContext context,
+        IEnumerable<ResourceEventV1<EndpointsV1>> events,
+        string namespaces,
+        string serviceName)
+    {
+        await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
+            
+        if (context.Request.Path.Value == $"/api/v1/watch/namespaces/{namespaces}/endpoints/{serviceName}")
+        {
+            _k8sCounter++;
+
+            if (context.Request.Headers.TryGetValue("Authorization", out var values))
+            {
+                _receivedToken = values.First();
+            }
+
+            context.Response.StatusCode = 200;
+            context.Response.Headers.Append("Content-Type", "application/json");
+
+            foreach (var @event in events)
+            {
+                _k8sWatchResetEvent.WaitOne();
+                var json = JsonConvert.SerializeObject(@event, KubeResourceClient.SerializerSettings);
+                await using var sw = new StreamWriter(context.Response.Body);
+                await sw.WriteLineAsync(json);
+                await sw.FlushAsync();
+                _k8sWatchResetEvent.Reset();
+            }
+
+            // keeping open connection like kube api will slow down tests
+        }
     }
 
     private static ServiceDescriptor GetValidateScopesDescriptor()
         => ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(
             new DefaultServiceProviderFactory(new() { ValidateScopes = true }));
+    
     private IOcelotBuilder AddKubernetes(IServiceCollection services) => services
         .Replace(GetValidateScopesDescriptor())
         .AddOcelot().AddKubernetes(_kubeClientOptionsConfigure);
@@ -355,6 +469,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     private int _k8sCounter, _k8sServiceGeneration;
     private static readonly object K8sCounterLocker = new();
     private RoundRobinAnalyzer _roundRobinAnalyzer;
+    private AutoResetEvent _k8sWatchResetEvent = new(false);
     private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
     {
         lock (K8sCounterLocker)
