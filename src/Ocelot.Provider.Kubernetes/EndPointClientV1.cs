@@ -19,7 +19,7 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
 
     public Task<EndpointsV1> GetAsync(string serviceName, string kubeNamespace = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(serviceName);
+        ArgumentException.ThrowIfNullOrEmpty(serviceName);
 
         var request = EndpointsRequest.WithTemplateParameters(new
         {
@@ -33,7 +33,7 @@ public class EndPointClientV1 : KubeResourceClient, IEndPointClient
 
     public IObservable<IResourceEventV1<EndpointsV1>> Watch(string serviceName, string kubeNamespace, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(serviceName);
+        ArgumentException.ThrowIfNullOrEmpty(serviceName);
 
         var request = EndpointsWatchRequest.WithTemplateParameters(new
         {

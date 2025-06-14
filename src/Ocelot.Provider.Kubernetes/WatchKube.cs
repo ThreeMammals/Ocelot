@@ -66,7 +66,7 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
         _services = endpointEvent.EventType switch
         {
             ResourceEventType.Deleted or ResourceEventType.Error => new(),
-            _ when (endpointEvent.Resource?.Subsets?.Count ?? 0) == 0 => new(),
+            _ when (endpointEvent.Resource?.Subsets.Count ?? 0) == 0 => new(),
             _ => _serviceBuilder.BuildServices(_configuration, endpointEvent.Resource).ToList(),
         };
         _firstResultsCompletionSource.TrySetResult();
