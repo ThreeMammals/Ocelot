@@ -171,8 +171,19 @@ public class ConcurrentSteps : Steps
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
         => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
+
     public void ThenAllResponseBodiesShouldBe(string expectedBody)
-        => _responses.ShouldAllBe(response => response.Value.Content.ReadAsStringAsync().Result == expectedBody);
+    {
+        foreach (var r in _responses)
+        {
+            var content = r.Value.Content.ReadAsStringAsync().Result;
+            content = content?.Contains(':') == true
+                ? content.Split(':')[1] // remove counter for body comparison
+                : "0";
+
+            content.ShouldBe(expectedBody);
+        }
+    }
 
     protected string CalledTimesMessage()
         => $"All values are [{string.Join(',', _counters)}]";
