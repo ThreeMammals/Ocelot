@@ -9,9 +9,25 @@ namespace Ocelot.Provider.Kubernetes;
 
 public class WatchKube : IServiceDiscoveryProvider, IDisposable
 {
-    internal const int FailedSubscriptionRetrySeconds = 5;
-    internal const int FirstResultsFetchingTimeoutSeconds = 3;
-    
+    /// <summary>The default number of seconds to wait before scheduling the next retry for the subscription operation.</summary>
+    /// <value>A positive integer that is greater than or equal to 1.</value>
+    public static int FailedSubscriptionRetrySeconds
+    {
+        get => failedSubscriptionRetrySeconds;
+        set => failedSubscriptionRetrySeconds = value >= 1 ? value : 1;
+    }
+
+    /// <summary>The default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint.</summary>
+    /// <value>A positive integer that is greater than or equal to 1.</value>
+    public static int FirstResultsFetchingTimeoutSeconds
+    {
+        get => firstResultsFetchingTimeoutSeconds;
+        set => firstResultsFetchingTimeoutSeconds = value >= 1 ? value : 1;
+    }
+
+    private static int failedSubscriptionRetrySeconds = 5; // TODO Discuss this def value
+    private static int firstResultsFetchingTimeoutSeconds = 3;
+
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
@@ -44,8 +60,7 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
     {
         // Wait for first results fetching
         await _firstResultsCompletionSource.Task;
-
-        if (_services.Count == 0) // should not be null
+        if (_services.Count == 0)
         {
             _logger.LogWarning(() => GetMessage("Subscription to service endpoints gave no results!"));
         }

@@ -191,6 +191,20 @@ public class WatchKubeTests
         services.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(-1, 1)]
+    [InlineData(0, 1)]
+    [InlineData(1, 1)]
+    [InlineData(3, 3)]
+    public void StaticProperties_Setter_ShouldBeGreaterThanOrEqualToOne(int value, int expected)
+    {
+        WatchKube.FailedSubscriptionRetrySeconds = value;
+        Assert.Equal(expected, WatchKube.FailedSubscriptionRetrySeconds);
+
+        WatchKube.FirstResultsFetchingTimeoutSeconds = value;
+        Assert.Equal(expected, WatchKube.FirstResultsFetchingTimeoutSeconds);
+    }
+
     private WatchKube CreateWatchKube() => new(_config, _loggerFactory.Object, _kubeApiClient.Object, _kubeServiceBuilder.Object, _testScheduler);
 
     private IResourceEventV1<EndpointsV1>[] CreateOneEvent(ResourceEventType eventType)
