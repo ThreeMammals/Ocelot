@@ -25,8 +25,8 @@ public class WatchKube : IServiceDiscoveryProvider, IDisposable
         set => firstResultsFetchingTimeoutSeconds = value >= 1 ? value : 1;
     }
 
-    private static int failedSubscriptionRetrySeconds = 5; // TODO Discuss this def value
-    private static int firstResultsFetchingTimeoutSeconds = 3;
+    private static int failedSubscriptionRetrySeconds = 1;
+    private static int firstResultsFetchingTimeoutSeconds = 1;
 
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;

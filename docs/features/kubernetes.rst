@@ -179,8 +179,21 @@ The following examples show how to set up a route that will work in Kubernetes.
 The most important thing is the ``ServiceName`` which is made up of the Kubernetes service name.
 We also need to set up the ``ServiceDiscoveryProvider`` in ``GlobalConfiguration``.
 
+Regarding global and route configurations, if your downstream service resides in a different namespace, you can override the global setting at the route level by specifying a ``ServiceNamespace``.
+
+.. code-block:: json
+
+  "Routes": [
+    {
+      "ServiceName": "my-service",
+      "ServiceNamespace": "my-namespace"
+    }
+  ]
+
+.. _k8s-kube-provider:
+
 ``Kube`` provider
-^^^^^^^^^^^^^^^^^
+-----------------
 
 The example here shows a typical configuration:
 
@@ -215,7 +228,7 @@ Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``
 .. _k8s-pollkube-provider:
 
 ``PollKube`` provider
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 You use Ocelot to poll Kubernetes for latest service information rather than per request.
 If you want to poll Kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration:
@@ -238,12 +251,14 @@ The polling interval is in milliseconds and tells Ocelot how often to call Kuber
 
 .. _k8s-watchkube-provider:
 
-WatchKube provider
-^^^^^^^^^^^^^^^^^^
+``WatchKube`` provider [#f3]_
+-----------------------------
+.. _Kubernetes API: https://kubernetes.io/docs/reference/using-api/
+.. _watch requests: https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes
 
-This option utilizes Kubernetes API `watch requests <https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes>`_ for fetching service configuration.
-Essentially it means that there will be one streamed http connection with kube-api per downstream service.
-Changes streamed by this connection will be used for updating available endpoints list.
+With this configuration, `Kubernetes API`_ "`watch requests`_" are used to fetch service configuration.
+Essentially, it establishes one streamed HTTP connection with the `Kubernetes API`_ per downstream service.
+Changes streamed through this connection will be used to update the list of available endpoints.
 
 .. code-block:: json
 
@@ -252,23 +267,63 @@ Changes streamed by this connection will be used for updating available endpoint
     "Type": "WatchKube"
   }
 
-Global vs Route levels
-^^^^^^^^^^^^^^^^^^^^^^
+The provider has an implicit configuration for fine-tuned watching, which are available and can only be initialized in C# code.
 
-If your downstream service resides in a different namespace, you can override the global setting at the route-level by specifying a ``ServiceNamespace``:
+* ``WatchKube.FirstResultsFetchingTimeoutSeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FirstResultsFetchingTimeoutSeconds&type=code>`_ is the default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint. :sup:`1`
+* ``WatchKube.FailedSubscriptionRetrySeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FailedSubscriptionRetrySeconds&type=code>`__ is the default number of seconds to wait before scheduling the next retry for the subscription operation. :sup:`1`
 
-.. code-block:: json
+.. _break3: http://break.do
 
-  "Routes": [
-    {
-      "ServiceName": "my-service",
-      "ServiceNamespace": "my-namespace"
-    }
-  ]
+  **Note 1**: For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
+
+  **Note 2**: The ``WatchKube`` provider is specifically designed for high-load Ocelot vs. Kubernetes environments with high RPS ratios.
+  To better understand which type is suitable for your needs, we have added a table :ref:`k8s-comparing-providers`.
+  
+.. _k8s-comparing-providers:
+
+Comparing providers
+-------------------
+This table explains the most important indicators that may influence Ocelot vs. Kubernetes deployment or DevOps strategy.
+The evolution path of all providers follows: ``Kube`` -> ``PollKube`` -> ``WatchKube``, with ``WatchKube`` being the most advanced provider.
+
+.. list-table::
+  :widths: 34 22 22 22
+  :header-rows: 1
+
+  * - *Indicators \\ Providers*
+    - :ref:`Kube <k8s-kube-provider>`
+    - :ref:`PollKube <k8s-pollkube-provider>`
+    - :ref:`WatchKube <k8s-watchkube-provider>`
+  * - Extra latency
+    - One hop per route
+    - \-
+    - \-
+  * - Speed of response to endpoints changes
+    - High
+    - Low :sup:`1`
+    - High
+  * - Pressure on `Kubernetes API`_
+    - High
+    - Low :sup:`1`
+    - Low
+  * - Ocelot load (estimated) :sup:`2`
+    - < 1000 RPS
+    - > 1000 RPS
+    - > 5000 RPS
+  * - Ocelot deployment :sup:`3`
+    - Single instance
+    - Multiple instances
+    - Cluster of instances
+
+.. _break4: http://break.do
+
+  | :sup:`1` Depends on the ``PollingInterval`` option.
+  | :sup:`2` Please consider this a rough load estimation, as our team has not provided any tests or benchmarks.
+  | :sup:`3` The term "instance" refers to an Ocelot instance, not a Kubernetes one.
 
 .. _k8s-downstream-scheme-vs-port-names:
 
-Downstream Scheme vs Port Names [#f3]_
+Downstream Scheme vs Port Names [#f4]_
 --------------------------------------
 
 Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
@@ -302,7 +357,7 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
     }
   ]
 
-.. _break3: http://break.do
+.. _break5: http://break.do
 
   **Note**: In the absence of a specified ``DownstreamScheme`` (which is the default behavior), the ``Kube`` provider will select **the first available port** from the ``EndpointSubsetV1.Ports`` collection.
   Consequently, if the port name is not designated, the default downstream scheme utilized will be ``http``.
@@ -311,13 +366,16 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 
 .. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
 .. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
-.. [#f3] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
+.. [#f3] The :ref:`k8s-watchkube-provider` was discussed in thread `2168`_ and released in version `24.1`_
+.. [#f4] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
 .. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134
 .. _1967: https://github.com/ThreeMammals/Ocelot/issues/1967
+.. _2168: https://github.com/ThreeMammals/Ocelot/discussions/2168
 .. _2255: https://github.com/ThreeMammals/Ocelot/issues/2255
 .. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
 .. _13.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
