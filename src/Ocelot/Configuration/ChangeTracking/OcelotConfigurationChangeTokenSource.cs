@@ -1,16 +1,15 @@
 using Microsoft.Extensions.Primitives;
 
-namespace Ocelot.Configuration.ChangeTracking
+namespace Ocelot.Configuration.ChangeTracking;
+
+public class OcelotConfigurationChangeTokenSource : IOcelotConfigurationChangeTokenSource
 {
-    public class OcelotConfigurationChangeTokenSource : IOcelotConfigurationChangeTokenSource
+    private readonly OcelotConfigurationChangeToken _changeToken = new();
+
+    public IChangeToken ChangeToken => _changeToken;
+
+    public void Activate()
     {
-        private readonly OcelotConfigurationChangeToken _changeToken = new();
-
-        public IChangeToken ChangeToken => _changeToken;
-
-        public void Activate()
-        {
-            _changeToken.Activate();
-        }
+        _changeToken.Activate();
     }
 }

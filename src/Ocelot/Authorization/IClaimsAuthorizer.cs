@@ -2,14 +2,13 @@
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.Authorization
+namespace Ocelot.Authorization;
+
+public interface IClaimsAuthorizer
 {
-    public interface IClaimsAuthorizer
-    {
-        Response<bool> Authorize(
-            ClaimsPrincipal claimsPrincipal,
-            Dictionary<string, string> routeClaimsRequirement,
-            List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
-        );
-    }
+    Response<bool> Authorize(
+        ClaimsPrincipal claimsPrincipal,
+        Dictionary<string, string> routeClaimsRequirement,
+        List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
+    );
 }

@@ -3,39 +3,38 @@ using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Headers
+namespace Ocelot.Headers;
+
+public class AddHeadersToResponse : IAddHeadersToResponse
 {
-    public class AddHeadersToResponse : IAddHeadersToResponse
+    private readonly IPlaceholders _placeholders;
+    private readonly IOcelotLogger _logger;
+
+    public AddHeadersToResponse(IPlaceholders placeholders, IOcelotLoggerFactory factory)
     {
-        private readonly IPlaceholders _placeholders;
-        private readonly IOcelotLogger _logger;
+        _logger = factory.CreateLogger<AddHeadersToResponse>();
+        _placeholders = placeholders;
+    }
 
-        public AddHeadersToResponse(IPlaceholders placeholders, IOcelotLoggerFactory factory)
+    public void Add(List<AddHeader> addHeaders, DownstreamResponse response)
+    {
+        foreach (var add in addHeaders)
         {
-            _logger = factory.CreateLogger<AddHeadersToResponse>();
-            _placeholders = placeholders;
-        }
-
-        public void Add(List<AddHeader> addHeaders, DownstreamResponse response)
-        {
-            foreach (var add in addHeaders)
+            if (add.Value.StartsWith('{') && add.Value.EndsWith('}'))
             {
-                if (add.Value.StartsWith('{') && add.Value.EndsWith('}'))
-                {
-                    var value = _placeholders.Get(add.Value);
+                var value = _placeholders.Get(add.Value);
 
-                    if (value.IsError)
-                    {
-                        _logger.LogWarning(() => $"Unable to add header to response {add.Key}: {add.Value}");
-                        continue;
-                    }
-
-                    response.Headers.Add(new Header(add.Key, new List<string> { value.Data }));
-                }
-                else
+                if (value.IsError)
                 {
-                    response.Headers.Add(new Header(add.Key, new List<string> { add.Value }));
+                    _logger.LogWarning(() => $"Unable to add header to response {add.Key}: {add.Value}");
+                    continue;
                 }
+
+                response.Headers.Add(new Header(add.Key, new List<string> { value.Data }));
+            }
+            else
+            {
+                response.Headers.Add(new Header(add.Key, new List<string> { add.Value }));
             }
         }
     }

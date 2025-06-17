@@ -215,7 +215,7 @@ public sealed class RateLimitingTests
         return (identity, options);
     }
 
-    [Fact]
+    [Fact(Skip = nameof(SequentialTests) + ": It is unstable and should be tested in sequential mode")]
     [Trait("Bug", "1590")]
     public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
     {

@@ -88,7 +88,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             ? options.DurationOfBreak
             : QoSOptions.DefaultBreakDuration;
 
-        var strategyOptions = new CircuitBreakerStrategyOptions<HttpResponseMessage>
+        var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
             FailureRatio = 0.8,
             SamplingDuration = TimeSpan.FromSeconds(10),
@@ -115,7 +115,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
                 return ValueTask.CompletedTask;
             },
         };
-        return builder.AddCircuitBreaker(strategyOptions);
+        return builder.AddCircuitBreaker(strategy);
     }
 
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
@@ -135,7 +135,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             ? timeoutMs.Value
             : QoSOptions.DefaultTimeout;
 
-        var strategyOptions = new TimeoutStrategyOptions
+        var strategy = new TimeoutStrategyOptions
         {
             Timeout = TimeSpan.FromMilliseconds(timeoutMs.Value),
             OnTimeout = _ =>
@@ -144,6 +144,6 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
                 return ValueTask.CompletedTask;
             },
         };
-        return builder.AddTimeout(strategyOptions);
+        return builder.AddTimeout(strategy);
     }
 }

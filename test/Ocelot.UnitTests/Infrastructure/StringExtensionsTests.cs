@@ -1,27 +1,29 @@
 ﻿using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.UnitTests.Infrastructure
+namespace Ocelot.UnitTests.Infrastructure;
+
+public class StringExtensionsTests
 {
-    public class StringExtensionsTests
+    [Fact]
+    public void TrimPrefix_ArgsCheck_ReturnedSource()
     {
-        [Fact]
-        public void should_trim_start()
-        {
-            var test = "/string";
+        ((string)null).TrimPrefix("/").ShouldBeNull();
+        "x".TrimPrefix(null).ShouldBe("x");
+        "x".TrimPrefix(string.Empty).ShouldBe("x");
+    }
 
-            test = test.TrimStart("/");
+    [Fact]
+    public void TrimPrefix_HasPrefix_HappyPath()
+    {
+        "/string".TrimPrefix("/").ShouldBe("string");
+        "///string".TrimPrefix("/").ShouldBe("string");
+        "ABABstring".TrimPrefix("AB").ShouldBe("string");
+    }
 
-            test.ShouldBe("string");
-        }
-
-        [Fact]
-        public void should_return_source()
-        {
-            var test = "string";
-
-            test = test.LastCharAsForwardSlash();
-
-            test.ShouldBe("string/");
-        }
+    [Fact]
+    public void LastCharAsForwardSlash_HappyPath()
+    {
+        "string".LastCharAsForwardSlash().ShouldBe("string/");
+        "string/".LastCharAsForwardSlash().ShouldBe("string/");
     }
 }

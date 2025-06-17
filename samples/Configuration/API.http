@@ -1,0 +1,23 @@
+@HttpHost = http://localhost:5556
+
+GET {{HttpHost}}/ocelot/posts/1
+Accept: application/json
+###
+GET {{HttpHost}}/ocelot/docs/
+Accept: text/html, */*
+###
+GET {{HttpHost}}/weather/current/London
+Accept: application/json
+###
+
+@HttpsHost = https://localhost:7778
+
+GET {{HttpsHost}}/ocelot/posts/3
+Accept: application/json
+###
+GET {{HttpsHost}}/ocelot/docs/releasenotes.html
+Accept: text/html, */*
+###
+GET {{HttpsHost}}/weather/current/Paris
+Accept: application/json
+###

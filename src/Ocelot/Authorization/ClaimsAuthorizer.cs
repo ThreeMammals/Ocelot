@@ -1,87 +1,93 @@
 ﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.Authorization
+namespace Ocelot.Authorization;
+
+/// <summary>
+/// Default authorizer by claims.
+/// </summary>
+public partial class ClaimsAuthorizer : IClaimsAuthorizer
 {
-    public class ClaimsAuthorizer : IClaimsAuthorizer
+    private readonly IClaimsParser _claimsParser;
+
+    public ClaimsAuthorizer(IClaimsParser claimsParser)
     {
-        private readonly IClaimsParser _claimsParser;
+        _claimsParser = claimsParser;
+    }
 
-        public ClaimsAuthorizer(IClaimsParser claimsParser)
-        {
-            _claimsParser = claimsParser;
-        }
+    [GeneratedRegex(@"^{(?<variable>.+)}$", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    private static partial Regex RegexAuthorize();
 
-        public Response<bool> Authorize(
-            ClaimsPrincipal claimsPrincipal,
-            Dictionary<string, string> routeClaimsRequirement,
-            List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
-        )
+    public Response<bool> Authorize(
+        ClaimsPrincipal claimsPrincipal,
+        Dictionary<string, string> routeClaimsRequirement,
+        List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
+    )
+    {
+        foreach (var required in routeClaimsRequirement)
         {
-            foreach (var required in routeClaimsRequirement)
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
+
+            if (values.IsError)
             {
-                var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
+                return new ErrorResponse<bool>(values.Errors);
+            }
 
-                if (values.IsError)
+            if (values.Data != null)
+            {
+                // dynamic claim
+                var match = RegexAuthorize().Match(required.Value);
+                if (match.Success)
                 {
-                    return new ErrorResponse<bool>(values.Errors);
-                }
+                    var variableName = match.Captures[0].Value;
 
-                if (values.Data != null)
-                {
-                    // dynamic claim
-                    var match = Regex.Match(required.Value, @"^{(?<variable>.+)}$");
-                    if (match.Success)
+                    var matchingPlaceholders = urlPathPlaceholderNameAndValues.Where(p => p.Name.Equals(variableName)).Take(2).ToArray();
+                    if (matchingPlaceholders.Length == 1)
                     {
-                        var variableName = match.Captures[0].Value;
-
-                        var matchingPlaceholders = urlPathPlaceholderNameAndValues.Where(p => p.Name.Equals(variableName)).Take(2).ToArray();
-                        if (matchingPlaceholders.Length == 1)
+                        // match
+                        var actualValue = matchingPlaceholders[0].Value;
+                        var authorized = values.Data.Contains(actualValue);
+                        if (!authorized)
                         {
-                            // match
-                            var actualValue = matchingPlaceholders[0].Value;
-                            var authorized = values.Data.Contains(actualValue);
-                            if (!authorized)
-                            {
-                                return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
-                                    $"dynamic claim value for {variableName} of {string.Join(", ", values.Data)} is not the same as required value: {actualValue}"));
-                            }
-                        }
-                        else
-                        {
-                            // config error
-                            if (matchingPlaceholders.Length == 0)
-                            {
-                                return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
-                                    $"config error: requires variable claim value: {variableName} placeholders does not contain that variable: {string.Join(", ", urlPathPlaceholderNameAndValues.Select(p => p.Name))}"));
-                            }
-                            else
-                            {
-                                return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
-                                    $"config error: requires variable claim value: {required.Value} but placeholders are ambiguous: {string.Join(", ", urlPathPlaceholderNameAndValues.Where(p => p.Name.Equals(variableName)).Select(p => p.Value))}"));
-                            }
+                            return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
+                                $"dynamic claim value for {variableName} of {string.Join(", ", values.Data)} is not the same as required value: {actualValue}"));
                         }
                     }
                     else
                     {
-                        // static claim
-                        var authorized = values.Data.Contains(required.Value);
-                        if (!authorized)
+                        // config error
+                        if (matchingPlaceholders.Length == 0)
                         {
                             return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
-                                       $"claim value: {string.Join(", ", values.Data)} is not the same as required value: {required.Value} for type: {required.Key}"));
+                                $"config error: requires variable claim value: {variableName} placeholders does not contain that variable: {string.Join(", ", urlPathPlaceholderNameAndValues.Select(p => p.Name))}"));
+                        }
+                        else
+                        {
+                            return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
+                                $"config error: requires variable claim value: {required.Value} but placeholders are ambiguous: {string.Join(", ", urlPathPlaceholderNameAndValues.Where(p => p.Name.Equals(variableName)).Select(p => p.Value))}"));
                         }
                     }
                 }
                 else
                 {
-                    return new ErrorResponse<bool>(new UserDoesNotHaveClaimError($"user does not have claim {required.Key}"));
+                    // static claim
+                    var authorized = values.Data.Contains(required.Value);
+                    if (!authorized)
+                    {
+                        return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(
+                                   $"claim value: {string.Join(", ", values.Data)} is not the same as required value: {required.Value} for type: {required.Key}"));
+                    }
                 }
             }
-
-            return new OkResponse<bool>(true);
+            else
+            {
+                return new ErrorResponse<bool>(new UserDoesNotHaveClaimError($"user does not have claim {required.Key}"));
+            }
         }
+
+        return new OkResponse<bool>(true);
     }
 }
