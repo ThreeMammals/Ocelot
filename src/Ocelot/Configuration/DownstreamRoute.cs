@@ -137,13 +137,15 @@ public class DownstreamRoute
     /// <summary>The timeout duration for the downstream request in seconds.</summary>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
     public int? Timeout { get; }
+    public const int LowTimeout = 3;  //  3 seconds
+    public const int DefTimeout = 90; // 90 seconds
 
-    /// <summary>Defines the default timeout in seconds for all routes, applicable at both the Route-level and globally.
-    /// <para>The setter includes a constraint that ensures the assigned value is greater than or equal to 3 seconds.</para></summary>
-    /// <remarks>By default, initialized to 90 seconds.</remarks>
-    /// <value>An <see cref="int"/> value which can't be less than 3.</value>
-    public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= 3 ? value : 90; }
-    private static int defaultTimeoutSeconds = 90;
+    /// <summary>Gets or sets the default timeout in seconds for all routes, applicable at both the route-level and globally.
+    /// <para>The setter includes a constraint that ensures the assigned value is greater than or equal to <see cref="LowTimeout"/> (3 seconds).</para></summary>
+    /// <remarks>By default, initialized to <see cref="DefTimeout"/> (90 seconds).</remarks>
+    /// <value>An <see cref="int"/> value in seconds.</value>
+    public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
+    private static int defaultTimeoutSeconds = DefTimeout;
 
     /// <summary>
     /// Calculates timeout in milliseconds based on QoS options with applying default timeout values.

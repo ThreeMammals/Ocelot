@@ -10,7 +10,6 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Responses;
-using Ocelot.Testing;
 using System.Diagnostics;
 using Xunit.Sdk;
 
@@ -126,7 +125,7 @@ public class MessageInvokerPoolTests : UnitTest
         // Act
         await WhenICallTheClient("http://www.google.com/");
 
-        // Assert: Then The DangerousAcceptAnyServerCertificateValidator warning is logged
+        // Assert: Then the DangerousAcceptAnyServerCertificateValidator warning is logged
         _ocelotLogger.Verify(
             x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
             Times.Once);
@@ -151,6 +150,7 @@ public class MessageInvokerPoolTests : UnitTest
             // The test should pass without timeout definition -> implicit default timeout
             //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
             .Build();
+
         //using ServiceHandler handler = new();
         var port = PortFinder.GetRandomPort();
         GivenADownstreamService(port); // sometimes it fails because of port binding
@@ -167,18 +167,6 @@ public class MessageInvokerPoolTests : UnitTest
         // Act, Assert
         await WhenICallTheClient(toUrl);
         _response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        //GivenADownstreamService();
-        //GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
-        //GivenAMessageInvokerPool();
-        //GivenARequest(route);
-
-        //// Act, Assert 1
-        //await WhenICallTheClient("http://localhost:5003");
-        //ThenTheCookieIsSet();
-
-        //// Act, Assert 2
-        //await WhenICallTheClient("http://localhost:5003");
-        //ThenTheResponseIsOk();
     }
 
     [Theory]
@@ -293,12 +281,6 @@ public class MessageInvokerPoolTests : UnitTest
         }
     }
 
-    //private void ThenTheDangerousAcceptAnyServerCertificateValidatorWarningIsLogged()
-    //{
-    //    _ocelotLogger.Verify(x => x.LogWarning(
-    //        It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
-    //        Times.Once);
-    //}
     private static string Url(int port) => $"http://localhost:{port}";
 
     private void GivenADownstreamService(int port)
