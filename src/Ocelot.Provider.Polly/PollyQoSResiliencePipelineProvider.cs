@@ -118,6 +118,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         return builder.AddCircuitBreaker(strategy);
     }
 
+    /// <summary>Configures the <see href="https://www.pollydocs.org/strategies/timeout.html">Timeout resilience strategy</see>.</summary>
+    /// <param name="builder">Pipeline builder instance.</param>
+    /// <param name="route">The route the pipeline is applied to.</param>
+    /// <returns>The same pipeline builder, as an <see cref="ResiliencePipelineBuilder{HttpResponseMessage}"/> object where TResult is <see cref="HttpResponseMessage"/>.</returns>
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         int? timeoutMs = route?.QosOptions?.TimeoutValue
@@ -130,10 +134,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return builder;
         }
 
-        // Polly constraints
-        timeoutMs = timeoutMs.Value > QoSOptions.LowTimeout && timeoutMs.Value < QoSOptions.HighTimeout
-            ? timeoutMs.Value
-            : QoSOptions.DefaultTimeout;
+        // Polly constraints -> https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
+        timeoutMs = QoSOptions.ApplyTimeoutConstraint(timeoutMs.Value);
 
         var strategy = new TimeoutStrategyOptions
         {
