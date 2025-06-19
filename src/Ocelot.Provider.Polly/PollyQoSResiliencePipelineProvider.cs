@@ -124,19 +124,19 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>The same pipeline builder, as an <see cref="ResiliencePipelineBuilder{HttpResponseMessage}"/> object where TResult is <see cref="HttpResponseMessage"/>.</returns>
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
-        int? timeoutMs = route?.QosOptions?.TimeoutValue
-            ?? _global?.QoSOptions?.TimeoutValue
-            ?? QoSOptions.DefaultTimeout;
+        // Gives higher priority to route-level options over global ones
+        int? timeoutMs = route?.QosOptions?.TimeoutValue ?? _global?.QoSOptions?.TimeoutValue;
 
-        // 0 means No option!
+        // Short cut: don't apply the strategy if no QoS options
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             return builder;
         }
 
-        // Polly constraints -> https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
-        timeoutMs = QoSOptions.ApplyTimeoutConstraint(timeoutMs.Value);
+        // Polly docs -> https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
+        timeoutMs = TimeoutStrategy.ApplyConstraint(timeoutMs.Value);
 
+        // Happy path: Set up native options and apply the strategy
         var strategy = new TimeoutStrategyOptions
         {
             Timeout = TimeSpan.FromMilliseconds(timeoutMs.Value),

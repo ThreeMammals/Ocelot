@@ -151,8 +151,8 @@ public class DownstreamRoute
     /// Calculates timeout in milliseconds based on QoS options with applying default timeout values.
     /// </summary>
     /// <returns>An <see cref="int"/> value, in milliseconds.</returns>
-    public int TimeoutMilliseconds() => QosOptions.UseQos
-        ? QosOptions.TimeoutValue ?? QoSOptions.DefaultTimeout
+    public int TimeoutMilliseconds() => QosOptions.UseQos // TODO move to the consumer class aka MessageInvokerPool
+        ? QosOptions.TimeoutValue ?? DefaultTimeoutSeconds
         : 1000 * (Timeout ?? DefaultTimeoutSeconds);
 
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>

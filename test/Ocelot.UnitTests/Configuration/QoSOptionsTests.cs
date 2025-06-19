@@ -1,24 +1,43 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class QoSOptionsTests
 {
-    [Theory]
-    [InlineData(0, QoSOptions.DefTimeout)] // not in range
-    [InlineData(QoSOptions.LowTimeout - 1, QoSOptions.DefTimeout)] // not in range
-    [InlineData(QoSOptions.LowTimeout, QoSOptions.DefTimeout)] // not in range
-    [InlineData(QoSOptions.LowTimeout + 1, QoSOptions.LowTimeout + 1)] // in range
-    [InlineData(QoSOptions.DefTimeout, QoSOptions.DefTimeout)] // in range
-    [InlineData(QoSOptions.HighTimeout - 1, QoSOptions.HighTimeout - 1)] // in range
-    [InlineData(QoSOptions.HighTimeout, QoSOptions.DefTimeout)] // not in range
-    [InlineData(QoSOptions.HighTimeout + 1, QoSOptions.DefTimeout)] // not in range
-    public void DefaultTimeout_Setter_ShouldBeGreaterThan10AndLessThan24hours(int value, int expected)
+    [Fact]
+    public void UseQos_NoOptions_ShouldNotUse()
     {
-        // Arrange, Act
-        QoSOptions.DefaultTimeout = value;
+        // Arrange
+        var from = new FileQoSOptions();
+        var opts = new QoSOptions(from);
 
-        // Assert
-        Assert.Equal(expected, QoSOptions.DefaultTimeout);
+        // Act, Assert
+        Assert.False(opts.UseQos);
+    }
+
+    [Theory]
+    [InlineData(0, false)] // should not use
+    [InlineData(1, true)] // should use
+    public void UseQos_ExceptionsAllowedBeforeBreaking_ShouldUse(int exceptionsAllowed, bool expected)
+    {
+        // Arrange
+        var opts = new QoSOptions(exceptionsAllowed, 0, null, null); // timeoutValue is null
+
+        // Act, Assert
+        Assert.Equal(expected, opts.UseQos);
+    }
+
+    [Theory]
+    [InlineData(null, false)] // should not use
+    [InlineData(0, false)] // should not use
+    [InlineData(1, true)] // should use
+    public void UseQos_TimeoutValue_ShouldUse(int? timeout, bool expected)
+    {
+        // Arrange
+        var opts = new QoSOptions(0, 0, timeout, null); // no exceptionsAllowedBeforeBreaking
+
+        // Act, Assert
+        Assert.Equal(expected, opts.UseQos);
     }
 }
