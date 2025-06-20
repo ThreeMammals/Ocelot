@@ -21,7 +21,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(1000) // 10ms, minimum required by Polly
             .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
-            .WithDurationOfBreak(QoSOptions.LowBreakDuration + 1) // 0.5s, minimum required by Polly
+            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 0.5s, minimum required by Polly
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
@@ -59,10 +59,10 @@ public class PollyQoSResiliencePipelineProviderTests
 
     [Theory]
     [Trait("Bug", "2085")]
-    [InlineData(0, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration - 1, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration + 1, QoSOptions.LowBreakDuration + 1)] // not default, exact
+    [InlineData(0, CircuitBreakerStrategy.DefaultBreakDuration)] // default
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration - 1, CircuitBreakerStrategy.DefaultBreakDuration)] // default
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration, CircuitBreakerStrategy.DefaultBreakDuration)] // default
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration + 1, CircuitBreakerStrategy.LowBreakDuration + 1)] // not default, exact
     public void ShouldBuild_WithDefaultBreakDuration(int durationOfBreak, int expectedMillisecons)
     {
         // Arrange

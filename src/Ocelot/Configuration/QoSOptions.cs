@@ -32,19 +32,15 @@ public class QoSOptions
         TimeoutValue = timeoutValue;
     }
 
-    /// <summary>How long the circuit should stay open before resetting in milliseconds.</summary>
-    /// <remarks>If using Polly version 8 or above, this value must be 500 (0.5 sec) or greater.</remarks>
+    /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>An <see cref="int"/> value (milliseconds).</value>
-    public int DurationOfBreak { get; } = DefaultBreakDuration;
-    public const int LowBreakDuration = 500; // 0.5 seconds
-    public const int DefaultBreakDuration = 5_000; // 5 seconds
+    public int DurationOfBreak { get; }
 
-    /// <summary>How many times a circuit can fail before being set to open.</summary>
-    /// <remarks>If using Polly version 8 or above, this value must be 2 or greater.</remarks>
-    /// <value>An <see cref="int"/> value (no of exceptions).</value>
+    /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <value>An <see cref="int"/> value (exceptions number).</value>
     public int ExceptionsAllowedBeforeBreaking { get; }
-    public const int LowMinimumThroughput = 2;
-    public const int DefaultMinimumThroughput = 100;
 
     public string Key { get; }
 

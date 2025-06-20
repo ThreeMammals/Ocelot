@@ -72,21 +72,15 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater/equal than/to 2
-        if (route.QosOptions.ExceptionsAllowedBeforeBreaking < 2)
+        var options = route.QosOptions;
+        if (options.ExceptionsAllowedBeforeBreaking < 2)
         {
             return builder;
         }
 
-        var options = route.QosOptions;
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
-
-        // Polly constraints
-        int minimumThroughput = options.ExceptionsAllowedBeforeBreaking >= QoSOptions.LowMinimumThroughput
-            ? options.ExceptionsAllowedBeforeBreaking
-            : QoSOptions.DefaultMinimumThroughput;
-        int breakDurationMs = options.DurationOfBreak > QoSOptions.LowBreakDuration
-            ? options.DurationOfBreak
-            : QoSOptions.DefaultBreakDuration;
+        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(options.ExceptionsAllowedBeforeBreaking);
+        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(options.DurationOfBreak);
 
         var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {

@@ -82,7 +82,7 @@ public sealed class PollyQoSTests : Steps
     [Trait("Bug", "2085")]
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
-        int invalidDuration = QoSOptions.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
+        int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, new QoSOptions(2, invalidDuration, 100000, null));
         var configuration = GivenConfiguration(route);
@@ -96,7 +96,7 @@ public sealed class PollyQoSTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
-            .Given(x => GivenIWaitMilliseconds(QoSOptions.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
+            .Given(x => GivenIWaitMilliseconds(CircuitBreakerStrategy.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // still opened
             .Given(x => GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound))
