@@ -32,10 +32,10 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     public void Clear() => _handlersPool.Clear();
 
-    private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute downstreamRoute)
+    private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute route)
     {
-        var baseHandler = CreateHandler(downstreamRoute);
-        var handlers = _handlerFactory.Get(downstreamRoute).Data;
+        var baseHandler = CreateHandler(route);
+        var handlers = _handlerFactory.Get(route).Data;
         handlers.Reverse();
 
         foreach (var delegatingHandler in handlers.Select(handler => handler()))
@@ -44,7 +44,9 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
-        int milliseconds = downstreamRoute.TimeoutMilliseconds();
+        int milliseconds = route.QosOptions.UseQos
+            ? route.QosOptions.TimeoutValue ?? DownstreamRoute.DefaultTimeoutSeconds // TODO Discuss this: seems we should not override timeout here because Polly Timeout strategy is responsible for this
+            : 1000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
         var timeout = TimeSpan.FromMilliseconds(milliseconds);
 
         // Adding timeout handler to the top of the chain.

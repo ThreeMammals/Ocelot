@@ -29,7 +29,7 @@ public class DynamicsCreator : IDynamicsCreator
             .ToList();
     }
 
-    public int CreateTimeout(FileDynamicRoute route, FileGlobalConfiguration global)
+    public virtual int CreateTimeout(FileDynamicRoute route, FileGlobalConfiguration global)
         => route.Timeout ?? global.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds;
 
     private Route SetUpDynamicRoute(FileDynamicRoute dynamicRoute, FileGlobalConfiguration globalConfiguration)

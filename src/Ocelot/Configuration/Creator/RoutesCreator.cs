@@ -74,7 +74,7 @@ public class RoutesCreator : IRoutesCreator
             .ToList();
     }
 
-    public int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
+    public virtual int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
         => route.Timeout ?? global.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds;
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
