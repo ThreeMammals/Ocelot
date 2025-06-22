@@ -181,7 +181,7 @@ public sealed class PollyQoSTests : Steps
     // This test must be sequential because of usage of the static DownstreamRoute.DefaultTimeoutSeconds
     [Fact]
     [Trait("Bug", "1833")]
-    public void Should_timeout_per_default_after_90_seconds()
+    public async Task Should_timeout_per_default_after_90_seconds()
     {
         int originalValue = DownstreamRoute.DefaultTimeoutSeconds; // original value is 90 seconds
         try
@@ -191,12 +191,11 @@ public sealed class PollyQoSTests : Steps
             var port = PortFinder.GetRandomPort();
             var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
             var configuration = GivenConfiguration(route);
-            this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500)) // 3.5s > 3s -> ServiceUnavailable
-                .And(x => GivenThereIsAConfiguration(configuration))
-                .And(x => GivenOcelotIsRunningWithPolly())
-                .When(x => WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 3 secs -> Timeout exception aka request cancellation
-                .BDDfy();
+            GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500); // 3.5s > 3s -> ServiceUnavailable
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunningWithPolly();
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 3 secs -> Timeout exception aka request cancellation
         }
         finally
         {

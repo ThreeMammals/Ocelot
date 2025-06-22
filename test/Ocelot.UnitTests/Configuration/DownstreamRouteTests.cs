@@ -5,6 +5,7 @@ namespace Ocelot.UnitTests.Configuration;
 public class DownstreamRouteTests
 {
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(0, DownstreamRoute.DefTimeout)] // not in range
     [InlineData(DownstreamRoute.LowTimeout - 1, DownstreamRoute.DefTimeout)] // not in range
     [InlineData(DownstreamRoute.LowTimeout, DownstreamRoute.LowTimeout)] // in range

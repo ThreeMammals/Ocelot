@@ -6,7 +6,7 @@ public class FileQoSOptionsTests
 {
     [Fact]
     [Trait("Bug", "1833")]
-    [Trait("Feat", "2073")]
+    [Trait("PR", "2073")]
     public void Cstor_Default_NoTimeoutValue()
     {
         // Arrange, Act

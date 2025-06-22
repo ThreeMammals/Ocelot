@@ -38,7 +38,6 @@ public class FileQoSOptions
     /// <list type="bullet">
     ///   <item><see cref="QoSOptions.TimeoutValue"/></item>
     ///   <item><see cref="DownstreamRoute.Timeout"/></item>
-    ///   <item><see cref="DownstreamRoute.TimeoutMilliseconds"/></item>
     ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/></item>
     /// </list>
     /// </remarks>
