@@ -41,7 +41,7 @@ public class RoutesCreatorTests : UnitTest
     private HeaderTransformations _ht;
     private List<DownstreamHostAndPort> _dhp;
     private LoadBalancerOptions _lbo;
-    private List<Route> _result;
+    private IReadOnlyList<Route> _result;
     private Version _expectedVersion;
     private HttpVersionPolicy _expectedVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _uht;

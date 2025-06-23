@@ -87,12 +87,12 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
     public string ServiceName { get; set; }
     public string ServiceNamespace { get; set; }
 
-    /// <summary>Explicit timeout value which overrides default one.</summary>
-    /// <remarks>Reused in, or ignored in favor of implicit default value:
+    /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
+    /// <remarks>Notes:
     /// <list type="bullet">
-    ///   <item><see cref="DownstreamRoute.Timeout"/></item>
-    ///   <item><see cref="DownstreamRoute.TimeoutMilliseconds"/></item>
-    ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/></item>
+    ///   <item><see cref="DownstreamRoute.Timeout"/> is the consumer of this property.</item>
+    ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/> implicitly overrides this property if not defined (null).</item>
+    ///   <item><see cref="QoSOptions.TimeoutValue"/> explicitly overrides this property if QoS is enabled.</item>
     /// </list>
     /// </remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>

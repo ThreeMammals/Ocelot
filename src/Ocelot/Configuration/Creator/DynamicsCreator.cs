@@ -22,7 +22,7 @@ public class DynamicsCreator : IDynamicsCreator
         _metadataCreator = metadataCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration)
+    public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
     {
         return fileConfiguration.DynamicRoutes
             .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))

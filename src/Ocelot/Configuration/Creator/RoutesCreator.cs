@@ -65,7 +65,7 @@ public class RoutesCreator : IRoutesCreator
         _metadataCreator = metadataCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration)
+    public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
     {
         Route CreateRoute(FileRoute route)
             => SetUpRoute(route, SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration));

@@ -12,7 +12,7 @@ public class DynamicsCreatorTests : UnitTest
     private readonly Mock<IVersionCreator> _versionCreator;
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
     private readonly Mock<IMetadataCreator> _metadataCreator;
-    private List<Route> _result;
+    private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
     private RateLimitOptions _rlo1;
     private RateLimitOptions _rlo2;

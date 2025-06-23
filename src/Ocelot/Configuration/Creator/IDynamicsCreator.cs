@@ -4,7 +4,7 @@ namespace Ocelot.Configuration.Creator;
 
 public interface IDynamicsCreator
 {
-    List<Route> Create(FileConfiguration fileConfiguration);
+    IReadOnlyList<Route> Create(FileConfiguration fileConfiguration);
 
     /// <summary>
     /// Creates a timeout value for a given file route based on the global configuration.

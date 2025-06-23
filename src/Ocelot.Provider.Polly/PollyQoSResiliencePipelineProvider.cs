@@ -17,7 +17,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
-    private readonly FileGlobalConfiguration _global;
+    private readonly FileGlobalConfiguration _globalConfiguration;
     
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
@@ -26,7 +26,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     {
         _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
         _registry = registry;
-        _global = global.Value;
+        _globalConfiguration = global.Value;
     }
 
     protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
@@ -119,7 +119,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         // Gives higher priority to route-level options over global ones
-        int? timeoutMs = route?.QosOptions?.TimeoutValue ?? _global?.QoSOptions?.TimeoutValue;
+        int? timeoutMs = route?.QosOptions?.TimeoutValue ?? _globalConfiguration?.QoSOptions?.TimeoutValue;
 
         // Short cut: don't apply the strategy if no QoS options
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
