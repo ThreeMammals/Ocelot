@@ -14,3 +14,10 @@ global using Ocelot.Testing;
 global using Shouldly;
 global using System.Net;
 global using Xunit;
+
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1124:DoNotUseRegions", Justification = "Reviewed.")]
+[assembly: SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Reviewed.")]
+
+internal class Usings { }

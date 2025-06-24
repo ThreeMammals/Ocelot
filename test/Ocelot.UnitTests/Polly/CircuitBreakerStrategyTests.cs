@@ -6,6 +6,7 @@ namespace Ocelot.UnitTests.Polly;
 public class CircuitBreakerStrategyTests
 {
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(0, Const.DefaultBreakDuration)] // out of range
     [InlineData(500, Const.DefaultBreakDuration)] // out of range
     [InlineData(501, 501)] // in range
@@ -22,6 +23,7 @@ public class CircuitBreakerStrategyTests
     }
 
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(0, Const.DefaultMinimumThroughput)] // out of range
     [InlineData(1, Const.DefaultMinimumThroughput)] // out of range
     [InlineData(2, 2)] // in range

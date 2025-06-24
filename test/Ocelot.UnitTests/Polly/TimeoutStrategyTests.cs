@@ -6,6 +6,7 @@ namespace Ocelot.UnitTests.Polly;
 public class TimeoutStrategyTests
 {
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(0, Const.DefTimeout)] // out of range
     [InlineData(Const.LowTimeout - 1, Const.DefTimeout)] // out of range
     [InlineData(Const.LowTimeout, Const.DefTimeout)] // out of range

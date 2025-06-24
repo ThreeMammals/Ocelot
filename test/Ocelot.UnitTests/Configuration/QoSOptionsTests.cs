@@ -6,6 +6,7 @@ namespace Ocelot.UnitTests.Configuration;
 public class QoSOptionsTests
 {
     [Fact]
+    [Trait("PR", "2073")]
     public void UseQos_NoOptions_ShouldNotUse()
     {
         // Arrange
@@ -17,6 +18,7 @@ public class QoSOptionsTests
     }
 
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(0, false)] // should not use
     [InlineData(1, true)] // should use
     public void UseQos_ExceptionsAllowedBeforeBreaking_ShouldUse(int exceptionsAllowed, bool expected)
@@ -29,6 +31,7 @@ public class QoSOptionsTests
     }
 
     [Theory]
+    [Trait("PR", "2073")]
     [InlineData(null, false)] // should not use
     [InlineData(0, false)] // should not use
     [InlineData(1, true)] // should use

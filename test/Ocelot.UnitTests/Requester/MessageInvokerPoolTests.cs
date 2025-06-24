@@ -200,12 +200,14 @@ public class MessageInvokerPoolTests : UnitTest
         AssertTimeoutPrecisely(watcher, expected);
     }
 
+    #region PR 2073
+
     [Theory]
     [Trait("PR", "2073")]
     [Trait("Feat", "1314 1869")]
     [InlineData(1)]
     [InlineData(3)]
-    public async Task SendAsync_TimeoutValueInRoute_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
+    public async Task SendAsync_NoQosAndHasRouteTimeout_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
@@ -216,7 +218,7 @@ public class MessageInvokerPoolTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(handlerOptions)
-            .WithTimeout(timeoutSeconds) // !!! TimeoutValueInRoute
+            .WithTimeout(timeoutSeconds) // !!!
             .Build();
         GivenTheFactoryReturnsNothing();
         GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
@@ -237,11 +239,11 @@ public class MessageInvokerPoolTests : UnitTest
     [Trait("Feat", "1314 1869")]
     [InlineData(1, 2)]
     [InlineData(3, 4)]
-    public async Task SendAsync_TimeoutValueInQosOptionsIsLessThanRouteTimeout_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
+    public async Task SendAsync_QosTimeoutIsLessThanRouteOne_ThrowTimeoutExceptionAfterQoSTimeout(int qosTimeout, int routeTimeout)
     {
         // Arrange
         var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(qosTimeout * 1000) // !!! TimeoutValueInQosOptionsIsLessThanRouteTimeout
+            .WithTimeoutValue(qosTimeout * 1000) // !!!
             .Build();
         var handlerOptions = new HttpHandlerOptionsBuilder()
             .WithUseMaxConnectionPerServer(int.MaxValue)
@@ -265,10 +267,9 @@ public class MessageInvokerPoolTests : UnitTest
         AssertTimeoutPrecisely(watcher, expected);
     }
 
-    private static TimeSpan C10ms => TimeSpan.FromMilliseconds(10);
     private static void AssertTimeoutPrecisely(Stopwatch watcher, TimeSpan expected, TimeSpan? precision = null)
     {
-        precision ??= C10ms;
+        precision ??= TimeSpan.FromMilliseconds(10);
         TimeSpan elapsed = watcher.Elapsed, margin = elapsed - expected;
         try
         {
@@ -280,6 +281,7 @@ public class MessageInvokerPoolTests : UnitTest
             Assert.True(elapsed.Add(precision.Value) >= expected, $"Elapsed time {elapsed} is less than expected timeout {expected} with margin {margin} which module is >= {precision.Value.Milliseconds}ms.");
         }
     }
+    #endregion
 
     private static string Url(int port) => $"http://localhost:{port}";
 

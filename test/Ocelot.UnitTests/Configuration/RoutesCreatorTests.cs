@@ -166,33 +166,60 @@ public class RoutesCreatorTests : UnitTest
         ThenTheRoutesAreCreated();
     }
 
+    #region PR 2073
+
     [Fact]
-    public void CreateTimeout_RouteTimeoutIsLessThanGlobalOne_CreatedFromRouteValue()
+    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
+    public void CreateTimeout_HasRouteTimeout_ShouldCreateFromRoute()
     {
         // Arrange
-        var fileRoute = new FileRoute { Timeout = 10 };
-        var globalConfiguration = new FileGlobalConfiguration { Timeout = 20 };
+        var route = new FileRoute { Timeout = 11 };
+        var global = new FileGlobalConfiguration { Timeout = 22 };
 
         // Act
-        var timeout = _creator.CreateTimeout(fileRoute, globalConfiguration);
+        var timeout = _creator.CreateTimeout(route, global);
 
         // Assert
-        Assert.Equal(fileRoute.Timeout, timeout);
+        Assert.Equal(route.Timeout, timeout);
     }
 
     [Fact]
-    public void CreateTimeout_NoRouteTimeoutAndHasGlobalTimeout_CreatedFromGlobalValue()
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndHasGlobalOne_ShouldCreateFromGlobalConfig()
     {
         // Arrange
-        var fileRoute = new FileRoute();
-        var globalConfiguration = new FileGlobalConfiguration { Timeout = 20 };
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration { Timeout = 22 };
 
         // Act
-        var timeout = _creator.CreateTimeout(fileRoute, globalConfiguration);
+        var timeout = _creator.CreateTimeout(route, global);
 
         // Assert
-        Assert.Equal(globalConfiguration.Timeout, timeout);
+        Assert.Null(route.Timeout);
+        Assert.Equal(global.Timeout, timeout);
     }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndNoGlobalOne_ShouldCreateFromDownstreamRouteDefaults()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration();
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Null(global.Timeout);
+        Assert.Equal(DownstreamRoute.DefaultTimeoutSeconds, timeout);
+    }
+    #endregion
 
     private void ThenTheDependenciesAreCalledCorrectly()
     {
