@@ -2,6 +2,7 @@
 
 namespace Ocelot.UnitTests.Configuration;
 
+[Collection(nameof(SequentialTests))]
 public class DownstreamRouteTests
 {
     [Theory]
@@ -18,5 +19,6 @@ public class DownstreamRouteTests
 
         // Assert
         Assert.Equal(expected, DownstreamRoute.DefaultTimeoutSeconds);
+        DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout; // recover clean state after assembly starting
     }
 }

@@ -217,7 +217,7 @@ public class RoutesCreatorTests : UnitTest
         // Assert
         Assert.Null(route.Timeout);
         Assert.Null(global.Timeout);
-        Assert.Equal(DownstreamRoute.DefaultTimeoutSeconds, timeout);
+        Assert.Equal(DownstreamRoute.DefTimeout, timeout);
     }
     #endregion
 

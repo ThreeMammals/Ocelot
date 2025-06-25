@@ -152,7 +152,7 @@ public sealed class ClientWebSocketOptionsProxyTests : UnitTest, IDisposable
     {
         // Arrange
         var expected = new CookieContainer();
-        Uri host = new Uri("https://ocelot.net");
+        var host = new Uri("https://ocelot.net");
         var cookie = new Cookie("test", nameof(Cookies_Proxied));
         expected.Add(host, cookie);
         _socket.Options.Cookies = expected;

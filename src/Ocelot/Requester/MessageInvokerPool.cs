@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using System.Net.Security;
 
@@ -44,9 +45,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             baseHandler = delegatingHandler;
         }
 
-        int milliseconds = route.QosOptions.UseQos
-            ? route.QosOptions.TimeoutValue ?? DownstreamRoute.DefaultTimeoutSeconds // TODO Discuss this: seems we should not override timeout here because Polly Timeout strategy is responsible for this
-            : 1000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
+        int milliseconds = EnsureRouteTimeoutIsGreaterThanQosOne(route);
         var timeout = TimeSpan.FromMilliseconds(milliseconds);
 
         // Adding timeout handler to the top of the chain.
@@ -55,9 +54,34 @@ public class MessageInvokerPool : IMessageInvokerPool
         {
             InnerHandler = baseHandler,
         };
-
         return new HttpMessageInvoker(timeoutHandler, true);
     }
+
+    /// <summary>
+    /// Ensures that the route timeout is greater than the QoS timeout. If the route timeout is less than or equal to the QoS timeout, returns double the QoS timeout value and logs a warning.
+    /// </summary>
+    /// <remarks>The method is open for overriding because it is declared as <see langword="virtual"/>.</remarks>
+    /// <param name="route">Current processing route.</param>
+    /// <returns>An <see cref="int"/> value representing the timeout in milliseconds, to be assigned in the upper context.</returns>
+    protected virtual int EnsureRouteTimeoutIsGreaterThanQosOne(DownstreamRoute route)
+    {
+        var qos = route.QosOptions;
+        int routeMilliseconds = 1000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
+        if (qos.UseQos && qos.TimeoutValue.HasValue && routeMilliseconds <= qos.TimeoutValue)
+        {
+            int doubledTimeout = 2 * qos.TimeoutValue.Value;
+            Func<string> getWarning = route.Timeout.HasValue
+                ? () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the route {nameof(route.Timeout)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the route {nameof(route.Timeout)} ({routeMilliseconds} ms) {EqualitySentence(routeMilliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!"
+                : () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} ({routeMilliseconds} ms) {EqualitySentence(routeMilliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)} instead of using {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!";
+            _logger.LogWarning(getWarning);
+            return doubledTimeout;
+        }
+
+        return routeMilliseconds;
+    }
+
+    public static string EqualitySentence(int left, int right)
+        => left < right ? "is shorter than" : left == right ? "is equal to" : "is longer than";
 
     private HttpMessageHandler CreateHandler(DownstreamRoute downstreamRoute)
     {
