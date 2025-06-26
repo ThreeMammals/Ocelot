@@ -183,7 +183,6 @@ public sealed class PollyQoSTests : Steps
     [Trait("Bug", "1833")]
     public async Task Should_timeout_per_default_after_90_seconds()
     {
-        int originalValue = DownstreamRoute.DefaultTimeoutSeconds; // original value is 90 seconds
         try
         {
             DownstreamRoute.DefaultTimeoutSeconds = 3; // override original value
@@ -199,7 +198,7 @@ public sealed class PollyQoSTests : Steps
         }
         finally
         {
-            DownstreamRoute.DefaultTimeoutSeconds = originalValue;
+            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
         }
     }
 
