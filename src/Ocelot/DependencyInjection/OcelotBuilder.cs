@@ -108,7 +108,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IRequestMapper, RequestMapper>();
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
-        Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+        Services.TryAddSingleton<IDelegatingHandlerFactory, DelegatingHandlerFactory>();
         
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();

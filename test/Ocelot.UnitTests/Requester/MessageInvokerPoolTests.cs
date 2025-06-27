@@ -313,9 +313,9 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     private static void ThenTheFakeAreHandledInOrder(FakeDelegatingHandler fakeOne, FakeDelegatingHandler fakeTwo) =>
         fakeOne.TimeCalled.ShouldBeGreaterThan(fakeTwo.TimeCalled);
 
-    private static Mock<IDelegatingHandlerHandlerFactory> GetHandlerFactory()
+    private static Mock<IDelegatingHandlerFactory> GetHandlerFactory()
     {
-        var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
+        var handlerFactory = new Mock<IDelegatingHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
             .Returns(new List<DelegatingHandler>());
         return handlerFactory;
@@ -369,7 +369,7 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
 
 public class MessageInvokerPoolBase : UnitTest
 {
-    protected Mock<IDelegatingHandlerHandlerFactory> _handlerFactory;
+    protected Mock<IDelegatingHandlerFactory> _handlerFactory;
     protected HttpResponseMessage _response;
     protected MessageInvokerPool _pool;
 
@@ -402,14 +402,14 @@ public class MessageInvokerPoolBase : UnitTest
     protected void GivenTheFactoryReturnsNothing()
     {
         var handlers = new List<DelegatingHandler>();
-        _handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
+        _handlerFactory = new Mock<IDelegatingHandlerFactory>();
         _handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
             .Returns(handlers);
     }
 
     protected void GivenTheFactoryReturns(List<DelegatingHandler> handlers)
     {
-        _handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
+        _handlerFactory = new Mock<IDelegatingHandlerFactory>();
         _handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
             .Returns(handlers);
     }

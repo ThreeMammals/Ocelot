@@ -9,12 +9,12 @@ namespace Ocelot.Requester;
 public class MessageInvokerPool : IMessageInvokerPool
 {
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;
-    private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
+    private readonly IDelegatingHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
     private readonly FileGlobalConfiguration _globalConfiguration;
 
     public MessageInvokerPool(
-        IDelegatingHandlerHandlerFactory handlerFactory,
+        IDelegatingHandlerFactory handlerFactory,
         IOcelotLoggerFactory loggerFactory,
         IOptions<FileGlobalConfiguration> global)
     {
