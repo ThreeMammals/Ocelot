@@ -404,7 +404,9 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
 
     private void ThenTheWarningIsLogged(DownstreamRoute route)
     {
-        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Route {route.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")), Times.Once);
+        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(
+            y => y.Invoke() == $"Route '{route.Name()}' specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")),
+            Times.Once);
     }
 
     private void GivenTheTracingFactoryReturns()
