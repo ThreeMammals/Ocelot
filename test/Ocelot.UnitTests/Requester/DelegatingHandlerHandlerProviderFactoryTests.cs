@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
@@ -17,6 +19,7 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly Mock<IQoSFactory> _qosFactory;
     private readonly Mock<ITracingHandlerFactory> _tracingFactory;
+    private readonly Mock<IOptionsMonitor<FileConfiguration>> _optionsMonitor;
     private IServiceProvider _serviceProvider;
     private readonly IServiceCollection _services;
     private readonly QosDelegatingHandlerDelegate _qosDelegate;
@@ -31,6 +34,10 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<DelegatingHandlerHandlerFactory>()).Returns(_logger.Object);
         _services = new ServiceCollection();
         _services.AddSingleton(_qosDelegate);
+        _optionsMonitor = new();
+        var configuration = new FileConfiguration();
+        _optionsMonitor.SetupGet(x => x.CurrentValue).Returns(configuration);
+        _services.AddSingleton(_optionsMonitor.Object);
     }
 
     [Fact]
@@ -280,7 +287,7 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
 
         // Assert: Then No Delegates Are In The Provider
         result.ShouldNotBeNull();
-        result.Data.Count.ShouldBe(0);
+        result.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -445,7 +452,7 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
             .Returns(new OkResponse<DelegatingHandler>(handler));
     }
 
-    private Response<List<Func<DelegatingHandler>>> WhenIGet(DownstreamRoute route)
+    private List<DelegatingHandler> WhenIGet(DownstreamRoute route)
     {
         _serviceProvider = _services.BuildServiceProvider(true);
         _factory = new DelegatingHandlerHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
@@ -456,39 +463,39 @@ public class DelegatingHandlerHandlerProviderFactoryTests : UnitTest
     private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
 }
 
-internal static class ResponseExtensions
+internal static class ListExtensions
 {
-    public static void ThenItIsQosHandler(this Response<List<Func<DelegatingHandler>>> result, int i)
+    public static void ThenItIsQosHandler(this List<DelegatingHandler> result, int i)
     {
-        var delegates = result.Data;
-        var del = delegates[i].Invoke();
+        var delegates = result;
+        var del = delegates[i];
         del.ShouldBeOfType<FakeQoSHandler>();
     }
 
-    public static void ThenTheDelegatesAreAddedCorrectly(this Response<List<Func<DelegatingHandler>>> result)
+    public static void ThenTheDelegatesAreAddedCorrectly(this List<DelegatingHandler> result)
     {
-        var delegates = result.Data;
+        var delegates = result;
 
-        var del = delegates[0].Invoke();
+        var del = delegates[0];
         var handler = (FakeDelegatingHandler)del;
         handler.Order.ShouldBe(1);
 
-        del = delegates[1].Invoke();
+        del = delegates[1];
         var handlerTwo = (FakeDelegatingHandlerTwo)del;
         handlerTwo.Order.ShouldBe(2);
     }
 
-    public static void ThenThereIsDelegatesInProvider(this Response<List<Func<DelegatingHandler>>> result, int count)
+    public static void ThenThereIsDelegatesInProvider(this List<DelegatingHandler> result, int count)
     {
         result.ShouldNotBeNull();
-        result.Data.Count.ShouldBe(count);
+        result.Count.ShouldBe(count);
     }
 
-    public static void ThenHandlerAtPositionIs<T>(this Response<List<Func<DelegatingHandler>>> result, int pos)
+    public static void ThenHandlerAtPositionIs<T>(this List<DelegatingHandler> result, int pos)
         where T : DelegatingHandler
     {
-        var delegates = result.Data;
-        var del = delegates[pos].Invoke();
+        var delegates = result;
+        var del = delegates[pos];
         del.ShouldBeOfType<T>();
     }
 }

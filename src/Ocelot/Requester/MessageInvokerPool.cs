@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using System.Net.Security;
@@ -10,14 +11,19 @@ public class MessageInvokerPool : IMessageInvokerPool
     private readonly ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>> _handlersPool;
     private readonly IDelegatingHandlerHandlerFactory _handlerFactory;
     private readonly IOcelotLogger _logger;
+    private readonly FileGlobalConfiguration _globalConfiguration;
 
-    public MessageInvokerPool(IDelegatingHandlerHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+    public MessageInvokerPool(
+        IDelegatingHandlerHandlerFactory handlerFactory,
+        IOcelotLoggerFactory loggerFactory,
+        IOptions<FileGlobalConfiguration> global)
     {
         _handlerFactory = handlerFactory ?? throw new ArgumentNullException(nameof(handlerFactory));
         _handlersPool = new ConcurrentDictionary<MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>();
 
         ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
+        _globalConfiguration = global.Value;
     }
 
     public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
@@ -36,13 +42,12 @@ public class MessageInvokerPool : IMessageInvokerPool
     private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute route)
     {
         var baseHandler = CreateHandler(route);
-        var handlers = _handlerFactory.Get(route).Data;
+        var handlers = _handlerFactory.Get(route);
         handlers.Reverse();
-
-        foreach (var delegatingHandler in handlers.Select(handler => handler()))
+        foreach (var handler in handlers)
         {
-            delegatingHandler.InnerHandler = baseHandler;
-            baseHandler = delegatingHandler;
+            handler.InnerHandler = baseHandler;
+            baseHandler = handler;
         }
 
         int milliseconds = EnsureRouteTimeoutIsGreaterThanQosOne(route);
@@ -66,18 +71,38 @@ public class MessageInvokerPool : IMessageInvokerPool
     protected virtual int EnsureRouteTimeoutIsGreaterThanQosOne(DownstreamRoute route)
     {
         var qos = route.QosOptions;
-        int routeMilliseconds = 1000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
-        if (qos.UseQos && qos.TimeoutValue.HasValue && routeMilliseconds <= qos.TimeoutValue)
+        int routeMilliseconds = 1_000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
+        var routeQos = route.QosOptions;
+        if (TryEnsureQosLevel(routeQos, route, ref routeMilliseconds))
         {
-            int doubledTimeout = 2 * qos.TimeoutValue.Value;
-            Func<string> getWarning = route.Timeout.HasValue
-                ? () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the route {nameof(route.Timeout)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the route {nameof(route.Timeout)} ({routeMilliseconds} ms) {EqualitySentence(routeMilliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!"
-                : () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} ({routeMilliseconds} ms) {EqualitySentence(routeMilliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)} instead of using {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!";
-            _logger.LogWarning(getWarning);
-            return doubledTimeout;
+            return routeMilliseconds;
+        }
+
+        var globalQos = new QoSOptions(_globalConfiguration.QoSOptions);
+        if (TryEnsureQosLevel(globalQos, route, ref routeMilliseconds))
+        {
+            return routeMilliseconds;
         }
 
         return routeMilliseconds;
+    }
+
+    private bool TryEnsureQosLevel(QoSOptions qos, DownstreamRoute route, ref int routeMilliseconds)
+    {
+        // (qos.UseQos && qos.TimeoutValue.HasValue && routeMilliseconds <= qos.TimeoutValue)
+        if (!qos.UseQos || !qos.TimeoutValue.HasValue || routeMilliseconds > qos.TimeoutValue)
+        {
+            return false;
+        }
+
+        int milliseconds = routeMilliseconds;
+        int doubledTimeout = 2 * qos.TimeoutValue.Value;
+        Func<string> getWarning = route.Timeout.HasValue
+            ? () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the route {nameof(route.Timeout)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the route {nameof(route.Timeout)} ({milliseconds} ms) {EqualitySentence(milliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!"
+            : () => $"Route '{route.Name()}' has Quality of Service settings ({nameof(FileRoute.QoSOptions)}) enabled, but either the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} or the QoS {nameof(QoSOptions.TimeoutValue)} is misconfigured: specifically, the {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)} ({milliseconds} ms) {EqualitySentence(milliseconds, qos.TimeoutValue.Value)} the QoS {nameof(QoSOptions.TimeoutValue)} ({qos.TimeoutValue} ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS {nameof(QoSOptions.TimeoutValue)} and applied {doubledTimeout} ms to the route {nameof(route.Timeout)} instead of using {nameof(DownstreamRoute)}.{nameof(DownstreamRoute.DefaultTimeoutSeconds)}. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!";
+        _logger.LogWarning(getWarning);
+        routeMilliseconds = doubledTimeout;
+        return true;
     }
 
     public static string EqualitySentence(int left, int right)

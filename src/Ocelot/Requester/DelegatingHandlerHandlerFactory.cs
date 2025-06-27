@@ -1,8 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
-using Ocelot.Responses;
 
 namespace Ocelot.Requester;
 
@@ -25,55 +26,55 @@ public class DelegatingHandlerHandlerFactory : IDelegatingHandlerHandlerFactory
         _qoSFactory = qoSFactory;
     }
 
-    public Response<List<Func<DelegatingHandler>>> Get(DownstreamRoute downstreamRoute)
+    public List<DelegatingHandler> Get(DownstreamRoute route)
     {
-        var globalDelegatingHandlers = _serviceProvider
-            .GetServices<GlobalDelegatingHandler>()
+        var globalDelegatingHandlers = _serviceProvider.GetServices<GlobalDelegatingHandler>()
             .ToArray();
-        var routeSpecificHandlers = _serviceProvider
-            .GetServices<DelegatingHandler>()
+        var routeSpecificHandlers = _serviceProvider.GetServices<DelegatingHandler>()
             .ToList();
-        var handlers = new List<Func<DelegatingHandler>>();
+        var handlers = new List<DelegatingHandler>();
 
         foreach (var handler in globalDelegatingHandlers)
         {
-            if (GlobalIsInHandlersConfig(downstreamRoute, handler))
+            if (GlobalIsInHandlersConfig(route, handler))
             {
                 routeSpecificHandlers.Add(handler.DelegatingHandler);
             }
             else
             {
-                handlers.Add(() => handler.DelegatingHandler);
+                handlers.Add(handler.DelegatingHandler);
             }
         }
 
-        if (downstreamRoute.DelegatingHandlers.Count != 0)
+        if (route.DelegatingHandlers.Count != 0)
         {
-            var sorted = SortByConfigOrder(downstreamRoute, routeSpecificHandlers);
-            handlers.AddRange(sorted.Select(handler => (Func<DelegatingHandler>)(() => handler)));
+            var sorted = SortByConfigOrder(route, routeSpecificHandlers);
+            handlers.AddRange(sorted);
         }
 
-        if (downstreamRoute.HttpHandlerOptions.UseTracing)
+        if (route.HttpHandlerOptions.UseTracing)
         {
-            handlers.Add(() => (DelegatingHandler)_tracingFactory.Get());
+            handlers.Add((DelegatingHandler)_tracingFactory.Get());
         }
 
-        if (downstreamRoute.QosOptions.UseQos)
+        var monitor = _serviceProvider.GetService<IOptionsMonitor<FileConfiguration>>();
+        var configuration = monitor.CurrentValue;
+        var globalQos = new QoSOptions(configuration.GlobalConfiguration.QoSOptions);
+        if (route.QosOptions.UseQos || globalQos.UseQos)
         {
-            var handler = _qoSFactory.Get(downstreamRoute);
-
+            var handler = _qoSFactory.Get(route);
             if (handler?.IsError == false)
             {
-                handlers.Add(() => handler.Data);
+                handlers.Add(handler.Data);
             }
             else
             {
-                _logger.LogWarning(() => $"Route {downstreamRoute.UpstreamPathTemplate} specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
-                handlers.Add(() => new NoQosDelegatingHandler());
+                _logger.LogWarning(() => $"Route '{route.Name()}' specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
+                handlers.Add(new NoQosDelegatingHandler());
             }
         }
 
-        return new OkResponse<List<Func<DelegatingHandler>>>(handlers);
+        return handlers;
     }
 
     private static DelegatingHandler[] SortByConfigOrder(DownstreamRoute request, List<DelegatingHandler> routeSpecificHandlers)

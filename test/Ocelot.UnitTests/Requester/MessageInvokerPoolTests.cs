@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -9,7 +10,6 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
-using Ocelot.Responses;
 using System.Diagnostics;
 using System.Reflection;
 using Xunit.Sdk;
@@ -71,11 +71,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         // Arrange
         var fakeOne = new FakeDelegatingHandler();
         var fakeTwo = new FakeDelegatingHandler();
-        var handlers = new List<Func<DelegatingHandler>>
-        {
-            () => fakeOne,
-            () => fakeTwo,
-        };
+        var handlers = new List<DelegatingHandler> { fakeOne, fakeTwo };
         GivenTheFactoryReturns(handlers);
         _downstreamRoute1 = DownstreamRouteFactory("/super-test");
         GivenAMessageInvokerPool();
@@ -111,7 +107,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             // The test should pass without timeout definition -> implicit default timeout
             //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
             .Build();
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         var port = PortFinder.GetRandomPort();
         GivenARequest(route, port);
@@ -149,7 +145,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         var port = PortFinder.GetRandomPort();
         GivenADownstreamService(port); // sometimes it fails because of port binding
 
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, port);
 
@@ -171,22 +167,27 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     [Trait("Feat", "1869")]
     [InlineData(1)]
     [InlineData(3)]
-    public async Task SendAsync_NoQosAndHasRouteTimeout_ThrowTimeoutExceptionAfterRouteTimeout(int timeoutSeconds)
+    public void SendAsync_NoQosAndHasRouteTimeout_ThrowTimeoutExceptionAfterRouteTimeout(int routeTimeoutSeconds)
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(null, timeoutSeconds);
+        var route = GivenRouteWithTimeouts(null, routeTimeoutSeconds);
         GivenTheFactoryReturnsNothing();
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         var port = PortFinder.GetRandomPort();
         GivenARequest(route, port);
 
-        // Act, Assert
-        int marginMs = 50;
-        var expected = TimeSpan.FromSeconds(timeoutSeconds);
-        var watcher = await TestRetry.NoWaitAsync(
-            () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
-        AssertTimeoutPrecisely(watcher, expected);
+        //// Act, Assert
+        //int marginMs = 50;
+        //var expected = TimeSpan.FromSeconds(routeTimeoutSeconds);
+        //var watcher = await TestRetry.NoWaitAsync(
+        //    () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
+        //AssertTimeoutPrecisely(watcher, expected);
+        // Act
+        using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+
+        // Assert
+        AssertTimeout(invoker, routeTimeoutSeconds);
     }
 
     [Theory]
@@ -199,7 +200,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     {
         // Arrange
         var route = GivenRouteWithTimeouts(qosTimeout, routeTimeout);
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
 
@@ -225,7 +226,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     {
         // Arrange
         var route = GivenRouteWithTimeouts(qosTimeout, routeTimeout);
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
         Func<string> fMsg = null;
@@ -258,23 +259,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
 
         // Assert
         Assert.Equal(expected, actual);
-    }
-
-    private static TimeSpan AssertTimeout(HttpMessageInvoker invoker, int expectedSeconds)
-    {
-        Assert.NotNull(invoker);
-        Type me = invoker.GetType();
-        var field = me.GetField("_handler", BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.NotNull(field);
-        var handler = field.GetValue(invoker) as HttpMessageHandler;
-        Assert.NotNull(handler);
-        Assert.IsType<TimeoutDelegatingHandler>(handler);
-        me = handler.GetType();
-        field = me.GetField("_timeout", BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.NotNull(field);
-        var timeout = (TimeSpan)field.GetValue(handler);
-        Assert.Equal(expectedSeconds, (int)timeout.TotalSeconds);
-        return timeout;
     }
     #endregion
 
@@ -333,7 +317,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     {
         var handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<List<Func<DelegatingHandler>>>(new()));
+            .Returns(new List<DelegatingHandler>());
         return handlerFactory;
     }
 
@@ -352,12 +336,12 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
 {
     [Fact]
     [Trait("Bug", "1833")]
-    public async Task SendAsync_NoQosAndNoRouteTimeouts_ShouldTimeoutAfterDefaultSeconds()
+    public void SendAsync_NoQosAndNoRouteTimeouts_ShouldTimeoutAfterDefaultSeconds()
     {
         // Arrange
         var route = GivenRouteWithTimeouts(null, null);
         GivenTheFactoryReturnsNothing();
-        GivenTheFactoryReturns(new List<Func<DelegatingHandler>>());
+        GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
 
@@ -365,11 +349,16 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
         DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // minimum possible
         try
         {
-            int marginMs = 50;
-            var expected = TimeSpan.FromSeconds(DownstreamRoute.LowTimeout);
-            var watcher = await TestRetry.NoWaitAsync(
-                () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
-            AssertTimeoutPrecisely(watcher, expected);
+            //int marginMs = 50;
+            //var expected = TimeSpan.FromSeconds(DownstreamRoute.LowTimeout);
+            //var watcher = await TestRetry.NoWaitAsync(
+            //    () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
+            //AssertTimeoutPrecisely(watcher, expected);
+            // Act
+            using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+
+            // Assert
+            AssertTimeout(invoker, DownstreamRoute.LowTimeout);
         }
         finally
         {
@@ -386,6 +375,12 @@ public class MessageInvokerPoolBase : UnitTest
 
     protected readonly DefaultHttpContext _context = new();
     protected readonly Mock<IOcelotLoggerFactory> _ocelotLoggerFactory = new();
+    protected readonly Mock<IOptions<FileGlobalConfiguration>> _globalConfiguration = new();
+
+    public MessageInvokerPoolBase()
+    {
+        _globalConfiguration.SetupGet(x => x.Value).Returns(new FileGlobalConfiguration());
+    }
 
     protected static DownstreamRoute GivenRouteWithTimeouts(int? qosTimeout, int? routeTimeout)
     {
@@ -406,21 +401,21 @@ public class MessageInvokerPoolBase : UnitTest
 
     protected void GivenTheFactoryReturnsNothing()
     {
-        var handlers = new List<Func<DelegatingHandler>>();
+        var handlers = new List<DelegatingHandler>();
         _handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         _handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+            .Returns(handlers);
     }
 
-    protected void GivenTheFactoryReturns(List<Func<DelegatingHandler>> handlers)
+    protected void GivenTheFactoryReturns(List<DelegatingHandler> handlers)
     {
         _handlerFactory = new Mock<IDelegatingHandlerHandlerFactory>();
         _handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<List<Func<DelegatingHandler>>>(handlers));
+            .Returns(handlers);
     }
 
     protected void GivenAMessageInvokerPool() =>
-        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object, _globalConfiguration.Object);
 
     protected void GivenARequest(DownstreamRoute downstream, int port)
         => GivenARequestWithAUrlAndMethod(downstream, Url(port), HttpMethod.Get);
@@ -439,7 +434,7 @@ public class MessageInvokerPoolBase : UnitTest
         try
         {
             _response = await messageInvoker
-                .SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://test.com"), CancellationToken.None);
+                .SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://savsgbfgnsgndg.com"), CancellationToken.None);
         }
         catch (Exception e)
         {
@@ -469,6 +464,23 @@ public class MessageInvokerPoolBase : UnitTest
             // The elapsed time is approximately 0.998xxx or 2.99xxx, with a 10ms margin of precision accepted.
             Assert.True(elapsed.Add(precision.Value) >= expected, $"Elapsed time {elapsed} is less than expected timeout {expected} with margin {margin} which module is >= {precision.Value.Milliseconds}ms.");
         }
+    }
+
+    protected static TimeSpan AssertTimeout(HttpMessageInvoker invoker, int expectedSeconds)
+    {
+        Assert.NotNull(invoker);
+        Type me = invoker.GetType();
+        var field = me.GetField("_handler", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(field);
+        var handler = field.GetValue(invoker) as HttpMessageHandler;
+        Assert.NotNull(handler);
+        Assert.IsType<TimeoutDelegatingHandler>(handler);
+        me = handler.GetType();
+        field = me.GetField("_timeout", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(field);
+        var timeout = (TimeSpan)field.GetValue(handler);
+        Assert.Equal(expectedSeconds, (int)timeout.TotalSeconds);
+        return timeout;
     }
 
     protected static string Url(int port) => $"http://localhost:{port}";

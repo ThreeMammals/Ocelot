@@ -52,8 +52,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <see cref="HttpResponseMessage"/>.</returns>
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
-        var options = route?.QosOptions;
-        if (options is null || !options.UseQos)
+        var globalQos = new QoSOptions(_globalConfiguration.QoSOptions);
+        if (!route.QosOptions.UseQos && !globalQos.UseQos)
         {
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
@@ -118,10 +118,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>The same pipeline builder, as an <see cref="ResiliencePipelineBuilder{HttpResponseMessage}"/> object where TResult is <see cref="HttpResponseMessage"/>.</returns>
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
-        // Gives higher priority to route-level options over global ones
+        // Gives higher priority to route-level QoS over global ones
         int? timeoutMs = route?.QosOptions?.TimeoutValue ?? _globalConfiguration?.QoSOptions?.TimeoutValue;
 
-        // Short cut: don't apply the strategy if no QoS options
+        // Short cut: don't apply the strategy if no QoS timeout
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             return builder;
@@ -130,7 +130,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         // Polly docs -> https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
         timeoutMs = TimeoutStrategy.ApplyConstraint(timeoutMs.Value);
 
-        // Happy path: Set up native options and apply the strategy
+        // Happy path: Set up native qos and apply the strategy
         var strategy = new TimeoutStrategyOptions
         {
             Timeout = TimeSpan.FromMilliseconds(timeoutMs.Value),
