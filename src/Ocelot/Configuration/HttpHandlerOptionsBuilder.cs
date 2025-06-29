@@ -10,6 +10,7 @@ public class HttpHandlerOptionsBuilder
     private bool _useProxy;
     private int _maxConnectionPerServer;
     private TimeSpan _pooledConnectionLifetime = TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+    private bool _enableMultipleHttp2Connections;
 
     public HttpHandlerOptionsBuilder WithAllowAutoRedirect(bool input)
     {
@@ -47,6 +48,12 @@ public class HttpHandlerOptionsBuilder
         return this;
     }
 
+
+    public HttpHandlerOptionsBuilder WithEnableMultipleHttp2Connections(bool enableMultipleHttp2Connections)
+    {
+        _enableMultipleHttp2Connections = enableMultipleHttp2Connections;
+        return this;
+    }
     public HttpHandlerOptions Build()
     {
         return new HttpHandlerOptions(_allowAutoRedirect, _useCookieContainer, _useTracing, _useProxy, _maxConnectionPerServer, _pooledConnectionLifetime);

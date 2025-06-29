@@ -24,7 +24,9 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
         var maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? options.MaxConnectionsPerServer : int.MaxValue;
         var pooledConnectionLifetime = TimeSpan.FromSeconds(options.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
 
-        return new HttpHandlerOptions(options.AllowAutoRedirect,
-            options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer, pooledConnectionLifetime);
+            return new HttpHandlerOptions(options.AllowAutoRedirect,
+                options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer, pooledConnectionLifetime,
+                options.EnableMultipleHttp2Connections);
+        }
     }
 }

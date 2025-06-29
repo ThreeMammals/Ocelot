@@ -14,6 +14,7 @@ public class HttpHandlerOptions
         UseProxy = useProxy;
         MaxConnectionsPerServer = maxConnectionsPerServer;
         PooledConnectionLifeTime = pooledConnectionLifeTime;
+        EnableMultipleHttp2Connections = enableMultipleHttp2Connections;
     }
 
     /// <summary>
@@ -51,4 +52,11 @@ public class HttpHandlerOptions
     /// </summary>
     /// <value>PooledConnectionLifeTime.</value>
     public TimeSpan PooledConnectionLifeTime { get; }
+
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether additional HTTP/2 connections can be established to the same server.
+    /// </summary>
+    /// <value>EnableMultipleHttp2Connections.</value>
+    public bool EnableMultipleHttp2Connections { get; }
 }
