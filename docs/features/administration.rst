@@ -1,30 +1,30 @@
 .. _IdentityServer: https://github.com/DuendeArchive/IdentityServer4
 .. _IdentityServer4: https://www.nuget.org/packages/IdentityServer4
 .. _Program: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4/blob/main/sample/Program.cs
-.. _Ocelot.Administration: https://www.nuget.org/packages/Ocelot.Administration
-.. _Ocelot.Administration.IdentityServer4: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4
+.. _Ocelot.Administration.IdentityServer4: https://www.nuget.org/packages/Ocelot.Administration.IdentityServer4
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _Ocelot.postman_collection.json: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4/blob/main/sample/Ocelot.postman_collection.json
 
 Administration
 ==============
 
-  | NuGet package: `IdentityServer4`_ by `IdentityServer org <https://github.com/IdentityServer>`_ (archived on March 6, 2025)
-  | Ocelot extension package: `Ocelot.Administration`_ with version 23.4.3
+  **Ocelot extension package**: `Ocelot.Administration.IdentityServer4`_ with integrated `IdentityServer4`_ package by `IdentityServer org <https://github.com/IdentityServer>`_ (archived on March 6, 2025)
 
 Ocelot supports changing configuration during runtime via an authenticated HTTP API.
 This can be authenticated in two ways either using Ocelot's internal `IdentityServer`_ (for authenticating requests to the :ref:`administration-api` only) or hooking the :ref:`administration-api` authentication into your own `IdentityServer`_.
 
-The first thing you need to do if you want to use the :ref:`administration-api` is bring in the relevant `Ocelot.Administration <https://www.nuget.org/packages/Ocelot.Administration>`_ package:
+The first thing you need to do if you want to use the :ref:`administration-api` is bring in the relevant `Ocelot.Administration.IdentityServer4`_ package:
 
 .. code-block:: powershell
 
-    Install-Package Ocelot.Administration
+  NuGet\Install-Package Ocelot.Administration.IdentityServer4
+  dotnet add package Ocelot.Administration.IdentityServer4
 
 This will bring down everything needed by the :ref:`administration-api`.
 
   **Warning!** Currently, the *Administration* feature relies solely on the `IdentityServer4`_ package, whose `repository <https://github.com/DuendeArchive/IdentityServer4>`_ was archived by its owner on July 31, 2024 (for the first time) and again on March 6, 2025.
-  The Ocelot team will deprecate the upcoming `Ocelot.Administration.IdentityServer4`_ extension package after the release of Ocelot version `24.0`_.
-  However, `the repository <https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4>`_ will remain available, allowing for potential future patches.
+  In release `24.0`_, the Ocelot team deprecated the `Ocelot.Administration.IdentityServer4`_ extension package.
+  However, `the repository <https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4>`_ remains available, allowing for potential patches.
 
 .. _ad-your-own-identityserver:
 
@@ -82,12 +82,13 @@ In order to pass this secret string as parameter, we must call the ``AddAdminist
 In order for the :ref:`administration-api` to work, Ocelot and `IdentityServer`_ must be able to call themselves for validation.
 This means that you need to add the base URL of Ocelot to the global configuration if it is not the default ``http://localhost:5000``.
 
-Please note, if you are using something like Docker to host Ocelot, it might not be able to call back to ``localhost``, etc., and you need to know what you are doing with Docker networking in this scenario.
-Anyway, this can be done as follows:
+  **Note**: If you are using something like Docker to host Ocelot, it might not be able to call back to ``localhost``, etc., and you need to know what you are doing with Docker networking in this scenario.
+
+Configuration can be done as follows:
 
 * If you want to run on a different host and port locally:
 
-    .. code-block:: json
+  .. code-block:: json
 
       "GlobalConfiguration": {
         "BaseUrl": "http://localhost:5580"
@@ -95,13 +96,13 @@ Anyway, this can be done as follows:
 
 * or if Ocelot is exposed via DNS:
 
-    .. code-block:: json
+  .. code-block:: json
 
       "GlobalConfiguration": {
         "BaseUrl": "http://mydns.com"
       }
 
-Now, if you went with the configuration options above and want to access the API, you can use the Postman scripts called **ocelot.postman_collection.json** in the solution to change the Ocelot configuration. 
+Now, if you went with the configuration options above and want to access the API, you can use the Postman scripts called `Ocelot.postman_collection.json`_ in the solution to change the Ocelot configuration. 
 Obviously these will need to be changed if you are running Ocelot on a different URL to ``http://localhost:5000``.
 
 The scripts show you how to request a Bearer token from Ocelot and then use it to GET the existing configuration and POST a configuration.
