@@ -35,8 +35,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
         _services = new ServiceCollection();
         _services.AddSingleton(_qosDelegate);
         _optionsMonitor = new();
-        var configuration = new FileConfiguration();
-        _optionsMonitor.SetupGet(x => x.CurrentValue).Returns(configuration);
+        _optionsMonitor.SetupGet(x => x.CurrentValue).Returns(new FileConfiguration());
         _services.AddSingleton(_optionsMonitor.Object);
     }
 
@@ -286,8 +285,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
         var result = WhenIGet(route);
 
         // Assert: Then No Delegates Are In The Provider
-        result.ShouldNotBeNull();
-        result.Count.ShouldBe(0);
+        result.ShouldNotBeNull().ShouldBeEmpty();
     }
 
     [Fact]
@@ -469,36 +467,27 @@ internal static class ListExtensions
 {
     public static void ThenItIsQosHandler(this List<DelegatingHandler> result, int i)
     {
-        var delegates = result;
-        var del = delegates[i];
-        del.ShouldBeOfType<FakeQoSHandler>();
+        result[i].ShouldNotBeNull().ShouldBeOfType<FakeQoSHandler>();
     }
 
     public static void ThenTheDelegatesAreAddedCorrectly(this List<DelegatingHandler> result)
     {
-        var delegates = result;
-
-        var del = delegates[0];
-        var handler = (FakeDelegatingHandler)del;
+        var handler = (FakeDelegatingHandler)result[0].ShouldNotBeNull();
         handler.Order.ShouldBe(1);
 
-        del = delegates[1];
-        var handlerTwo = (FakeDelegatingHandlerTwo)del;
+        var handlerTwo = (FakeDelegatingHandlerTwo)result[1].ShouldNotBeNull();
         handlerTwo.Order.ShouldBe(2);
     }
 
     public static void ThenThereIsDelegatesInProvider(this List<DelegatingHandler> result, int count)
     {
-        result.ShouldNotBeNull();
-        result.Count.ShouldBe(count);
+        result.ShouldNotBeNull().Count.ShouldBe(count);
     }
 
     public static void ThenHandlerAtPositionIs<T>(this List<DelegatingHandler> result, int pos)
         where T : DelegatingHandler
     {
-        var delegates = result;
-        var del = delegates[pos];
-        del.ShouldBeOfType<T>();
+        result[pos].ShouldNotBeNull().ShouldBeOfType<T>();
     }
 }
 
