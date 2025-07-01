@@ -24,9 +24,9 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
         IOptions<FileGlobalConfiguration> global)
     {
-        _logger = loggerFactory.CreateLogger<PollyQoSResiliencePipelineProvider>();
-        _registry = registry;
-        _globalConfiguration = global.Value;
+        _logger = loggerFactory?.CreateLogger<PollyQoSResiliencePipelineProvider>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        _globalConfiguration = global?.Value ?? throw new ArgumentNullException(nameof(global));
     }
 
     protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
@@ -52,6 +52,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>A <see cref="ResiliencePipeline{T}"/> object where T is <see cref="HttpResponseMessage"/>.</returns>
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
+        ArgumentNullException.ThrowIfNull(route);
         var globalQos = new QoSOptions(_globalConfiguration.QoSOptions);
         if (!route.QosOptions.UseQos && !globalQos.UseQos)
         {
@@ -71,6 +72,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
+        ArgumentNullException.ThrowIfNull(route);
+
         // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater/equal than/to 2
         var options = route.QosOptions;
         if (options.ExceptionsAllowedBeforeBreaking < 2)
@@ -118,8 +121,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     /// <returns>The same pipeline builder, as an <see cref="ResiliencePipelineBuilder{HttpResponseMessage}"/> object where TResult is <see cref="HttpResponseMessage"/>.</returns>
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(_globalConfiguration);
+
         // Gives higher priority to route-level QoS over global ones
-        int? timeoutMs = route?.QosOptions?.TimeoutValue ?? _globalConfiguration?.QoSOptions?.TimeoutValue;
+        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue;
 
         // Short cut: don't apply the strategy if no QoS timeout
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)

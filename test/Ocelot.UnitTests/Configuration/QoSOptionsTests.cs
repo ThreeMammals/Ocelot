@@ -6,6 +6,27 @@ namespace Ocelot.UnitTests.Configuration;
 public class QoSOptionsTests
 {
     [Fact]
+    public void Ctor_Copy_ShouldCopy()
+    {
+        // Arrange
+        var copyee = new QoSOptions(
+            exceptionsAllowedBeforeBreaking: 1,
+            durationOfBreak: 2,
+            timeoutValue: 3,
+            key: "123");
+
+        // Act
+        var actual = new QoSOptions(copyee);
+
+        // Assert
+        Assert.Equivalent(copyee, actual);
+        Assert.Equal(copyee.ExceptionsAllowedBeforeBreaking, actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Equal(copyee.DurationOfBreak, actual.DurationOfBreak);
+        Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
+        Assert.Equal(copyee.Key, actual.Key);
+    }
+
+    [Fact]
     [Trait("PR", "2073")]
     public void UseQos_NoOptions_ShouldNotUse()
     {

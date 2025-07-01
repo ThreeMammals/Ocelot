@@ -149,7 +149,15 @@ public class DownstreamRoute
 
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
     /// <returns>A <see cref="string"/> object with the name.</returns>
-    public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
-        ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
-        : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
+    public string Name()
+    {
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.Template)
+            ? UpstreamPathTemplate.Template
+            : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
+                ? DownstreamPathTemplate.ToString()
+                : "?";
+        return UseServiceDiscovery || !string.IsNullOrEmpty(ServiceName)
+            ? string.Join(':', ServiceNamespace, ServiceName, path)
+            : path;
+    }
 }
