@@ -1,5 +1,6 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -75,7 +76,10 @@ public class RoutesCreator : IRoutesCreator
     }
 
     public virtual int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
-        => route.Timeout ?? global.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds;
+    {
+        int def = DownstreamRoute.DefaultTimeoutSeconds;
+        return route.Timeout.Positive(def) ?? global.Timeout.Positive(def) ?? def;
+    }
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
