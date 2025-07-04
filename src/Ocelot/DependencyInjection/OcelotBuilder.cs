@@ -50,6 +50,7 @@ public class OcelotBuilder : IOcelotBuilder
         Configuration = configurationRoot;
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
+        Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
 
         Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
@@ -107,7 +108,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IRequestMapper, RequestMapper>();
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
-        Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+        Services.TryAddSingleton<IDelegatingHandlerFactory, DelegatingHandlerFactory>();
         
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();

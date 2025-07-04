@@ -437,6 +437,41 @@ Dynamic Routing [#f8]_
 The concept of dynamic *routing* allows you to use a :doc:`../features/servicediscovery` provider, eliminating the need to manually configure *route* settings.
 For more details, refer to the :ref:`sd-dynamic-routing` documentation if this feature interests you.
 
+Errors and Gotchas
+------------------
+.. _Show and tell: https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell
+.. _499 (Client Closed Request): https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.statuscodes.status499clientclosedrequest
+.. _503 (Service Unavailable): https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503
+
+In this section, Ocelot team has gathered user scenarios where routing behavior was unclear or errors appeared in the logs.
+Please note that the failed routing cases listed below do not represent all application configurations.
+If your case is not included, feel free to open a "`Show and tell`_" discussion.
+
+* **Magic 499 status**.
+  According to Ocelot Core's design, HTTP status code `499 (Client Closed Request)`_ is returned in cases involving an ``OperationCanceledException``.
+  Please note that due to extensive warning-level logging, you may encounter spikes in ``499`` responses—as discussed in thread `2072`_.
+  This status is typically caused by:
+
+  A) Forced cancellation of the request by the client
+  B) Browser events such as page refreshes or closures while the downstream request is still in progress
+
+  As a quick recipe, the Ocelot team recommends ensuring client stability and, if necessary, adjusting the :ref:`config-timeout` strategy:
+  either increasing or decreasing the route :ref:`config-timeout` depending on your usage scenario and the behavior of the downstream service.
+
+* **Timeout errors aka 503 status**.
+  According to Ocelot Core's design, HTTP status code `503 (Service Unavailable)`_ is returned in cases involving a ``TimeoutException``.
+  This status is typically caused by:
+
+  A) Slow downstream services that may fail to respond
+  B) Large requests forwarded to slow downstream services
+
+  As a quick recipe, the Ocelot team recommends increasing the route :ref:`config-timeout` in your configuration.
+  This adjustment can help resolve timeout-related issues with sluggish downstream services, ultimately reducing occurrences of `503 (Service Unavailable)`_.
+
+.. _break: http://break.do
+
+  **Note**: For comprehensive documentation regarding errors and status codes in Ocelot, please refer to the :doc:`../features/errorcodes` chapter.
+
 """"
 
 .. [#f1] ":ref:`routing-embedded-placeholders`" feature was requested as part of issue `2199`_ , and released in version `23.4`_
@@ -464,6 +499,7 @@ For more details, refer to the :ref:`sd-dynamic-routing` documentation if this f
 .. _1174: https://github.com/ThreeMammals/Ocelot/issues/1174
 .. _1312: https://github.com/ThreeMammals/Ocelot/pull/1312
 .. _1400: https://github.com/ThreeMammals/Ocelot/issues/1400
+.. _2072: https://github.com/ThreeMammals/Ocelot/discussions/2072
 .. _2165: https://github.com/ThreeMammals/Ocelot/issues/2165
 .. _2199: https://github.com/ThreeMammals/Ocelot/issues/2199
 

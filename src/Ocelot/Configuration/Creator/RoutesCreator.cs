@@ -1,5 +1,6 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -65,15 +66,19 @@ public class RoutesCreator : IRoutesCreator
         _metadataCreator = metadataCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration)
+    public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
     {
+        Route CreateRoute(FileRoute route)
+            => SetUpRoute(route, SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration));
         return fileConfiguration.Routes
-            .Select(route =>
-            {
-                var downstreamRoute = SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration);
-                return SetUpRoute(route, downstreamRoute);
-            })
+            .Select(CreateRoute)
             .ToList();
+    }
+
+    public virtual int CreateTimeout(FileRoute route, FileGlobalConfiguration global)
+    {
+        int def = DownstreamRoute.DefaultTimeoutSeconds;
+        return route.Timeout.Positive(def) ?? global.Timeout.Positive(def) ?? def;
     }
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
@@ -156,8 +161,8 @@ public class RoutesCreator : IRoutesCreator
             .WithDownstreamHttpVersionPolicy(downstreamHttpVersionPolicy)
             .WithDownStreamHttpMethod(fileRoute.DownstreamHttpMethod)
             .WithMetadata(metadata)
+            .WithTimeout(CreateTimeout(fileRoute, globalConfiguration))
             .Build();
-
         return route;
     }
 

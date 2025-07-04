@@ -3,11 +3,8 @@
 public class QoSOptionsBuilder
 {
     private int _exceptionsAllowedBeforeBreaking;
-
     private int _durationOfBreak;
-
-    private int _timeoutValue;
-
+    private int? _timeoutValue;
     private string _key;
 
     public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
@@ -22,7 +19,7 @@ public class QoSOptionsBuilder
         return this;
     }
 
-    public QoSOptionsBuilder WithTimeoutValue(int timeoutValue)
+    public QoSOptionsBuilder WithTimeoutValue(int? timeoutValue)
     {
         _timeoutValue = timeoutValue;
         return this;

@@ -41,7 +41,7 @@ public class RoutesCreatorTests : UnitTest
     private HeaderTransformations _ht;
     private List<DownstreamHostAndPort> _dhp;
     private LoadBalancerOptions _lbo;
-    private List<Route> _result;
+    private IReadOnlyList<Route> _result;
     private Version _expectedVersion;
     private HttpVersionPolicy _expectedVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _uht;
@@ -165,6 +165,61 @@ public class RoutesCreatorTests : UnitTest
         ThenTheDependenciesAreCalledCorrectly();
         ThenTheRoutesAreCreated();
     }
+
+    #region PR 2073
+
+    [Fact]
+    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
+    public void CreateTimeout_HasRouteTimeout_ShouldCreateFromRoute()
+    {
+        // Arrange
+        var route = new FileRoute { Timeout = 11 };
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Equal(route.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndHasGlobalOne_ShouldCreateFromGlobalConfig()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Equal(global.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndNoGlobalOne_ShouldCreateFromDownstreamRouteDefaults()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration();
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Null(global.Timeout);
+        Assert.Equal(DownstreamRoute.DefTimeout, timeout);
+    }
+    #endregion
 
     private void ThenTheDependenciesAreCalledCorrectly()
     {

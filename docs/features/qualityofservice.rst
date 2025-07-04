@@ -18,12 +18,12 @@ Quality of Service
 Ocelot currently supports a single *Quality of Service* (QoS) capability.
 It allows you to configure, on a per-route basis, the application of a circuit breaker when making requests to downstream services.
 This feature leverages a well-regarded .NET library known as `Polly`_.
-For more details, visit the Polly library's official `repository <https://github.com/App-vNext/Polly>`_.
+For more details, visit the `Polly`_ library's official `repository <https://github.com/App-vNext/Polly>`_.
 
 Installation
 ------------
 
-To utilize the :ref:`administration-api`, begin by importing the appropriate `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_:
+To utilize the *Quality of Service* via `Polly`_ library, begin by importing the appropriate `Ocelot.Provider.Polly <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_ extension package:
 
 .. code-block:: powershell
 
@@ -70,7 +70,7 @@ The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be c
 
   "QoSOptions": {
     "ExceptionsAllowedBeforeBreaking": 3,
-    "DurationOfBreak": 1000
+    "DurationOfBreak": 1000 // ms
   }
 
 Alternatively, you can omit ``DurationOfBreak``, which will default to the implicit 5-second setting as specified in Polly's `documentation`_:
@@ -87,8 +87,9 @@ This setup activates only the `Circuit breaker <https://www.pollydocs.org/strate
 
 Timeout strategy
 ----------------
+.. _Timeout: https://www.pollydocs.org/strategies/timeout.html
 
-The ``TimeoutValue`` can be configured independently from the ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` options:
+The ``TimeoutValue`` can be configured independently from the options of the :ref:`qos-circuit-breaker-strategy`:
 
 .. code-block:: json
 
@@ -96,13 +97,37 @@ The ``TimeoutValue`` can be configured independently from the ``ExceptionsAllowe
     "TimeoutValue": 5000 // ms
   }
 
-This setup activates only the `Timeout <https://www.pollydocs.org/strategies/timeout.html>`_ strategy.
+This setup activates only the `Timeout`_ strategy.
+To configure a global QoS timeout using the `Timeout`_ strategy for all static routes (excluding dynamic routes), set the ``TimeoutValue`` option according to the :ref:`config-global-configuration-schema`:
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    // other global props
+    "QoSOptions": {
+      "TimeoutValue": 10000 // ms, 10 seconds
+    }
+  }
+
+Please note that the route-level timeout takes precedence over the global timeout.
+For example, a route timeout may be shorter, while the global timeout can be longer and apply to all routes.
+
+.. _TimeoutStrategyOptions.Timeout: https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
+
+  There are value constraints for ``TimeoutValue``: it must be a positive number starting from *1 millisecond* to enable the `Timeout`_ strategy.
+  If ``TimeoutValue`` is set to zero or a negative number, the `Timeout`_ strategy will not be added to the resilience pipeline.
+  Also, keep in mind Polly's `TimeoutStrategyOptions.Timeout`_ constraint, thus Ocelot validates the ``TimeoutValue``.
+  If the value violates Polly's requirements, it will be rolled back to the default of *30 seconds*, as specified in the `Polly`_ documentation.
+
+.. _qos-notes:
 
 Notes
 -----
+.. _DownstreamRoute.DefTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20DownstreamRoute.DefTimeout&type=code
 
-1. If a *QoS* section is not included, *QoS* will not be applied, and Ocelot will enforce a default timeout of **90** `seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+90+language%3AC%23&type=code&l=C%23>`_ for all downstream requests.
-   To request additional configurability, consider opening an issue. [#f3]_
+1. **Absolute timeout** [#f3]_. If a *QoS* section is not included, *QoS* will not be applied, and Ocelot will enforce an absolute timeout of 90 seconds (defined by the `DownstreamRoute.DefTimeout`_ constant) for all downstream requests.
+   This absolute timeout is configurable via the ``DownstreamRoute.DefaultTimeoutSeconds`` static C# property.
+   For more information, refer to the :ref:`config-default-timeout` section of the :doc:`../features/configuration` chapter.
 
 2. The `Polly`_ V7 syntax is no longer supported as of version `23.2`_. [#f4]_
 
@@ -113,6 +138,23 @@ Notes
    * The ``TimeoutValue`` must be over **10** milliseconds.
 
    Refer to the `Resilience strategies <https://www.pollydocs.org/strategies/index.html>`_ documentation for a comprehensive explanation of each option.
+
+4. **QoS and route/global timeouts**.
+   The ``TimeoutValue`` option in *QoS* always takes precedence over the route-level ``Timeout`` property, so ``Timeout`` will be ignored in favor of ``TimeoutValue``.
+   In Ocelot Core, ``TimeoutValue`` and ``Timeout`` are not intended to be used together.
+   Moreover, there is an Ocelot Core design constraint: if the route or global ``Timeout`` duration is shorter than the *QoS* ``TimeoutValue``, you may encounter warning messages in the logs that begin with the following sentence:
+
+   .. code-block:: text
+
+    Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: ...
+
+   This warning means that the route or global timeout will occur before the *QoS* :ref:`qos-timeout-strategy` has a chance to handle its own timeout event, which is configured with a longer duration.
+   Technically, this situation results in the functional disabling of the Polly's `Timeout`_ strategy.
+   Ocelot handles this misconfiguration by logging a warning and automatically applying a longer timeout to the ``TimeoutDelegatingHandler`` in order to effectively unblock the *QoS* :ref:`qos-timeout-strategy`.
+   To avoid this warning, ensure that your *QoS* timeouts are shorter than the route or global timeouts, or remove the ``Timeout`` property from routes where *QoS* is enabled with the ``TimeoutValue`` option.
+
+5. Both route-level and global *QoS* options apply only to static routes, as defined by the :ref:`config-route-schema`.
+   Since the :ref:`config-dynamic-route-schema` does not support *QoS* options, *Quality of Service* is not applied to dynamic routes in :ref:`routing-dynamic`.
 
 .. _qos-extensibility:
 
@@ -162,11 +204,13 @@ Finally, to define your own set of exceptions for mapping, you can apply the fol
 
 .. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 .. [#f2] If something doesn't work or you're stuck, consider reviewing the current `QoS issues <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+QoS&type=issues>`_ filtered by the |QoS_label| label.
-.. [#f3] Recently, surrounding the release of version `24.0`_, we opened pull request `2073`_ to address the issue of default timeout configurations. This is a high-priority pull request, and the feature will be included in an upcoming major or minor release (excluding patches).
+.. [#f3] The absolute timeout configuration, used as the :ref:`config-default-timeout`, and the :ref:`config-timeout` feature were requested in issue `1314`_, implemented in pull request `2073`_, and officially released in version `24.1`_.
 .. [#f4] We upgraded `Polly`_ from version 7.x to 8.x! The :ref:`qos-extensibility` feature was requested in issue `1875`_ and implemented through pull request `1914`_, as part of version `23.2`_.
 
+.. _1314: https://github.com/ThreeMammals/Ocelot/issues/1314
 .. _1875: https://github.com/ThreeMammals/Ocelot/issues/1875
 .. _1914: https://github.com/ThreeMammals/Ocelot/pull/1914
 .. _2073: https://github.com/ThreeMammals/Ocelot/pull/2073
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0

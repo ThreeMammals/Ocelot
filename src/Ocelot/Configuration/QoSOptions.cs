@@ -23,7 +23,7 @@ public class QoSOptions
     public QoSOptions(
         int exceptionsAllowedBeforeBreaking,
         int durationOfBreak,
-        int timeoutValue, 
+        int? timeoutValue, 
         string key)
     {
         DurationOfBreak = durationOfBreak;
@@ -32,36 +32,22 @@ public class QoSOptions
         TimeoutValue = timeoutValue;
     }
 
-    /// <summary>How long the circuit should stay open before resetting in milliseconds.</summary>
-    /// <remarks>If using Polly version 8 or above, this value must be 500 (0.5 sec) or greater.</remarks>
+    /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>An <see cref="int"/> value (milliseconds).</value>
-    public int DurationOfBreak { get; } = DefaultBreakDuration;
-    public const int LowBreakDuration = 500; // 0.5 seconds
-    public const int DefaultBreakDuration = 5_000; // 5 seconds
+    public int DurationOfBreak { get; }
 
-    /// <summary>
-    /// How many times a circuit can fail before being set to open.
-    /// </summary>
-    /// <remarks>
-    /// If using Polly version 8 or above, this value must be 2 or greater.
-    /// </remarks>
-    /// <value>
-    /// An <see cref="int"/> value (no of exceptions).
-    /// </value>
+    /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <value>An <see cref="int"/> value (exceptions number).</value>
     public int ExceptionsAllowedBeforeBreaking { get; }
 
     public string Key { get; }
 
-    /// <summary>
-    /// Value for TimeoutStrategy in milliseconds.
-    /// </summary>
-    /// <remarks>
-    /// If using Polly version 8 or above, this value must be 1000 (1 sec) or greater.
-    /// </remarks>
-    /// <value>
-    /// An <see cref="int"/> value (milliseconds).
-    /// </value>
-    public int TimeoutValue { get; }
+    /// <summary>Gets the timeout in milliseconds.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
+    public int? TimeoutValue { get; }
 
-    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
+    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
 }

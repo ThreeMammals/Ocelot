@@ -1,33 +1,24 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Configuration;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Polly;
-using Ocelot.Requester;
-using System.Reflection;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class PollyQoSTests : Steps
+public sealed class PollyQoSTests : TimeoutTestsBase
 {
-    public PollyQoSTests()
+    private static FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null)
     {
+        var route = GivenRoute(port, upstream, null);
+        route.UpstreamHttpMethod = [ httpMethod ?? HttpMethods.Get ];
+        route.QoSOptions = new(options);
+        return route;
     }
-
-    private static FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null) => new()
-    {
-        DownstreamPathTemplate = "/",
-        DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        UpstreamPathTemplate = upstream ?? "/",
-        UpstreamHttpMethod = new() { httpMethod ?? HttpMethods.Get },
-        QoSOptions = new(options),
-    };
 
     [Fact]
     public void Should_not_timeout()
@@ -82,7 +73,7 @@ public sealed class PollyQoSTests : Steps
     [Trait("Bug", "2085")]
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
-        int invalidDuration = QoSOptions.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
+        int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, new QoSOptions(2, invalidDuration, 100000, null));
         var configuration = GivenConfiguration(route);
@@ -96,7 +87,7 @@ public sealed class PollyQoSTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
-            .Given(x => GivenIWaitMilliseconds(QoSOptions.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
+            .Given(x => GivenIWaitMilliseconds(CircuitBreakerStrategy.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // still opened
             .Given(x => GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound))
@@ -176,32 +167,88 @@ public sealed class PollyQoSTests : Steps
             .BDDfy();
     }
 
+    // TODO: If failed in parallel execution mode, switch to SequentialTests
+    // This issue may arise when transitioning all tests to parallel execution
+    // This test must be sequential because of usage of the static DownstreamRoute.DefaultTimeoutSeconds
     [Fact]
     [Trait("Bug", "1833")]
-    public void Should_timeout_per_default_after_90_seconds()
+    public async Task Should_timeout_per_default_after_90_seconds()
     {
-        var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
-        var configuration = GivenConfiguration(route);
+        try
+        {
+            DownstreamRoute.DefaultTimeoutSeconds = 3; // override original value
+            var defTimeoutMs = Ms(DownstreamRoute.DefaultTimeoutSeconds);
+            var port = PortFinder.GetRandomPort();
+            var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
+            var configuration = GivenConfiguration(route);
+            GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500); // 3.5s > 3s -> ServiceUnavailable
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunningWithPolly();
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 3 secs -> Timeout exception aka request cancellation
+        }
+        finally
+        {
+            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+        }
+    }
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 3500)) // 3.5s > 3s -> ServiceUnavailable
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => GivenIHackDefaultTimeoutValue(3)) // after 3 secs -> Timeout exception aka request cancellation
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .BDDfy();
+    [Fact]
+    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    public async Task HasRouteAndGlobalTimeouts_RouteTimeoutShouldTakePrecedenceOverGlobalTimeout()
+    {
+        const int RouteTimeoutSeconds = 2, GlobalTimeoutSeconds = 4;
+        int serviceTimeoutMs = Ms(Math.Max(RouteTimeoutSeconds, GlobalTimeoutSeconds)) + 500; // total 4.5 sec
+
+        var port = PortFinder.GetRandomPort();
+        var qos = new FileQoSOptions() { TimeoutValue = Ms(RouteTimeoutSeconds) };
+        var route = GivenRoute(port, new(qos), HttpMethods.Get);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.QoSOptions.TimeoutValue = Ms(GlobalTimeoutSeconds); // !!!
+
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, serviceTimeoutMs);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+
+        var watcher = await WatchWhenIGetUrlOnTheApiGateway();
+
+        ThenTimeoutIsInRange(watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500); // (2.0, 2.5) s
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        await ThenTheResponseBodyShouldBeAsync(string.Empty);
+    }
+
+    [Fact]
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    public async Task HasGlobalTimeoutOnly_ForAllRoutesGlobalTimeoutShouldTakePrecedenceOverAbsoluteGlobalTimeout()
+    {
+        const int GlobalTimeoutSeconds = 2;
+        int serviceTimeoutMs = Ms(GlobalTimeoutSeconds + 1); // total 3 sec
+        var ports = PortFinder.GetPorts(2);
+        FileRoute route1 = GivenRoute(ports[0], "/route1"), route2 = GivenRoute(ports[1], "/route2"); // without QoS timeouts
+        var configuration = GivenConfiguration(route1, route2);
+        configuration.GlobalConfiguration.QoSOptions.TimeoutValue = Ms(GlobalTimeoutSeconds); // !!!
+        GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs); // 2s -> ServiceUnavailable
+        GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs); // 2s -> ServiceUnavailable
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+
+        var watchers = await Task.WhenAll<Stopwatch>(
+            WatchWhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate),
+            WatchWhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate));
+
+        int globalTimeoutMs = Ms(GlobalTimeoutSeconds);
+        foreach (var watcher in watchers)
+        {
+            ThenTimeoutIsInRange(watcher, globalTimeoutMs, Ms(DownstreamRoute.DefaultTimeoutSeconds)); // (2.0, 90) so assert roughly
+            ThenTimeoutIsInRange(watcher, globalTimeoutMs, globalTimeoutMs + 500); // (2.0, 2.5) so assert precisely
+            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
+            await ThenTheResponseBodyShouldBeAsync(string.Empty);
+        }
     }
 
     private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunning(WithPolly);
     private static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
-
-    private void GivenIHackDefaultTimeoutValue(int defaultTimeoutSeconds)
-    {
-        var field = typeof(MessageInvokerPool).GetField("_requestTimeoutSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
-        var service = ocelotServer.Services.GetService(typeof(IMessageInvokerPool));
-        field.SetValue(service, defaultTimeoutSeconds); // hack the value of default 90 seconds
-    }
 
     private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
 

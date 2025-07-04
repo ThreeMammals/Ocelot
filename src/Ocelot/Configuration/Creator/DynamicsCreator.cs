@@ -1,5 +1,6 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -22,29 +23,36 @@ public class DynamicsCreator : IDynamicsCreator
         _metadataCreator = metadataCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration)
+    public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
     {
         return fileConfiguration.DynamicRoutes
             .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))
             .ToList();
     }
 
-    private Route SetUpDynamicRoute(FileDynamicRoute fileDynamicRoute, FileGlobalConfiguration globalConfiguration)
+    public virtual int CreateTimeout(FileDynamicRoute route, FileGlobalConfiguration global)
+    {
+        int def = DownstreamRoute.DefaultTimeoutSeconds;
+        return route.Timeout.Positive(def) ?? global.Timeout.Positive(def) ?? def;
+    }
+
+    private Route SetUpDynamicRoute(FileDynamicRoute dynamicRoute, FileGlobalConfiguration globalConfiguration)
     {
         var rateLimitOption = _rateLimitOptionsCreator
-            .Create(fileDynamicRoute.RateLimitRule, globalConfiguration);
+            .Create(dynamicRoute.RateLimitRule, globalConfiguration);
 
-        var version = _versionCreator.Create(fileDynamicRoute.DownstreamHttpVersion);
-        var versionPolicy = _versionPolicyCreator.Create(fileDynamicRoute.DownstreamHttpVersionPolicy);
-        var metadata = _metadataCreator.Create(fileDynamicRoute.Metadata, globalConfiguration);
+        var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
+        var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
+        var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
 
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
             .WithRateLimitOptions(rateLimitOption)
-            .WithServiceName(fileDynamicRoute.ServiceName)
+            .WithServiceName(dynamicRoute.ServiceName)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
             .WithMetadata(metadata)
+            .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
             .Build();
 
         var route = new RouteBuilder()

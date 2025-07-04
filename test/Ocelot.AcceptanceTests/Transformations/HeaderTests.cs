@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using System.Net.Sockets;
+using YamlDotNet.Core.Tokens;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
@@ -17,19 +18,13 @@ public sealed class HeaderTests : Steps
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                GivenDefaultRoute(port)
-                    .WithUpstreamHeaderTransform(X_Forwarded_For, "{RemoteIpAddress}")
-                    .WithHttpHandlerOptions(new() { AllowAutoRedirect = false }),
-            },
-        };
-
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, X_Forwarded_For);
+        var route = GivenDefaultRoute(port);
+        route.UpstreamHeaderTransform.TryAdd(X_Forwarded_For, "{RemoteIpAddress}");
+        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, X_Forwarded_For);
 
         //var remoteIpAddress = Dns.GetHostAddresses("dns.google").First(a => a.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6).ToString();
         //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);

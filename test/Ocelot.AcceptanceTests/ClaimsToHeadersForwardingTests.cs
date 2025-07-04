@@ -9,8 +9,6 @@ using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using System.Security.Claims;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Ocelot.AcceptanceTests;
 
 public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
