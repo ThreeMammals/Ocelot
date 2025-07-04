@@ -12,7 +12,6 @@ public static class IntExtensions
     /// <param name="toDefault">Default integer to convert to.</param>
     /// <returns>A nullable <see cref="int"/> value.</returns>
     public static int? Positive(this int? value, int toDefault = 1)
-        => value.HasValue
-            ? (value.Value > 0 ? value.Value : toDefault)
-            : null;
+        => !value.HasValue ? null :
+            value.Value > 0 ? value.Value : toDefault;
 }

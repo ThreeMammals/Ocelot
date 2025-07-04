@@ -125,7 +125,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(_globalConfiguration);
 
         // Gives higher priority to route-level QoS over global ones
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue;
+        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
 
         // Short cut: don't apply the strategy if no QoS timeout
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
