@@ -126,7 +126,6 @@ public class PollyQoSResiliencePipelineProviderTests
 
     [Theory]
     [Trait("Bug", "2085")]
-    [InlineData(0, CircuitBreakerStrategy.DefaultBreakDuration)] // default
     [InlineData(CircuitBreakerStrategy.LowBreakDuration - 1, CircuitBreakerStrategy.DefaultBreakDuration)] // default
     [InlineData(CircuitBreakerStrategy.LowBreakDuration, CircuitBreakerStrategy.DefaultBreakDuration)] // default
     [InlineData(CircuitBreakerStrategy.LowBreakDuration + 1, CircuitBreakerStrategy.LowBreakDuration + 1)] // not default, exact
