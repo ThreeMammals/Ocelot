@@ -1,4 +1,5 @@
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator;
@@ -9,14 +10,8 @@ namespace Ocelot.Configuration.Creator;
 /// <remarks>Ocelot feature: Routing based on request header.</remarks>
 public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatternCreator
 {
-    private const string PlaceHolderPattern = @"(\{header:.*?\})";
-#if NET7_0_OR_GREATER
-    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, "en-US")]
-    private static partial Regex RegExPlaceholders();
-#else
-    private static readonly Regex RegExPlaceholdersVar = new(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(1000));
-    private static Regex RegExPlaceholders() => RegExPlaceholdersVar;
-#endif
+    [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
+    private static partial Regex RegexPlaceholders();
 
     public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
     {
@@ -25,7 +20,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
         foreach (var headerTemplate in route.UpstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
-            var matches = RegExPlaceholders().Matches(headerTemplateValue);
+            var matches = RegexPlaceholders().Matches(headerTemplateValue);
 
             if (matches.Count > 0)
             {

@@ -1,22 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <AssemblyVersion>24.0.0</AssemblyVersion>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <ProductName>Ocelot Gateway</ProductName>
+    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/samples/GraphQL</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>https://github.com/ThreeMammals/Ocelot.git</RepositoryType>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="ocelot.json;appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="4.8.0" />
+    <PackageReference Include="GraphQL" Version="8.5.0" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" Version="8.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 </Project>

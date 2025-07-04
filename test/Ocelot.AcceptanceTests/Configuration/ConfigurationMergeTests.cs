@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -29,8 +30,9 @@ public sealed class ConfigurationMergeTests : Steps
         Arrange();
 
         // Act
-        StartOcelot((context, config) => config
-            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, _ocelotConfigFileName, _globalConfigFileName, null, false, false));
+        GivenOcelotIsRunning((context, config) => config
+            .SetBasePath(context.HostingEnvironment.ContentRootPath)
+            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, _globalConfigFileName, null, false, false));
 
         // Assert
         TheOcelotPrimaryConfigFileExists(fileExist);
@@ -62,10 +64,12 @@ public sealed class ConfigurationMergeTests : Steps
         GivenThereIsAConfiguration(environmentConfig, environmentPath);
 
         // Act
-        StartOcelot((context, config) => config
-            .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
-            .AddJsonFile(environmentPath),
-            "Env");
+        GivenOcelotIsRunning(
+            (context, config) => config
+                .SetBasePath(context.HostingEnvironment.ContentRootPath)
+                .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
+                .AddJsonFile(environmentPath),
+            null, null, host => host.UseEnvironment("Env"), null, null);
 
         // Assert
         TheOcelotPrimaryConfigFileExists(false);
@@ -74,7 +78,7 @@ public sealed class ConfigurationMergeTests : Steps
         var actualLocation = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         File.Exists(actualLocation).ShouldBe(fileExist);
 
-        var repository = _ocelotServer.Services.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
+        var repository = ocelotServer.Services.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
         var response = repository.Get().ShouldNotBeNull();
         response.IsError.ShouldBeFalse();
         var internalConfig = response.Data.ShouldNotBeNull();
@@ -91,11 +95,11 @@ public sealed class ConfigurationMergeTests : Steps
     }
 
     private void TheOcelotPrimaryConfigFileExists(bool expected)
-        => File.Exists(_ocelotConfigFileName).ShouldBe(expected);
+        => File.Exists(ocelotConfigFileName).ShouldBe(expected);
 
     private void ThenGlobalConfigurationHasBeenMerged([CallerMemberName] string testName = null)
     {
-        var config = _ocelotServer.Services.GetService<IConfiguration>().ShouldNotBeNull();
+        var config = ocelotServer.Services.GetService<IConfiguration>().ShouldNotBeNull();
         var actual = config["GlobalConfiguration:RequestIdKey"];
         actual.ShouldNotBeNull().ShouldBe(testName);
         actual = config["GlobalConfiguration:ServiceDiscoveryProvider:ConfigurationKey"];

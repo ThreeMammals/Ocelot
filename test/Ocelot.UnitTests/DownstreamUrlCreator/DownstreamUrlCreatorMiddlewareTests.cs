@@ -26,12 +26,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private DownstreamUrlCreatorMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly HttpRequestMessage _request;
-    private readonly HttpContext _httpContext;
-    private readonly Mock<IRequestScopedDataRepository> _repo;
+    private readonly DefaultHttpContext _httpContext;
 
     public DownstreamUrlCreatorMiddlewareTests()
     {
-        _repo = new Mock<IRequestScopedDataRepository>();
         _httpContext = new DefaultHttpContext();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
@@ -72,6 +70,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public async Task Should_replace_query_string()
     {
         // Arrange
@@ -106,6 +105,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public async Task Should_replace_query_string_but_leave_non_placeholder_queries()
     {
         // Arrange
@@ -140,6 +140,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "1288")]
     public async Task Should_replace_query_string_but_leave_non_placeholder_queries_2()
     {
         // Arrange
@@ -174,6 +175,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "467")]
     public async Task Should_replace_query_string_exact_match()
     {
         // Arrange

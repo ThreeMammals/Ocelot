@@ -3,279 +3,244 @@ using Ocelot.Configuration;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Headers;
+
+public class HttpResponseHeaderReplacerTests : UnitTest
 {
-    public class HttpResponseHeaderReplacerTests : UnitTest
+    private DownstreamResponse _response;
+    private readonly Placeholders _placeholders;
+    private readonly HttpResponseHeaderReplacer _replacer;
+    private List<HeaderFindAndReplace> _headerFindAndReplaces;
+    private Response _result;
+    private DownstreamRequest _request;
+    private readonly Mock<IBaseUrlFinder> _finder;
+    private readonly Mock<IRequestScopedDataRepository> _repo;
+    private readonly Mock<IHttpContextAccessor> _accessor;
+    /*private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IOcelotLogger> _logger;*/
+
+    public HttpResponseHeaderReplacerTests()
     {
-        private DownstreamResponse _response;
-        private readonly Placeholders _placeholders;
-        private readonly HttpResponseHeaderReplacer _replacer;
-        private List<HeaderFindAndReplace> _headerFindAndReplaces;
-        private Response _result;
-        private DownstreamRequest _request;
-        private readonly Mock<IBaseUrlFinder> _finder;
-        private readonly Mock<IRequestScopedDataRepository> _repo;
-        private readonly Mock<IHttpContextAccessor> _accessor;
+        _repo = new Mock<IRequestScopedDataRepository>();
+        _finder = new Mock<IBaseUrlFinder>();
+        _accessor = new Mock<IHttpContextAccessor>();
 
-        public HttpResponseHeaderReplacerTests()
-        {
-            _accessor = new Mock<IHttpContextAccessor>();
-            _repo = new Mock<IRequestScopedDataRepository>();
-            _finder = new Mock<IBaseUrlFinder>();
-            _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
-            _replacer = new HttpResponseHeaderReplacer(_placeholders);
-        }
+        //_loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object/*,_loggerFactory.Object*/);
+        _replacer = new HttpResponseHeaderReplacer(_placeholders);
+    }
 
-        [Fact]
-        public void should_replace_headers()
-        {
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("test", new List<string> {"test"}),
-                }, string.Empty);
-
-            var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeadersAreReplaced())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_replace_headers()
-        {
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("test", new List<string> {"test"}),
-                }, string.Empty);
-
-            var fAndRs = new List<HeaderFindAndReplace>();
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeadersAreNotReplaced())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_replace_downstream_base_url_with_ocelot_base_url()
-        {
-            const string downstreamUrl = "http://downstream.com/";
-
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
-
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
-
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_replace_headers()
+    {
+        // Arrange
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
-            };
+                new("test", new List<string> {"test"}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
 
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com/"))
-                .BDDfy();
-        }
+        // Act
+        WhenICallTheReplacer();
 
-        [Fact]
-        public void should_replace_downstream_base_url_with_ocelot_base_url_with_port()
-        {
-            const string downstreamUrl = "http://downstream.com/";
+        // Assert
+        ThenTheHeadersAreReplaced();
+    }
 
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
-
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
-
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_not_replace_headers()
+    {
+        // Arrange
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
-            };
+                new("test", new List<string> {"test"}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>();
 
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com:123/"))
-                .BDDfy();
-        }
+        // Act
+        WhenICallTheReplacer();
 
-        [Fact]
-        public void should_replace_downstream_base_url_with_ocelot_base_url_and_path()
-        {
-            const string downstreamUrl = "http://downstream.com/test/product";
+        // Assert
+        ThenTheHeadersAreNotReplaced();
+    }
 
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
-
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
-
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_replace_downstream_base_url_with_ocelot_base_url()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com/";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
-            };
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com/test/product"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_replace_downstream_base_url_with_ocelot_base_url_with_path_and_port()
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
         {
-            const string downstreamUrl = "http://downstream.com/test/product";
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
+        };
 
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
+        // Act
+        WhenICallTheReplacer();
 
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com/");
+    }
 
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_replace_downstream_base_url_with_ocelot_base_url_with_port()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com/";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
-            };
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com:123/test/product"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_replace_downstream_base_url_and_port_with_ocelot_base_url()
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
         {
-            const string downstreamUrl = "http://downstream.com:123/test/product";
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
+        };
 
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
+        // Act
+        WhenICallTheReplacer();
 
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com:123/");
+    }
 
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_replace_downstream_base_url_with_ocelot_base_url_and_path()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com/test/product";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
-            };
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com/test/product"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_replace_downstream_base_url_and_port_with_ocelot_base_url_and_port()
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
         {
-            const string downstreamUrl = "http://downstream.com:123/test/product";
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
+        };
 
-            var request =
-                new HttpRequestMessage(HttpMethod.Get, "http://test.com") { RequestUri = new System.Uri(downstreamUrl) };
+        // Act
+        WhenICallTheReplacer();
 
-            var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
-                new List<KeyValuePair<string, IEnumerable<string>>>
-                {
-                    new("Location", new List<string> {downstreamUrl}),
-                }, string.Empty);
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com/test/product");
+    }
 
-            var fAndRs = new List<HeaderFindAndReplace>
+    [Fact]
+    public void Should_replace_downstream_base_url_with_ocelot_base_url_with_path_and_port()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com/test/product";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0),
-            };
-
-            this.Given(x => GivenTheHttpResponse(response))
-                .And(x => GivenTheRequestIs(request))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeaderShouldBe("Location", "http://ocelot.com:321/test/product"))
-                .BDDfy();
-        }
-
-        private void GivenTheRequestIs(HttpRequestMessage request)
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
         {
-            _request = new DownstreamRequest(request);
-        }
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:123/", 0),
+        };
 
-        private void ThenTheHeadersAreNotReplaced()
-        {
-            _result.ShouldBeOfType<OkResponse>();
-            foreach (var f in _headerFindAndReplaces)
+        // Act
+        WhenICallTheReplacer();
+
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com:123/test/product");
+    }
+
+    [Fact]
+    public void Should_replace_downstream_base_url_and_port_with_ocelot_base_url()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com:123/test/product";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                var values = _response.Headers.First(x => x.Key == f.Key);
-                values.Values.ToList()[f.Index].ShouldBe("test");
-            }
-        }
-
-        private void GivenTheFollowingHeaderReplacements(List<HeaderFindAndReplace> fAndRs)
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
         {
-            _headerFindAndReplaces = fAndRs;
-        }
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com/", 0),
+        };
 
-        private void GivenTheHttpResponse(DownstreamResponse response)
-        {
-            _response = response;
-        }
+        // Act
+        WhenICallTheReplacer();
 
-        private void WhenICallTheReplacer()
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Items.UpsertDownstreamResponse(_response);
-            httpContext.Items.UpsertDownstreamRequest(_request);
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com/test/product");
+    }
 
-            _result = _replacer.Replace(httpContext, _headerFindAndReplaces);
-        }
-
-        private void ThenTheHeaderShouldBe(string key, string value)
-        {
-            var test = _response.Headers.First(x => x.Key == key);
-            test.Values.First().ShouldBe(value);
-        }
-
-        private void ThenTheHeadersAreReplaced()
-        {
-            _result.ShouldBeOfType<OkResponse>();
-            foreach (var f in _headerFindAndReplaces)
+    [Fact]
+    public void Should_replace_downstream_base_url_and_port_with_ocelot_base_url_and_port()
+    {
+        // Arrange
+        const string downstreamUrl = "http://downstream.com:123/test/product";
+        _request = new DownstreamRequest(new(HttpMethod.Get, "http://test.com") { RequestUri = new Uri(downstreamUrl) });
+        _response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.Accepted,
+            new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                var values = _response.Headers.First(x => x.Key == f.Key);
-                values.Values.ToList()[f.Index].ShouldBe(f.Replace);
-            }
+                new("Location", new List<string> {downstreamUrl}),
+            }, string.Empty);
+        _headerFindAndReplaces = new List<HeaderFindAndReplace>
+        {
+            new("Location", "{DownstreamBaseUrl}", "http://ocelot.com:321/", 0),
+        };
+
+        // Act
+        WhenICallTheReplacer();
+
+        // Assert
+        ThenTheHeaderShouldBe("Location", "http://ocelot.com:321/test/product");    
+    }
+
+    private void ThenTheHeadersAreNotReplaced()
+    {
+        _result.ShouldBeOfType<OkResponse>();
+        foreach (var f in _headerFindAndReplaces)
+        {
+            var values = _response.Headers.First(x => x.Key == f.Key);
+            values.Values.ToList()[f.Index].ShouldBe("test");
+        }
+    }
+
+    private void WhenICallTheReplacer()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items.UpsertDownstreamResponse(_response);
+        httpContext.Items.UpsertDownstreamRequest(_request);
+
+        _result = _replacer.Replace(httpContext, _headerFindAndReplaces);
+    }
+
+    private void ThenTheHeaderShouldBe(string key, string value)
+    {
+        var test = _response.Headers.First(x => x.Key == key);
+        test.Values.First().ShouldBe(value);
+    }
+
+    private void ThenTheHeadersAreReplaced()
+    {
+        _result.ShouldBeOfType<OkResponse>();
+        foreach (var f in _headerFindAndReplaces)
+        {
+            var values = _response.Headers.First(x => x.Key == f.Key);
+            values.Values.ToList()[f.Index].ShouldBe(f.Replace);
         }
     }
 }

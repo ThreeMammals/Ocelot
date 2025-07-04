@@ -3,7 +3,6 @@ using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
-using System;
 
 namespace Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
 

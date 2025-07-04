@@ -1,24 +1,19 @@
 {
-  "ReRoutes": [
+  "Routes": [
     {
-      "HttpHandlerOptions": {
-        "UseTracing": true
-      },
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/posts/{id}",
       "DownstreamPathTemplate": "/todos/{id}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "jsonplaceholder.typicode.com",
-          "Port": 443
-        }
+        { "Host": "jsonplaceholder.typicode.com", "Port": 443 }
       ],
-      "UpstreamPathTemplate": "/posts/{id}",
-      "UpstreamHttpMethod": [
-        "Get"
-      ]
+      "HttpHandlerOptions": {
+        "UseTracing": true
+      }
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:5000"
+    "BaseUrl": "https://localhost:7784"
   }
 }
