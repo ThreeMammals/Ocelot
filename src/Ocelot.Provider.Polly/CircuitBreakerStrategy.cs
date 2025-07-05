@@ -36,4 +36,20 @@ public static class CircuitBreakerStrategy
     /// <param name="failures">The number of failures.</param>
     /// <returns>The same value if the constraint is satisfied; otherwise, the default value (<see cref="DefaultMinimumThroughput"/>).</returns>
     public static int MinimumThroughput(int failures) => (failures >= LowMinimumThroughput) ? failures : DefaultMinimumThroughput;
+
+    // --- FailureRatio ---
+    // Actual Polly's FailureRatio constraint -> https://www.pollydocs.org/api/Polly.CircuitBreaker.CircuitBreakerStrategyOptions-1.html#Polly_CircuitBreaker_CircuitBreakerStrategyOptions_1_FailureRatio
+    public const double LowFailureRatio = 0.0D; // ~ 0%
+    public const double HighFailureRatio = 1.0D; // ~100%
+
+    /// <summary>The FailureRatio default value is 0.1 (i.e. 10%).</summary>
+    public const double DefaultFailureRatio = 0.1D; // ~10%
+
+    // --- SamplingDuration ---
+    // Actual Polly's SamplingDuration constraint -> https://www.pollydocs.org/api/Polly.CircuitBreaker.CircuitBreakerStrategyOptions-1.html#Polly_CircuitBreaker_CircuitBreakerStrategyOptions_1_SamplingDuration
+    public const int LowSamplingDuration = 500; // 0.5 seconds
+    public const int HighSamplingDuration = 86_400_000; // 1 day, 24 hours in milliseconds
+
+    /// <summary>The SamplingDuration default value is 30 seconds, in milliseconds.</summary>
+    public const int DefaultSamplingDuration = 30_000; // 30 seconds
 }

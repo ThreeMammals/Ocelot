@@ -40,25 +40,31 @@ Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPol
       .AddOcelot(builder.Configuration)
       .AddPolly();
 
-.. _qos-configuration:
+.. _qos-configuration-schema:
 
-Configuration
--------------
+Configuration Schema
+--------------------
 
-Then add the following section to a route configuration: 
+Here is the complete *Quality of Service* configuration, also known as the "QoS options schema".
+Depending on your needs and choosen strategies definition of all properties are not required.
+If you skip a property then a default value will be substituted as per Ocelot/Polly specification.
 
 .. code-block:: json
 
   "QoSOptions": {
-    "ExceptionsAllowedBeforeBreaking": 3,
-    "DurationOfBreak": 1000, // ms
-    "TimeoutValue": 5000, // ms
-    "FailureRatio": .8, // .8 = 80% of failed, this is default value
-    "SamplingDuration": 10000 // The time period over which the failure-success ratio is calculated (in milliseconds), default is 10000 (10s)
+    // Circuit Breaker strategy
+    "DurationOfBreak": 1, // integer
+    "ExceptionsAllowedBeforeBreaking": 1, // integer
+    "FailureRatio": 0.1, // floating number
+    "SamplingDuration": 1, // integer
+    // Timeout strategy
+    "TimeoutValue": 1, // integer
   }
 
 - To implement this rule, you must set a value of **2** or higher for ``ExceptionsAllowedBeforeBreaking``. [#f2]_
 - ``DurationOfBreak`` indicates that the circuit breaker will remain open for **1** second after being triggered.
+- ``FailureRatio`` sets the failure-to-success ratio at which the circuit will break. Default value is ``0.1`` ~ 10% of failed.
+- ``SamplingDuration``: 10000 // The time period over which the failure-success ratio is calculated (in milliseconds), default is 10000 (10s)
 - ``TimeoutValue`` specifies that if a request exceeds **5** seconds, it will automatically time out.
 
   | Please note: if you use the Circuit-Breaker, Ocelot checks that the parameters are correct during execution. If not, it throws an exception.

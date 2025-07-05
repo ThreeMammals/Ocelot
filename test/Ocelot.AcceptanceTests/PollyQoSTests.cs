@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Configuration;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Polly;
@@ -23,8 +24,15 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_not_timeout()
     {
+        var qos = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(10)
+            .WithDurationOfBreak(500)
+            .WithTimeoutValue(1000)
+            .WithFailureRatio(0.5)
+            .WithSamplingDuration(5)
+            .Build();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(10, 500, .5, 5, 1000, null), HttpMethods.Post);
+        var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty, 10))
@@ -38,8 +46,11 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_timeout()
     {
+        var qos = new QoSOptionsBuilder()
+            .WithTimeoutValue(1000)
+            .Build();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(0, 0, 1000, null), HttpMethods.Post);
+        var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 2100))
@@ -53,8 +64,13 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_open_circuit_breaker_after_two_exceptions()
     {
+        var qos = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(1000)
+            .WithTimeoutValue(100000)
+            .Build();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(2, 1000, 100000, null));
+        var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
@@ -74,8 +90,15 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
+        var qos = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(invalidDuration)
+            .WithTimeoutValue(100000)
+            .WithFailureRatio(0.005)
+            .WithSamplingDuration(1)
+            .Build();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(2, invalidDuration, .005,1,100000, null));
+        var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
@@ -104,9 +127,13 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     public void Should_open_circuit_breaker_then_close()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
-
+        var qos = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(500)
+            .WithTimeoutValue(1000)
+            .Build();
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, new QoSOptions(2, 500, 1000, null));
+        var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
             .Given(x => GivenThereIsAConfiguration(configuration))
@@ -134,10 +161,13 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     public void Open_circuit_should_not_effect_different_route()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
-
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var qos1 = new QoSOptions(2, 500, 1000, null);
+        var qos1 = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(500)
+            .WithTimeoutValue(1000)
+            .Build();
         var route = GivenRoute(port1, qos1);
         var route2 = GivenRoute(port2, new(new FileQoSOptions()), null, "/working");
         var configuration = GivenConfiguration(route, route2);

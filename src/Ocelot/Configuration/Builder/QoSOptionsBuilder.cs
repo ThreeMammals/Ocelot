@@ -1,9 +1,11 @@
 ﻿namespace Ocelot.Configuration.Builder;
 
-public class QoSOptionsBuilder
+public class QoSOptionsBuilder // TODO : QoSOptions LoL :D
 {
     private int _exceptionsAllowedBeforeBreaking;
     private int _durationOfBreak;
+    private double _failureRatio;
+    private int _samplingDuration;
     private int? _timeoutValue;
     private string _key;
 
@@ -31,8 +33,21 @@ public class QoSOptionsBuilder
         return this;
     }
 
-    public QoSOptions Build()
+    public QoSOptionsBuilder WithFailureRatio(double failureRatio)
     {
-        return new QoSOptions(_exceptionsAllowedBeforeBreaking, _durationOfBreak, _timeoutValue, _key);
+        _failureRatio = failureRatio;
+        return this;
     }
+
+    public QoSOptionsBuilder WithSamplingDuration(int samplingDuration)
+    {
+        _samplingDuration = samplingDuration;
+        return this;
+    }
+
+    public QoSOptions Build() => new(_exceptionsAllowedBeforeBreaking, _durationOfBreak,
+        timeoutValue: _timeoutValue,
+        key: _key,
+        failureRatio: _failureRatio,
+        samplingDuration: _samplingDuration);
 }

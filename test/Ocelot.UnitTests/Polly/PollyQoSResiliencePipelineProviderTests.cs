@@ -494,7 +494,7 @@ public class PollyQoSResiliencePipelineProviderTests
         Assert.Equal(GlobalTimeout, actual.Timeout.Milliseconds);
     }
 
-    private FileGlobalConfiguration _globalConfiguration = new();
+    private readonly FileGlobalConfiguration _globalConfiguration = new();
     private PollyQoSResiliencePipelineProvider GivenProvider()
     {
         var loggerFactory = new Mock<IOcelotLoggerFactory>();

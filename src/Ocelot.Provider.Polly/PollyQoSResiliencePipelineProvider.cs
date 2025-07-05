@@ -62,7 +62,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         if (!route.QosOptions.IsValid())
         {
-            throw new ArgumentException("QoS options are invalid.");
+            //throw new ArgumentException("QoS options are invalid.");
         }
 
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
@@ -93,8 +93,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
-            FailureRatio = options.FailureRatio,
-            SamplingDuration = TimeSpan.FromMilliseconds(options.SamplingDuration),
+            FailureRatio = 0.8, // options.FailureRatio,
+            SamplingDuration = TimeSpan.FromMilliseconds(10_000/*options.SamplingDuration*/),
             MinimumThroughput = minimumThroughput,
             BreakDuration = TimeSpan.FromMilliseconds(breakDurationMs),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()

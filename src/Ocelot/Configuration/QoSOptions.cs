@@ -4,63 +4,49 @@ namespace Ocelot.Configuration;
 
 public class QoSOptions
 {
+    /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class.</summary>
+    /// <remarks>This is the copying constructor.</remarks>
+    /// <param name="from">The object to copy the properties from.</param>
     public QoSOptions(QoSOptions from)
     {
+        Key = from.Key;
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
-        Key = from.Key;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
     }
 
+    /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class from a <see cref="FileQoSOptions"/> model.</summary>
+    /// <remarks>This is the converting constructor.</remarks>
+    /// <param name="from">The File-model to copy the properties from.</param>
     public QoSOptions(FileQoSOptions from)
     {
+        Key = string.Empty;
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
-        Key = string.Empty;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
     }
 
     public QoSOptions(
         int exceptionsAllowedBeforeBreaking,
         int durationOfBreak,
-        int? timeoutValue, 
-        string key)
+        int? timeoutValue = null, 
+        string key = null,
+        double failureRatio = 0.0D,
+        int samplingDuration = 0)
     {
+        Key = key;
         DurationOfBreak = durationOfBreak;
         ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-        Key = key;
-        TimeoutValue = timeoutValue;
-    }
-
-    public QoSOptions(
-        int exceptionsAllowedBeforeBreaking,
-        int durationOfBreak,
-        double failureRatio,
-        int timeoutValue,
-        string key)
-    {
-        DurationOfBreak = durationOfBreak;
-        ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-        Key = key;
-        TimeoutValue = timeoutValue;
-        FailureRatio = failureRatio;
-    }
-
-    public QoSOptions(
-        int exceptionsAllowedBeforeBreaking,
-        int durationOfBreak,
-        double failureRatio,
-        int samplingDuration,
-        int timeoutValue,
-        string key)
-    {
-        DurationOfBreak = durationOfBreak;
-        ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-        Key = key;
-        TimeoutValue = timeoutValue;
         FailureRatio = failureRatio;
         SamplingDuration = samplingDuration;
+        TimeoutValue = timeoutValue;
     }
+
+    public string Key { get; }
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
@@ -72,15 +58,13 @@ public class QoSOptions
     /// <value>An <see cref="int"/> value (exceptions number).</value>
     public int ExceptionsAllowedBeforeBreaking { get; }
 
-    public string Key { get; }
-
     /// <summary>
     /// The failure-success ratio that will cause the circuit to break/open. 
     /// </summary>
     /// <value>
     /// An <see cref="double"/> ratio of exceptions/requests  (0.8 means 80% failed of all sampled executions).
     /// </value>
-    public double FailureRatio { get; } = .8;
+    public double FailureRatio { get; }
 
     /// <summary>
     /// The time period over which the failure-success ratio is calculated (in milliseconds).
@@ -88,7 +72,7 @@ public class QoSOptions
     /// <value>
     /// An <see cref="int"/> Time period in milliseconds.
     /// </value>
-    public int SamplingDuration { get; } = 10000;
+    public int SamplingDuration { get; }
 
     /// <summary>Gets the timeout in milliseconds.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
@@ -97,7 +81,7 @@ public class QoSOptions
 
     public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
 
-    public bool IsValid() =>
+    public bool IsValid() => // TODO To remove this, refactor in favor of CircuitBreakerStrategy constraints
         ExceptionsAllowedBeforeBreaking <= 0 ||
         ExceptionsAllowedBeforeBreaking >= 2 && DurationOfBreak > 0 && !(FailureRatio <= 0) &&
         !(FailureRatio > 1) && SamplingDuration > 0;
