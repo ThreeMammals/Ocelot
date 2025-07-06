@@ -82,9 +82,4 @@ public class QoSOptions
     public int? TimeoutValue { get; protected set; }
 
     public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
-
-    public bool IsValid() => // TODO To remove this, refactor in favor of CircuitBreakerStrategy constraints
-        ExceptionsAllowedBeforeBreaking <= 0 ||
-        ExceptionsAllowedBeforeBreaking >= 2 && DurationOfBreak > 0 && !(FailureRatio <= 0) &&
-        !(FailureRatio > 1) && SamplingDuration > 0;
 }

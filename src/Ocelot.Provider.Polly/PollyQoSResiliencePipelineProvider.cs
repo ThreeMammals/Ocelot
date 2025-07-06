@@ -6,7 +6,7 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Timeout;
-using System;
+using System.Linq;
 using System.Net;
 
 namespace Ocelot.Provider.Polly;
@@ -60,11 +60,6 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
 
-        if (!route.QosOptions.IsValid())
-        {
-            //throw new ArgumentException("QoS options are invalid.");
-        }
-
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
             key: new OcelotResiliencePipelineKey(GetRouteName(route)),
             configure: (builder) => ConfigureStrategies(builder, route));
@@ -76,17 +71,69 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ConfigureTimeout(builder, route);
     }
 
+    protected virtual string CircuitBreakerValidationMessage(DownstreamRoute route)
+        => $"Route '{GetRouteName(route)}' has invalid {nameof(QoSOptions)} for Polly's Circuit Breaker strategy. Specifically, ";
+
+    protected virtual bool AreOptionsValidForCircuitBreaker(DownstreamRoute route)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(route.QosOptions);
+
+        var qos = route.QosOptions;
+        if (qos.ExceptionsAllowedBeforeBreaking <= 0)
+        {
+            _logger.LogError(
+                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({qos.ExceptionsAllowedBeforeBreaking}) is either negative or zero.",
+                null);
+            return false;
+        }
+
+        var warnings = new List<Func<string>>();
+        string The(Func<string> msg) => warnings.Count > 1
+            ? Environment.NewLine + $"{warnings.IndexOf(msg) + 1}. The"
+            : "the";
+        if (!qos.ExceptionsAllowedBeforeBreaking.IsValidMinimumThroughput())
+        {
+            string msg1() => $"{The(msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
+            warnings.Add(msg1);
+        }
+
+        if (!qos.DurationOfBreak.IsValidBreakDuration())
+        {
+            string msg2() => $"{The(msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.DurationOfBreak}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
+            warnings.Add(msg2);
+        }
+
+        if (!qos.FailureRatio.IsValidFailureRatio())
+        {
+            string msg3() => $"{The(msg3)} {nameof(CircuitBreakerStrategy.FailureRatio)} value ({qos.FailureRatio}) is outside the valid range ({CircuitBreakerStrategy.LowFailureRatio} to {CircuitBreakerStrategy.HighFailureRatio}). Therefore, ensure the ratio falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultFailureRatio}) will be substituted.";
+            warnings.Add(msg3);
+        }
+
+        if (!qos.SamplingDuration.IsValidSamplingDuration())
+        {
+            string msg4() => $"{The(msg4)} {nameof(CircuitBreakerStrategy.SamplingDuration)} value ({qos.SamplingDuration}) is outside the valid range ({CircuitBreakerStrategy.LowSamplingDuration} to {CircuitBreakerStrategy.HighSamplingDuration} milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultSamplingDuration}) will be substituted.";
+            warnings.Add(msg4);
+        }
+
+        if (warnings.Count > 0)
+        {
+            _logger.LogWarning(() => CircuitBreakerValidationMessage(route) + string.Join(Environment.NewLine, warnings.Select(f => f.Invoke())));
+        }
+
+        return true;
+    }
+
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
-
-        // Add CircuitBreaker strategy only if ExceptionsAllowedBeforeBreaking is greater/equal than/to 2
-        var options = route.QosOptions;
-        if (options.ExceptionsAllowedBeforeBreaking < 2)
+        ArgumentNullException.ThrowIfNull(route.QosOptions);
+        if (!AreOptionsValidForCircuitBreaker(route))
         {
             return builder;
         }
 
+        var options = route.QosOptions;
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(options.ExceptionsAllowedBeforeBreaking);
         int breakDurationMs = CircuitBreakerStrategy.BreakDuration(options.DurationOfBreak);
@@ -128,7 +175,9 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureTimeout(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(route.QosOptions);
         ArgumentNullException.ThrowIfNull(_globalConfiguration);
+        ArgumentNullException.ThrowIfNull(_globalConfiguration.QoSOptions);
 
         // Gives higher priority to route-level QoS over global ones
         int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
