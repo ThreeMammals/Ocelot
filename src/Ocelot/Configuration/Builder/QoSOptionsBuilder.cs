@@ -1,53 +1,42 @@
 ﻿namespace Ocelot.Configuration.Builder;
 
-public class QoSOptionsBuilder // TODO : QoSOptions LoL :D
+public class QoSOptionsBuilder : QoSOptions
 {
-    private int _exceptionsAllowedBeforeBreaking;
-    private int _durationOfBreak;
-    private double _failureRatio;
-    private int _samplingDuration;
-    private int? _timeoutValue;
-    private string _key;
-
-    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
+    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int value)
     {
-        _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+        ExceptionsAllowedBeforeBreaking = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithDurationOfBreak(int durationOfBreak)
+    public QoSOptionsBuilder WithDurationOfBreak(int value)
     {
-        _durationOfBreak = durationOfBreak;
+        DurationOfBreak = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithTimeoutValue(int? timeoutValue)
+    public QoSOptionsBuilder WithTimeoutValue(int? value)
     {
-        _timeoutValue = timeoutValue;
+        TimeoutValue = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithKey(string input)
+    public QoSOptionsBuilder WithKey(string value)
     {
-        _key = input;
+        Key = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithFailureRatio(double failureRatio)
+    public QoSOptionsBuilder WithFailureRatio(double value)
     {
-        _failureRatio = failureRatio;
+        FailureRatio = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithSamplingDuration(int samplingDuration)
+    public QoSOptionsBuilder WithSamplingDuration(int value)
     {
-        _samplingDuration = samplingDuration;
+        SamplingDuration = value;
         return this;
     }
 
-    public QoSOptions Build() => new(_exceptionsAllowedBeforeBreaking, _durationOfBreak,
-        timeoutValue: _timeoutValue,
-        key: _key,
-        failureRatio: _failureRatio,
-        samplingDuration: _samplingDuration);
+    public QoSOptions Build() => this;
 }
