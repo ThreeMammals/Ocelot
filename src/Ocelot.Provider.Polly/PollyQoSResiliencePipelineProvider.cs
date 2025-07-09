@@ -74,7 +74,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     protected virtual string CircuitBreakerValidationMessage(DownstreamRoute route)
         => $"Route '{GetRouteName(route)}' has invalid {nameof(QoSOptions)} for Polly's Circuit Breaker strategy. Specifically, ";
 
-    protected virtual bool AreOptionsValidForCircuitBreaker(DownstreamRoute route)
+    protected virtual bool IsConfigurationValidForCircuitBreaker(DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
@@ -83,36 +83,32 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         if (qos.ExceptionsAllowedBeforeBreaking <= 0)
         {
             _logger.LogError(
-                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({qos.ExceptionsAllowedBeforeBreaking}) is either negative or zero.",
-                null);
+                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({qos.ExceptionsAllowedBeforeBreaking}) is either negative or zero.", null);
             return false;
         }
 
-        var warnings = new List<Func<string>>();
-        string The(Func<string> msg) => warnings.Count > 1
-            ? Environment.NewLine + $"{warnings.IndexOf(msg) + 1}. The"
-            : "the";
+        List<Func<string>> warnings = new(), w = warnings;
         if (!qos.ExceptionsAllowedBeforeBreaking.IsValidMinimumThroughput())
         {
-            string msg1() => $"{The(msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
+            string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
             warnings.Add(msg1);
         }
 
         if (!qos.DurationOfBreak.IsValidBreakDuration())
         {
-            string msg2() => $"{The(msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.DurationOfBreak}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
+            string msg2() => $"{The(w, msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.DurationOfBreak}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
             warnings.Add(msg2);
         }
 
         if (!qos.FailureRatio.IsValidFailureRatio())
         {
-            string msg3() => $"{The(msg3)} {nameof(CircuitBreakerStrategy.FailureRatio)} value ({qos.FailureRatio}) is outside the valid range ({CircuitBreakerStrategy.LowFailureRatio} to {CircuitBreakerStrategy.HighFailureRatio}). Therefore, ensure the ratio falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultFailureRatio}) will be substituted.";
+            string msg3() => $"{The(w, msg3)} {nameof(CircuitBreakerStrategy.FailureRatio)} value ({qos.FailureRatio}) is outside the valid range ({CircuitBreakerStrategy.LowFailureRatio} to {CircuitBreakerStrategy.HighFailureRatio}). Therefore, ensure the ratio falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultFailureRatio}) will be substituted.";
             warnings.Add(msg3);
         }
 
         if (!qos.SamplingDuration.IsValidSamplingDuration())
         {
-            string msg4() => $"{The(msg4)} {nameof(CircuitBreakerStrategy.SamplingDuration)} value ({qos.SamplingDuration}) is outside the valid range ({CircuitBreakerStrategy.LowSamplingDuration} to {CircuitBreakerStrategy.HighSamplingDuration} milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultSamplingDuration}) will be substituted.";
+            string msg4() => $"{The(w, msg4)} {nameof(CircuitBreakerStrategy.SamplingDuration)} value ({qos.SamplingDuration}) is outside the valid range ({CircuitBreakerStrategy.LowSamplingDuration} to {CircuitBreakerStrategy.HighSamplingDuration} milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultSamplingDuration}) will be substituted.";
             warnings.Add(msg4);
         }
 
@@ -124,11 +120,50 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         return true;
     }
 
+    protected virtual string TimeoutValidationMessage(DownstreamRoute route)
+        => $"Route '{GetRouteName(route)}' has invalid {nameof(QoSOptions)} for Polly's Timeout strategy. Specifically, ";
+
+    protected virtual bool IsConfigurationValidForTimeout(DownstreamRoute route)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(route.QosOptions);
+        ArgumentNullException.ThrowIfNull(_globalConfiguration);
+        ArgumentNullException.ThrowIfNull(_globalConfiguration.QoSOptions);
+
+        // Gives higher priority to route-level QoS over global ones
+        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
+        if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
+        {
+            _logger.LogError(
+                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.TimeoutValue)} ({(timeoutMs.HasValue ? timeoutMs.Value.ToString() : "?")}) is either undefined, negative, or zero.", null);
+            return false;
+        }
+
+        List<Func<string>> warnings = new(), w = warnings;
+        if (!timeoutMs.Value.IsValidTimeout())
+        {
+            string msg() => $"{The(w, msg)} {nameof(TimeoutStrategy.Timeout)} value ({timeoutMs.Value}) is outside the valid range ({TimeoutStrategy.LowTimeout} to {TimeoutStrategy.HighTimeout} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({TimeoutStrategy.DefTimeout}) will be substituted.";
+            warnings.Add(msg);
+        }
+
+        if (warnings.Count > 0)
+        {
+            _logger.LogWarning(() => TimeoutValidationMessage(route) + string.Join(Environment.NewLine, warnings.Select(f => f.Invoke())));
+        }
+
+        return true;
+    }
+
+    private static string The(List<Func<string>> warnings, Func<string> msg)
+        => warnings.Count > 1
+            ? Environment.NewLine + $"{warnings.IndexOf(msg) + 1}. The"
+            : "the";
+
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
-        if (!AreOptionsValidForCircuitBreaker(route))
+        if (!IsConfigurationValidForCircuitBreaker(route))
         {
             return builder;
         }
@@ -178,18 +213,14 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(route.QosOptions);
         ArgumentNullException.ThrowIfNull(_globalConfiguration);
         ArgumentNullException.ThrowIfNull(_globalConfiguration.QoSOptions);
-
-        // Gives higher priority to route-level QoS over global ones
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
-
-        // Short cut: don't apply the strategy if no QoS timeout
-        if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
+        if (!IsConfigurationValidForTimeout(route))
         {
             return builder;
         }
 
-        // Polly docs -> https://www.pollydocs.org/api/Polly.Timeout.TimeoutStrategyOptions.html#Polly_Timeout_TimeoutStrategyOptions_Timeout
-        timeoutMs = TimeoutStrategy.ApplyConstraint(timeoutMs.Value);
+        // Gives higher priority to route-level QoS over global ones
+        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue ?? TimeoutStrategy.DefaultTimeout; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
+        timeoutMs = TimeoutStrategy.Timeout(timeoutMs.Value);
 
         // Happy path: Set up native qos and apply the strategy
         var strategy = new TimeoutStrategyOptions
