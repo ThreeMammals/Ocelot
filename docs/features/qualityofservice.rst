@@ -53,12 +53,12 @@ If you skip a property then a default value will be substituted as per Ocelot/Po
 
   "QoSOptions": {
     // Circuit Breaker strategy
-    "DurationOfBreak": 1, // integer
-    "ExceptionsAllowedBeforeBreaking": 1, // integer
-    "FailureRatio": 0.1, // floating number
-    "SamplingDuration": 1, // integer
+    "DurationOfBreak": 0, // integer
+    "ExceptionsAllowedBeforeBreaking": 0, // integer
+    "FailureRatio": 0.0, // nullable floating number
+    "SamplingDuration": 0, // nullable integer
     // Timeout strategy
-    "TimeoutValue": 1, // integer
+    "TimeoutValue": 0, // nullable integer
   }
 
 - To implement this rule, you must set a value of **2** or higher for ``ExceptionsAllowedBeforeBreaking``. [#f2]_
@@ -67,13 +67,16 @@ If you skip a property then a default value will be substituted as per Ocelot/Po
 - ``SamplingDuration``: 10000 // The time period over which the failure-success ratio is calculated (in milliseconds), default is 10000 (10s)
 - ``TimeoutValue`` specifies that if a request exceeds **5** seconds, it will automatically time out.
 
-  | Please note: if you use the Circuit-Breaker, Ocelot checks that the parameters are correct during execution. If not, it throws an exception.
-  | For a complete explanation about Circuit-Breaker strategies and mechanisms, consult Polly documentation here <https://www.pollydocs.org/strategies/circuit-breaker>
+.. _break1: http://break.do
+
+  **Note**: If you use the Circuit-Breaker, Ocelot checks that the parameters are correct during execution; if not, it logs an errors or warnings.
+  For a complete explanation about Circuit-Breaker strategies and mechanisms, consult Polly's `Circuit breaker resilience strategy`_ documentation.
 
 .. _qos-circuit-breaker-strategy:
 
 Circuit Breaker strategy
 ------------------------
+.. _Circuit breaker resilience strategy: https://www.pollydocs.org/strategies/circuit-breaker
 
 The options ``ExceptionsAllowedBeforeBreaking`` and ``DurationOfBreak`` can be configured independently from ``TimeoutValue``:
 
@@ -93,6 +96,19 @@ Alternatively, you can omit ``DurationOfBreak``, which will default to the impli
   }
 
 This setup activates only the `Circuit breaker <https://www.pollydocs.org/strategies/circuit-breaker.html>`_ strategy.
+
+Additionally, there is a failure handling strategy based on ``FailureRatio``, which serves as a counterpart to, or supplement for, the number of failures, also known as ``ExceptionsAllowedBeforeBreaking``.
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "ExceptionsAllowedBeforeBreaking": 10,
+    "FailureRatio": 0.5, // 50%
+    "SamplingDuration": 10000, // ms, 10 seconds
+  }
+
+Thus, a failure ratio of ``0.5`` indicates that the circuit will break if 50% or more of actions result in handled failures.
+Additionally, the 10-second sampling duration defines the time window over which the 50% failure ratio is evaluated.
 
 .. _qos-timeout-strategy:
 

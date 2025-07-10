@@ -100,13 +100,13 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             warnings.Add(msg2);
         }
 
-        if (!qos.FailureRatio.IsValidFailureRatio())
+        if (qos.FailureRatio.HasValue && !qos.FailureRatio.Value.IsValidFailureRatio())
         {
             string msg3() => $"{The(w, msg3)} {nameof(CircuitBreakerStrategy.FailureRatio)} value ({qos.FailureRatio}) is outside the valid range ({CircuitBreakerStrategy.LowFailureRatio} to {CircuitBreakerStrategy.HighFailureRatio}). Therefore, ensure the ratio falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultFailureRatio}) will be substituted.";
             warnings.Add(msg3);
         }
 
-        if (!qos.SamplingDuration.IsValidSamplingDuration())
+        if (qos.SamplingDuration.HasValue && !qos.SamplingDuration.Value.IsValidSamplingDuration())
         {
             string msg4() => $"{The(w, msg4)} {nameof(CircuitBreakerStrategy.SamplingDuration)} value ({qos.SamplingDuration}) is outside the valid range ({CircuitBreakerStrategy.LowSamplingDuration} to {CircuitBreakerStrategy.HighSamplingDuration} milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultSamplingDuration}) will be substituted.";
             warnings.Add(msg4);
@@ -172,11 +172,13 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(options.ExceptionsAllowedBeforeBreaking);
         int breakDurationMs = CircuitBreakerStrategy.BreakDuration(options.DurationOfBreak);
+        double failureRatio = CircuitBreakerStrategy.FailureRatio(options.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
+        int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(options.SamplingDuration ?? 0); // 0 fallbacks to the default value
 
         var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
-            FailureRatio = 0.8, // options.FailureRatio,
-            SamplingDuration = TimeSpan.FromMilliseconds(10_000/*options.SamplingDuration*/),
+            FailureRatio = failureRatio,
+            SamplingDuration = TimeSpan.FromMilliseconds(samplingDurationMs),
             MinimumThroughput = minimumThroughput,
             BreakDuration = TimeSpan.FromMilliseconds(breakDurationMs),
             ShouldHandle = new PredicateBuilder<HttpResponseMessage>()

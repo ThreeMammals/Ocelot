@@ -27,12 +27,12 @@ public class FileQoSOptionsTests
     }
 
     [Fact]
-    public void Cstor_Default_AssignedOneToDurationOfBreak()
+    public void Cstor_Default_AssignedZeroToDurationOfBreak()
     {
         // Arrange, Act
         var actual = new FileQoSOptions();
 
         // Assert
-        Assert.Equal(1, actual.DurationOfBreak);
+        Assert.Equal(0, actual.DurationOfBreak);
     }
 }

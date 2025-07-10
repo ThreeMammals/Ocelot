@@ -91,7 +91,6 @@ public class MessageInvokerPool : IMessageInvokerPool
 
     private bool TryEnsureQosLevel(QoSOptions qos, DownstreamRoute route, bool isGlobal, ref int routeMilliseconds)
     {
-        // (qos.UseQos && qos.TimeoutValue.HasValue && routeMilliseconds <= qos.TimeoutValue)
         if (!qos.UseQos || !qos.TimeoutValue.HasValue || routeMilliseconds > qos.TimeoutValue)
         {
             return false;

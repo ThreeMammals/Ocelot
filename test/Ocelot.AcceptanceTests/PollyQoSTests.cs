@@ -67,7 +67,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var qos = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(2)
             .WithDurationOfBreak(1000)
-            .WithTimeoutValue(100000)
+            .WithTimeoutValue(100_000)
             .Build();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
@@ -93,9 +93,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var qos = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(2)
             .WithDurationOfBreak(invalidDuration)
-            .WithTimeoutValue(100000)
-            .WithFailureRatio(0.005)
-            .WithSamplingDuration(1)
+            .WithTimeoutValue(100_000)
             .Build();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
@@ -123,34 +121,34 @@ public sealed class PollyQoSTests : TimeoutTestsBase
 
     private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
 
-    [SkippableFact] // [Fact]
+    [SkippableFact]
     public void Should_open_circuit_breaker_then_close()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var qos = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(500)
+            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 501
             .WithTimeoutValue(1000)
             .Build();
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .Given(x => GivenOcelotIsRunningWithPolly())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithPolly())
+            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Given(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .Given(x => GivenIWaitMilliseconds(3000))
+            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => GivenIWaitMilliseconds(3000))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
@@ -165,11 +163,11 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port2 = PortFinder.GetRandomPort();
         var qos1 = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(500)
+            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 501
             .WithTimeoutValue(1000)
             .Build();
         var route = GivenRoute(port1, qos1);
-        var route2 = GivenRoute(port2, new(new FileQoSOptions()), null, "/working");
+        var route2 = GivenRoute(port2, new QoSOptionsBuilder().Build(), null, "/working");
         var configuration = GivenConfiguration(route, route2);
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
             .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, "Hello from Tom", 0))
@@ -300,14 +298,14 @@ public sealed class PollyQoSTests : TimeoutTestsBase
 
     private void GivenThereIsAPossiblyBrokenServiceRunningOn(int port, string responseBody)
     {
-        var requestCount = 0;
+        int requestCount = 0;
         handler.GivenThereIsAServiceRunningOn(port, async context =>
         {
             if (requestCount == 2)
             {
                 // In Polly v8:
                 //   MinimumThroughput (ExceptionsAllowedBeforeBreaking) must be 2 or more
-                //   BreakDuration (DurationOfBreak) must be 500 or more
+                //   BreakDuration (DurationOfBreak) must be > 500
                 //   Timeout (TimeoutValue) must be 1000 or more
                 // So, we wait for 2.1 seconds to make sure the circuit is open
                 // DurationOfBreak * ExceptionsAllowedBeforeBreaking + Timeout

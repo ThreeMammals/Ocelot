@@ -26,13 +26,13 @@ public class QoSOptionsBuilder : QoSOptions
         return this;
     }
 
-    public QoSOptionsBuilder WithFailureRatio(double value)
+    public QoSOptionsBuilder WithFailureRatio(double? value)
     {
         FailureRatio = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithSamplingDuration(int value)
+    public QoSOptionsBuilder WithSamplingDuration(int? value)
     {
         SamplingDuration = value;
         return this;

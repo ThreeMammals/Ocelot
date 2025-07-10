@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
@@ -9,11 +10,12 @@ public class QoSOptionsTests
     public void Ctor_Copy_ShouldCopy()
     {
         // Arrange
-        var copyee = new QoSOptions(
-            exceptionsAllowedBeforeBreaking: 1,
-            durationOfBreak: 2,
-            timeoutValue: 3,
-            key: "123");
+        var copyee = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(1)
+            .WithDurationOfBreak(2)
+            .WithTimeoutValue(3)
+            .WithKey("123")
+            .Build();
 
         // Act
         var actual = new QoSOptions(copyee);
@@ -45,7 +47,9 @@ public class QoSOptionsTests
     public void UseQos_ExceptionsAllowedBeforeBreaking_ShouldUse(int exceptionsAllowed, bool expected)
     {
         // Arrange
-        var opts = new QoSOptions(exceptionsAllowed, 0, null, null); // timeoutValue is null
+        var opts = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(exceptionsAllowed)
+            .Build(); // timeoutValue is null
 
         // Act, Assert
         Assert.Equal(expected, opts.UseQos);
@@ -59,7 +63,9 @@ public class QoSOptionsTests
     public void UseQos_TimeoutValue_ShouldUse(int? timeout, bool expected)
     {
         // Arrange
-        var opts = new QoSOptions(0, 0, timeout, null); // no exceptionsAllowedBeforeBreaking
+        var opts = new QoSOptionsBuilder()
+            .WithTimeoutValue(timeout)
+            .Build(); // no exceptionsAllowedBeforeBreaking
 
         // Act, Assert
         Assert.Equal(expected, opts.UseQos);

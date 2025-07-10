@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -112,7 +113,7 @@ public class ConfigurationCreatorTests : UnitTest
         _routes = new List<Route>();
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
         _lbo = new LoadBalancerOptionsBuilder().Build();
-        _qoso = new QoSOptions(1, 1, 1, string.Empty);
+        _qoso = new QoSOptionsBuilder().Build();
         _hho = new HttpHandlerOptionsBuilder().Build();
 
         _spcCreator.Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(_spc);
