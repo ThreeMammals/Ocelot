@@ -168,12 +168,14 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return builder;
         }
 
-        var options = route.QosOptions;
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
-        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(options.ExceptionsAllowedBeforeBreaking);
-        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(options.DurationOfBreak);
-        double failureRatio = CircuitBreakerStrategy.FailureRatio(options.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
-        int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(options.SamplingDuration ?? 0); // 0 fallbacks to the default value
+        QoSOptions qos = route.QosOptions, globalQos = new(_globalConfiguration.QoSOptions);
+        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.UseQos && qos.ExceptionsAllowedBeforeBreaking > 0 ? qos.ExceptionsAllowedBeforeBreaking
+            : globalQos.UseQos && globalQos.ExceptionsAllowedBeforeBreaking > 0 ? globalQos.ExceptionsAllowedBeforeBreaking : 0); // 0 fallbacks to the default value
+        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.UseQos && qos.DurationOfBreak > 0 ? qos.DurationOfBreak
+            : globalQos.UseQos && globalQos.DurationOfBreak > 0 ? globalQos.DurationOfBreak : 0); // 0 fallbacks to the default value
+        double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? globalQos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
+        int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? globalQos.SamplingDuration ?? 0); // 0 fallbacks to the default value
 
         var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
