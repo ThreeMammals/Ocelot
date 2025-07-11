@@ -27,8 +27,8 @@ public class FileQoSOptions
         TimeoutValue = from.TimeoutValue;
     }
 
-    public int DurationOfBreak { get; set; }
-    public int ExceptionsAllowedBeforeBreaking { get; set; }
+    public int? DurationOfBreak { get; set; }
+    public int? ExceptionsAllowedBeforeBreaking { get; set; }
     public double? FailureRatio { get; set; }
     public int? SamplingDuration { get; set; }
 

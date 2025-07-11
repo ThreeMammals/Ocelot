@@ -36,13 +36,13 @@ public class QoSOptions
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
-    /// <value>An <see cref="int"/> value (milliseconds).</value>
-    public int DurationOfBreak { get; protected set; }
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
+    public int? DurationOfBreak { get; protected set; }
 
     /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
-    /// <value>An <see cref="int"/> value (exceptions number).</value>
-    public int ExceptionsAllowedBeforeBreaking { get; protected set; }
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (exceptions number).</value>
+    public int? ExceptionsAllowedBeforeBreaking { get; protected set; }
 
     /// <summary>Gets or sets the failure-to-success ratio at which the circuit will break.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
@@ -59,5 +59,6 @@ public class QoSOptions
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? TimeoutValue { get; protected set; }
 
-    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || (TimeoutValue.HasValue && TimeoutValue > 0);
+    public bool UseQos => (ExceptionsAllowedBeforeBreaking.HasValue && ExceptionsAllowedBeforeBreaking > 0)
+        || (TimeoutValue.HasValue && TimeoutValue > 0);
 }

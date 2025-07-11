@@ -2,13 +2,13 @@
 
 public class QoSOptionsBuilder : QoSOptions
 {
-    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int value)
+    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int? value)
     {
         ExceptionsAllowedBeforeBreaking = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithDurationOfBreak(int value)
+    public QoSOptionsBuilder WithDurationOfBreak(int? value)
     {
         DurationOfBreak = value;
         return this;

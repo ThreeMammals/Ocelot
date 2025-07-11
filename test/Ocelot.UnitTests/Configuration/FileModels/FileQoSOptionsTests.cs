@@ -5,34 +5,18 @@ namespace Ocelot.UnitTests.Configuration.FileModels;
 public class FileQoSOptionsTests
 {
     [Fact]
-    [Trait("Bug", "1833")]
     [Trait("PR", "2073")]
-    public void Cstor_Default_NoTimeoutValue()
+    [Trait("PR", "2081")]
+    public void Ctor_Default_AllPropertiesAreNull()
     {
         // Arrange, Act
         var actual = new FileQoSOptions();
 
         // Assert
+        Assert.Null(actual.DurationOfBreak);
+        Assert.Null(actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Null(actual.FailureRatio);
+        Assert.Null(actual.SamplingDuration);
         Assert.Null(actual.TimeoutValue);
-    }
-
-    [Fact]
-    public void Cstor_Default_AssignedZeroToExceptionsAllowedBeforeBreaking()
-    {
-        // Arrange, Act
-        var actual = new FileQoSOptions();
-
-        // Assert
-        Assert.Equal(0, actual.ExceptionsAllowedBeforeBreaking);
-    }
-
-    [Fact]
-    public void Cstor_Default_AssignedZeroToDurationOfBreak()
-    {
-        // Arrange, Act
-        var actual = new FileQoSOptions();
-
-        // Assert
-        Assert.Equal(0, actual.DurationOfBreak);
     }
 }
