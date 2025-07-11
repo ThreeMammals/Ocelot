@@ -6,12 +6,14 @@ public class QoSOptionsCreator : IQoSOptionsCreator
 {
     public QoSOptions Create(FileQoSOptions options) => new(options);
 
-    public QoSOptions Create(FileQoSOptions options, string pathTemplate, List<string> httpMethods)
-        => Create(new QoSOptions(options), pathTemplate, httpMethods);
-
-    public QoSOptions Create(QoSOptions options, string pathTemplate, List<string> httpMethods)
+    public QoSOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
-        options.Key = $"{pathTemplate.FirstOrDefault()}|{string.Join(',', httpMethods)}";
-        return options;
+        FileQoSOptions qos = route.QoSOptions, global = globalConfiguration.QoSOptions;
+        qos.DurationOfBreak ??= global.DurationOfBreak;
+        qos.ExceptionsAllowedBeforeBreaking ??= global.ExceptionsAllowedBeforeBreaking;
+        qos.FailureRatio ??= global.FailureRatio;
+        qos.SamplingDuration ??= global.SamplingDuration;
+        qos.TimeoutValue ??= global.TimeoutValue;
+        return new(qos);
     }
 }

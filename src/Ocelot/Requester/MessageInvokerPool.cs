@@ -72,7 +72,6 @@ public class MessageInvokerPool : IMessageInvokerPool
     /// <returns>An <see cref="int"/> value representing the timeout in milliseconds, to be assigned in the upper context.</returns>
     protected virtual int EnsureRouteTimeoutIsGreaterThanQosOne(DownstreamRoute route)
     {
-        var qos = route.QosOptions;
         int routeMilliseconds = 1_000 * (route.Timeout ?? DownstreamRoute.DefaultTimeoutSeconds);
         var routeQos = route.QosOptions;
         if (TryEnsureQosLevel(routeQos, route, false, ref routeMilliseconds))

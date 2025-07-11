@@ -101,7 +101,7 @@ public class RoutesCreator : IRoutesCreator
 
         var claimsToDownstreamPath = _claimsToThingCreator.Create(fileRoute.ChangeDownstreamPathTemplate);
 
-        var qosOptions = _qosOptionsCreator.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
+        var qosOptions = _qosOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
 

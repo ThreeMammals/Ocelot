@@ -1,6 +1,5 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
@@ -9,38 +8,34 @@ namespace Ocelot.DownstreamRouteFinder.Finder;
 
 public class DownstreamRouteCreator : IDownstreamRouteProvider
 {
-    private readonly IQoSOptionsCreator _qoSOptionsCreator;
     private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
 
-    public DownstreamRouteCreator(IQoSOptionsCreator qoSOptionsCreator)
+    public DownstreamRouteCreator()
     {
-        _qoSOptionsCreator = qoSOptionsCreator;
-        _cache = new ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>>();
+        _cache = new();
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
     {
         var serviceName = GetServiceName(upstreamUrlPath);
-
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
-
         if (HasQueryString(downstreamPath))
         {
             downstreamPath = RemoveQueryString(downstreamPath);
         }
 
         var downstreamPathForKeys = $"/{serviceName}{downstreamPath}";
-
         var loadBalancerKey = CreateLoadBalancerKey(downstreamPathForKeys, upstreamHttpMethod, configuration.LoadBalancerOptions);
-
         if (_cache.TryGetValue(loadBalancerKey, out var downstreamRouteHolder))
         {
             return downstreamRouteHolder;
         }
 
-        var qosOptions = _qoSOptionsCreator.Create(configuration.QoSOptions, downstreamPathForKeys, new List<string> { upstreamHttpMethod });
-
+        var qosOptions = new QoSOptions(configuration.QoSOptions)
+        {
+            Key = $"{downstreamPathForKeys}|{upstreamHttpMethod}",
+        };
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
 
         var downstreamRouteBuilder = new DownstreamRouteBuilder()
@@ -66,7 +61,6 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();
-
         var route = new RouteBuilder()
             .WithDownstreamRoute(downstreamRoute)
             .WithUpstreamHttpMethod(new List<string> { upstreamHttpMethod })
@@ -74,7 +68,6 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
             .Build();
 
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
-
         _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);
 
         return downstreamRouteHolder;
