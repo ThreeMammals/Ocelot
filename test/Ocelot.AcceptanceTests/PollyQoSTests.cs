@@ -7,6 +7,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Polly;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
@@ -34,8 +35,8 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty, 10))
+        var body = ResponseBody();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, 10, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
@@ -52,8 +53,8 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, 2100))
+        var body = ResponseBody();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, 2100, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
@@ -170,7 +171,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var route2 = GivenRoute(port2, new QoSOptionsBuilder().Build(), null, "/working");
         var configuration = GivenConfiguration(route, route2);
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
-            .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, "Hello from Tom", 0))
+            .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, 0, "Hello from Tom"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithPolly())
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -209,7 +210,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             var port = PortFinder.GetRandomPort();
             var route = GivenRoute(port, new QoSOptions(new FileQoSOptions()), HttpMethods.Get);
             var configuration = GivenConfiguration(route);
-            GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, defTimeoutMs + 500); // 3.5s > 3s -> ServiceUnavailable
+            GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, defTimeoutMs + 500); // 3.5s > 3s -> ServiceUnavailable
             GivenThereIsAConfiguration(configuration);
             GivenOcelotIsRunningWithPolly();
             await WhenIGetUrlOnTheApiGateway("/");
@@ -235,7 +236,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions.TimeoutValue = Ms(GlobalTimeoutSeconds); // !!!
 
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty, serviceTimeoutMs);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, serviceTimeoutMs);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithPolly();
 
@@ -273,6 +274,103 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             await ThenTheResponseBodyShouldBeAsync(string.Empty);
         }
+    }
+
+    [Fact]
+    [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
+    [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
+    public async Task HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio()
+    {
+        const double RouteFailureRatio = 0.50D, GlobalFailureRatio = 0.75D;
+        var qos = new FileQoSOptions()
+        {
+            ExceptionsAllowedBeforeBreaking = 3, // after 3 actions FailureRatio is activated
+            DurationOfBreak = CircuitBreakerStrategy.LowBreakDuration + 1,
+            FailureRatio = RouteFailureRatio, // 50% of requests
+            SamplingDuration = 1_000,
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, new(qos), HttpMethods.Get);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.QoSOptions.FailureRatio = GlobalFailureRatio; // !!!
+
+        int count = 0;
+        bool isOK = false;
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, 10, () => !isOK && ++count % 2 == 0); // 1 of 2 fails
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // 0 failed of 1 -> 0%
+        await WhenIGetUrlOnTheApiGateway("/"); // fail
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 1 failed of 2 -> 50% but failure ratio is ignored because of 2 actions < 3
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // 1 failed of 3 -> 33%
+        await WhenIGetUrlOnTheApiGateway("/"); // fail
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 2 failed of 4 -> 50% -> circuit is open now!
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 2 failed of 5 -> 40%, but circuit is already open
+        await WhenIGetUrlOnTheApiGateway("/"); // fail
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 3 failed of 6 -> 50%, but circuit is already open
+        count.ShouldBe(4); // 2 of 4 were failed, and the service was called 4 times
+        isOK = true; // the next requests should be OK
+        await Task.Delay(qos.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
+        await ThenTheResponseBodyShouldBeAsync(nameof(HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio));
+    }
+
+    [Fact]
+    [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
+    [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
+    public async Task HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio()
+    {
+        const double GlobalFailureRatio = 0.75D; // Polly def FailureRatio is CircuitBreakerStrategy.DefaultFailureRatio -> 0.1 -> 10%
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port); // without failure ratios
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.QoSOptions = new()
+        {
+            ExceptionsAllowedBeforeBreaking = 2, // after 2 actions FailureRatio is activated
+            DurationOfBreak = CircuitBreakerStrategy.LowBreakDuration + 1,
+            FailureRatio = GlobalFailureRatio, // 75% of requests
+            SamplingDuration = 1_000,
+        }; // !!!
+        int count = 0;
+        bool isOK = false;
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, 10, () => !isOK && ++count > 2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // 0 failed of 1 -> 0%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // 0 failed of 2 -> 0%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 1 failed of 3 -> 33%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 2 failed of 4 -> 50%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 3 failed of 5 -> 60%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 4 failed of 6 -> 66%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 5 failed of 7 -> 71%
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 6 failed of 8 -> 75% -> circuit is open now!
+        await WhenIGetUrlOnTheApiGateway("/");
+
+        // Assert circuit is open
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 7 failed of 9 -> 77%, but circuit is already open
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 8 failed of 10 -> 80%, but circuit is already open
+        count.ShouldBe(8); // the service was called 8 times of 10 total
+        isOK = true; // the next requests should be OK
+        await Task.Delay(configuration.GlobalConfiguration.QoSOptions.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
+        await ThenTheResponseBodyShouldBeAsync(nameof(HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio));
     }
 
     private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunning(WithPolly);
@@ -319,13 +417,20 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         });
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody, int timeout)
+    private string ResponseBody([CallerMemberName] string response = nameof(PollyQoSTests)) => response;
+
+    protected override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(PollyQoSTests))
+        => base.GivenThereIsAServiceRunningOn(port, statusCode, timeout, response);
+
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, Func<bool> failingStrategy, [CallerMemberName] string response = nameof(PollyQoSTests))
     {
-        handler.GivenThereIsAServiceRunningOn(port, async context =>
+        async Task MapBodyWithTimeout(HttpContext context)
         {
             await Task.Delay(timeout);
-            context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(responseBody);
-        });
+            HttpStatusCode status = failingStrategy() ? HttpStatusCode.InternalServerError : statusCode;
+            context.Response.StatusCode = (int)status;
+            await context.Response.WriteAsync(response);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapBodyWithTimeout);
     }
 }

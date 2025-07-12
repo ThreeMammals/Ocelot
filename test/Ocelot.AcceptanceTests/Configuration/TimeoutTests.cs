@@ -123,7 +123,7 @@ public class TimeoutTestsBase : Steps
         return configuration;
     }
 
-    protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(TimeoutTests))
+    protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(TimeoutTests))
     {
         async Task MapBodyWithTimeout(HttpContext context)
         {
