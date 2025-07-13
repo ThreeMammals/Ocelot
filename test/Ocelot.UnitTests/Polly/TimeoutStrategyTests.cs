@@ -3,6 +3,7 @@ using Const = Ocelot.Provider.Polly.TimeoutStrategy;
 
 namespace Ocelot.UnitTests.Polly;
 
+[Collection(nameof(SequentialTests))]
 public class TimeoutStrategyTests
 {
     [Theory]
@@ -22,5 +23,6 @@ public class TimeoutStrategyTests
 
         // Assert
         Assert.Equal(expected, TimeoutStrategy.DefaultTimeout);
+        TimeoutStrategy.DefaultTimeout = TimeoutStrategy.DefTimeout;
     }
 }

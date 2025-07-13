@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
-using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly.Interfaces;
 using Polly.CircuitBreaker;
@@ -18,16 +16,13 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 {
     private readonly ResiliencePipelineRegistry<OcelotResiliencePipelineKey> _registry;
     private readonly IOcelotLogger _logger;
-    private readonly FileGlobalConfiguration _globalConfiguration;
     
     public PollyQoSResiliencePipelineProvider(
         IOcelotLoggerFactory loggerFactory,
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry,
-        IOptions<FileGlobalConfiguration> global)
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
     {
         _logger = loggerFactory?.CreateLogger<PollyQoSResiliencePipelineProvider>() ?? throw new ArgumentNullException(nameof(loggerFactory));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-        _globalConfiguration = global?.Value ?? throw new ArgumentNullException(nameof(global));
     }
 
     protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
@@ -54,8 +49,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     public ResiliencePipeline<HttpResponseMessage> GetResiliencePipeline(DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
-        var globalQos = new QoSOptions(_globalConfiguration.QoSOptions);
-        if (!route.QosOptions.UseQos && !globalQos.UseQos)
+
+        if (!route.QosOptions.UseQos)
         {
             return ResiliencePipeline<HttpResponseMessage>.Empty; // shortcut -> No QoS
         }
@@ -127,11 +122,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
-        ArgumentNullException.ThrowIfNull(_globalConfiguration);
-        ArgumentNullException.ThrowIfNull(_globalConfiguration.QoSOptions);
 
-        // Gives higher priority to route-level QoS over global ones
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
+        int? timeoutMs = route.QosOptions.TimeoutValue;
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             _logger.LogError(
@@ -142,7 +134,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         List<Func<string>> warnings = new(), w = warnings;
         if (!timeoutMs.Value.IsValidTimeout())
         {
-            string msg() => $"{The(w, msg)} {nameof(TimeoutStrategy.Timeout)} value ({timeoutMs.Value}) is outside the valid range ({TimeoutStrategy.LowTimeout} to {TimeoutStrategy.HighTimeout} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({TimeoutStrategy.DefTimeout}) will be substituted.";
+            string msg() => $"{The(w, msg)} {nameof(TimeoutStrategy.Timeout)} value ({timeoutMs.Value}) is outside the valid range ({TimeoutStrategy.LowTimeout} to {TimeoutStrategy.HighTimeout} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({TimeoutStrategy.DefaultTimeout}) will be substituted.";
             warnings.Add(msg);
         }
 
@@ -159,6 +151,10 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             ? Environment.NewLine + $"{warnings.IndexOf(msg) + 1}. The"
             : "the";
 
+    /// <summary>Configures the <see href="https://www.pollydocs.org/strategies/circuit-breaker.html">Circuit breaker resilience strategy</see>.</summary>
+    /// <param name="builder">Pipeline builder instance.</param>
+    /// <param name="route">The route the pipeline is applied to.</param>
+    /// <returns>The same pipeline builder, as an <see cref="ResiliencePipelineBuilder{HttpResponseMessage}"/> object where TResult is <see cref="HttpResponseMessage"/>.</returns>
     protected virtual ResiliencePipelineBuilder<HttpResponseMessage> ConfigureCircuitBreaker(ResiliencePipelineBuilder<HttpResponseMessage> builder, DownstreamRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
@@ -169,11 +165,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         }
 
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
-        QoSOptions qos = route.QosOptions, globalQos = new(_globalConfiguration.QoSOptions);
-        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.ExceptionsAllowedBeforeBreaking ?? globalQos.ExceptionsAllowedBeforeBreaking ?? 0); // 0 fallbacks to the default value
-        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.DurationOfBreak ?? globalQos.DurationOfBreak ?? 0); // 0 fallbacks to the default value
-        double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? globalQos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
-        int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? globalQos.SamplingDuration ?? 0); // 0 fallbacks to the default value
+        QoSOptions qos = route.QosOptions;
+        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.ExceptionsAllowedBeforeBreaking ?? 0); // 0 fallbacks to the default value
+        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.DurationOfBreak ?? 0); // 0 fallbacks to the default value
+        double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
+        int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? 0); // 0 fallbacks to the default value
 
         var strategy = new CircuitBreakerStrategyOptions<HttpResponseMessage>
         {
@@ -213,18 +209,15 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
-        ArgumentNullException.ThrowIfNull(_globalConfiguration);
-        ArgumentNullException.ThrowIfNull(_globalConfiguration.QoSOptions);
+
         if (!IsConfigurationValidForTimeout(route))
         {
             return builder;
         }
 
-        // Gives higher priority to route-level QoS over global ones
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? _globalConfiguration.QoSOptions.TimeoutValue ?? TimeoutStrategy.DefaultTimeout; // TODO Move global QoS to QoSOptionsCreator then remove injected IOptions<FileGlobalConfiguration>
-        timeoutMs = TimeoutStrategy.Timeout(timeoutMs.Value);
+        int? timeoutMs = route.QosOptions.TimeoutValue ?? TimeoutStrategy.DefaultTimeout;
+        timeoutMs = TimeoutStrategy.Timeout(timeoutMs.Value) ?? TimeoutStrategy.DefaultTimeout;
 
-        // Happy path: Set up native qos and apply the strategy
         var strategy = new TimeoutStrategyOptions
         {
             Timeout = TimeSpan.FromMilliseconds(timeoutMs.Value),

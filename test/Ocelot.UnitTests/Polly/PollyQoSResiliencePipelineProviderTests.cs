@@ -1,7 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Polly;
@@ -9,6 +7,7 @@ using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Testing;
 using Polly.Timeout;
+using _TimeoutStrategy_ = Ocelot.Provider.Polly.TimeoutStrategy;
 
 namespace Ocelot.UnitTests.Polly;
 
@@ -30,7 +29,7 @@ public class PollyQoSResiliencePipelineProviderTests
 
         // Act
         var ex = Assert.Throws<ArgumentNullException>(
-            () => new PollyQoSResiliencePipelineProvider(factory, null, null));
+            () => new PollyQoSResiliencePipelineProvider(factory, null));
 
         // Assert
         Assert.Equal("loggerFactory", ex.ParamName);
@@ -48,36 +47,10 @@ public class PollyQoSResiliencePipelineProviderTests
 
         // Act
         var ex = Assert.Throws<ArgumentNullException>(
-            () => new PollyQoSResiliencePipelineProvider(factory.Object, noRegistry, null));
+            () => new PollyQoSResiliencePipelineProvider(factory.Object, noRegistry));
 
         // Assert
         Assert.Equal("registry", ex.ParamName);
-    }
-
-    [Theory]
-    [Trait("PR", "2073")]
-    [InlineData(0)]
-    [InlineData(1)]
-    public void Ctor_NoGlobalParam_ShouldThrowArgumentNullException(int branch)
-    {
-        // Arrange
-        var factory = new Mock<IOcelotLoggerFactory>();
-        factory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
-            .Returns(Mock.Of<IOcelotLogger>());
-        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry = new();
-
-        IOptions<FileGlobalConfiguration> globalOptions = null;
-        if (branch >= 0)
-            globalOptions = null;
-        if (branch >= 1)
-            globalOptions = Mock.Of<IOptions<FileGlobalConfiguration>>();
-
-        // Act
-        var ex = Assert.Throws<ArgumentNullException>(
-            () => new PollyQoSResiliencePipelineProvider(factory.Object, registry, globalOptions));
-
-        // Assert
-        Assert.Equal("global", ex.ParamName);
     }
     #endregion
 
@@ -448,13 +421,12 @@ public class PollyQoSResiliencePipelineProviderTests
     [Trait("PR", "2073")]
     [Trait("Feat", "1314")]
     [Trait("Feat", "1869")]
-    public void ConfigureTimeout_RouteVsGlobalTimeouts_ShouldGiveHigherPriorityToRouteTimeoutOverGlobalOne()
+    public void ConfigureTimeout_HasInvalidTimeout_ShouldUseDefaultTimeout()
     {
         // Arrange
-        const int RouteTimeout = 300, GlobalTimeout = 400;
+        int? invalidTimeout = _TimeoutStrategy_.LowTimeout - 1;
         var provider = GivenProvider();
-        var route = GivenDownstreamRoute("/", true, RouteTimeout);
-        _globalConfiguration.QoSOptions.TimeoutValue = GlobalTimeout;
+        var route = GivenDownstreamRoute("/", true, invalidTimeout);
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -465,44 +437,16 @@ public class PollyQoSResiliencePipelineProviderTests
         descriptor.Strategies.ShouldNotBeEmpty();
         descriptor.Strategies.Single().Options.ShouldBeOfType<TimeoutStrategyOptions>();
         var actual = descriptor.Strategies.Single().Options as TimeoutStrategyOptions;
-        Assert.Equal(RouteTimeout, actual.Timeout.Milliseconds);
-        Assert.NotEqual(GlobalTimeout, actual.Timeout.Milliseconds);
+        Assert.Equal(_TimeoutStrategy_.DefaultTimeout, (int)actual.Timeout.TotalMilliseconds);
     }
 
-    [Fact]
-    [Trait("PR", "2073")]
-    [Trait("Feat", "1314")]
-    [Trait("Feat", "1869")]
-    public void ConfigureTimeout_NoRouteTimeoutButHasGlobalOne_ShouldUseGlobalTimeout()
-    {
-        // Arrange
-        int? noRouteTimeout = null;
-        const int GlobalTimeout = 333;
-        var provider = GivenProvider();
-        var route = GivenDownstreamRoute("/", true, noRouteTimeout);
-        _globalConfiguration.QoSOptions.TimeoutValue = GlobalTimeout;
-
-        // Act
-        var resiliencePipeline = provider.GetResiliencePipeline(route);
-        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
-
-        // Assert
-        descriptor.ShouldNotBeNull();
-        descriptor.Strategies.ShouldNotBeEmpty();
-        descriptor.Strategies.Single().Options.ShouldBeOfType<TimeoutStrategyOptions>();
-        var actual = descriptor.Strategies.Single().Options as TimeoutStrategyOptions;
-        Assert.Equal(GlobalTimeout, actual.Timeout.Milliseconds);
-    }
-
-    private readonly FileGlobalConfiguration _globalConfiguration = new();
     private PollyQoSResiliencePipelineProvider GivenProvider()
     {
         var loggerFactory = new Mock<IOcelotLoggerFactory>();
         loggerFactory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
             .Returns(new Mock<IOcelotLogger>().Object);
-        var globalConfiguration = new OptionsWrapper<FileGlobalConfiguration>(_globalConfiguration);
         var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        return new PollyQoSResiliencePipelineProvider(loggerFactory.Object, registry, globalConfiguration);
+        return new PollyQoSResiliencePipelineProvider(loggerFactory.Object, registry);
     }
 
     private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false, int? timeOut = 10000)
