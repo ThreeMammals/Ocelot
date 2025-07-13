@@ -1,95 +1,381 @@
-Kubernetes
-==============
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+.. |K8sLogo| image:: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png
+  :alt: K8s Logo
+  :height: 50
+  :class: img-valign-bottom
+  :target: https://kubernetes.io
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 30
+  :class: img-valign-middle
+  :target: https://kubernetes.io
 
-This feature was requested as part of `Issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ . to add support for kubernetes's provider. 
+.. _KubeClient: https://www.nuget.org/packages/KubeClient
+.. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
+.. _package: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
 
-Ocelot will call the k8s endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them. Ocelot used to use the services api to send requests to the k8s service but this was changed in `PR 1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
+|K8sLogo| Kubernetes (K8s) [#f1]_
+=================================
 
-The first thing you need to do is install the NuGet package that provides kubernetes support in Ocelot.
+    | Feature of: :doc:`../features/servicediscovery`
+    | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 
-``Install-Package Ocelot.Provider.Kubernetes``
+Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
+Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in pull request `1134`_ because the service did not load balance as expected.
 
-Then add the following to your ConfigureServices method.
+Our NuGet `Ocelot.Provider.Kubernetes`_ extension package is based on the `KubeClient`_ package.
+For a comprehensive understanding, it is essential refer to the `KubeClient`_ documentation.
+
+.. _k8s-install:
+
+Install
+-------
+
+The first thing you need to do is install the `package`_ that provides |logo-kubernetes| support in Ocelot:
+
+.. code-block:: powershell
+
+    Install-Package Ocelot.Provider.Kubernetes
+
+``AddKubernetes(bool)`` method
+------------------------------
 
 .. code-block:: csharp
+  :emphasize-lines: 3
 
-    s.AddOcelot()
-     .AddKubernetes();
+  public static class OcelotBuilderExtensions
+  {
+      public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true);
+  }
 
-If you have services deployed in kubernetes you will normally use the naming service to access them. Default usePodServiceAccount = True, which means that ServiceAccount using Pod to access the service of the k8s cluster needs to be ServiceAccount based on RBAC authorization
+This extension-method adds `K8s`_ services **with** or **without** using a pod service account.
+Then add the following to your `Program <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Kubernetes/ApiGateway/Program.cs>`_:
 
-.. code-block::csharp
-    public static class OcelotBuilderExtensions
+.. code-block:: csharp
+  :emphasize-lines: 3
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddKubernetes(); // usePodServiceAccount is true
+
+If you have services deployed in Kubernetes, you will normally use the naming service to access them.
+
+1. By default the ``useServiceAccount`` argument is true, which means that Service Account using Pod to access the service of the `K8s`_ cluster needs to be Service Account based on RBAC authorization:
+
+   You can replicate a Permissive using RBAC role bindings (see `Permissive RBAC Permissions <https://kubernetes.io/docs/reference/access-authn-authz/rbac/#permissive-rbac-permissions>`_),
+   `K8s`_ API server and token will read from pod.
+
+   .. code-block:: bash
+
+     kubectl create clusterrolebinding permissive-binding --clusterrole=cluster-admin --user=admin --user=kubelet --group=system:serviceaccounts
+
+   Finally, it creates the `KubeClient`_ from pod service account.
+
+2. When the ``useServiceAccount`` argument is false, you need to provide `KubeClientOptions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20KubeClientOptions&type=code>`_ to create `KubeClient`_ using them.
+   You have to bind the options configuration section for the DI ``IOptions<KubeClientOptions>`` interface or register a custom action to initialize the options:
+
+   .. code-block:: csharp
+    :emphasize-lines: 9, 10, 13
+
+     Action<KubeClientOptions> configureKubeClient = opts => 
+     { 
+         opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+         opts.AccessToken = "my-token";
+         opts.AuthStrategy = KubeAuthStrategy.BearerToken;
+         opts.AllowInsecure = true; 
+     };
+     builder.Services
+         .AddOptions<KubeClientOptions>()
+         .Configure(configureKubeClient); // manual binding options via IOptions<KubeClientOptions>
+     builder.Services
+         .AddOcelot(builder.Configuration)
+         .AddKubernetes(false); // don't use pod service account, and IOptions<KubeClientOptions> is reused
+
+   .. _break: http://break.do
+
+      **Note**, this could also be written like this (shortened version):
+
+      .. code-block:: csharp
+        :emphasize-lines: 2, 10
+
+        builder.Services
+            .AddKubeClientOptions(opts =>
+            {
+                opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+                opts.AuthStrategy = KubeAuthStrategy.BearerToken;
+                opts.AccessToken = "my-token";
+                opts.AllowInsecure = true;
+            })
+            .AddOcelot(builder.Configuration)
+            .AddKubernetes(false); // don't use pod service account, and client options provided via AddKubeClientOptions
+
+   Finally, it creates the `KubeClient`_ from your options.
+
+    **Note 1**: For understanding the ``IOptions<TOptions>`` interface, please refer to the Microsoft Learn documentation: `Options pattern in .NET <https://learn.microsoft.com/en-us/dotnet/core/extensions/options>`_.
+
+    **Note 2**: Please consider this Case 2 as an example of manual setup when you **do not** use a pod service account.
+    We recommend using our official extension method, which receives an ``Action<KubeClientOptions>`` argument with your options: refer to the :ref:`k8s-addkubernetes-action-method` below.
+
+.. _k8s-addkubernetes-action-method:
+
+``AddKubernetes(Action<KubeClientOptions>)`` method [#f2]_
+----------------------------------------------------------
+
+.. code-block:: csharp
+  :emphasize-lines: 3
+
+  public static class OcelotBuilderExtensions
+  {
+      public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, Action<KubeClientOptions> configureOptions, /*optional params*/);
+  }
+
+This extension method adds `K8s`_ services **without** using a pod service account, explicitly calling an action to initialize configuration options for `KubeClient`_.
+It operates in two modes:
+
+1. If ``configureOptions`` is provided (action is not null), it calls the action, ignoring all optional arguments.
+
+   .. code-block:: csharp
+    :emphasize-lines: 8
+
+    Action<KubeClientOptions> configureKubeClient = opts => 
     {
-        public static IOcelotBuilder AddKubernetes(this IOcelotBuilder builder, bool usePodServiceAccount = true);
-    }
+        opts.ApiEndPoint = new UriBuilder("https", "my-host", 443).Uri;
+        // ...
+    };
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddKubernetes(configureKubeClient); // without optional arguments
 
-You can replicate a Permissive. Using RBAC role bindings.
-`Permissive RBAC Permissions <https://kubernetes.io/docs/reference/access-authn-authz/rbac/#permissive-rbac-permissions>`_, k8s api server and token will read from pod.
+.. _break: http://break.do
 
-.. code-block::bash
-kubectl create clusterrolebinding permissive-binding  --clusterrole=cluster-admin  --user=admin  --user=kubelet --group=system:serviceaccounts
+     **Note**: Optional arguments do not make sense; all settings are defined inside the ``configureKubeClient`` action.
 
-The following example shows how to set up a Route that will work in kubernetes. The most important thing is the ServiceName which is made up of the kubernetes service name. We also need to set up the ServiceDiscoveryProvider in GlobalConfiguration. The example here shows a typical configuration. 
+2. If ``configureOptions`` is not provided (action is null), it reads the global ``ServiceDiscoveryProvider`` :ref:`k8s-configuration` options and reuses them to initialize the following properties:
+   ``ApiEndPoint``, ``AccessToken``, and ``KubeNamespace``, finally initializing the rest of the properties with optional arguments.
 
+   .. code-block:: csharp
+    :emphasize-lines: 3, 5
+
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddKubernetes(null, allowInsecure: true, /*optional args*/) // shortened version
+        // or
+        .AddKubernetes(configureOptions: null, allowInsecure: true, /*optional args*/); // long version
+
+.. _break2: http://break.do
+
+     **Note**: Optional arguments must be used here in addition to the options coming from the global ``ServiceDiscoveryProvider`` :ref:`k8s-configuration`.
+     Find the comprehensive documentation in the C# code of the `AddKubernetes <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22public+static+IOcelotBuilder+AddKubernetes%28this+IOcelotBuilder+builder%2C%22+language%3AC%23&type=code>`_ methods.
+
+.. _k8s-configuration:
+
+Configuration
+-------------
+
+The following examples show how to set up a route that will work in Kubernetes.
+The most important thing is the ``ServiceName`` which is made up of the Kubernetes service name.
+We also need to set up the ``ServiceDiscoveryProvider`` in ``GlobalConfiguration``.
+
+Regarding global and route configurations, if your downstream service resides in a different namespace, you can override the global setting at the route level by specifying a ``ServiceNamespace``.
 
 .. code-block:: json
 
-    {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/values",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/values",
-      "ServiceName": "downstreamservice",
-      "UpstreamHttpMethod": [ "Get" ]     
+      "ServiceName": "my-service",
+      "ServiceNamespace": "my-namespace"
+    }
+  ]
+
+.. _k8s-kube-provider:
+
+``Kube`` provider
+-----------------
+
+The example here shows a typical configuration:
+
+.. code-block:: json
+
+  "Routes": [
+    {
+      "ServiceName": "my-service",
+      // ...
     }
   ],
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": {
-      "Host": "192.168.0.13",
+      "Scheme": "https",
+      "Host": "my-host",
       "Port": 443,
-      "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
-      "Namespace": "dev",
-      "Type": "kube"
+      "Token": "my-token",
+      "Namespace": "Dev",
+      "Type": "Kube"
     }
   }
-}
-    
-Service deployment in Namespace Dev , ServiceDiscoveryProvider type is kube, you also can set pollkube ServiceDiscoveryProvider type.
-  Note: Host、 Port and Token are no longer in use。
 
-You use Ocelot to poll kubernetes for latest service information rather than per request. If you want to poll kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration.
+Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` or :ref:`k8s-watchkube-provider` type.
+
+  **Note 1**: ``Scheme``, ``Host``, ``Port``, and ``Token`` are not used if ``usePodServiceAccount`` is true when `KubeClient`_ is created from a pod service account.
+  Please refer to the :ref:`k8s-install` section for technical details.
+
+  **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
+  Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
+  Please refer to the :ref:`k8s-downstream-scheme-vs-port-names` section for technical details.
+
+.. _k8s-pollkube-provider:
+
+``PollKube`` provider
+---------------------
+
+You use Ocelot to poll Kubernetes for latest service information rather than per request.
+If you want to poll Kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration:
 
 .. code-block:: json
 
   "ServiceDiscoveryProvider": {
-   "Host": "192.168.0.13",
-   "Port": 443,
-   "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
-   "Namespace": "dev",
-   "Type": "pollkube",
-   "PollingInterval": 100
+    "Namespace": "dev",
+    "Type": "PollKube",
+    "PollingInterval": 100 // ms
   } 
 
-The polling interval is in milliseconds and tells Ocelot how often to call kubernetes for changes in service configuration.
+The polling interval is in milliseconds and tells Ocelot how often to call Kubernetes for changes in service configuration.
 
-Please note there are tradeoffs here. If you poll kubernetes it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request. This really depends on how volatile your services are. I doubt it will matter for most people and polling may give a tiny performance improvement over calling kubernetes per request. There is no way for Ocelot to work these out for you. 
+  **Note**, there are tradeoffs here.
+  If you poll Kubernetes, it is possible Ocelot will not know if a service is down depending on your polling interval and you might get more errors than if you get the latest services per request.
+  This really depends on how volatile your services are.
+  We doubt it will matter for most people and polling may give a tiny performance improvement over calling Kubernetes per request.
+  There is no way for Ocelot to work these out for you, except perhaps through a `discussion <https://github.com/ThreeMammals/Ocelot/discussions>`_. 
 
-If your downstream service resides in a different namespace you can override the global setting at the Route level by specifying a ServiceNamespace.
+.. _k8s-watchkube-provider:
 
+``WatchKube`` provider [#f3]_
+-----------------------------
+.. _Kubernetes API: https://kubernetes.io/docs/reference/using-api/
+.. _watch requests: https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes
+
+With this configuration, `Kubernetes API`_ "`watch requests`_" are used to fetch service configuration.
+Essentially, it establishes one streamed HTTP connection with the `Kubernetes API`_ per downstream service.
+Changes streamed through this connection will be used to update the list of available endpoints.
 
 .. code-block:: json
 
+  "ServiceDiscoveryProvider": {
+    "Namespace": "dev",
+    "Type": "WatchKube"
+  }
+
+The provider has an implicit configuration for fine-tuned watching, which are available and can only be initialized in C# code.
+
+* ``WatchKube.FirstResultsFetchingTimeoutSeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FirstResultsFetchingTimeoutSeconds&type=code>`_ is the default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint. :sup:`1`
+* ``WatchKube.FailedSubscriptionRetrySeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FailedSubscriptionRetrySeconds&type=code>`__ is the default number of seconds to wait before scheduling the next retry for the subscription operation. :sup:`1`
+
+.. _break3: http://break.do
+
+  **Note 1**: For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
+
+  **Note 2**: The ``WatchKube`` provider is specifically designed for high-load Ocelot vs. Kubernetes environments with high RPS ratios.
+  To better understand which type is suitable for your needs, we have added a table :ref:`k8s-comparing-providers`.
+  
+.. _k8s-comparing-providers:
+
+Comparing providers
+-------------------
+This table explains the most important indicators that may influence Ocelot vs. Kubernetes deployment or DevOps strategy.
+The evolution path of all providers follows: ``Kube`` -> ``PollKube`` -> ``WatchKube``, with ``WatchKube`` being the most advanced provider.
+
+.. list-table::
+  :widths: 34 22 22 22
+  :header-rows: 1
+
+  * - *Indicators \\ Providers*
+    - :ref:`Kube <k8s-kube-provider>`
+    - :ref:`PollKube <k8s-pollkube-provider>`
+    - :ref:`WatchKube <k8s-watchkube-provider>`
+  * - Extra latency
+    - One hop per route
+    - \-
+    - \-
+  * - Speed of response to endpoints changes
+    - High
+    - Low :sup:`1`
+    - High
+  * - Pressure on `Kubernetes API`_
+    - High
+    - Low :sup:`1`
+    - Low
+  * - Ocelot load (estimated) :sup:`2`
+    - < 1000 RPS
+    - > 1000 RPS
+    - > 5000 RPS
+  * - Ocelot deployment :sup:`3`
+    - Single instance
+    - Multiple instances
+    - Cluster of instances
+
+.. _break4: http://break.do
+
+  | :sup:`1` Depends on the ``PollingInterval`` option.
+  | :sup:`2` Please consider this a rough load estimation, as our team has not provided any tests or benchmarks.
+  | :sup:`3` The term "instance" refers to an Ocelot instance, not a Kubernetes one.
+
+.. _k8s-downstream-scheme-vs-port-names:
+
+Downstream Scheme vs Port Names [#f4]_
+--------------------------------------
+
+Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
+When binding multiple ports, you assign a name to each subset port.
+To allow the ``Kube`` provider to recognize the desired port by its name, you need to specify the ``DownstreamScheme`` with the port's name;
+if not, the collection's first port entry will be chosen by default.
+
+For instance, consider a service on Kubernetes that exposes two ports: ``https`` for 443 and ``http`` for 80, as follows:
+
+.. code-block:: text
+
+  Name:         my-service
+  Namespace:    default
+  Subsets:
+    Addresses:  10.1.161.59
+    Ports:
+      Name   Port  Protocol
+      ----   ----  --------
+      https  443   TCP
+      http   80    TCP
+
+**When** you need to use the ``http`` port while intentionally bypassing the default ``https`` port (first one),
+you must define ``DownstreamScheme`` to enable the provider to recognize the desired ``http`` port by comparing ``DownstreamScheme`` with the port name as follows:
+
+.. code-block:: json
+
+  "Routes": [
     {
-      "Routes": [
-        {
-          "DownstreamPathTemplate": "/api/values",
-          "DownstreamScheme": "http",
-          "UpstreamPathTemplate": "/values",
-          "ServiceName": "downstreamservice",
-          "ServiceNamespace": "downstream-namespace",
-          "UpstreamHttpMethod": [ "Get" ]     
-        }
-      ]
+      "ServiceName": "my-service",
+      "DownstreamScheme": "http", // port name -> http -> port is 80
     }
+  ]
+
+.. _break5: http://break.do
+
+  **Note**: In the absence of a specified ``DownstreamScheme`` (which is the default behavior), the ``Kube`` provider will select **the first available port** from the ``EndpointSubsetV1.Ports`` collection.
+  Consequently, if the port name is not designated, the default downstream scheme utilized will be ``http``.
+
+""""
+
+.. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
+.. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
+.. [#f3] The :ref:`k8s-watchkube-provider` was discussed in thread `2168`_ and released in version `24.1`_
+.. [#f4] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
+
+.. _345: https://github.com/ThreeMammals/Ocelot/issues/345
+.. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134
+.. _1967: https://github.com/ThreeMammals/Ocelot/issues/1967
+.. _2168: https://github.com/ThreeMammals/Ocelot/discussions/2168
+.. _2255: https://github.com/ThreeMammals/Ocelot/issues/2255
+.. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
+.. _13.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0

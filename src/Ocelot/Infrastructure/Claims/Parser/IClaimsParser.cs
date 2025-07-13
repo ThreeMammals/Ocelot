@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Ocelot.Responses;
 using System.Security.Claims;
 
-using Ocelot.Responses;
+namespace Ocelot.Infrastructure.Claims.Parser;
 
-namespace Ocelot.Infrastructure.Claims.Parser
+public interface IClaimsParser
 {
-    public interface IClaimsParser
-    {
-        Response<string> GetValue(IEnumerable<Claim> claims, string key, string delimiter, int index);
+    Response<string> GetValue(IEnumerable<Claim> claims, string key, string delimiter, int index);
 
-        Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType);
-    }
+    Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType);
 }

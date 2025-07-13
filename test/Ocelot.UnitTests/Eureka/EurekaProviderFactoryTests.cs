@@ -1,37 +1,40 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.Provider.Eureka;
-using Shouldly;
 using Steeltoe.Discovery;
-using Xunit;
 
-namespace Ocelot.UnitTests.Eureka
+namespace Ocelot.UnitTests.Eureka;
+
+public class EurekaProviderFactoryTests
 {
-    public class EurekaProviderFactoryTests
+    [Fact]
+    public void Should_not_get()
     {
-        [Fact]
-        public void should_not_get()
-        {
-            var config = new ServiceProviderConfigurationBuilder().Build();
-            var sp = new ServiceCollection().BuildServiceProvider();
-            var provider = EurekaProviderFactory.Get(sp, config, null);
-            provider.ShouldBeNull();
-        }
+        // Arrange
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        var sp = new ServiceCollection().BuildServiceProvider(true);
 
-        [Fact]
-        public void should_get()
-        {
-            var config = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
-            var client = new Mock<IDiscoveryClient>();
-            var services = new ServiceCollection();
-            services.AddSingleton(client.Object);
-            var sp = services.BuildServiceProvider();
-            var route = new DownstreamRouteBuilder()
-                .WithServiceName(string.Empty)
-                .Build();
-            var provider = EurekaProviderFactory.Get(sp, config, route);
-            provider.ShouldBeOfType<Provider.Eureka.Eureka>();
-        }
+        // Act, Assert
+        Should.Throw<NullReferenceException>(() => EurekaProviderFactory.Get(sp, config, null));
+    }
+
+    [Fact]
+    public void Should_get()
+    {
+        // Arrange
+        var config = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
+        var client = new Mock<IDiscoveryClient>();
+        var services = new ServiceCollection();
+        services.AddSingleton(client.Object);
+        var sp = services.BuildServiceProvider(true);
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName(string.Empty)
+            .Build();
+
+        // Act
+        var provider = EurekaProviderFactory.Get(sp, config, route);
+
+        // Assert
+        provider.ShouldBeOfType<Provider.Eureka.Eureka>();
     }
 }

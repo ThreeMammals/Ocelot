@@ -1,42 +1,35 @@
-using System;
-
 using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Requester;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Requester;
 
-using Xunit;
-
-namespace Ocelot.UnitTests.Requester
+public class TracingHandlerFactoryTests
 {
-    public class TracingHandlerFactoryTests
+    private readonly TracingHandlerFactory _factory;
+    private readonly Mock<ITracer> _tracer;
+    private readonly IServiceCollection _serviceCollection;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly Mock<IRequestScopedDataRepository> _repo;
+
+    public TracingHandlerFactoryTests()
     {
-        private readonly TracingHandlerFactory _factory;
-        private readonly Mock<ITracer> _tracer;
-        private readonly IServiceCollection _serviceCollection;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Mock<IRequestScopedDataRepository> _repo;
+        _tracer = new Mock<ITracer>();
+        _serviceCollection = new ServiceCollection();
+        _serviceCollection.AddSingleton(_tracer.Object);
+        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
+        _repo = new Mock<IRequestScopedDataRepository>();
+        _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
+    }
 
-        public TracingHandlerFactoryTests()
-        {
-            _tracer = new Mock<ITracer>();
-            _serviceCollection = new ServiceCollection();
-            _serviceCollection.AddSingleton(_tracer.Object);
-            _serviceProvider = _serviceCollection.BuildServiceProvider();
-            _repo = new Mock<IRequestScopedDataRepository>();
-            _factory = new TracingHandlerFactory(_serviceProvider, _repo.Object);
-        }
+    [Fact]
+    public void Should_return()
+    {
+        // Arrange, Act
+        var handler = _factory.Get();
 
-        [Fact]
-        public void should_return()
-        {
-            var handler = _factory.Get();
-            handler.ShouldBeOfType<OcelotHttpTracingHandler>();
-        }
+        // Assert
+        handler.ShouldBeOfType<OcelotHttpTracingHandler>();
     }
 }

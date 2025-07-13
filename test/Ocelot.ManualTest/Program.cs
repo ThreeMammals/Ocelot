@@ -1,83 +1,55 @@
-﻿using Ocelot.Requester;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Ocelot.ManualTest.Actions;
+using System.Reflection;
 
-using Ocelot.DependencyInjection;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using Ocelot.Middleware;
-
-namespace Ocelot.ManualTest
+var nl = Environment.NewLine;
+var programName = Assembly.GetExecutingAssembly().GetName()?.Name?.Replace(".", " ") ?? "?";
+do
 {
-    public class Program
+    Console.Clear();
+    Console.WriteLine($"{nl}Welcome to {programName} app!");
+    Console.Write(@"What are you going to do?
+  1. Run Ocelot with basic setup (default)
+  2. Run Ocelot manual tests
+So, press 1 or 2 > ");
+    ConsoleKeyInfo info = Console.ReadKey(true);
+    if (info.Key == ConsoleKey.D2)
     {
-        public static void Main(string[] args)
-        {
-            new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config
-                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                        .AddJsonFile("appsettings.json", true, true)
-                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                        .AddJsonFile("ocelot.json", false, false)
-                        .AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
-                {
-                    s.AddAuthentication();
-                    /*.AddJwtBearer("TestKey", x =>
-                    {
-                        x.Authority = "test";
-                        x.Audience = "test";
-                    });*/
+        Console.WriteLine((char)info.Key);
+        ManualTests.Run(args);
+    }
+    else
+    {
+        Console.WriteLine($"{(char)info.Key} -> 1 (default)");
+        await Basic.RunAsync(args);
+    }
+}
+while (!Quit());
 
-                    s.AddSingleton<QosDelegatingHandlerDelegate>((x, t) => new FakeHandler());
-                    s.AddOcelot()
-                       .AddDelegatingHandler<FakeHandler>(true);
-                    /*.AddCacheManager(x =>
-                    {
-                        x.WithDictionaryHandle();
-                    })
-                    .AddOpenTracing(option =>
-                    {
-                        option.CollectorUrl = "http://localhost:9618";
-                        option.Service = "Ocelot.ManualTest";
-                    })
-                    .AddAdministration("/administration", "secret");*/
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                })
-                .UseIISIntegration()
-                .Configure(app =>
-                {
-                    app.UseOcelot().Wait();
-                })
-                .Build()
-                .Run();
+bool Quit()
+{
+    Console.WriteLine(nl + "Enter Ctrl+Q to Quit, Ctrl+E to Exit, Ctrl+L to Clear the log");
+    Console.Write("Or press any key to restart... ");
+    ConsoleKeyInfo info = Console.ReadKey(true);
+    if (info.Modifiers == ConsoleModifiers.Control)
+    {
+        if (info.Key == ConsoleKey.Q)
+        {
+            Console.WriteLine("Quitting...");
+            Environment.ExitCode = 0;
+            return true;
+        }
+        else if (info.Key == ConsoleKey.E)
+        {
+            Console.WriteLine("Exitting...");
+            Environment.Exit(1);
+        }
+        else if (info.Key == ConsoleKey.L)
+        {
+            Console.WriteLine();
+            Console.Clear();
         }
     }
 
-    public class FakeHandler : DelegatingHandler
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Console.WriteLine(request.RequestUri);
-
-            //do stuff and optionally call the base handler..
-            return await base.SendAsync(request, cancellationToken);
-        }
-    }
+    Console.WriteLine();
+    return false;
 }

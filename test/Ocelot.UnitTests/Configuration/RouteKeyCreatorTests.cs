@@ -1,88 +1,116 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.LoadBalancers;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Configuration;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.Configuration
+public class RouteKeyCreatorTests : UnitTest
 {
-    public class RouteKeyCreatorTests
+    private readonly RouteKeyCreator _creator = new();
+
+    [Fact]
+    public void Should_return_sticky_session_key()
     {
-        private readonly RouteKeyCreator _creator;
-        private FileRoute _route;
-        private string _result;
-
-        public RouteKeyCreatorTests()
+        // Arrange
+        var route = new FileRoute
         {
-            _creator = new RouteKeyCreator();
-        }
-
-        [Fact]
-        public void should_return_sticky_session_key()
-        {
-            var route = new FileRoute
+            LoadBalancerOptions = new FileLoadBalancerOptions
             {
-                LoadBalancerOptions = new FileLoadBalancerOptions
-                {
-                    Key = "testy",
-                    Type = nameof(CookieStickySessions),
-                },
-            };
+                Key = "testy",
+                Type = nameof(CookieStickySessions),
+            },
+        };
 
-            this.Given(_ => GivenThe(route))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}"))
-                .BDDfy();
-        }
+        // Act
+        var result = _creator.Create(route);
 
-        [Fact]
-        public void should_return_re_route_key()
+        // Assert
+        result.ShouldBe("CookieStickySessions:testy");
+    }
+
+    [Fact]
+    public void Should_return_route_key()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            var route = new FileRoute
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            DownstreamHostAndPorts = new()
             {
-                UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
-                },
-            };
+                new("localhost", 8080),
+                new("localhost", 4430),
+            },
+        };
 
-            this.Given(_ => GivenThe(route))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(',', route.UpstreamHttpMethod)}|{string.Join(',', route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
-                .BDDfy();
-        }
+        // Act
+        var result = _creator.Create(route);
 
-        private void GivenThe(FileRoute route)
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_upstream_host()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _route = route;
-        }
+            UpstreamHost = "my-host",
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            DownstreamHostAndPorts = new()
+            {
+                new("localhost", 8080),
+                new("localhost", 4430),
+            },
+        };
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_route);
-        }
+        // Act
+        var result = _creator.Create(route);
 
-        private void ThenTheResultIs(string expected)
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_svc_name()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _result.ShouldBe(expected);
-        }
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            ServiceName = "products-service",
+        };
+
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_load_balancer_options()
+    {
+        // Arrange
+        var route = new FileRoute
+        {
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            ServiceName = "products-service",
+            LoadBalancerOptions = new FileLoadBalancerOptions
+            {
+                Type = nameof(LeastConnection),
+                Key = "testy",
+            },
+        };
+
+        // Act
+        var result = _creator.Create(route);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy");
     }
 }

@@ -1,119 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Ocelot.Configuration;
-
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
+using Ocelot.Configuration;
 
-using Ocelot.Responses;
+namespace Ocelot.Request.Mapper;
 
-namespace Ocelot.Request.Mapper
+public class RequestMapper : IRequestMapper
 {
-    public class RequestMapper : IRequestMapper
+    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host", "transfer-encoding" };
+    private static readonly string[] ContentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
+
+    public HttpRequestMessage Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
-        private readonly string[] _unsupportedHeaders = { "host" };
-
-        public async Task<Response<HttpRequestMessage>> Map(HttpRequest request, DownstreamRoute downstreamRoute)
+        var requestMessage = new HttpRequestMessage
         {
-            try
-            {
-                var requestMessage = new HttpRequestMessage
-                {
-                    Content = await MapContent(request),
-                    Method = MapMethod(request, downstreamRoute),
-                    RequestUri = MapUri(request),
-                    Version = downstreamRoute.DownstreamHttpVersion,
-                };
+            Content = MapContent(request),
+            Method = MapMethod(request, downstreamRoute),
+            RequestUri = MapUri(request),
+            Version = downstreamRoute.DownstreamHttpVersion,
+            VersionPolicy = downstreamRoute.DownstreamHttpVersionPolicy,
+        };
 
-                MapHeaders(request, requestMessage);
+        MapHeaders(request, requestMessage);
+        return requestMessage;
+    }
 
-                return new OkResponse<HttpRequestMessage>(requestMessage);
-            }
-            catch (Exception ex)
-            {
-                return new ErrorResponse<HttpRequestMessage>(new UnmappableRequestError(ex));
-            }
+    private static HttpContent MapContent(HttpRequest request)
+    {
+        HttpContent content;
+
+        // No content if we have no body or if the request has no content according to RFC 2616 section 4.3
+        if (request.Body == null
+            || (!request.ContentLength.HasValue && StringValues.IsNullOrEmpty(request.Headers.TransferEncoding)))
+        {
+            return null;
         }
 
-        private static async Task<HttpContent> MapContent(HttpRequest request)
+        content = request.ContentLength is 0
+            ? new ByteArrayContent(Array.Empty<byte>()) 
+            : new StreamHttpContent(request.HttpContext);
+
+        AddContentHeaders(request, content);
+
+        return content;
+    }
+
+    private static void AddContentHeaders(HttpRequest request, HttpContent content)
+    {
+        if (!string.IsNullOrEmpty(request.ContentType))
         {
-            if (request.Body == null || (request.Body.CanSeek && request.Body.Length <= 0))
-            {
-                return null;
-            }
-
-            // Never change this to StreamContent again, I forgot it doesnt work in #464.
-            var content = new ByteArrayContent(await ToByteArray(request.Body));
-
-            if (!string.IsNullOrEmpty(request.ContentType))
-            {
-                content.Headers
-                    .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
-            }
-
-            AddHeaderIfExistsOnRequest("Content-Language", content, request);
-            AddHeaderIfExistsOnRequest("Content-Location", content, request);
-            AddHeaderIfExistsOnRequest("Content-Range", content, request);
-            AddHeaderIfExistsOnRequest("Content-MD5", content, request);
-            AddHeaderIfExistsOnRequest("Content-Disposition", content, request);
-            AddHeaderIfExistsOnRequest("Content-Encoding", content, request);
-
-            return content;
+            content.Headers
+                .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
         }
 
-        private static void AddHeaderIfExistsOnRequest(string key, HttpContent content, HttpRequest request)
-        {
-            if (request.Headers.ContainsKey(key))
-            {
-                content.Headers
-                    .TryAddWithoutValidation(key, request.Headers[key].ToArray());
-            }
-        }
+        // The performance might be improved by retrieving the matching headers from the request
+        // instead of calling request.Headers.TryGetValue for each used content header
+        var matchingHeaders = ContentHeaders.Where(request.Headers.ContainsKey);
 
-        private static HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute)
+        foreach (var key in matchingHeaders)
         {
-            if (!string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod))
+            if (!request.Headers.TryGetValue(key, out var value))
             {
-                return new HttpMethod(downstreamRoute.DownstreamHttpMethod);
+                continue;
             }
 
-            return new HttpMethod(request.Method);
+            content.Headers.TryAddWithoutValidation(key, value.ToArray());
         }
+    }
 
-        private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
+    private static HttpMethod MapMethod(HttpRequest request, DownstreamRoute downstreamRoute) => 
+        !string.IsNullOrEmpty(downstreamRoute?.DownstreamHttpMethod) ? 
+            new HttpMethod(downstreamRoute.DownstreamHttpMethod) : new HttpMethod(request.Method);
 
-        private void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
+    // TODO Review this method, request.GetEncodedUrl() could throw a NullReferenceException
+    private static Uri MapUri(HttpRequest request) => new(request.GetEncodedUrl());
+
+    private static void MapHeaders(HttpRequest request, HttpRequestMessage requestMessage)
+    {
+        foreach (var header in request.Headers)
         {
-            foreach (var header in request.Headers)
+            if (IsSupportedHeader(header))
             {
-                if (IsSupportedHeader(header))
-                {
-                    requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-                }
-            }
-        }
-
-        private bool IsSupportedHeader(KeyValuePair<string, StringValues> header)
-        {
-            return !_unsupportedHeaders.Contains(header.Key.ToLower());
-        }
-
-        private static async Task<byte[]> ToByteArray(Stream stream)
-        {
-            await using (stream)
-            {
-                using (var memStream = new MemoryStream())
-                {
-                    await stream.CopyToAsync(memStream);
-                    return memStream.ToArray();
-                }
+                requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
         }
     }
+
+    private static bool IsSupportedHeader(KeyValuePair<string, StringValues> header) =>
+        !UnsupportedHeaders.Contains(header.Key);
 }

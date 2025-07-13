@@ -1,13 +1,9 @@
-﻿using System.Threading.Tasks;
-
-using Ocelot.Configuration.File;
-
+﻿using Ocelot.Configuration.File;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Validator
+namespace Ocelot.Configuration.Validator;
+
+public interface IConfigurationValidator
 {
-    public interface IConfigurationValidator
-    {
-        Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration);
-    }
+    Task<Response<ConfigurationValidationResult>> IsValid(FileConfiguration configuration);
 }

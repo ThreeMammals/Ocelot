@@ -1,73 +1,69 @@
-using System;
-using System.Collections.Generic;
-
-using Ocelot.ServiceDiscovery.Configuration;
-
-using Ocelot.Logging;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using Ocelot.Configuration;
-
-using Ocelot.ServiceDiscovery.Providers;
-
+using Ocelot.Logging;
 using Ocelot.Responses;
-
+using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
-namespace Ocelot.ServiceDiscovery
+namespace Ocelot.ServiceDiscovery;
+
+public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
 {
-    public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
+    private readonly IServiceProvider _provider;
+    private readonly ServiceDiscoveryFinderDelegate _delegates;
+    private readonly IOcelotLogger _logger;
+
+    public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
     {
-        private readonly IOcelotLoggerFactory _factory;
-        private readonly ServiceDiscoveryFinderDelegate _delegates;
-        private readonly IServiceProvider _provider;
+        _provider = provider;
+        _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
+        _logger = factory.CreateLogger<ServiceDiscoveryProviderFactory>();
+    }
 
-        public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
+    public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
+    {
+        if (route.UseServiceDiscovery)
         {
-            _factory = factory;
-            _provider = provider;
-            _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
+            _logger.LogInformation(() => $"The {nameof(DownstreamRoute.UseServiceDiscovery)} mode of the route '{route.Name()}' is enabled.");
+            return GetServiceDiscoveryProvider(serviceConfig, route);
         }
 
-        public Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route)
+        var services = route.DownstreamAddresses
+            .Select(address => new Service(
+                route.ServiceName,
+                new ServiceHostAndPort(address.Host, address.Port, route.DownstreamScheme),
+                string.Empty,
+                string.Empty,
+                Enumerable.Empty<string>()))
+            .ToList();
+
+        return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
+    }
+
+    private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
+    {
+        _logger.LogInformation(() => $"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
+
+        if (config.Type?.ToLower() == "servicefabric")
         {
-            if (route.UseServiceDiscovery)
-            {
-                return GetServiceDiscoveryProvider(serviceConfig, route);
-            }
-
-            var services = new List<Service>();
-
-            foreach (var downstreamAddress in route.DownstreamAddresses)
-            {
-                var service = new Service(route.ServiceName, new ServiceHostAndPort(downstreamAddress.Host, downstreamAddress.Port, route.DownstreamScheme), string.Empty, string.Empty, Array.Empty<string>());
-
-                services.Add(service);
-            }
-
-            return new OkResponse<IServiceDiscoveryProvider>(new ConfigurationServiceProvider(services));
+            var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
+            return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
         }
 
-        private Response<IServiceDiscoveryProvider> GetServiceDiscoveryProvider(ServiceProviderConfiguration config, DownstreamRoute route)
+        if (_delegates != null)
         {
-            if (config.Type?.ToLower() == "servicefabric")
+            var provider = _delegates?.Invoke(_provider, config, route);
+
+            if (provider.GetType().Name.ToLower() == config.Type.ToLower())
             {
-                var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
-                return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
+                return new OkResponse<IServiceDiscoveryProvider>(provider);
             }
-
-            if (_delegates != null)
-            {
-                var provider = _delegates?.Invoke(_provider, config, route);
-
-                if (provider.GetType().Name.ToLower() == config.Type.ToLower())
-                {
-                    return new OkResponse<IServiceDiscoveryProvider>(provider);
-                }
-            }
-
-            return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError($"Unable to find service discovery provider for type: {config.Type}"));
         }
+
+        var message = $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!";
+        _logger.LogWarning(() => $"Unable to find service discovery provider for {nameof(config.Type)}: '{config.Type}'!");
+
+        return new ErrorResponse<IServiceDiscoveryProvider>(new UnableToFindServiceDiscoveryProviderError(message));
     }
 }

@@ -1,40 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
-
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.LoadBalancer.LoadBalancers;
+
+public class NoLoadBalancer : ILoadBalancer
 {
-    public class NoLoadBalancer : ILoadBalancer
+    private readonly Func<Task<List<Service>>> _services;
+
+    public NoLoadBalancer(Func<Task<List<Service>>> services)
     {
-        private readonly Func<Task<List<Service>>> _services;
+        _services = services;
+    }
 
-        public NoLoadBalancer(Func<Task<List<Service>>> services)
+    public string Type => nameof(NoLoadBalancer);
+
+    public async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
+    {
+        var services = await _services();
+
+        if (services == null || services.Count == 0)
         {
-            _services = services;
+            return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {Type}!"));
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease(HttpContext httpContext)
-        {
-            var services = await _services();
+        var service = await Task.FromResult(services.FirstOrDefault());
+        return new OkResponse<ServiceHostAndPort>(service.HostAndPort);
+    }
 
-            if (services == null || services.Count == 0)
-            {
-                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError("There were no services in NoLoadBalancer"));
-            }
-
-            var service = await Task.FromResult(services.FirstOrDefault());
-            return new OkResponse<ServiceHostAndPort>(service.HostAndPort);
-        }
-
-        public void Release(ServiceHostAndPort hostAndPort)
-        {
-        }
+    public void Release(ServiceHostAndPort hostAndPort)
+    {
     }
 }

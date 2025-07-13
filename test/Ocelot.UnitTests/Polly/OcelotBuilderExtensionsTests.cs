@@ -1,51 +1,45 @@
-﻿using System.IO;
-
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
+using Ocelot.Provider.Polly;
 using Ocelot.Requester;
 
-using Ocelot.Provider.Polly;
+namespace Ocelot.UnitTests.Polly;
 
-using Shouldly;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.Polly
+public class OcelotBuilderExtensionsTests
 {
-    public class OcelotBuilderExtensionsTests
+    [Fact]
+    public void Should_build()
     {
-        [Fact]
-        public void should_build()
-        {
-            var loggerFactory = new Mock<IOcelotLoggerFactory>();
-            var services = new ServiceCollection();
-            var options = new QoSOptionsBuilder()
-                .WithTimeoutValue(100)
-                .WithExceptionsAllowedBeforeBreaking(1)
-                .WithDurationOfBreak(200)
-                .Build();
-            var route = new DownstreamRouteBuilder().WithQosOptions(options)
-                .Build();
+        // Arrange
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        var contextAccessor = new Mock<IHttpContextAccessor>();
+        var services = new ServiceCollection();
+        var options = new QoSOptionsBuilder()
+            .WithTimeoutValue(100)
+            .WithExceptionsAllowedBeforeBreaking(2)
+            .WithDurationOfBreak(200)
+            .Build();
+        var route = new DownstreamRouteBuilder().WithQosOptions(options)
+            .Build();
 
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .Build();
-            services
-                .AddOcelot(configuration)
-                .AddPolly();
-            var provider = services.BuildServiceProvider();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .Build();
+        services
+            .AddOcelot(configuration)
+            .AddPolly();
+        var provider = services.BuildServiceProvider(true);
 
-            var handler = provider.GetService<QosDelegatingHandlerDelegate>();
-            handler.ShouldNotBeNull();
+        // Act, Assert
+        var del = provider.GetService<QosDelegatingHandlerDelegate>();
+        del.ShouldNotBeNull();
 
-            var delgatingHandler = handler(route, loggerFactory.Object);
-            delgatingHandler.ShouldNotBeNull();
-        }
+        // Act, Assert
+        var handler = del(route, contextAccessor.Object, loggerFactory.Object);
+        handler.ShouldNotBeNull();
     }
 }

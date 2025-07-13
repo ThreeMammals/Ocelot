@@ -1,45 +1,42 @@
-﻿using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-
-using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
-
 using Ocelot.Responses;
 
-namespace Ocelot.Security.IPSecurity
+namespace Ocelot.Security.IPSecurity;
+
+public class IPSecurityPolicy : ISecurityPolicy
 {
-    public class IPSecurityPolicy : ISecurityPolicy
+    public Response Security(DownstreamRoute downstreamRoute, HttpContext context)
     {
-        public async Task<Response> Security(DownstreamRoute downstreamRoute, HttpContext httpContext)
+        var clientIp = context.Connection.RemoteIpAddress;
+        var options = downstreamRoute.SecurityOptions;
+        if (options == null || clientIp == null)
         {
-            var clientIp = httpContext.Connection.RemoteIpAddress;
-            var securityOptions = downstreamRoute.SecurityOptions;
-            if (securityOptions == null)
-            {
-                return new OkResponse();
-            }
-
-            if (securityOptions.IPBlockedList != null)
-            {
-                if (securityOptions.IPBlockedList.Exists(f => f == clientIp.ToString()))
-                {
-                    var error = new UnauthenticatedError($" This request rejects access to {clientIp} IP");
-                    return new ErrorResponse(error);
-                }
-            }
-
-            if (securityOptions.IPAllowedList?.Count > 0)
-            {
-                if (!securityOptions.IPAllowedList.Exists(f => f == clientIp.ToString()))
-                {
-                    var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
-                    return new ErrorResponse(error);
-                }
-            }
-
-            return await Task.FromResult(new OkResponse());
+            return new OkResponse();
         }
+
+        if (options.IPBlockedList?.Count > 0)
+        {
+            if (options.IPBlockedList.Contains(clientIp.ToString()))
+            {
+                var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP");
+                return new ErrorResponse(error);
+            }
+        }
+
+        if (options.IPAllowedList?.Count > 0)
+        {
+            if (!options.IPAllowedList.Contains(clientIp.ToString()))
+            {
+                var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
+                return new ErrorResponse(error);
+            }
+        }
+
+        return new OkResponse();
     }
+
+    public Task<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context)
+        => Task.Run(() => Security(downstreamRoute, context));
 }

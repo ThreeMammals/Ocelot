@@ -1,14 +1,9 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
-
 using Ocelot.Middleware;
 
-namespace Ocelot.Multiplexer
+namespace Ocelot.Multiplexer;
+
+public interface IDefinedAggregator
 {
-    public interface IDefinedAggregator
-    {
-        Task<DownstreamResponse> Aggregate(List<HttpContext> responses);
-    }
+    Task<DownstreamResponse> Aggregate(List<HttpContext> responses);
 }

@@ -1,45 +1,37 @@
-using System.Threading.Tasks;
-
 using Ocelot.Infrastructure;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Infrastructure;
 
-using Xunit;
-
-namespace Ocelot.UnitTests.Infrastructure
+public class InMemoryBusTests
 {
-    public class InMemoryBusTests
+    private readonly InMemoryBus<object> _bus = new();
+
+    [Fact]
+    public async Task Should_publish_with_delay()
     {
-        private readonly InMemoryBus<object> _bus;
+        // Arrange
+        var called = false;
+        _bus.Subscribe(x => called = true);
 
-        public InMemoryBusTests()
-        {
-            _bus = new InMemoryBus<object>();
-        }
+        // Act
+        _bus.Publish(new object(), 1);
+        await Task.Delay(100);
 
-        [Fact]
-        public async Task should_publish_with_delay()
-        {
-            var called = false;
-            _bus.Subscribe(x =>
-            {
-                called = true;
-            });
-            _bus.Publish(new object(), 1);
-            await Task.Delay(100);
-            called.ShouldBeTrue();
-        }
+        // Assert
+        called.ShouldBeTrue();
+    }
 
-        [Fact]
-        public void should_not_be_publish_yet_as_no_delay_in_caller()
-        {
-            var called = false;
-            _bus.Subscribe(x =>
-            {
-                called = true;
-            });
-            _bus.Publish(new object(), 1);
-            called.ShouldBeFalse();
-        }
+    [Fact]
+    public void Should_not_be_publish_yet_as_no_delay_in_caller()
+    {
+        // Arrange
+        var called = false;
+        _bus.Subscribe(x => called = true);
+
+        // Act
+        _bus.Publish(new object(), 1);
+
+        // Assert
+        called.ShouldBeFalse();
     }
 }

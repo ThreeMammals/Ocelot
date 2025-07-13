@@ -1,60 +1,52 @@
-﻿using System;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
 
-namespace Ocelot.Infrastructure.RequestData
+namespace Ocelot.Infrastructure.RequestData;
+
+public class HttpDataRepository : IRequestScopedDataRepository
 {
-    public class HttpDataRepository : IRequestScopedDataRepository
+    private readonly IHttpContextAccessor _contextAccessor;
+
+    public HttpDataRepository(IHttpContextAccessor contextAccessor)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        _contextAccessor = contextAccessor;
+    }
 
-        public HttpDataRepository(IHttpContextAccessor httpContextAccessor)
+    public Response Add<T>(string key, T value)
+    {
+        try
         {
-            _httpContextAccessor = httpContextAccessor;
+            _contextAccessor.HttpContext.Items.Add(key, value);
+            return new OkResponse();
+        }
+        catch (Exception exception)
+        {
+            return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to add data for key: {key}, exception: {exception.Message}")));
+        }
+    }
+
+    public Response Update<T>(string key, T value)
+    {
+        try
+        {
+            _contextAccessor.HttpContext.Items[key] = value;
+            return new OkResponse();
+        }
+        catch (Exception exception)
+        {
+            return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to update data for key: {key}, exception: {exception.Message}")));
+        }
+    }
+
+    public Response<T> Get<T>(string key)
+    {
+        if (_contextAccessor?.HttpContext?.Items == null)
+        {
+            return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null"));
         }
 
-        public Response Add<T>(string key, T value)
-        {
-            try
-            {
-                _httpContextAccessor.HttpContext.Items.Add(key, value);
-                return new OkResponse();
-            }
-            catch (Exception exception)
-            {
-                return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to add data for key: {key}, exception: {exception.Message}")));
-            }
-        }
-
-        public Response Update<T>(string key, T value)
-        {
-            try
-            {
-                _httpContextAccessor.HttpContext.Items[key] = value;
-                return new OkResponse();
-            }
-            catch (Exception exception)
-            {
-                return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to update data for key: {key}, exception: {exception.Message}")));
-            }
-        }
-
-        public Response<T> Get<T>(string key)
-        {
-            if (_httpContextAccessor.HttpContext == null || _httpContextAccessor.HttpContext.Items == null)
-            {
-                return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null"));
-            }
-
-            if (_httpContextAccessor.HttpContext.Items.TryGetValue(key, out var obj))
-            {
-                var data = (T)obj;
-                return new OkResponse<T>(data);
-            }
-
-            return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key}"));
-        }
+        return _contextAccessor.HttpContext.Items.TryGetValue(key, out var item)
+            ? new OkResponse<T>((T)item)
+            : new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key}"));
     }
 }

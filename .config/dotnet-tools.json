@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "cake.tool": {
-      "version": "3.0.0",
+      "version": "4.0.0",
       "commands": [
         "dotnet-cake"
       ]
@@ -13,6 +13,13 @@
       "commands": [
         "csmacnz.Coveralls"
       ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.4.7",
+      "commands": [
+        "reportgenerator"
+      ],
+      "rollForward": false
     }
   }
 }

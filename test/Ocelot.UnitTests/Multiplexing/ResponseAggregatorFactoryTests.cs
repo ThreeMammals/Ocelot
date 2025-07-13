@@ -1,70 +1,47 @@
-using Moq;
-
-using Ocelot.Multiplexer;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Multiplexer;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Multiplexing;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.Multiplexing
+public class ResponseAggregatorFactoryTests : UnitTest
 {
-    public class ResponseAggregatorFactoryTests
+    private readonly InMemoryResponseAggregatorFactory _factory;
+    private readonly Mock<IDefinedAggregatorProvider> _provider;
+    private IResponseAggregator _aggregator;
+
+    public ResponseAggregatorFactoryTests()
     {
-        private readonly InMemoryResponseAggregatorFactory _factory;
-        private readonly Mock<IDefinedAggregatorProvider> _provider;
-        private Route _route;
-        private IResponseAggregator _aggregator;
+        _provider = new Mock<IDefinedAggregatorProvider>();
+        _aggregator = new SimpleJsonResponseAggregator();
+        _factory = new InMemoryResponseAggregatorFactory(_provider.Object, _aggregator);
+    }
 
-        public ResponseAggregatorFactoryTests()
-        {
-            _provider = new Mock<IDefinedAggregatorProvider>();
-            _aggregator = new SimpleJsonResponseAggregator();
-            _factory = new InMemoryResponseAggregatorFactory(_provider.Object, _aggregator);
-        }
+    [Fact]
+    public void Should_return_simple_json_aggregator()
+    {
+        // Arrange
+        var route = new RouteBuilder().Build();
 
-        [Fact]
-        public void should_return_simple_json_aggregator()
-        {
-            var route = new RouteBuilder()
-                .Build();
+        // Act
+        _aggregator = _factory.Get(route);
 
-            this.Given(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenTheAggregatorIs<SimpleJsonResponseAggregator>())
-                .BDDfy();
-        }
+        // Assert
+        _aggregator.ShouldBeOfType<SimpleJsonResponseAggregator>();
+    }
 
-        [Fact]
-        public void should_return_user_defined_aggregator()
-        {
-            var route = new RouteBuilder()
-                .WithAggregator("doesntmatter")
-                .Build();
+    [Fact]
+    public void Should_return_user_defined_aggregator()
+    {
+        // Arrange
+        var route = new RouteBuilder()
+            .WithAggregator("doesntmatter")
+            .Build();
 
-            this.Given(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenTheAggregatorIs<UserDefinedResponseAggregator>())
-                .BDDfy();
-        }
+        // Act
+        _aggregator = _factory.Get(route);
 
-        private void GivenRoute(Route route)
-        {
-            _route = route;
-        }
-
-        private void WhenIGet()
-        {
-            _aggregator = _factory.Get(_route);
-        }
-
-        private void ThenTheAggregatorIs<T>()
-        {
-            _aggregator.ShouldBeOfType<T>();
-        }
+        // Assert
+        _aggregator.ShouldBeOfType<UserDefinedResponseAggregator>();
     }
 }

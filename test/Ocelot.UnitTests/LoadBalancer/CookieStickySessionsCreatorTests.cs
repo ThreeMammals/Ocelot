@@ -1,74 +1,40 @@
-﻿using Moq;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.LoadBalancer;
+
+public class CookieStickySessionsCreatorTests : UnitTest
 {
-    public class CookieStickySessionsCreatorTests
+    private readonly CookieStickySessionsCreator _creator;
+    private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
+
+    public CookieStickySessionsCreatorTests()
     {
-        private readonly CookieStickySessionsCreator _creator;
-        private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
-        private DownstreamRoute _route;
-        private Response<ILoadBalancer> _loadBalancer;
-        private string _typeName;
+        _creator = new();
+        _serviceProvider = new();
+    }
 
-        public CookieStickySessionsCreatorTests()
-        {
-            _creator = new CookieStickySessionsCreator();
-            _serviceProvider = new Mock<IServiceDiscoveryProvider>();
-        }
+    [Fact]
+    public void Should_return_instance_of_expected_load_balancer_type()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerOptions(new LoadBalancerOptions("myType", "myKey", 1000))
+            .Build();
 
-        [Fact]
-        public void should_return_instance_of_expected_load_balancer_type()
-        {
-            var route = new DownstreamRouteBuilder()
-                .WithLoadBalancerOptions(new LoadBalancerOptions("myType", "myKey", 1000))
-                .Build();
+        // Act
+        var loadBalancer = _creator.Create(route, _serviceProvider.Object);
 
-            this.Given(x => x.GivenARoute(route))
-                .When(x => x.WhenIGetTheLoadBalancer())
-                .Then(x => x.ThenTheLoadBalancerIsReturned<CookieStickySessions>())
-                .BDDfy();
-        }
+        // Assert
+        loadBalancer.Data.ShouldBeOfType<CookieStickySessions>();
+    }
 
-        [Fact]
-        public void should_return_expected_name()
-        {
-            this.When(x => x.WhenIGetTheLoadBalancerTypeName())
-                .Then(x => x.ThenTheLoadBalancerTypeIs("CookieStickySessions"))
-                .BDDfy();
-        }
-
-        private void GivenARoute(DownstreamRoute route)
-        {
-            _route = route;
-        }
-
-        private void WhenIGetTheLoadBalancer()
-        {
-            _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
-        }
-
-        private void WhenIGetTheLoadBalancerTypeName()
-        {
-            _typeName = _creator.Type;
-        }
-
-        private void ThenTheLoadBalancerIsReturned<T>()
-            where T : ILoadBalancer
-        {
-            _loadBalancer.Data.ShouldBeOfType<T>();
-        }
-
-        private void ThenTheLoadBalancerTypeIs(string type)
-        {
-            _typeName.ShouldBe(type);
-        }
+    [Fact]
+    public void Should_return_expected_name()
+    {
+        // Arrange, Act, Assert
+        _creator.Type.ShouldBe(nameof(CookieStickySessions));
     }
 }

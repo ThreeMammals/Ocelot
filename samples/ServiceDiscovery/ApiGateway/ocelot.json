@@ -1,0 +1,32 @@
+﻿{
+  "Routes": [
+    {
+      "ServiceName": "downstream-service",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/categories",
+      "DownstreamPathTemplate": "/categories",
+      "DownstreamScheme": "https",
+      "FileCacheOptions": { "TtlSeconds": 15 },
+      "Metadata": {
+        "instance": "localhost:7786"
+      }
+    },
+    {
+      "ServiceName": "downstream-service",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/health",
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "https",
+      "Metadata": {
+        "instance": "localhost:7786"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "RequestIdKey": "OcRequestId",
+    "AdministrationPath": "/administration",
+    "ServiceDiscoveryProvider": {
+      "Type": "MyServiceDiscoveryProvider"
+    }
+  }
+}

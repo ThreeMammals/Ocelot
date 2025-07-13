@@ -1,14 +1,11 @@
-using System.Collections.Generic;
+namespace Ocelot.Cache;
 
-namespace Ocelot.Cache
+public class Regions
 {
-    public class Regions
+    public Regions(List<string> value)
     {
-        public Regions(List<string> value)
-        {
-            Value = value;
-        }
-
-        public List<string> Value { get; }
+        Value = value;
     }
+
+    public List<string> Value { get; }
 }

@@ -1,64 +1,99 @@
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
+
 Delegating Handlers
 ===================
 
-Ocelot allows the user to add delegating handlers to the HttpClient transport. This feature was requested `GitHub #208 <https://github.com/ThreeMammals/Ocelot/issues/208>`_ 
-and I decided that it was going to be useful in various ways. Since then we extended it in `GitHub #264 <https://github.com/ThreeMammals/Ocelot/issues/264>`_.
+    **MS Learn Documentation:**
 
-Usage
-^^^^^
+    * `DelegatingHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler>`_
+    * `HTTP Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/http-message-handlers>`_
+    * `HttpClient Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/httpclient-message-handlers>`_
 
-In order to add delegating handlers to the HttpClient transport you need to do two main things.
+Ocelot allows the user to add `delegating handlers <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler>`_ to the ``HttpClient`` transport. [#f1]_
 
-First in order to create a class that can be used a delegating handler it must look as follows. We are going to register these handlers in the 
-asp.net core container so you can inject any other services you have registered into the constructor of your handler.
+Configuration
+-------------
 
-.. code-block:: csharp
+In order to utilize the :doc:`../features/delegatinghandlers` feature, you need to do the following three steps of configuration.
 
-    public class FakeHandler : DelegatingHandler
+1. Create a class that can be used as a *delegating handler*: it must inherit from the ``DelegatingHandler`` class.
+   We are going to register these handlers in the ASP.NET Core DI container, so you can inject any other services you have registered into the constructor of your handler.
+
+   .. code-block:: csharp
+
+    public class MyHandler : DelegatingHandler
     {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
-            //do stuff and optionally call the base handler..
-            return await base.SendAsync(request, cancellationToken);
+            // Do stuff before sending request, and optionally call the base handler...
+            var response = await base.SendAsync(request, token);
+            // Do post-processing of the response...
+            return response;
         }
     }
 
-Next you must add the handlers to Ocelot's container like below...
+2. You must add the handlers to the DI container in your `Program`_, as shown below:
 
-.. code-block:: csharp
+   .. code-block:: csharp
 
-    services.AddOcelot()
-            .AddDelegatingHandler<FakeHandler>()
-            .AddDelegatingHandler<FakeHandlerTwo>()
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddDelegatingHandler<MyHandler>()
+        .AddDelegatingHandler<MyHandlerTwo>();
 
-Both of these Add methods have a default parameter called global which is set to false. If it is false then the intent of the DelegatingHandler is to be applied to specific Routes via ocelot.json (more on that later). If it is set to true
-then it becomes a global handler and will be applied to all Routes.
+   Both of these ``AddDelegatingHandler{T}`` methods have an optional parameter called ``global``, which is set to ``false``.
+   If it is ``false``, then the intent of the *delegating handler* is to be applied to specific routes via `ocelot.json`_ (see step 3).
+   If it is set to ``true``, then it becomes a global handler and will be applied to all routes, as shown below:
 
-e.g.
+   .. code-block:: csharp
 
-As below...
+    builder.Services
+        .AddOcelot(builder.Configuration)
+        .AddDelegatingHandler<MyGlobalHandler>(true);  // it's global!
 
-.. code-block:: csharp
+.. _break: http://break.do
 
-    services.AddOcelot()
-            .AddDelegatingHandler<FakeHandler>(true)
+    **Note 1**: The generic ``AddDelegatingHandler<T>(bool)`` method has another overloaded non-generic one with the ``Type`` parameter: ``AddDelegatingHandler(Type, bool)``.
+    Thus, here is an alternative to set it up:
 
-Finally if you want Route specific DelegatingHandlers or to order your specific and / or global (more on this later) DelegatingHandlers then you must add the following json to the specific Route in ocelot.json. The names in the array must match the class names of your
-DelegatingHandlers for Ocelot to match them together.
+    .. code-block:: csharp
 
-.. code-block:: json
+        builder.Services
+            .AddOcelot(builder.Configuration)
+            .AddDelegatingHandler(typeof(MyHandler)) // for selected routes only
+            .AddDelegatingHandler(typeof(MyGlobalHandler), true); // it's global!
 
-    "DelegatingHandlers": [
-        "FakeHandlerTwo",
-        "FakeHandler"
-    ]
+    **Note 2**: Both versions of the methods add transient services to the DI container. It is recommended to utilize the generic version.
 
-You can have as many DelegatingHandlers as you want and they are run in the following order:
+3. If you want route-specific *delegating handlers* or to order your specific and/or global *delegating handlers* (more on this in the :ref:`dh-execution-order` section), then you must add the following to the specific route in `ocelot.json`_.
+   The names in the array must match the class names of your *delegating handlers* for Ocelot to match them together:
 
-1. Any globals that are left in the order they were added to services and are not in the DelegatingHandlers array from ocelot.json.
-2. Any non global DelegatingHandlers plus any globals that were in the DelegatingHandlers array from ocelot.json ordered as they are in the DelegatingHandlers array.
-3. Tracing DelegatingHandler if enabled (see tracing docs).
-4. QoS DelegatingHandler if enabled (see QoS docs).
-5. The HttpClient sends the HttpRequestMessage.
+   .. code-block:: json
 
-Hopefully other people will find this feature useful!
+     "DelegatingHandlers": [ "MyHandlerTwo", "MyHandler" ]
+
+.. _dh-execution-order:
+
+Execution Order
+---------------
+
+You can have as many *delegating handlers* as you want, and they are run in the following order:
+
+1. Any globals that are left in the order they were added to services and are not in the ``DelegatingHandlers`` option array from `ocelot.json`_.
+2. Any non-global *delegating handlers* plus any globals that were in the ``DelegatingHandlers`` option array from `ocelot.json`_, ordered as they are in the ``DelegatingHandlers`` array.
+3. Tracing *delegating handler*, if enabled (refer to the :doc:`../features/tracing` chapter).
+4. Quality of Service *delegating handler*, if enabled (refer to the :doc:`../features/qualityofservice` chapter).
+5. The ``HttpClient`` sends the ``HttpRequestMessage``.
+
+Hopefully, other people will find this feature useful!
+
+""""
+
+.. [#f1] This feature was requested in issue `208`_, and the team decided that it would be useful in various ways, releasing it in version `3.0.3`_. Since then, we extended it in issue `264`_ and released it in version `5.0.0`_.
+
+.. _208: https://github.com/ThreeMammals/Ocelot/issues/208
+.. _264: https://github.com/ThreeMammals/Ocelot/issues/264
+
+.. _3.0.3: https://github.com/ThreeMammals/Ocelot/releases/tag/3.0.3
+.. _5.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/5.0.0

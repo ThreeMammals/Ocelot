@@ -1,17 +1,13 @@
-﻿using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Middleware;
 
-namespace Ocelot.Responder
+namespace Ocelot.Responder;
+
+public interface IHttpResponder
 {
-    public interface IHttpResponder
-    {
-        Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response);
+    Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse response);
 
-        void SetErrorResponseOnContext(HttpContext context, int statusCode);
+    void SetErrorResponseOnContext(HttpContext context, int statusCode);
 
-        Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response);
-    }
+    Task SetErrorResponseOnContext(HttpContext context, DownstreamResponse response);
 }

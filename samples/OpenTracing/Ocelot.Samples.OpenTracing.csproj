@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <AssemblyVersion>24.0.0</AssemblyVersion>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <ProductName>Ocelot Gateway</ProductName>
+    <Authors>Raman Maksimchuk</Authors>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/samples/OpenTracing</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Jaeger" Version="1.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
+  </ItemGroup>
+</Project>

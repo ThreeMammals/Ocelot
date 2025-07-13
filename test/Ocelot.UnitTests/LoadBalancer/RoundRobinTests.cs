@@ -1,78 +1,159 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
-using Shouldly;
+namespace Ocelot.UnitTests.LoadBalancer;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.LoadBalancer
+public class RoundRobinTests : UnitTest
 {
-    public class RoundRobinTests
+    private readonly DefaultHttpContext _httpContext = new();
+
+    [Fact]
+    public async Task Lease_LoopThroughIndexRangeOnce_ShouldGetNextAddress()
     {
-        private readonly RoundRobin _roundRobin;
-        private readonly List<Service> _services;
-        private Response<ServiceHostAndPort> _hostAndPort;
-        private readonly HttpContext _httpContext;
+        // Arrange
+        var services = GivenServices();
+        var roundRobin = GivenLoadBalancer(services);
 
-        public RoundRobinTests()
+        // Act
+        var response0 = await roundRobin.LeaseAsync(_httpContext);
+        var response1 = await roundRobin.LeaseAsync(_httpContext);
+        var response2 = await roundRobin.LeaseAsync(_httpContext);
+
+        // Assert
+        response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
+        response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
+        response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
+    }
+
+    [Fact]
+    [Trait("Feat", "336")]
+    public async Task Lease_LoopThroughIndexRangeIndefinitelyButOneSecond_ShouldGoBackToFirstAddressAfterFinishedLast()
+    {
+        // Arrange
+        var services = GivenServices();
+        var roundRobin = GivenLoadBalancer(services);
+        var stopWatch = Stopwatch.StartNew();
+        while (stopWatch.ElapsedMilliseconds < 1000)
         {
-            _httpContext = new DefaultHttpContext();
-            _services = new List<Service>
+            // Act
+            var response0 = await roundRobin.LeaseAsync(_httpContext);
+            var response1 = await roundRobin.LeaseAsync(_httpContext);
+            var response2 = await roundRobin.LeaseAsync(_httpContext);
+
+            // Assert
+            response0.Data.ShouldNotBeNull().ShouldBe(services[0].HostAndPort);
+            response1.Data.ShouldNotBeNull().ShouldBe(services[1].HostAndPort);
+            response2.Data.ShouldNotBeNull().ShouldBe(services[2].HostAndPort);
+        }
+    }
+
+    [Fact]
+    [Trait("Bug", "2110")]
+    public async Task Lease_SelectedServiceIsNull_ShouldReturnError()
+    {
+        // Arrange
+        var invalidServices = new List<Service> { null };
+        var roundRobin = GivenLoadBalancer(invalidServices);
+
+        // Act
+        var response = await roundRobin.LeaseAsync(_httpContext);
+
+        // Assert: Then ServicesAreNullError Is Returned
+        response.ShouldNotBeNull().Data.ShouldBeNull();
+        response.IsError.ShouldBeTrue();
+        response.Errors[0].ShouldBeOfType<ServicesAreNullError>();
+    }
+
+    //[InlineData(1, 10)]
+    //[InlineData(2, 50)]
+    //[InlineData(3, 50)]
+    //[InlineData(4, 50)]
+    //[InlineData(5, 50)]
+    //[InlineData(3, 100)]
+    //[InlineData(4, 100)]
+    //[InlineData(7, 100)]
+    [InlineData(3, 100)]
+    [Theory]
+    [Trait("Feat", "2110")]
+    public void Lease_LoopThroughIndexRangeIndefinitelyUnderHighLoad_ShouldDistributeIndexValuesUniformly(int totalServices, int totalThreads)
+    {
+        // Arrange
+        const bool ReturnServicesNotImmediately = false;
+        var services = GivenServices(totalServices);
+        var roundRobin = GivenLoadBalancer(services, ReturnServicesNotImmediately);
+        int bottom = totalThreads / totalServices,
+            top = totalThreads - (bottom * totalServices) + bottom;
+
+        // Act
+        var responses = WhenICallLeaseFromMultipleThreads(roundRobin, totalThreads);
+        var counters = CountServices(services, responses);
+
+        // Assert
+        responses.ShouldNotBeNull();
+        responses.Length.ShouldBe(totalThreads);
+
+        var message = $"All values are [{string.Join(',', counters)}]";
+        counters.Sum().ShouldBe(totalThreads, message);
+
+        message = $"{nameof(bottom)}: {bottom}\n\t{nameof(top)}: {top}\n\tAll values are [{string.Join(',', counters)}]";
+        counters.ShouldAllBe(counter => bottom <= counter && counter <= top, message);
+    }
+
+    private static int[] CountServices(List<Service> services, Response<ServiceHostAndPort>[] responses)
+    {
+        var counters = new int[services.Count];
+        var firstPort = services[0].HostAndPort.DownstreamPort;
+        foreach (var response in responses)
+        {
+            var idx = response.Data.DownstreamPort - firstPort;
+            counters[idx]++;
+        }
+
+        return counters;
+    }
+
+    private Response<ServiceHostAndPort>[] WhenICallLeaseFromMultipleThreads(RoundRobin roundRobin, int times)
+    {
+        var tasks = new Task[times]; // allocate N-times threads as Task
+        var parallelResponses = new Response<ServiceHostAndPort>[times];
+        for (var i = 0; i < times; i++)
+        {
+            tasks[i] = GetParallelResponse(parallelResponses, roundRobin, i);
+        }
+
+        Task.WaitAll(tasks); // load by N-times threads
+        return parallelResponses;
+    }
+
+    private async Task GetParallelResponse(Response<ServiceHostAndPort>[] responses, RoundRobin roundRobin, int threadIndex)
+    {
+        responses[threadIndex] = await roundRobin.LeaseAsync(_httpContext);
+    }
+
+    private static List<Service> GivenServices(int total = 3, [CallerMemberName] string serviceName = null)
+    {
+        var list = new List<Service>(total);
+        for (int i = 1; i <= total; i++)
+        {
+            list.Add(new(serviceName, new ServiceHostAndPort("127.0.0." + i, 5000 + i), string.Empty, string.Empty, Array.Empty<string>()));
+        }
+
+        return list;
+    }
+
+    private static RoundRobin GivenLoadBalancer(List<Service> services, bool immediately = true, [CallerMemberName] string serviceName = null)
+    {
+        return new(
+            () =>
             {
-                new("product", new ServiceHostAndPort("127.0.0.1", 5000), string.Empty, string.Empty, Array.Empty<string>()),
-                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
-                new("product", new ServiceHostAndPort("127.0.0.1", 5001), string.Empty, string.Empty, Array.Empty<string>()),
-            };
-
-            _roundRobin = new RoundRobin(() => Task.FromResult(_services));
-        }
-
-        [Fact]
-        public void should_get_next_address()
-        {
-            this.Given(x => x.GivenIGetTheNextAddress())
-                .Then(x => x.ThenTheNextAddressIndexIs(0))
-                .Given(x => x.GivenIGetTheNextAddress())
-                .Then(x => x.ThenTheNextAddressIndexIs(1))
-                .Given(x => x.GivenIGetTheNextAddress())
-                .Then(x => x.ThenTheNextAddressIndexIs(2))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_go_back_to_first_address_after_finished_last()
-        {
-            var stopWatch = Stopwatch.StartNew();
-
-            while (stopWatch.ElapsedMilliseconds < 1000)
-            {
-                var address = _roundRobin.Lease(_httpContext).Result;
-                address.Data.ShouldBe(_services[0].HostAndPort);
-                address = _roundRobin.Lease(_httpContext).Result;
-                address.Data.ShouldBe(_services[1].HostAndPort);
-                address = _roundRobin.Lease(_httpContext).Result;
-                address.Data.ShouldBe(_services[2].HostAndPort);
-            }
-        }
-
-        private void GivenIGetTheNextAddress()
-        {
-            _hostAndPort = _roundRobin.Lease(_httpContext).Result;
-        }
-
-        private void ThenTheNextAddressIndexIs(int index)
-        {
-            _hostAndPort.Data.ShouldBe(_services[index].HostAndPort);
-        }
+                int leasingDelay = immediately ? 0 : Random.Shared.Next(5, 15);
+                Thread.Sleep(leasingDelay);
+                return Task.FromResult(services);
+            },
+            serviceName);
     }
 }

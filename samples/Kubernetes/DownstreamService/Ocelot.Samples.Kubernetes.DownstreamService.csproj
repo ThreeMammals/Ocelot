@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <AssemblyVersion>24.0.0</AssemblyVersion>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <ProductName>Ocelot Gateway</ProductName>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Authors>Raman Maksimchuk</Authors>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/samples/Kubernetes</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
+  </ItemGroup>
+</Project>

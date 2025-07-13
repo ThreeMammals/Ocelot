@@ -1,271 +1,180 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-
 using Butterfly.Client.AspNetCore;
-
-using Ocelot.Configuration.File;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-
-using Shouldly;
-
-using TestStack.BDDfy;
-
-using Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Tracing.Butterfly;
 using Xunit.Abstractions;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public sealed class ButterflyTracingTests : Steps
 {
-    public class ButterflyTracingTests : IDisposable
+    private int _butterflyCalled;
+    private readonly ITestOutputHelper _output;
+
+    public ButterflyTracingTests(ITestOutputHelper output)
     {
-        private IWebHost _serviceOneBuilder;
-        private IWebHost _serviceTwoBuilder;
-        private IWebHost _fakeButterfly;
-        private readonly Steps _steps;
-        private string _downstreamPathOne;
-        private string _downstreamPathTwo;
-        private int _butterflyCalled;
-        private readonly ITestOutputHelper _output;
+        _output = output;
+    }
 
-        public ButterflyTracingTests(ITestOutputHelper output)
+    [Fact]
+    public void Should_forward_tracing_information_from_ocelot_and_downstream_services()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var configuration = new FileConfiguration
         {
-            _output = output;
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_forward_tracing_information_from_ocelot_and_downstream_services()
-        {
-            var port1 = RandomPortFinder.GetRandomPort();
-            var port2 = RandomPortFinder.GetRandomPort();
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+            Routes = new List<FileRoute>
+                {
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port1,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true,
+                                Host = "localhost",
+                                Port = port1,
                             },
                         },
-                        new()
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port2,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api002/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true,
-                            },
+                            UseTracing = true,
                         },
                     },
-            };
-
-            var butterflyPort = RandomPortFinder.GetRandomPort();
-            var butterflyUrl = $"http://localhost:{butterflyPort}";
-
-            this.Given(x => GivenFakeButterfly(butterflyUrl))
-                .And(x => GivenServiceOneIsRunning($"http://localhost:{port1}", "/api/values", 200, "Hello from Laura", butterflyUrl))
-                .And(x => GivenServiceTwoIsRunning($"http://localhost:{port2}", "/api/values", 200, "Hello from Tom", butterflyUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api002/values"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Tom"))
-                .BDDfy();
-
-            var commandOnAllStateMachines = Wait.WaitFor(10000).Until(() => _butterflyCalled >= 4);
-
-            _output.WriteLine($"_butterflyCalled is {_butterflyCalled}");
-
-            commandOnAllStateMachines.ShouldBeTrue();
-        }
-
-        [Fact]
-        public void should_return_tracing_header()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
+                    new()
                     {
-                        new()
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            DownstreamPathTemplate = "/api/values",
-                            DownstreamScheme = "http",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            new()
                             {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/api001/values",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            HttpHandlerOptions = new FileHttpHandlerOptions
-                            {
-                                UseTracing = true,
-                            },
-                            DownstreamHeaderTransform = new Dictionary<string, string>
-                            {
-                                {"Trace-Id", "{TraceId}"},
-                                {"Tom", "Laura"},
+                                Host = "localhost",
+                                Port = port2,
                             },
                         },
+                        UpstreamPathTemplate = "/api002/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
+                        {
+                            UseTracing = true,
+                        },
                     },
-            };
+                },
+        };
+        var butterflyPort = PortFinder.GetRandomPort();
+        this.Given(x => GivenFakeButterfly(butterflyPort))
+            .And(x => GivenServiceIsRunning(port1, "/api/values", HttpStatusCode.OK, "Hello from Laura", butterflyPort, "Service One"))
+            .And(x => GivenServiceIsRunning(port2, "/api/values", HttpStatusCode.OK, "Hello from Tom", butterflyPort, "Service One"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingButterfly(butterflyPort))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api002/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
+            .BDDfy();
 
-            var butterflyPort = RandomPortFinder.GetRandomPort();
-            var butterflyUrl = $"http://localhost:{butterflyPort}";
+        var commandOnAllStateMachines = Wait.For(10_000).Until(() => _butterflyCalled >= 4);
+        _output.WriteLine($"_butterflyCalled is {_butterflyCalled}");
+        commandOnAllStateMachines.ShouldBeTrue();
+    }
 
-            this.Given(x => GivenFakeButterfly(butterflyUrl))
-                .And(x => GivenServiceOneIsRunning($"http://localhost:{port}", "/api/values", 200, "Hello from Laura", butterflyUrl))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningUsingButterfly(butterflyUrl))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api001/values"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .And(x => _steps.ThenTheTraceHeaderIsSet("Trace-Id"))
-                .And(x => _steps.ThenTheResponseHeaderIs("Tom", "Laura"))
-                .BDDfy();
-        }
-
-        private void GivenServiceOneIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
+    [Fact]
+    public void Should_return_tracing_header()
+    {
+        var port = PortFinder.GetRandomPort();
+        var configuration = new FileConfiguration
         {
-            _serviceOneBuilder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .ConfigureServices(services =>
+            Routes = new List<FileRoute>
                 {
-                    services.AddButterfly(option =>
+                    new()
                     {
-                        option.CollectorUrl = butterflyUrl;
-                        option.Service = "Service One";
-                        option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {
-                        _downstreamPathOne = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if (_downstreamPathOne != basePath)
+                        DownstreamPathTemplate = "/api/values",
+                        DownstreamScheme = "http",
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
                         {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
+                            new()
+                            {
+                                Host = "localhost",
+                                Port = port,
+                            },
+                        },
+                        UpstreamPathTemplate = "/api001/values",
+                        UpstreamHttpMethod = new List<string> { "Get" },
+                        HttpHandlerOptions = new FileHttpHandlerOptions
                         {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
+                            UseTracing = true,
+                        },
+                        DownstreamHeaderTransform = new Dictionary<string, string>
+                        {
+                            {"Trace-Id", "{TraceId}"},
+                            {"Tom", "Laura"},
+                        },
+                    },
+                },
+        };
+        var butterflyPort = PortFinder.GetRandomPort();
+        this.Given(x => GivenFakeButterfly(butterflyPort))
+            .And(x => GivenServiceIsRunning(port, "/api/values", HttpStatusCode.OK, "Hello from Laura", butterflyPort, "Service One"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingButterfly(butterflyPort))
+            .When(x => WhenIGetUrlOnTheApiGateway("/api001/values"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseHeaderExists("Trace-Id"))
+            .And(x => ThenTheResponseHeaderIs("Tom", "Laura"))
+            .BDDfy();
+    }
 
-            _serviceOneBuilder.Start();
-        }
+    private void GivenOcelotIsRunningUsingButterfly(int butterflyPort)
+    {
+        void WithButterfly(IServiceCollection services) => services
+            .AddOcelot()
+            .AddButterfly(option =>
+            {
+                option.CollectorUrl = DownstreamUrl(butterflyPort); // this is the url that the butterfly collector server is running on...
+                option.Service = "Ocelot";
+            });
+        GivenOcelotIsRunning(WithButterfly);
+    }
 
-        private void GivenFakeButterfly(string baseUrl)
+    private void GivenFakeButterfly(int port)
+    {
+        Task Map(HttpContext context)
         {
-            _fakeButterfly = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        _butterflyCalled++;
-                        await context.Response.WriteAsync("OK...");
-                    });
-                })
-                .Build();
-
-            _fakeButterfly.Start();
+            _butterflyCalled++;
+            return context.Response.WriteAsync("OK...");
         }
+        handler.GivenThereIsAServiceRunningOn(port, Map);
+    }
 
-        private void GivenServiceTwoIsRunning(string baseUrl, string basePath, int statusCode, string responseBody, string butterflyUrl)
+    private string GivenServiceIsRunning(int port, string basePath, HttpStatusCode statusCode, string responseBody, int butterflyPort, string serviceName)
+    {
+        string downstreamPath = string.Empty;
+        void WithButterfly(IServiceCollection services)
         {
-            _serviceTwoBuilder = new WebHostBuilder()
-                .UseUrls(baseUrl)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .ConfigureServices(services =>
-                {
-                    services.AddButterfly(option =>
-                    {
-                        option.CollectorUrl = butterflyUrl;
-                        option.Service = "Service Two";
-                        option.IgnoredRoutesRegexPatterns = Array.Empty<string>();
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UsePathBase(basePath);
-                    app.Run(async context =>
-                    {
-                        _downstreamPathTwo = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                        if (_downstreamPathTwo != basePath)
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync("downstream path didnt match base path");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = statusCode;
-                            await context.Response.WriteAsync(responseBody);
-                        }
-                    });
-                })
-                .Build();
-
-            _serviceTwoBuilder.Start();
+            services.AddButterfly(option =>
+            {
+                option.CollectorUrl = DownstreamUrl(butterflyPort);
+                option.Service = serviceName;
+                option.IgnoredRoutesRegexPatterns = [];
+            });
         }
-
-        public void Dispose()
+        Task MapStatusAndPath(HttpContext context)
         {
-            _serviceOneBuilder?.Dispose();
-            _serviceTwoBuilder?.Dispose();
-            _fakeButterfly?.Dispose();
-            _steps.Dispose();
+            downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+            bool oK = downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            return context.Response.WriteAsync(oK ? responseBody : "downstream path didnt match base path");
         }
+        handler.GivenThereIsAServiceRunningOn(DownstreamUrl(port), basePath, WithButterfly, MapStatusAndPath);
+        return downstreamPath;
     }
 }

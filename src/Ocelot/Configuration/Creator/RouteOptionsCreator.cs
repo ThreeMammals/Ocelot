@@ -1,36 +1,34 @@
 using Ocelot.Configuration.Builder;
-
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class RouteOptionsCreator : IRouteOptionsCreator
 {
-    public class RouteOptionsCreator : IRouteOptionsCreator
+    public RouteOptions Create(FileRoute fileRoute)
     {
-        public RouteOptions Create(FileRoute fileRoute)
+        if (fileRoute == null)
         {
-            var isAuthenticated = IsAuthenticated(fileRoute);
-            var isAuthorized = IsAuthorized(fileRoute);
-            var isCached = IsCached(fileRoute);
-            var enableRateLimiting = IsEnableRateLimiting(fileRoute);
-            var useServiceDiscovery = !string.IsNullOrEmpty(fileRoute.ServiceName);
-
-            var options = new RouteOptionsBuilder()
-                .WithIsAuthenticated(isAuthenticated)
-                .WithIsAuthorized(isAuthorized)
-                .WithIsCached(isCached)
-                .WithRateLimiting(enableRateLimiting)
-                .WithUseServiceDiscovery(useServiceDiscovery)
-                .Build();
-
-            return options;
+            return new RouteOptionsBuilder().Build();
         }
 
-        private static bool IsEnableRateLimiting(FileRoute fileRoute) => fileRoute.RateLimitOptions?.EnableRateLimiting == true;
+        var authOpts = fileRoute.AuthenticationOptions;
+        var isAuthenticated = authOpts != null
+            && (!string.IsNullOrEmpty(authOpts.AuthenticationProviderKey)
+                || authOpts.AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true);
+        var isAuthorized = fileRoute.RouteClaimsRequirement?.Any() == true;
 
-        private static bool IsAuthenticated(FileRoute fileRoute) => !string.IsNullOrEmpty(fileRoute.AuthenticationOptions?.AuthenticationProviderKey);
+        // TODO: This sounds more like a hack, it might be better to refactor this at some point.
+        var isCached = fileRoute.FileCacheOptions.TtlSeconds > 0;
+        var enableRateLimiting = fileRoute.RateLimitOptions?.EnableRateLimiting == true;
+        var useServiceDiscovery = !string.IsNullOrEmpty(fileRoute.ServiceName);
 
-        private static bool IsAuthorized(FileRoute fileRoute) => fileRoute.RouteClaimsRequirement?.Count > 0;
-
-        private static bool IsCached(FileRoute fileRoute) => fileRoute.FileCacheOptions.TtlSeconds > 0;
+        return new RouteOptionsBuilder()
+            .WithIsAuthenticated(isAuthenticated)
+            .WithIsAuthorized(isAuthorized)
+            .WithIsCached(isCached)
+            .WithRateLimiting(enableRateLimiting)
+            .WithUseServiceDiscovery(useServiceDiscovery)
+            .Build();
     }
 }

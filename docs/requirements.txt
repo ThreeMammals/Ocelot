@@ -1,0 +1,4 @@
+# Defining the exact version will make sure things don't break
+sphinx==8.2.3
+alabaster==1.0.0
+sphinx_copybutton==0.5.2

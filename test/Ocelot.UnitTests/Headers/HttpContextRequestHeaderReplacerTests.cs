@@ -1,94 +1,56 @@
-using System.Collections.Generic;
-
 using Microsoft.AspNetCore.Http;
-
 using Ocelot.Configuration;
 using Ocelot.Headers;
 using Ocelot.Responses;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Headers;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.Headers
+public class HttpContextRequestHeaderReplacerTests : UnitTest
 {
-    public class HttpContextRequestHeaderReplacerTests
+    private readonly DefaultHttpContext _context;
+    private readonly HttpContextRequestHeaderReplacer _replacer;
+
+    public HttpContextRequestHeaderReplacerTests()
     {
-        private HttpContext _context;
-        private List<HeaderFindAndReplace> _fAndRs;
-        private readonly HttpContextRequestHeaderReplacer _replacer;
-        private Response _result;
+        _replacer = new();
+        _context = new();
+    }
 
-        public HttpContextRequestHeaderReplacerTests()
+    [Fact]
+    public void Should_replace_headers()
+    {
+        // Arrange
+        _context.Request.Headers.Append("test", "test");
+        var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
+
+        // Act
+        var result = _replacer.Replace(_context, fAndRs);
+
+        // Assert
+        result.ShouldBeOfType<OkResponse>();
+        foreach (var f in fAndRs)
         {
-            _replacer = new HttpContextRequestHeaderReplacer();
+            _context.Request.Headers.TryGetValue(f.Key, out var values);
+            values[f.Index].ShouldBe(f.Replace);
         }
+    }
 
-        [Fact]
-        public void should_replace_headers()
+    [Fact]
+    public void Should_not_replace_headers()
+    {
+        // Arrange
+        _context.Request.Headers.Append("test", "test");
+        var fAndRs = new List<HeaderFindAndReplace>();
+
+        // Act
+        var result = _replacer.Replace(_context, fAndRs);
+
+        // Assert
+        result.ShouldBeOfType<OkResponse>();
+        foreach (var f in fAndRs)
         {
-            var context = new DefaultHttpContext();
-            context.Request.Headers.Add("test", "test");
-
-            var fAndRs = new List<HeaderFindAndReplace> { new("test", "test", "chiken", 0) };
-
-            this.Given(x => GivenTheFollowingHttpRequest(context))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeadersAreReplaced())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_replace_headers()
-        {
-            var context = new DefaultHttpContext();
-            context.Request.Headers.Add("test", "test");
-
-            var fAndRs = new List<HeaderFindAndReplace>();
-
-            this.Given(x => GivenTheFollowingHttpRequest(context))
-                .And(x => GivenTheFollowingHeaderReplacements(fAndRs))
-                .When(x => WhenICallTheReplacer())
-                .Then(x => ThenTheHeadersAreNotReplaced())
-                .BDDfy();
-        }
-
-        private void ThenTheHeadersAreNotReplaced()
-        {
-            _result.ShouldBeOfType<OkResponse>();
-            foreach (var f in _fAndRs)
-            {
-                _context.Request.Headers.TryGetValue(f.Key, out var values);
-                values[f.Index].ShouldBe("test");
-            }
-        }
-
-        private void GivenTheFollowingHttpRequest(HttpContext context)
-        {
-            _context = context;
-        }
-
-        private void GivenTheFollowingHeaderReplacements(List<HeaderFindAndReplace> fAndRs)
-        {
-            _fAndRs = fAndRs;
-        }
-
-        private void WhenICallTheReplacer()
-        {
-            _result = _replacer.Replace(_context, _fAndRs);
-        }
-
-        private void ThenTheHeadersAreReplaced()
-        {
-            _result.ShouldBeOfType<OkResponse>();
-            foreach (var f in _fAndRs)
-            {
-                _context.Request.Headers.TryGetValue(f.Key, out var values);
-                values[f.Index].ShouldBe(f.Replace);
-            }
+            _context.Request.Headers.TryGetValue(f.Key, out var values);
+            values[f.Index].ShouldBe("test");
         }
     }
 }

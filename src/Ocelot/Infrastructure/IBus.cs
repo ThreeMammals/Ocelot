@@ -1,11 +1,8 @@
-using System;
+namespace Ocelot.Infrastructure;
 
-namespace Ocelot.Infrastructure
+public interface IBus<T>
 {
-    public interface IBus<T>
-    {
-        void Subscribe(Action<T> action);
+    void Subscribe(Action<T> action);
 
-        void Publish(T message, int delay);
-    }
+    void Publish(T message, int delay);
 }

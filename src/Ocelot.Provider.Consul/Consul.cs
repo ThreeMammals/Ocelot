@@ -1,89 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using global::Consul;
-
-using Ocelot.Infrastructure.Extensions;
-
-using Ocelot.Logging;
-
+﻿using Ocelot.Logging;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
-
 using Ocelot.Values;
 
-namespace Ocelot.Provider.Consul
+namespace Ocelot.Provider.Consul;
+
+public class Consul : IServiceDiscoveryProvider
 {
-    public class Consul : IServiceDiscoveryProvider
+    private readonly ConsulRegistryConfiguration _configuration;
+    private readonly IConsulClient _consul;
+    private readonly IOcelotLogger _logger;
+    private readonly IConsulServiceBuilder _serviceBuilder;
+
+    public Consul(
+        ConsulRegistryConfiguration config,
+        IOcelotLoggerFactory factory,
+        IConsulClientFactory clientFactory,
+        IConsulServiceBuilder serviceBuilder)
     {
-        private readonly ConsulRegistryConfiguration _config;
-        private readonly IOcelotLogger _logger;
-        private readonly IConsulClient _consul;
-        private const string VersionPrefix = "version-";
-
-        public Consul(ConsulRegistryConfiguration config, IOcelotLoggerFactory factory, IConsulClientFactory clientFactory)
-        {
-            _logger = factory.CreateLogger<Consul>();
-            _config = config;
-            _consul = clientFactory.Get(_config);
-        }
-
-        public async Task<List<Service>> Get()
-        {
-            var queryResult = await _consul.Health.Service(_config.KeyOfServiceInConsul, string.Empty, true);
-
-            var services = new List<Service>();
-
-            foreach (var serviceEntry in queryResult.Response)
-            {
-                if (IsValid(serviceEntry))
-                {
-                    var nodes = await _consul.Catalog.Nodes();
-                    if (nodes.Response == null)
-                    {
-                        services.Add(BuildService(serviceEntry, null));
-                    }
-                    else
-                    {
-                        var serviceNode = nodes.Response.FirstOrDefault(n => n.Address == serviceEntry.Service.Address);
-                        services.Add(BuildService(serviceEntry, serviceNode));
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning($"Unable to use service Address: {serviceEntry.Service.Address} and Port: {serviceEntry.Service.Port} as it is invalid. Address must contain host only e.g. localhost and port must be greater than 0");
-                }
-            }
-
-            return services.ToList();
-        }
-
-        private static Service BuildService(ServiceEntry serviceEntry, Node serviceNode)
-        {
-            return new Service(
-                serviceEntry.Service.Service,
-                new ServiceHostAndPort(serviceNode == null ? serviceEntry.Service.Address : serviceNode.Name, serviceEntry.Service.Port),
-                serviceEntry.Service.ID,
-                GetVersionFromStrings(serviceEntry.Service.Tags),
-                serviceEntry.Service.Tags ?? Enumerable.Empty<string>());
-        }
-
-        private static bool IsValid(ServiceEntry serviceEntry)
-        {
-            if (string.IsNullOrEmpty(serviceEntry.Service.Address) || serviceEntry.Service.Address.Contains("http://") || serviceEntry.Service.Address.Contains("https://") || serviceEntry.Service.Port <= 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static string GetVersionFromStrings(IEnumerable<string> strings)
-        {
-            return strings
-                ?.FirstOrDefault(x => x.StartsWith(VersionPrefix, StringComparison.Ordinal))
-                .TrimStart(VersionPrefix);
-        }
+        _configuration = config;
+        _consul = clientFactory.Get(_configuration);
+        _logger = factory.CreateLogger<Consul>();
+        _serviceBuilder = serviceBuilder;
     }
+
+    public virtual async Task<List<Service>> GetAsync()
+    {
+        var entriesTask = _consul.Health.Service(_configuration.KeyOfServiceInConsul, string.Empty, true);
+        var nodesTask = _consul.Catalog.Nodes();
+
+        await Task.WhenAll(entriesTask, nodesTask);
+        var entries = (await entriesTask).Response ?? Array.Empty<ServiceEntry>();
+        var nodes = (await nodesTask).Response ?? Array.Empty<Node>();
+        if (entries.Length == 0)
+        {
+            _logger.LogWarning(() => $"{nameof(Consul)} Provider: No service entries found for '{_configuration.KeyOfServiceInConsul}' service!");
+            return new();
+        }
+
+        _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {entries.Length} service entries for '{_configuration.KeyOfServiceInConsul}' service.");
+        _logger.LogDebug(() => $"{nameof(Consul)} Provider: Found total {nodes.Length} catalog nodes.");
+        return BuildServices(entries, nodes)
+            .ToList();
+    }
+
+    protected virtual IEnumerable<Service> BuildServices(ServiceEntry[] entries, Node[] nodes)
+        => _serviceBuilder.BuildServices(entries, nodes);
 }

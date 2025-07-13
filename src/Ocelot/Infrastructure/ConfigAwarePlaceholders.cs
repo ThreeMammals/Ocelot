@@ -1,64 +1,64 @@
-using System;
-using System.Text.RegularExpressions;
-
 using Microsoft.Extensions.Configuration;
-
 using Ocelot.Request.Middleware;
-
 using Ocelot.Responses;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+/// <summary>
+/// The configuration related implementation of the <see cref="IPlaceholders"/> interface.
+/// </summary>
+public partial class ConfigAwarePlaceholders : IPlaceholders
 {
-    public class ConfigAwarePlaceholders : IPlaceholders
+    private readonly IConfiguration _configuration;
+    private readonly IPlaceholders _placeholders;
+
+    public ConfigAwarePlaceholders(IConfiguration configuration, IPlaceholders placeholders)
     {
-        private readonly IConfiguration _configuration;
-        private readonly IPlaceholders _placeholders;
+        _configuration = configuration;
+        _placeholders = placeholders;
+    }
 
-        public ConfigAwarePlaceholders(IConfiguration configuration, IPlaceholders placeholders)
+    public Response<string> Get(string key)
+    {
+        var placeholderResponse = _placeholders.Get(key);
+
+        if (!placeholderResponse.IsError)
         {
-            _configuration = configuration;
-            _placeholders = placeholders;
+            return placeholderResponse;
         }
 
-        public Response<string> Get(string key)
+        return GetFromConfig(CleanKey(key));
+    }
+
+    public Response<string> Get(string key, DownstreamRequest request)
+    {
+        var placeholderResponse = _placeholders.Get(key, request);
+
+        if (!placeholderResponse.IsError)
         {
-            var placeholderResponse = _placeholders.Get(key);
-
-            if (!placeholderResponse.IsError)
-            {
-                return placeholderResponse;
-            }
-
-            return GetFromConfig(CleanKey(key));
+            return placeholderResponse;
         }
 
-        public Response<string> Get(string key, DownstreamRequest request)
-        {
-            var placeholderResponse = _placeholders.Get(key, request);
+        return GetFromConfig(CleanKey(key));
+    }
 
-            if (!placeholderResponse.IsError)
-            {
-                return placeholderResponse;
-            }
+    public Response Add(string key, Func<Response<string>> func)
+        => _placeholders.Add(key, func);
 
-            return GetFromConfig(CleanKey(key));
-        }
+    public Response Remove(string key)
+        => _placeholders.Remove(key);
 
-        public Response Add(string key, Func<Response<string>> func)
-            => _placeholders.Add(key, func);
+    [GeneratedRegex(@"[{}]", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    private static partial Regex Regex();
 
-        public Response Remove(string key)
-            => _placeholders.Remove(key);
+    private static string CleanKey(string key)
+        => Regex().Replace(key, string.Empty);
 
-        private static string CleanKey(string key)
-            => Regex.Replace(key, @"[{}]", string.Empty, RegexOptions.None);
-
-        private Response<string> GetFromConfig(string key)
-        {
-            var valueFromConfig = _configuration[key];
-            return valueFromConfig == null
-                ? new ErrorResponse<string>(new CouldNotFindPlaceholderError(key))
-                : new OkResponse<string>(valueFromConfig);
-        }
+    private Response<string> GetFromConfig(string key)
+    {
+        var valueFromConfig = _configuration[key];
+        return valueFromConfig == null
+            ? new ErrorResponse<string>(new CouldNotFindPlaceholderError(key))
+            : new OkResponse<string>(valueFromConfig);
     }
 }

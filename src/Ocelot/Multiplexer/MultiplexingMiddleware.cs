@@ -1,221 +1,285 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections;
+using Route = Ocelot.Configuration.Route;
 
-namespace Ocelot.Multiplexer
+namespace Ocelot.Multiplexer;
+
+public class MultiplexingMiddleware : OcelotMiddleware
 {
-    public class MultiplexingMiddleware : OcelotMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IResponseAggregatorFactory _factory;
+    private const string RequestIdString = "RequestId";
+
+    public MultiplexingMiddleware(RequestDelegate next,
+        IOcelotLoggerFactory loggerFactory,
+        IResponseAggregatorFactory factory)
+        : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
     {
-        private readonly RequestDelegate _next;
-        private readonly IResponseAggregatorFactory _factory;
+        _factory = factory;
+        _next = next;
+    }
 
-        public MultiplexingMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IResponseAggregatorFactory factory
-            )
-                : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
+    public async Task Invoke(HttpContext httpContext)
+    {
+        var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
+        var route = downstreamRouteHolder.Route;
+        var downstreamRoutes = route.DownstreamRoute;
+
+        // Case 1: if websocket request or single downstream route
+        if (ShouldProcessSingleRoute(httpContext, downstreamRoutes))
         {
-            _factory = factory;
-            _next = next;
+            await ProcessSingleRouteAsync(httpContext, downstreamRoutes[0]);
+            return;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        // Case 2: if no downstream routes
+        if (downstreamRoutes.Count == 0)
         {
-            if (httpContext.WebSockets.IsWebSocketRequest)
-            {
-                //todo this is obviously stupid
-                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
-                await _next.Invoke(httpContext);
-                return;
-            }
-
-            var routeKeysConfigs = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRouteConfig;
-            if (routeKeysConfigs == null || !routeKeysConfigs.Any())
-            {
-                var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
-
-                var tasks = new Task<HttpContext>[downstreamRouteHolder.Route.DownstreamRoute.Count];
-
-                for (var i = 0; i < downstreamRouteHolder.Route.DownstreamRoute.Count; i++)
-                {
-                    var newHttpContext = Copy(httpContext);
-
-                    newHttpContext.Items
-                        .Add("RequestId", httpContext.Items["RequestId"]);
-                    newHttpContext.Items
-                        .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
-                    newHttpContext.Items
-                        .UpsertTemplatePlaceholderNameAndValues(httpContext.Items.TemplatePlaceholderNameAndValues());
-                    newHttpContext.Items
-                        .UpsertDownstreamRoute(downstreamRouteHolder.Route.DownstreamRoute[i]);
-
-                    tasks[i] = Fire(newHttpContext, _next);
-                }
-
-                await Task.WhenAll(tasks);
-
-                var contexts = new List<HttpContext>();
-
-                foreach (var task in tasks)
-                {
-                    var finished = await task;
-                    contexts.Add(finished);
-                }
-
-                await Map(httpContext, downstreamRouteHolder.Route, contexts);
-            }
-            else
-            {
-                httpContext.Items.UpsertDownstreamRoute(httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[0]);
-                var mainResponse = await Fire(httpContext, _next);
-
-                if (httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count == 1)
-                {
-                    MapNotAggregate(httpContext, new List<HttpContext> { mainResponse });
-                    return;
-                }
-
-                var tasks = new List<Task<HttpContext>>();
-
-                if (mainResponse.Items.DownstreamResponse() == null)
-                {
-                    return;
-                }
-
-                var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
-
-                var jObject = Newtonsoft.Json.Linq.JToken.Parse(content);
-
-                for (var i = 1; i < httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute.Count; i++)
-                {
-                    var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
-
-                    var downstreamRoute = httpContext.Items.DownstreamRouteHolder().Route.DownstreamRoute[i];
-
-                    var matchAdvancedAgg = routeKeysConfigs
-                        .FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
-
-                    if (matchAdvancedAgg != null)
-                    {
-                        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
-
-                        foreach (var value in values)
-                        {
-                            var newHttpContext = Copy(httpContext);
-
-                            var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
-                            tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
-
-                            newHttpContext.Items
-                                .Add("RequestId", httpContext.Items["RequestId"]);
-
-                            newHttpContext.Items
-                                .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
-
-                            newHttpContext.Items
-                                .UpsertTemplatePlaceholderNameAndValues(tPnv);
-
-                            newHttpContext.Items
-                                .UpsertDownstreamRoute(downstreamRoute);
-
-                            tasks.Add(Fire(newHttpContext, _next));
-                        }
-                    }
-                    else
-                    {
-                        var newHttpContext = Copy(httpContext);
-
-                        newHttpContext.Items
-                               .Add("RequestId", httpContext.Items["RequestId"]);
-
-                        newHttpContext.Items
-                            .SetIInternalConfiguration(httpContext.Items.IInternalConfiguration());
-
-                        newHttpContext.Items
-                            .UpsertTemplatePlaceholderNameAndValues(templatePlaceholderNameAndValues);
-
-                        newHttpContext.Items
-                            .UpsertDownstreamRoute(downstreamRoute);
-
-                        tasks.Add(Fire(newHttpContext, _next));
-                    }
-                }
-
-                await Task.WhenAll(tasks);
-
-                var contexts = new List<HttpContext> { mainResponse };
-
-                foreach (var task in tasks)
-                {
-                    var finished = await task;
-                    contexts.Add(finished);
-                }
-
-                await Map(httpContext, httpContext.Items.DownstreamRouteHolder().Route, contexts);
-            }
+            return;
         }
 
-        private static HttpContext Copy(HttpContext source)
+        // Case 3: if multiple downstream routes
+        var routeKeysConfigs = route.DownstreamRouteConfig;
+        if (routeKeysConfigs == null || routeKeysConfigs.Count == 0)
         {
-            var target = new DefaultHttpContext();
+            await ProcessRoutesAsync(httpContext, route);
+            return;
+        }
 
-            foreach (var header in source.Request.Headers)
+        // Case 4: if multiple downstream routes with route keys
+        var mainResponseContext = await ProcessMainRouteAsync(httpContext, downstreamRoutes[0]);
+        if (mainResponseContext == null)
+        {
+            return;
+        }
+
+        var responsesContexts = await ProcessRoutesWithRouteKeysAsync(httpContext, downstreamRoutes, routeKeysConfigs, mainResponseContext);
+        if (responsesContexts.Length == 0)
+        {
+            return;
+        }
+
+        await MapResponsesAsync(httpContext, route, mainResponseContext, responsesContexts);
+    }
+
+    /// <summary>
+    /// Helper method to determine if only the first downstream route should be processed.
+    /// It is the case if the request is a websocket request or if there is only one downstream route.
+    /// </summary>
+    /// <param name="context">The http context.</param>
+    /// <param name="routes">The downstream routes.</param>
+    /// <returns>True if only the first downstream route should be processed.</returns>
+    private static bool ShouldProcessSingleRoute(HttpContext context, ICollection routes)
+        => context.WebSockets.IsWebSocketRequest || routes.Count == 1;
+
+    /// <summary>
+    /// Processing a single downstream route (no route keys).
+    /// In that case, no need to make copies of the http context.
+    /// </summary>
+    /// <param name="context">The http context.</param>
+    /// <param name="route">The downstream route.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    protected virtual Task ProcessSingleRouteAsync(HttpContext context, DownstreamRoute route)
+    {
+        context.Items.UpsertDownstreamRoute(route);
+        return _next.Invoke(context);
+    }
+
+    /// <summary>
+    /// Processing the downstream routes (no route keys).
+    /// </summary>
+    /// <param name="context">The main http context.</param>
+    /// <param name="route">The route.</param>
+    private async Task ProcessRoutesAsync(HttpContext context, Route route)
+    {
+        var tasks = route.DownstreamRoute
+            .Select(downstreamRoute => ProcessRouteAsync(context, downstreamRoute))
+            .ToArray();
+        var contexts = await Task.WhenAll(tasks);
+        await MapAsync(context, route, new(contexts));
+    }
+
+    /// <summary>
+    /// When using route keys, the first route is the main route and the rest are additional routes.
+    /// Since we need to break if the main route response is null, we must process the main route first.
+    /// </summary>
+    /// <param name="context">The http context.</param>
+    /// <param name="route">The first route, the main route.</param>
+    /// <returns>The updated http context.</returns>
+    private async Task<HttpContext> ProcessMainRouteAsync(HttpContext context, DownstreamRoute route)
+    {
+        context.Items.UpsertDownstreamRoute(route);
+        await _next.Invoke(context);
+        return context;
+    }
+
+    /// <summary>
+    /// Processing the downstream routes with route keys except the main route that has already been processed.
+    /// </summary>
+    /// <param name="context">The main http context.</param>
+    /// <param name="routes">The downstream routes.</param>
+    /// <param name="routeKeysConfigs">The route keys config.</param>
+    /// <param name="mainResponse">The response from the main route.</param>
+    /// <returns>A list of the tasks' http contexts.</returns>
+    protected virtual async Task<HttpContext[]> ProcessRoutesWithRouteKeysAsync(HttpContext context, IEnumerable<DownstreamRoute> routes, IReadOnlyCollection<AggregateRouteConfig> routeKeysConfigs, HttpContext mainResponse)
+    {
+        var processing = new List<Task<HttpContext>>();
+        var content = await mainResponse.Items.DownstreamResponse().Content.ReadAsStringAsync();
+        var jObject = JToken.Parse(content);
+
+        foreach (var downstreamRoute in routes.Skip(1))
+        {
+            var matchAdvancedAgg = routeKeysConfigs.FirstOrDefault(q => q.RouteKey == downstreamRoute.Key);
+            if (matchAdvancedAgg != null)
             {
-                target.Request.Headers.TryAdd(header.Key, header.Value);
+                processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jObject, context, downstreamRoute));
+                continue;
             }
 
-            target.Request.Body = source.Request.Body;
-            target.Request.ContentLength = source.Request.ContentLength;
-            target.Request.ContentType = source.Request.ContentType;
-            target.Request.Host = source.Request.Host;
-            target.Request.Method = source.Request.Method;
-            target.Request.Path = source.Request.Path;
-            target.Request.PathBase = source.Request.PathBase;
-            target.Request.Protocol = source.Request.Protocol;
-            target.Request.Query = source.Request.Query;
-            target.Request.QueryString = source.Request.QueryString;
-            target.Request.Scheme = source.Request.Scheme;
-            target.Request.IsHttps = source.Request.IsHttps;
-            target.Request.RouteValues = source.Request.RouteValues;
-            target.Connection.RemoteIpAddress = source.Connection.RemoteIpAddress;
-            target.RequestServices = source.RequestServices;
-            return target;
+            processing.Add(ProcessRouteAsync(context, downstreamRoute));
         }
 
-        private async Task Map(HttpContext httpContext, Route route, List<HttpContext> contexts)
+        return await Task.WhenAll(processing);
+    }
+
+    /// <summary>
+    /// Mapping responses.
+    /// </summary>
+    private Task MapResponsesAsync(HttpContext context, Route route, HttpContext mainResponseContext, IEnumerable<HttpContext> responsesContexts)
+    {
+        var contexts = new List<HttpContext> { mainResponseContext };
+        contexts.AddRange(responsesContexts);
+        return MapAsync(context, route, contexts);
+    }
+
+    /// <summary>
+    /// Processing a route with aggregation.
+    /// </summary>
+    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
+        JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
+    {
+        var processing = new List<Task<HttpContext>>();
+        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
+        foreach (var value in values)
         {
-            if (route.DownstreamRoute.Count > 1)
+            var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
+            tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
+            processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
+        }
+
+        return processing;
+    }
+
+    /// <summary>
+    /// Process a downstream route asynchronously.
+    /// </summary>
+    /// <returns>The cloned Http context.</returns>
+    private async Task<HttpContext> ProcessRouteAsync(HttpContext sourceContext, DownstreamRoute route, List<PlaceholderNameAndValue> placeholders = null)
+    {
+        var newHttpContext = await CreateThreadContextAsync(sourceContext, route);
+        CopyItemsToNewContext(newHttpContext, sourceContext, placeholders);
+        newHttpContext.Items.UpsertDownstreamRoute(route);
+
+        await _next.Invoke(newHttpContext);
+        return newHttpContext;
+    }
+
+    /// <summary>
+    /// Copying some needed parameters to the Http context items.
+    /// </summary>
+    private static void CopyItemsToNewContext(HttpContext target, HttpContext source, List<PlaceholderNameAndValue> placeholders = null)
+    {
+        target.Items.Add(RequestIdString, source.Items[RequestIdString]);
+        target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
+        target.Items.UpsertTemplatePlaceholderNameAndValues(placeholders ??
+                                                            source.Items.TemplatePlaceholderNameAndValues());
+    }
+
+    /// <summary>
+    /// Creates a new HttpContext based on the source.
+    /// </summary>
+    /// <param name="source">The base http context.</param>
+    /// <param name="route">Downstream route.</param>
+    /// <returns>The cloned context.</returns>
+    protected virtual async Task<HttpContext> CreateThreadContextAsync(HttpContext source, DownstreamRoute route)
+    {
+        var from = source.Request;
+        var bodyStream = await CloneRequestBodyAsync(from, route, source.RequestAborted);
+        var target = new DefaultHttpContext
+        {
+            Request =
             {
-                var aggregator = _factory.Get(route);
-                await aggregator.Aggregate(route, httpContext, contexts);
-            }
-            else
+                Body = bodyStream,
+                ContentLength = from.ContentLength,
+                ContentType = from.ContentType,
+                Host = from.Host,
+                Method = from.Method,
+                Path = from.Path,
+                PathBase = from.PathBase,
+                Protocol = from.Protocol,
+                QueryString = from.QueryString,
+                Scheme = from.Scheme,
+                IsHttps = from.IsHttps,
+                Query = new QueryCollection(new Dictionary<string, StringValues>(from.Query)),
+                RouteValues = new(from.RouteValues),
+            },
+            Connection =
             {
-                MapNotAggregate(httpContext, contexts);
-            }
-        }
-
-        private static void MapNotAggregate(HttpContext httpContext, List<HttpContext> downstreamContexts)
+                RemoteIpAddress = source.Connection.RemoteIpAddress,
+            },
+            RequestServices = source.RequestServices,
+            RequestAborted = source.RequestAborted,
+            User = source.User,
+        };
+        foreach (var header in from.Headers)
         {
-            //assume at least one..if this errors then it will be caught by global exception handler
-            var finished = downstreamContexts.First();
-
-            httpContext.Items.UpsertErrors(finished.Items.Errors());
-
-            httpContext.Items.UpsertDownstreamRequest(finished.Items.DownstreamRequest());
-
-            httpContext.Items.UpsertDownstreamResponse(finished.Items.DownstreamResponse());
+            target.Request.Headers[header.Key] = header.Value.ToArray();
         }
 
-        private static async Task<HttpContext> Fire(HttpContext httpContext, RequestDelegate next)
+        // Once the downstream request is completed and the downstream response has been read, the downstream response object can dispose of the body's Stream object
+        target.Response.RegisterForDisposeAsync(bodyStream); // manage Stream lifetime by HttpResponse object
+        return target;
+    }
+
+    protected virtual Task MapAsync(HttpContext httpContext, Route route, List<HttpContext> contexts)
+    {
+        if (route.DownstreamRoute.Count == 1)
         {
-            await next.Invoke(httpContext);
-            return httpContext;
+            return Task.CompletedTask;
         }
+
+        var aggregator = _factory.Get(route);
+        return aggregator.Aggregate(route, httpContext, contexts);
+    }
+
+    protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)
+    {
+        request.EnableBuffering();
+        if (request.Body.Position != 0)
+        {
+            Logger.LogWarning(() => $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.");
+            return request.Body;
+        }
+
+        var targetBuffer = new MemoryStream();
+        if (request.ContentLength is not null)
+        {
+            await request.Body.CopyToAsync(targetBuffer, (int)request.ContentLength, aborted);
+            targetBuffer.Position = 0;
+            request.Body.Position = 0;
+        }
+        else
+        {
+            Logger.LogInformation(() => $"Aggregation does not support body copy without Content-Length header, skipping body copy for the route {route.Name()}.");
+        }
+
+        return targetBuffer;
     }
 }

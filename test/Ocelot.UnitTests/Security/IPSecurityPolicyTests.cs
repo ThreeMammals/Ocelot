@@ -1,115 +1,419 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security.IPSecurity;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using TestStack.BDDfy;
-using Xunit;
 
-namespace Ocelot.UnitTests.Security
+namespace Ocelot.UnitTests.Security;
+
+public sealed class IPSecurityPolicyTests : UnitTest
 {
-    public class IPSecurityPolicyTests
+    private readonly DownstreamRouteBuilder _downstreamRouteBuilder;
+    private readonly IPSecurityPolicy _policy;
+    private readonly DefaultHttpContext _context;
+    private readonly SecurityOptionsCreator _securityOptionsCreator;
+    private static readonly FileGlobalConfiguration Empty = new();
+
+    public IPSecurityPolicyTests()
     {
-        private readonly DownstreamRouteBuilder _downstreamRouteBuilder;
-        private readonly IPSecurityPolicy _ipSecurityPolicy;
-        private Response response;
-        private readonly HttpContext _httpContext;
+        _context = new DefaultHttpContext();
+        _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        _downstreamRouteBuilder = new DownstreamRouteBuilder();
+        _policy = new IPSecurityPolicy();
+        _securityOptionsCreator = new SecurityOptionsCreator();
+    }
 
-        public IPSecurityPolicyTests()
-        {
-            _httpContext = new DefaultHttpContext();
-            _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
-            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
-            _downstreamRouteBuilder = new DownstreamRouteBuilder();
-            _ipSecurityPolicy = new IPSecurityPolicy();
-        }
+    [Fact]
+    public void Should_No_blocked_Ip_and_allowed_Ip()
+    {
+        // Arrange, Act
+        var actual = WhenTheSecurityPolicy(new());
 
-        [Fact]
-        public void should_No_blocked_Ip_and_allowed_Ip()
-        {
-            this.Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
-        }
+        // Assert
+        Assert.False(actual.IsError);
+    }
 
-        [Fact]
-        public void should_blockedIp_clientIp_block()
-        {
-            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
-            this.Given(x => x.GivenSetBlockedIP())
-                .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
-        }
+    [Fact]
+    public void Should_blockedIp_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.1");
 
-        [Fact]
-        public void should_blockedIp_clientIp_Not_block()
-        {
-            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
-            this.Given(x => x.GivenSetBlockedIP())
-                .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
-        }
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
 
-        [Fact]
-        public void should_allowedIp_clientIp_block()
-        {
-            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
-            this.Given(x => x.GivenSetAllowedIP())
-                .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenSecurityPassing())
-                .BDDfy();
-        }
+        // Assert
+        Assert.True(actual.IsError);
+    }
 
-        [Fact]
-        public void should_allowedIp_clientIp_Not_block()
-        {
-            _httpContext.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
-            this.Given(x => x.GivenSetAllowedIP())
-                .Given(x => x.GivenSetDownstreamRoute())
-                .When(x => x.WhenTheSecurityPolicy())
-                .Then(x => x.ThenNotSecurityPassing())
-                .BDDfy();
-        }
+    [Fact]
+    public void Should_blockedIp_clientIp_Not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.1");
 
-        private void GivenSetAllowedIP()
-        {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string> { "192.168.1.1" }, new List<string>()));
-        }
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
 
-        private void GivenSetBlockedIP()
-        {
-            _downstreamRouteBuilder.WithSecurityOptions(new SecurityOptions(new List<string>(), new List<string> { "192.168.1.1" }));
-        }
+        // Assert
+        Assert.False(actual.IsError);
+    }
 
-        private void GivenSetDownstreamRoute()
-        {
-            _httpContext.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
-        }
+    [Fact]
+    public void Should_allowedIp_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions("192.168.1.1");
 
-        private void WhenTheSecurityPolicy()
-        {
-            response = _ipSecurityPolicy.Security(_httpContext.Items.DownstreamRoute(), _httpContext).GetAwaiter().GetResult();
-        }
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
 
-        private void ThenSecurityPassing()
-        {
-            Assert.False(response.IsError);
-        }
+        // Assert
+        Assert.False(actual.IsError);
+    }
 
-        private void ThenNotSecurityPassing()
+    [Fact]
+    public void Should_allowedIp_clientIp_Not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+        var options = new FileSecurityOptions("192.168.1.1");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_cidrNotation_allowed24_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.5")[0];
+        var options = new FileSecurityOptions("192.168.1.0/24");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_cidrNotation_allowed24_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
+        var options = new FileSecurityOptions("192.168.1.0/24");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_cidrNotation_allowed29_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
+        var options = new FileSecurityOptions("192.168.1.0/29");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_cidrNotation_blocked24_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/24");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_cidrNotation_blocked24_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/24");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_range_allowed_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions("192.168.1.0-192.168.1.10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_range_allowed_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
+        var options = new FileSecurityOptions("192.168.1.0-192.168.1.10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_range_blocked_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-192.168.1.10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_range_blocked_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-192.168.1.10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_shortRange_allowed_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions("192.168.1.0-10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_shortRange_allowed_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.8")[0];
+        var options = new FileSecurityOptions("192.168.1.0-10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_shortRange_blocked_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.5")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_shortRange_blocked_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0-10");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_ipSubnet_allowed_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.15")[0];
+        var options = new FileSecurityOptions("192.168.1.0/255.255.255.0");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_ipSubnet_allowed_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions("192.168.1.0/255.255.255.0");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_ipSubnet_blocked_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.15")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/255.255.255.0");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_ipSubnet_blocked_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.10.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.0/255.255.255.0");
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_exludeAllowedFromBlocked_moreAllowed_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
+        var options = new FileSecurityOptions("192.168.0.0/255.255.0.0", "192.168.1.100-200", false);
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_exludeAllowedFromBlocked_moreAllowed_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.150")[0];
+        var options = new FileSecurityOptions("192.168.0.0/255.255.0.0", "192.168.1.100-200", true);
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_exludeAllowedFromBlocked_moreBlocked_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
+        var options = new FileSecurityOptions("192.168.1.10-20", "192.168.1.0/23", false);
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public void Should_exludeAllowedFromBlocked_moreBlocked_clientIp_not_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
+        var options = new FileSecurityOptions("192.168.1.10-20", "192.168.1.0/23", true);
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    [Trait("Feat", "2170")]
+    public void Should_route_config_overrides_global_config()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.10")[0];
+        var globalConfig = new FileGlobalConfiguration
         {
-            Assert.True(response.IsError);
-        }
+            SecurityOptions = new FileSecurityOptions("192.168.1.30-50", "192.168.1.1-100", true),
+        };
+        var localConfig = new FileSecurityOptions("192.168.1.10", "", false);
+
+        // Act
+        var actual = WhenTheSecurityPolicy(localConfig, globalConfig);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    private Response WhenTheSecurityPolicy(FileSecurityOptions options, FileGlobalConfiguration global = null)
+    {
+        // Arrange
+        var securityOptions = _securityOptionsCreator.Create(options, global ?? Empty);
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
+        _context.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
+
+        // Act
+        return _policy.Security(_context.Items.DownstreamRoute(), _context);
     }
 }

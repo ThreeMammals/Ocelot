@@ -1,106 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-
-using Microsoft.AspNetCore.Http;
-
+using Ocelot.DependencyInjection;
 using Ocelot.Responses;
 
-using TestStack.BDDfy;
+namespace Ocelot.AcceptanceTests;
 
-using Xunit;
-
-namespace Ocelot.AcceptanceTests
+public class StartupTests : Steps
 {
-    public class StartupTests : IDisposable
+    public StartupTests()
     {
-        private readonly Steps _steps;
-        private readonly ServiceHandler _serviceHandler;
-        private string _downstreamPath;
+    }
 
-        public StartupTests()
+    [Fact]
+    public void Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
+        var fakeRepo = new FakeFileConfigurationRepository();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
+    {
+        void WithFakeRepo(IServiceCollection s) => s.AddSingleton(fake).AddOcelot();
+        GivenOcelotIsRunning(WithFakeRepo);
+    }
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
+            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+            bool oK = downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            return context.Response.WriteAsync(oK ? responseBody : "downstream path didn't match base path");
+        });
+    }
 
-        [Fact]
-        public void should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-            };
-
-            var fakeRepo = new FakeFileConfigurationRepository();
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", 200, "Hello from Laura"))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .BDDfy();
-        }
-
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
-            {
-                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPath != basePath)
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
-
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
-
-        private class FakeFileConfigurationRepository : IFileConfigurationRepository
-        {
-            public Task<Response<FileConfiguration>> Get()
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<Response> Set(FileConfiguration fileConfiguration)
-            {
-                throw new NotImplementedException();
-            }
-        }
+    private class FakeFileConfigurationRepository : IFileConfigurationRepository
+    {
+        public Task<Response<FileConfiguration>> Get() => throw new NotImplementedException();
+        public Task<Response> Set(FileConfiguration fileConfiguration) => throw new NotImplementedException();
     }
 }

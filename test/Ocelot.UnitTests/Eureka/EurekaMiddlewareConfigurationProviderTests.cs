@@ -1,47 +1,52 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Repository;
 using Ocelot.Provider.Eureka;
 using Ocelot.Responses;
-using Shouldly;
 using Steeltoe.Discovery;
-using System.Threading.Tasks;
-using Xunit;
 
-namespace Ocelot.UnitTests.Eureka
+namespace Ocelot.UnitTests.Eureka;
+
+public class EurekaMiddlewareConfigurationProviderTests
 {
-    public class EurekaMiddlewareConfigurationProviderTests
+    [Fact]
+    public void ShouldNotBuild()
     {
-        [Fact]
-        public void ShouldNotBuild()
-        {
-            var configRepo = new Mock<IInternalConfigurationRepository>();
-            configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null)));
-            var services = new ServiceCollection();
-            services.AddSingleton(configRepo.Object);
-            var sp = services.BuildServiceProvider();
-            var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.Status.ShouldBe(TaskStatus.RanToCompletion);
-        }
+        // Arrange
+        var configRepo = new Mock<IInternalConfigurationRepository>();
+        configRepo.Setup(x => x.Get())
+            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null, null)));
+        var services = new ServiceCollection();
+        services.AddSingleton(configRepo.Object);
+        var sp = services.BuildServiceProvider(true);
 
-        [Fact]
-        public void ShouldBuild()
-        {
-            var serviceProviderConfig = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
-            var client = new Mock<IDiscoveryClient>();
-            var configRepo = new Mock<IInternalConfigurationRepository>();
-            configRepo.Setup(x => x.Get())
-                .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null)));
-            var services = new ServiceCollection();
-            services.AddSingleton(configRepo.Object);
-            services.AddSingleton(client.Object);
-            var sp = services.BuildServiceProvider();
-            var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
-            provider.Status.ShouldBe(TaskStatus.RanToCompletion);
-        }
+        // Act
+        var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
+
+        // Assert
+        provider.Status.ShouldBe(TaskStatus.RanToCompletion);
+    }
+
+    [Fact]
+    public void ShouldBuild()
+    {
+        // Arrange
+        var serviceProviderConfig = new ServiceProviderConfigurationBuilder().WithType("eureka").Build();
+        var client = new Mock<IDiscoveryClient>();
+        var configRepo = new Mock<IInternalConfigurationRepository>();
+        configRepo.Setup(x => x.Get())
+            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null, null)));
+        var services = new ServiceCollection();
+        services.AddSingleton(configRepo.Object);
+        services.AddSingleton(client.Object);
+        var sp = services.BuildServiceProvider(true);
+
+        // Act
+        var provider = EurekaMiddlewareConfigurationProvider.Get(new ApplicationBuilder(sp));
+
+        // Assert
+        provider.Status.ShouldBe(TaskStatus.RanToCompletion);
     }
 }

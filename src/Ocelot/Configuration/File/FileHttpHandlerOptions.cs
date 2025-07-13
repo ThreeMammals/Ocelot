@@ -1,23 +1,31 @@
-﻿namespace Ocelot.Configuration.File
+﻿namespace Ocelot.Configuration.File;
+
+public class FileHttpHandlerOptions
 {
-    public class FileHttpHandlerOptions
+    public FileHttpHandlerOptions()
     {
-        public FileHttpHandlerOptions()
-        {
-            AllowAutoRedirect = false;
-            UseCookieContainer = false;
-            UseProxy = true;
-            MaxConnectionsPerServer = int.MaxValue;
-        }
-
-        public bool AllowAutoRedirect { get; set; }
-
-        public bool UseCookieContainer { get; set; }
-
-        public bool UseTracing { get; set; }
-
-        public bool UseProxy { get; set; }
-
-        public int MaxConnectionsPerServer { get; set; }
+        AllowAutoRedirect = false;
+        MaxConnectionsPerServer = int.MaxValue;
+        PooledConnectionLifetimeSeconds = null;
+        UseCookieContainer = false;
+        UseProxy = false;
+        UseTracing = false;
     }
+
+    public FileHttpHandlerOptions(FileHttpHandlerOptions from)
+    {
+        AllowAutoRedirect = from.AllowAutoRedirect;
+        MaxConnectionsPerServer = from.MaxConnectionsPerServer;
+        PooledConnectionLifetimeSeconds = from.PooledConnectionLifetimeSeconds;
+        UseCookieContainer = from.UseCookieContainer;
+        UseProxy = from.UseProxy;
+        UseTracing = from.UseTracing;
+    }
+
+    public bool AllowAutoRedirect { get; set; }
+    public int MaxConnectionsPerServer { get; set; }
+    public int? PooledConnectionLifetimeSeconds { get; set; }
+    public bool UseCookieContainer { get; set; }
+    public bool UseProxy { get; set; }
+    public bool UseTracing { get; set; }
 }

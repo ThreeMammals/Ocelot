@@ -1,14 +1,9 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
 
-namespace Ocelot.Requester
+namespace Ocelot.Requester;
+
+public interface IHttpRequester
 {
-    public interface IHttpRequester
-    {
-        Task<Response<HttpResponseMessage>> GetResponse(HttpContext httpContext);
-    }
+    Task<Response<HttpResponseMessage>> GetResponse(HttpContext httpContext);
 }

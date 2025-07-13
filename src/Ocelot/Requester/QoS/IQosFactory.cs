@@ -1,13 +1,9 @@
-using System.Net.Http;
-
 using Ocelot.Configuration;
-
 using Ocelot.Responses;
 
-namespace Ocelot.Requester.QoS
+namespace Ocelot.Requester.QoS;
+
+public interface IQoSFactory
 {
-    public interface IQoSFactory
-    {
-        Response<DelegatingHandler> Get(DownstreamRoute request);
-    }
+    Response<DelegatingHandler> Get(DownstreamRoute request);
 }

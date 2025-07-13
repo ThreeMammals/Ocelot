@@ -1,11 +1,8 @@
-﻿using System;
+﻿using Ocelot.Errors;
 
-using Ocelot.Errors;
+namespace Ocelot.Requester;
 
-namespace Ocelot.Requester
+public interface IExceptionToErrorMapper
 {
-    public interface IExceptionToErrorMapper
-    {
-        Error Map(Exception exception);
-    }
+    Error Map(Exception exception);
 }

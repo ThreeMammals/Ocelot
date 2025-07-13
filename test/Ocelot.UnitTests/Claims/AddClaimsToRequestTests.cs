@@ -1,148 +1,143 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-
-using Microsoft.AspNetCore.Http;
-
-using Moq;
-
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
+using System.Security.Claims;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Claims;
 
-using TestStack.BDDfy;
-
-using Xunit;
-
-namespace Ocelot.UnitTests.Claims
+public class AddClaimsToRequestTests : UnitTest
 {
-    public class AddClaimsToRequestTests
+    private readonly AddClaimsToRequest _addClaimsToRequest;
+    private readonly Mock<IClaimsParser> _parser;
+    private List<ClaimToThing> _claimsToThings;
+    private HttpContext _context;
+    private Response _result;
+    private Response<string> _claimValue;
+
+    public AddClaimsToRequestTests()
     {
-        private readonly AddClaimsToRequest _addClaimsToRequest;
-        private readonly Mock<IClaimsParser> _parser;
-        private List<ClaimToThing> _claimsToThings;
-        private HttpContext _context;
-        private Response _result;
-        private Response<string> _claimValue;
+        _parser = new Mock<IClaimsParser>();
+        _addClaimsToRequest = new AddClaimsToRequest(_parser.Object);
+    }
 
-        public AddClaimsToRequestTests()
+    [Fact]
+    public void Should_add_claims_to_context()
+    {
+        // Arrange
+        var context = new DefaultHttpContext
         {
-            _parser = new Mock<IClaimsParser>();
-            _addClaimsToRequest = new AddClaimsToRequest(_parser.Object);
-        }
-
-        [Fact]
-        public void should_add_claims_to_context()
-        {
-            var context = new DefaultHttpContext
+            User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new("test", "data"),
-                })),
-            };
-
-            this.Given(
-                x => x.GivenClaimsToThings(new List<ClaimToThing>
-                {
-                    new("claim-key", string.Empty, string.Empty, 0),
-                }))
-                .Given(x => x.GivenHttpContext(context))
-                .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-                .When(x => x.WhenIAddClaimsToTheRequest())
-                .Then(x => x.ThenTheResultIsSuccess())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void if_claims_exists_should_replace_it()
+                new("test", "data"),
+            })),
+        };
+        GivenClaimsToThings(new List<ClaimToThing>
         {
-            var context = new DefaultHttpContext
+            new("claim-key", string.Empty, string.Empty, 0),
+        });
+        GivenHttpContext(context);
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        WhenIAddClaimsToTheRequest();
+
+        // Assert
+        ThenTheResultIsSuccess();
+    }
+
+    [Fact]
+    public void If_claims_exists_should_replace_it()
+    {
+        // Arrange
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new("existing-key", "data"),
-                    new("new-key", "data"),
-                })),
-            };
-
-            this.Given(
-                x => x.GivenClaimsToThings(new List<ClaimToThing>
-                {
-                    new("existing-key", "new-key", string.Empty, 0),
-                }))
-                .Given(x => x.GivenHttpContext(context))
-                .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-                .When(x => x.WhenIAddClaimsToTheRequest())
-                .Then(x => x.ThenTheResultIsSuccess())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error()
+                new("existing-key", "data"),
+                new("new-key", "data"),
+            })),
+        };
+        GivenClaimsToThings(new List<ClaimToThing>
         {
-            this.Given(
-               x => x.GivenClaimsToThings(new List<ClaimToThing>
-               {
-                    new(string.Empty, string.Empty, string.Empty, 0),
-               }))
-               .Given(x => x.GivenHttpContext(new DefaultHttpContext()))
-               .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
-               {
-                   new AnyError(),
-               })))
-               .When(x => x.WhenIAddClaimsToTheRequest())
-               .Then(x => x.ThenTheResultIsError())
-               .BDDfy();
-        }
+            new("existing-key", "new-key", string.Empty, 0),
+        });
+        GivenHttpContext(context);
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
 
-        private void GivenClaimsToThings(List<ClaimToThing> configuration)
-        {
-            _claimsToThings = configuration;
-        }
+        // Act
+        WhenIAddClaimsToTheRequest();
 
-        private void GivenHttpContext(HttpContext context)
-        {
-            _context = context;
-        }
+        // Assert
+        ThenTheResultIsSuccess();
+    }
 
-        private void GivenTheClaimParserReturns(Response<string> claimValue)
+    [Fact]
+    public void Should_return_error()
+    {
+        // Arrange
+        GivenClaimsToThings(new List<ClaimToThing>
         {
-            _claimValue = claimValue;
-            _parser
-                .Setup(
-                    x =>
-                        x.GetValue(It.IsAny<IEnumerable<Claim>>(),
-                        It.IsAny<string>(),
-                        It.IsAny<string>(),
-                        It.IsAny<int>()))
-                .Returns(_claimValue);
-        }
+            new(string.Empty, string.Empty, string.Empty, 0),
+        });
+        GivenHttpContext(new DefaultHttpContext());
+        GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
+        {
+            new AnyError(),
+        }));
 
-        private void WhenIAddClaimsToTheRequest()
-        {
-            _result = _addClaimsToRequest.SetClaimsOnContext(_claimsToThings, _context);
-        }
+        // Act
+        WhenIAddClaimsToTheRequest();
 
-        private void ThenTheResultIsSuccess()
-        {
-            _result.IsError.ShouldBe(false);
-        }
+        // Assert
+        ThenTheResultIsError();
+    }
 
-        private void ThenTheResultIsError()
-        {
-            _result.IsError.ShouldBe(true);
-        }
+    private void GivenClaimsToThings(List<ClaimToThing> configuration)
+    {
+        _claimsToThings = configuration;
+    }
 
-        private class AnyError : Error
+    private void GivenHttpContext(HttpContext context)
+    {
+        _context = context;
+    }
+
+    private void GivenTheClaimParserReturns(Response<string> claimValue)
+    {
+        _claimValue = claimValue;
+        _parser
+            .Setup(
+                x =>
+                    x.GetValue(It.IsAny<IEnumerable<Claim>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<int>()))
+            .Returns(_claimValue);
+    }
+
+    private void WhenIAddClaimsToTheRequest()
+    {
+        _result = _addClaimsToRequest.SetClaimsOnContext(_claimsToThings, _context);
+    }
+
+    private void ThenTheResultIsSuccess()
+    {
+        _result.IsError.ShouldBe(false);
+    }
+
+    private void ThenTheResultIsError()
+    {
+        _result.IsError.ShouldBe(true);
+    }
+
+    private class AnyError : Error
+    {
+        public AnyError()
+            : base("blahh", OcelotErrorCode.UnknownError, 404)
         {
-            public AnyError()
-                : base("blahh", OcelotErrorCode.UnknownError, 404)
-            {
-            }
         }
     }
 }

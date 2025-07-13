@@ -1,22 +1,28 @@
-﻿using KubeClient;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Ocelot.Provider.Kubernetes.Interfaces;
 
-namespace Ocelot.Provider.Kubernetes
+namespace Ocelot.Provider.Kubernetes;
+
+public class KubeApiClientFactory : IKubeApiClientFactory
 {
-    public class KubeApiClientFactory : IKubeApiClientFactory
+    private readonly ILoggerFactory _logger;
+    private readonly IOptions<KubeClientOptions> _options;
+
+    public KubeApiClientFactory(ILoggerFactory logger, IOptions<KubeClientOptions> options)
     {
-        public IKubeApiClient Get(KubeRegistryConfiguration config)
-        {
-            var option = new KubeClientOptions
-            {
-                ApiEndPoint = config.ApiEndPoint
-            };
-            if (!string.IsNullOrEmpty(config?.AccessToken))
-            {
-                option.AccessToken = config.AccessToken;
-                option.AuthStrategy = config.AuthStrategy;
-                option.AllowInsecure = config.AllowInsecure;
-            }
-            return KubeApiClient.Create(option);
-        }
+        _logger = logger;
+        _options = options;
+    }
+
+    public string ServiceAccountPath { get; set; }
+
+    public virtual KubeApiClient Get(bool usePodServiceAccount)
+    {
+        var options = usePodServiceAccount
+            ? KubeClientOptions.FromPodServiceAccount(ServiceAccountPath)
+            : _options.Value;
+        options.LoggerFactory ??= _logger;
+        return KubeApiClient.Create(options);
     }
 }

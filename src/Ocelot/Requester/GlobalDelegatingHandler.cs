@@ -1,14 +1,11 @@
-using System.Net.Http;
+namespace Ocelot.Requester;
 
-namespace Ocelot.Requester
+public class GlobalDelegatingHandler
 {
-    public class GlobalDelegatingHandler
+    public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
     {
-        public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
-        {
-            DelegatingHandler = delegatingHandler;
-        }
-
-        public DelegatingHandler DelegatingHandler { get; }
+        DelegatingHandler = delegatingHandler;
     }
+
+    public DelegatingHandler DelegatingHandler { get; }
 }

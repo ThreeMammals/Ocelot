@@ -1,67 +1,102 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Shouldly;
-using System.Collections.Generic;
-using TestStack.BDDfy;
-using Xunit;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public sealed class SecurityOptionsCreatorTests : UnitTest
 {
-    public class SecurityOptionsCreatorTests
+    private readonly SecurityOptionsCreator _creator = new();
+
+    [Fact]
+    public void Should_create_route_security_config()
     {
-        private FileRoute _fileRoute;
-        private SecurityOptions _result;
-        private readonly ISecurityOptionsCreator _creator;
-
-        public SecurityOptionsCreatorTests()
+        // Arrange
+        var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var securityOptions = new FileSecurityOptions
         {
-            _creator = new SecurityOptionsCreator();
-        }
+            IPAllowedList = ipAllowedList,
+            IPBlockedList = ipBlockedList,
+        };
+        var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
+        var globalConfig = new FileGlobalConfiguration();
 
-        [Fact]
-        public void should_create_security_config()
+        // Act
+        var actual = _creator.Create(securityOptions, globalConfig);
+
+        // Assert
+        actual.ThenTheResultIs(expected);
+    }
+
+    [Fact]
+    [Trait("Feat", "2170")]
+    public void Should_create_global_security_config()
+    {
+        // Arrange
+        var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var globalConfig = new FileGlobalConfiguration
         {
-            var ipAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var ipBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
-            var fileRoute = new FileRoute
+            SecurityOptions = new()
             {
-                SecurityOptions = new FileSecurityOptions
-                {
-                    IPAllowedList = ipAllowedList,
-                    IPBlockedList = ipBlockedList,
-                },
-            };
+                IPAllowedList = ipAllowedList,
+                IPBlockedList = ipBlockedList,
+            },
+        };
+        var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
 
-            var expected = new SecurityOptions(ipAllowedList, ipBlockedList);
+        // Act
+        var actual = _creator.Create(new(), globalConfig);
 
-            this.Given(x => x.GivenThe(fileRoute))
-              .When(x => x.WhenICreate())
-              .Then(x => x.ThenTheResultIs(expected))
-              .BDDfy();
-        }
+        // Assert
+        actual.ThenTheResultIs(expected);
+    }
 
-        private void GivenThe(FileRoute route)
+    [Fact]
+    [Trait("Feat", "2170")]
+    public void Should_create_global_route_security_config()
+    {
+        // Arrange
+        var routeIpAllowedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var routeIpBlockedList = new List<string> { "127.0.0.1", "192.168.1.1" };
+        var securityOptions = new FileSecurityOptions
         {
-            _fileRoute = route;
-        }
-
-        private void WhenICreate()
+            IPAllowedList = routeIpAllowedList,
+            IPBlockedList = routeIpBlockedList,
+        };
+        var globalIpAllowedList = new List<string> { "127.0.0.2", "192.168.1.2" };
+        var globalIpBlockedList = new List<string> { "127.0.0.2", "192.168.1.2" };
+        var globalConfig = new FileGlobalConfiguration
         {
-            _result = _creator.Create(_fileRoute.SecurityOptions);
-        }
-
-        private void ThenTheResultIs(SecurityOptions expected)
-        {
-            for (var i = 0; i < expected.IPAllowedList.Count; i++)
+            SecurityOptions = new FileSecurityOptions
             {
-                _result.IPAllowedList[i].ShouldBe(expected.IPAllowedList[i]);
-            }
+                IPAllowedList = globalIpAllowedList,
+                IPBlockedList = globalIpBlockedList,
+            },
+        };
+        var expected = new SecurityOptions(routeIpAllowedList, routeIpBlockedList);
 
-            for (var i = 0; i < expected.IPBlockedList.Count; i++)
-            {
-                _result.IPBlockedList[i].ShouldBe(expected.IPBlockedList[i]);
-            }
+        // Act
+        var actual = _creator.Create(securityOptions, globalConfig);
+
+        // Assert
+        actual.ThenTheResultIs(expected);
+    }
+}
+
+internal static class SecurityOptionsExtensions
+{
+    public static void ThenTheResultIs(this SecurityOptions actual, SecurityOptions expected)
+    {
+        for (var i = 0; i < expected.IPAllowedList.Count; i++)
+        {
+            actual.IPAllowedList[i].ShouldBe(expected.IPAllowedList[i]);
+        }
+
+        for (var i = 0; i < expected.IPBlockedList.Count; i++)
+        {
+            actual.IPBlockedList[i].ShouldBe(expected.IPBlockedList[i]);
         }
     }
 }

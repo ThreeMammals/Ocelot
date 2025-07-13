@@ -1,17 +1,33 @@
-﻿using System.Collections.Generic;
+﻿namespace Ocelot.Configuration;
 
-namespace Ocelot.Configuration
+public class SecurityOptions
 {
-    public class SecurityOptions
+    public SecurityOptions()
     {
-        public SecurityOptions(List<string> allowedList, List<string> blockedList)
+        IPAllowedList = new List<string>();
+        IPBlockedList = new List<string>();
+    }
+
+    public SecurityOptions(string allowed = null, string blocked = null)
+        : this()
+    {
+        if (!string.IsNullOrEmpty(allowed))
         {
-            IPAllowedList = allowedList;
-            IPBlockedList = blockedList;
+            IPAllowedList.Add(allowed);
         }
 
-        public List<string> IPAllowedList { get; }
-
-        public List<string> IPBlockedList { get; }
+        if (!string.IsNullOrEmpty(blocked))
+        {
+            IPBlockedList.Add(blocked);
+        }
     }
+
+    public SecurityOptions(IList<string> allowedList = null, IList<string> blockedList = null)
+    {
+        IPAllowedList = allowedList ?? new List<string>();
+        IPBlockedList = blockedList ?? new List<string>();
+    }
+
+    public IList<string> IPAllowedList { get; }
+    public IList<string> IPBlockedList { get; }
 }

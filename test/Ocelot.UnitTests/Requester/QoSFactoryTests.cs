@@ -1,60 +1,64 @@
-﻿using System.Net.Http;
-
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
-using Moq;
-
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 
-using Shouldly;
+namespace Ocelot.UnitTests.Requester;
 
-using Xunit;
-
-namespace Ocelot.UnitTests.Requester
+public class QoSFactoryTests
 {
-    public class QoSFactoryTests
+    private QoSFactory _factory;
+    private ServiceCollection _services;
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IHttpContextAccessor> _contextAccessor;
+
+    public QoSFactoryTests()
     {
-        private QoSFactory _factory;
-        private ServiceCollection _services;
-        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+        _services = new ServiceCollection();
+        _loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _contextAccessor = new Mock<IHttpContextAccessor>();
+        var provider = _services.BuildServiceProvider(true);
+        _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+    }
 
-        public QoSFactoryTests()
-        {
-            _services = new ServiceCollection();
-            _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            var provider = _services.BuildServiceProvider();
-            _factory = new QoSFactory(provider, _loggerFactory.Object);
-        }
+    [Fact]
+    public void Should_return_error()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder().Build();
 
-        [Fact]
-        public void should_return_error()
-        {
-            var downstreamRoute = new DownstreamRouteBuilder().Build();
-            var handler = _factory.Get(downstreamRoute);
-            handler.IsError.ShouldBeTrue();
-            handler.Errors[0].ShouldBeOfType<UnableToFindQoSProviderError>();
-        }
+        // Act
+        var handler = _factory.Get(downstreamRoute);
 
-        [Fact]
-        public void should_return_handler()
-        {
-            _services = new ServiceCollection();
-            DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IOcelotLoggerFactory b) => new FakeDelegatingHandler();
-            _services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandlerDelegate);
-            var provider = _services.BuildServiceProvider();
-            _factory = new QoSFactory(provider, _loggerFactory.Object);
-            var downstreamRoute = new DownstreamRouteBuilder().Build();
-            var handler = _factory.Get(downstreamRoute);
-            handler.IsError.ShouldBeFalse();
-            handler.Data.ShouldBeOfType<FakeDelegatingHandler>();
-        }
+        // Assert
+        handler.IsError.ShouldBeTrue();
+        handler.Errors[0].ShouldBeOfType<UnableToFindQoSProviderError>();
+    }
 
-        private class FakeDelegatingHandler : DelegatingHandler
-        {
-        }
+    [Fact]
+    public void Should_return_handler()
+    {
+        // Arrange
+        _services = new ServiceCollection();
+
+        static DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
+        _services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandlerDelegate);
+        var provider = _services.BuildServiceProvider(true);
+        _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+        var downstreamRoute = new DownstreamRouteBuilder().Build();
+
+        // Act
+        var handler = _factory.Get(downstreamRoute);
+
+        // Assert
+        handler.IsError.ShouldBeFalse();
+        handler.Data.ShouldBeOfType<FakeDelegatingHandler>();
+    }
+
+    private class FakeDelegatingHandler : DelegatingHandler
+    {
     }
 }
