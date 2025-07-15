@@ -192,6 +192,25 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         opts.Username.ShouldBe("myUser");
     }
 
+    [Fact]
+    [Trait("Bug", "2299")]
+    public void CreateProvider_StepsToReproduce()
+    {
+        // Arrange
+        _builder.AddKubernetes(); // !!!
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", "localhost");
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", PortFinder.GetRandomPort().ToString());
+
+        // Act
+        var ex = Assert.Throws<ArgumentNullException>(
+            () => CreateProvider(nameof(Kube)));
+
+        // Assert
+        ex.ParamName.ShouldBe("path1");
+        ex.StackTrace.ShouldContain("KubeClient.KubeClientOptions.FromPodServiceAccount(String serviceAccountPath)");
+        ex.Message.ShouldBe("Value cannot be null. (Parameter 'path1')");
+    }
+
     private static X509Certificate2 CreateCertificate()
     {
         // Generate a self-signed certificate
