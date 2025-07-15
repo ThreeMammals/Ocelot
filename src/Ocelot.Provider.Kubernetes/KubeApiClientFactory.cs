@@ -22,7 +22,7 @@ public class KubeApiClientFactory : IKubeApiClientFactory
         var options = usePodServiceAccount
             ? KubeClientOptions.FromPodServiceAccount(ServiceAccountPath)
             : _options.Value;
-        options.LoggerFactory ??= _logger;
+        options.LoggerFactory = _logger;
         return KubeApiClient.Create(options);
     }
 }
