@@ -8,14 +8,20 @@ public class KubeApiClientFactory : IKubeApiClientFactory
 {
     private readonly ILoggerFactory _logger;
     private readonly IOptions<KubeClientOptions> _options;
+    private string _serviceAccountPath;
 
     public KubeApiClientFactory(ILoggerFactory logger, IOptions<KubeClientOptions> options)
     {
         _logger = logger;
         _options = options;
+        _serviceAccountPath = KubeClientConstants.DefaultServiceAccountPath;
     }
 
-    public string ServiceAccountPath { get; set; }
+    protected string ServiceAccountPath
+    {
+        get => _serviceAccountPath;
+        set => _serviceAccountPath = string.IsNullOrEmpty(value) ? KubeClientConstants.DefaultServiceAccountPath : value;
+    }
 
     public virtual KubeApiClient Get(bool usePodServiceAccount)
     {
