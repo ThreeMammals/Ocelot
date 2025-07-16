@@ -394,20 +394,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        releaseNotes.Add("");
-        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        releaseNotes.AddRange(starring);
-        releaseNotes.Add("");
-        releaseNotes.Add($"### Features in Release {releaseVersion}");
-        releaseNotes.Add("");
-        releaseNotes.Add("<details><summary>Logbook</summary>");
-        releaseNotes.Add("");
-        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
-        releaseNotes.AddRange(commitsHistory);
-        releaseNotes.Add("</details>");
-        releaseNotes.Add("");
+        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        // releaseNotes.Add("");
+        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        // releaseNotes.AddRange(starring);
+        // releaseNotes.Add("");
+        // releaseNotes.Add($"### Features in Release {releaseVersion}");
+        // releaseNotes.Add("");
+        // releaseNotes.Add("<details><summary>Logbook</summary>");
+        // releaseNotes.Add("");
+        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        // releaseNotes.AddRange(commitsHistory);
+        // releaseNotes.Add("</details>");
+        //releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -826,16 +826,26 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			.Distinct();
         var skippable = new List<string>
         {
-			"ReleaseNotes.md", // skip always
-            // "Ocelot.Provider.Eureka", // do not release for version 23.4.3
-            // "Ocelot.Provider.Kubernetes",
-            // "Ocelot.Tracing.Butterfly",
-            // "Ocelot.Tracing.OpenTracing",
+            "ReleaseNotes.md", // skip always
+            "Ocelot.24.0.0",
+            "Ocelot.Cache.CacheManager",
+            "Ocelot.Provider.Consul",
+            "Ocelot.Provider.Eureka",
+            //"Ocelot.Provider.Kubernetes",
+            "Ocelot.Provider.Polly",
+            "Ocelot.Tracing.Butterfly",
+            "Ocelot.Tracing.OpenTracing",
+        };
+        var includedInTheRelease = new List<string>
+        {
+            "Ocelot.Provider.Kubernetes",
         };
 		var errors = new List<string>();
 		foreach (var artifact in artifacts)
 		{
-            if (skippable.Exists(x => artifact.StartsWith(x)))
+            // if (skippable.Exists(x => artifact.StartsWith(x)))
+			// 	continue;
+            if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
 				continue;
 
 			var codePackage = packagesDir + File(artifact);
@@ -927,7 +937,7 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"make_latest\": true, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
