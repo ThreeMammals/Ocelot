@@ -1,7 +1,9 @@
+.. _2299: https://github.com/ThreeMammals/Ocelot/issues/2299
 .. _23.4.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.2
 .. _23.4.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.1
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 .. _Ocelot: https://www.nuget.org/packages/Ocelot
 .. role::  htm(raw)
@@ -16,6 +18,12 @@ Welcome
 Welcome to the Ocelot `24.0`_ documentation!
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
+
+The major version `24.0.0`_ includes several patches, the history of which is outlined below.
+
+.. admonition:: Patches
+
+  - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ extension package.
 
 .. _release-notes:
 
