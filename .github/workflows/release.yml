@@ -4,104 +4,83 @@ on:
     branches:
       - main
       #- 'release/24.0'
-env:
-  WORKFLOW_VAR: Release # ${{ vars.WORKFLOW_VAR }}
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0', '9.0' ]
-    steps:
-      - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}.x
-      - name: .NET Info
-        run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
-      - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-      - name: Integration Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
-      - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  build-windows:
-    needs: build-linux
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0', '9.0' ]
-    steps:
-      - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}.x
-      - name: .NET Info
-        run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
-      - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-      - name: Integration Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
-      - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  build-macos:
-    needs: build-windows
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0', '9.0' ]
-    steps:
-      - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}.x
-      - name: .NET Info
-        run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
-      - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-      - name: Integration Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
-      - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  # display-variables:
-  #   # name: ${{ vars.JOB_NAME }}
-  #   # You can use configuration variables with the `vars` context for dynamic jobs
-  #   if: true # ${{ vars.USE_VARIABLES == 'true' }}
-  #   runs-on: ubuntu-latest # ${{ vars.RUNNER }}
-  #   environment: build.cake
+  # build-linux:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       dotnet-version: [ '8.0', '9.0' ]
   #   steps:
-  #   - name: Use variables
-  #     run: |
-  #       echo "CAKE_RELEASE_MYVAR variable : $CAKE_RELEASE_MYVAR"
-  #       echo "WORKFLOW_VAR : $WORKFLOW_VAR"
-  #     env:
-  #       ENV_CONTEXT_VAR: ${{ vars.ENV_CONTEXT_VAR }}
-  #       CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
-  #   - name: HELLO_WORLD
-  #     # if: ${{ vars.HELLO_WORLD_ENABLED == 'true' }}
-  #     uses: actions/hello-world-javascript-action@main
-  #     with:
-  #       who-to-greet: Raman # ${{ vars.GREET_NAME }}
+  #     - name: Setup .NET ${{ matrix.dotnet-version }}
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: ${{ matrix.dotnet-version }}.x
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Restore
+  #       run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+  #     - name: Build
+  #       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
+  #     - name: Unit Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #     - name: Integration Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+  #     - name: Acceptance Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+  # build-windows:
+  #   needs: build-linux
+  #   runs-on: windows-latest
+  #   strategy:
+  #     matrix:
+  #       dotnet-version: [ '8.0', '9.0' ]
+  #   steps:
+  #     - name: Setup .NET ${{ matrix.dotnet-version }}
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: ${{ matrix.dotnet-version }}.x
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Restore
+  #       run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+  #     - name: Build
+  #       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
+  #     - name: Unit Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #     - name: Integration Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+  #     - name: Acceptance Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+  # build-macos:
+  #   needs: build-windows
+  #   runs-on: macos-latest
+  #   strategy:
+  #     matrix:
+  #       dotnet-version: [ '8.0', '9.0' ]
+  #   steps:
+  #     - name: Setup .NET ${{ matrix.dotnet-version }}
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: ${{ matrix.dotnet-version }}.x
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Restore
+  #       run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+  #     - name: Build
+  #       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
+  #     - name: Unit Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #     - name: Integration Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
+  #     - name: Acceptance Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
   release-cake:
-    needs: build-macos
+    # needs: build-macos
     runs-on: ubuntu-latest
     environment: build.cake
     env:

@@ -937,7 +937,7 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"make_latest\": true, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": false }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
