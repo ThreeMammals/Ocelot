@@ -84,10 +84,6 @@ jobs:
         target: PullRequest
     - name: Prepare Coveralls
       run: |
-        # echo "GITHUB_REF is ${{ env.GITHUB_REF }}"
-        # echo "GITHUB_REF_NAME is ${{ env.GITHUB_REF_NAME }}"
-        # echo "GITHUB_SHA is ${{ env.GITHUB_SHA }}"
-        # echo "GITHUB BASE_REF is ${{ github.base_ref }}" # target branch
         echo "Listing environment variables:"
         env | sort
         echo ------------ Detect coverage file ------------ 
@@ -103,13 +99,8 @@ jobs:
           echo "Coverage file DOES NOT exist!"
           echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
         fi
-        echo ------------ Detect target branch ------------ 
-        target_branch="${{ github.base_ref }}"
-        echo Compare_Ref is $target_branch
-        echo "COVERALLS_compare_ref=$target_branch" >> $GITHUB_ENV
     - name: Coveralls
       if: env.COVERALLS_coverage_file_exists == 'true'
       uses: coverallsapp/github-action@v2
       with:
         file: ${{ env.COVERALLS_coverage_file }}
-        # compare-ref: ${{ env.COVERALLS_compare_ref }}
