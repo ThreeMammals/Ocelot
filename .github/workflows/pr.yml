@@ -84,9 +84,9 @@ jobs:
         target: PullRequest
     - name: Prepare Coveralls
       run: |
-        echo "GITHUB_REF is ${{ env.GITHUB_REF }}"
-        echo "GITHUB_REF_NAME is ${{ env.GITHUB_REF_NAME }}"
-        echo "GITHUB_SHA is ${{ env.GITHUB_SHA }}"
+        echo "Listing environment variables:"
+        env | sort
+        echo ------------ Detect coverage file ------------ 
         coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
         echo "Detected first folder : $coverage_1st_folder"
         coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
@@ -104,4 +104,3 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         file: ${{ env.COVERALLS_coverage_file }}
-        compare-ref: develop

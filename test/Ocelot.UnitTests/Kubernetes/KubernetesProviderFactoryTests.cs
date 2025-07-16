@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -13,33 +12,11 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
-public sealed class KubernetesProviderFactoryTests : FileUnitTest
+public sealed class KubernetesProviderFactoryTests : KubernetesProviderFactoryTestsBase
 {
-    private readonly IOcelotBuilder _builder;
-
-    public KubernetesProviderFactoryTests()
-    {
-        var config = new FileConfiguration();
-        config.GlobalConfiguration.ServiceDiscoveryProvider = new()
-        {
-            Scheme = Uri.UriSchemeHttp,
-            Host = "localhost",
-            Port = 888,
-            Namespace = nameof(KubernetesProviderFactoryTests),
-            Token = TestID,
-        };
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddOcelot(config, null, MergeOcelotJson.ToMemory)
-            .Build();
-        _builder = new ServiceCollection().AddOcelot(configuration);
-    }
-
     [Theory]
     [Trait("Bug", "977")]
     [InlineData(typeof(Kube))]
@@ -82,67 +59,6 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         actual.ShouldBeNull();
     }
 
-    class FakeKubeApiClientFactory : KubeApiClientFactory
-    {
-        public FakeKubeApiClientFactory(ILoggerFactory logger, IOptions<KubeClientOptions> options) : base(logger, options) { }
-        public KubeApiClient Actual { get; private set; }
-        public override KubeApiClient Get(bool usePodServiceAccount)
-        {
-            return Actual = base.Get(usePodServiceAccount);
-        }
-    }
-
-    [Fact]
-    [Trait("Feat", "2256")]
-    public async Task CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount()
-    {
-        // Arrange
-        _builder.AddKubernetes(true); // !!!
-        var serviceAccountPath = Path.Combine(AppContext.BaseDirectory, TestID);
-        var stub = new FakeKubeApiClientFactory(null, null)
-        {
-            ServiceAccountPath = serviceAccountPath,
-        };
-        var original = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClientFactory));
-        var descriptor = ServiceDescriptor.Describe(original.ServiceType, _ => stub, original.Lifetime);
-        _builder.Services.Replace(descriptor);
-
-        var expectedHost = IPAddress.Loopback.ToString();
-        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", expectedHost);
-        int expectedPort = PortFinder.GetRandomPort();
-        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", expectedPort.ToString());
-
-        _folders.Add(serviceAccountPath);
-        if (!Directory.Exists(serviceAccountPath))
-        {
-            Directory.CreateDirectory(serviceAccountPath);
-        }
-
-        var path = Path.Combine(serviceAccountPath, "namespace");
-        await File.WriteAllTextAsync(path, nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
-        _files.Add(path);
-
-        path = Path.Combine(serviceAccountPath, "token");
-        await File.WriteAllTextAsync(path, TestID);
-        _files.Add(path);
-
-        path = Path.Combine(serviceAccountPath, "ca.crt");
-        await CreateCertificate(path);
-        _files.Add(path);
-
-        // Act
-        var actualProvider = CreateProvider(nameof(Kube));
-
-        // Assert
-        actualProvider.ShouldNotBeNull().ShouldBeOfType<Kube>();
-        stub.ShouldNotBeNull();
-        stub.Actual.ShouldNotBeNull();
-        stub.Actual.ApiEndPoint.ShouldNotBeNull();
-        stub.Actual.ApiEndPoint.Host.ShouldBe(expectedHost);
-        stub.Actual.ApiEndPoint.Port.ShouldBe(expectedPort);
-        stub.Actual.DefaultNamespace.ShouldNotBeNull(nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
-    }
-
     [Fact]
     [Trait("Feat", "2256")]
     public void CreateProvider_KubeApiClientFactory_ShouldCreateFromOptions()
@@ -157,7 +73,7 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         options.SetupGet(x => x.Value).Returns(new KubeClientOptions
         {
             ApiEndPoint = new UriBuilder(Uri.UriSchemeHttps, IPAddress.Loopback.ToString(), PortFinder.GetRandomPort()).Uri,
-            ClientCertificate = CreateCertificate(),
+            ClientCertificate = FakeKubeApiClientFactory.CreateCertificate(),
             KubeNamespace = nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromOptions),
         });
         _builder.Services.AddSingleton<IOptions<KubeClientOptions>>(options.Object);
@@ -191,29 +107,106 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
         configureOptions.Configure(opts);
         opts.Username.ShouldBe("myUser");
     }
+}
 
-    private static X509Certificate2 CreateCertificate()
+[Collection(nameof(SequentialTests))]
+public sealed class KubernetesProviderFactorySequentialTests : KubernetesProviderFactoryTestsBase
+{
+    [Fact]
+    [Trait("Feat", "2256")]
+    public async Task CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount()
     {
-        // Generate a self-signed certificate
-        using RSA rsa = RSA.Create(2048);
-        var request = new CertificateRequest("CN=MyCertificate", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        // Arrange
+        _builder.AddKubernetes(true); // !!!
+        var serviceAccountPath = Path.Combine(AppContext.BaseDirectory, TestID);
+        var stub = new FakeKubeApiClientFactory(null, null, serviceAccountPath);
+        var original = _builder.Services.First(x => x.ServiceType == typeof(IKubeApiClientFactory));
+        var descriptor = ServiceDescriptor.Describe(original.ServiceType, _ => stub, original.Lifetime);
+        _builder.Services.Replace(descriptor);
 
-        // Add extensions to the certificate (optional)
-        request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
-        request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
-        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+        var expectedHost = IPAddress.Loopback.ToString();
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", expectedHost);
+        int expectedPort = PortFinder.GetRandomPort();
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", expectedPort.ToString());
 
-        return request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+        _folders.Add(serviceAccountPath);
+        if (!Directory.Exists(serviceAccountPath))
+        {
+            Directory.CreateDirectory(serviceAccountPath);
+        }
+
+        var path = Path.Combine(serviceAccountPath, "namespace");
+        await File.WriteAllTextAsync(path, nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
+        _files.Add(path);
+
+        path = Path.Combine(serviceAccountPath, "token");
+        await File.WriteAllTextAsync(path, TestID);
+        _files.Add(path);
+
+        path = Path.Combine(serviceAccountPath, "ca.crt");
+        await FakeKubeApiClientFactory.CreateCertificate(path);
+        _files.Add(path);
+
+        // Act
+        var actualProvider = CreateProvider(nameof(Kube));
+
+        // Assert
+        actualProvider.ShouldNotBeNull().ShouldBeOfType<Kube>();
+        stub.ShouldNotBeNull();
+        stub.Actual.ShouldNotBeNull();
+        stub.Actual.ApiEndPoint.ShouldNotBeNull();
+        stub.Actual.ApiEndPoint.Host.ShouldBe(expectedHost);
+        stub.Actual.ApiEndPoint.Port.ShouldBe(expectedPort);
+        stub.Actual.DefaultNamespace.ShouldNotBeNull(nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", null);
     }
 
-    private static async Task CreateCertificate(string crtFile)
+    [Fact]
+    [Trait("Bug", "2299")]
+    public void Bug2299_StepsToReproduce_ShouldNotThrowExceptionByPathCombine()
     {
-        var certificate = CreateCertificate();
-        byte[] certBytes = certificate.Export(X509ContentType.Cert);
-        await File.WriteAllBytesAsync(crtFile, certBytes);
+        // Arrange
+        _builder.AddKubernetes(); // !!!
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_HOST", "localhost");
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", PortFinder.GetRandomPort().ToString());
+
+        // Act
+        var ex = Assert.ThrowsAny<Exception>(
+            () => CreateProvider(nameof(Kube)));
+
+        // Assert
+        ex.ShouldNotBeOfType<ArgumentNullException>();
+        ex.ShouldBeOfType<DirectoryNotFoundException>();
+        ex.StackTrace.ShouldContain("at KubeClient.KubeClientOptions.FromPodServiceAccount(String serviceAccountPath)");
+        ex.StackTrace.ShouldNotContain("at System.IO.Path.Combine(String path1, String path2)");
+        ex.Message.ShouldNotBe("Value cannot be null. (Parameter 'path1')");
+        Environment.SetEnvironmentVariable("KUBERNETES_SERVICE_PORT", null);
+    }
+}
+
+public class KubernetesProviderFactoryTestsBase : FileUnitTest
+{
+    protected readonly IOcelotBuilder _builder;
+
+    public KubernetesProviderFactoryTestsBase()
+    {
+        var config = new FileConfiguration();
+        config.GlobalConfiguration.ServiceDiscoveryProvider = new()
+        {
+            Scheme = Uri.UriSchemeHttp,
+            Host = "localhost",
+            Port = 888,
+            Namespace = nameof(KubernetesProviderFactoryTests),
+            Token = TestID,
+        };
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddOcelot(config, null, MergeOcelotJson.ToMemory)
+            .Build();
+        _builder = new ServiceCollection().AddOcelot(configuration);
     }
 
-    private IServiceDiscoveryProvider CreateProvider(string providerType)
+    protected IServiceDiscoveryProvider CreateProvider(string providerType)
     {
         var serviceProvider = _builder.Services.BuildServiceProvider(true);
         var config = GivenServiceProvider(providerType);
@@ -223,7 +216,7 @@ public sealed class KubernetesProviderFactoryTests : FileUnitTest
             .Invoke(serviceProvider, config, route);
     }
 
-    private static ServiceProviderConfiguration GivenServiceProvider(string type) => new(
+    protected static ServiceProviderConfiguration GivenServiceProvider(string type) => new(
         type: type,
         scheme: string.Empty,
         host: string.Empty,
