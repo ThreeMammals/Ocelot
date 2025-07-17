@@ -15,6 +15,8 @@ public class QoSOptionsTests
             .WithDurationOfBreak(2)
             .WithTimeoutValue(3)
             .WithKey("123")
+            .WithFailureRatio(4.0D)
+            .WithSamplingDuration(5)
             .Build();
 
         // Act
@@ -26,6 +28,8 @@ public class QoSOptionsTests
         Assert.Equal(copyee.DurationOfBreak, actual.DurationOfBreak);
         Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
         Assert.Equal(copyee.Key, actual.Key);
+        Assert.Equal(copyee.FailureRatio, actual.FailureRatio);
+        Assert.Equal(copyee.SamplingDuration, actual.SamplingDuration);
     }
 
     [Fact]

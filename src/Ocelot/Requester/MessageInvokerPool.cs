@@ -113,12 +113,12 @@ public class MessageInvokerPool : IMessageInvokerPool
         };
 
         _logger.LogWarning(() =>
-            $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
+            $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this {nameof(DownstreamRoute)} -> {downstreamRoute.Name()}");
 
         return handler;
     }
 
-    private readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
+    public readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
     {
         public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
         {

@@ -78,12 +78,12 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         if (!qos.ExceptionsAllowedBeforeBreaking.HasValue || qos.ExceptionsAllowedBeforeBreaking <= 0)
         {
             _logger.LogError(
-                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({qos.ExceptionsAllowedBeforeBreaking}) is either undefined, negative, or zero.", null);
+                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({ToStr(qos.ExceptionsAllowedBeforeBreaking)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
         List<Func<string>> warnings = new(), w = warnings;
-        if (qos.ExceptionsAllowedBeforeBreaking.HasValue && !qos.ExceptionsAllowedBeforeBreaking.Value.IsValidMinimumThroughput())
+        if (!qos.ExceptionsAllowedBeforeBreaking.Value.IsValidMinimumThroughput())
         {
             string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
             warnings.Add(msg1);
@@ -109,7 +109,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         if (warnings.Count > 0)
         {
-            _logger.LogWarning(() => CircuitBreakerValidationMessage(route) + string.Join(Environment.NewLine, warnings.Select(f => f.Invoke())));
+            _logger.LogWarning(() => CircuitBreakerValidationMessage(route) + string.Join(string.Empty, warnings.Select(f => f.Invoke())));
         }
 
         return true;
@@ -127,7 +127,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             _logger.LogError(
-                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.TimeoutValue)} ({(timeoutMs.HasValue ? timeoutMs.Value.ToString() : "?")}) is either undefined, negative, or zero.", null);
+                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.TimeoutValue)} ({ToStr(timeoutMs)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
@@ -140,15 +140,17 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         if (warnings.Count > 0)
         {
-            _logger.LogWarning(() => TimeoutValidationMessage(route) + string.Join(Environment.NewLine, warnings.Select(f => f.Invoke())));
+            _logger.LogWarning(() => TimeoutValidationMessage(route) + string.Join(string.Empty, warnings.Select(f => f.Invoke())));
         }
 
         return true;
     }
 
-    private static string The(List<Func<string>> warnings, Func<string> msg)
+    public static string ToStr(int? value) => value.HasValue ? value.ToString() : "?";
+
+    public static string The(List<Func<string>> warnings, Func<string> msg)
         => warnings.Count > 1
-            ? Environment.NewLine + $"{warnings.IndexOf(msg) + 1}. The"
+            ? $"{Environment.NewLine}  {warnings.IndexOf(msg) + 1}. The"
             : "the";
 
     /// <summary>Configures the <see href="https://www.pollydocs.org/strategies/circuit-breaker.html">Circuit breaker resilience strategy</see>.</summary>
