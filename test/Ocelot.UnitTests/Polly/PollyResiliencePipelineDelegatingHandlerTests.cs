@@ -8,81 +8,91 @@ using Ocelot.Provider.Polly.Interfaces;
 using Polly;
 using Polly.Retry;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.Polly;
 
 public class PollyResiliencePipelineDelegatingHandlerTests
 {
-    private readonly Mock<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>> _pollyQoSResiliencePipelineProviderMock;
-    private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
+    private readonly Mock<DelegatingHandler> _innerHandler = new();
+    private readonly Mock<IOcelotLogger> _logger = new();
+    private readonly Mock<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>> _pipelineProvider = new();
+    private readonly Mock<IHttpContextAccessor> _contextAccessor = new();
     private readonly PollyResiliencePipelineDelegatingHandler _sut;
+    private Func<string> _loggerMessage;
 
     public PollyResiliencePipelineDelegatingHandlerTests()
     {
-        _pollyQoSResiliencePipelineProviderMock = new Mock<IPollyQoSResiliencePipelineProvider<HttpResponseMessage>>();
-
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var loggerMock = new Mock<IOcelotLogger>();
-        _contextAccessorMock = new Mock<IHttpContextAccessor>();
-
-        loggerFactoryMock.Setup(x => x.CreateLogger<PollyResiliencePipelineDelegatingHandler>())
-            .Returns(loggerMock.Object);
-        loggerMock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
-
-        _sut = new PollyResiliencePipelineDelegatingHandler(DownstreamRouteFactory(), _contextAccessorMock.Object, loggerFactoryMock.Object);
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        loggerFactory.Setup(x => x.CreateLogger<PollyResiliencePipelineDelegatingHandler>())
+            .Returns(_logger.Object);
+        _logger.Setup(x => x.LogDebug(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => _loggerMessage = f);
+        _logger.Setup(x => x.LogInformation(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => _loggerMessage = f);
+        _sut = new PollyResiliencePipelineDelegatingHandler(DownstreamRouteFactory(), _contextAccessor.Object, loggerFactory.Object);
     }
 
     [Fact]
-    public async Task SendAsync_OnePolicy()
+    public async Task SendAsync_WithPipeline_ExecutedByPipeline()
     {
         // Arrange
-        var fakeResponse = new HttpResponseMessage(HttpStatusCode.NoContent);
-        fakeResponse.Headers.Add("X-Xunit", nameof(SendAsync_OnePolicy));
+        var fakeResponse = GivenHttpResponseMessage();
+        SetupInnerHandler(fakeResponse);
+        SetupResiliencePipelineProvider();
 
-        // setup the inner handler for PollyResiliencePipelineDelegatingHandler
-        var innerHandler = new Mock<DelegatingHandler>();
-        innerHandler.Protected()
+        // Act
+        var actual = await InvokeAsync("SendAsync");
+
+        // Assert
+        ShouldHaveTestHeaderWithoutContent(actual);
+        ShouldHaveCalledThePipelineProviderOnce();
+        ShouldLogInformation("The Polly.ResiliencePipeline`1[System.Net.Http.HttpResponseMessage] pipeline has detected by QoS provider for the route with downstream URL ''. Going to execute request...");
+        ShouldHaveCalledTheInnerHandlerOnce();
+    }
+
+    [Fact]
+    public async Task SendAsync_NoPipeline_SentWithoutPipeline()
+    {
+        // Arrange
+        const bool PipelineIsNull = true;
+        var fakeResponse = GivenHttpResponseMessage();
+        SetupInnerHandler(fakeResponse);
+        SetupResiliencePipelineProvider(PipelineIsNull);
+
+        // Act
+        var actual = await InvokeAsync("SendAsync");
+
+        // Assert
+        ShouldHaveTestHeaderWithoutContent(actual);
+        ShouldHaveCalledThePipelineProviderOnce();
+        ShouldLogDebug("No pipeline was detected by QoS provider for the route with downstream URL ''.");
+        ShouldHaveCalledTheInnerHandlerOnce();
+    }
+
+    private void SetupInnerHandler(HttpResponseMessage fakeResponse)
+    {
+        _innerHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(fakeResponse);
-        _sut.InnerHandler = innerHandler.Object;
+        _sut.InnerHandler = _innerHandler.Object;
+    }
 
-        // setup the resilience pipeline eg: retry policy
+    private void SetupResiliencePipelineProvider(bool pipelineIsNull = false)
+    {
         var resiliencePipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
             {
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>().Handle<Exception>(),
             })
             .Build();
-
-        _pollyQoSResiliencePipelineProviderMock
-            .Setup(x => x.GetResiliencePipeline(It.IsAny<DownstreamRoute>()))
-            .Returns(resiliencePipeline);
-
+        _pipelineProvider.Setup(x => x.GetResiliencePipeline(It.IsAny<DownstreamRoute>()))
+            .Returns(pipelineIsNull ? null : resiliencePipeline);
         var httpContext = new Mock<HttpContext>();
-        httpContext
-            .Setup(x => x.RequestServices.GetService(typeof(IPollyQoSResiliencePipelineProvider<HttpResponseMessage>)))
-            .Returns(_pollyQoSResiliencePipelineProviderMock.Object);
-
-        _contextAccessorMock
-            .Setup(x => x.HttpContext)
+        httpContext.Setup(x => x.RequestServices.GetService(typeof(IPollyQoSResiliencePipelineProvider<HttpResponseMessage>)))
+            .Returns(_pipelineProvider.Object);
+        _contextAccessor.Setup(x => x.HttpContext)
             .Returns(httpContext.Object);
-
-        // Act
-        var actual = await InvokeAsync("SendAsync");
-
-        // Assert
-        ShouldHaveXunitHeaderWithNoContent(actual, nameof(SendAsync_OnePolicy));
-
-        // TODO: do more checks
-        // check that the pipeline provider was called only once
-        _pollyQoSResiliencePipelineProviderMock
-            .Verify(a => a.GetResiliencePipeline(It.IsAny<DownstreamRoute>()), times: Times.Once);
-        _pollyQoSResiliencePipelineProviderMock
-            .VerifyNoOtherCalls();
-
-        // this check has no sense anymore
-        //method.DeclaringType.Name.ShouldBe("IAsyncPolicy`1");
-        //method.DeclaringType.ShouldNotBeOfType<AsyncPolicyWrap>();
     }
 
     private async Task<HttpResponseMessage> InvokeAsync(string methodName)
@@ -93,11 +103,46 @@ public class PollyResiliencePipelineDelegatingHandlerTests
         return actual;
     }
 
-    private static void ShouldHaveXunitHeaderWithNoContent(HttpResponseMessage actual, string headerName)
+    private static HttpResponseMessage GivenHttpResponseMessage([CallerMemberName] string headerValue = nameof(PollyResiliencePipelineDelegatingHandlerTests))
+    {
+        var fakeResponse = new HttpResponseMessage(HttpStatusCode.NoContent);
+        fakeResponse.Headers.Add("X-Xunit", headerValue);
+        return fakeResponse;
+    }
+
+    private static void ShouldHaveTestHeaderWithoutContent(HttpResponseMessage actual, [CallerMemberName] string headerValue = nameof(PollyResiliencePipelineDelegatingHandlerTests))
     {
         actual.ShouldNotBeNull();
         actual.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        actual.Headers.GetValues("X-Xunit").ShouldContain(headerName);
+        actual.Headers.GetValues("X-Xunit").ShouldContain(headerValue);
+    }
+
+    private void ShouldHaveCalledThePipelineProviderOnce()
+    {
+        _pipelineProvider.Verify(a => a.GetResiliencePipeline(It.IsAny<DownstreamRoute>()),
+            Times.Once);
+        _pipelineProvider.VerifyNoOtherCalls();
+    }
+
+    private void ShouldHaveCalledTheInnerHandlerOnce()
+    {
+        _innerHandler.Protected().Verify<Task<HttpResponseMessage>>(
+            "SendAsync", Times.Once(),
+            ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+    }
+
+    private void ShouldLogDebug(string expected)
+    {
+        _logger.Verify(x => x.LogDebug(It.IsAny<Func<string>>()), Times.Once);
+        var msg = _loggerMessage.ShouldNotBeNull().Invoke();
+        msg.ShouldBe(expected);
+    }
+
+    private void ShouldLogInformation(string expected)
+    {
+        _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Once);
+        var msg = _loggerMessage.ShouldNotBeNull().Invoke();
+        msg.ShouldBe(expected);
     }
 
     private static DownstreamRoute DownstreamRouteFactory()
@@ -107,13 +152,11 @@ public class PollyResiliencePipelineDelegatingHandlerTests
             .WithExceptionsAllowedBeforeBreaking(2)
             .WithDurationOfBreak(200)
             .Build();
-
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate("/")
             .WithContainsQueryString(false)
             .WithPriority(1)
             .WithOriginalValue("/").Build();
-
         return new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .WithUpstreamPathTemplate(upstreamPath)
