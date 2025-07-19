@@ -854,7 +854,7 @@ To configure timeouts (in seconds) at different levels, choose the appropriate l
 
     Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: ...
 
-  For more details about this warning, refer to the QoS :ref:`qos-notes` (see Note 4).
+  For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
   Your next recommended action is to completely remove the ``Timeout`` property.
 
 .. _break4: http://break.do
@@ -873,7 +873,7 @@ Default timeout
 
 Timeout values defined at different levels in the JSON configuration can serve as fallback defaults for other levels.
 
-- The absolute timeout (also known as ``DownstreamRoute.DefaultTimeoutSeconds``) defaults to 90 seconds (as defined by the ``DownstreamRoute.DefTimeout`` constant).
+- The absolute timeout (also known as ``DownstreamRoute`` `DefaultTimeoutSeconds`_) defaults to 90 seconds (as defined by the ``DownstreamRoute`` `DefTimeout`_ constant).
   It acts as the default timeout when neither route-level nor global timeouts are defined.
 - The global configuration timeout, if not defined, also defaults to ``DownstreamRoute.DefaultTimeoutSeconds``.
   If defined, it serves as the default timeout for all routes.
@@ -883,6 +883,8 @@ To configure the absolute timeout (currently 90 seconds, as defined by the ``Dow
 assign the desired number of seconds to the ``DownstreamRoute`` `DefaultTimeoutSeconds`_ static property in your `Program`_ class:
 
 .. code-block:: csharp
+
+  using Ocelot.Configuration;
 
   DownstreamRoute.DefaultTimeoutSeconds = 3; // seconds, value must be >= 3
 
