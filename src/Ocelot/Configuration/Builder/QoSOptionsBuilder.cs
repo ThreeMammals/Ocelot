@@ -1,38 +1,42 @@
 ﻿namespace Ocelot.Configuration.Builder;
 
-public class QoSOptionsBuilder
+public class QoSOptionsBuilder : QoSOptions
 {
-    private int _exceptionsAllowedBeforeBreaking;
-    private int _durationOfBreak;
-    private int? _timeoutValue;
-    private string _key;
-
-    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int exceptionsAllowedBeforeBreaking)
+    public QoSOptionsBuilder WithExceptionsAllowedBeforeBreaking(int? value)
     {
-        _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
+        ExceptionsAllowedBeforeBreaking = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithDurationOfBreak(int durationOfBreak)
+    public QoSOptionsBuilder WithDurationOfBreak(int? value)
     {
-        _durationOfBreak = durationOfBreak;
+        DurationOfBreak = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithTimeoutValue(int? timeoutValue)
+    public QoSOptionsBuilder WithTimeoutValue(int? value)
     {
-        _timeoutValue = timeoutValue;
+        TimeoutValue = value;
         return this;
     }
 
-    public QoSOptionsBuilder WithKey(string input)
+    public QoSOptionsBuilder WithKey(string value)
     {
-        _key = input;
+        Key = value;
         return this;
     }
 
-    public QoSOptions Build()
+    public QoSOptionsBuilder WithFailureRatio(double? value)
     {
-        return new QoSOptions(_exceptionsAllowedBeforeBreaking, _durationOfBreak, _timeoutValue, _key);
+        FailureRatio = value;
+        return this;
     }
+
+    public QoSOptionsBuilder WithSamplingDuration(int? value)
+    {
+        SamplingDuration = value;
+        return this;
+    }
+
+    public QoSOptions Build() => this;
 }

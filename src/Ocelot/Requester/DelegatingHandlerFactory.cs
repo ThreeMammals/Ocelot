@@ -57,10 +57,7 @@ public class DelegatingHandlerFactory : IDelegatingHandlerFactory
             handlers.Add((DelegatingHandler)_tracingFactory.Get());
         }
 
-        var monitor = _serviceProvider.GetService<IOptionsMonitor<FileConfiguration>>();
-        var configuration = monitor.CurrentValue;
-        var globalQos = new QoSOptions(configuration.GlobalConfiguration.QoSOptions);
-        if (route.QosOptions.UseQos || globalQos.UseQos)
+        if (route.QosOptions.UseQos)
         {
             var handler = _qoSFactory.Get(route);
             if (handler?.IsError == false)

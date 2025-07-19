@@ -5,21 +5,16 @@
 /// </summary>
 public class FileQoSOptions
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileQoSOptions"/> class.
-    /// <para>Default constructor. DON'T CHANGE!..</para>
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="FileQoSOptions"/> class.</summary>
     public FileQoSOptions()
-    {
-        DurationOfBreak = 1;
-        ExceptionsAllowedBeforeBreaking = 0;
-        TimeoutValue = null; // default value will be assigned in consumer services: see DownstreamRoute
-    }
+    { }
 
     public FileQoSOptions(FileQoSOptions from)
     {
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
     }
 
@@ -27,11 +22,15 @@ public class FileQoSOptions
     {
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
     }
 
-    public int DurationOfBreak { get; set; }
-    public int ExceptionsAllowedBeforeBreaking { get; set; }
+    public int? DurationOfBreak { get; set; }
+    public int? ExceptionsAllowedBeforeBreaking { get; set; }
+    public double? FailureRatio { get; set; }
+    public int? SamplingDuration { get; set; }
 
     /// <summary>Explicit timeout value which overrides default one.</summary>
     /// <remarks>Reused in, or ignored in favor of implicit default value:

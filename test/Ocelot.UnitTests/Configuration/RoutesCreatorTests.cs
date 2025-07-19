@@ -257,7 +257,7 @@ public class RoutesCreatorTests : UnitTest
         _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
         _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
-        _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
+        _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
         _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
         _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
@@ -339,7 +339,7 @@ public class RoutesCreatorTests : UnitTest
         _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
-        _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
+        _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
         _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
         _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);

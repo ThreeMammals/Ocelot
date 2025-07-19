@@ -36,4 +36,39 @@ public class CircuitBreakerStrategyTests
         // Assert
         Assert.Equal(expected, actual);
     }
+
+    [Theory]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    [InlineData(0.0D, Const.DefaultFailureRatio)] // out of range
+    [InlineData(0.05D, 0.05D)] // in range
+    [InlineData(Const.DefaultFailureRatio, Const.DefaultFailureRatio)] // in range
+    [InlineData(0.99D, 0.99D)] // in range
+    [InlineData(1.0, Const.DefaultFailureRatio)] // out of range
+    public void FailureRatio_ShouldBeInRange(double ratio, double expected)
+    {
+        // Arrange, Act
+        var actual = CircuitBreakerStrategy.FailureRatio(ratio);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    [InlineData(0, Const.DefaultSamplingDuration)] // out of range
+    [InlineData(500, Const.DefaultSamplingDuration)] // out of range
+    [InlineData(501, 501)] // in range
+    [InlineData(Const.DefaultSamplingDuration, Const.DefaultSamplingDuration)] // in range
+    [InlineData(86_400_000 - 1, 86_400_000 - 1)] // in range
+    [InlineData(86_400_000, Const.DefaultSamplingDuration)] // out of range
+    public void SamplingDuration_ShouldBeInRange(int ms, int expected)
+    {
+        // Arrange, Act
+        var actual = CircuitBreakerStrategy.SamplingDuration(ms);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
 }

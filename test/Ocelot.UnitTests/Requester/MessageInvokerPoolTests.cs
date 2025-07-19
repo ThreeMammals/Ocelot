@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -10,7 +9,9 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net.Security;
 using System.Reflection;
 using Xunit.Sdk;
 
@@ -110,7 +111,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
 
         // Assert: Then the DangerousAcceptAnyServerCertificateValidator warning is logged
         _ocelotLogger.Verify(
-            x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {_context.Items.DownstreamRoute().UpstreamPathTemplate}, DownstreamPathTemplate: {_context.Items.DownstreamRoute().DownstreamPathTemplate}")),
+            x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute -> {_context.Items.DownstreamRoute().Name()}")),
             Times.Once);
     }
 
@@ -163,7 +164,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public void SendAsync_NoQosAndHasRouteTimeout_ThrowTimeoutExceptionAfterRouteTimeout(int routeTimeoutSeconds)
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(null, routeTimeoutSeconds);
+        var route = GivenRoute(null, routeTimeoutSeconds);
         GivenTheFactoryReturnsNothing();
         GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
@@ -192,7 +193,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public void CreateMessageInvoker_QosTimeoutAndRouteOne_CreatedTimeoutDelegatingHandlerWithoutQosTimeout(int qosTimeout, int routeTimeout)
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(qosTimeout, routeTimeout);
+        var route = GivenRoute(qosTimeout, routeTimeout);
         GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
@@ -218,7 +219,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public void EnsureRouteTimeoutIsGreaterThanQosOne_QosTimeoutVsRouteOne_ExpectedRouteTimeoutOrDoubledQosTimeout(int qosTimeout, int? routeTimeout, int expectedSeconds, int loggedCount, string expectedMessage)
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(qosTimeout, routeTimeout);
+        var route = GivenRoute(qosTimeout, routeTimeout);
         GivenTheFactoryReturns(new());
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
@@ -254,6 +255,60 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         Assert.Equal(expected, actual);
     }
     #endregion
+
+    [Fact]
+    public void CreateHandler_DangerousAcceptAnyServerCertificateValidatorIsTrue_InitializedRemoteCertificateValidationCallback()
+    {
+        // Arrange
+        const bool DangerousAcceptAnyServerCertificateValidator = true;
+        var route = GivenRoute(null, null, DangerousAcceptAnyServerCertificateValidator);
+        GivenTheFactoryReturns(new());
+        GivenAMessageInvokerPool();
+        GivenARequest(route, PortFinder.GetRandomPort());
+        Func<string> fMsg = null;
+        _ocelotLogger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => fMsg = f);
+
+        // Act
+        using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+
+        // Assert
+        _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
+        var message = fMsg?.Invoke() ?? string.Empty;
+        Assert.Equal("You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute -> /", message);
+
+        var handler = AssertTimeoutDelegatingHandler(invoker);
+        var baseHandler = handler.InnerHandler as SocketsHttpHandler;
+        Assert.NotNull(baseHandler?.SslOptions?.RemoteCertificateValidationCallback);
+        bool alwaysTrue = baseHandler.SslOptions.RemoteCertificateValidationCallback.Invoke(this, null, null, SslPolicyErrors.None);
+        Assert.True(alwaysTrue);
+    }
+
+    [Fact]
+    public void Clear_WithOneItem_HandlersPoolShouldBeEmpty()
+    {
+        // Arrange
+        var route = GivenRoute(null, null);
+        GivenTheFactoryReturns(new());
+        GivenAMessageInvokerPool();
+        GivenARequest(route, PortFinder.GetRandomPort());
+
+        // Act, Assert 1
+        using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+        Assert.NotNull(invoker);
+        Type me = _pool.GetType();
+        var field = me.GetField("_handlersPool", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(field);
+        var handlersPool = field.GetValue(_pool) as ConcurrentDictionary<MessageInvokerPool.MessageInvokerCacheKey, Lazy<HttpMessageInvoker>>;
+        Assert.NotNull(handlersPool);
+        Assert.NotEmpty(handlersPool);
+        Assert.Single(handlersPool);
+
+        // Act, Assert 2
+        _pool.Clear();
+        Assert.Empty(handlersPool);
+        _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never());
+    }
 
     private void GivenADownstreamService(int port)
     {
@@ -332,7 +387,7 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
     public void SendAsync_NoQosAndNoRouteTimeouts_ShouldTimeoutAfterDefaultSeconds()
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(null, null);
+        var route = GivenRoute(null, null);
         GivenTheFactoryReturnsNothing();
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
@@ -362,11 +417,10 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
     [Trait("PR", "2073")]
     [Trait("Feat", "1314")]
     [Trait("Feat", "1869")]
-    public void EnsureRouteTimeoutIsGreaterThanQosOne_GlobalQosTimeoutIsGreaterThanDefRouteOne_EnsuredGlobalQos()
+    public void EnsureRouteTimeoutIsGreaterThanQosOne_RouteQosTimeoutIsGreaterThanRouteOne_EnsuredQos()
     {
         // Arrange
-        var route = GivenRouteWithTimeouts(null, null);
-        _globalConfigurationValue.QoSOptions.TimeoutValue = Ms(DownstreamRoute.LowTimeout + 1); // !!!
+        var route = GivenRoute(DownstreamRoute.LowTimeout + 1, null);
         GivenTheFactoryReturnsNothing();
         GivenAMessageInvokerPool();
         GivenARequest(route, PortFinder.GetRandomPort());
@@ -385,9 +439,7 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
             AssertTimeout(invoker, 8); // should have doubled QoS timeout
             _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
             var message = fMsg?.Invoke() ?? string.Empty;
-            Assert.Equal(
-                "Route '/' has global Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the global QoS TimeoutValue is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the global QoS TimeoutValue (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the global QoS TimeoutValue and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!",
-                message);
+            Assert.Equal("Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS TimeoutValue is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the QoS TimeoutValue (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!", message);
         }
         finally
         {
@@ -405,18 +457,16 @@ public class MessageInvokerPoolBase : UnitTest
     protected readonly DefaultHttpContext _context = new();
     protected readonly Mock<IOcelotLogger> _ocelotLogger = new();
     protected readonly Mock<IOcelotLoggerFactory> _ocelotLoggerFactory = new();
-    protected readonly Mock<IOptions<FileGlobalConfiguration>> _globalConfiguration = new();
-    protected readonly FileGlobalConfiguration _globalConfigurationValue = new();
 
     public MessageInvokerPoolBase()
     {
         _ocelotLoggerFactory.Setup(x => x.CreateLogger<MessageInvokerPool>()).Returns(_ocelotLogger.Object);
-        _globalConfiguration.SetupGet(x => x.Value).Returns(_globalConfigurationValue);
     }
 
     public static int Ms(int seconds) => 1000 * seconds;
 
-    protected static DownstreamRoute GivenRouteWithTimeouts(int? qosTimeout, int? routeTimeout)
+    protected static DownstreamRoute GivenRoute(int? qosTimeout, int? routeTimeout,
+        bool dangerousAcceptAnyServerCertificateValidator = false)
     {
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(qosTimeout.HasValue ? Ms(qosTimeout.Value): null) // !!!
@@ -429,6 +479,7 @@ public class MessageInvokerPoolBase : UnitTest
             .WithHttpHandlerOptions(handlerOptions)
             .WithTimeout(routeTimeout) // !!!
             .WithUpstreamPathTemplate(new("/", 0, false, "/"))
+            .WithDangerousAcceptAnyServerCertificateValidator(dangerousAcceptAnyServerCertificateValidator)
             .Build();
         return route;
     }
@@ -447,7 +498,7 @@ public class MessageInvokerPoolBase : UnitTest
     }
 
     protected void GivenAMessageInvokerPool() =>
-        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object, _globalConfiguration.Object);
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
 
     protected void GivenARequest(DownstreamRoute downstream, int port)
         => GivenARequestWithAUrlAndMethod(downstream, Url(port), HttpMethod.Get);
@@ -498,7 +549,7 @@ public class MessageInvokerPoolBase : UnitTest
         }
     }
 
-    protected static TimeSpan AssertTimeout(HttpMessageInvoker invoker, int expectedSeconds)
+    protected static TimeoutDelegatingHandler AssertTimeoutDelegatingHandler(HttpMessageInvoker invoker)
     {
         Assert.NotNull(invoker);
         Type me = invoker.GetType();
@@ -507,8 +558,14 @@ public class MessageInvokerPoolBase : UnitTest
         var handler = field.GetValue(invoker) as HttpMessageHandler;
         Assert.NotNull(handler);
         Assert.IsType<TimeoutDelegatingHandler>(handler);
-        me = handler.GetType();
-        field = me.GetField("_timeout", BindingFlags.NonPublic | BindingFlags.Instance);
+        return handler as TimeoutDelegatingHandler;
+    }
+
+    protected static TimeSpan AssertTimeout(HttpMessageInvoker invoker, int expectedSeconds)
+    {
+        var handler = AssertTimeoutDelegatingHandler(invoker);
+        var me = handler.GetType();
+        var field = me.GetField("_timeout", BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.NotNull(field);
         var timeout = (TimeSpan)field.GetValue(handler);
         Assert.Equal(expectedSeconds, (int)timeout.TotalSeconds);
