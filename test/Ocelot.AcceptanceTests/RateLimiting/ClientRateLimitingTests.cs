@@ -1,25 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
-public sealed class ClientRateLimitingTests : Steps, IDisposable
+public sealed class ClientRateLimitingTests : RateLimitingSteps
 {
     const int OK = (int)HttpStatusCode.OK;
     const int TooManyRequests = (int)HttpStatusCode.TooManyRequests;
-
     private int _counterOne;
-    private readonly ServiceHandler _serviceHandler;
 
     public ClientRateLimitingTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -29,7 +22,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, null, null, new(), 3, "1s", 1); // periods are equal
         var configuration = GivenConfigurationWithRateLimitOptions(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
@@ -49,7 +42,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         var route = GivenRoute(port, "/api/ClientRateLimit?count={count}", "/ClientRateLimit/?{count}", new(), 3, "1s", 2);
         var configuration = GivenConfigurationWithRateLimitOptions(route);
         _counterOne = 0;
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
@@ -88,7 +81,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, null, null, whitelist: new() { "ocelotclient1" }, 3, "3s", 2); // main period is greater than ban one
         var configuration = GivenConfigurationWithRateLimitOptions(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
@@ -111,7 +104,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         var route = GivenRoute(port, "/api/ClientRateLimit?count={count}", "/ClientRateLimit/?{count}", new(),
             limit, period, periodTimespan); // bug scenario, adapted
         var configuration = GivenConfigurationWithRateLimitOptions(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/api/ClientRateLimit"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
 
@@ -129,29 +122,77 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
             .And(x => ThenTheResponseBodyShouldBe("101")) // total 101 OK responses
             .BDDfy();
     }
-
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
+    
+    [Theory]
+    [Trait("Bug", "1305")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_set_ratelimiting_headers_on_response_when_DisableRateLimitHeaders_set_to(bool disableRateLimitHeaders)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, context =>
+        int port = PortFinder.GetRandomPort();
+        var configuration = CreateConfigurationForCheckingHeaders(port, disableRateLimitHeaders);
+        bool exist = !disableRateLimitHeaders;
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(false))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(false))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(false))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(exist))
+            .BDDfy();
+    }
+
+    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
+    {
+        var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
+        var config = GivenConfiguration(route);
+        config.GlobalConfiguration.RateLimitOptions = new FileRateLimitOptions()
+        {
+            DisableRateLimitHeaders = disableRateLimitHeaders,
+            QuotaExceededMessage = "",
+            HttpStatusCode = TooManyRequests,
+        };
+        return config;
+    }
+
+    private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
+    {
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
+    }
+
+    private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
+        => response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath)
+    {
+        Task MapOK(HttpContext context)
         {
             _counterOne++;
             context.Response.StatusCode = OK;
             context.Response.WriteAsync(_counterOne.ToString());
             return Task.CompletedTask;
-        });
+        }
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
     }
 
-    private FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
+    private static FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
     {
         DownstreamPathTemplate = downstream ?? "/api/ClientRateLimit",
         DownstreamHostAndPorts = new()
         {
-            new("localhost", port),
+            Localhost(port),
         },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
         UpstreamHttpMethod = new() { HttpMethods.Get },
-        RequestIdKey = RequestIdKey,
+        RequestIdKey = "Oc-RequestId",
         RateLimitOptions = new FileRateLimitRule
         {
             EnableRateLimiting = true,
@@ -162,7 +203,7 @@ public sealed class ClientRateLimitingTests : Steps, IDisposable
         },
     };
 
-    private static FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
+    private FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
     {
         var config = GivenConfiguration(routes);
         config.GlobalConfiguration = new()

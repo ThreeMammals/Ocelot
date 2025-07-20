@@ -1,12 +1,11 @@
-namespace Ocelot.Requester
-{
-    public class GlobalDelegatingHandler
-    {
-        public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
-        {
-            DelegatingHandler = delegatingHandler;
-        }
+namespace Ocelot.Requester;
 
-        public DelegatingHandler DelegatingHandler { get; }
+public class GlobalDelegatingHandler
+{
+    public GlobalDelegatingHandler(DelegatingHandler delegatingHandler)
+    {
+        DelegatingHandler = delegatingHandler;
     }
+
+    public DelegatingHandler DelegatingHandler { get; }
 }

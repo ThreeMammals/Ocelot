@@ -21,7 +21,6 @@ COPY src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj src/Ocelot.Tra
 COPY src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj
 COPY test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 COPY test/Ocelot.ManualTest/Ocelot.ManualTest.csproj test/Ocelot.ManualTest/Ocelot.ManualTest.csproj
-COPY test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj
 COPY test/Ocelot.UnitTests/Ocelot.UnitTests.csproj test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 COPY test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj
 

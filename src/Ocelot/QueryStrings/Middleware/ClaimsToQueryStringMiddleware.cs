@@ -2,44 +2,43 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.QueryStrings.Middleware
+namespace Ocelot.QueryStrings.Middleware;
+
+public class ClaimsToQueryStringMiddleware : OcelotMiddleware
 {
-    public class ClaimsToQueryStringMiddleware : OcelotMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IAddQueriesToRequest _addQueriesToRequest;
+
+    public ClaimsToQueryStringMiddleware(RequestDelegate next,
+        IOcelotLoggerFactory loggerFactory,
+        IAddQueriesToRequest addQueriesToRequest)
+            : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
     {
-        private readonly RequestDelegate _next;
-        private readonly IAddQueriesToRequest _addQueriesToRequest;
+        _next = next;
+        _addQueriesToRequest = addQueriesToRequest;
+    }
 
-        public ClaimsToQueryStringMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory,
-            IAddQueriesToRequest addQueriesToRequest)
-                : base(loggerFactory.CreateLogger<ClaimsToQueryStringMiddleware>())
+    public async Task Invoke(HttpContext httpContext)
+    {
+        var downstreamRoute = httpContext.Items.DownstreamRoute();
+
+        if (downstreamRoute.ClaimsToQueries.Any())
         {
-            _next = next;
-            _addQueriesToRequest = addQueriesToRequest;
-        }
+            Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var downstreamRoute = httpContext.Items.DownstreamRoute();
+            var downstreamRequest = httpContext.Items.DownstreamRequest();
 
-            if (downstreamRoute.ClaimsToQueries.Any())
+            var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamRoute.ClaimsToQueries, httpContext.User.Claims, downstreamRequest);
+
+            if (response.IsError)
             {
-                Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to queries");
+                Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                var downstreamRequest = httpContext.Items.DownstreamRequest();
-
-                var response = _addQueriesToRequest.SetQueriesOnDownstreamRequest(downstreamRoute.ClaimsToQueries, httpContext.User.Claims, downstreamRequest);
-
-                if (response.IsError)
-                {
-                    Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
-
-                    httpContext.Items.UpsertErrors(response.Errors);
-                    return;
-                }
+                httpContext.Items.UpsertErrors(response.Errors);
+                return;
             }
-
-            await _next.Invoke(httpContext);
         }
+
+        await _next.Invoke(httpContext);
     }
 }

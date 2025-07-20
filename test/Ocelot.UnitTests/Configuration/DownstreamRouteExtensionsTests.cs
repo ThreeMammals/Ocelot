@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Metadata;
@@ -25,7 +26,7 @@ public class DownstreamRouteExtensionsTests
             new HttpHandlerOptions(false, false, false, false, 0, TimeSpan.Zero),
             default,
             default,
-            new QoSOptions(0, 0, 0, null),
+            new QoSOptionsBuilder().Build(),
             null,
             null,
             default,
@@ -51,7 +52,8 @@ public class DownstreamRouteExtensionsTests
             new Version(),
             HttpVersionPolicy.RequestVersionExact,
             new(),
-            new MetadataOptions(new FileMetadataOptions()));
+            new MetadataOptions(new FileMetadataOptions()),
+            0);
     }
 
     [Theory]
@@ -161,10 +163,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         //Assert
-        Assert.Throws<JsonException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key);
-        });
+        Assert.Throws<JsonException>(() => _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key));
     }
 
     [Fact]
@@ -186,7 +185,7 @@ public class DownstreamRouteExtensionsTests
         _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadata<FakeObject>(key, jsonSerializerOptions: serializerOptions);
+        var metadataValue = _downstreamRoute.GetMetadata<FakeObject>(key, options: serializerOptions);
 
         //Assert
         metadataValue.ShouldBeEquivalentTo(expected);
@@ -238,10 +237,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         // Assert
-        Assert.Throws<FormatException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<int>(key);
-        });
+        Assert.Throws<FormatException>(() => _ = _downstreamRoute.GetMetadata<int>(key));
     }
 
     [Theory]

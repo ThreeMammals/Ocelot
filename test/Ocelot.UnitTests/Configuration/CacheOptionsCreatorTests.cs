@@ -10,10 +10,14 @@ public class CacheOptionsCreatorTests
     [Fact]
     public void ShouldCreateCacheOptions()
     {
+        // Arrange
         var options = FileCacheOptionsFactory();
         var cacheOptionsCreator = new CacheOptionsCreator();
+
+        // Act
         var result = cacheOptionsCreator.Create(options, null, null, null);
 
+        // Assert
         result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
         result.Region.ShouldBe(options.Region);
         result.Header.ShouldBe(options.Header);
@@ -23,11 +27,14 @@ public class CacheOptionsCreatorTests
     [Fact]
     public void ShouldCreateCacheOptionsUsingGlobalConfiguration()
     {
+        // Arrange
         var global = GlobalConfigurationFactory();
-
         var cacheOptionsCreator = new CacheOptionsCreator();
+
+        // Act
         var result = cacheOptionsCreator.Create(new FileCacheOptions(), global, null, null);
 
+        // Assert
         result.TtlSeconds.ShouldBe(global.CacheOptions.TtlSeconds.Value);
         result.Region.ShouldBe(global.CacheOptions.Region);
         result.Header.ShouldBe(global.CacheOptions.Header);
@@ -37,12 +44,15 @@ public class CacheOptionsCreatorTests
     [Fact]
     public void RouteCacheOptionsShouldOverrideGlobalConfiguration()
     {
+        // Arrange
         var global = GlobalConfigurationFactory();
         var options = FileCacheOptionsFactory();
-
         var cacheOptionsCreator = new CacheOptionsCreator();
+
+        // Act
         var result = cacheOptionsCreator.Create(options, global, null, null);
 
+        // Assert
         result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
         result.Region.ShouldBe(options.Region);
         result.Header.ShouldBe(options.Header);
@@ -52,9 +62,13 @@ public class CacheOptionsCreatorTests
     [Fact]
     public void ShouldCreateCacheOptionsWithDefaults()
     {
+        // Arrange
         var cacheOptionsCreator = new CacheOptionsCreator();
+
+        // Act
         var result = cacheOptionsCreator.Create(new FileCacheOptions(), null, "/", new List<string> { "GET" });
 
+        // Assert
         result.TtlSeconds.ShouldBe(0);
         result.Region.ShouldBe("GET");
         result.Header.ShouldBe(null);
@@ -64,15 +78,17 @@ public class CacheOptionsCreatorTests
     [Fact]
     public void ShouldComputeRegionIfNotProvided()
     {
+        // Arrange
         var global = GlobalConfigurationFactory();
         var options = FileCacheOptionsFactory();
-
         global.CacheOptions.Region = null;
         options.Region = null;
-
         var cacheOptionsCreator = new CacheOptionsCreator();
+
+        // Act
         var result = cacheOptionsCreator.Create(options, global, "/api/values", new List<string> { "GET", "POST" });
 
+        // Assert
         result.TtlSeconds.ShouldBe(options.TtlSeconds.Value);
         result.Region.ShouldBe("GETPOSTapivalues");
         result.Header.ShouldBe(options.Header);

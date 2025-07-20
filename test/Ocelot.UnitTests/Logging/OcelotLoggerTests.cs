@@ -8,15 +8,14 @@ public class OcelotLoggerTests
 {
     private readonly Mock<ILogger<object>> _coreLogger;
     private readonly OcelotLogger _logger;
-    private readonly string _b;
-    private readonly string _a;
-    private readonly Exception _ex;
+
+    private static readonly string _a = "Tom";
+    private static readonly string _b = "Laura";
+    private static readonly Exception _ex = new("oh no");
+    private static readonly string NL = Environment.NewLine;
 
     public OcelotLoggerTests()
     {
-        _a = "tom";
-        _b = "laura";
-        _ex = new Exception("oh no");
         _coreLogger = new Mock<ILogger<object>>();
         _coreLogger.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
         var repo = new Mock<IRequestScopedDataRepository>();
@@ -26,50 +25,55 @@ public class OcelotLoggerTests
     [Fact]
     public void Should_log_trace()
     {
+        // Arrange, Act
         _logger.LogTrace(() => $"a message from {_a} to {_b}");
 
-        ThenLevelIsLogged(
-            "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'",
+        // Assert
+        ThenLevelIsLogged($"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura",
             LogLevel.Trace);
     }
 
     [Fact]
     public void Should_log_info()
     {
+        // Arrange, Act
         _logger.LogInformation(() => $"a message from {_a} to {_b}");
 
-        ThenLevelIsLogged(
-            "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'",
+        // Assert
+        ThenLevelIsLogged($"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura",
             LogLevel.Information);
     }
 
     [Fact]
     public void Should_log_warning()
     {
+        // Arrange, Act
         _logger.LogWarning(() => $"a message from {_a} to {_b}");
 
-        ThenLevelIsLogged(
-            "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'",
+        // Assert
+        ThenLevelIsLogged($"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura",
             LogLevel.Warning);
     }
 
     [Fact]
     public void Should_log_error()
     {
+        // Arrange, Act
         _logger.LogError(() => $"a message from {_a} to {_b}", _ex);
 
-        ThenLevelIsLogged(
-            "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'",
+        // Assert
+        ThenLevelIsLogged($"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura",
             LogLevel.Error, _ex);
     }
 
     [Fact]
     public void Should_log_critical()
     {
+        // Arrange, Act
         _logger.LogCritical(() => $"a message from {_a} to {_b}", _ex);
 
-        ThenLevelIsLogged(
-            "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'",
+        // Assert
+        ThenLevelIsLogged($"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura",
             LogLevel.Critical, _ex);
     }
 
@@ -112,7 +116,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -149,7 +153,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from Tom to Laura'";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -186,7 +190,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -216,28 +220,34 @@ public class OcelotLoggerTests
     [Fact]
     public void String_func_is_never_called_when_log_level_is_disabled()
     {
+        // Arrange
         var mockedFunc = new Mock<Func<string>>();
         mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
         var mockedILogger = MockLogger(LogLevel.None);
         var repo = new Mock<IRequestScopedDataRepository>();
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
+        // Act
         currentLogger.LogTrace(mockedFunc.Object);
 
+        // Assert
         mockedFunc.Verify(x => x.Invoke(), Times.Never);
     }
 
     [Fact]
     public void String_func_is_called_once_when_log_level_is_enabled()
     {
+        // Arrange
         var mockedFunc = new Mock<Func<string>>();
         mockedFunc.Setup(x => x.Invoke()).Returns("test").Verifiable();
         var mockedILogger = MockLogger(LogLevel.Information);
         var repo = new Mock<IRequestScopedDataRepository>();
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
+        // Act
         currentLogger.LogInformation(mockedFunc.Object);
 
+        // Assert
         mockedFunc.Verify(x => x.Invoke(), Times.Once);
     }
 
@@ -251,7 +261,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -288,7 +298,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -325,7 +335,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 
@@ -362,7 +372,7 @@ public class OcelotLoggerTests
         var currentLogger = new OcelotLogger(mockedILogger.Object, repo.Object);
 
         currentLogger.LogDebug(() => $"a message from {_a} to {_b}");
-        var expected = "requestId: No RequestId, previousRequestId: No PreviousRequestId, message: 'a message from tom to laura'";
+        var expected = $"RequestId: -, PreviousRequestId: -{NL}a message from Tom to Laura";
 
         ThenLevelIsNotLogged(mockedILogger, expected, LogLevel.Debug);
 

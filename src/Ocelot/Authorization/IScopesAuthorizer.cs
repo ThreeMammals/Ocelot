@@ -1,10 +1,9 @@
 ﻿using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.Authorization
+namespace Ocelot.Authorization;
+
+public interface IScopesAuthorizer
 {
-    public interface IScopesAuthorizer
-    {
-        Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes);
-    }
+    Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes);
 }

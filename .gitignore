@@ -411,10 +411,12 @@ FodyWeavers.xsd
 !tools/packages.config
 tools/
 
+# ReportGenerator dotnet tool -> https://reportgenerator.io/
+**/coveragereport/
+
 # Ocelot acceptance test config
 test/Ocelot.AcceptanceTests/ocelot.json
 
-# Read the Docs
-# https://ocelot.readthedocs.io
-_build/
-_templates/
+# Read the Docs -> https://ocelot.readthedocs.io
+docs/_build/
+docs/_templates/

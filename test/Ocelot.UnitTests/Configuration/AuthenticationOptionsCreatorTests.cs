@@ -35,7 +35,7 @@ public class AuthenticationOptionsCreatorTests
         }
 
         // Act
-        var actual = _authOptionsCreator.Create(route?.AuthenticationOptions, null);
+        var actual = _authOptionsCreator.Create(route, null);
 
         // Assert
         Assert.NotNull(actual);
@@ -52,6 +52,19 @@ public class AuthenticationOptionsCreatorTests
     public void Create_OptionsObjIsNotNull_CreatedSuccessfully(bool isAuthenticationProviderKeys)
     {
         // Arrange
+        //string authenticationProviderKey = !isAuthenticationProviderKeys
+        //    ? "Test" : null;
+        //string[] authenticationProviderKeys = isAuthenticationProviderKeys
+        //    ? new string[] { "Test #1", "Test #2" } : null;
+        //var fileRoute = new FileRoute()
+        //{
+        //    AuthenticationOptions = new FileAuthenticationOptions
+        //    {
+        //        AllowedScopes = new() { "cheese" },
+        //        AuthenticationProviderKey = authenticationProviderKey,
+        //        AuthenticationProviderKeys = authenticationProviderKeys,
+        //    },
+        //};
         string authenticationProviderKey = !isAuthenticationProviderKeys ? _routeAuthProviderKey : null;
         string[] authenticationProviderKeys = isAuthenticationProviderKeys ? _routeAuthProviderKeys : null;
         var fileRoute = AuthenticationOptionsCreatorTests.CreateFileRoute(_routeScopes, authenticationProviderKey, authenticationProviderKeys);
@@ -62,7 +75,7 @@ public class AuthenticationOptionsCreatorTests
             .Build();
 
         // Act
-        var actual = _authOptionsCreator.Create(fileRoute.AuthenticationOptions, null);
+        var actual = _authOptionsCreator.Create(fileRoute, null);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
@@ -83,7 +96,7 @@ public class AuthenticationOptionsCreatorTests
             .Build();
 
         // Act
-        var actual = _authOptionsCreator.Create(route.AuthenticationOptions, globalConfig.AuthenticationOptions);
+        var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
@@ -104,7 +117,7 @@ public class AuthenticationOptionsCreatorTests
             .Build();
 
         // Act
-        var actual = _authOptionsCreator.Create(route.AuthenticationOptions, globalConfig.AuthenticationOptions);
+        var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
@@ -129,7 +142,7 @@ public class AuthenticationOptionsCreatorTests
             .Build();
 
         // Act
-        var actual = _authOptionsCreator.Create(route.AuthenticationOptions, globalConfig.AuthenticationOptions);
+        var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);

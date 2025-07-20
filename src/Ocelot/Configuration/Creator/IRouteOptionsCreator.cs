@@ -1,9 +1,8 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IRouteOptionsCreator
 {
-    public interface IRouteOptionsCreator
-    {
-        RouteOptions Create(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration);
-    }
+    RouteOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration);
 }
