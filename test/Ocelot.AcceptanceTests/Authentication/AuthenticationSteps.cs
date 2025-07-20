@@ -170,11 +170,11 @@ public class AuthenticationSteps : Steps
         return r;
     }
 
-    public static FileGlobalConfiguration GivenGlobalConfig() => new()
+    public static FileGlobalConfiguration GivenGlobalAuthConfiguration(string scheme = "key") => new()
     {
         AuthenticationOptions = new()
         {
-            AuthenticationProviderKey = "key",
+            AuthenticationProviderKeys = [ scheme ?? "key" ],
         },
     };
 

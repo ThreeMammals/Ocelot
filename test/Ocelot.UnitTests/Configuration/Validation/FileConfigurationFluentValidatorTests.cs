@@ -38,11 +38,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // TODO Replace with mocks
         _configurationValidator = new FileConfigurationFluentValidator(
             _provider,
-            new RouteFluentValidator(
-                new HostAndPortValidator(),
-                new FileQoSOptionsFluentValidator(_provider),
-                _fileAuthOptsValidator),
-            new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
+            new(new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator),
+            new(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
     }
 
     [Fact]
@@ -1036,7 +1033,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         ThenTheErrorMessagesAre(expected);
     }
 
+    #region PR 2114
     [Fact]
+    [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
+    [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     public async Task Configuration_is_not_valid_if_specified_authentication_provider_is_not_registered()
     {
         const string key = "JwtLads";
@@ -1047,6 +1047,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
     public async Task Configuration_is_valid_if_specified_authentication_provider_is_registered()
     {
         const string key = "JwtLads";
@@ -1057,6 +1059,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
     public async Task Configuration_is_not_valid_if_one_authentication_provider_is_not_registered()
     {
         string[] keys = { "JwtLads", "other" };
@@ -1067,6 +1071,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
     public async Task Configuration_is_valid_if_all_specified_authentication_provider_are_registered()
     {
         string[] keys = { "JwtLads", "other" };
@@ -1075,6 +1081,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         await WhenIValidateTheConfiguration();
         ThenTheResultIsValid();
     }
+    #endregion
 
     private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
     private static FileRoute GivenDefaultRoute(string upstream, string downstream) => GivenDefaultRoute(upstream, downstream, null);
@@ -1122,29 +1129,17 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         return config;
     }
 
-    private void GivenConfigurationWithAuthenticationKey(string key) =>
-        GivenAConfiguration(new FileConfiguration
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                AuthenticationOptions = new FileAuthenticationOptions
-                {
-                    AuthenticationProviderKey = key,
-                },
-            },
-        });
+    private void GivenConfigurationWithAuthenticationKey(string key)
+    {
+        _fileConfiguration = new FileConfiguration();
+        _fileConfiguration.GlobalConfiguration.AuthenticationOptions.AuthenticationProviderKey = key;
+    }
 
-    private void GivenConfigurationWithAuthenticationKeys(string[] keys) =>
-        GivenAConfiguration(new FileConfiguration
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                AuthenticationOptions = new FileAuthenticationOptions
-                {
-                    AuthenticationProviderKeys = keys,
-                },
-            },
-        });
+    private void GivenConfigurationWithAuthenticationKeys(string[] keys)
+    {
+        _fileConfiguration = new FileConfiguration();
+        _fileConfiguration.GlobalConfiguration.AuthenticationOptions.AuthenticationProviderKeys = keys;
+    }
 
     private static FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new()
     {
@@ -1194,6 +1189,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(names.Select(n => new AuthenticationScheme(n, n, typeof(TestHandler))));
     }
+
     private void GivenAQoSHandler()
     {
         static DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
@@ -1201,11 +1197,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         _provider = _services.BuildServiceProvider(true);
         _configurationValidator = new FileConfigurationFluentValidator(
             _provider,
-            new RouteFluentValidator(
-                new HostAndPortValidator(),
-                new FileQoSOptionsFluentValidator(_provider),
-                _fileAuthOptsValidator),
-            new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
+            new(new(), new(_provider), _fileAuthOptsValidator),
+            new(new(_provider), _fileAuthOptsValidator));
     }
 
     private void GivenAServiceDiscoveryHandler()
@@ -1215,11 +1208,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         _provider = _services.BuildServiceProvider(true);
         _configurationValidator = new FileConfigurationFluentValidator(
             _provider,
-            new RouteFluentValidator(
-                new HostAndPortValidator(),
-                new FileQoSOptionsFluentValidator(_provider),
-                _fileAuthOptsValidator),
-            new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
+            new(new(), new(_provider), _fileAuthOptsValidator),
+            new(new(_provider), _fileAuthOptsValidator));
     }
 
     private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider

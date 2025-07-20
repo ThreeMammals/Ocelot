@@ -14,7 +14,7 @@ public class FileAuthenticationOptionsValidator : AbstractValidator<FileAuthenti
 
         RuleFor(authOptions => authOptions)
             .MustAsync(IsSupportedAuthenticationProviders)
-            .WithMessage("AuthenticationOptions: {PropertyValue} is unsupported authentication provider");
+            .WithMessage($"{nameof(FileRoute.AuthenticationOptions)}: {{PropertyValue}} is unsupported authentication provider");
     }
 
     private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions options, CancellationToken cancellationToken)

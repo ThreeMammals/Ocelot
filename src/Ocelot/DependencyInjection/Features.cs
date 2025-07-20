@@ -2,13 +2,27 @@
 using Ocelot.Cache;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.RateLimiting;
+using FluentValidation;
 
 namespace Ocelot.DependencyInjection;
 
 public static class Features
 {
+    /// <summary>This Ocelot Core feature adds validation for JSON configuration File-models.</summary>
+    /// <remarks>Added validator-classes must implement the <see cref="AbstractValidator{FileConfiguration}"/> interface, where T is File-model.</remarks>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddConfigurationValidators(this IServiceCollection services) => services
+        .AddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>()
+        .AddSingleton<HostAndPortValidator>()
+        .AddSingleton<RouteFluentValidator>()
+        .AddSingleton<FileGlobalConfigurationFluentValidator>()
+        .AddSingleton<FileQoSOptionsFluentValidator>()
+        .AddSingleton<FileAuthenticationOptionsValidator>();
+
     /// <summary>
     /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/ratelimiting.rst">Rate Limiting</see>.
     /// </summary>

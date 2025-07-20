@@ -11,7 +11,6 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
-using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
@@ -51,24 +50,19 @@ public class OcelotBuilder : IOcelotBuilder
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
         Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
+        Services.AddConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
 
         Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
         Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
         Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
-        Services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
-        Services.TryAddSingleton<HostAndPortValidator>();
         Services.TryAddSingleton<IRoutesCreator, RoutesCreator>();
         Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
         Services.TryAddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         Services.TryAddSingleton<IConfigurationCreator, ConfigurationCreator>();
         Services.TryAddSingleton<IDynamicsCreator, DynamicsCreator>();
         Services.TryAddSingleton<ILoadBalancerOptionsCreator, LoadBalancerOptionsCreator>();
-        Services.TryAddSingleton<RouteFluentValidator>();
-        Services.TryAddSingleton<FileGlobalConfigurationFluentValidator>();
-        Services.TryAddSingleton<FileQoSOptionsFluentValidator>();
-        Services.TryAddSingleton<FileAuthenticationOptionsValidator>();
         Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
         Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
         Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();

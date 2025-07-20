@@ -12,14 +12,11 @@ public class RouteOptionsCreator : IRouteOptionsCreator
             return new RouteOptionsBuilder().Build();
         }
 
-        var authOpts = route.AuthenticationOptions;
+        // TODO Requires design review, see code review
+        bool isAuthenticated = route?.AuthenticationOptions?.AllowAnonymous != true && global?.AuthenticationOptions?.HasScheme == true
+            || route?.AuthenticationOptions?.HasScheme == true;
 
-        //var isAuthenticated = authOpts != null
-        //    && (!string.IsNullOrEmpty(authOpts.AuthenticationProviderKey)
-        //        || authOpts.AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true);
-        var isAuthenticated = authOpts?.AllowAnonymous != true && global?.AuthenticationOptions?.HasProviderKey == true
-            || authOpts?.HasProviderKey == true;
-        var isAuthorized = route.RouteClaimsRequirement?.Any() == true;
+        bool isAuthorized = (route.RouteClaimsRequirement?.Count ?? 0) > 0;
 
         // TODO: This sounds more like a hack, it might be better to refactor this at some point.
         var isCached = route.FileCacheOptions.TtlSeconds > 0;

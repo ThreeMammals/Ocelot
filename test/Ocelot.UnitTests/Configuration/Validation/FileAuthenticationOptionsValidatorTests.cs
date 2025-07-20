@@ -6,6 +6,8 @@ using Ocelot.Configuration.Validator;
 
 namespace Ocelot.UnitTests.Configuration.Validation;
 
+[Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
+[Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
 public class FileAuthenticationOptionsValidatorTests : UnitTest
 {
     private readonly FileAuthenticationOptionsValidator _validator;
@@ -15,16 +17,15 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
 
     public FileAuthenticationOptionsValidatorTests()
     {
-        _authProvider = new Mock<IAuthenticationSchemeProvider>();
-        _validator = new FileAuthenticationOptionsValidator(_authProvider.Object);
+        _authProvider = new();
+        _validator = new(_authProvider.Object);
     }
 
     [Fact]
-    public async void Should_be_valid_if_specified_authentication_provider_is_registered()
+    public async Task Should_be_valid_if_specified_authentication_provider_is_registered()
     {
         // Arrange
         const string key = "JwtLads";
-
         CreateAuthenticationOptions(key);
         GivenAnAuthProvider(key);
 
@@ -36,11 +37,10 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
     }
 
     [Fact]
-    public async void Should_not_be_valid_if_specified_authentication_provider_is_not_registered()
+    public async Task Should_not_be_valid_if_specified_authentication_provider_is_not_registered()
     {
         // Arrange
         const string key = "JwtLads";
-
         CreateAuthenticationOptions(key);
 
         // Act
@@ -48,8 +48,7 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
 
         // Assert
         _result.IsValid.ShouldBeFalse();
-        _result.Errors[0].ErrorMessage.ShouldBe($"AuthenticationOptions: AuthenticationProviderKey:'{key}',AuthenticationProviderKeys:[]," +
-            $"AllowedScopes:[] is unsupported authentication provider");
+        _result.Errors[0].ErrorMessage.ShouldBe("AuthenticationOptions: AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads'],AllowedScopes:[] is unsupported authentication provider");
     }
 
     private void GivenAnAuthProvider(string key)
@@ -58,9 +57,7 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
         {
             new(key, key, typeof(FakeAuthHandler)),
         };
-
-        _authProvider
-            .Setup(x => x.GetAllSchemesAsync())
+        _authProvider.Setup(x => x.GetAllSchemesAsync())
             .ReturnsAsync(schemes);
     }
 
@@ -68,7 +65,7 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
     {
         _authenticationOptions = new FileAuthenticationOptions
         {
-            AuthenticationProviderKey = key,
+            AuthenticationProviderKeys = [ key ],
         };
     }
 
@@ -79,24 +76,9 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
 
     private class FakeAuthHandler : IAuthenticationHandler
     {
-        public Task<AuthenticateResult> AuthenticateAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ChallengeAsync(AuthenticationProperties properties)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ForbidAsync(AuthenticationProperties properties)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<AuthenticateResult> AuthenticateAsync() => throw new NotImplementedException();
+        public Task ChallengeAsync(AuthenticationProperties properties) => throw new NotImplementedException();
+        public Task ForbidAsync(AuthenticationProperties properties) => throw new NotImplementedException();
+        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context) => throw new NotImplementedException();
     }
 }

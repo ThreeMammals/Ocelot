@@ -18,8 +18,7 @@ public class RouteFluentValidatorTests : UnitTest
         _authProvider = new Mock<IAuthenticationSchemeProvider>();
         _serviceProvider = new Mock<IServiceProvider>();
 
-        // Todo - replace with mocks
-        //_validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+        // TODO - replace with mocks
         _validator = new RouteFluentValidator(
             new HostAndPortValidator(),
             new FileQoSOptionsFluentValidator(_serviceProvider.Object),

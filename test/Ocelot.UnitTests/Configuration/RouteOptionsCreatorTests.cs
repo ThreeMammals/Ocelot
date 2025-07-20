@@ -60,7 +60,7 @@ public class RouteOptionsCreatorTests : UnitTest
                 AuthenticationProviderKeys = null,
             },
         };
-        var globalConfig = RouteOptionsCreatorTests.CreateGlobalConfiguration(null, null);
+        var globalConfig = CreateGlobalConfiguration(null, null);
 
         // Act
         var actual = _creator.Create(route, globalConfig);
@@ -112,10 +112,10 @@ public class RouteOptionsCreatorTests : UnitTest
     public void Create_RouteOptions_HappyPath(bool isAuthenticationProviderKeys)
     {
         // Arrange
-        var route = RouteOptionsCreatorTests.CreateFileRoute(!isAuthenticationProviderKeys ? "Test" : null,
+        var route = CreateFileRoute(!isAuthenticationProviderKeys ? "Test" : null,
                                     isAuthenticationProviderKeys ? new string[] { string.Empty, "Test #1" } : null,
                                     false);
-        var globalConfig = RouteOptionsCreatorTests.CreateGlobalConfiguration(null, null);
+        var globalConfig = CreateGlobalConfiguration(null, null);
         var expected = new RouteOptionsBuilder()
             .WithIsAuthenticated(true)
             .WithIsAuthorized(true)
@@ -140,11 +140,13 @@ public class RouteOptionsCreatorTests : UnitTest
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
     public void Create_ProviderKeyInGlobalConfig_ShouldSetIsAuthenticatedDependOnAllowAnonymous(bool globalConfigHasSingleProviderKey, bool allowAnonymous)
     {
         // Arrange
-        var route = RouteOptionsCreatorTests.CreateFileRoute(null, null, allowAnonymous);
-        var globalConfig = RouteOptionsCreatorTests.CreateGlobalConfiguration(globalConfigHasSingleProviderKey ? "key" : null,
+        var route = CreateFileRoute(null, null, allowAnonymous);
+        var globalConfig = CreateGlobalConfiguration(globalConfigHasSingleProviderKey ? "key" : null,
                                                      globalConfigHasSingleProviderKey ? null : new string[] { "key1", "key2" });
         var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(!allowAnonymous)

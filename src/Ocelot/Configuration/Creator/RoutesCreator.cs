@@ -83,7 +83,6 @@ public class RoutesCreator : IRoutesCreator
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
-        //var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute);
         var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
