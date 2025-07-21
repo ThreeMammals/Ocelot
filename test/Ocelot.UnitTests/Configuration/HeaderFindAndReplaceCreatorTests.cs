@@ -37,7 +37,6 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         {
             GlobalConfiguration = _global,
         });
-
         _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
     }
 

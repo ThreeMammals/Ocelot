@@ -44,14 +44,13 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
     {
         var qoSProvider = this.GetQoSProvider();
         var pipeline = qoSProvider.GetResiliencePipeline(_route);
-
         if (pipeline == null)
         {
             _logger.LogDebug(() => $"No {nameof(pipeline)} was detected by QoS provider for the route with downstream URL '{request.RequestUri}'.");
             return await base.SendAsync(request, cancellationToken); // shortcut > no qos
         }
 
-        _logger.LogInformation(() => $"The {pipeline.GetType().Name} {nameof(pipeline)} has detected by QoS provider for the route with downstream URL '{request.RequestUri}'. Going to execute request...");
+        _logger.LogInformation(() => $"The {pipeline} {nameof(pipeline)} has detected by QoS provider for the route with downstream URL '{request.RequestUri}'. Going to execute request...");
         return await pipeline.ExecuteAsync(async (token) => await base.SendAsync(request, token), cancellationToken);
     }
 }

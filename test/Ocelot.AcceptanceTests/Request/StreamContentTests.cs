@@ -6,19 +6,10 @@ using System.Security.Cryptography;
 namespace Ocelot.AcceptanceTests.Request;
 
 [Trait("PR", "1972")]
-public sealed class StreamContentTests : Steps, IDisposable
+public sealed class StreamContentTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public StreamContentTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -29,7 +20,7 @@ public sealed class StreamContentTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, false)))
@@ -46,7 +37,7 @@ public sealed class StreamContentTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, true)))
@@ -55,14 +46,14 @@ public sealed class StreamContentTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath)
     {
         static void options(KestrelServerOptions o)
         {
             o.Limits.MaxRequestBodySize = long.MaxValue;
         }
-
-        _serviceHandler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
+        var baseUrl = DownstreamUrl(port);
+        handler.GivenThereIsAServiceRunningOnWithKestrelOptions(baseUrl, basePath, options, async context =>
         {
             var request = context.Request;
             var response = context.Response;

@@ -44,9 +44,10 @@ public class AuthenticationOptionsCreatorTests
     public void Create_OptionsObjIsNotNull_CreatedSuccessfully(bool isAuthenticationProviderKeys)
     {
         // Arrange
-        string authenticationProviderKey = !isAuthenticationProviderKeys ? "Test" : null;
-        string[] authenticationProviderKeys = isAuthenticationProviderKeys ?
-            new string[] { "Test #1", "Test #2" } : null;
+        string authenticationProviderKey = !isAuthenticationProviderKeys
+            ? "Test" : null;
+        string[] authenticationProviderKeys = isAuthenticationProviderKeys
+            ? new string[] { "Test #1", "Test #2" } : null;
         var fileRoute = new FileRoute()
         {
             AuthenticationOptions = new FileAuthenticationOptions

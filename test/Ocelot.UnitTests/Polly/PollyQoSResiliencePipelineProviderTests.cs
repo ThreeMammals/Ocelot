@@ -7,11 +7,53 @@ using Polly.CircuitBreaker;
 using Polly.Registry;
 using Polly.Testing;
 using Polly.Timeout;
+using _TimeoutStrategy_ = Ocelot.Provider.Polly.TimeoutStrategy;
 
 namespace Ocelot.UnitTests.Polly;
 
 public class PollyQoSResiliencePipelineProviderTests
 {
+    #region Constructor
+    [Theory]
+    [Trait("PR", "2073")]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Ctor_NoLoggerParam_ShouldThrowArgumentNullException(int branch)
+    {
+        // Arrange
+        IOcelotLoggerFactory factory = null;
+        if (branch >= 0)
+            factory = null;
+        if (branch >= 1)
+            factory = Mock.Of<IOcelotLoggerFactory>();
+
+        // Act
+        var ex = Assert.Throws<ArgumentNullException>(
+            () => new PollyQoSResiliencePipelineProvider(factory, null));
+
+        // Assert
+        Assert.Equal("loggerFactory", ex.ParamName);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    public void Ctor_NoRegistryParam_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var factory = new Mock<IOcelotLoggerFactory>();
+        factory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
+            .Returns(Mock.Of<IOcelotLogger>());
+        ResiliencePipelineRegistry<OcelotResiliencePipelineKey> noRegistry = null; // !!!
+
+        // Act
+        var ex = Assert.Throws<ArgumentNullException>(
+            () => new PollyQoSResiliencePipelineProvider(factory.Object, noRegistry));
+
+        // Assert
+        Assert.Equal("registry", ex.ParamName);
+    }
+    #endregion
+
     [Fact]
     public void ShouldBuild()
     {
@@ -19,14 +61,12 @@ public class PollyQoSResiliencePipelineProviderTests
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(1000) // 10ms, minimum required by Polly
             .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
-            .WithDurationOfBreak(QoSOptions.LowBreakDuration + 1) // 0.5s, minimum required by Polly
+            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 0.5s, minimum required by Polly
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -46,9 +86,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -61,10 +99,9 @@ public class PollyQoSResiliencePipelineProviderTests
 
     [Theory]
     [Trait("Bug", "2085")]
-    [InlineData(0, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration - 1, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration, QoSOptions.DefaultBreakDuration)] // default
-    [InlineData(QoSOptions.LowBreakDuration + 1, QoSOptions.LowBreakDuration + 1)] // not default, exact
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration - 1, CircuitBreakerStrategy.DefaultBreakDuration)] // default
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration, CircuitBreakerStrategy.DefaultBreakDuration)] // default
+    [InlineData(CircuitBreakerStrategy.LowBreakDuration + 1, CircuitBreakerStrategy.LowBreakDuration + 1)] // not default, exact
     public void ShouldBuild_WithDefaultBreakDuration(int durationOfBreak, int expectedMillisecons)
     {
         // Arrange
@@ -76,9 +113,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        var provider = new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        var provider = GivenProvider();
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -158,7 +193,7 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         // Arrange
         var provider = GivenProvider();
-        var route = GivenDownstreamRoute("/", true); // get route with 0 exceptions allowed before breaking
+        var route = GivenDownstreamRoute("/", 0); // get route with 0 exceptions allowed before breaking
 
         // Act
         var resiliencePipeline = provider.GetResiliencePipeline(route);
@@ -177,8 +212,8 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         // Arrange
         var provider = GivenProvider();
-        const int timeOut = 1000;
-        var route = GivenDownstreamRoute("/", false, timeOut);
+        const int OneSecond = 1000;
+        var route = GivenDownstreamRoute("/", timeOut: OneSecond);
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.OK);
         var cancellationTokenSource = new CancellationTokenSource();
@@ -189,7 +224,7 @@ public class PollyQoSResiliencePipelineProviderTests
             // Act
             await resiliencePipeline.ExecuteAsync(async (cancellationToken) =>
             {
-                await Task.Delay(timeOut + 500, cancellationToken); // add 500ms to make sure it's timed out
+                await Task.Delay(OneSecond + 500, cancellationToken); // add 500ms to make sure it's timed out
                 return response;
             },
             cancellationTokenSource.Token));
@@ -201,8 +236,8 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         // Arrange
         var provider = GivenProvider();
-        const int timeOut = 1000;
-        var route = GivenDownstreamRoute("/", false, timeOut);
+        const int OneSecond = 1000;
+        var route = GivenDownstreamRoute("/", timeOut: OneSecond);
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.OK);
         var cancellationTokenSource = new CancellationTokenSource();
@@ -210,7 +245,7 @@ public class PollyQoSResiliencePipelineProviderTests
         // Act
         await resiliencePipeline.ExecuteAsync(async cancellationToken =>
         {
-            await Task.Delay(timeOut - 100, cancellationToken); // subtract 100ms to make sure it's not timed out
+            await Task.Delay(OneSecond - 100, cancellationToken); // subtract 100ms to make sure it's not timed out
             return response;
         }, cancellationTokenSource.Token);
 
@@ -359,21 +394,267 @@ public class PollyQoSResiliencePipelineProviderTests
             await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
     }
 
-    private static PollyQoSResiliencePipelineProvider GivenProvider()
+    [Theory]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    [Trait("Feat", "1869")]
+    [InlineData(null)]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public void ConfigureTimeout_NoQosTimeout_ShouldNotApplyTimeoutStrategy(int? timeout)
     {
-        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
-        loggerFactoryMock
-            .Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
-            .Returns(new Mock<IOcelotLogger>().Object);
-        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
-        return new PollyQoSResiliencePipelineProvider(loggerFactoryMock.Object, registry);
+        // Arrange
+        var provider = GivenProvider();
+        var route = GivenDownstreamRoute("/", timeOut: timeout);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Single().Options.ShouldNotBeOfType<TimeoutStrategyOptions>();
     }
 
-    private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, bool inactiveExceptionsAllowedBeforeBreaking = false, int timeOut = 10000)
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    [Trait("Feat", "1869")]
+    public void ConfigureTimeout_HasInvalidTimeout_ShouldUseDefaultTimeout()
+    {
+        // Arrange
+        int? invalidTimeout = _TimeoutStrategy_.LowTimeout - 1;
+        var provider = GivenProvider();
+        var route = GivenDownstreamRoute("/", 0, invalidTimeout);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Single().Options.ShouldBeOfType<TimeoutStrategyOptions>();
+        var actual = descriptor.Strategies.Single().Options as TimeoutStrategyOptions;
+        Assert.Equal(_TimeoutStrategy_.DefaultTimeout, (int)actual.Timeout.TotalMilliseconds);
+    }
+
+    [Theory]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    [Trait("Feat", "1869")]
+    [InlineData(null)]
+    [InlineData(_TimeoutStrategy_.LowTimeout - 1)]
+    public void ConfigureTimeout_ValidationIsAlwaysTrue_ShouldUseDefaultTimeout(int? invalidTimeout)
+    {
+        // Arrange
+        var provider = GivenProvider<FakeTimeoutProvider>();
+        var route = GivenDownstreamRoute("/", timeOut: invalidTimeout);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Count.ShouldBe(2);
+        var strategy = descriptor.Strategies.SingleOrDefault(x => x.Options.GetType() == typeof(TimeoutStrategyOptions)).ShouldNotBeNull();
+        var actual = strategy.Options as TimeoutStrategyOptions;
+        Assert.Equal(_TimeoutStrategy_.DefaultTimeout, (int)actual.Timeout.TotalMilliseconds);
+    }
+
+    [Theory]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    [Trait("Feat", "1869")]
+    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the TimeoutValue (?) is either undefined, negative, or zero.")]
+    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the TimeoutValue (-1) is either undefined, negative, or zero.")]
+    public void IsConfigurationValidForTimeout_InvalidValue_ShouldLogError(int? invalidTimeout, string expectedMessage)
+    {
+        // Arrange
+        var provider = GivenProvider();
+        var route = GivenDownstreamRoute("/", timeOut: invalidTimeout);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Single().Options.ShouldBeOfType<CircuitBreakerStrategyOptions<HttpResponseMessage>>();
+        _logger.Verify(x => x.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()), Times.Once());
+        var message = _funcMessage?.Invoke() ?? string.Empty;
+        message.ShouldBe(expectedMessage);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    [Trait("Feat", "1869")]
+    public void IsConfigurationValidForTimeout_ValidValueButIsNotValidTimeout_ShouldLogWarning()
+    {
+        // Arrange
+        var provider = GivenProvider();
+        var route = GivenDownstreamRoute("/", timeOut: _TimeoutStrategy_.LowTimeout - 1);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Count.ShouldBe(2);
+        var strategy = descriptor.Strategies.SingleOrDefault(x => x.Options.GetType() == typeof(TimeoutStrategyOptions)).ShouldNotBeNull();
+        var actual = strategy.Options as TimeoutStrategyOptions;
+        Assert.Equal(_TimeoutStrategy_.DefaultTimeout, (int)actual.Timeout.TotalMilliseconds);
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
+        var message = _funcMessage?.Invoke() ?? string.Empty;
+        message.ShouldBe("Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the Timeout value (9) is outside the valid range (10 to 86400000 milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value (30000) will be substituted.");
+    }
+
+    [Fact]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    public void The_ReturnedWithMessagePosition()
+    {
+        // Arrange 1
+        List<Func<string>> warnings = new();
+        static string msg1() => "A";
+        warnings.Add(msg1);
+
+        // Act, Assert 1
+        PollyQoSResiliencePipelineProvider.The(warnings, msg1).ShouldBe("the");
+
+        // Arrange 2
+        static string msg2() => "B";
+        warnings.Add(msg2);
+
+        // Act, Assert 2
+        var nl = Environment.NewLine;
+        PollyQoSResiliencePipelineProvider.The(warnings, msg1).ShouldBe($"{nl}  1. The");
+        PollyQoSResiliencePipelineProvider.The(warnings, msg2).ShouldBe($"{nl}  2. The");
+    }
+
+    [Theory]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the ExceptionsAllowedBeforeBreaking value (?) is either undefined, negative, or zero.")]
+    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the ExceptionsAllowedBeforeBreaking value (-1) is either undefined, negative, or zero.")]
+    public void IsConfigurationValidForCircuitBreaker_InvalidValue_ShouldLogError(int? exceptionsAllowedBeforeBreaking, string expectedMessage)
+    {
+        // Arrange
+        var provider = GivenProvider();
+        var route = GivenDownstreamRoute("/", exceptionsAllowedBeforeBreaking, 555);
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Single().Options.ShouldBeOfType<TimeoutStrategyOptions>();
+        _logger.Verify(x => x.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()), Times.Once());
+        var message = _funcMessage?.Invoke() ?? string.Empty;
+        message.ShouldBe(expectedMessage);
+    }
+
+    [Fact]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    public void IsConfigurationValidForCircuitBreaker_InvalidOptions_ShouldLogWarning()
+    {
+        // Arrange
+        var provider = GivenProvider();
+        var invalidOptions = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(1) // invalid
+            .WithDurationOfBreak(0)
+            .WithFailureRatio(0.0D)
+            .WithSamplingDuration(0)
+            .WithTimeoutValue(_TimeoutStrategy_.DefTimeout) // but timeout is valid
+            .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(invalidOptions)
+            .WithUpstreamPathTemplate(new("/", 1, false, "/"))
+            .Build();
+
+        // Act
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Count.ShouldBe(2);
+        descriptor.Strategies.Single(x => x.Options.GetType() == typeof(CircuitBreakerStrategyOptions<HttpResponseMessage>));
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
+        var message = _funcMessage?.Invoke() ?? string.Empty;
+        message.ShouldBe(@"Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, 
+  1. The MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase ExceptionsAllowedBeforeBreaking to at least 2 or higher. Until then, the default value (100) will be substituted.
+  2. The BreakDuration value (0) is outside the valid range (500 to 86400000 milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value (5000) will be substituted.
+  3. The FailureRatio value (0) is outside the valid range (0 to 1). Therefore, ensure the ratio falls within this range; otherwise, the default value (0.1) will be substituted.
+  4. The SamplingDuration value (0) is outside the valid range (500 to 86400000 milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value (30000) will be substituted.");
+    }
+
+    [Fact]
+    [Trait("PR", "2081")]
+    [Trait("Feat", "2080")]
+    public void IsConfigurationValidForCircuitBreaker_NullOptions_ShouldLogWarning()
+    {
+        // Arrange
+        var provider = GivenProvider();
+        var nullOptions = new QoSOptionsBuilder()
+            .WithExceptionsAllowedBeforeBreaking(1) // invalid
+            .WithDurationOfBreak(null)
+            .WithFailureRatio(null)
+            .WithSamplingDuration(null)
+            .WithTimeoutValue(_TimeoutStrategy_.DefTimeout) // but timeout is valid
+            .Build();
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(nullOptions)
+            .WithUpstreamPathTemplate(new("/", 1, false, "/"))
+            .Build();
+
+        // Act 2
+        var resiliencePipeline = provider.GetResiliencePipeline(route);
+        var descriptor = resiliencePipeline.ShouldNotBeNull().GetPipelineDescriptor();
+
+        // Assert 2
+        descriptor.ShouldNotBeNull();
+        descriptor.Strategies.ShouldNotBeEmpty();
+        descriptor.Strategies.Count.ShouldBe(2);
+        descriptor.Strategies.ShouldContain(x => x.Options.GetType() == typeof(CircuitBreakerStrategyOptions<HttpResponseMessage>));
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
+        var message = _funcMessage?.Invoke() ?? string.Empty;
+        message.ShouldBe("Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase ExceptionsAllowedBeforeBreaking to at least 2 or higher. Until then, the default value (100) will be substituted.");
+    }
+
+    private Func<string> _funcMessage;
+    private readonly Mock<IOcelotLogger> _logger = new();
+    private PollyQoSResiliencePipelineProvider GivenProvider() => GivenProvider<PollyQoSResiliencePipelineProvider>();
+    private PollyQoSResiliencePipelineProvider GivenProvider<T>()
+        where T : PollyQoSResiliencePipelineProvider
+    {
+        _logger.Setup(x => x.LogError(It.IsAny<Func<string>>(), It.IsAny<Exception>()))
+            .Callback<Func<string>, Exception>((f, _) => _funcMessage = f);
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>((f) => _funcMessage = f);
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        loggerFactory.Setup(x => x.CreateLogger<PollyQoSResiliencePipelineProvider>())
+            .Returns(_logger.Object);
+        var registry = new ResiliencePipelineRegistry<OcelotResiliencePipelineKey>();
+        return (T)Activator.CreateInstance(typeof(T), loggerFactory.Object, registry);
+    }
+
+    private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, int? exceptionsAllowedBeforeBreaking = 2, int? timeOut = 10000)
     {
         var options = new QoSOptionsBuilder()
             .WithTimeoutValue(timeOut)
-            .WithExceptionsAllowedBeforeBreaking(inactiveExceptionsAllowedBeforeBreaking ? 0 : 2)
+            .WithExceptionsAllowedBeforeBreaking(exceptionsAllowedBeforeBreaking)
             .WithDurationOfBreak(5000)
             .Build();
 
@@ -389,4 +670,12 @@ public class PollyQoSResiliencePipelineProviderTests
             .WithUpstreamPathTemplate(upstreamPath)
             .Build();
     }
+}
+
+internal class FakeTimeoutProvider : PollyQoSResiliencePipelineProvider
+{
+    public FakeTimeoutProvider(IOcelotLoggerFactory loggerFactory, ResiliencePipelineRegistry<OcelotResiliencePipelineKey> registry)
+        : base(loggerFactory, registry) { }
+
+    protected override bool IsConfigurationValidForTimeout(DownstreamRoute route) => true;
 }

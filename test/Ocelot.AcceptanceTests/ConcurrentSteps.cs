@@ -9,28 +9,21 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ConcurrentSteps : Steps, IDisposable
+public class ConcurrentSteps : Steps
 {
     protected Task[] _tasks;
-    protected ServiceHandler[] _handlers;
     protected ConcurrentDictionary<int, HttpResponseMessage> _responses;
     protected volatile int[] _counters;
 
     public ConcurrentSteps()
     {
         _tasks = Array.Empty<Task>();
-        _handlers = Array.Empty<ServiceHandler>();
         _responses = new();
         _counters = Array.Empty<int>();
     }
 
     public override void Dispose()
     {
-        foreach (var handler in _handlers)
-        {
-            handler?.Dispose();
-        }
-
         foreach (var response in _responses.Values)
         {
             response?.Dispose();
@@ -50,7 +43,6 @@ public class ConcurrentSteps : Steps, IDisposable
 
     protected void GivenServiceInstanceIsRunning(string url, string response, HttpStatusCode statusCode)
     {
-        _handlers = new ServiceHandler[1]; // allocate single instance
         _counters = new int[1]; // single counter
         GivenServiceIsRunning(url, response, 0, statusCode);
         _counters[0] = 0;
@@ -58,8 +50,6 @@ public class ConcurrentSteps : Steps, IDisposable
 
     protected void GivenThereIsAServiceRunningOn(string url, string basePath, string responseBody)
     {
-        var handler = new ServiceHandler();
-        _handlers = new ServiceHandler[] { handler };
         handler.GivenThereIsAServiceRunningOn(url, basePath, MapGet(basePath, responseBody));
     }
 
@@ -76,7 +66,6 @@ public class ConcurrentSteps : Steps, IDisposable
     protected void GivenMultipleServiceInstancesAreRunning(string[] urls, string[] responses, HttpStatusCode statusCode)
     {
         Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
-        _handlers = new ServiceHandler[urls.Length]; // allocate multiple instances
         _counters = new int[urls.Length]; // multiple counters
         for (int i = 0; i < urls.Length; i++)
         {
@@ -93,9 +82,7 @@ public class ConcurrentSteps : Steps, IDisposable
     private void GivenServiceIsRunning(string url, string response, int index, HttpStatusCode successCode)
     {
         response ??= successCode.ToString();
-        _handlers[index] ??= new();
-        var serviceHandler = _handlers[index];
-        serviceHandler.GivenThereIsAServiceRunningOn(url, MapGet(index, response, successCode));
+        handler.GivenThereIsAServiceRunningOn(url, MapGet(index, response, successCode));
     }
 
     protected static RequestDelegate MapGet(string path, string responseBody) => MapGet(path, responseBody, HttpStatusCode.OK);
@@ -172,7 +159,7 @@ public class ConcurrentSteps : Steps, IDisposable
 
     private async Task GetParallelResponse(string url, int threadIndex)
     {
-        var response = await _ocelotClient.GetAsync(url);
+        var response = await ocelotClient.GetAsync(url);
         var content = await response.Content.ReadAsStringAsync();
         var counterString = content.Contains(':')
             ? content.Split(':')[0] // let the first fragment is counter value
@@ -184,8 +171,19 @@ public class ConcurrentSteps : Steps, IDisposable
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
         => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
+
     public void ThenAllResponseBodiesShouldBe(string expectedBody)
-        => _responses.ShouldAllBe(response => response.Value.Content.ReadAsStringAsync().Result == expectedBody);
+    {
+        foreach (var r in _responses)
+        {
+            var content = r.Value.Content.ReadAsStringAsync().Result;
+            content = content?.Contains(':') == true
+                ? content.Split(':')[1] // remove counter for body comparison
+                : "0";
+
+            content.ShouldBe(expectedBody);
+        }
+    }
 
     protected string CalledTimesMessage()
         => $"All values are [{string.Join(',', _counters)}]";

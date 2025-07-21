@@ -1,28 +1,27 @@
 ﻿using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
-namespace Ocelot.Requester
+namespace Ocelot.Requester;
+
+public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
 {
-    public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
+    private readonly ITracer _tracer;
+    private readonly IRequestScopedDataRepository _repo;
+
+    public OcelotHttpTracingHandler(
+        ITracer tracer,
+        IRequestScopedDataRepository repo,
+        HttpMessageHandler httpMessageHandler = null)
     {
-        private readonly ITracer _tracer;
-        private readonly IRequestScopedDataRepository _repo;
+        _repo = repo;
+        _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+        InnerHandler = httpMessageHandler ?? new HttpClientHandler();
+    }
 
-        public OcelotHttpTracingHandler(
-            ITracer tracer,
-            IRequestScopedDataRepository repo,
-            HttpMessageHandler httpMessageHandler = null)
-        {
-            _repo = repo;
-            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-            InnerHandler = httpMessageHandler ?? new HttpClientHandler();
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            return _tracer.SendAsync(request, cancellationToken, x => _repo.Add("TraceId", x), (r, c) => base.SendAsync(r, c));
-        }
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return _tracer.SendAsync(request, cancellationToken, x => _repo.Add("TraceId", x), (r, c) => base.SendAsync(r, c));
     }
 }

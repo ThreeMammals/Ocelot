@@ -1,40 +1,39 @@
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class InMemoryBus<T> : IBus<T>
 {
-    public class InMemoryBus<T> : IBus<T>
+    private readonly BlockingCollection<DelayedMessage<T>> _queue;
+    private readonly List<Action<T>> _subscriptions;
+    private readonly Thread _processing;
+
+    public InMemoryBus()
     {
-        private readonly BlockingCollection<DelayedMessage<T>> _queue;
-        private readonly List<Action<T>> _subscriptions;
-        private readonly Thread _processing;
+        _queue = new BlockingCollection<DelayedMessage<T>>();
+        _subscriptions = new List<Action<T>>();
+        _processing = new Thread(async () => await Process());
+        _processing.Start();
+    }
 
-        public InMemoryBus()
-        {
-            _queue = new BlockingCollection<DelayedMessage<T>>();
-            _subscriptions = new List<Action<T>>();
-            _processing = new Thread(async () => await Process());
-            _processing.Start();
-        }
+    public void Subscribe(Action<T> action)
+    {
+        _subscriptions.Add(action);
+    }
 
-        public void Subscribe(Action<T> action)
-        {
-            _subscriptions.Add(action);
-        }
+    public void Publish(T message, int delay)
+    {
+        var delayed = new DelayedMessage<T>(message, delay);
+        _queue.Add(delayed);
+    }
 
-        public void Publish(T message, int delay)
+    private async Task Process()
+    {
+        foreach (var delayedMessage in _queue.GetConsumingEnumerable())
         {
-            var delayed = new DelayedMessage<T>(message, delay);
-            _queue.Add(delayed);
-        }
+            await Task.Delay(delayedMessage.Delay);
 
-        private async Task Process()
-        {
-            foreach (var delayedMessage in _queue.GetConsumingEnumerable())
+            foreach (var subscription in _subscriptions)
             {
-                await Task.Delay(delayedMessage.Delay);
-
-                foreach (var subscription in _subscriptions)
-                {
-                    subscription(delayedMessage.Message);
-                }
+                subscription(delayedMessage.Message);
             }
         }
     }

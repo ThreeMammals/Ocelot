@@ -4,41 +4,40 @@ using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.Claims
+namespace Ocelot.Claims;
+
+public class AddClaimsToRequest : IAddClaimsToRequest
 {
-    public class AddClaimsToRequest : IAddClaimsToRequest
+    private readonly IClaimsParser _claimsParser;
+
+    public AddClaimsToRequest(IClaimsParser claimsParser)
     {
-        private readonly IClaimsParser _claimsParser;
+        _claimsParser = claimsParser;
+    }
 
-        public AddClaimsToRequest(IClaimsParser claimsParser)
+    public Response SetClaimsOnContext(List<ClaimToThing> claimsToThings, HttpContext context)
+    {
+        foreach (var config in claimsToThings)
         {
-            _claimsParser = claimsParser;
-        }
+            var value = _claimsParser.GetValue(context.User.Claims, config.NewKey, config.Delimiter, config.Index);
 
-        public Response SetClaimsOnContext(List<ClaimToThing> claimsToThings, HttpContext context)
-        {
-            foreach (var config in claimsToThings)
+            if (value.IsError)
             {
-                var value = _claimsParser.GetValue(context.User.Claims, config.NewKey, config.Delimiter, config.Index);
-
-                if (value.IsError)
-                {
-                    return new ErrorResponse(value.Errors);
-                }
-
-                var exists = context.User.Claims.FirstOrDefault(x => x.Type == config.ExistingKey);
-
-                var identity = context.User.Identity as ClaimsIdentity;
-
-                if (exists != null)
-                {
-                    identity?.RemoveClaim(exists);
-                }
-
-                identity?.AddClaim(new Claim(config.ExistingKey, value.Data));
+                return new ErrorResponse(value.Errors);
             }
 
-            return new OkResponse();
+            var exists = context.User.Claims.FirstOrDefault(x => x.Type == config.ExistingKey);
+
+            var identity = context.User.Identity as ClaimsIdentity;
+
+            if (exists != null)
+            {
+                identity?.RemoveClaim(exists);
+            }
+
+            identity?.AddClaim(new Claim(config.ExistingKey, value.Data));
         }
+
+        return new OkResponse();
     }
 }

@@ -2,54 +2,53 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class FileInternalConfigurationCreator : IInternalConfigurationCreator
 {
-    public class FileInternalConfigurationCreator : IInternalConfigurationCreator
+    private readonly IConfigurationValidator _configurationValidator;
+    private readonly IConfigurationCreator _configCreator;
+    private readonly IDynamicsCreator _dynamicsCreator;
+    private readonly IRoutesCreator _routesCreator;
+    private readonly IAggregatesCreator _aggregatesCreator;
+
+    public FileInternalConfigurationCreator(
+        IConfigurationValidator configurationValidator,
+        IRoutesCreator routesCreator,
+        IAggregatesCreator aggregatesCreator,
+        IDynamicsCreator dynamicsCreator,
+        IConfigurationCreator configCreator
+        )
     {
-        private readonly IConfigurationValidator _configurationValidator;
-        private readonly IConfigurationCreator _configCreator;
-        private readonly IDynamicsCreator _dynamicsCreator;
-        private readonly IRoutesCreator _routesCreator;
-        private readonly IAggregatesCreator _aggregatesCreator;
+        _configCreator = configCreator;
+        _dynamicsCreator = dynamicsCreator;
+        _aggregatesCreator = aggregatesCreator;
+        _routesCreator = routesCreator;
+        _configurationValidator = configurationValidator;
+    }
 
-        public FileInternalConfigurationCreator(
-            IConfigurationValidator configurationValidator,
-            IRoutesCreator routesCreator,
-            IAggregatesCreator aggregatesCreator,
-            IDynamicsCreator dynamicsCreator,
-            IConfigurationCreator configCreator
-            )
+    public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
+    {
+        var response = await _configurationValidator.IsValid(fileConfiguration);
+
+        if (response.Data.IsError)
         {
-            _configCreator = configCreator;
-            _dynamicsCreator = dynamicsCreator;
-            _aggregatesCreator = aggregatesCreator;
-            _routesCreator = routesCreator;
-            _configurationValidator = configurationValidator;
+            return new ErrorResponse<IInternalConfiguration>(response.Data.Errors);
         }
 
-        public async Task<Response<IInternalConfiguration>> Create(FileConfiguration fileConfiguration)
-        {
-            var response = await _configurationValidator.IsValid(fileConfiguration);
+        var routes = _routesCreator.Create(fileConfiguration);
 
-            if (response.Data.IsError)
-            {
-                return new ErrorResponse<IInternalConfiguration>(response.Data.Errors);
-            }
+        var aggregates = _aggregatesCreator.Create(fileConfiguration, routes);
 
-            var routes = _routesCreator.Create(fileConfiguration);
+        var dynamicRoute = _dynamicsCreator.Create(fileConfiguration);
 
-            var aggregates = _aggregatesCreator.Create(fileConfiguration, routes);
+        var mergedRoutes = routes
+            .Union(aggregates)
+            .Union(dynamicRoute)
+            .ToList();
 
-            var dynamicRoute = _dynamicsCreator.Create(fileConfiguration);
+        var config = _configCreator.Create(fileConfiguration, mergedRoutes);
 
-            var mergedRoutes = routes
-                .Union(aggregates)
-                .Union(dynamicRoute)
-                .ToList();
-
-            var config = _configCreator.Create(fileConfiguration, mergedRoutes);
-
-            return new OkResponse<IInternalConfiguration>(config);
-        }
+        return new OkResponse<IInternalConfiguration>(config);
     }
 }
