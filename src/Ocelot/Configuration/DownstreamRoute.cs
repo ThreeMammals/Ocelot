@@ -151,8 +151,8 @@ public class DownstreamRoute
     /// <returns>A <see cref="string"/> object with the name.</returns>
     public string Name()
     {
-        var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.Template)
-            ? UpstreamPathTemplate.Template
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
+            ? UpstreamPathTemplate.OriginalValue
             : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
                 ? DownstreamPathTemplate.ToString()
                 : "?";

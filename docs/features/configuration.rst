@@ -825,7 +825,7 @@ To configure timeouts (in seconds) at different levels, choose the appropriate l
   Please note that the global timeout is substituted into a route if the route-level timeout is not defined, and it takes precedence over the absolute :ref:`config-default-timeout`.
   Additionally, the global timeout may be omitted in the JSON configuration in favor of the absolute :ref:`config-default-timeout`, which is also configurable via a property of the C# static class.
 
-- **A** :doc:`../features/qualityofservice` **timeout** can be defined according to the QoS :ref:`qos-configuration` schema and the QoS :ref:`qos-timeout-strategy`:
+- **A** :doc:`../features/qualityofservice` **timeout** can be defined according to the QoS :ref:`qos-configuration-schema` and the QoS :ref:`qos-timeout-strategy`:
 
   .. code-block:: json
 
@@ -854,7 +854,7 @@ To configure timeouts (in seconds) at different levels, choose the appropriate l
 
     Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: ...
 
-  For more details about this warning, refer to the QoS :ref:`qos-notes` (see Note 4).
+  For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
   Your next recommended action is to completely remove the ``Timeout`` property.
 
 .. _break4: http://break.do
@@ -868,21 +868,23 @@ To configure timeouts (in seconds) at different levels, choose the appropriate l
 
 Default timeout
 ^^^^^^^^^^^^^^^
-.. _DownstreamRoute.DefTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20DownstreamRoute.DefTimeout&type=code
-.. _DownstreamRoute.DefaultTimeoutSeconds: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20DownstreamRoute.DefaultTimeoutSeconds&type=code
+.. _DefTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22const+int+DefTimeout%22&type=code
+.. _DefaultTimeoutSeconds: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22static+int+DefaultTimeoutSeconds%22&type=code
 
 Timeout values defined at different levels in the JSON configuration can serve as fallback defaults for other levels.
 
-- The absolute timeout (also known as ``DownstreamRoute.DefaultTimeoutSeconds``) defaults to 90 seconds (as defined by the ``DownstreamRoute.DefTimeout`` constant).
+- The absolute timeout (also known as ``DownstreamRoute`` `DefaultTimeoutSeconds`_) defaults to 90 seconds (as defined by the ``DownstreamRoute`` `DefTimeout`_ constant).
   It acts as the default timeout when neither route-level nor global timeouts are defined.
 - The global configuration timeout, if not defined, also defaults to ``DownstreamRoute.DefaultTimeoutSeconds``.
   If defined, it serves as the default timeout for all routes.
 - The Quality of Service (QoS) global timeout acts as the default timeout for all routes where QoS is enabled.
 
-To configure the absolute timeout (currently 90 seconds, as defined by the `DownstreamRoute.DefTimeout`_ constant),
-assign the desired number of seconds to the `DownstreamRoute.DefaultTimeoutSeconds`_ static property in your `Program`_ class:
+To configure the absolute timeout (currently 90 seconds, as defined by the ``DownstreamRoute`` `DefTimeout`_ constant),
+assign the desired number of seconds to the ``DownstreamRoute`` `DefaultTimeoutSeconds`_ static property in your `Program`_ class:
 
 .. code-block:: csharp
+
+  using Ocelot.Configuration;
 
   DownstreamRoute.DefaultTimeoutSeconds = 3; // seconds, value must be >= 3
 

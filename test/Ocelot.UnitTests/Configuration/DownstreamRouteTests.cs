@@ -45,11 +45,12 @@ public class DownstreamRouteTests
     [InlineData(null, "?")]
     [InlineData("", "?")]
     [InlineData("TestTemplate", "TestTemplate")]
-    public void Name_UpstreamPathTemplate_ShouldContainPathTemplate(string upstreamPathTemplate, string expectedName)
+    public void Name_UpstreamPathTemplate_ShouldContainOriginalValue(string upstreamPathTemplate, string expectedName)
     {
         // Arrange
         var template = new UpstreamPathTemplateBuilder()
             .WithTemplate(upstreamPathTemplate)
+            .WithOriginalValue(upstreamPathTemplate)
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithUpstreamPathTemplate(template)
