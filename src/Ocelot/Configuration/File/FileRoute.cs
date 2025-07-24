@@ -54,7 +54,7 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
     public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
     public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
     public List<string> DelegatingHandlers { get; set; }
-    public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
+    public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
     public string DownstreamHttpMethod { get; set; }
     public string DownstreamHttpVersion { get; set; }
@@ -123,7 +123,7 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
         to.ChangeDownstreamPathTemplate = new(from.ChangeDownstreamPathTemplate);
         to.DangerousAcceptAnyServerCertificateValidator = from.DangerousAcceptAnyServerCertificateValidator;
         to.DelegatingHandlers = new(from.DelegatingHandlers);
-        to.DownstreamHeaderTransform = new(from.DownstreamHeaderTransform);
+        to.DownstreamHeaderTransform = new Dictionary<string, string>(from.DownstreamHeaderTransform);
         to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
         to.DownstreamHttpMethod = from.DownstreamHttpMethod;
         to.DownstreamHttpVersion = from.DownstreamHttpVersion;

@@ -18,10 +18,14 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     private readonly Mock<IPlaceholders> _placeholders;
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
+    private readonly List<Func<string>> _messages = new();
 
     public HeaderFindAndReplaceCreatorTests()
     {
         _logger = new Mock<IOcelotLogger>();
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(_messages.Add);
+
         _factory = new Mock<IOcelotLoggerFactory>();
         _factory.Setup(x => x.CreateLogger<HeaderFindAndReplaceCreator>()).Returns(_logger.Object);
         _placeholders = new Mock<IPlaceholders>();
@@ -32,12 +36,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         _global.DownstreamHeaderTransform.Add("PopGlobal", "West, East");
         _global.DownstreamHeaderTransform.Add("BopGlobal", "e, r");
 
-        var options = new Mock<IOptions<FileConfiguration>>();
-        options.Setup(x => x.Value).Returns(new FileConfiguration
-        {
-            GlobalConfiguration = _global,
-        });
-        _creator = new HeaderFindAndReplaceCreator(options.Object, _placeholders.Object, _factory.Object);
+        var options = new Mock<IOptions<FileGlobalConfiguration>>();
+        options.Setup(x => x.Value).Returns(_global);
+        _creator = new HeaderFindAndReplaceCreator(_placeholders.Object, _factory.Object, options.Object);
     }
 
     [Fact]
@@ -166,13 +167,23 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         // Assert
         ThenTheFollowingDownstreamIsReturned(expectedDownstream);
         ThenTheFollowingUpstreamIsReturned(expectedUpstream);
-        ThenTheLoggerIsCalledCorrectly($"Unable to add {nameof(FileRoute.DownstreamHeaderTransform)} Location: http://www.bbc.co.uk/, {{BaseUrl}}");
-        ThenTheLoggerIsCalledCorrectly($"Unable to add {nameof(FileRoute.UpstreamHeaderTransform)} Location: http://www.bbc.co.uk/, {{BaseUrl}}");
+        ThenTheLoggerIsCalledCorrectly(4,
+            "HeaderFindAndReplace was not mapped from [Location, http://www.bbc.co.uk/, {BaseUrl}] due to UnknownError: blahh",
+            "Unable to add UpstreamHeaderTransform [Location, http://www.bbc.co.uk/, {BaseUrl}]",
+            "HeaderFindAndReplace was not mapped from [Location, http://www.bbc.co.uk/, {BaseUrl}] due to UnknownError: blahh",
+            "Unable to add DownstreamHeaderTransform [Location, http://www.bbc.co.uk/, {BaseUrl}]");
     }
 
-    private void ThenTheLoggerIsCalledCorrectly(string message) => _logger
-        .Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == message)),
-            Times.Once);
+    private void ThenTheLoggerIsCalledCorrectly(int times, params string[] messages)
+    {
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Exactly(times));
+        _messages.ShouldNotBeEmpty();
+        var actual = _messages.Select(f => f.Invoke()).ToList();
+        foreach (var expected in messages)
+        {
+            actual.ShouldContain(expected);
+        }
+    }
 
     [Fact]
     public void Should_use_base_url_partial_placeholder()

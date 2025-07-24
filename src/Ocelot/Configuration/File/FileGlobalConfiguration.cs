@@ -52,6 +52,6 @@ public class FileGlobalConfiguration
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
     public int? Timeout { get; set; }
 
-    public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
-    public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
+    public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
+    public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
 }
