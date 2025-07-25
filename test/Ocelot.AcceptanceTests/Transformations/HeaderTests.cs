@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
@@ -24,7 +25,7 @@ public sealed class HeaderTests : Steps
             .And(x => GivenIAddAHeader("Laz", "D"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("GP"))
+            .And(x => ThenTheResponseBodyShouldBe("Laz: GP"))
             .BDDfy();
     }
 
@@ -33,7 +34,7 @@ public sealed class HeaderTests : Steps
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
-        route.DownstreamHeaderTransform.Add("Location", "http://www.bbc.co.uk/, http://ocelot.com/");
+        route.DownstreamHeaderTransform.Add("Location", "http://www.bbc.co.uk/, http://ocelot.net/");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
@@ -41,7 +42,7 @@ public sealed class HeaderTests : Steps
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseHeaderIs("Location", "http://ocelot.com/"))
+            .And(x => ThenTheResponseHeaderIs("Location", "http://ocelot.net/"))
             .BDDfy();
     }
 
@@ -162,7 +163,7 @@ public sealed class HeaderTests : Steps
             .And(x => GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("text/html,application/xhtml+xml,application/xml;"))
+            .And(x => ThenTheResponseBodyShouldBe("Accept: text/html,application/xhtml+xml,application/xml;"))
             .BDDfy();
     }
 
@@ -183,11 +184,9 @@ public sealed class HeaderTests : Steps
             .And(x => GivenIAddAHeader("Accept", "application/xml"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("text/html, application/xhtml+xml, application/xml"))
+            .And(x => ThenTheResponseBodyShouldBe("Accept: text/html, application/xhtml+xml, application/xml"))
             .BDDfy();
     }
-
-    public const string X_Forwarded_For = "X-Forwarded-For";
 
     [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
     [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
@@ -210,7 +209,109 @@ public sealed class HeaderTests : Steps
         var expectedIP = Dns.GetHostAddresses(string.Empty)
             .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
             .ToString();
-        await ThenTheResponseBodyShouldBeAsync(/*remoteIpAddress*/expectedIP);
+        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/expectedIP);
+    }
+
+    public const string X_Forwarded_For = "X-Forwarded-For";
+    public const string X_Forwarded_Host = "X-Forwarded-Host";
+    public const string X_Forwarded_Proto = "X-Forwarded-Proto";
+
+    [Fact]
+    [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
+    [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
+    public async Task ShouldApplyGlobalUpstreamHeaderTransformsForAllRoutes()
+    {
+        const string Ot_Route = "Ot-Route";
+        var ocelotIP = Dns.GetHostAddresses(string.Empty)
+            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
+            .ToString();
+        var port1 = PortFinder.GetRandomPort();
+        var route1 = GivenRoute(port1, "/route1");
+        route1.UpstreamHeaderTransform = new Dictionary<string, string>()
+        {
+            { Ot_Route, "Raman" },
+        };
+        var port2 = PortFinder.GetRandomPort();
+        var route2 = GivenRoute(port2, "/route2");
+        route2.UpstreamHeaderTransform = new Dictionary<string, string>()
+        {
+            { Ot_Route, "Mark" },
+        };
+        var port3 = PortFinder.GetRandomPort();
+        var route3 = GivenRoute(port3, "/route3");
+        var configuration = GivenConfiguration(route1, route2, route3);
+        configuration.GlobalConfiguration.BaseUrl = "http://ocelot.net";
+        configuration.GlobalConfiguration.UpstreamHeaderTransform = new Dictionary<string, string>()
+        {
+            { X_Forwarded_For, "{RemoteIpAddress}" },
+            { X_Forwarded_Host, "{BaseUrl}" },
+            { X_Forwarded_Proto, "https" },
+            { Ot_Route, "?" },
+        };
+        var allHeaders = configuration.GlobalConfiguration.UpstreamHeaderTransform.Keys
+            .Union(route1.UpstreamHeaderTransform.Keys.Intersect(route2.UpstreamHeaderTransform.Keys))
+            .ToArray();
+        GivenThereIsAServiceEchoingAHeader(port1, HttpStatusCode.OK, allHeaders);
+        GivenThereIsAServiceEchoingAHeader(port2, HttpStatusCode.OK, allHeaders);
+        GivenThereIsAServiceEchoingAHeader(port3, HttpStatusCode.OK, allHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
+X-Forwarded-Host: http://ocelot.net
+X-Forwarded-Proto: https
+Ot-Route: Raman");
+
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
+X-Forwarded-Host: http://ocelot.net
+X-Forwarded-Proto: https
+Ot-Route: Mark");
+
+        await WhenIGetUrlOnTheApiGateway("/route3");
+        ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
+X-Forwarded-Host: http://ocelot.net
+X-Forwarded-Proto: https
+Ot-Route: ?");
+    }
+
+    [Fact]
+    [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
+    [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
+    public async Task ShouldApplyGlobalDownstreamHeaderTransformsForAllRoutes()
+    {
+        const string Who = "Who", X_Forwarded_By = "X-Forwarded-By";
+        var port1 = PortFinder.GetRandomPort();
+        var route1 = GivenRoute(port1, "/route1");
+        route1.DownstreamHeaderTransform.Add(Who, "Raman, Mark");
+        var port2 = PortFinder.GetRandomPort();
+        var route2 = GivenRoute(port2, "/route2");
+        route2.DownstreamHeaderTransform.Add(Who, "Mark, Raman");
+        var port3 = PortFinder.GetRandomPort();
+        var route3 = GivenRoute(port3, "/route3");
+        var configuration = GivenConfiguration(route1 ,route2, route3);
+        configuration.GlobalConfiguration.BaseUrl = "http://ocelot.net";
+        configuration.GlobalConfiguration.DownstreamHeaderTransform = new Dictionary<string, string>()
+        {
+            { X_Forwarded_By, "{BaseUrl}" },
+            { Who, "HideMe, ?" },
+        };
+        GivenThereIsAServiceReturningAHeaderBack(port1, HttpStatusCode.OK, Who, "Raman Mark Raman");
+        GivenThereIsAServiceReturningAHeaderBack(port2, HttpStatusCode.OK, Who, "Mark Raman Mark");
+        GivenThereIsAServiceReturningAHeaderBack(port3, HttpStatusCode.OK, Who, "HideMe Mark");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheResponseHeaderExists(Who).First().ShouldBe("Mark Mark Mark");
+        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheResponseHeaderExists(Who).First().ShouldBe("Raman Raman Raman");
+        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
+        await WhenIGetUrlOnTheApiGateway("/route3");
+        ThenTheResponseHeaderExists(Who).First().ShouldBe("? Mark");
+        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
     }
 
     private int _count;
@@ -262,17 +363,21 @@ public sealed class HeaderTests : Steps
         handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseHeaders);
     }
 
-    private void GivenThereIsAServiceEchoingAHeader(int port, HttpStatusCode statusCode, string headerKey)
+    private void GivenThereIsAServiceEchoingAHeader(int port, HttpStatusCode statusCode, params string[] headerKeys)
     {
         Task MapHeaderIntoResponseBody(HttpContext context)
         {
-            if (context.Request.Headers.TryGetValue(headerKey, out var values))
+            var body = new StringBuilder();
+            foreach (var key in headerKeys)
             {
-                var result = values.First();
-                context.Response.StatusCode = (int)statusCode;
-                return context.Response.WriteAsync(result);
+                if (context.Request.Headers.TryGetValue(key, out var values))
+                {
+                    body.AppendLine($"{key}: {values}");
+                }
             }
-            return Task.CompletedTask;
+            context.Response.StatusCode = (int)statusCode;
+            body.Length -= Environment.NewLine.Length;
+            return context.Response.WriteAsync(body.ToString());
         }
         handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseBody);
     }
