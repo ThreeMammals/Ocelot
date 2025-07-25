@@ -13,7 +13,6 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
 {
     private readonly HeaderFindAndReplaceCreator _creator;
     private readonly FileGlobalConfiguration _global;
-    private FileRoute _route;
     private HeaderTransformations _result;
     private readonly Mock<IPlaceholders> _placeholders;
     private readonly Mock<IOcelotLoggerFactory> _factory;
@@ -42,6 +41,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "204")]
+    [Trait("Feat", "1658")]
+    [Trait("PR", "1659")]
     public void Should_create()
     {
         // Arrange
@@ -72,10 +74,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             new(_global.DownstreamHeaderTransform.First()),
             new(_global.DownstreamHeaderTransform.Last()),
         };
-        GivenTheRoute(route);
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingUpstreamIsReturned(upstream);
@@ -96,10 +97,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             },
         };
         var expected = new AddHeader(key, value);
-        GivenTheRoute(route);
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingAddHeaderToUpstreamIsReturned(expected);
@@ -122,11 +122,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             new(_global.DownstreamHeaderTransform.First()),
             new(_global.DownstreamHeaderTransform.Last()),
         };
-        GivenTheRoute(route);
         GivenThePlaceholderIs("http://ocelot.com/");
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingDownstreamIsReturned(downstream);
@@ -134,6 +133,7 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
 
     [Fact]
     [Trait("Feat", "204")]
+    [Trait("Feat", "1658")]
     public void Should_log_errors_and_not_add_headers()
     {
         // Arrange
@@ -158,11 +158,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             new("TestGlobal", "Test", "Chicken", 0),
             new("MoopGlobal", "o", "a", 0),
         };
-        GivenTheRoute(route);
         GivenTheBaseUrlErrors();
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingDownstreamIsReturned(expectedDownstream);
@@ -202,11 +201,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             new(_global.DownstreamHeaderTransform.First()),
             new(_global.DownstreamHeaderTransform.Last()),
         };
-        GivenTheRoute(route);
         GivenThePlaceholderIs("http://ocelot.com/");
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingDownstreamIsReturned(downstream);
@@ -230,11 +228,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             new(_global.DownstreamHeaderTransform.First()),
             new(_global.DownstreamHeaderTransform.Last()),
         };
-        GivenTheRoute(route);
         GivenThePlaceholderIs("ocelot.next");
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingDownstreamIsReturned(expected);
@@ -252,11 +249,10 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             },
         };
         var expected = new AddHeader("Trace-Id", "{TraceId}");
-        GivenTheRoute(route);
         GivenThePlaceholderIs("http://ocelot.com/");
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingAddHeaderToDownstreamIsReturned(expected);
@@ -274,10 +270,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             },
         };
         var expected = new AddHeader("X-Custom-Header", "Value");
-        GivenTheRoute(route);
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingAddHeaderToDownstreamIsReturned(expected);
@@ -295,32 +290,33 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             },
         };
         var expected = new AddHeader("X-Custom-Header", "Value");
-        GivenTheRoute(route);
 
         // Act
-        WhenICreate();
+        _result = _creator.Create(route);
 
         // Assert
         ThenTheFollowingAddHeaderToUpstreamIsReturned(expected);
     }
 
     [Fact]
-    public void Should_merge()
+    [Trait("PR", "1659")]
+    [Trait("Feat", "1658")]
+    public void Merge_ShouldMergeGlobalIntoRouteOpts()
     {
         // Arrange
-        var local = new Dictionary<string, string>()
+        var routeTransforms = new Dictionary<string, string>()
         {
-            { "B", "localB" },
-            { "C", "localC" },
+            { "B", "routeB" },
+            { "C", "routeC" },
         };
-        var global = new Dictionary<string, string>()
+        var globalTransforms = new Dictionary<string, string>()
         {
             { "A", "globalA" },
             { "B", "globalB" },
         };
 
         // Act
-        var actual = HeaderFindAndReplaceCreator.Merge(local, global);
+        var actual = HeaderFindAndReplaceCreator.Merge(routeTransforms, globalTransforms);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -329,9 +325,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         dictionary.ContainsKey("A").ShouldBeTrue();
         dictionary["A"].ShouldBe("globalA");
         dictionary.ContainsKey("B").ShouldBeTrue();
-        dictionary["B"].ShouldBe("localB"); // local value wins over global one
+        dictionary["B"].ShouldBe("routeB"); // local value wins over global one
         dictionary.ContainsKey("C").ShouldBeTrue();
-        dictionary["C"].ShouldBe("localC");
+        dictionary["C"].ShouldBe("routeC");
     }
 
     private void GivenThePlaceholderIs(string placeholderValue)
@@ -369,16 +365,6 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
             result.Key.ShouldBe(expected.Key);
             result.Replace.ShouldBe(expected.Replace);
         }
-    }
-
-    private void GivenTheRoute(FileRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenICreate()
-    {
-        _result = _creator.Create(_route);
     }
 
     private void ThenTheFollowingUpstreamIsReturned(List<HeaderFindAndReplace> expecteds)

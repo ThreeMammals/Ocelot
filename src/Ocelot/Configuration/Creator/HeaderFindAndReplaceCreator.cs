@@ -97,6 +97,6 @@ public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
             replace = replace.Replace(placeholder, value.Data);
         }
 
-        return new HeaderFindAndReplace(input.Key, findAndReplace[0], replace, 0);
+        return new(input.Key, findAndReplace[0], replace, 0);
     }
 }
