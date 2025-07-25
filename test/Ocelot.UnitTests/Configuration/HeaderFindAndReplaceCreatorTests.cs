@@ -109,6 +109,8 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public void Should_create_with_add_headers_to_request()
     {
         // Arrange

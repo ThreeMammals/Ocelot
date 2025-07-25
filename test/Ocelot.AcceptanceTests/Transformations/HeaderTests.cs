@@ -1,49 +1,24 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 using System.Net.Sockets;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
+/// <summary>
+/// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/headerstransformation.rst">Headers Transformation</see>.
+/// <para>Read the Docs: <see href="https://ocelot.readthedocs.io/en/develop/features/headerstransformation.html">Headers Transformation</see>.</para>
+/// </summary>
+[Trait("Feat", "204")] // https://github.com/ThreeMammals/Ocelot/pull/204
 public sealed class HeaderTests : Steps
 {
-    public const string X_Forwarded_For = "X-Forwarded-For";
-    private int _count;
-
-    public HeaderTests()
-    {
-    }
-
     [Fact]
     public void Should_transform_upstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        UpstreamHeaderTransform = new Dictionary<string,string>
-                        {
-                            {"Laz", "D, GP"},
-                        },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        route.UpstreamHeaderTransform.Add("Laz", "D, GP");
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Laz"))
+        this.Given(x => x.GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, "Laz"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Laz", "D"))
@@ -57,33 +32,11 @@ public sealed class HeaderTests : Steps
     public void Should_transform_downstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHeaderTransform = new Dictionary<string,string>
-                        {
-                            {"Location", "http://www.bbc.co.uk/, http://ocelot.com/"},
-                        },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "http://www.bbc.co.uk/, http://ocelot.com/");
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
+        this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -93,40 +46,16 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Feat", "190")] // https://github.com/ThreeMammals/Ocelot/issues/190
     public void Should_fix_issue_190()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHeaderTransform = new Dictionary<string,string>
-                        {
-                            {"Location", $"http://localhost:{port}, {{BaseUrl}}"},
-                        },
-                        HttpHandlerOptions = new FileHttpHandlerOptions
-                        {
-                            AllowAutoRedirect = false,
-                        },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", $"{DownstreamUrl(port)}, {{BaseUrl}}");
+        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -136,40 +65,16 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Feat", "205")] // https://github.com/ThreeMammals/Ocelot/issues/205
     public void Should_fix_issue_205()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHeaderTransform = new Dictionary<string,string>
-                        {
-                            {"Location", "{DownstreamBaseUrl}, {BaseUrl}"},
-                        },
-                        HttpHandlerOptions = new FileHttpHandlerOptions
-                        {
-                            AllowAutoRedirect = false,
-                        },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
+        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -179,44 +84,17 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Feat", "417")] // https://github.com/ThreeMammals/Ocelot/issues/417
     public void Should_fix_issue_417()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                        DownstreamHeaderTransform = new Dictionary<string,string>
-                        {
-                            {"Location", "{DownstreamBaseUrl}, {BaseUrl}"},
-                        },
-                        HttpHandlerOptions = new FileHttpHandlerOptions
-                        {
-                            AllowAutoRedirect = false,
-                        },
-                    },
-                },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                BaseUrl = "http://anotherapp.azurewebsites.net",
-            },
-        };
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
+        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.BaseUrl = "http://anotherapp.azurewebsites.net";
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
+        this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -226,34 +104,14 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Bug", "274")] // https://github.com/ThreeMammals/Ocelot/issues/274
     public void Request_should_reuse_cookies_with_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/sso/{everything}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/sso/{everything}",
-                    UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
-                    HttpHandlerOptions = new FileHttpHandlerOptions
-                    {
-                        UseCookieContainer = true,
-                    },
-                },
-            },
-        };
+        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
+        route.UpstreamHttpMethod.AddRange([ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ]);
+        route.HttpHandlerOptions.UseCookieContainer = true;
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -268,34 +126,14 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Bug", "274")] // https://github.com/ThreeMammals/Ocelot/issues/274
     public void Request_should_have_own_cookies_no_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/sso/{everything}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/sso/{everything}",
-                    UpstreamHttpMethod = new List<string> { "Get", "Post", "Options" },
-                    HttpHandlerOptions = new FileHttpHandlerOptions
-                    {
-                        UseCookieContainer = false,
-                    },
-                },
-            },
-        };
+        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
+        route.UpstreamHttpMethod.AddRange([HttpMethods.Get, HttpMethods.Post, HttpMethods.Options]);
+        route.HttpHandlerOptions.UseCookieContainer = false; // !
+        var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -310,32 +148,15 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Bug", "474")] // https://github.com/ThreeMammals/Ocelot/issues/474
+    [Trait("PR", "483")] // https://github.com/ThreeMammals/Ocelot/pull/483
     public void Issue_474_should_not_put_spaces_in_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Accept"))
+        this.Given(x => x.GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, "Accept"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;"))
@@ -346,32 +167,15 @@ public sealed class HeaderTests : Steps
     }
 
     [Fact]
+    [Trait("Bug", "474")]
+    [Trait("PR", "483")]
     public void Issue_474_should_put_spaces_in_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-                {
-                    new()
-                    {
-                        DownstreamPathTemplate = "/",
-                        DownstreamScheme = "http",
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new()
-                            {
-                                Host = "localhost",
-                                Port = port,
-                            },
-                        },
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
-                    },
-                },
-        };
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Accept"))
+        this.Given(x => x.GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, "Accept"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("Accept", "text/html"))
@@ -383,70 +187,11 @@ public sealed class HeaderTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
-        {
-            if (_count == 0)
-            {
-                context.Response.Cookies.Append("test", "0");
-                _count++;
-                context.Response.StatusCode = (int)statusCode;
-                return Task.CompletedTask;
-            }
-
-            if (context.Request.Cookies.TryGetValue("test", out var cookieValue))
-            {
-                if (cookieValue == "0")
-                {
-                    context.Response.StatusCode = (int)statusCode;
-                    return Task.CompletedTask;
-                }
-            }
-
-            if (context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
-            {
-                if (headerValue == "test=1; path=/")
-                {
-                    context.Response.StatusCode = (int)statusCode;
-                    return Task.CompletedTask;
-                }
-            }
-
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            return Task.CompletedTask;
-        });
-    }
-
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string headerKey)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
-        {
-            if (context.Request.Headers.TryGetValue(headerKey, out var values))
-            {
-                var result = values.First();
-                context.Response.StatusCode = (int)statusCode;
-                await context.Response.WriteAsync(result);
-            }
-        });
-    }
-
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string headerKey, string headerValue)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
-        {
-            context.Response.OnStarting(() =>
-            {
-                context.Response.Headers.Append(headerKey, headerValue);
-                context.Response.StatusCode = (int)statusCode;
-                return Task.CompletedTask;
-            });
-
-            return Task.CompletedTask;
-        });
-    }
+    public const string X_Forwarded_For = "X-Forwarded-For";
 
     [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -456,7 +201,7 @@ public sealed class HeaderTests : Steps
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, X_Forwarded_For);
+        GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, X_Forwarded_For);
 
         //var remoteIpAddress = Dns.GetHostAddresses("dns.google").First(a => a.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6).ToString();
         //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);
@@ -468,9 +213,58 @@ public sealed class HeaderTests : Steps
         await ThenTheResponseBodyShouldBeAsync(/*remoteIpAddress*/expectedIP);
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string headerKey)
+    private int _count;
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode)
     {
-        Task MapStatusAndHeader(HttpContext context)
+        Task MapCookies(HttpContext context)
+        {
+            if (_count == 0)
+            {
+                context.Response.Cookies.Append("test", "0");
+                _count++;
+                context.Response.StatusCode = (int)statusCode;
+                return Task.CompletedTask;
+            }
+            else if (context.Request.Cookies.TryGetValue("test", out var cookieValue))
+            {
+                if (cookieValue == "0")
+                {
+                    context.Response.StatusCode = (int)statusCode;
+                    return Task.CompletedTask;
+                }
+            }
+            else if (context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
+            {
+                if (headerValue == "test=1; path=/")
+                {
+                    context.Response.StatusCode = (int)statusCode;
+                    return Task.CompletedTask;
+                }
+            }
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            return Task.CompletedTask;
+        }
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapCookies);
+    }
+
+    private void GivenThereIsAServiceReturningAHeaderBack(int port, HttpStatusCode statusCode, string headerKey, string headerValue)
+    {
+        Task MapHeaderIntoResponseHeaders(HttpContext context)
+        {
+            context.Response.OnStarting(() =>
+            {
+                context.Response.Headers.Append(headerKey, headerValue);
+                context.Response.StatusCode = (int)statusCode;
+                return Task.CompletedTask;
+            });
+            return Task.CompletedTask;
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseHeaders);
+    }
+
+    private void GivenThereIsAServiceEchoingAHeader(int port, HttpStatusCode statusCode, string headerKey)
+    {
+        Task MapHeaderIntoResponseBody(HttpContext context)
         {
             if (context.Request.Headers.TryGetValue(headerKey, out var values))
             {
@@ -480,6 +274,6 @@ public sealed class HeaderTests : Steps
             }
             return Task.CompletedTask;
         }
-        handler.GivenThereIsAServiceRunningOn(port, MapStatusAndHeader);
+        handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseBody);
     }
 }
