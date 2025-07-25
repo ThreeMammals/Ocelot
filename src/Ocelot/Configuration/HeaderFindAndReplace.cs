@@ -45,5 +45,5 @@ public class HeaderFindAndReplace
     // only index 0 for now..
     public int Index { get; }
 
-    public override string ToString() => $"{Key} at {Index}: {Find} -> {Replace}";
+    public override string ToString() => $"{nameof(HeaderFindAndReplace)}[{Key} at {Index}: {Find} -> {Replace}]";
 }

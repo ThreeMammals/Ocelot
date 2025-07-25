@@ -41,8 +41,9 @@ public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
     /// <returns> An <see cref="IEnumerable{T}"/> collection where T is <see cref="Header"/>.</returns>
     public static IEnumerable<Header> Merge(IDictionary<string, string> local, IDictionary<string, string> global)
     {
-        // Winning strategy: The Route local setting wins over global one
-        var toAdd = global.ExceptBy(local.Keys, x => x.Key);
+        local ??= new Dictionary<string, string>();
+        global ??= new Dictionary<string, string>();
+        var toAdd = global.ExceptBy(local.Keys, x => x.Key); // Winning strategy: the route Transform-value wins over global one
         return local.Union(toAdd);
     }
 
@@ -52,8 +53,7 @@ public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
         var addHeaders = new List<AddHeader>();
         var streamHeaders = new List<HeaderFindAndReplace>();
 
-        var headerPairs = headerTransform ?? Enumerable.Empty<Header>();
-        foreach (var input in headerPairs)
+        foreach (var input in headerTransform)
         {
             if (input.Value.Contains(HeaderFindAndReplace.Comma))
             {

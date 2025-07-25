@@ -41,9 +41,9 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
     }
 
     [Fact]
-    [Trait("Feat", "204")]
-    [Trait("Feat", "1658")]
-    [Trait("PR", "1659")]
+    [Trait("Feat", "204")] // https://github.com/ThreeMammals/Ocelot/pull/204
+    [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
+    [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
     public void Should_create()
     {
         // Arrange
@@ -77,6 +77,31 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
 
         // Act
         _result = _creator.Create(route);
+
+        // Assert
+        ThenTheFollowingUpstreamIsReturned(upstream);
+        ThenTheFollowingDownstreamIsReturned(downstream);
+    }
+
+    [Fact]
+    [Trait("Feat", "1658")]
+    public void Create_WithRouteAndWithoutGlobalConfigurationParam_GlobalConfigurationInjectionIsReused()
+    {
+        // Arrange
+        var route = new FileRoute(); // no data
+        var upstream = new List<HeaderFindAndReplace>
+        {
+            new(_global.UpstreamHeaderTransform.First()),
+            new(_global.UpstreamHeaderTransform.Last()),
+        };
+        var downstream = new List<HeaderFindAndReplace>
+        {
+            new(_global.DownstreamHeaderTransform.First()),
+            new(_global.DownstreamHeaderTransform.Last()),
+        };
+
+        // Act
+        _result = _creator.Create(route, null);
 
         // Assert
         ThenTheFollowingUpstreamIsReturned(upstream);
@@ -328,6 +353,18 @@ public class HeaderFindAndReplaceCreatorTests : UnitTest
         dictionary["B"].ShouldBe("routeB"); // local value wins over global one
         dictionary.ContainsKey("C").ShouldBeTrue();
         dictionary["C"].ShouldBe("routeC");
+    }
+
+    [Fact]
+    [Trait("PR", "1659")]
+    [Trait("Feat", "1658")]
+    public void Merge_NullParams_NullChecksHaveBeenPerformed()
+    {
+        // Arrange, Act
+        var actual = HeaderFindAndReplaceCreator.Merge(null, null);
+
+        // Assert
+        actual.ShouldNotBeNull().ShouldBeEmpty();
     }
 
     private void GivenThePlaceholderIs(string placeholderValue)
