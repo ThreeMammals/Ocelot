@@ -83,7 +83,7 @@ public class RoutesCreator : IRoutesCreator
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute);
+        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
@@ -91,7 +91,7 @@ public class RoutesCreator : IRoutesCreator
 
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-        var authOptionsForRoute = _authOptionsCreator.Create(fileRoute);
+        var authOptionsForRoute = _authOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var claimsToHeaders = _claimsToThingCreator.Create(fileRoute.AddHeadersToRequest);
 

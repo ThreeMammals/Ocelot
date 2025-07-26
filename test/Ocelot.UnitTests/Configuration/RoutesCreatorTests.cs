@@ -251,11 +251,11 @@ public class RoutesCreatorTests : UnitTest
             ["foo"] = "bar",
         };
 
-        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
+        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
         _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
-        _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ao);
+        _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
         _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
@@ -332,11 +332,11 @@ public class RoutesCreatorTests : UnitTest
 
     private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
     {
-        _rroCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _rroCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
         _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
-        _aoCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _aoCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);

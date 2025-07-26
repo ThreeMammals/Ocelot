@@ -17,10 +17,19 @@ public sealed class FileAuthenticationOptions
 
     public List<string> AllowedScopes { get; set; }
 
+    /// <summary>Allows anonymous authentication for route when global authentication options are used.</summary>
+    /// <value><see langword="true"/> if it is allowed; otherwise, <see langword="false"/>.</value>
+    public bool AllowAnonymous { get; set; }
+
     [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
     public string AuthenticationProviderKey { get; set; }
 
     public string[] AuthenticationProviderKeys { get; set; }
+
+    /// <summary>Checks whether authentication schemes are specified (not empty, exist).</summary>
+    /// <value><see langword="true"/> if an authentication scheme is defined; otherwise, <see langword="false"/>.</value>
+    public bool HasScheme => !string.IsNullOrEmpty(AuthenticationProviderKey)
+            || AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true;
 
     public override string ToString() => new StringBuilder()
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")

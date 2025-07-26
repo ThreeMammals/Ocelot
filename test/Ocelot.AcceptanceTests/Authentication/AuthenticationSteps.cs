@@ -162,12 +162,21 @@ public class AuthenticationSteps : Steps
         return GivenIHaveATokenWithForm(url, form);
     }
 
-    public static FileRoute GivenAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null)
+    public static FileRoute GivenAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null, bool allowAnonymous = false)
     {
         var r = GivenDefaultRoute(port).WithMethods(upstreamHttpMethod ?? HttpMethods.Get);
         r.AuthenticationOptions.AuthenticationProviderKeys = [authProviderKey ?? "Test"];
+        r.AuthenticationOptions.AllowAnonymous = allowAnonymous;
         return r;
     }
+
+    public static FileGlobalConfiguration GivenGlobalAuthConfiguration(string scheme = "key") => new()
+    {
+        AuthenticationOptions = new()
+        {
+            AuthenticationProviderKeys = [ scheme ?? "key" ],
+        },
+    };
 
     protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody)
     {

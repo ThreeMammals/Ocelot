@@ -119,6 +119,44 @@ public sealed class AuthenticationTests : AuthenticationSteps
             .BDDfy();
     }
 
+    [Fact(Skip = IdentityServer4Skip)]
+    [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
+    [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
+    public void Should_use_global_authentication_and_return_401_when_no_token()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AuthenticationProviderKeys = null;
+        var globalConfig = GivenGlobalAuthConfiguration();
+        var configuration = GivenConfiguration(globalConfig, route);
+        this.Given(x => x.random.Next()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            //.And(x => GivenOcelotIsRunning(_options, "key"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+            .BDDfy();
+    }
+
+    [Fact(Skip = IdentityServer4Skip)]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Should_allow_anonymous_route_and_return_200_when_global_auth_options_and_no_token()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port, allowAnonymous: true);
+        route.AuthenticationOptions.AuthenticationProviderKeys = null;
+        var globalConfig = GivenGlobalAuthConfiguration();
+        var configuration = GivenConfiguration(globalConfig, route);
+        this.Given(x => x.random.Next())//x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            //.And(x => GivenOcelotIsRunning(_options, "key"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .BDDfy();
+    }
+
     //public async Task GivenThereIsAnIdentityServerOn(string url, AccessTokenType tokenType)
     //{
     //    var scopes = new string[] { "api", "api2" };

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.AcceptanceTests.Properties;
+using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -13,6 +14,13 @@ public class Steps : AcceptanceSteps
     public Steps() : base()
     {
         BddfyConfig.Configure();
+    }
+
+    protected FileConfiguration GivenConfiguration(FileGlobalConfiguration globalConfig, params FileRoute[] routes)
+    {
+        var config = GivenConfiguration(routes);
+        config.GlobalConfiguration = globalConfig;
+        return config;
     }
 
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
