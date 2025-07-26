@@ -9,6 +9,7 @@ public class FileGlobalConfiguration
         AuthenticationOptions = new();
         BaseUrl = default;
         CacheOptions = new();
+        DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHttpVersion = default;
         DownstreamHttpVersionPolicy = default;
         DownstreamScheme = default;
@@ -20,11 +21,14 @@ public class FileGlobalConfiguration
         RequestIdKey = default;
         SecurityOptions = new();
         ServiceDiscoveryProvider = new();
+        Timeout = null;
+        UpstreamHeaderTransform = new Dictionary<string, string>();
     }
 
     public FileAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
     public FileCacheOptions CacheOptions { get; set; }
+    public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public string DownstreamHttpVersion { get; set; }
 
     /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
@@ -51,4 +55,5 @@ public class FileGlobalConfiguration
     /// <summary>The timeout in seconds for requests.</summary>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in seconds.</value>
     public int? Timeout { get; set; }
+    public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
 }

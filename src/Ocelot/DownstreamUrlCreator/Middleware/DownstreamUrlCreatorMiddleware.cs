@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -17,8 +18,8 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
 
     private const char Ampersand = '&';
     private const char QuestionMark = '?';
-    private const char OpeningBrace = '{';
-    private const char ClosingBrace = '}';
+    private const char OpeningBrace = Placeholders.OpeningBrace;
+    private const char ClosingBrace = Placeholders.ClosingBrace;
     protected const char Slash = '/';
 
     public DownstreamUrlCreatorMiddleware(
