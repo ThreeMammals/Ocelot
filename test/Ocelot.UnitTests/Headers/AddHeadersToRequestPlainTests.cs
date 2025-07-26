@@ -30,6 +30,8 @@ public class AddHeadersToRequestPlainTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public void Should_log_error_if_cannot_find_placeholder()
     {
         // Arrange
@@ -43,6 +45,8 @@ public class AddHeadersToRequestPlainTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "623")]
+    [Trait("PR", "632")]
     public void Should_add_placeholder_to_downstream_request()
     {
         // Arrange

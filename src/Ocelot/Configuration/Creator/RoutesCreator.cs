@@ -107,7 +107,7 @@ public class RoutesCreator : IRoutesCreator
 
         var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
 
-        var hAndRs = _headerFAndRCreator.Create(fileRoute);
+        var hAndRs = _headerFAndRCreator.Create(fileRoute, globalConfiguration);
 
         var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute);
 
