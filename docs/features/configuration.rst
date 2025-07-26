@@ -170,6 +170,7 @@ Here is the complete global configuration, also known as the *"global configurat
     {
       "BaseUrl": "",
       "CacheOptions": {},
+      "DownstreamHeaderTransform": {}, // dictionary
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
       "DownstreamScheme": "",
@@ -181,7 +182,8 @@ Here is the complete global configuration, also known as the *"global configurat
       "RequestIdKey": "",
       "SecurityOptions": {},
       "ServiceDiscoveryProvider": {},
-      "Timeout": 0 // nullable integer
+      "Timeout": 0, // nullable integer
+      "UpstreamHeaderTransform": {} // dictionary
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
