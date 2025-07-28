@@ -127,11 +127,12 @@ public sealed class AuthenticationTests : AuthenticationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AuthenticationProviderKeys = null;
-        var globalConfig = GivenGlobalAuthConfiguration();
-        var configuration = GivenConfiguration(globalConfig, route);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration = GivenGlobalAuthConfiguration();
         this.Given(x => x.random.Next()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "key"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
@@ -146,11 +147,12 @@ public sealed class AuthenticationTests : AuthenticationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, allowAnonymous: true);
         route.AuthenticationOptions.AuthenticationProviderKeys = null;
-        var globalConfig = GivenGlobalAuthConfiguration();
-        var configuration = GivenConfiguration(globalConfig, route);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration = GivenGlobalAuthConfiguration();
         this.Given(x => x.random.Next())//x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, AccessTokenType.Reference))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
+
             //.And(x => GivenOcelotIsRunning(_options, "key"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))

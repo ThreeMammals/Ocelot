@@ -7,14 +7,14 @@ public class RouteOptionsCreator : IRouteOptionsCreator
 {
     public RouteOptions Create(FileRoute route, FileGlobalConfiguration global)
     {
+        global ??= new();
         if (route == null)
         {
             return new RouteOptionsBuilder().Build();
         }
 
-        // TODO Requires design review, see code review
-        bool isAuthenticated = route?.AuthenticationOptions?.AllowAnonymous != true && global?.AuthenticationOptions?.HasScheme == true
-            || route?.AuthenticationOptions?.HasScheme == true;
+        bool isAuthenticated = route.AuthenticationOptions?.AllowAnonymous != true
+            && (route.AuthenticationOptions?.HasScheme == true || global.AuthenticationOptions?.HasScheme == true);
 
         bool isAuthorized = (route.RouteClaimsRequirement?.Count ?? 0) > 0;
 

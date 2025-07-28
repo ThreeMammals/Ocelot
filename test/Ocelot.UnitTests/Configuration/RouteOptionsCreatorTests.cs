@@ -16,6 +16,12 @@ public class RouteOptionsCreatorTests : UnitTest
 
         // Assert
         Assert.NotNull(actual);
+
+        // Arrange, Act
+        actual = _creator.Create(new(), null);
+
+        // Assert
+        Assert.NotNull(actual);
     }
 
     [Fact]
@@ -42,7 +48,7 @@ public class RouteOptionsCreatorTests : UnitTest
         };
 
         // Act
-        var actual = _creator.Create(route, null);
+        var actual = _creator.Create(route, new());
 
         // Assert
         Assert.NotNull(actual);

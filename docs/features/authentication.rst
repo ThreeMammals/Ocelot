@@ -24,6 +24,53 @@ We then map this to a route in the configuration using the following `Authentica
 * ``AuthenticationProviderKey`` is a string object, obsolete [#f1]_. This is legacy definition when you define :ref:`authentication-scheme`.
 * ``AuthenticationProviderKeys`` is an array of strings, the recommended definition of :ref:`authentication-multiple` feature.
 
+Configuration
+-------------
+
+If you want to configure ``AuthenticationOptions`` the same for all Routes, do it in GlobalConfiguration the same way as for Route. If there are ``AuthenticationOptions`` configured both for GlobalConfiguration and Route (``AuthenticationProviderKey`` or ``AuthenticationProviderKeys`` is set), the Route section has priority.
+
+If you want to exclude route from global ``AuthenticationOptions``, you can do that by setting ``AllowAnonymous`` to true in the route ``AuthenticationOptions`` - then this route will not be authenticated.
+
+In the following example:
+
+* the first route will be authenticated with MyGlobalKey provider key, 
+* the second one - with MyKey provider key,
+* the others will not be authenticated.
+
+.. code-block:: json
+
+  "Routes": [
+    {
+      "AuthenticationOptions": {},
+      // ...
+    },
+    {
+      "AuthenticationOptions": {
+        "AuthenticationProviderKeys": [ "MyKey" ],
+        "AllowedScopes": [ "Bob" ]
+      },
+      // ...
+    },
+    {
+      "AuthenticationOptions": {
+        "AllowAnonymous": true
+      },
+      // ...
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://ocelot.net",
+    "AuthenticationOptions": {
+      "AuthenticationProviderKeys": [ "MyGlobalKey" ],
+      "AllowedScopes": [ "Admin" ]
+    }
+  }
+
+.. _break: http://break.do
+
+  **Note** If there are global ``AuthenticationProviderKeys`` (when ``AuthenticationProviderKeys`` are not configured for route explicitly),
+  it uses also global ``AllowedScopes``, even if ``AllowedScopes`` is configured for the route additionally.
+
 .. _authentication-scheme:
 
 Single Authentication Scheme [#f1]_
@@ -83,71 +130,6 @@ Afterward, Ocelot applies all steps that are specified for ``AuthenticationProvi
 Finally, we would say that registering providers, initializing options, and forwarding authentication artifacts can be a "real" coding challenge.
 If you're stuck or don't know what to do, just find inspiration in our `acceptance tests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+MultipleAuthSchemesFeatureTests+language%3AC%23&type=code&l=C%23>`_
 (currently for `IdentityServer4 <https://identityserver4.readthedocs.io/>`_ only) [#f3]_.
-
-Global Authentication
------------------------------------
-
-If you want to configure ``AuthenticationOptions`` the same for all Routes, do it in GlobalConfiguration the same way as for Route. If there are ``AuthenticationOptions`` configured both for GlobalConfiguration and Route (``AuthenticationProviderKey`` or ``AuthenticationProviderKeys`` is set), the Route section has priority.
-
-If you want to exclude route from global ``AuthenticationOptions``, you can do that by setting ``AllowAnonymous`` to true in the route ``AuthenticationOptions`` - then this route will not be authenticated.
-
-In the following example:
-* the first route will be authenticated with TestKeyGlobal provider key, 
-* the second one - with TestKey provider key,
-* the others will not be authenticated.
-
-.. code-block:: json
-	"Routes": [
-		{
-			"DownstreamPathTemplate": "/abc",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "localhost",
-					"Port": 54001
-				}],
-			"UpstreamPathTemplate": "/abc",
-			"UpstreamHttpMethod": [ "Get" ]
-		},
-		{
-			"DownstreamPathTemplate": "/def",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "localhost",
-					"Port": 54001
-				}],
-			"UpstreamPathTemplate": "/def",
-			"UpstreamHttpMethod": [ "Get" ],
-			"AuthenticationOptions": {
-				"AuthenticationProviderKey": "TestKey",
-				"AllowedScopes": []
-			}
-		},
-		{
-			"DownstreamPathTemplate": "/{action}",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-			{
-				"Host": "localhost",
-				"Port": 54001
-			}],
-			"UpstreamPathTemplate": "/{action}",
-			"UpstreamHttpMethod": [ "Get" ],
-			"AuthenticationOptions": {
-				"AllowAnonymous": true
-			}
-		}
-	],
-	"GlobalConfiguration": {
-		"BaseUrl": "http://fake.test.com",
-		"AuthenticationOptions": {
-			"AuthenticationProviderKey": "TestKeyGlobal",
-			"AllowedScopes": []
-		}
-	}
-
-**Note** If a route uses a global ``AuthenticationProviderKey`` (when ``AuthenticationProviderKey`` is not configured for route explicitly), it uses also global ``AllowedScopes``, even if ``AllowedScopes`` is configured for the route additionally.
 
 JWT Tokens
 ----------

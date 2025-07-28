@@ -16,13 +16,6 @@ public class Steps : AcceptanceSteps
         BddfyConfig.Configure();
     }
 
-    protected FileConfiguration GivenConfiguration(FileGlobalConfiguration globalConfig, params FileRoute[] routes)
-    {
-        var config = GivenConfiguration(routes);
-        config.GlobalConfiguration = globalConfig;
-        return config;
-    }
-
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {
