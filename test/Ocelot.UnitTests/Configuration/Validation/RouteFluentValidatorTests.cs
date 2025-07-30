@@ -258,7 +258,7 @@ public class RouteFluentValidatorTests : UnitTest
 
         // Assert
         result.IsValid.ShouldBeFalse();
-        result.ThenTheErrorsContains($"AuthenticationOptions: AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider");
+        result.ThenTheErrorsContains("AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
     }
 
     [Fact]

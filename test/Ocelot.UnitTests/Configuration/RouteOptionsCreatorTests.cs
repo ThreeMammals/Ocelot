@@ -29,9 +29,10 @@ public class RouteOptionsCreatorTests : UnitTest
     {
         // Arrange
         var route = new FileRoute { AuthenticationOptions = null };
+        var global = new FileGlobalConfiguration { AuthenticationOptions = null };
 
         // Act
-        var actual = _creator.Create(route, null);
+        var actual = _creator.Create(route, global);
 
         // Assert
         Assert.NotNull(actual);

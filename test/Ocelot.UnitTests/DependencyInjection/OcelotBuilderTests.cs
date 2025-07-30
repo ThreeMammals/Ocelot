@@ -364,8 +364,41 @@ public class OcelotBuilderTests : UnitTest
         ShouldFindConfiguration();
     }
 
-    private bool _fakeCustomBuilderCalled;
+    [Fact]
+    public void CreateInstance_CreatedFromImplementationInstance()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+        ServiceDescriptor descriptor = new(GetType(), this);
 
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    [Fact]
+    public void CreateInstance_CreatedByImplementationFactory()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+
+        object factory(IServiceProvider p) => this;
+        ServiceDescriptor descriptor = new(GetType(), factory, ServiceLifetime.Singleton);
+
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    private bool _fakeCustomBuilderCalled;
     private IMvcCoreBuilder FakeCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
     {
         _fakeCustomBuilderCalled = true;

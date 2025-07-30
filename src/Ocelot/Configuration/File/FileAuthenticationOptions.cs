@@ -38,8 +38,9 @@ public sealed class FileAuthenticationOptions
     public bool HasScope => AllowedScopes.Exists(s => !string.IsNullOrWhiteSpace(s));
 
     public override string ToString() => new StringBuilder()
+        .Append($"{nameof(AllowAnonymous)}:{AllowAnonymous ?? false},")
+        .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
-        .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys.Select(x => $"'{x}'"))}],")
-        .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}]")
+        .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys.Select(x => $"'{x}'"))}]")
         .ToString();
 }

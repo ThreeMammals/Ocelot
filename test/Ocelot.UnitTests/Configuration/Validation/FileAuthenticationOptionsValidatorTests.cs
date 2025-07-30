@@ -48,7 +48,7 @@ public class FileAuthenticationOptionsValidatorTests : UnitTest
 
         // Assert
         _result.IsValid.ShouldBeFalse();
-        _result.Errors[0].ErrorMessage.ShouldBe("AuthenticationOptions: AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads'],AllowedScopes:[] is unsupported authentication provider");
+        _result.Errors[0].ErrorMessage.ShouldBe("AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads'] is unsupported authentication provider");
     }
 
     private void GivenAnAuthProvider(string key)

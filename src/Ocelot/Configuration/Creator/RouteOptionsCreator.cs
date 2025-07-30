@@ -13,8 +13,10 @@ public class RouteOptionsCreator : IRouteOptionsCreator
             return new RouteOptionsBuilder().Build();
         }
 
-        bool isAuthenticated = route.AuthenticationOptions?.AllowAnonymous != true
-            && (route.AuthenticationOptions?.HasScheme == true || global.AuthenticationOptions?.HasScheme == true);
+        route.AuthenticationOptions ??= new();
+        global.AuthenticationOptions ??= new();
+        bool isAuthenticated = route.AuthenticationOptions.AllowAnonymous != true
+            && (route.AuthenticationOptions.HasScheme || global.AuthenticationOptions.HasScheme);
 
         bool isAuthorized = (route.RouteClaimsRequirement?.Count ?? 0) > 0;
 

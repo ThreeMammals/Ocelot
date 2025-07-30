@@ -32,7 +32,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     /// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
+    /* [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11CLient_DirectConnection_ShouldConnect(string url, string expected)
     {

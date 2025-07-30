@@ -533,7 +533,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'] is unsupported authentication provider");
     }
 
     [Fact]
@@ -1043,7 +1043,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         GivenConfigurationWithAuthenticationKey(key);
         await WhenIValidateTheConfiguration();
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, $"AuthenticationOptions: AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
     }
 
     [Fact]
@@ -1067,7 +1067,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         GivenConfigurationWithAuthenticationKeys(keys);
         await WhenIValidateTheConfiguration();
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, $"AuthenticationOptions: AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads','other'],AllowedScopes:[] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads','other'] is unsupported authentication provider");
     }
 
     [Fact]

@@ -1,5 +1,4 @@
 using Ocelot.Configuration.File;
-using System;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -7,21 +6,30 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
 {
     public AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
-        var options = route?.AuthenticationOptions?.HasScheme == true
-            ? route?.AuthenticationOptions
-            : globalConfiguration?.AuthenticationOptions;
-        return new(options ?? new());
+        route ??= new();
+        route.AuthenticationOptions ??= new();
+        globalConfiguration ??= new();
+        globalConfiguration.AuthenticationOptions ??= new();
+        var options = route.AuthenticationOptions.HasScheme
+            ? route.AuthenticationOptions
+            : globalConfiguration.AuthenticationOptions;
+        return new(options);
     }
 
     // TODO Apply this version after removal of the AuthenticationProviderKey property
     private AuthenticationOptions Create2(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
-        FileAuthenticationOptions opts = route.AuthenticationOptions ?? new(),
-            global = globalConfiguration.AuthenticationOptions ?? new();
+        route ??= new();
+        route.AuthenticationOptions ??= new();
+        globalConfiguration ??= new();
+        globalConfiguration.AuthenticationOptions ??= new();
+
+        FileAuthenticationOptions opts = route.AuthenticationOptions,
+            global = globalConfiguration.AuthenticationOptions;
 
         // We must ignore the global option because it is purely designed for route-level use only
         //opts.AllowAnonymous ??= global.AllowAnonymous;
-        opts.AllowAnonymous = opts.AllowAnonymous;
+        opts.AllowAnonymous = opts.AllowAnonymous ?? false;
 
         MergeScopes(opts, global);
         MergeSchemes(opts, global);
@@ -32,17 +40,17 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
     protected virtual void MergeSchemes(FileAuthenticationOptions opts, FileAuthenticationOptions global)
     {
         //opts.AuthenticationProviderKey ??= global.AuthenticationProviderKey;
-        if (!opts.HasScheme)
+        if (!opts.HasScheme && global.HasScheme)
         {
-            opts.AuthenticationProviderKeys = global.HasScheme ? global.AuthenticationProviderKeys : Array.Empty<string>();
+            opts.AuthenticationProviderKeys = global.AuthenticationProviderKeys;
         }
     }
 
     protected virtual void MergeScopes(FileAuthenticationOptions opts, FileAuthenticationOptions global)
     {
-        if (!opts.HasScope)
+        if (!opts.HasScope && global.HasScope)
         {
-            opts.AllowedScopes = global.HasScope ? global.AllowedScopes : new();
+            opts.AllowedScopes = global.AllowedScopes;
         }
     }
 }
