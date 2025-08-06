@@ -40,7 +40,6 @@ public class DownstreamRouteBuilder
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
-    private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
     private int? _timeout;
 
@@ -256,12 +255,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithUpstreamHeaders(Dictionary<string, UpstreamHeaderTemplate> input)
-    {
-        _upstreamHeaders = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithDownstreamHttpVersionPolicy(HttpVersionPolicy downstreamHttpVersionPolicy)
     {
         _downstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
@@ -318,7 +311,6 @@ public class DownstreamRouteBuilder
             _downstreamHttpMethod,
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
-            _upstreamHeaders,
             _metadataOptions,
             _timeout);
     }

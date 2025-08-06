@@ -41,7 +41,6 @@ public class DownstreamRoute
         string downstreamHttpMethod,
         Version downstreamHttpVersion,
         HttpVersionPolicy downstreamHttpVersionPolicy,
-        Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
         MetadataOptions metadataOptions,
         int? timeout)
     {
@@ -80,7 +79,6 @@ public class DownstreamRoute
         DownstreamHttpMethod = downstreamHttpMethod;
         DownstreamHttpVersion = downstreamHttpVersion;
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
-        UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
         Timeout = timeout;
     }
@@ -130,7 +128,6 @@ public class DownstreamRoute
     /// </list>
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
-    public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
     public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
 

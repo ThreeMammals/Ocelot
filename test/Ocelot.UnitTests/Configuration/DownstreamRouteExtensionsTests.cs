@@ -51,7 +51,6 @@ public class DownstreamRouteExtensionsTests
             null,
             new Version(),
             HttpVersionPolicy.RequestVersionExact,
-            new(),
             new MetadataOptions(new FileMetadataOptions()),
             0);
     }
