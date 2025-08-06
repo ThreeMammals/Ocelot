@@ -45,7 +45,6 @@ public class ClaimsToHeadersMiddlewareTests : UnitTest
                         {
                             new("UserId", "Subject", string.Empty, 0),
                         })
-                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());

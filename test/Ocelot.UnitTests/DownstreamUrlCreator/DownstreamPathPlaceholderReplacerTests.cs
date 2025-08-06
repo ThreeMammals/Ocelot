@@ -17,7 +17,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
                  new List<PlaceholderNameAndValue>(),
                  new RouteBuilder()
                      .WithDownstreamRoute(new DownstreamRouteBuilder()
-                         .WithUpstreamHttpMethod(new List<string> { "Get" })
                          .Build())
                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build());
@@ -38,7 +37,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
              new RouteBuilder()
                  .WithDownstreamRoute(new DownstreamRouteBuilder()
                      .WithDownstreamPathTemplate("/")
-                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build())
                  .WithUpstreamHttpMethod(new List<string> { "Get" })
                  .Build());
@@ -58,7 +56,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
               new RouteBuilder()
                   .WithDownstreamRoute(new DownstreamRouteBuilder()
                       .WithDownstreamPathTemplate("api")
-                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                       .Build())
                   .WithUpstreamHttpMethod(new List<string> { "Get" })
                   .Build());
@@ -78,7 +75,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
              new RouteBuilder()
                  .WithDownstreamRoute(new DownstreamRouteBuilder()
                      .WithDownstreamPathTemplate("api/")
-                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build())
                  .WithUpstreamHttpMethod(new List<string> { "Get" })
                  .Build());
@@ -98,7 +94,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
               new RouteBuilder()
                   .WithDownstreamRoute(new DownstreamRouteBuilder()
                       .WithDownstreamPathTemplate("api/product/products/")
-                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                       .Build())
                   .WithUpstreamHttpMethod(new List<string> { "Get" })
                   .Build());
@@ -122,7 +117,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
               new RouteBuilder()
                   .WithDownstreamRoute(new DownstreamRouteBuilder()
                       .WithDownstreamPathTemplate("productservice/products/{productId}/")
-                      .WithUpstreamHttpMethod(new List<string> { "Get" })
                       .Build())
                   .WithUpstreamHttpMethod(new List<string> { "Get" })
                   .Build());
@@ -146,7 +140,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
                new RouteBuilder()
                    .WithDownstreamRoute(new DownstreamRouteBuilder()
                        .WithDownstreamPathTemplate("productservice/products/{productId}/variants")
-                       .WithUpstreamHttpMethod(new List<string> { "Get" })
                        .Build())
                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                    .Build());
@@ -171,7 +164,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
              new RouteBuilder()
                  .WithDownstreamRoute(new DownstreamRouteBuilder()
                      .WithDownstreamPathTemplate("productservice/products/{productId}/variants/{variantId}")
-                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build())
                  .WithUpstreamHttpMethod(new List<string> { "Get" })
                  .Build());
@@ -197,7 +189,6 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
              new RouteBuilder()
                  .WithDownstreamRoute(new DownstreamRouteBuilder()
                      .WithDownstreamPathTemplate("productservice/category/{categoryId}/products/{productId}/variants/{variantId}")
-                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                      .Build())
                  .WithUpstreamHttpMethod(new List<string> { "Get" })
              .Build());

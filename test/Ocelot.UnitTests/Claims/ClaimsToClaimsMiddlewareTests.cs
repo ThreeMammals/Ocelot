@@ -44,7 +44,6 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
                     {
                         new("sub", "UserType", "|", 0),
                     })
-                    .WithUpstreamHttpMethod(new() { HttpMethods.Get })
                     .Build())
                 .WithUpstreamHttpMethod(new() { HttpMethods.Get })
                 .Build());

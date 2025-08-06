@@ -375,7 +375,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
-            .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
 }
 

@@ -53,7 +53,6 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
             HttpVersionPolicy.RequestVersionOrLower);
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
         GivenTheDownStreamRouteFinderReturns(new(
             new List<PlaceholderNameAndValue>(),

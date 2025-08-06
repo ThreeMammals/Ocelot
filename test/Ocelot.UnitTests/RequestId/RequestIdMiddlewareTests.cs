@@ -46,7 +46,6 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build());
@@ -73,7 +72,6 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
@@ -98,7 +96,6 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
@@ -126,7 +123,6 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());
@@ -154,7 +150,6 @@ public class RequestIdMiddlewareTests : UnitTest
                 .WithDownstreamRoute(new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build())
                 .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build());

@@ -65,7 +65,6 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
             {
                 var downstreamRoute = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate(_downstreamTemplatePath)
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
                 return new List<Route>

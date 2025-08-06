@@ -9,7 +9,6 @@ public class DownstreamRouteBuilder
     private string _loadBalancerKey;
     private string _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
-    private List<HttpMethod> _upstreamHttpMethod;
     private bool _isAuthenticated;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
@@ -86,14 +85,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithUpstreamPathTemplate(UpstreamPathTemplate input)
     {
         _upstreamTemplatePattern = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
-    {
-        _upstreamHttpMethod = input.Count > 0
-            ? input.Select(x => new HttpMethod(x.Trim())).ToList()
-            : new();
         return this;
     }
 

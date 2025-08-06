@@ -45,7 +45,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -76,7 +75,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -111,7 +109,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -146,7 +143,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -181,7 +177,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api/units/{subscriptionId}/{unitId}/updates/{unitIdIty}")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -216,7 +211,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
             .WithDownstreamScheme("https")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
@@ -368,7 +362,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
                 .WithOriginalValue("/uc/Authorized/{servak}/{action}").Build())
             .WithDownstreamPathTemplate("/Authorized/{action}?server={servak}")
-            .WithUpstreamHttpMethod(methods)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -434,7 +427,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
                 .WithOriginalValue("/users?userId={userId}").Build())
             .WithDownstreamPathTemplate("/persons?personId={userId}")
-            .WithUpstreamHttpMethod(methods)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -468,7 +460,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
                 .WithOriginalValue("/users?userId={uid}").Build())
             .WithDownstreamPathTemplate("/persons?personId={uid}")
-            .WithUpstreamHttpMethod(methods)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -504,7 +495,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
                 .WithOriginalValue("/contracts?{everythingelse}").Build())
             .WithDownstreamPathTemplate("/api/contracts?{everythingelse}")
-            .WithUpstreamHttpMethod(methods)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -545,7 +535,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
                 .WithOriginalValue(upstreamTemplate).Build())
             .WithDownstreamPathTemplate(downstreamTemplate)
-            .WithUpstreamHttpMethod(methods)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -586,7 +575,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 .WithOriginalValue("/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}")
                 .Build())
             .WithDownstreamPathTemplate("/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}")
-            .WithUpstreamHttpMethod(withGetMethod)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
@@ -626,7 +614,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 .WithOriginalValue("/routed/api/{path}")
                 .Build())
             .WithDownstreamPathTemplate("/api/{path}")
-            .WithUpstreamHttpMethod(withGetMethod)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(

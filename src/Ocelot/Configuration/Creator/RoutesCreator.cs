@@ -126,7 +126,6 @@ public class RoutesCreator : IRoutesCreator
         var route = new DownstreamRouteBuilder()
             .WithKey(fileRoute.Key)
             .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
             .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
             .WithAuthenticationOptions(authOptionsForRoute)

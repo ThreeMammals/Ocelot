@@ -47,7 +47,6 @@ public class LoadBalancerMiddlewareTests : UnitTest
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
             .Build();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();
@@ -73,7 +72,6 @@ public class LoadBalancerMiddlewareTests : UnitTest
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
             .Build();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();
@@ -103,7 +101,6 @@ public class LoadBalancerMiddlewareTests : UnitTest
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
             .Build();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
            .Build();
@@ -130,7 +127,6 @@ public class LoadBalancerMiddlewareTests : UnitTest
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
             .Build();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();

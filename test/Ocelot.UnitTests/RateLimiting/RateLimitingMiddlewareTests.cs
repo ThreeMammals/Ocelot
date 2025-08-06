@@ -59,7 +59,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 100.0D, limit),
                 (int)HttpStatusCode.TooManyRequests))
-            .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
             .Build();
         var route = new RouteBuilder()
@@ -101,7 +100,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                     rateLimitCounterPrefix: string.Empty,
                     new RateLimitRule("1s", 100.0D, 3),
                     (int)HttpStatusCode.TooManyRequests))
-                .WithUpstreamHttpMethod(new() { "Get" })
                 .Build())
             .WithUpstreamHttpMethod(new() { "Get" })
             .Build();
@@ -133,7 +131,6 @@ public class RateLimitingMiddlewareTests : UnitTest
                 rateLimitCounterPrefix: string.Empty,
                 new RateLimitRule("1s", 30.0D, limit), // bug scenario
                 (int)HttpStatusCode.TooManyRequests))
-            .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
             .Build();
         var route = new RouteBuilder()
