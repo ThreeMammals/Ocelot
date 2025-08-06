@@ -10,7 +10,7 @@ public sealed class TimeoutDelegatingHandlerTests
     {
         // Arrange
         using var baseHandler = new SocketsHttpHandler();
-        using var handler = new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(100));
+        using var handler = new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(3));
         handler.InnerHandler = baseHandler;
 
         var type = handler.GetType();
