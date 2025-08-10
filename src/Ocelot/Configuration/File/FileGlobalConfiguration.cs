@@ -6,6 +6,7 @@ public class FileGlobalConfiguration
 {
     public FileGlobalConfiguration()
     {
+        AuthenticationOptions = new();
         BaseUrl = default;
         CacheOptions = new();
         DownstreamHeaderTransform = new Dictionary<string, string>();
@@ -24,6 +25,7 @@ public class FileGlobalConfiguration
         UpstreamHeaderTransform = new Dictionary<string, string>();
     }
 
+    public FileAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
     public FileCacheOptions CacheOptions { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }

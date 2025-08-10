@@ -26,15 +26,20 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     private IServiceProvider _provider;
     private readonly ServiceCollection _services;
     private readonly Mock<IAuthenticationSchemeProvider> _authProvider;
+    private readonly FileAuthenticationOptionsValidator _fileAuthOptsValidator;
 
     public FileConfigurationFluentValidatorTests()
     {
         _services = new ServiceCollection();
         _authProvider = new Mock<IAuthenticationSchemeProvider>();
+        _fileAuthOptsValidator = new FileAuthenticationOptionsValidator(_authProvider.Object);
         _provider = _services.BuildServiceProvider(true);
 
         // TODO Replace with mocks
-        _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+        _configurationValidator = new FileConfigurationFluentValidator(
+            _provider,
+            new(new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator),
+            new(new FileQoSOptionsFluentValidator(_provider), _fileAuthOptsValidator));
     }
 
     [Fact]
@@ -528,7 +533,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "Authentication Options AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],AllowedScopes:[] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'] is unsupported authentication provider");
     }
 
     [Fact]
@@ -1028,6 +1033,56 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         ThenTheErrorMessagesAre(expected);
     }
 
+    #region PR 2114
+    [Fact]
+    [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
+    [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
+    public async Task Configuration_is_not_valid_if_specified_authentication_provider_is_not_registered()
+    {
+        const string key = "JwtLads";
+        GivenConfigurationWithAuthenticationKey(key);
+        await WhenIValidateTheConfiguration();
+        ThenTheResultIsNotValid();
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public async Task Configuration_is_valid_if_specified_authentication_provider_is_registered()
+    {
+        const string key = "JwtLads";
+        GivenConfigurationWithAuthenticationKey(key);
+        GivenTheAuthSchemeExists(key);
+        await WhenIValidateTheConfiguration();
+        ThenTheResultIsValid();
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public async Task Configuration_is_not_valid_if_one_authentication_provider_is_not_registered()
+    {
+        string[] keys = { "JwtLads", "other" };
+        GivenConfigurationWithAuthenticationKeys(keys);
+        await WhenIValidateTheConfiguration();
+        ThenTheResultIsNotValid();
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads','other'] is unsupported authentication provider");
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public async Task Configuration_is_valid_if_all_specified_authentication_provider_are_registered()
+    {
+        string[] keys = { "JwtLads", "other" };
+        GivenConfigurationWithAuthenticationKeys(keys);
+        GivenTheAuthSchemesExists(keys);
+        await WhenIValidateTheConfiguration();
+        ThenTheResultIsValid();
+    }
+    #endregion
+
     private static FileRoute GivenDefaultRoute() => GivenDefaultRoute(null, null, null);
     private static FileRoute GivenDefaultRoute(string upstream, string downstream) => GivenDefaultRoute(upstream, downstream, null);
 
@@ -1074,6 +1129,18 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         return config;
     }
 
+    private void GivenConfigurationWithAuthenticationKey(string key)
+    {
+        _fileConfiguration = new FileConfiguration();
+        _fileConfiguration.GlobalConfiguration.AuthenticationOptions.AuthenticationProviderKey = key;
+    }
+
+    private void GivenConfigurationWithAuthenticationKeys(string[] keys)
+    {
+        _fileConfiguration = new FileConfiguration();
+        _fileConfiguration.GlobalConfiguration.AuthenticationOptions.AuthenticationProviderKeys = keys;
+    }
+
     private static FileServiceDiscoveryProvider GivenDefaultServiceDiscoveryProvider() => new()
     {
         Scheme = Uri.UriSchemeHttps,
@@ -1118,12 +1185,20 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         });
     }
 
+    private void GivenTheAuthSchemesExists(string[] names)
+    {
+        _authProvider.Setup(x => x.GetAllSchemesAsync()).ReturnsAsync(names.Select(n => new AuthenticationScheme(n, n, typeof(TestHandler))));
+    }
+
     private void GivenAQoSHandler()
     {
         static DelegatingHandler Del(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
         _services.AddSingleton((QosDelegatingHandlerDelegate)Del);
         _provider = _services.BuildServiceProvider(true);
-        _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+        _configurationValidator = new FileConfigurationFluentValidator(
+            _provider,
+            new(new(), new(_provider), _fileAuthOptsValidator),
+            new(new(_provider), _fileAuthOptsValidator));
     }
 
     private void GivenAServiceDiscoveryHandler()
@@ -1131,7 +1206,10 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         static IServiceDiscoveryProvider del(IServiceProvider a, ServiceProviderConfiguration b, DownstreamRoute c) => new FakeServiceDiscoveryProvider();
         _services.AddSingleton((ServiceDiscoveryFinderDelegate)del);
         _provider = _services.BuildServiceProvider(true);
-        _configurationValidator = new FileConfigurationFluentValidator(_provider, new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_provider)), new FileGlobalConfigurationFluentValidator(new FileQoSOptionsFluentValidator(_provider)));
+        _configurationValidator = new FileConfigurationFluentValidator(
+            _provider,
+            new(new(), new(_provider), _fileAuthOptsValidator),
+            new(new(_provider), _fileAuthOptsValidator));
     }
 
     private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider

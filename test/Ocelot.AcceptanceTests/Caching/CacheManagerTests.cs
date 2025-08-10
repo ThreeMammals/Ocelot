@@ -42,14 +42,14 @@ public sealed class CacheManagerTests : AuthenticationSteps
 
         using var ocelot = await GivenOcelotHostIsRunning(
             WithBasicConfiguration, WithCacheManager, WithUseOcelot,
-            (host) => host.UseUrls(ocelotUrl)
+            (host) => host.UseUrls()
         );
         ocelotClient = new()
         {
             BaseAddress = new(ocelotUrl),
         };
 
-        await GivenIHaveAToken("/administration"); // TODO Move to AuthSteps
+        await GivenIHaveATokenWithUrlPath("/administration");
         GivenIHaveAddedATokenToMyRequest();
 
         response = await ocelotClient.DeleteAsync($"/administration/outputcache/{nameof(ShouldClearRegionViaAdministrationAPI)}");

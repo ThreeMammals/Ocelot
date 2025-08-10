@@ -86,7 +86,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(nameof(Should_return_response_200_and_foward_claim_as_header)))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))

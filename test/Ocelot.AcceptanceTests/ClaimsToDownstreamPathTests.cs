@@ -74,7 +74,7 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(nameof(Should_return_200_and_change_downstream_path)))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))

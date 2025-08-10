@@ -87,7 +87,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(nameof(Should_return_response_200_and_foward_claim_as_query_string)))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -152,7 +152,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(nameof(Should_return_response_200_and_foward_claim_as_query_string_and_preserve_original_string)))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => _steps.GivenOcelotIsRunning(_options, "Test"))

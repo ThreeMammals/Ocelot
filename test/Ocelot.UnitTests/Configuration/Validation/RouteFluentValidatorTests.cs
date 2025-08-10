@@ -18,8 +18,11 @@ public class RouteFluentValidatorTests : UnitTest
         _authProvider = new Mock<IAuthenticationSchemeProvider>();
         _serviceProvider = new Mock<IServiceProvider>();
 
-        // Todo - replace with mocks
-        _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+        // TODO - replace with mocks
+        _validator = new RouteFluentValidator(
+            new HostAndPortValidator(),
+            new FileQoSOptionsFluentValidator(_serviceProvider.Object),
+            new FileAuthenticationOptionsValidator(_authProvider.Object));
     }
 
     [Fact]
@@ -255,7 +258,7 @@ public class RouteFluentValidatorTests : UnitTest
 
         // Assert
         result.IsValid.ShouldBeFalse();
-        result.ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider");
+        result.ThenTheErrorsContains("AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
     }
 
     [Fact]
