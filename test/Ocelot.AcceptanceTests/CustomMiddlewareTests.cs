@@ -52,7 +52,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -97,7 +97,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -142,7 +142,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -187,7 +187,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -232,7 +232,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -276,7 +276,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, string.Empty))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -322,7 +322,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ""))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunning(configuration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -368,7 +368,7 @@ public class CustomMiddlewareTests : Steps
                 },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/test"))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, "/test"))
             .And(x => GivenThereIsAConfiguration(fileConfiguration))
             .And(x => GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -395,9 +395,9 @@ public class CustomMiddlewareTests : Steps
         _counter.ShouldBe(expected);
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath)
+    private void GivenThereIsAServiceRunningOnPath(int port, string basePath)
     {
-        handler.GivenThereIsAServiceRunningOn(port, context =>
+        Task MapPath(HttpContext context)
         {
             if (string.IsNullOrEmpty(basePath))
             {
@@ -408,7 +408,8 @@ public class CustomMiddlewareTests : Steps
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             }
             return Task.CompletedTask;
-        });
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapPath);
     }
 
     public class FakeMiddleware

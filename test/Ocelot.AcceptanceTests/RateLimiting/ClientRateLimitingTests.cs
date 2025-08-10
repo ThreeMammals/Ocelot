@@ -170,7 +170,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
     private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
         => response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath)
+    protected override void GivenThereIsAServiceRunningOn(int port, string basePath)
     {
         Task MapOK(HttpContext context)
         {

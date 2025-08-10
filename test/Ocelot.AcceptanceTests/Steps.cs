@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.AcceptanceTests.Properties;
-using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -30,5 +31,18 @@ public class Steps : AcceptanceSteps
             .Configure(async a => await a.UseOcelot(pipelineConfig));
         ocelotServer = new TestServer(builder);
         ocelotClient = ocelotServer.CreateClient();
+    }
+
+    protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
+        => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
+
+    protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
+    {
+        Task MapStatus(HttpContext context)
+        {
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
     }
 }
