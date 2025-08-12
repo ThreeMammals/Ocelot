@@ -43,6 +43,7 @@ public class DownstreamRouteBuilder
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
+    private int? _timeout;
     private IEnumerable<GlobalRateLimitOptions> _globalRateLimitOption;
 
     public DownstreamRouteBuilder()
@@ -289,6 +290,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithTimeout(int? timeout)
+    {
+        _timeout = timeout;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -329,6 +336,7 @@ public class DownstreamRouteBuilder
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
             _upstreamHeaders,
-            _metadataOptions);
+            _metadataOptions,
+            _timeout);
     }
 }

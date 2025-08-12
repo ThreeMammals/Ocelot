@@ -1,13 +1,17 @@
 //using IdentityServer4.AccessTokenValidation;
 //using IdentityServer4.Models;
 //using IdentityServer4.Test;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Security.Policy;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -31,6 +35,8 @@ public sealed class AuthorizationTests : AuthenticationSteps
         //    o.ApiSecret = "secret";
         //};
     }
+
+    private string Name([CallerMemberName] string testName = "") => testName;
 
     [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
     public void Should_return_response_200_authorizing_route()
@@ -79,10 +85,10 @@ public sealed class AuthorizationTests : AuthenticationSteps
                 },
             },
         };
-
+        var testName = Name();
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(testName))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -139,10 +145,10 @@ public sealed class AuthorizationTests : AuthenticationSteps
                 },
             },
         };
-
+        var testName = Name();
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(testName))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -152,48 +158,24 @@ public sealed class AuthorizationTests : AuthenticationSteps
             .BDDfy();
     }
 
-    [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
-    public void Should_return_response_200_using_identity_server_with_allowed_scope()
+    [Fact]
+    public async Task Should_return_response_200_using_identity_server_with_allowed_scope()
     {
         var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = [ "api", "api.readOnly", "openid", "offline_access" ];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsAnIdentityServer();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
 
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    AuthenticationOptions = new FileAuthenticationOptions
-                    {
-                        AuthenticationProviderKey = "Test",
-                        AllowedScopes = new List<string>{ "api", "api.readOnly", "openid", "offline_access" },
-                    },
-                },
-            },
-        };
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithAspNetIdentityAuthentication);
 
-        this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
-            .And(x => GivenThereIsAConfiguration(configuration))
-
-            //.And(x => GivenOcelotIsRunning(_options, "Test"))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        await GivenIHaveAToken(scope: "api.readOnly");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
@@ -227,10 +209,10 @@ public sealed class AuthorizationTests : AuthenticationSteps
                 },
             },
         };
-
+        var testName = Name();
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveATokenForApiReadOnlyScope(_identityServerRootUrl))
+            .And(x => GivenIHaveATokenWithScope("api.readOnly", testName))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -290,9 +272,10 @@ public sealed class AuthorizationTests : AuthenticationSteps
         //        },
         //    },
         //};
+        var testName = Name();
         this.Given(x => Void()) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, users))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveAToken(_identityServerRootUrl))
+            .And(x => GivenIHaveAToken(testName))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
@@ -301,6 +284,28 @@ public sealed class AuthorizationTests : AuthenticationSteps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public async Task Should_return_200_OK_with_global_allowed_scopes()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AuthenticationProviderKeys = []; // no route auth!
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration = GivenGlobalAuthConfiguration(allowedScopes: ["api", "apiGlobal"]);
+        GivenThereIsAConfiguration(configuration);
+
+        await GivenThereIsAnIdentityServer();
+        GivenThereIsAServiceRunningOn(port);
+        GivenOcelotIsRunning(WithAspNetIdentityAuthentication);
+        await GivenIHaveAToken(scope: "apiGlobal");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOK();
+        await ThenTheResponseBodyAsync();
     }
 
     private static void Void() { }
@@ -462,8 +467,8 @@ public sealed class AuthorizationTests : AuthenticationSteps
 
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
-    private async Task GivenIHaveATokenForApiReadOnlyScope(string url)
-        => await GivenAuthToken(url, "api.readOnly");
+    private async Task GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
+        => await GivenIHaveAToken(scope: scope, testName);
 
     public override void Dispose()
     {

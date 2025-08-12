@@ -609,7 +609,7 @@ public sealed class AggregateTests : Steps
     //        this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
     //            .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
     //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-    //            .And(x => auth.GivenIHaveAToken(identityServerUrl))
+    //            .And(x => auth.GivenToken(identityServerUrl))
     //            .And(x => auth.GivenThereIsAConfiguration(configuration))
     //            .And(x => auth.GivenOcelotIsRunning(configureServices, configureApp))
     //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())

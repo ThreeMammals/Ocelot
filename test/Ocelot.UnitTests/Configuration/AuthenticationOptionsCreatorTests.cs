@@ -1,12 +1,22 @@
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class AuthenticationOptionsCreatorTests
 {
     private readonly AuthenticationOptionsCreator _authOptionsCreator;
+
+    private readonly List<string> _routeScopes = new() { "route scope 1", "route scope 2" };
+    private const string _routeAuthProviderKey = "route key";
+    private readonly string[] _routeAuthProviderKeys = new string[] { "route key 1", "route key 2" };
+
+    private readonly List<string> _globalScopes = new() { "global scope 1", "global scope 2" };
+    private const string _globalAuthProviderKey = "global key";
+    private readonly string[] _globalAuthProviderKeys = new string[] { "global key 1", "global key 2" };
 
     public AuthenticationOptionsCreatorTests()
     {
@@ -27,7 +37,7 @@ public class AuthenticationOptionsCreatorTests
         }
 
         // Act
-        var actual = _authOptionsCreator.Create(route);
+        var actual = _authOptionsCreator.Create(route, null);
 
         // Assert
         Assert.NotNull(actual);
@@ -43,20 +53,9 @@ public class AuthenticationOptionsCreatorTests
     [InlineData(true)]
     public void Create_OptionsObjIsNotNull_CreatedSuccessfully(bool isAuthenticationProviderKeys)
     {
-        // Arrange
-        string authenticationProviderKey = !isAuthenticationProviderKeys
-            ? "Test" : null;
-        string[] authenticationProviderKeys = isAuthenticationProviderKeys
-            ? new string[] { "Test #1", "Test #2" } : null;
-        var fileRoute = new FileRoute()
-        {
-            AuthenticationOptions = new FileAuthenticationOptions
-            {
-                AllowedScopes = new() { "cheese" },
-                AuthenticationProviderKey = authenticationProviderKey,
-                AuthenticationProviderKeys = authenticationProviderKeys,
-            },
-        };
+        string authenticationProviderKey = !isAuthenticationProviderKeys ? _routeAuthProviderKey : null;
+        string[] authenticationProviderKeys = isAuthenticationProviderKeys ? _routeAuthProviderKeys : null;
+        var fileRoute = CreateFileRoute(_routeScopes, authenticationProviderKey, authenticationProviderKeys);
         var expected = new AuthenticationOptionsBuilder()
             .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
             .WithAuthenticationProviderKey(authenticationProviderKey)
@@ -64,11 +63,180 @@ public class AuthenticationOptionsCreatorTests
             .Build();
 
         // Act
-        var actual = _authOptionsCreator.Create(fileRoute);
+        var actual = _authOptionsCreator.Create(fileRoute, null);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
         actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create_ArgumentIsNull_CreatedSuccessfully(bool is1st, bool is2nd)
+    {
+        // Arrange
+        FileRoute arg1 = is1st ? new() : null;
+        FileGlobalConfiguration arg2 = is2nd ? new() : null;
+
+        // Act
+        var actual = _authOptionsCreator.Create(arg1, arg2);
+
+        // Assert
+        Assert.NotNull(actual);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create_GlobalAuthOptsObjIsNull_CreatedSuccessfully(bool isNull)
+    {
+        // Arrange
+        FileRoute arg1 = new();
+        FileGlobalConfiguration arg2 = new()
+        {
+            AuthenticationOptions = isNull ? new() : null,
+        };
+
+        // Act
+        var actual = _authOptionsCreator.Create(arg1, arg2);
+
+        // Assert
+        Assert.NotNull(actual);
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create_GlobalConfigExists_ShouldUseGlobal()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
+        var expected = new AuthenticationOptionsBuilder()
+            .WithAllowedScopes(_globalScopes)
+            .WithAuthenticationProviderKey(_globalAuthProviderKey)
+            .WithAuthenticationProviderKeys(_globalAuthProviderKeys)
+            .Build();
+
+        // Act
+        var actual = _authOptionsCreator.Create(route, globalConfig);
+
+        // Assert
+        actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
+        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
+        actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create_RouteKeyProviderEmpty_ShouldUseGlobal()
+    {
+        // Arrange
+        var route = CreateFileRoute(_routeScopes, string.Empty, null);
+        var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
+        var expected = new AuthenticationOptionsBuilder()
+            .WithAllowedScopes(_globalScopes)
+            .WithAuthenticationProviderKey(_globalAuthProviderKey)
+            .WithAuthenticationProviderKeys(_globalAuthProviderKeys)
+            .Build();
+
+        // Act
+        var actual = _authOptionsCreator.Create(route, globalConfig);
+
+        // Assert
+        actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
+        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
+        actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create_RouteAndGlobalKeyExist_ShouldUseRoute(bool routeHasSingleProviderKey)
+    {
+        // Arrange
+        var routeAuthProviderKey = routeHasSingleProviderKey ? _routeAuthProviderKey : null;
+        var routeAuthProviderKeys = routeHasSingleProviderKey ? null : _routeAuthProviderKeys;
+        var route = CreateFileRoute(_routeScopes, routeAuthProviderKey, routeAuthProviderKeys);
+        var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
+        var expected = new AuthenticationOptionsBuilder()
+            .WithAllowedScopes(_routeScopes)
+            .WithAuthenticationProviderKey(routeAuthProviderKey)
+            .WithAuthenticationProviderKeys(routeAuthProviderKeys)
+            .Build();
+
+        // Act
+        var actual = _authOptionsCreator.Create(route, globalConfig);
+
+        // Assert
+        actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
+        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
+        actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
+    }
+
+    [Fact]
+    [Trait("PR", "2114")]
+    [Trait("Feat", "842")]
+    public void Create2()
+    {
+        // Arrange
+        var method = typeof(AuthenticationOptionsCreator).GetMethod("Create2", BindingFlags.Instance | BindingFlags.NonPublic);
+        var actual = method?.Invoke(_authOptionsCreator, [null, null]) as AuthenticationOptions;
+        Assert.NotNull(actual);
+
+        FileRoute route = new();
+        FileGlobalConfiguration global = new();
+        actual = method?.Invoke(_authOptionsCreator, [route, global]) as AuthenticationOptions;
+        Assert.NotNull(actual);
+
+        route.AuthenticationOptions = global.AuthenticationOptions = null;
+        actual = method?.Invoke(_authOptionsCreator, [route, global]) as AuthenticationOptions;
+        Assert.NotNull(actual);
+
+        route.AuthenticationOptions = new();
+        global.AuthenticationOptions = new()
+        {
+            AllowedScopes = ["test"],
+            AuthenticationProviderKeys = ["test"],
+        };
+        actual = method?.Invoke(_authOptionsCreator, [route, global]) as AuthenticationOptions;
+        Assert.NotNull(actual);
+
+        route.AuthenticationOptions.AuthenticationProviderKeys = ["test"];
+        route.AuthenticationOptions.AllowedScopes = ["test"];
+        global.AuthenticationOptions.AuthenticationProviderKeys = [];
+        global.AuthenticationOptions.AllowedScopes = [];
+        actual = method?.Invoke(_authOptionsCreator, [route, global]) as AuthenticationOptions;
+        Assert.NotNull(actual);
+    }
+
+    private static FileRoute CreateFileRoute(List<string> allowedScopes, string authProviderKey, string[] authProviderKeys) => new()
+    {
+        AuthenticationOptions = new FileAuthenticationOptions
+        {
+            AllowedScopes = allowedScopes,
+            AuthenticationProviderKey = authProviderKey,
+            AuthenticationProviderKeys = authProviderKeys,
+        },
+    };
+
+    private static FileGlobalConfiguration CreateGlobalConfiguration(List<string> allowedScopes, string authProviderKey, string[] authProviderKeys) => new()
+    {
+        AuthenticationOptions = new FileAuthenticationOptions
+        {
+            AllowedScopes = allowedScopes,
+            AuthenticationProviderKey = authProviderKey,
+            AuthenticationProviderKeys = authProviderKeys,
+        },
+    };
 }

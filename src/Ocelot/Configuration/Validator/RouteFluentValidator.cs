@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
-using Ocelot.Configuration.File;
 using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 
 namespace Ocelot.Configuration.Validator;
@@ -11,14 +11,13 @@ namespace Ocelot.Configuration.Validator;
 /// </summary>
 public partial class RouteFluentValidator : AbstractValidator<FileRoute>
 {
-    private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
-
-    public RouteFluentValidator(IAuthenticationSchemeProvider authenticationSchemeProvider, HostAndPortValidator hostAndPortValidator, FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
+    public RouteFluentValidator(
+        HostAndPortValidator hostAndPortValidator,
+        FileQoSOptionsFluentValidator qosOptsValidator,
+        FileAuthenticationOptionsValidator authOptsValidator)
     {
-        _authenticationSchemeProvider = authenticationSchemeProvider;
-
         RuleFor(route => route.QoSOptions)
-            .SetValidator(fileQoSOptionsFluentValidator);
+            .SetValidator(qosOptsValidator);
 
         RuleFor(route => route.DownstreamPathTemplate)
             .NotEmpty()
@@ -70,8 +69,7 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
         });
 
         RuleFor(route => route.AuthenticationOptions)
-            .MustAsync(IsSupportedAuthenticationProviders)
-            .WithMessage("{PropertyName} {PropertyValue} is unsupported authentication provider");
+            .SetValidator(authOptsValidator);
 
         When(route => string.IsNullOrEmpty(route.ServiceName), () =>
         {
@@ -94,21 +92,6 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
         {
             RuleFor(r => r.DownstreamHttpVersionPolicy).Matches($@"^({VersionPolicies.RequestVersionExact}|{VersionPolicies.RequestVersionOrHigher}|{VersionPolicies.RequestVersionOrLower})$");
         });
-    }
-
-    private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions options, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(options.AuthenticationProviderKey)
-            && options.AuthenticationProviderKeys.Length == 0)
-        {
-            return true;
-        }
-
-        var schemes = await _authenticationSchemeProvider.GetAllSchemesAsync();
-        var supportedSchemes = schemes.Select(scheme => scheme.Name).ToList();
-        var primary = options.AuthenticationProviderKey;
-        return !string.IsNullOrEmpty(primary) && supportedSchemes.Contains(primary)
-            || (string.IsNullOrEmpty(primary) && options.AuthenticationProviderKeys.All(supportedSchemes.Contains));
     }
 
     [GeneratedRegex("^[0-9]+s", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]

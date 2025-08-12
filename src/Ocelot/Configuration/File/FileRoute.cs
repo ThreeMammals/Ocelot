@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File;
 
-public class FileRoute : IRoute, ICloneable
+public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
 {
     public FileRoute()
     {
@@ -54,7 +54,7 @@ public class FileRoute : IRoute, ICloneable
     public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
     public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
     public List<string> DelegatingHandlers { get; set; }
-    public Dictionary<string, string> DownstreamHeaderTransform { get; set; }
+    public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
     public string DownstreamHttpMethod { get; set; }
     public string DownstreamHttpVersion { get; set; }
@@ -86,9 +86,19 @@ public class FileRoute : IRoute, ICloneable
     public FileSecurityOptions SecurityOptions { get; set; }
     public string ServiceName { get; set; }
     public string ServiceNamespace { get; set; }
-    public int Timeout { get; set; }
+
+    /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
+    /// <remarks>Notes:
+    /// <list type="bullet">
+    ///   <item><see cref="DownstreamRoute.Timeout"/> is the consumer of this property.</item>
+    ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/> implicitly overrides this property if not defined (null).</item>
+    ///   <item><see cref="QoSOptions.TimeoutValue"/> explicitly overrides this property if QoS is enabled.</item>
+    /// </list>
+    /// </remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
+    public int? Timeout { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
-    public Dictionary<string, string> UpstreamHeaderTransform { get; set; }
+    public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
     public List<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
@@ -113,7 +123,7 @@ public class FileRoute : IRoute, ICloneable
         to.ChangeDownstreamPathTemplate = new(from.ChangeDownstreamPathTemplate);
         to.DangerousAcceptAnyServerCertificateValidator = from.DangerousAcceptAnyServerCertificateValidator;
         to.DelegatingHandlers = new(from.DelegatingHandlers);
-        to.DownstreamHeaderTransform = new(from.DownstreamHeaderTransform);
+        to.DownstreamHeaderTransform = new Dictionary<string, string>(from.DownstreamHeaderTransform);
         to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
         to.DownstreamHttpMethod = from.DownstreamHttpMethod;
         to.DownstreamHttpVersion = from.DownstreamHttpVersion;
@@ -136,7 +146,7 @@ public class FileRoute : IRoute, ICloneable
         to.ServiceNamespace = from.ServiceNamespace;
         to.Timeout = from.Timeout;
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
-        to.UpstreamHeaderTransform = new(from.UpstreamHeaderTransform);
+        to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;
         to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;

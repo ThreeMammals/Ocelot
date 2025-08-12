@@ -14,7 +14,7 @@ public class AggregatesCreator : IAggregatesCreator
         _headerCreator = headerCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes)
+    public List<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes)
     {
         return fileConfiguration.Aggregates
             .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))

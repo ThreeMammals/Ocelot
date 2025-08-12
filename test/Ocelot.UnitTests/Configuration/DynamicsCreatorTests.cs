@@ -12,7 +12,7 @@ public class DynamicsCreatorTests : UnitTest
     private readonly Mock<IVersionCreator> _versionCreator;
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
     private readonly Mock<IMetadataCreator> _metadataCreator;
-    private List<Route> _result;
+    private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
     private RateLimitOptions _rlo1;
     private RateLimitOptions _rlo2;
@@ -74,6 +74,61 @@ public class DynamicsCreatorTests : UnitTest
         ThenTheVersionCreatorIsCalledCorrectly();
         ThenTheMetadataCreatorIsCalledCorrectly();
     }
+
+    #region PR 2073
+
+    [Fact]
+    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
+    public void CreateTimeout_HasRouteTimeout_ShouldCreateFromRoute()
+    {
+        // Arrange
+        var route = new FileDynamicRoute { Timeout = 11 };
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Equal(route.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndHasGlobalOne_ShouldCreateFromGlobalConfig()
+    {
+        // Arrange
+        var route = new FileDynamicRoute();
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Equal(global.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndNoGlobalOne_ShouldCreateFromDownstreamRouteDefaults()
+    {
+        // Arrange
+        var route = new FileDynamicRoute();
+        var global = new FileGlobalConfiguration();
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Null(global.Timeout);
+        Assert.Equal(DownstreamRoute.DefTimeout, timeout);
+    }
+    #endregion
 
     private static FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting, string downstreamHttpVersion, string key, string value) => new()
     {

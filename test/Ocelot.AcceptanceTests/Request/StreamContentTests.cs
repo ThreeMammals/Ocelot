@@ -46,7 +46,7 @@ public sealed class StreamContentTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath)
+    protected override void GivenThereIsAServiceRunningOn(int port, string basePath)
     {
         static void options(KestrelServerOptions o)
         {

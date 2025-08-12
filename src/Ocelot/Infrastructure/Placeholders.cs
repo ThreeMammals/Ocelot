@@ -9,6 +9,9 @@ namespace Ocelot.Infrastructure;
 
 public class Placeholders : IPlaceholders
 {
+    public const char OpeningBrace = '{';
+    public const char ClosingBrace = '}';
+
     private readonly Dictionary<string, Func<Response<string>>> _placeholders;
     private readonly Dictionary<string, Func<DownstreamRequest, string>> _requestPlaceholders;
     private readonly IBaseUrlFinder _finder;

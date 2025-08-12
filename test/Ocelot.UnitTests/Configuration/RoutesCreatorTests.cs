@@ -42,7 +42,7 @@ public class RoutesCreatorTests : UnitTest
     private HeaderTransformations _ht;
     private List<DownstreamHostAndPort> _dhp;
     private LoadBalancerOptions _lbo;
-    private List<Route> _result;
+    private IReadOnlyList<Route> _result;
     private Version _expectedVersion;
     private HttpVersionPolicy _expectedVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _uht;
@@ -168,6 +168,61 @@ public class RoutesCreatorTests : UnitTest
         ThenTheRoutesAreCreated();
     }
 
+    #region PR 2073
+
+    [Fact]
+    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+    [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
+    [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
+    public void CreateTimeout_HasRouteTimeout_ShouldCreateFromRoute()
+    {
+        // Arrange
+        var route = new FileRoute { Timeout = 11 };
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Equal(route.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndHasGlobalOne_ShouldCreateFromGlobalConfig()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration { Timeout = 22 };
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Equal(global.Timeout, timeout);
+    }
+
+    [Fact]
+    [Trait("PR", "2073")]
+    [Trait("Feat", "1314")]
+    public void CreateTimeout_NoRouteTimeoutAndNoGlobalOne_ShouldCreateFromDownstreamRouteDefaults()
+    {
+        // Arrange
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration();
+
+        // Act
+        var timeout = _creator.CreateTimeout(route, global);
+
+        // Assert
+        Assert.Null(route.Timeout);
+        Assert.Null(global.Timeout);
+        Assert.Equal(DownstreamRoute.DefTimeout, timeout);
+    }
+    #endregion
+
     private void ThenTheDependenciesAreCalledCorrectly()
     {
         ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
@@ -198,17 +253,18 @@ public class RoutesCreatorTests : UnitTest
             ["foo"] = "bar",
         };
 
-        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rro);
+        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
         _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
-        _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ao);
+        _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
-        _qosoCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(_qoso);
+        _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
         _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
         _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
+        _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ht);
         _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
         _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
         _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
@@ -278,19 +334,20 @@ public class RoutesCreatorTests : UnitTest
 
     private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
     {
-        _rroCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _rroCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
         _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
-        _aoCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _aoCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
-        _qosoCreator.Verify(x => x.Create(fileRoute.QoSOptions, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod));
+        _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
         _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
         _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
-        _hfarCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);
+        _hfarCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
         _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
         _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);

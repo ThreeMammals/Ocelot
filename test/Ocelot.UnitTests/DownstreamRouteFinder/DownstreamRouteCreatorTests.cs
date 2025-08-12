@@ -1,6 +1,6 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
@@ -19,20 +19,15 @@ public class DownstreamRouteCreatorTests : UnitTest
     private string _upstreamHttpMethod;
     private Dictionary<string, string> _upstreamHeaders;
     private IInternalConfiguration _configuration;
-    private readonly Mock<IQoSOptionsCreator> _qosOptionsCreator;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
 
     public DownstreamRouteCreatorTests()
     {
-        _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
-        _qoSOptions = new QoSOptionsBuilder().Build();
+        _qoSOptions = new(new FileQoSOptions());
         _handlerOptions = new HttpHandlerOptionsBuilder().Build();
         _loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(NoLoadBalancer)).Build();
-        _qosOptionsCreator
-            .Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
-            .Returns(_qoSOptions);
-        _creator = new DownstreamRouteCreator(_qosOptionsCreator.Object);
+        _creator = new DownstreamRouteCreator();
         _upstreamQuery = string.Empty;
     }
 
@@ -281,6 +276,7 @@ public class DownstreamRouteCreatorTests : UnitTest
         var qoSOptions = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(1)
             .WithTimeoutValue(1)
+            .WithKey("/auth/test|GET")
             .Build();
         var configuration = new InternalConfiguration(
             null,
@@ -294,7 +290,6 @@ public class DownstreamRouteCreatorTests : UnitTest
             new Version("1.1"),
             HttpVersionPolicy.RequestVersionOrLower);
         GivenTheConfiguration(configuration);
-        GivenTheQosCreatorReturns(qoSOptions);
 
         // Act
         WhenICreate();
@@ -327,12 +322,6 @@ public class DownstreamRouteCreatorTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
     }
 
-    private void GivenTheQosCreatorReturns(QoSOptions options)
-    {
-        _qosOptionsCreator.Setup(x => x.Create(It.IsAny<QoSOptions>(), It.IsAny<string>(), It.IsAny<List<string>>()))
-            .Returns(options);
-    }
-
     private void WithRateLimitOptions(RateLimitOptions expected)
     {
         _result.Data.Route.DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
@@ -352,7 +341,7 @@ public class DownstreamRouteCreatorTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].DownstreamScheme.ShouldBe("http");
         _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(NoLoadBalancer));
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldBe(_qoSOptions);
+        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe("/auth/test|GET");
         _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
     }
@@ -387,10 +376,8 @@ public class DownstreamRouteCreatorTests : UnitTest
 
     private void ThenTheQosOptionsAreSet(QoSOptions expected)
     {
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldBe(expected);
+        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe(expected.Key);
         _result.Data.Route.DownstreamRoute[0].QosOptions.UseQos.ShouldBeTrue();
-        _qosOptionsCreator
-            .Verify(x => x.Create(expected, _upstreamUrlPath, It.IsAny<List<string>>()), Times.Once);
     }
 
     private void GivenTheConfiguration(IInternalConfiguration config)

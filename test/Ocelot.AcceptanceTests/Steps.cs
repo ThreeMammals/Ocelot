@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.AcceptanceTests.Properties;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -34,21 +33,16 @@ public class Steps : AcceptanceSteps
         ocelotClient = ocelotServer.CreateClient();
     }
 
-    public Task GivenWebSocketServiceIsRunningOnAsync(string url, Func<HttpContext, Func<Task>, Task> middleware) =>
-        handler.GivenThereIsAServiceRunningOnAsync(url,
-            (context, config) => config
-                .SetBasePath(context.HostingEnvironment.ContentRootPath)
-                .AddJsonFile("appsettings.json", true, false)
-                .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, false)
-                .AddEnvironmentVariables(),
-            (context, logging) => logging
-                .AddConfiguration(context.Configuration.GetSection("Logging"))
-                .AddConsole(),
-            null, // no services
-            app => app.UseWebSockets().Use(middleware),
-            web => web.UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-        );
+    protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
+        => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
+
+    protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
+    {
+        Task MapStatus(HttpContext context)
+        {
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
+    }
 }

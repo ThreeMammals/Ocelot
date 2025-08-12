@@ -56,7 +56,7 @@ public class Kube : IServiceDiscoveryProvider
         try
         {
             return await _kubeApi
-                .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
+                .EndpointsV1()
                 .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
         }
         catch (KubeApiException ex)

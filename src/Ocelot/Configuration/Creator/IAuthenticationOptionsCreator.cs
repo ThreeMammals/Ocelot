@@ -4,5 +4,5 @@ namespace Ocelot.Configuration.Creator;
 
 public interface IAuthenticationOptionsCreator
 {
-    AuthenticationOptions Create(FileRoute route);
+    AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration);
 }

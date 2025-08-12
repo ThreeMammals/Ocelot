@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 
 namespace Ocelot.Responder;
@@ -27,7 +28,7 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
         {
-            return 503;
+            return StatusCodes.Status503ServiceUnavailable;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestCanceled))
@@ -35,7 +36,7 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
             // status code refer to
             // https://stackoverflow.com/questions/46234679/what-is-the-correct-http-status-code-for-a-cancelled-request?answertab=votes#tab-top
             // https://httpstatuses.com/499
-            return 499;
+            return StatusCodes.Status499ClientClosedRequest;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))

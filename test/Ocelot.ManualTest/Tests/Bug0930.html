@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug 930 Test</title>
+  <link rel="icon" type="image/png" href="ocelot_icon.png">
+  <style>
+    .title-container {
+      display: flex;
+      align-items: center; /* Aligns items vertically */
+    }
+
+    .logo {
+      width: 50px; /* Adjust size */
+      height: auto;
+      margin-right: 10px; /* Spacing */
+    }
+  </style>
+</head>
+<!--<body style="background-color: darkslategray; color: azure;">-->
+<body>
+  <div class="title-container">
+    <img alt="Ocelot Icon" src="ocelot_icon.png" class="logo">
+    <h1>Bug <a href="https://github.com/ThreeMammals/Ocelot/issues/930">930</a> Test</h1>
+  </div>
+  <hr />
+  <h2>WebSocket Connection</h2>
+  <div>
+    <label>
+      <input type="radio" name="connection" value="ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx" checked> Direct &rarr; ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="radio" name="connection" value="ws://localhost:5000/bug930/ws1"> Ocelot &rarr; ws://localhost:5000/bug930/ws1
+    </label>
+  </div>
+  <br />
+  <div>
+    <label>
+      <input type="radio" name="connection" value="wss://echo.websocket.org"> Direct &rarr; wss://echo.websocket.org
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="radio" name="connection" value="ws://localhost:5000/bug930/ws2"> Ocelot &rarr; ws://localhost:5000/bug930/ws2
+    </label>
+  </div>
+  <br />
+  <div>
+    <label>
+      <input type="radio" name="connection" value="wss://ws.postman-echo.com/raw"> Direct &rarr; wss://ws.postman-echo.com/raw
+    </label>
+  </div>
+  <div>
+    <label>
+      <input type="radio" name="connection" value="ws://localhost:5000/bug930/ws3"> Ocelot &rarr; ws://localhost:5000/bug930/ws3
+    </label>
+  </div>
+  <br />
+  <br />
+  <label>
+    <button id="connectBtn">Connect</button>
+    <span id="status">Not connected</span>
+  </label>
+
+  <script>
+    let socket;
+    let interval;
+    let url = "ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx"; // "ws://localhost:5000/bug930";
+    const button = document.getElementById("connectBtn");
+    const status = document.getElementById("status");
+
+    function getSelectedConnection() {
+      return document.querySelector('input[name="connection"]:checked').value;
+    }
+    function generateRandomString() {
+      return Math.random().toString(36).substring(2, 10);
+    }
+    function sendMessage(msg) {
+      if (!msg || msg.trim() === "") {
+        msg = generateRandomString();
+      }
+      socket.send(msg);
+      console.log("Sent:", msg);
+    }
+
+    button.addEventListener("click", function () {
+      if (!socket || socket.readyState === WebSocket.CLOSED) {
+        const connectionString = getSelectedConnection();
+        console.log("Connecting to:", connectionString);
+        socket = new WebSocket(connectionString); // open connection
+
+        socket.onopen = () => {
+          status.textContent = "Connected";
+          button.textContent = "Disconnect";
+          console.log("WebSocket connected to", connectionString);
+          sendMessage("Hello!");
+
+          // Start sending a random string every 2 seconds
+          interval = setInterval(sendMessage, 2000);
+        };
+
+        socket.onmessage = (event) => {
+          console.log("Received:", event.data);
+        };
+
+        socket.onerror = (error) => {
+          console.error("WebSocket error:", error);
+        };
+
+        socket.onclose = () => {
+          status.textContent = "Disconnected";
+          button.textContent = "Connect";
+          console.log("WebSocket closed");
+          clearInterval(interval); // stop sending messages
+        };
+      } else {
+        socket.close(); // close connection
+      }
+    });
+  </script>
+</body>
+</html>

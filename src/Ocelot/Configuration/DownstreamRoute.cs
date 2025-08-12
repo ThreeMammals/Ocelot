@@ -44,7 +44,8 @@ public class DownstreamRoute
         Version downstreamHttpVersion,
         HttpVersionPolicy downstreamHttpVersionPolicy,
         Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
-        MetadataOptions metadataOptions)
+        MetadataOptions metadataOptions,
+        int? timeout)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
         AddHeadersToDownstream = addHeadersToDownstream;
@@ -83,6 +84,7 @@ public class DownstreamRoute
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
+        Timeout = timeout;
 
         string path = UpstreamPathTemplate?.OriginalValue ?? string.Empty;
         string method = DownstreamHttpMethod ?? "GET";
@@ -177,9 +179,30 @@ public class DownstreamRoute
     public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
 
+    /// <summary>The timeout duration for the downstream request in seconds.</summary>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
+    public int? Timeout { get; }
+    public const int LowTimeout = 3;  //  3 seconds
+    public const int DefTimeout = 90; // 90 seconds
+
+    /// <summary>Gets or sets the default timeout in seconds for all routes, applicable at both the route-level and globally.
+    /// <para>The setter includes a constraint that ensures the assigned value is greater than or equal to <see cref="LowTimeout"/> (3 seconds).</para></summary>
+    /// <remarks>By default, initialized to <see cref="DefTimeout"/> (90 seconds).</remarks>
+    /// <value>An <see cref="int"/> value in seconds.</value>
+    public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
+    private static int defaultTimeoutSeconds = DefTimeout;
+
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
     /// <returns>A <see cref="string"/> object with the name.</returns>
-    public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
-        ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
-        : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
+    public string Name()
+    {
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
+            ? UpstreamPathTemplate.OriginalValue
+            : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
+                ? DownstreamPathTemplate.ToString()
+                : "?";
+        return UseServiceDiscovery || !string.IsNullOrEmpty(ServiceName)
+            ? string.Join(':', ServiceNamespace, ServiceName, path)
+            : path;
+    }
 }

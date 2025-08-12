@@ -75,7 +75,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
     //    var tokenType = AccessTokenType.Jwt;
     //    string url = _identityServerUrls[index] = $"http://localhost:{PortFinder.GetRandomPort()}";
     //    var clients = new Client[] { DefaultClient(tokenType, scopes) };
-    //    var builder = CreateIdentityServer(url, tokenType, scopes, clients);
+    //    var builder = CreateAspNetIdentityServer(url, tokenType, scopes, clients);
 
     //    var server = _identityServers[index] = builder.Build();
     //    server.Start();
@@ -85,12 +85,12 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
     private async Task GivenIHaveTokenWithScope(int index, string scope)
     {
         string url = _identityServerUrls[index];
-        _tokens[index] = await GivenAuthToken(url, scope);
+        _tokens[index] = await GivenIHaveAToken(/*new Uri(url).Port,*/ scope: scope);
     }
 
     private async Task GivenIHaveExpiredTokenWithScope(string url, string scope, int index)
     {
-        _tokens[index] = await GivenAuthToken(url, scope, "expired");
+        _tokens[index] = await GivenIHaveAToken(/*new Uri(url).Port,*/ scope: scope, "expired");
     }
 
     private void GivenIHaveAddedAllAuthHeaders(string[] schemes)

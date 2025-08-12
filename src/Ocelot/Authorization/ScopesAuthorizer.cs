@@ -7,7 +7,7 @@ namespace Ocelot.Authorization;
 public class ScopesAuthorizer : IScopesAuthorizer
 {
     private readonly IClaimsParser _claimsParser;
-    private const string Scope = "scope";
+    public const string Scope = "scope";
 
     public ScopesAuthorizer(IClaimsParser claimsParser)
     {

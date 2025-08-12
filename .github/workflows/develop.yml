@@ -2,9 +2,10 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 name: Develop
 on:
- push:
-   branches: [ "develop" ]
-
+  push:
+    branches:
+      - develop
+      - 'release/**'
 jobs:
   #1 Official required job to run utilizing GitHub Actions infrastructure
   build:
@@ -13,18 +14,52 @@ jobs:
       matrix:
         dotnet-version: [ '8.0', '9.0' ]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
     - name: Setup .NET ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}.x
     - name: .NET Version
       run: dotnet --version
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Restore
       run: dotnet restore ./Ocelot.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
     - name: Build
       run: dotnet build --no-restore ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
+    - name: Add threemammals.com DNS-record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
+    - name: Install mycert.pfx certificate
+      run: |
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        if [ -f "$pfx" ]; then
+          echo mycert.pfx file found
+        fi
+        echo Converting PFX to PEM format...
+        openssl version
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        echo Moving the certificate to the trusted CA store...
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        echo Updating the trusted certificates...
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        echo Verifying installation by listing in /etc/ssl/certs/ folder...
+        sudo ls /etc/ssl/certs/ | grep mycert
+        echo Verifying installation by openssl for $cert file...
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
+
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
@@ -110,6 +145,21 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - name: Add DNS-records & Install mycert.pfx certificate
+      run: |
+        sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+        ping -c 1 threemammals.com
+        # Install mycert.pfx certificate
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        sudo ls /etc/ssl/certs/ | grep mycert
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
     - name: Cake Build
       uses: cake-build/cake-action@v3
       with:
