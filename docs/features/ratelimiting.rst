@@ -91,33 +91,37 @@ Notes
 .. _rl-global-rate-limiting:
 
 Global Rate Limiting
------
+--------------------
 
-Ocelot now supports defining Global Rate Limiting rules for groups of routes. These rules are inserted before the existing rate limiting middleware and will add a `RateLimitRule` to any route that has no explicit rate limiting configured and whose `DownstreamPathTemplate` matches one of the global rule patterns.
+Ocelot now supports defining Global Rate Limiting rules for groups of routes. These rules are inserted before the existing rate limiting middleware and will add a ``RateLimitRule`` to any route that has no explicit rate limiting configured and whose ``DownstreamPathTemplate`` matches one of the global rule patterns.
 
 Configuration in JSON
 
-In your configuration file (e.g., `ocelot.json`), add the `GlobalRateLimitRules` array:
+In your configuration file (e.g., ``ocelot.json``), add the ``RateLimiting.ByPattern`` array with rules:
 
 .. code-block:: json
 
-   "GlobalRateLimitRules": [
-       {
-           "Pattern": "/api/users/*",
-           "Limit": 10,
-           "Period": "1m",
-           "PeriodTimespan": 1,
-           "QuotaExceededMessage": "Global limit exceeded. Try again later."
-       },
-       {
-           "Pattern": "/api/posts/*",
-           "Limit": 5,
-           "Period": "30s",
-           "PeriodTimespan": 30,
-           "QuotaExceededMessage": "Too many post requests."
-       }
-   ]
-
+  "GlobalConfiguration": {
+    "BaseUrl": "https://api.ocelot.net",
+    "RateLimiting": {
+      "ByPattern": [
+        {
+          "Pattern": "/api/users/*",
+          "Limit": 10,
+          "Period": "1m",
+          "PeriodTimespan": 1,
+          "QuotaExceededMessage": "Global limit exceeded. Try again later."
+        },
+        {
+          "Pattern": "/api/posts/*",
+          "Limit": 5,
+          "Period": "30s",
+          "PeriodTimespan": 30,
+          "QuotaExceededMessage": "Too many post requests."
+        }
+      ]
+    }
+  }
 
 Fields in each global rule:
 
@@ -128,36 +132,37 @@ Fields in each global rule:
     * - *Field*
       - *Description*
     * - ``Pattern``
-      - The downstream path template pattern to match (using Ocelot’s syntax).
+      - The downstream path template pattern to match (using Ocelot's syntax).
     * - ``Limit``
       - The maximum number of requests allowed per period.
     * - ``Period``
-      - A human-readable string representing the time window (e.g., `"1m"`, `"30s"`).
+      - A human-readable string representing the time window (e.g., '1m', '30s').
     * - ``PeriodTimespan``
-      - The numeric value corresponding to `Period` (e.g., 1 for 1 minute).
+      - The numeric value corresponding to ``Period`` (e.g., 1 for 1 minute).
     * - ``QuotaExceededMessage``
       - The error message returned when the limit is exceeded.
 
 Behavior
------
+--------
 
-1. **Loading Configuration**: Ocelot reads the `GlobalRateLimitRules` array when loading its configuration.
+1. **Loading Configuration**: Ocelot reads the ``RateLimiting.ByPattern`` array when loading its configuration.
 
 2. **Injecting Rules into Routes**:
 
    * Before the rate limiting middleware executes, the Configuration Builder iterates over all routes.
    * For each route that does **not** have an explicit rate limiting rule:
 
-     * If its `DownstreamPathTemplate` matches the `Pattern` of a global rule, a new `RateLimitRule` is created with that rule’s settings and added to the route.
+     * If its ``DownstreamPathTemplate`` matches the ``Pattern`` of a global rule, a new ``RateLimitRule`` is created with that rule's settings and added to the route.
 
 3. **Middleware Execution**:
 
    * With the injected rule present, the existing rate limiting middleware applies it like any other rule.
-   * If the number of requests exceeds the configured `Limit`, Ocelot returns an HTTP 429 response with the specified `QuotaExceededMessage`.
+   * If the number of requests exceeds the configured `Limit`, Ocelot returns an HTTP 429 response with the specified ``QuotaExceededMessage``.
 
-**Note:** There is no need to modify `RateLimitMiddleware` itself—adding the rule to the route’s configuration automatically includes it in the rate limiting pipeline.
+  **Note:** There is no need to modify ``RateLimitMiddleware`` itself—adding the rule to the route's configuration automatically includes it in the rate limiting pipeline.
 
 .. _rl-ocelot-vs-asp-net:
+
 Ocelot vs ASP.NET
 -----------------
 

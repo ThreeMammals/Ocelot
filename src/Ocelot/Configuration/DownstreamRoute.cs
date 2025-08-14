@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Values;
@@ -87,26 +88,21 @@ public class DownstreamRoute
         Timeout = timeout;
 
         string path = UpstreamPathTemplate?.OriginalValue ?? string.Empty;
-        string method = DownstreamHttpMethod ?? "GET";
+        string method = DownstreamHttpMethod ?? HttpMethods.Get;
+        var globalRateLimit = globalRateLimitOption?.FirstOrDefault(g => g.Pattern.IsMatch(path) && g.Methods.Contains(method));
 
-        GlobalRateLimitOptions globalRateLimit = globalRateLimitOption?.FirstOrDefault(g =>
-            g.Pattern.IsMatch(path) &&
-            g.Methods.Contains(method));
-
-        if (globalRateLimit == null || RateLimitOptions.EnableRateLimiting)
+        if (globalRateLimit != null && !RateLimitOptions.EnableRateLimiting)
         {
-            return;
+            EnableEndpointEndpointRateLimiting = true;
+            RateLimitOptions = new RateLimitOptionsBuilder()
+                .WithDisableRateLimitHeaders(globalRateLimit.DisableRateLimitHeaders)
+                .WithEnableRateLimiting(globalRateLimit.EnableRateLimiting)
+                .WithHttpStatusCode(globalRateLimit.HttpStatusCode)
+                .WithQuotaExceededMessage(globalRateLimit.QuotaExceededMessage)
+                .WithRateLimitRule(new RateLimitRule(globalRateLimit.Period, ParsePeriodTimespan(globalRateLimit.Period), globalRateLimit.Limit))
+                .WithClientWhiteList(() => [])
+                .Build();
         }
-
-        EnableEndpointEndpointRateLimiting = true;
-        RateLimitOptions = new RateLimitOptionsBuilder()
-            .WithDisableRateLimitHeaders(globalRateLimit.DisableRateLimitHeaders)
-            .WithEnableRateLimiting(globalRateLimit.EnableRateLimiting)
-            .WithHttpStatusCode(globalRateLimit.HttpStatusCode)
-            .WithQuotaExceededMessage(globalRateLimit.QuotaExceededMessage)
-            .WithRateLimitRule(new RateLimitRule(globalRateLimit.Period, ParsePeriodTimespan(globalRateLimit.Period), globalRateLimit.Limit))
-            .WithClientWhiteList(() => [])
-            .Build();
     }
 
     private static double ParsePeriodTimespan(string period)
