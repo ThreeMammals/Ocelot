@@ -11,7 +11,7 @@ public sealed class GlobalRateLimitOptionsCreator : IGlobalRateLimitOptionsCreat
             {
                 Name = g.Name,
                 Pattern = new Regex("^" + Regex.Escape(g.Pattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                Methods = new HashSet<string>(g.Methods, StringComparer.OrdinalIgnoreCase),
+                Methods = g.Methods, // new HashSet<string>(g.Methods, StringComparer.OrdinalIgnoreCase),
                 Limit = g.Limit,
                 Period = g.Period,
                 HttpStatusCode = g.HttpStatusCode,
@@ -19,7 +19,7 @@ public sealed class GlobalRateLimitOptionsCreator : IGlobalRateLimitOptionsCreat
                 DisableRateLimitHeaders = g.DisableRateLimitHeaders,
                 EnableRateLimiting = g.EnableRateLimiting,
             })
-            .ToList();
+            .ToArray();
 
         return groups;
     }

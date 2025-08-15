@@ -49,7 +49,7 @@ public class FileGlobalConfiguration
     public FileMetadataOptions MetadataOptions { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public FileRateLimitOptions RateLimitOptions { get; set; }
-    public IEnumerable<FileGlobalRateLimit> GlobalRateLimitRules { get; init; }
+    public IReadOnlyList<FileGlobalRateLimit> GlobalRateLimitRules { get; set; }
     public string RequestIdKey { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }
     public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }
