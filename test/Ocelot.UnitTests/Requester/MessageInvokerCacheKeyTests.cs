@@ -64,8 +64,8 @@ public class MessageInvokerCacheKeyTests
         }
 
         // Two object with absolutely identical internal state
-        var d1 = new DownstreamRoute(default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default);
-        var d2 = new DownstreamRoute(default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default);
+        var d1 = new DownstreamRoute(default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default);
+        var d2 = new DownstreamRoute(default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default, default);
 
         // Act for Gui :)
         bool happyStart = d1.Equals(d2); // object.Equals(object)

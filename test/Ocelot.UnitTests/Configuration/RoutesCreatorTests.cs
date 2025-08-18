@@ -17,7 +17,6 @@ public class RoutesCreatorTests : UnitTest
     private readonly Mock<IQoSOptionsCreator> _qosoCreator;
     private readonly Mock<IRouteOptionsCreator> _rroCreator;
     private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-    private readonly Mock<IGlobalRateLimitOptionsCreator> _grloCreator = new();
     private readonly Mock<ICacheOptionsCreator> _coCreator;
     private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
     private readonly Mock<IHeaderFindAndReplaceCreator> _hfarCreator;
@@ -77,7 +76,6 @@ public class RoutesCreatorTests : UnitTest
             _qosoCreator.Object,
             _rroCreator.Object,
             _rloCreator.Object,
-            _grloCreator.Object,
             _coCreator.Object,
             _hhoCreator.Object,
             _hfarCreator.Object,
@@ -256,11 +254,11 @@ public class RoutesCreatorTests : UnitTest
         _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
-        _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
+        _utpCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>())).Returns(_upt);
         _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
-        _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
+        _rloCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
         _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
@@ -343,7 +341,7 @@ public class RoutesCreatorTests : UnitTest
         _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
         _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
-        _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
+        _rloCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
         _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);

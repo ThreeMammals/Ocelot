@@ -133,7 +133,7 @@ public class AggregatesCreatorTests : UnitTest
         _aggregate1Utp = new UpstreamPathTemplateBuilder().Build();
         _aggregate2Utp = new UpstreamPathTemplateBuilder().Build();
 
-        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_aggregate1Utp)
             .Returns(_aggregate2Utp);
     }
@@ -143,7 +143,7 @@ public class AggregatesCreatorTests : UnitTest
         _headerTemplates1 = new Dictionary<string, UpstreamHeaderTemplate>();
         _headerTemplates2 = new Dictionary<string, UpstreamHeaderTemplate>();
 
-        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_headerTemplates1)
             .Returns(_headerTemplates2);
     }

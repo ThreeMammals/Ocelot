@@ -38,9 +38,7 @@ public class DynamicsCreator : IDynamicsCreator
 
     private Route SetUpDynamicRoute(FileDynamicRoute dynamicRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var rateLimitOption = _rateLimitOptionsCreator
-            .Create(dynamicRoute.RateLimitRule, globalConfiguration);
-
+        var rateLimitOption = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
         var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);

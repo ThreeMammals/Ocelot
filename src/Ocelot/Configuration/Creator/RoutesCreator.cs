@@ -15,7 +15,6 @@ public class RoutesCreator : IRoutesCreator
     private readonly IQoSOptionsCreator _qosOptionsCreator;
     private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
-    private readonly IGlobalRateLimitOptionsCreator _globalRateLimitOptionsCreator;
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
     private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
     private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
@@ -34,7 +33,6 @@ public class RoutesCreator : IRoutesCreator
         IQoSOptionsCreator qosOptionsCreator,
         IRouteOptionsCreator fileRouteOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
-        IGlobalRateLimitOptionsCreator globalRateLimitOptionsCreator,
         ICacheOptionsCreator cacheOptionsCreator,
         IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
         IHeaderFindAndReplaceCreator headerFAndRCreator,
@@ -53,7 +51,6 @@ public class RoutesCreator : IRoutesCreator
         _headerFAndRCreator = headerFAndRCreator;
         _cacheOptionsCreator = cacheOptionsCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
-        _globalRateLimitOptionsCreator = globalRateLimitOptionsCreator;
         _requestIdKeyCreator = requestIdKeyCreator;
         _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
         _authOptionsCreator = authOptionsCreator;
@@ -106,8 +103,7 @@ public class RoutesCreator : IRoutesCreator
 
         var qosOptions = _qosOptionsCreator.Create(fileRoute, globalConfiguration);
 
-        var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
-        var globalRateLimitOption = _globalRateLimitOptionsCreator.Create(globalConfiguration);
+        var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
 
@@ -148,9 +144,8 @@ public class RoutesCreator : IRoutesCreator
             .WithDownstreamAddresses(downstreamAddresses)
             .WithLoadBalancerKey(routeKey)
             .WithQosOptions(qosOptions)
-            .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting)
+            .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting && rateLimitOption.EnableRateLimiting) // TODO Review RouteOptions.EnableRateLimiting usage
             .WithRateLimitOptions(rateLimitOption)
-            .WithGlobalRateLimitOptions(globalRateLimitOption)
             .WithHttpHandlerOptions(httpHandlerOptions)
             .WithServiceName(fileRoute.ServiceName)
             .WithServiceNamespace(fileRoute.ServiceNamespace)

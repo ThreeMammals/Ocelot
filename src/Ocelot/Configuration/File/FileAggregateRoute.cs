@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Configuration.File;
 
-public class FileAggregateRoute : IRoute
+public class FileAggregateRoute : IRouteUpstream
 {
     public string Aggregator { get; set; }
     public int Priority { get; set; } = 1;

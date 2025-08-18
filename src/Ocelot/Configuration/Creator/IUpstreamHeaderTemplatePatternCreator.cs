@@ -13,5 +13,5 @@ public interface IUpstreamHeaderTemplatePatternCreator
     /// </summary>
     /// <param name="route">The route info.</param>
     /// <returns>An <see cref="IDictionary{TKey, TValue}"/> object where TKey is <see langword="string"/>, TValue is <see cref="UpstreamHeaderTemplate"/>.</returns>
-    IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route);
+    IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route);
 }

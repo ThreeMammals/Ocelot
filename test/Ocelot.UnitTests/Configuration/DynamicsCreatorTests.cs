@@ -42,7 +42,7 @@ public class DynamicsCreatorTests : UnitTest
         _result.Count.ShouldBe(0);
 
         // Assert: then the RloCreator is not called
-        _rloCreator.Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+        _rloCreator.Verify(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
 
         // Assert: then the metadata creator is not called
         _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
@@ -146,11 +146,10 @@ public class DynamicsCreatorTests : UnitTest
 
     private void ThenTheRloCreatorIsCalledCorrectly()
     {
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].RateLimitRule,
-            _fileConfig.GlobalConfiguration), Times.Once);
-
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].RateLimitRule,
-            _fileConfig.GlobalConfiguration), Times.Once);
+        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0], _fileConfig.GlobalConfiguration),
+            Times.Once);
+        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1], _fileConfig.GlobalConfiguration),
+            Times.Once);
     }
 
     private void ThenTheVersionCreatorIsCalledCorrectly()
@@ -212,7 +211,7 @@ public class DynamicsCreatorTests : UnitTest
         _rlo2 = new RateLimitOptionsBuilder().WithEnableRateLimiting(true).Build();
 
         _rloCreator
-            .SetupSequence(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()))
+            .SetupSequence(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()))
             .Returns(_rlo1)
             .Returns(_rlo2);
     }

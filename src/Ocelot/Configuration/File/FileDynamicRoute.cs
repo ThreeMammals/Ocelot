@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.File;
 /// <summary>
 /// TODO: Make it as a base Route File-model.
 /// </summary>
-public class FileDynamicRoute
+public class FileDynamicRoute : IRouteRateLimiting
 {
     public string DownstreamHttpVersion { get; set; }
 
@@ -36,4 +36,12 @@ public class FileDynamicRoute
     /// <summary>The timeout in seconds for requests.</summary>
     /// <value>A <see cref="Nullable{T}"/> where T is <see cref="int"/> value in seconds.</value>
     public int? Timeout { get; set; }
+
+    // IRouteRateLimiting vs IRouteUpstream
+    public FileRateLimitRule RateLimitOptions => RateLimitRule;
+    public IDictionary<string, string> UpstreamHeaderTemplates => new Dictionary<string, string>();
+    public string UpstreamPathTemplate { get => ServiceName; }
+    public List<string> UpstreamHttpMethod { get; set; }
+    public bool RouteIsCaseSensitive => false;
+    public int Priority => 0;
 }

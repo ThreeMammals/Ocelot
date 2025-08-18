@@ -50,7 +50,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         bool enabled = true;
 
         // Act
-        var result = _creator.Create(fileRoute.RateLimitOptions, fileGlobalConfig);
+        var result = _creator.Create(fileRoute, fileGlobalConfig);
 
         // Assert
         enabled.ShouldBeTrue();

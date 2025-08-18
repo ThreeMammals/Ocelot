@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File;
 
-public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
+public class FileRoute : IRouteRateLimiting, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
 {
     public FileRoute()
     {

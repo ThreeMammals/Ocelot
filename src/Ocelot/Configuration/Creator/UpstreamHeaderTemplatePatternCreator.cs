@@ -13,7 +13,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
     [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegexPlaceholders();
 
-    public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
     {
         var result = new Dictionary<string, UpstreamHeaderTemplate>();
 

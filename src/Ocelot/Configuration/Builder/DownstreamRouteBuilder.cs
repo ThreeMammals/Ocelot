@@ -44,7 +44,6 @@ public class DownstreamRouteBuilder
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
     private int? _timeout;
-    private IEnumerable<GlobalRateLimitOptions> _globalRateLimitOption;
 
     public DownstreamRouteBuilder()
     {
@@ -188,12 +187,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithGlobalRateLimitOptions(IEnumerable<GlobalRateLimitOptions> input)
-    {
-        _globalRateLimitOption = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
     {
         _httpHandlerOptions = input;
@@ -316,7 +309,6 @@ public class DownstreamRouteBuilder
             _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,
-            _globalRateLimitOption,
             _routeClaimRequirement,
             _claimToQueries,
             _claimsToHeaders,
