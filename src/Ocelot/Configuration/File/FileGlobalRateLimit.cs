@@ -6,7 +6,7 @@ public sealed record FileGlobalRateLimit
 {
     public string Name { get; init; }
     public string Pattern { get; init; } 
-    public List<string> Methods { get; init; }
+    public IList<string> Methods { get; init; }
     public int Limit { get; init; }
     public string Period { get; init; }
     public int HttpStatusCode { get; init; } = StatusCodes.Status429TooManyRequests;
