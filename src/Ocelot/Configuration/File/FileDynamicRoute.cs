@@ -41,7 +41,8 @@ public class FileDynamicRoute : IRouteRateLimiting
     public FileRateLimitRule RateLimitOptions => RateLimitRule;
     public IDictionary<string, string> UpstreamHeaderTemplates => new Dictionary<string, string>();
     public string UpstreamPathTemplate { get => ServiceName; }
-    public List<string> UpstreamHttpMethod { get; set; }
+    public IList<string> UpstreamHttpMethod { get; set; }
+
     public bool RouteIsCaseSensitive => false;
     public int Priority => 0;
 }
