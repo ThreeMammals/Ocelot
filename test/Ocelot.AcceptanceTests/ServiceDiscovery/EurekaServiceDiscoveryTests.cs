@@ -41,7 +41,7 @@ public sealed class EurekaServiceDiscoveryTests : Steps
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() { HttpMethods.Get },
+                    UpstreamHttpMethod = [HttpMethods.Get],
                     ServiceName = serviceName,
                     LoadBalancerOptions = new() { Type = nameof(LeastConnection) },
                 },

@@ -1,10 +1,18 @@
 ﻿using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.Configuration.Creator;
 
 public class RateLimitOptionsCreator : IRateLimitOptionsCreator
 {
+    private readonly IRateLimiting _rateLimiting;
+
+    public RateLimitOptionsCreator(IRateLimiting limiting)
+    {
+        _rateLimiting = limiting;
+    }
+
     public RateLimitOptions Create(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)
     {
         var rule = route?.RateLimitOptions ?? new();
@@ -32,7 +40,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         ArgumentNullException.ThrowIfNull(globalConfiguration);
 
         var path = route.UpstreamPathTemplate ?? string.Empty;
-        var methods = route.UpstreamHttpMethod ?? new(); // limiting downstream HTTP verbs has no effect; only upstream methods are respected, also keep in mind Method Transformation feature
+        var methods = route.UpstreamHttpMethod ?? []; // limiting downstream HTTP verbs has no effect; only upstream methods are respected, also keep in mind Method Transformation feature
         var globalRule = globalConfiguration.RateLimitingRules
             .FirstOrDefault(rule => Regex.IsMatch(path, '^' + Regex.Escape(rule.Pattern).Replace("\\*", ".*") + '$', RegexOptions.IgnoreCase | RegexOptions.Compiled)
                 && (methods.Count == 0 || rule.Methods.Count == 0 || rule.Methods.Intersect(methods).Any()));
@@ -45,33 +53,12 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 .WithQuotaExceededMessage(globalRule.QuotaExceededMessage)
                 .WithRateLimitRule(new RateLimitRule(
                     globalRule.Period,
-                    ParsePeriodTimespan(globalRule.Period), // TODO Review this, it seems this is the new feature, we parse Period only.
+                    _rateLimiting.ToTimespan(globalRule.Period).TotalSeconds, // TODO This is design issue because of parsing Period! The 2nd parameter must be FileRateLimitRule.PeriodTimespan !!!
                     globalRule.Limit))
                 .WithClientWhiteList(() => [])
                 .Build();
         }
 
         return new RateLimitOptionsBuilder().WithEnableRateLimiting(false).Build();
-    }
-
-    private static double ParsePeriodTimespan(string period)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(period, nameof(period));
-
-        char unit = period[^1]; // separate latest character
-        string numberPart = period[..^1]; // all characters except latest
-        if (!double.TryParse(numberPart, out var value))
-        {
-            throw new ArgumentException($"Invalid period number: {period}", nameof(period));
-        }
-
-        return unit switch
-        {
-            's' => value, // seconds
-            'm' => value * 60, // minutes
-            'h' => value * 3600, // hour
-            'd' => value * 86400, // day
-            _ => throw new ArgumentException($"Invalid period unit: {unit}", nameof(period)),
-        };
     }
 }

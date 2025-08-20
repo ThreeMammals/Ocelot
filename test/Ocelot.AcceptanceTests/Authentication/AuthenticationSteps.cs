@@ -216,7 +216,7 @@ public class AuthenticationSteps : Steps
         return token = await GivenToken(auth);
     }
 
-    public static FileRoute GivenAuthRoute(int port, string scheme = JwtBearerDefaults.AuthenticationScheme,
+    public FileRoute GivenAuthRoute(int port, string scheme = JwtBearerDefaults.AuthenticationScheme,
         bool allowAnonymous = false, string method = null)
     {
         var r = GivenDefaultRoute(port).WithMethods(method ?? HttpMethods.Get);

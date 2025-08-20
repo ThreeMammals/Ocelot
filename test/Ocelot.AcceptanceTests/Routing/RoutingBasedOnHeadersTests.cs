@@ -415,17 +415,17 @@ public sealed class RoutingBasedOnHeadersTests : Steps
 
     private void ThenTheDownstreamUrlPathShouldBe(string expected) => _downstreamPath.ShouldBe(expected);
 
-    private static FileRoute GivenRouteWithKey(int port, string path = null, string key = null)
+    private FileRoute GivenRouteWithKey(int port, string path = null, string key = null)
         => GivenRoute(port, path, path).WithKey(key);
 
-    private static FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, Dictionary<string, string> templates)
+    private FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, Dictionary<string, string> templates)
     {
         var route = GivenDefaultRoute(port);
         route.UpstreamHeaderTemplates = templates;
         return route;
     }
 
-    private static FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, string upstream, string downstream, Dictionary<string, string> templates)
+    private FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, string upstream, string downstream, Dictionary<string, string> templates)
     {
         var route = GivenRoute(port, upstream, downstream);
         route.UpstreamHeaderTemplates = templates;

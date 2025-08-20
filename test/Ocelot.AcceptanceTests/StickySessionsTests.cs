@@ -93,7 +93,7 @@ public sealed class StickySessionsTests : Steps
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         LoadBalancerOptions = new()
         {
             Type = nameof(CookieStickySessions),

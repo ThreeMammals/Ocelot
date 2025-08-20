@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Builder;
 public class RouteBuilder
 {
     private UpstreamPathTemplate _upstreamTemplatePattern;
-    private List<HttpMethod> _upstreamHttpMethod;
+    private IList<HttpMethod> _upstreamHttpMethod;
     private string _upstreamHost;
     private List<DownstreamRoute> _downstreamRoutes;
     private List<AggregateRouteConfig> _downstreamRoutesConfig;

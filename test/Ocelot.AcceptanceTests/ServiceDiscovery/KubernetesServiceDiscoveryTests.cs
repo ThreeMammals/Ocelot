@@ -333,7 +333,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             DownstreamPathTemplate = "/",
             DownstreamScheme = null, // the scheme should not be defined in service discovery scenarios by default, only ServiceName
             UpstreamPathTemplate = "/",
-            UpstreamHttpMethod = new() { HttpMethods.Get },
+            UpstreamHttpMethod = [HttpMethods.Get],
             ServiceName = serviceName, // !!!
             ServiceNamespace = serviceNamespace,
             LoadBalancerOptions = new() { Type = loadBalancerType },

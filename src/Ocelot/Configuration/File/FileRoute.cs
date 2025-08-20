@@ -100,7 +100,7 @@ public class FileRoute : IRouteRateLimiting, ICloneable // TODO: Inherit from Fi
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
-    public List<string> UpstreamHttpMethod { get; set; }
+    public IList<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     /// <summary>
@@ -148,7 +148,7 @@ public class FileRoute : IRouteRateLimiting, ICloneable // TODO: Inherit from Fi
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
         to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;
-        to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
+        to.UpstreamHttpMethod = new List<string>(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
     }
 }

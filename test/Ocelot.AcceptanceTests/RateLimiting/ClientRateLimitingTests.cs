@@ -182,7 +182,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
     }
 
-    private static FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
+    private FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
     {
         DownstreamPathTemplate = downstream ?? "/api/ClientRateLimit",
         DownstreamHostAndPorts = new()
@@ -191,7 +191,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         RequestIdKey = "Oc-RequestId",
         RateLimitOptions = new FileRateLimitRule
         {

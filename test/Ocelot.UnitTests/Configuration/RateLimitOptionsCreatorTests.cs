@@ -2,12 +2,13 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class RateLimitOptionsCreatorTests : UnitTest
 {
-    private readonly RateLimitOptionsCreator _creator = new();
+    private readonly RateLimitOptionsCreator _creator = new(Mock.Of<IRateLimiting>());
 
     [Fact]
     public void Should_create_rate_limit_options()

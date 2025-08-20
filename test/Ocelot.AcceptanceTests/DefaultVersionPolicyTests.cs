@@ -141,7 +141,7 @@ public sealed class DefaultVersionPolicyTests : Steps
     private static FileRoute GivenHttpsRoute(int port, string httpVersion, string versionPolicy) => new()
     {
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         DownstreamPathTemplate = "/",
         DownstreamHostAndPorts = new() { new("localhost", port) },
         DownstreamScheme = Uri.UriSchemeHttps, // !!!

@@ -39,17 +39,16 @@ public class AggregatesCreator : IAggregatesCreator
 
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
         var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
+        var upstreamHttpMethod = (aggregateRoute.UpstreamHttpMethod.Count == 0) ? new List<HttpMethod>()
+            : aggregateRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToList();
 
-        var route = new RouteBuilder()
-            .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithDownstreamRoutes(applicableRoutes)
-            .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
-            .WithUpstreamHost(aggregateRoute.UpstreamHost)
-            .WithAggregator(aggregateRoute.Aggregator)
-            .WithUpstreamHeaders(upstreamHeaderTemplates)
-            .Build();
-
-        return route;
+        return new Route(
+            applicableRoutes,
+            aggregateRoute.RouteKeysConfig,
+            upstreamHttpMethod,
+            upstreamTemplatePattern,
+            aggregateRoute.UpstreamHost,
+            aggregateRoute.Aggregator,
+            upstreamHeaderTemplates);
     }
 }

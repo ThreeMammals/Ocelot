@@ -126,7 +126,7 @@ public class RoutesCreator : IRoutesCreator
         var route = new DownstreamRouteBuilder()
             .WithKey(fileRoute.Key)
             .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
+            .WithUpstreamHttpMethod(new(fileRoute.UpstreamHttpMethod))
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
             .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
             .WithAuthenticationOptions(authOptionsForRoute)
@@ -166,19 +166,20 @@ public class RoutesCreator : IRoutesCreator
         return route;
     }
 
-    private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
+    private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoute)
     {
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute);
+        var upstreamHttpMethods = fileRoute.UpstreamHttpMethod.Count == 0 ? new List<HttpMethod>()
+            : fileRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToList();
 
-        var route = new RouteBuilder()
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithDownstreamRoute(downstreamRoutes)
-            .WithUpstreamHost(fileRoute.UpstreamHost)
-            .WithUpstreamHeaders(upstreamHeaderTemplates)
-            .Build();
-
-        return route;
+        return new Route(
+            [downstreamRoute],
+            new(),
+            upstreamHttpMethods,
+            upstreamTemplatePattern,
+            fileRoute.UpstreamHost,
+            aggregator: default,
+            upstreamHeaderTemplates);
     }
 }

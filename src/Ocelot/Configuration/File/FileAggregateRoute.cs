@@ -11,7 +11,7 @@ public class FileAggregateRoute : IRouteUpstream
     public List<AggregateRouteConfig> RouteKeysConfig { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public string UpstreamHost { get; set; }
-    public List<string> UpstreamHttpMethod { get; set; }
+    public IList<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     public FileAggregateRoute()
@@ -23,7 +23,7 @@ public class FileAggregateRoute : IRouteUpstream
         RouteKeysConfig = new();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHost = default;
-        UpstreamHttpMethod = new() { HttpMethods.Get }; // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
+        UpstreamHttpMethod = [ HttpMethods.Get ]; // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
         UpstreamPathTemplate = default;
     }
 }

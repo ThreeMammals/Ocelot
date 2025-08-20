@@ -229,7 +229,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         DownstreamPathTemplate = "DownstreamPathTemplate" + suffix,
         Key = "Key" + suffix,
         UpstreamHost = "UpstreamHost" + suffix,
-        UpstreamHttpMethod = new() { "UpstreamHttpMethod" + suffix },
+        UpstreamHttpMethod = [ "UpstreamHttpMethod" + suffix ],
         DownstreamHostAndPorts = new()
         {
             new("Host"+suffix, 80),

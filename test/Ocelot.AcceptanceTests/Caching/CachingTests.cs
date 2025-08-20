@@ -268,7 +268,7 @@ public sealed class CachingTests : Steps
                 DownstreamHttpMethod = "Post",
                 DownstreamScheme = Uri.UriSchemeHttp,
                 UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post },
+                UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post ],
                 FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
             },
         },

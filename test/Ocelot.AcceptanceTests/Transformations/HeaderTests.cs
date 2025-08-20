@@ -110,7 +110,7 @@ public sealed class HeaderTests : Steps
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
-        route.UpstreamHttpMethod.AddRange([ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ]);
+        route.UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ];
         route.HttpHandlerOptions.UseCookieContainer = true;
         var configuration = GivenConfiguration(route);
 
@@ -132,7 +132,7 @@ public sealed class HeaderTests : Steps
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
-        route.UpstreamHttpMethod.AddRange([HttpMethods.Get, HttpMethods.Post, HttpMethods.Options]);
+        route.UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ];
         route.HttpHandlerOptions.UseCookieContainer = false; // !
         var configuration = GivenConfiguration(route);
 

@@ -14,7 +14,7 @@ public class CacheOptionsCreatorTests : UnitTest
         // Arrange
         var route = new FileRoute
         {
-            UpstreamHttpMethod = new() { HttpMethods.Get },
+            UpstreamHttpMethod = [HttpMethods.Get],
             UpstreamPathTemplate = "/testdummy",
         };
 

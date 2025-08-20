@@ -61,11 +61,14 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(downstreamRoute)
-            .WithUpstreamHttpMethod(new List<string> { upstreamHttpMethod })
-            .WithUpstreamPathTemplate(upstreamPathTemplate)
-            .Build();
+        var route = new Route(
+            new() { downstreamRoute },
+            new(),
+            new List<HttpMethod>() { new(upstreamHttpMethod.Trim()) },
+            upstreamPathTemplate,
+            upstreamHost: default,
+            aggregator: default,
+            upstreamHeaderTemplates: default);
 
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
         _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);

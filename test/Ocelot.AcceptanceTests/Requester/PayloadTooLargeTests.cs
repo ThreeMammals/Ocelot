@@ -64,7 +64,7 @@ public sealed class PayloadTooLargeTests : Steps
         },
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() {method ?? HttpMethods.Get },
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
 
     private void GivenThereIsAServiceRunningOn(int port)
