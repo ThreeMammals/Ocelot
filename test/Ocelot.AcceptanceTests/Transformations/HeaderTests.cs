@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
 using System.Net.Sockets;
 using System.Text;
 
@@ -11,12 +12,16 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Feat", "204")] // https://github.com/ThreeMammals/Ocelot/pull/204
 public sealed class HeaderTests : Steps
 {
+    private static FileHttpHandlerOptions DoNotAllowAutoRedirect => new() { AllowAutoRedirect = false };
+    private static FileHttpHandlerOptions UseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = true };
+    private static FileHttpHandlerOptions DoNotUseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = false };
+
     [Fact]
     public void Should_transform_upstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.UpstreamHeaderTransform.Add("Laz", "D, GP");
+        var route = Box(GivenDefaultRoute(port))
+            .UpstreamHeaderTransform("Laz", "D, GP").Out();
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, "Laz"))
@@ -33,8 +38,8 @@ public sealed class HeaderTests : Steps
     public void Should_transform_downstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.DownstreamHeaderTransform.Add("Location", "http://www.bbc.co.uk/, http://ocelot.net/");
+        var route = Box(GivenDefaultRoute(port))
+            .DownstreamHeaderTransform("Location", "http://www.bbc.co.uk/, http://ocelot.net/").Out();
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
@@ -51,9 +56,10 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_190()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.DownstreamHeaderTransform.Add("Location", $"{DownstreamUrl(port)}, {{BaseUrl}}");
-        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var route = Box(GivenDefaultRoute(port))
+            .DownstreamHeaderTransform("Location", $"{DownstreamUrl(port)}, {{BaseUrl}}")
+            .HandlerOptions(DoNotAllowAutoRedirect)
+            .Unbox();
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
@@ -70,9 +76,10 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_205()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
-        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var route = Box(GivenDefaultRoute(port))
+            .DownstreamHeaderTransform("Location", "{DownstreamBaseUrl}, {BaseUrl}")
+            .HandlerOptions(DoNotAllowAutoRedirect)
+            .Unbox();
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
@@ -89,9 +96,10 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_417()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
-        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var route = Box(GivenDefaultRoute(port))
+            .DownstreamHeaderTransform("Location", "{DownstreamBaseUrl}, {BaseUrl}")
+            .HandlerOptions(DoNotAllowAutoRedirect)
+            .Unbox();
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.BaseUrl = "http://anotherapp.azurewebsites.net";
 
@@ -109,9 +117,10 @@ public sealed class HeaderTests : Steps
     public void Request_should_reuse_cookies_with_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
-        route.UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ];
-        route.HttpHandlerOptions.UseCookieContainer = true;
+        var route = Box(GivenRoute(port, "/sso/{everything}", "/sso/{everything}"))
+            .Methods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Options)
+            .HandlerOptions(UseCookieContainer)
+            .Unbox();
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
@@ -131,9 +140,10 @@ public sealed class HeaderTests : Steps
     public void Request_should_have_own_cookies_no_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
-        route.UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post, HttpMethods.Options ];
-        route.HttpHandlerOptions.UseCookieContainer = false; // !
+        var route = Box(GivenRoute(port, "/sso/{everything}", "/sso/{everything}"))
+            .Methods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Options)
+            .HandlerOptions(DoNotUseCookieContainer)
+            .Unbox(); // !
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
@@ -194,9 +204,10 @@ public sealed class HeaderTests : Steps
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenDefaultRoute(port);
-        route.UpstreamHeaderTransform.TryAdd(X_Forwarded_For, "{RemoteIpAddress}");
-        route.HttpHandlerOptions.AllowAutoRedirect = false;
+        var route = Box(GivenDefaultRoute(port))
+            .UpstreamHeaderTransform(X_Forwarded_For, "{RemoteIpAddress}")
+            .HandlerOptions(DoNotAllowAutoRedirect)
+            .Unbox();
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -226,17 +237,11 @@ public sealed class HeaderTests : Steps
             .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
             .ToString();
         var port1 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/route1");
-        route1.UpstreamHeaderTransform = new Dictionary<string, string>()
-        {
-            { Ot_Route, "Raman" },
-        };
+        var route1 = Box(GivenRoute(port1, "/route1"))
+            .UpstreamHeaderTransform(Ot_Route, "Raman").Out();
         var port2 = PortFinder.GetRandomPort();
-        var route2 = GivenRoute(port2, "/route2");
-        route2.UpstreamHeaderTransform = new Dictionary<string, string>()
-        {
-            { Ot_Route, "Mark" },
-        };
+        var route2 = Box(GivenRoute(port2, "/route2"))
+            .UpstreamHeaderTransform(Ot_Route, "Mark").Out();
         var port3 = PortFinder.GetRandomPort();
         var route3 = GivenRoute(port3, "/route3");
         var configuration = GivenConfiguration(route1, route2, route3);
@@ -283,11 +288,11 @@ Ot-Route: ?");
     {
         const string Who = "Who", X_Forwarded_By = "X-Forwarded-By";
         var port1 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/route1");
-        route1.DownstreamHeaderTransform.Add(Who, "Raman, Mark");
+        var route1 = Box(GivenRoute(port1, "/route1"))
+            .DownstreamHeaderTransform(Who, "Raman, Mark").Out();
         var port2 = PortFinder.GetRandomPort();
-        var route2 = GivenRoute(port2, "/route2");
-        route2.DownstreamHeaderTransform.Add(Who, "Mark, Raman");
+        var route2 = Box(GivenRoute(port2, "/route2"))
+            .DownstreamHeaderTransform(Who, "Mark, Raman").Out();
         var port3 = PortFinder.GetRandomPort();
         var route3 = GivenRoute(port3, "/route3");
         var configuration = GivenConfiguration(route1 ,route2, route3);

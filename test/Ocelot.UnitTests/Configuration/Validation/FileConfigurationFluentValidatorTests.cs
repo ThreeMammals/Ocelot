@@ -240,7 +240,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = Box.In(GivenDefaultRoute("/tom", "/"))
+        var route2 = FileRouteBox.In(GivenDefaultRoute("/tom", "/"))
             .Key("Tom").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -267,7 +267,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = Box.In(GivenDefaultRoute("/tom", "/"))
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
             .Key("Tom").UpstreamHost("localhost").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -295,7 +295,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = Box.In(GivenDefaultRoute("/tom", "/"))
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
             .Key("Tom").Methods("Post").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -322,7 +322,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = Box.In(GivenDefaultRoute("/lol", "/"))
+        var route2 = Box(GivenDefaultRoute("/lol", "/"))
             .Key("Tom").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -382,7 +382,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = Box.In(GivenDefaultRoute("/tom", "/"))
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
             .Key("Tom").Out();
         route2.RequestIdKey = "should_fail";
         var configuration = GivenAConfiguration(route, route2);
@@ -554,7 +554,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute()
             .WithUpstreamHost("host1");
-        var duplicate = Box.With(GivenDefaultRoute(null, "/www/test/"))
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
             .UpstreamHost("host2").Unbox();
         GivenAConfiguration(route, duplicate);
 
@@ -606,7 +606,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             .WithMethods()
             .WithUpstreamHost("upstreamhost");
 
-        var duplicate = Box.With(GivenDefaultRoute(null, "/www/test/"))
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
             .Methods().UpstreamHost("upstreamhost").Unbox();
         GivenAConfiguration(route, duplicate);
 
@@ -625,7 +625,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var route = GivenDefaultRoute()
             .WithMethods()
             .WithUpstreamHost("upstreamhost111");
-        var duplicate = Box.With(GivenDefaultRoute(null, "/www/test/"))
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
             .Methods().UpstreamHost("upstreamhost222").Unbox();
         GivenAConfiguration(route, duplicate);
 
@@ -643,7 +643,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var route = GivenDefaultRoute()
             .WithMethods()
             .WithUpstreamHost("upstreamhost");
-        var duplicate = Box.With(GivenDefaultRoute(null, "/www/test/"))
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
             .Methods().Unbox();
         GivenAConfiguration(route, duplicate);
 

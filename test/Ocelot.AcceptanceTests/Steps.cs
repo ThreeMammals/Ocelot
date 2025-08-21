@@ -52,4 +52,6 @@ public class Steps : AcceptanceSteps
     protected override FileRoute GivenDefaultRoute(int port) => base.GivenDefaultRoute(port) as FileRoute;
     protected override FileRoute GivenCatchAllRoute(int port) => base.GivenCatchAllRoute(port) as FileRoute;
     protected override FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
+
+    protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
 }
