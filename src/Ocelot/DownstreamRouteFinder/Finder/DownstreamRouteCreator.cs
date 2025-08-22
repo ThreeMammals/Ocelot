@@ -50,13 +50,14 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
             .WithUpstreamPathTemplate(upstreamPathTemplate);
 
-        var rateLimitOptions = configuration.Routes?.SelectMany(x => x.DownstreamRoute)
+        var serviceDiscoveryDownstreamRoute = configuration.Routes?
+            .SelectMany(x => x.DownstreamRoute)
             .FirstOrDefault(x => x.ServiceName == serviceName);
 
-        if (rateLimitOptions != null)
+        if (serviceDiscoveryDownstreamRoute != null)
         {
             downstreamRouteBuilder
-                .WithRateLimitOptions(rateLimitOptions.RateLimitOptions)
+                .WithRateLimitOptions(serviceDiscoveryDownstreamRoute.RateLimitOptions)
                 .WithEnableRateLimiting(true);
         }
 

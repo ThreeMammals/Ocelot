@@ -170,13 +170,13 @@ public class DynamicsCreatorTests : UnitTest
     private void ThenTheRoutesAreReturned()
     {
         _result.Count.ShouldBe(2);
-        _result[0].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
+        _result[0].DownstreamRoute[0].EnableRateLimiting.ShouldBeFalse();
         _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
         _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
         _result[0].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
         _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
 
-        _result[1].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+        _result[1].DownstreamRoute[0].EnableRateLimiting.ShouldBeTrue();
         _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
         _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
         _result[1].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);

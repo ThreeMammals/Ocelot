@@ -324,7 +324,7 @@ public class DownstreamRouteCreatorTests : UnitTest
 
     private void WithRateLimitOptions(RateLimitOptions expected)
     {
-        _result.Data.Route.DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+        _result.Data.Route.DownstreamRoute[0].EnableRateLimiting.ShouldBeTrue();
         _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         _result.Data.Route.DownstreamRoute[0].RateLimitOptions.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
     }

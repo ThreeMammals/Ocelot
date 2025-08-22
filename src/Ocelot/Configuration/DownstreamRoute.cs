@@ -15,7 +15,7 @@ public class DownstreamRoute
         string serviceNamespace,
         HttpHandlerOptions httpHandlerOptions,
         bool useServiceDiscovery,
-        bool enableEndpointRateLimiting,
+        bool enableRateLimiting,
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
@@ -57,7 +57,7 @@ public class DownstreamRoute
         ServiceNamespace = serviceNamespace;
         HttpHandlerOptions = httpHandlerOptions;
         UseServiceDiscovery = useServiceDiscovery;
-        EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
+        EnableRateLimiting = enableRateLimiting;
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
@@ -93,7 +93,7 @@ public class DownstreamRoute
     public string ServiceName { get; }
     public string ServiceNamespace { get; }
     public HttpHandlerOptions HttpHandlerOptions { get; }
-    public bool EnableEndpointEndpointRateLimiting { get; } // TODO Naming mistyping
+    public bool EnableRateLimiting { get; }
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }

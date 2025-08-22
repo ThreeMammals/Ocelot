@@ -32,9 +32,9 @@ public class RateLimitingMiddleware : OcelotMiddleware
         var options = downstreamRoute.RateLimitOptions;
 
         // check if rate limiting is enabled
-        if (!downstreamRoute.EnableEndpointEndpointRateLimiting)
+        if (!downstreamRoute.EnableRateLimiting)
         {
-            Logger.LogInformation(() => $"{nameof(DownstreamRoute.EnableEndpointEndpointRateLimiting)} is not enabled for downstream path: {downstreamRoute.DownstreamPathTemplate.Value}");
+            Logger.LogInformation(() => $"Rate limiting is disabled for route '{downstreamRoute.Name()}' via the {nameof(DownstreamRoute.EnableRateLimiting)} option.");
             await _next.Invoke(httpContext);
             return;
         }
@@ -45,7 +45,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
         // check white list
         if (IsWhitelisted(identity, options))
         {
-            Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} is white listed from rate limiting");
+            Logger.LogInformation(() => $"Route '{downstreamRoute.Name()}' is configured to bypass rate limiting based on the client's header, due to the client's ID being detected in the whitelist.");
             await _next.Invoke(httpContext);
             return;
         }
