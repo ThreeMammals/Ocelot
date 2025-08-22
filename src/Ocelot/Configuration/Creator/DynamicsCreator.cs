@@ -44,7 +44,6 @@ public class DynamicsCreator : IDynamicsCreator
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
 
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
             .WithRateLimitOptions(rateLimitOption)
             .WithServiceName(dynamicRoute.ServiceName)
             .WithDownstreamHttpVersion(version)

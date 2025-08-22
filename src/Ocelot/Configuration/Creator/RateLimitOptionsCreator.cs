@@ -48,7 +48,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         {
             return new RateLimitOptionsBuilder()
                 .WithDisableRateLimitHeaders(globalRule.DisableRateLimitHeaders)
-                .WithEnableRateLimiting(globalRule.EnableRateLimiting) // TODO Double check this -> EnableEndpointEndpointRateLimiting = true;
+                .WithEnableRateLimiting(globalRule.EnableRateLimiting)
                 .WithHttpStatusCode(globalRule.HttpStatusCode)
                 .WithQuotaExceededMessage(globalRule.QuotaExceededMessage)
                 .WithRateLimitRule(new RateLimitRule(

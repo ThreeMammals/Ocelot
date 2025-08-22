@@ -83,7 +83,7 @@ public class RoutesCreator : IRoutesCreator
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration);
+        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration); // TODO Refactor this overhead service by moving options to native creators
 
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
@@ -144,7 +144,6 @@ public class RoutesCreator : IRoutesCreator
             .WithDownstreamAddresses(downstreamAddresses)
             .WithLoadBalancerKey(routeKey)
             .WithQosOptions(qosOptions)
-            .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
             .WithRateLimitOptions(rateLimitOption)
             .WithHttpHandlerOptions(httpHandlerOptions)
             .WithServiceName(fileRoute.ServiceName)

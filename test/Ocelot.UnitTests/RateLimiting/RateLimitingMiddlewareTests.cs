@@ -49,7 +49,6 @@ public class RateLimitingMiddlewareTests : UnitTest
         var upstreamTemplate = new UpstreamPathTemplateBuilder()
             .Build();
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithEnableRateLimiting(true)
             .WithRateLimitOptions(new(
                 enableRateLimiting: true,
                 clientIdHeader: "ClientId",
@@ -91,7 +90,6 @@ public class RateLimitingMiddlewareTests : UnitTest
         // Arrange
         var route = new RouteBuilder()
             .WithDownstreamRoute(new DownstreamRouteBuilder()
-                .WithEnableRateLimiting(true)
                 .WithRateLimitOptions(new(
                     enableRateLimiting: true,
                     clientIdHeader: "ClientId",
@@ -123,7 +121,6 @@ public class RateLimitingMiddlewareTests : UnitTest
         var upstreamTemplate = new UpstreamPathTemplateBuilder()
             .Build();
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithEnableRateLimiting(true)
             .WithRateLimitOptions(new(
                 enableRateLimiting: true,
                 clientIdHeader: "ClientId",

@@ -29,12 +29,10 @@ public class RateLimitingMiddleware : OcelotMiddleware
     {
         var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-        var options = downstreamRoute.RateLimitOptions;
-
-        // check if rate limiting is enabled
-        if (!downstreamRoute.EnableRateLimiting)
+        var options = downstreamRoute.RateLimitOptions ?? new RateLimitOptions(false, default, default, default, default, default, default, default); // TODO Perhaps a parameterless constructor is a better choice
+        if (!options.EnableRateLimiting)
         {
-            Logger.LogInformation(() => $"Rate limiting is disabled for route '{downstreamRoute.Name()}' via the {nameof(DownstreamRoute.EnableRateLimiting)} option.");
+            Logger.LogInformation(() => $"Rate limiting is disabled for route '{downstreamRoute.Name()}' via the {nameof(RateLimitOptions.EnableRateLimiting)} option.");
             await _next.Invoke(httpContext);
             return;
         }

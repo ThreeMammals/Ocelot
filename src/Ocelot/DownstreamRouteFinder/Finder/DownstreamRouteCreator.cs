@@ -57,8 +57,7 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
         if (serviceDiscoveryDownstreamRoute != null)
         {
             downstreamRouteBuilder
-                .WithRateLimitOptions(serviceDiscoveryDownstreamRoute.RateLimitOptions)
-                .WithEnableRateLimiting(true);
+                .WithRateLimitOptions(serviceDiscoveryDownstreamRoute.RateLimitOptions);
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();

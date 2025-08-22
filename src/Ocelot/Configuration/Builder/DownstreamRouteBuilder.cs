@@ -24,7 +24,6 @@ public class DownstreamRouteBuilder
     private LoadBalancerOptions _loadBalancerOptions;
     private QoSOptions _qosOptions;
     private HttpHandlerOptions _httpHandlerOptions;
-    private bool _enableRateLimiting;
     private RateLimitOptions _rateLimitOptions;
     private bool _useServiceDiscovery;
     private string _serviceName;
@@ -175,12 +174,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithEnableRateLimiting(bool input)
-    {
-        _enableRateLimiting = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithRateLimitOptions(RateLimitOptions input)
     {
         _rateLimitOptions = input;
@@ -301,7 +294,6 @@ public class DownstreamRouteBuilder
             _serviceNamespace,
             _httpHandlerOptions,
             _useServiceDiscovery,
-            _enableRateLimiting,
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,

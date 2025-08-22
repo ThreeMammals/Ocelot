@@ -2,7 +2,7 @@
 
 public class RateLimitOptionsBuilder
 {
-    private bool _enableRateLimiting;
+    private bool _enableRateLimiting = true; // TODO Move to parameterless constructor
     private string _clientIdHeader;
     private Func<List<string>> _getClientWhitelist;
     private bool _disableRateLimitHeaders;
