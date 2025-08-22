@@ -144,7 +144,7 @@ public class RoutesCreator : IRoutesCreator
             .WithDownstreamAddresses(downstreamAddresses)
             .WithLoadBalancerKey(routeKey)
             .WithQosOptions(qosOptions)
-            .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting && rateLimitOption.EnableRateLimiting) // TODO Review RouteOptions.EnableRateLimiting usage
+            .WithEnableRateLimiting(rateLimitOption.EnableRateLimiting)
             .WithRateLimitOptions(rateLimitOption)
             .WithHttpHandlerOptions(httpHandlerOptions)
             .WithServiceName(fileRoute.ServiceName)

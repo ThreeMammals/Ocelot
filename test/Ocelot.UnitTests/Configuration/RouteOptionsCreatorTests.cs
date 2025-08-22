@@ -96,23 +96,6 @@ public class RouteOptionsCreatorTests : UnitTest
         Assert.False(actual.IsAuthorized);
     }
 
-    [Fact]
-    public void Create_RateLimitOptionsObjIsNull_EnableRateLimitingIsFalse()
-    {
-        // Arrange
-        var route = new FileRoute
-        {
-            RateLimitOptions = null,
-        };
-
-        // Act
-        var actual = _creator.Create(route, null);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.False(actual.EnableRateLimiting);
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -127,7 +110,6 @@ public class RouteOptionsCreatorTests : UnitTest
             .WithIsAuthenticated(true)
             .WithIsAuthorized(true)
             .WithIsCached(true)
-            .WithRateLimiting(true)
             .WithUseServiceDiscovery(true)
             .Build();
 
@@ -138,7 +120,6 @@ public class RouteOptionsCreatorTests : UnitTest
         actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
         actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
         actual.IsCached.ShouldBe(expected.IsCached);
-        actual.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 
@@ -159,7 +140,6 @@ public class RouteOptionsCreatorTests : UnitTest
                 .WithIsAuthenticated(!allowAnonymous)
                 .WithIsAuthorized(true)
                 .WithIsCached(true)
-                .WithRateLimiting(true)
                 .WithUseServiceDiscovery(true)
                 .Build();
 
@@ -170,7 +150,6 @@ public class RouteOptionsCreatorTests : UnitTest
         actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
         actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
         actual.IsCached.ShouldBe(expected.IsCached);
-        actual.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 

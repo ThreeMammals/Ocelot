@@ -231,7 +231,7 @@ public class RoutesCreatorTests : UnitTest
     {
         _expectedVersion = new Version("1.1");
         _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _rro = new RouteOptions(false, false, false, false, false);
+        _rro = new RouteOptions(false, false, false, false);
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
@@ -288,7 +288,7 @@ public class RoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
         _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
         _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
-        _result[routeIndex].DownstreamRoute[0].EnableRateLimiting.ShouldBe(_rro.EnableRateLimiting);
+        _result[routeIndex].DownstreamRoute[0].EnableRateLimiting.ShouldBe(_rlo.EnableRateLimiting);
         _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
         _result[routeIndex].DownstreamRoute[0].UpstreamPathTemplate.ShouldBe(_upt);

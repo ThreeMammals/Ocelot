@@ -22,14 +22,12 @@ public class RouteOptionsCreator : IRouteOptionsCreator
 
         // TODO: This sounds more like a hack, it might be better to refactor this at some point.
         var isCached = route.FileCacheOptions.TtlSeconds > 0;
-        var enableRateLimiting = route.RateLimitOptions?.EnableRateLimiting == true;
         var useServiceDiscovery = !string.IsNullOrEmpty(route.ServiceName);
 
         return new RouteOptionsBuilder()
             .WithIsAuthenticated(isAuthenticated)
             .WithIsAuthorized(isAuthorized)
             .WithIsCached(isCached)
-            .WithRateLimiting(enableRateLimiting)
             .WithUseServiceDiscovery(useServiceDiscovery)
             .Build();
     }
