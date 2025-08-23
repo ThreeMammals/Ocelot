@@ -1,5 +1,4 @@
-﻿using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
+﻿using Ocelot.Configuration.File;
 using Ocelot.RateLimiting;
 
 namespace Ocelot.Configuration.Creator;
@@ -19,16 +18,17 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         if (rule.EnableRateLimiting)
         {
             var global = globalConfiguration?.RateLimitOptions ?? new();
-            return new RateLimitOptionsBuilder()
-                .WithClientIdHeader(global.ClientIdHeader)
-                .WithClientWhiteList(() => rule.ClientWhitelist)
-                .WithDisableRateLimitHeaders(global.DisableRateLimitHeaders)
-                .WithEnableRateLimiting(rule.EnableRateLimiting)
-                .WithHttpStatusCode(global.HttpStatusCode)
-                .WithQuotaExceededMessage(global.QuotaExceededMessage)
-                .WithRateLimitCounterPrefix(global.RateLimitCounterPrefix)
-                .WithRateLimitRule(new RateLimitRule(rule.Period, rule.PeriodTimespan, rule.Limit))
-                .Build();
+            return new RateLimitOptions()
+            {
+                ClientIdHeader = global.ClientIdHeader,
+                ClientWhitelist = rule.ClientWhitelist ?? global.ClientWhitelist ?? GlobalClientWhitelist(),
+                DisableRateLimitHeaders = global.DisableRateLimitHeaders,
+                EnableRateLimiting = rule.EnableRateLimiting,
+                HttpStatusCode = global.HttpStatusCode,
+                QuotaExceededMessage = global.QuotaExceededMessage,
+                RateLimitCounterPrefix = global.RateLimitCounterPrefix,
+                RateLimitRule = new(rule.Period, rule.PeriodTimespan, rule.Limit),
+            };
         }
 
         return CreatePatternRules(route, globalConfiguration);
@@ -46,19 +46,19 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 && (methods.Count == 0 || rule.Methods.Count == 0 || rule.Methods.Intersect(methods).Any()));
         if (globalRule != null)
         {
-            return new RateLimitOptionsBuilder()
-                .WithDisableRateLimitHeaders(globalRule.DisableRateLimitHeaders)
-                .WithEnableRateLimiting(globalRule.EnableRateLimiting)
-                .WithHttpStatusCode(globalRule.HttpStatusCode)
-                .WithQuotaExceededMessage(globalRule.QuotaExceededMessage)
-                .WithRateLimitRule(new RateLimitRule(
-                    globalRule.Period,
-                    _rateLimiting.ToTimespan(globalRule.Period).TotalSeconds, // TODO This is design issue because of parsing Period! The 2nd parameter must be FileRateLimitRule.PeriodTimespan !!!
-                    globalRule.Limit))
-                .WithClientWhiteList(() => [])
-                .Build();
+            return new RateLimitOptions()
+            {
+                DisableRateLimitHeaders = globalRule.DisableRateLimitHeaders,
+                EnableRateLimiting = globalRule.EnableRateLimiting,
+                HttpStatusCode = globalRule.HttpStatusCode,
+                QuotaExceededMessage = globalRule.QuotaExceededMessage,
+                RateLimitRule = new(globalRule.Period, globalRule.PeriodTimespan, globalRule.Limit),
+                ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),
+            };
         }
 
-        return new RateLimitOptionsBuilder().WithEnableRateLimiting(false).Build();
+        return new() { EnableRateLimiting = false };
     }
+
+    protected virtual List<string> GlobalClientWhitelist() => new();
 }

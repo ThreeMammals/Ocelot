@@ -5,14 +5,17 @@
 /// </summary>
 public class RateLimitOptions
 {
-    private readonly Func<List<string>> _getClientWhitelist;
+    public RateLimitOptions()
+    {
+        EnableRateLimiting = true;
+    }
 
-    public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, Func<List<string>> getClientWhitelist, bool disableRateLimitHeaders,
+    public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, IList<string> clientWhitelist, bool disableRateLimitHeaders,
         string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
     {
         EnableRateLimiting = enableRateLimiting;
         ClientIdHeader = clientIdHeader;
-        _getClientWhitelist = getClientWhitelist;
+        ClientWhitelist = clientWhitelist;
         DisableRateLimitHeaders = disableRateLimitHeaders;
         QuotaExceededMessage = quotaExceededMessage;
         RateLimitCounterPrefix = rateLimitCounterPrefix;
@@ -26,15 +29,15 @@ public class RateLimitOptions
     /// <value>
     /// A <see cref="Configuration.RateLimitRule"/> object that represents the rule.
     /// </value>
-    public RateLimitRule RateLimitRule { get; }
+    public RateLimitRule RateLimitRule { get; init; }
 
     /// <summary>
     /// Gets the list of white listed clients.
     /// </summary>
     /// <value>
-    /// A <see cref="List{T}"/> (where T is <see cref="string"/>) collection with white listed clients.
+    /// A <see cref="IList{T}"/> (where T is <see cref="string"/>) collection with white listed clients.
     /// </value>
-    public List<string> ClientWhitelist => _getClientWhitelist();
+    public IList<string> ClientWhitelist { get; init; }
 
     /// <summary>
     /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.
@@ -42,7 +45,7 @@ public class RateLimitOptions
     /// <value>
     /// A string value with the HTTP header.
     /// </value>
-    public string ClientIdHeader { get; }
+    public string ClientIdHeader { get; init; }
 
     /// <summary>
     /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests).
@@ -51,7 +54,7 @@ public class RateLimitOptions
     /// An integer value with the HTTP Status code.
     /// <para>Default value: 429 (Too Many Requests).</para>
     /// </value>
-    public int HttpStatusCode { get; }
+    public int HttpStatusCode { get; init; }
 
     /// <summary>
     /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
@@ -61,7 +64,7 @@ public class RateLimitOptions
     /// A string value with a formatter for the QuotaExceeded response message.
     /// <para>Default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
     /// </value>
-    public string QuotaExceededMessage { get; }
+    public string QuotaExceededMessage { get; init; }
 
     /// <summary>
     /// Gets or sets the counter prefix, used to compose the rate limit counter cache key.
@@ -69,7 +72,7 @@ public class RateLimitOptions
     /// <value>
     /// A string value with the counter prefix.
     /// </value>
-    public string RateLimitCounterPrefix { get; }
+    public string RateLimitCounterPrefix { get; init; }
 
     /// <summary>
     /// Enables endpoint rate limiting based URL path and HTTP verb.
@@ -77,7 +80,7 @@ public class RateLimitOptions
     /// <value>
     /// A boolean value for enabling endpoint rate limiting based URL path and HTTP verb.
     /// </value>
-    public bool EnableRateLimiting { get; }
+    public bool EnableRateLimiting { get; init; }
 
     /// <summary>
     /// Disables <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
@@ -85,5 +88,5 @@ public class RateLimitOptions
     /// <value>
     /// A boolean value for disabling <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
     /// </value>
-    public bool DisableRateLimitHeaders { get; }
+    public bool DisableRateLimitHeaders { get; init; }
 }

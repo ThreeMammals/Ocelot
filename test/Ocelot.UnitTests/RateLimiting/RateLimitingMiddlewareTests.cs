@@ -52,7 +52,7 @@ public class RateLimitingMiddlewareTests : UnitTest
             .WithRateLimitOptions(new(
                 enableRateLimiting: true,
                 clientIdHeader: "ClientId",
-                getClientWhitelist: () => new List<string>(),
+                clientWhitelist: new List<string>(),
                 disableRateLimitHeaders: false,
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
@@ -93,7 +93,7 @@ public class RateLimitingMiddlewareTests : UnitTest
                 .WithRateLimitOptions(new(
                     enableRateLimiting: true,
                     clientIdHeader: "ClientId",
-                    getClientWhitelist: () => new List<string> { "ocelotclient2" },
+                    clientWhitelist: new List<string> { "ocelotclient2" },
                     disableRateLimitHeaders: false,
                     quotaExceededMessage: "Exceeding!",
                     rateLimitCounterPrefix: string.Empty,
@@ -124,7 +124,7 @@ public class RateLimitingMiddlewareTests : UnitTest
             .WithRateLimitOptions(new(
                 enableRateLimiting: true,
                 clientIdHeader: "ClientId",
-                getClientWhitelist: () => new List<string>(),
+                clientWhitelist: new List<string>(),
                 disableRateLimitHeaders: false,
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,

@@ -238,7 +238,7 @@ public class RoutesCreatorTests : UnitTest
         _ao = new AuthenticationOptionsBuilder().Build();
         _ctt = new List<ClaimToThing>();
         _qoso = new QoSOptionsBuilder().Build();
-        _rlo = new RateLimitOptionsBuilder().Build();
+        _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
         _hho = new HttpHandlerOptionsBuilder().Build();

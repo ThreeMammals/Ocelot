@@ -207,8 +207,8 @@ public class DynamicsCreatorTests : UnitTest
 
     private void GivenTheRloCreatorReturns()
     {
-        _rlo1 = new RateLimitOptionsBuilder().WithEnableRateLimiting(false).Build();
-        _rlo2 = new RateLimitOptionsBuilder().WithEnableRateLimiting(true).Build();
+        _rlo1 = new() { EnableRateLimiting = false };
+        _rlo2 = new() { EnableRateLimiting = true };
 
         _rloCreator
             .SetupSequence(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()))

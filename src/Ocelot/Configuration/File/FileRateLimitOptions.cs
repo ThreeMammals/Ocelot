@@ -5,6 +5,7 @@ public class FileRateLimitOptions
     /// <summary>Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.</summary>
     /// <value>A string with the HTTP header that holds the client identifier, by default is X-ClientId.</value>
     public string ClientIdHeader { get; set; } = "ClientId";
+    public IList<string> ClientWhitelist { get; set; }
 
     /// <summary>Disables X-Rate-Limit and Rety-After headers.</summary>
     /// <value>A boolean value for disabling X-Rate-Limit and Rety-After headers.</value>

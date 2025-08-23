@@ -36,18 +36,17 @@ public class RateLimitOptionsCreatorTests : UnitTest
                 HttpStatusCode = 200,
             },
         };
-        var expected = new RateLimitOptionsBuilder()
-            .WithClientIdHeader("ClientIdHeader")
-            .WithClientWhiteList(() => fileRoute.RateLimitOptions.ClientWhitelist)
-            .WithDisableRateLimitHeaders(true)
-            .WithEnableRateLimiting(true)
-            .WithHttpStatusCode(200)
-            .WithQuotaExceededMessage("QuotaExceededMessage")
-            .WithRateLimitCounterPrefix("RateLimitCounterPrefix")
-            .WithRateLimitRule(new RateLimitRule(fileRoute.RateLimitOptions.Period,
-                   fileRoute.RateLimitOptions.PeriodTimespan,
-                   fileRoute.RateLimitOptions.Limit))
-            .Build();
+        RateLimitOptions expected = new()
+        {
+            ClientIdHeader = "ClientIdHeader",
+            ClientWhitelist = fileRoute.RateLimitOptions.ClientWhitelist,
+            DisableRateLimitHeaders = true,
+            EnableRateLimiting = true,
+            HttpStatusCode = 200,
+            QuotaExceededMessage = "QuotaExceededMessage",
+            RateLimitCounterPrefix = "RateLimitCounterPrefix",
+            RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.PeriodTimespan, fileRoute.RateLimitOptions.Limit),
+        };
         bool enabled = true;
 
         // Act

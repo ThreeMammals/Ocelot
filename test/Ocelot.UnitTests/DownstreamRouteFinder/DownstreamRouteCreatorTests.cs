@@ -59,10 +59,11 @@ public class DownstreamRouteCreatorTests : UnitTest
     public void Should_create_downstream_route_with_rate_limit_options()
     {
         // Arrange
-        var rateLimitOptions = new RateLimitOptionsBuilder()
-            .WithEnableRateLimiting(true)
-            .WithClientIdHeader("test")
-            .Build();
+        var rateLimitOptions = new RateLimitOptions()
+        {
+            EnableRateLimiting = true,
+            ClientIdHeader = "test",
+        };
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)

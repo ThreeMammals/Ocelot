@@ -199,11 +199,12 @@ public sealed class RateLimitingTests
         Func<RateLimitCounter?> counterFactory, Action<TimeSpan> expirationAction, [CallerMemberName] string testName = "")
     {
         ClientRequestIdentity identity = new(nameof(RateLimitingTests), "/" + testName, HttpMethods.Get);
-        RateLimitOptions options = new RateLimitOptionsBuilder()
-            .WithEnableRateLimiting(true)
-            .WithRateLimitCounterPrefix(nameof(_RateLimiting_.ProcessRequest))
-            .WithRateLimitRule(new RateLimitRule(period, periodTimespan, limit))
-            .Build();
+        RateLimitOptions options = new()
+        {
+            EnableRateLimiting = true,
+            RateLimitCounterPrefix = nameof(_RateLimiting_.ProcessRequest),
+            RateLimitRule = new(period, periodTimespan, limit),
+        };
         _storage.Setup(x => x.Get(It.IsAny<string>()))
             .Returns(counterFactory); // counter value factory
         _storage.Setup(x => x.Remove(It.IsAny<string>()))

@@ -4,12 +4,12 @@ public class FileRateLimitRule
 {
     public FileRateLimitRule()
     {
-        ClientWhitelist = new();
+        ClientWhitelist = new List<string>();
     }
 
     public FileRateLimitRule(FileRateLimitRule from)
     {
-        ClientWhitelist = new(from.ClientWhitelist);
+        ClientWhitelist = new List<string>(from.ClientWhitelist);
         EnableRateLimiting = from.EnableRateLimiting;
         Limit = from.Limit;
         Period = from.Period;
@@ -18,7 +18,7 @@ public class FileRateLimitRule
 
     /// <summary>The list of allowed clients.</summary>
     /// <value>A <see cref="List{T}"/> collection of allowed clients.</value>
-    public List<string> ClientWhitelist { get; set; }
+    public IList<string> ClientWhitelist { get; set; }
 
     /// <summary>Enables endpoint rate limiting based URL path and HTTP verb.</summary>
     /// <value>A boolean value for enabling endpoint rate limiting based URL path and HTTP verb.</value>
