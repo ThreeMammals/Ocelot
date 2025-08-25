@@ -17,7 +17,7 @@ public class FileRateLimitRule
     }
 
     /// <summary>The list of allowed clients.</summary>
-    /// <value>A <see cref="List{T}"/> collection of allowed clients.</value>
+    /// <value>An <see cref="IList{T}"/> collection of allowed clients.</value>
     public IList<string> ClientWhitelist { get; set; }
 
     /// <summary>Enables endpoint rate limiting based URL path and HTTP verb.</summary>

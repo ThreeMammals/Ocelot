@@ -46,7 +46,14 @@
         }
       ],
       "UpstreamPathTemplate": "/comments/{id}",
-      "UpstreamHttpMethod": [ "Get" ]
+      "UpstreamHttpMethod": [ "Get" ],
+      "Key": "C1",
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Limit": 3,
+        "Period": "1m", // 1 minute
+        "PeriodTimespan": 3 // 3 seconds
+      }
     },
     {
       "DownstreamPathTemplate": "/posts",
@@ -112,30 +119,30 @@
 
   "GlobalConfiguration": {
     "RequestIdKey": "ot-traceid",
-    "GlobalRateLimitRules": [
+    "RateLimitOptions": {
+      "ClientIdHeader": "MyRateLimiting",
+      "QuotaExceededMessage": "Customize Tips!",
+      "RateLimitCounterPrefix": "ocelot",
+      "Keys": ["C1"]
+    },
+    "RateLimitingRules": [
       {
-        "Name": "ProfileRead",
-        "Pattern": "/profile",
-        "Methods": [
-          "GET"
-        ],
+        "Name": "MetadataRule",
+        "Pattern": "/metadata/posts",
+        "Methods": [ "GET" ],
         "Limit": 1,
         "Period": "1m",
-        "EnableRateLimiting": true,
         "DisableRateLimitHeaders": false,
-        "QuotaExceededMessage": "You have exceeded the rate limit. Please try again later."
-            },
+        "QuotaExceededMessage": "You have exceeded the rate limit quota for grouped route by '/metadata/posts' pattern! Please try again later."
+      },
       {
-        "Name": "ProfileChildRead",
-        "Pattern": "/profile/*",
-        "Methods": [
-          "GET"
-        ],
-        "Limit": 1,
+        "Name": "PostsRule",
+        "Pattern": "/posts/*",
+        "Methods": [ "GET" ],
+        "Limit": 3,
         "Period": "1m",
-        "EnableRateLimiting": true,
         "DisableRateLimitHeaders": true,
-        "QuotaExceededMessage": "You have exceeded the rate limit. Please try again later."
+        "QuotaExceededMessage": "You have exceeded the rate limit quota for grouped routes by '/posts/*' pattern! Please try again later."
       }
     ]
   }

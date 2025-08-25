@@ -14,11 +14,13 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
 
     public RateLimitOptions Create(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)
     {
-        var rule = route?.RateLimitOptions ?? new();
-        if (rule.EnableRateLimiting)
-        {
-            var global = globalConfiguration?.RateLimitOptions ?? new();
-            return new RateLimitOptions()
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(globalConfiguration);
+
+        var rule = route.RateLimitOptions ?? new();
+        var global = globalConfiguration.RateLimitOptions ?? new();
+        return rule.EnableRateLimiting ?
+            new()
             {
                 ClientIdHeader = global.ClientIdHeader,
                 ClientWhitelist = rule.ClientWhitelist ?? global.ClientWhitelist ?? GlobalClientWhitelist(),
@@ -28,10 +30,8 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 QuotaExceededMessage = global.QuotaExceededMessage,
                 RateLimitCounterPrefix = global.RateLimitCounterPrefix,
                 RateLimitRule = new(rule.Period, rule.PeriodTimespan, rule.Limit),
-            };
-        }
-
-        return CreatePatternRules(route, globalConfiguration);
+            }
+            : CreatePatternRules(route, globalConfiguration);
     }
 
     public RateLimitOptions CreatePatternRules(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)

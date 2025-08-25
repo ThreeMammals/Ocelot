@@ -1,6 +1,8 @@
-﻿namespace Ocelot.Configuration.File;
+﻿using Microsoft.AspNetCore.Http;
 
-public class FileRateLimitOptions
+namespace Ocelot.Configuration.File;
+
+public class FileRateLimitOptions : IRateLimitingGroupByKeys
 {
     /// <summary>Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.</summary>
     /// <value>A string with the HTTP header that holds the client identifier, by default is X-ClientId.</value>
@@ -14,7 +16,7 @@ public class FileRateLimitOptions
     /// <summary>Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests).
     /// <para>Default value: 429 (Too Many Requests).</para></summary>
     /// <value>An integer value with the HTTP Status code returned when rate limiting occurs.</value>
-    public int HttpStatusCode { get; set; } = 429;
+    public int HttpStatusCode { get; set; } = StatusCodes.Status429TooManyRequests;
 
     /// <summary>
     /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
@@ -28,4 +30,8 @@ public class FileRateLimitOptions
     /// <summary>Gets or sets the counter prefix, used to compose the rate limit counter cache key.</summary>
     /// <value>A string with counter prefix, used to compose the rate limit counter cache key.</value>
     public string RateLimitCounterPrefix { get; set; } = "ocelot";
+
+    /// <summary>Gets or sets the keys used to group routes, based on the already defined <see cref="FileRoute.Key"/> property.</summary>
+    /// <value>An <see cref="IList{T}"/> collection of keys that determine which routes the options should be applied to.</value>
+    public IList<string> Keys { get; set; }
 }

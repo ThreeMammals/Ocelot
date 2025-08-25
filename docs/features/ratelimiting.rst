@@ -50,6 +50,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
   "GlobalConfiguration": {
     "BaseUrl": "https://api.mybusiness.com",
     "RateLimitOptions": {
+      "Keys": ["C1"], // can be empty array or undefined, thus global rule opts will apply to all routes
       "ClientIdHeader": "MyRateLimiting",
       "DisableRateLimitHeaders": false,
       "HttpStatusCode": 418, // I'm a teapot
@@ -104,6 +105,7 @@ In your configuration file (e.g., ``ocelot.json``), add the ``RateLimiting.ByPat
   "GlobalConfiguration": {
     "BaseUrl": "https://api.ocelot.net",
     "RateLimiting": {
+      "ByHeader": {},
       "ByPattern": [
         {
           "Pattern": "/api/users/*",
