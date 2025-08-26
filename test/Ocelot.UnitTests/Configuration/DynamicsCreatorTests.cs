@@ -133,7 +133,7 @@ public class DynamicsCreatorTests : UnitTest
     private static FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting, string downstreamHttpVersion, string key, string value) => new()
     {
         ServiceName = serviceName,
-        RateLimitRule = new FileRateLimitRule
+        RateLimitRule = new FileRateLimitByHeaderRule
         {
             EnableRateLimiting = enableRateLimiting,
         },

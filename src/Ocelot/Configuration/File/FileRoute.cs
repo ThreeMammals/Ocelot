@@ -27,7 +27,7 @@ public class FileRoute : IRouteRateLimiting, ICloneable // TODO: Inherit from Fi
         Metadata = new Dictionary<string, string>();
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
-        RateLimitOptions = new FileRateLimitRule();
+        RateLimitOptions = new FileRateLimitByHeaderRule();
         RequestIdKey = default; // to be reviewed
         RouteClaimsRequirement = new Dictionary<string, string>();
         RouteIsCaseSensitive = default; // to be reviewed
@@ -79,7 +79,7 @@ public class FileRoute : IRouteRateLimiting, ICloneable // TODO: Inherit from Fi
     public IDictionary<string, string> Metadata { get; set; }
     public int Priority { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
-    public FileRateLimitRule RateLimitOptions { get; set; }
+    public FileRateLimitByHeaderRule RateLimitOptions { get; set; }
     public string RequestIdKey { get; set; }
     public Dictionary<string, string> RouteClaimsRequirement { get; set; }
     public bool RouteIsCaseSensitive { get; set; }

@@ -106,7 +106,7 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
     [GeneratedRegex("^[0-9]+d", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex DaysRegex();
 
-    private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
+    private static bool IsValidPeriod(FileRateLimitByHeaderRule rateLimitOptions)
     {
         if (string.IsNullOrEmpty(rateLimitOptions.Period))
         {

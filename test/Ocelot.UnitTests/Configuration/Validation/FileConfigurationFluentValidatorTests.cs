@@ -659,7 +659,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.RateLimitOptions = new FileRateLimitRule
+        route.RateLimitOptions = new FileRateLimitByHeaderRule
         {
             Period = "1x",
             EnableRateLimiting = true,
@@ -679,7 +679,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.RateLimitOptions = new FileRateLimitRule
+        route.RateLimitOptions = new FileRateLimitByHeaderRule
         {
             Period = "1d",
             EnableRateLimiting = true,

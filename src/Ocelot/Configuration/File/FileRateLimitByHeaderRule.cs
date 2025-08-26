@@ -1,13 +1,13 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public class FileRateLimitRule
+public class FileRateLimitByHeaderRule
 {
-    public FileRateLimitRule()
+    public FileRateLimitByHeaderRule()
     {
         ClientWhitelist = new List<string>();
     }
 
-    public FileRateLimitRule(FileRateLimitRule from)
+    public FileRateLimitByHeaderRule(FileRateLimitByHeaderRule from)
     {
         ClientWhitelist = new List<string>(from.ClientWhitelist);
         EnableRateLimiting = from.EnableRateLimiting;

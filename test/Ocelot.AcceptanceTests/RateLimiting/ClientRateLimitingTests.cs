@@ -193,7 +193,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
         UpstreamHttpMethod = [HttpMethods.Get],
         RequestIdKey = "Oc-RequestId",
-        RateLimitOptions = new FileRateLimitRule
+        RateLimitOptions = new FileRateLimitByHeaderRule
         {
             EnableRateLimiting = true,
             ClientWhitelist = whitelist ?? new() { "ocelotclient1" },

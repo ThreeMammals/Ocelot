@@ -16,7 +16,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         // Arrange
         var fileRoute = new FileRoute
         {
-            RateLimitOptions = new FileRateLimitRule
+            RateLimitOptions = new FileRateLimitByHeaderRule
             {
                 ClientWhitelist = new List<string>(),
                 Period = "Period",

@@ -177,7 +177,7 @@ public class RouteFluentValidatorTests : UnitTest
         {
             DownstreamPathTemplate = "/test",
             UpstreamPathTemplate = "/test",
-            RateLimitOptions = new FileRateLimitRule
+            RateLimitOptions = new FileRateLimitByHeaderRule
             {
                 EnableRateLimiting = true,
             },
@@ -199,7 +199,7 @@ public class RouteFluentValidatorTests : UnitTest
         {
             DownstreamPathTemplate = "/test",
             UpstreamPathTemplate = "/test",
-            RateLimitOptions = new FileRateLimitRule
+            RateLimitOptions = new FileRateLimitByHeaderRule
             {
                 EnableRateLimiting = true,
                 Period = "test",
@@ -230,7 +230,7 @@ public class RouteFluentValidatorTests : UnitTest
     {
         // Arrange
         var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
-        var argument = new FileRateLimitRule { Period = period };
+        var argument = new FileRateLimitByHeaderRule { Period = period };
 
         // Act
         bool actual = (bool)method.Invoke(_validator, new object[] { argument });

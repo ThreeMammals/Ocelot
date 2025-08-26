@@ -245,7 +245,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                 new()
                 {
                     ServiceName = serviceName,
-                    RateLimitRule = new FileRateLimitRule
+                    RateLimitRule = new FileRateLimitByHeaderRule
                     {
                         EnableRateLimiting = true,
                         ClientWhitelist = new List<string>(),

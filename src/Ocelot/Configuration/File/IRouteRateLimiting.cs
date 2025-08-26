@@ -2,5 +2,5 @@
 
 public interface IRouteRateLimiting : IRouteUpstream
 {
-    FileRateLimitRule RateLimitOptions { get; }
+    FileRateLimitByHeaderRule RateLimitOptions { get; }
 }

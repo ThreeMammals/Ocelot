@@ -155,7 +155,7 @@ public class RouteOptionsCreatorTests : UnitTest
 
     private static FileRoute CreateFileRoute(string authProviderKey, string[] authProviderKeys, bool allowAnonymous) => new()
         {
-            RateLimitOptions = new FileRateLimitRule
+            RateLimitOptions = new FileRateLimitByHeaderRule
             {
                 EnableRateLimiting = true,
             },

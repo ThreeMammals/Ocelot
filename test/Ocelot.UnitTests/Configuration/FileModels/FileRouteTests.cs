@@ -98,7 +98,7 @@ public class FileRouteTests
         Assert.Equal(expected.Metadata, actual.Metadata);
         Assert.Equal(expected.Priority, actual.Priority);
         Assert.Equivalent(expected.QoSOptions, actual.QoSOptions); // FileQoSOptions requires Equals overriding
-        Assert.Equivalent(expected.RateLimitOptions, actual.RateLimitOptions); // FileRateLimitRule requires Equals overriding
+        Assert.Equivalent(expected.RateLimitOptions, actual.RateLimitOptions); // FileRateLimitByHeaderRule requires Equals overriding
         Assert.Equal(expected.RequestIdKey, actual.RequestIdKey);
         Assert.Equal(expected.RouteClaimsRequirement, actual.RouteClaimsRequirement);
         Assert.Equal(expected.RouteIsCaseSensitive, actual.RouteIsCaseSensitive);
