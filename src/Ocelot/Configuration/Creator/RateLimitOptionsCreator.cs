@@ -42,8 +42,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         var path = route.UpstreamPathTemplate ?? string.Empty;
         var methods = route.UpstreamHttpMethod ?? []; // limiting downstream HTTP verbs has no effect; only upstream methods are respected, also keep in mind Method Transformation feature
         var globalRule = globalConfiguration.RateLimitingRules
-            .FirstOrDefault(rule => Regex.IsMatch(path, '^' + Regex.Escape(rule.Pattern).Replace("\\*", ".*") + '$', RegexOptions.IgnoreCase | RegexOptions.Compiled)
-                && (methods.Count == 0 || rule.Methods.Count == 0 || rule.Methods.Intersect(methods).Any()));
+            .FirstOrDefault(rule => Regex.IsMatch(path, '^' + Regex.Escape(rule.Pattern).Replace("\\*", ".*") + '$', RegexOptions.IgnoreCase | RegexOptions.Compiled));
         if (globalRule != null)
         {
             return new RateLimitOptions()

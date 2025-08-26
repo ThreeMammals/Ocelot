@@ -14,10 +14,7 @@ public sealed class FileGlobalRateLimit : FileRateLimitOptions // TODO This is t
     // TODO Potentially, it should be 'Policy Name', or something that conveys the meaning of 'Rule Name'
     public string Name { get; init; }
 
-    // TODO Literally, this is a new feature aka "RL by Methods", it is not a part of grouping feat, thus, consider moving to a separate rule model
-    public IList<string> Methods { get; init; }
-
-    public string Pattern { get; init; } 
+    public string Pattern { get; init; }
     public int Limit { get; init; }
     public string Period { get; init; }
     public double PeriodTimespan { get; init; }
