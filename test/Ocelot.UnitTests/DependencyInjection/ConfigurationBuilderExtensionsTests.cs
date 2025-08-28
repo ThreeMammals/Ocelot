@@ -218,7 +218,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
     {
         new()
         {
-            RouteKeys = new() { "KeyB", "KeyBB" },
+            RouteKeys = ["KeyB", "KeyBB"],
             UpstreamPathTemplate = "UpstreamPathTemplate",
         },
     };

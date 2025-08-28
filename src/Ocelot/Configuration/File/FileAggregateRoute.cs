@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Configuration.File;
 
-public class FileAggregateRoute : IRouteUpstream
+public class FileAggregateRoute : IRouteUpstream, IRouteGroup
 {
     public string Aggregator { get; set; }
     public int Priority { get; set; } = 1;
     public bool RouteIsCaseSensitive { get; set; }
-    public List<string> RouteKeys { get; set; }
+    public IList<string> RouteKeys { get; set; }
     public List<AggregateRouteConfig> RouteKeysConfig { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public string UpstreamHost { get; set; }
@@ -19,7 +19,7 @@ public class FileAggregateRoute : IRouteUpstream
         Aggregator = default;
         Priority = 1;
         RouteIsCaseSensitive = default;
-        RouteKeys = new();
+        RouteKeys = new List<string>();
         RouteKeysConfig = new();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHost = default;

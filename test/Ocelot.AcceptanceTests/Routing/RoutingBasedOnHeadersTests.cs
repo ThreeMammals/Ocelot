@@ -436,7 +436,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     {
         UpstreamPathTemplate = "/",
         UpstreamHost = "localhost",
-        RouteKeys = new() { "Laura", "Tom" },
+        RouteKeys = ["Laura", "Tom"],
         UpstreamHeaderTemplates = templates,
     };
 }

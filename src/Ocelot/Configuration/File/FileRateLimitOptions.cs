@@ -2,7 +2,7 @@
 
 namespace Ocelot.Configuration.File;
 
-public class FileRateLimitOptions : IRateLimitingGroupByKeys
+public class FileRateLimitOptions : IRouteGroup
 {
     /// <summary>Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.</summary>
     /// <value>A string with the HTTP header that holds the client identifier, by default is X-ClientId.</value>
@@ -32,6 +32,7 @@ public class FileRateLimitOptions : IRateLimitingGroupByKeys
     public string RateLimitCounterPrefix { get; set; } = "ocelot";
 
     /// <summary>Gets or sets the keys used to group routes, based on the already defined <see cref="FileRoute.Key"/> property.</summary>
+    /// <remarks>If not empty, these options are applied specifically to the route with those keys; otherwise, they are applied to all routes.</remarks>
     /// <value>An <see cref="IList{T}"/> collection of keys that determine which routes the options should be applied to.</value>
-    public IList<string> Keys { get; set; }
+    public IList<string> RouteKeys { get; set ; }
 }

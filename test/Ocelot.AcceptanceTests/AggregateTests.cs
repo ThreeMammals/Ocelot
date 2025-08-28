@@ -106,12 +106,12 @@ public sealed class AggregateTests : Steps
             {
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2", "key3", "key4" },
+                    RouteKeys = ["key1", "key2", "key3", "key4"],
                     UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                 },
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2" },
+                    RouteKeys = ["key1", "key2"],
                     UpstreamPathTemplate = "/EmpDetail/US/{userid}",
                 },
             },
@@ -196,7 +196,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Comments", "UserDetails", "PostDetails" },
+                    RouteKeys = ["Comments", "UserDetails", "PostDetails"],
                     RouteKeysConfig = new()
                     {
                         new AggregateRouteConfig
@@ -274,7 +274,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                     Aggregator = "FakeDefinedAggregator",
                 },
             },
@@ -361,7 +361,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -427,7 +427,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -493,7 +493,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };

@@ -249,7 +249,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -276,7 +276,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -304,7 +304,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -331,13 +331,13 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
             new()
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -363,7 +363,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -392,7 +392,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);

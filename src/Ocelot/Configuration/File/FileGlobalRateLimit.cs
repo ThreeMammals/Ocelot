@@ -1,7 +1,8 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public sealed class FileGlobalRateLimit : FileRateLimitOptions // TODO This is temporarily solution to inherit from RL by Header feature model, an extraction of props is required
-    , IRateLimitingGroupByKeys // Default grouping technique by keys (inspired by the Aggregation feature) used to apply global rules. TODO Apply the interface for Aggregation feat models
+public sealed class FileGlobalRateLimit :
+    FileRateLimitOptions, // TODO This is temporarily solution to inherit from RL by Header feature model, an extraction of props is required
+    IRouteGroup
 {
     //public bool DisableRateLimitHeaders { get; set; }
     //public IList<string> ClientWhitelist { get; set; }
