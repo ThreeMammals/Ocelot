@@ -29,7 +29,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
     {
         var downstreamRoute = httpContext.Items.DownstreamRoute();
 
-        var options = downstreamRoute.RateLimitOptions ?? new RateLimitOptions(false, default, default, default, default, default, default, default); // TODO Perhaps a parameterless constructor is a better choice
+        var options = downstreamRoute.RateLimitOptions ?? new(false);
         if (!options.EnableRateLimiting)
         {
             Logger.LogInformation(() => $"Rate limiting is disabled for route '{downstreamRoute.Name()}' via the {nameof(RateLimitOptions.EnableRateLimiting)} option.");
@@ -71,7 +71,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
         }
 
         // Set X-Rate-Limit headers for the longest period
-        if (!options.DisableRateLimitHeaders)
+        if (options.EnableHeaders)
         {
             var originalContext = _contextAccessor?.HttpContext;
             if (originalContext != null)
@@ -116,7 +116,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
             Content = new StringContent(message),
         };
 
-        if (!option.DisableRateLimitHeaders)
+        if (option.EnableHeaders)
         {
             http.Headers.TryAddWithoutValidation(HeaderNames.RetryAfter, retryAfter); // in seconds, not date string
             httpContext.Response.Headers[HeaderNames.RetryAfter] = retryAfter;

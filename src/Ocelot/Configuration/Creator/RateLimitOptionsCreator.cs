@@ -24,7 +24,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
             {
                 ClientIdHeader = global.ClientIdHeader,
                 ClientWhitelist = rule.ClientWhitelist ?? global.ClientWhitelist ?? GlobalClientWhitelist(),
-                DisableRateLimitHeaders = global.DisableRateLimitHeaders,
+                EnableHeaders = global.DisableRateLimitHeaders.HasValue ? !global.DisableRateLimitHeaders.Value : global.EnableHeaders,
                 EnableRateLimiting = rule.EnableRateLimiting,
                 HttpStatusCode = global.HttpStatusCode,
                 QuotaExceededMessage = global.QuotaExceededMessage,
@@ -47,7 +47,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         {
             return new RateLimitOptions()
             {
-                DisableRateLimitHeaders = globalRule.DisableRateLimitHeaders,
+                EnableHeaders = globalRule.DisableRateLimitHeaders.HasValue ? !globalRule.DisableRateLimitHeaders.Value : globalRule.EnableHeaders,
                 EnableRateLimiting = globalRule.EnableRateLimiting,
                 HttpStatusCode = globalRule.HttpStatusCode,
                 QuotaExceededMessage = globalRule.QuotaExceededMessage,

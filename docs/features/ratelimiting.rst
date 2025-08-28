@@ -52,7 +52,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
     "RateLimitOptions": {
       "Keys": ["C1"], // can be empty array or undefined, thus global rule opts will apply to all routes
       "ClientIdHeader": "MyRateLimiting",
-      "DisableRateLimitHeaders": false,
+      "EnableHeaders": true,
       "HttpStatusCode": 418, // I'm a teapot
       "QuotaExceededMessage": "Customize Tips!",
       "RateLimitCounterPrefix": "ocelot"
@@ -67,14 +67,21 @@ You can configure the following options in the ``GlobalConfiguration`` section o
       - *Description*
     * - ``ClientIdHeader``
       - Specifies the header used to identify clients, with ``ClientId`` set as the default.
-    * - ``DisableRateLimitHeaders``
-      - Specifies whether the ``X-Rate-Limit`` and ``Retry-After`` headers are disabled.
+    * - ``EnableHeaders``
+      - Specifies whether the ``X-Rate-Limit-*`` and ``Retry-After`` headers are enabled. If undefined, defaults to ``true`` (enabled). This option is the new counterpart to the old ``DisableRateLimitHeaders`` option (see note).
     * - ``HttpStatusCode``
       - Specifies the HTTP status code returned during *rate limiting*, with a default value of **429** (`Too Many Requests`_).
     * - ``QuotaExceededMessage``
       - Specifies the message displayed when the quota is exceeded. This parameter is optional, and the default message is informative.
     * - ``RateLimitCounterPrefix``
       - Specifies the counter prefix used to construct the *rate limiting* counter cache key.
+
+.. _break: http://break.do
+
+  **Note**: The ``DisableRateLimitHeaders`` option is obsolete as of version `24.1`_. Use ``EnableHeaders`` instead.
+  If ``DisableRateLimitHeaders`` is defined, it will take precedence; otherwise, ``EnableHeaders`` will be used.
+  **Do not define both options.**
+  This setting is retained for backward compatibility but is subject to change; therefore, the ``DisableRateLimitHeaders`` option will be removed in the upcoming major release, version 25.0.
 
 Notes
 -----
@@ -200,6 +207,7 @@ We encourage you to share your thoughts with us in the `Discussions <https://git
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat

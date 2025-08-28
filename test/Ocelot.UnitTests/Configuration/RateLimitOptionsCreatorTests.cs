@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.RateLimiting;
@@ -30,7 +29,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             RateLimitOptions = new FileRateLimitOptions
             {
                 ClientIdHeader = "ClientIdHeader",
-                DisableRateLimitHeaders = true,
+                EnableHeaders = true,
                 QuotaExceededMessage = "QuotaExceededMessage",
                 RateLimitCounterPrefix = "RateLimitCounterPrefix",
                 HttpStatusCode = 200,
@@ -40,7 +39,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         {
             ClientIdHeader = "ClientIdHeader",
             ClientWhitelist = fileRoute.RateLimitOptions.ClientWhitelist,
-            DisableRateLimitHeaders = true,
+            EnableHeaders = true,
             EnableRateLimiting = true,
             HttpStatusCode = 200,
             QuotaExceededMessage = "QuotaExceededMessage",
@@ -56,7 +55,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         enabled.ShouldBeTrue();
         result.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
         result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
-        result.DisableRateLimitHeaders.ShouldBe(expected.DisableRateLimitHeaders);
+        result.EnableHeaders.ShouldBe(expected.EnableHeaders);
         result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         result.HttpStatusCode.ShouldBe(expected.HttpStatusCode);
         result.QuotaExceededMessage.ShouldBe(expected.QuotaExceededMessage);

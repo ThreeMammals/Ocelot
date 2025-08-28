@@ -4,7 +4,7 @@ public sealed class FileGlobalRateLimit :
     FileRateLimitOptions, // TODO This is temporarily solution to inherit from RL by Header feature model, an extraction of props is required
     IRouteGroup
 {
-    //public bool DisableRateLimitHeaders { get; set; }
+    //public bool EnableHeaders { get; set; }
     //public IList<string> ClientWhitelist { get; set; }
     //public int HttpStatusCode { get; set; } = StatusCodes.Status429TooManyRequests;
     //public string ClientIdHeader { get; set; } = "ClientId";

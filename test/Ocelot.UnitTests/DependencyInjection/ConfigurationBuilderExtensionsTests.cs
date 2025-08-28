@@ -200,7 +200,6 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         {
             HttpStatusCode = 500,
             ClientIdHeader = "ClientIdHeader",
-            DisableRateLimitHeaders = true,
             QuotaExceededMessage = "QuotaExceededMessage",
             RateLimitCounterPrefix = "RateLimitCounterPrefix",
         },
@@ -275,6 +274,7 @@ public sealed class ConfigurationBuilderExtensionsTests : FileUnitTest
         fc.GlobalConfiguration.BaseUrl.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.BaseUrl : _globalConfig.GlobalConfiguration.BaseUrl);
         fc.GlobalConfiguration.RateLimitOptions.ClientIdHeader.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.ClientIdHeader : _globalConfig.GlobalConfiguration.RateLimitOptions.ClientIdHeader);
         fc.GlobalConfiguration.RateLimitOptions.DisableRateLimitHeaders.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.DisableRateLimitHeaders : _globalConfig.GlobalConfiguration.RateLimitOptions.DisableRateLimitHeaders);
+        fc.GlobalConfiguration.RateLimitOptions.EnableHeaders.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.EnableHeaders : _globalConfig.GlobalConfiguration.RateLimitOptions.EnableHeaders);
         fc.GlobalConfiguration.RateLimitOptions.HttpStatusCode.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.HttpStatusCode : _globalConfig.GlobalConfiguration.RateLimitOptions.HttpStatusCode);
         fc.GlobalConfiguration.RateLimitOptions.QuotaExceededMessage.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.QuotaExceededMessage : _globalConfig.GlobalConfiguration.RateLimitOptions.QuotaExceededMessage);
         fc.GlobalConfiguration.RateLimitOptions.RateLimitCounterPrefix.ShouldBe(useCombinedConfig ? _combinedFileConfiguration.GlobalConfiguration.RateLimitOptions.RateLimitCounterPrefix : _globalConfig.GlobalConfiguration.RateLimitOptions.RateLimitCounterPrefix);

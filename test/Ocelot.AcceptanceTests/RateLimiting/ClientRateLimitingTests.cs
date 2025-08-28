@@ -127,33 +127,32 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
     [Trait("Bug", "1305")]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_set_ratelimiting_headers_on_response_when_DisableRateLimitHeaders_set_to(bool disableRateLimitHeaders)
+    public void Should_set_ratelimiting_headers_on_response_when_EnableHeaders_set_to(bool enableHeaders)
     {
         int port = PortFinder.GetRandomPort();
-        var configuration = CreateConfigurationForCheckingHeaders(port, disableRateLimitHeaders);
-        bool exist = !disableRateLimitHeaders;
+        var configuration = CreateConfigurationForCheckingHeaders(port, enableHeaders);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
-            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(enableHeaders))
             .And(x => ThenRetryAfterHeaderExistsInResponse(false))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
-            .Then(x => ThenRateLimitingHeadersExistInResponse(exist))
+            .Then(x => ThenRateLimitingHeadersExistInResponse(enableHeaders))
             .And(x => ThenRetryAfterHeaderExistsInResponse(false))
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
             .Then(x => ThenRateLimitingHeadersExistInResponse(false))
-            .And(x => ThenRetryAfterHeaderExistsInResponse(exist))
+            .And(x => ThenRetryAfterHeaderExistsInResponse(enableHeaders))
             .BDDfy();
     }
 
-    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool disableRateLimitHeaders)
+    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool enableHeaders)
     {
         var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
         var config = GivenConfiguration(route);
         config.GlobalConfiguration.RateLimitOptions = new FileRateLimitOptions()
         {
-            DisableRateLimitHeaders = disableRateLimitHeaders,
+            EnableHeaders = enableHeaders,
             QuotaExceededMessage = "",
             HttpStatusCode = TooManyRequests,
         };
@@ -211,7 +210,6 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
             RateLimitOptions = new()
             {
                 ClientIdHeader = "ClientId",
-                DisableRateLimitHeaders = false,
                 QuotaExceededMessage = "Exceeding!",
                 RateLimitCounterPrefix = "ABC",
                 HttpStatusCode = TooManyRequests, // 429

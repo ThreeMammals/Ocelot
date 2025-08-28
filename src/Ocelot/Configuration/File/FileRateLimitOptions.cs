@@ -11,7 +11,9 @@ public class FileRateLimitOptions : IRouteGroup
 
     /// <summary>Disables X-Rate-Limit and Rety-After headers.</summary>
     /// <value>A boolean value for disabling X-Rate-Limit and Rety-After headers.</value>
-    public bool DisableRateLimitHeaders { get; set; }
+    [Obsolete("Use EnableHeaders instead of DisableRateLimitHeaders! Note that DisableRateLimitHeaders will be removed in version 25.0.")]
+    public bool? DisableRateLimitHeaders { get; set; }
+    public bool EnableHeaders { get; set; } = true; // defaults to 'enabled' via def ctor
 
     /// <summary>Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests).
     /// <para>Default value: 429 (Too Many Requests).</para></summary>

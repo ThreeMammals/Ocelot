@@ -266,10 +266,9 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                 RateLimitOptions = new FileRateLimitOptions
                 {
                     ClientIdHeader = "ClientId",
-                    DisableRateLimitHeaders = false,
                     QuotaExceededMessage = string.Empty,
                     RateLimitCounterPrefix = string.Empty,
-                    HttpStatusCode = 428,
+                    HttpStatusCode = StatusCodes.Status428PreconditionRequired,
                 },
                 DownstreamScheme = "http",
             },

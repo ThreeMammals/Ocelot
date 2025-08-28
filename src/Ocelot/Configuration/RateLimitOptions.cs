@@ -8,15 +8,21 @@ public class RateLimitOptions
     public RateLimitOptions()
     {
         EnableRateLimiting = true;
+        EnableHeaders = true;
     }
 
-    public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, IList<string> clientWhitelist, bool disableRateLimitHeaders,
+    public RateLimitOptions(bool enableRateLimiting) : this()
+    {
+        EnableRateLimiting = enableRateLimiting;
+    }
+
+    public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, IList<string> clientWhitelist, bool enableHeaders,
         string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
     {
         EnableRateLimiting = enableRateLimiting;
         ClientIdHeader = clientIdHeader;
         ClientWhitelist = clientWhitelist;
-        DisableRateLimitHeaders = disableRateLimitHeaders;
+        EnableHeaders = enableHeaders;
         QuotaExceededMessage = quotaExceededMessage;
         RateLimitCounterPrefix = rateLimitCounterPrefix;
         RateLimitRule = rateLimitRule;
@@ -82,11 +88,7 @@ public class RateLimitOptions
     /// </value>
     public bool EnableRateLimiting { get; init; }
 
-    /// <summary>
-    /// Disables <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
-    /// </summary>
-    /// <value>
-    /// A boolean value for disabling <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.
-    /// </value>
-    public bool DisableRateLimitHeaders { get; init; }
+    /// <summary>Enables or disables <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.</summary>
+    /// <value>A <see cref="bool"/> value.</value>
+    public bool EnableHeaders { get; init; }
 }
