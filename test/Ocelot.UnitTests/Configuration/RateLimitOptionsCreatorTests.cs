@@ -26,7 +26,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         };
         var fileGlobalConfig = new FileGlobalConfiguration
         {
-            RateLimitOptions = new FileRateLimitOptions
+            RateLimitOptions = new()
             {
                 ClientIdHeader = "ClientIdHeader",
                 EnableHeaders = true,
@@ -44,7 +44,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             HttpStatusCode = 200,
             QuotaExceededMessage = "QuotaExceededMessage",
             RateLimitCounterPrefix = "RateLimitCounterPrefix",
-            RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.PeriodTimespan, fileRoute.RateLimitOptions.Limit),
+            RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.PeriodTimespan.Value, fileRoute.RateLimitOptions.Limit.Value),
         };
         bool enabled = true;
 

@@ -2,12 +2,19 @@
 
 public class RateLimitRule
 {
+    public const string DefaultPeriod = "1s";
+    public const double ZeroPeriodTimespan = 0.0D;
+    public const long ZeroLimit = 0L;
+    public static RateLimitRule Empty = new(DefaultPeriod, ZeroPeriodTimespan, ZeroLimit);
+
     public RateLimitRule(string period, double periodTimespan, long limit)
     {
-        Period = period;
-        PeriodTimespan = periodTimespan;
-        Limit = limit;
+        Period = string.IsNullOrWhiteSpace(period) ? DefaultPeriod : period;
+        PeriodTimespan = Math.Abs(periodTimespan);
+        Limit = Math.Abs(limit);
     }
+
+    public override string ToString() => $"{Limit}/{Period}/w{PeriodTimespan:F}s";
 
     /// <summary>
     /// Rate limit period as in 1s, 1m, 1h, 1d.

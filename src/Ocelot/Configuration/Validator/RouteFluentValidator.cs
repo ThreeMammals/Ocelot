@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
@@ -57,7 +56,7 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
                 .WithMessage("{PropertyName} {PropertyValue} contains scheme");
         });
 
-        When(route => route.RateLimitOptions.EnableRateLimiting, () =>
+        When(route => route.RateLimitOptions != null && route.RateLimitOptions.EnableRateLimiting != false, () =>
         {
             RuleFor(route => route.RateLimitOptions.Period)
                 .NotEmpty()

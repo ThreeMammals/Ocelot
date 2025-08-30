@@ -17,7 +17,7 @@ public class FileGlobalConfiguration
         LoadBalancerOptions = new();
         MetadataOptions = new();
         QoSOptions = new();
-        RateLimitOptions = new();
+        RateLimitOptions = default;
         RateLimitingRules = new List<FileGlobalRateLimit>();
         RequestIdKey = default;
         SecurityOptions = new();
@@ -48,7 +48,7 @@ public class FileGlobalConfiguration
     public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
-    public FileRateLimitOptions RateLimitOptions { get; set; }
+    public FileGlobalRateLimitByHeaderRule RateLimitOptions { get; set; }
     public IReadOnlyList<FileGlobalRateLimit> RateLimitingRules { get; set; }
     public string RequestIdKey { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }

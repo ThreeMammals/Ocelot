@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
@@ -25,11 +26,11 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 2))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .BDDfy();
     }
@@ -45,17 +46,17 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 2))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 2))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .And(x => GivenIWait(1000))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
             .And(x => GivenIWait(1000))
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
             .And(x => ThenTheResponseBodyShouldBe("4")) // total 4 OK responses
             .BDDfy();
@@ -65,28 +66,38 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
     private int Count() => ++_count;
     private string Url() => $"/ClientRateLimit/?{Count()}";
 
-    private async Task WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Func<string> urlDelegate, long times)
+    private async Task WhenIGetUrlOnTheApiGatewayMultipleTimes(Func<string> urlDelegate, long times)
     {
         for (long i = 0; i < times; i++)
         {
             var url = urlDelegate.Invoke();
-            await WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(url, 1);
+            await WhenIGetUrlOnTheApiGatewayMultipleTimes(url, 1);
         }
     }
 
     [Fact]
     [Trait("Feat", "37")]
-    public void Should_call_middleware_with_white_list_client()
+    public async Task Should_call_middleware_with_white_list_client()
     {
+        const int Limit = 3;
+        const string ClientID = "ocelotclient1";
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, null, null, whitelist: new() { "ocelotclient1" }, 3, "3s", 2); // main period is greater than ban one
+        var route = GivenRoute(port, null, null, whitelist: [ClientID], Limit, "3s", 2); // main period is greater than ban one
         var configuration = GivenConfigurationWithRateLimitOptions(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 4))
-            .Then(x => ThenTheStatusCodeShouldBe(OK))
-            .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        var responses = await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader(
+                            "/api/ClientRateLimit", Limit + 1,
+                            route.RateLimitOptions.ClientIdHeader.IfEmpty(configuration.GlobalConfiguration.RateLimitOptions.ClientIdHeader),
+                            ClientID);
+        ThenTheStatusCodeShouldBeOK();
+        responses.Length.ShouldBe(Limit + 1);
+        responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.OK);
+        var bodies = responses.Select(r => r.Content.ReadAsStringAsync().Result).ToList();
+        bodies.Sum(int.Parse).ShouldBe(10); // n * (n + 1) / 2 -> 4*5/2 -> 20/2
+        bodies.Sort();
+        bodies.ForEach(body => int.Parse(body).ShouldBe(bodies.IndexOf(body) + 1)); // 1, 2, 3, 4
     }
 
     [Fact]
@@ -109,15 +120,15 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
             .And(x => GivenOcelotIsRunning())
 
             // main scenario
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, route.RateLimitOptions.Limit)) // 100 times to reach the limit
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, limit)) // 100 times to reach the limit
             .Then(x => ThenTheStatusCodeShouldBe(OK))
             .And(x => ThenTheResponseBodyShouldBe(route.RateLimitOptions.Limit.ToString())) // total 100 OK responses
 
             // extra scenario
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1)) // 101st request should fail
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1)) // 101st request should fail
             .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
-            .And(x => GivenIWait((int)TimeSpan.FromSeconds(route.RateLimitOptions.PeriodTimespan).TotalMilliseconds)) // in 3 secs PeriodTimespan will elapse
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit(Url, 1))
+            .And(x => GivenIWait((int)TimeSpan.FromSeconds(periodTimespan).TotalMilliseconds)) // in 3 secs PeriodTimespan will elapse
+            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1))
             .Then(x => ThenTheStatusCodeShouldBe(OK))
             .And(x => ThenTheResponseBodyShouldBe("101")) // total 101 OK responses
             .BDDfy();
@@ -134,13 +145,13 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/ClientRateLimit"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1))
             .Then(x => ThenRateLimitingHeadersExistInResponse(enableHeaders))
             .And(x => ThenRetryAfterHeaderExistsInResponse(false))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 2))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 2))
             .Then(x => ThenRateLimitingHeadersExistInResponse(enableHeaders))
             .And(x => ThenRetryAfterHeaderExistsInResponse(false))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/api/ClientRateLimit", 1))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1))
             .Then(x => ThenRateLimitingHeadersExistInResponse(false))
             .And(x => ThenRetryAfterHeaderExistsInResponse(enableHeaders))
             .BDDfy();
@@ -150,7 +161,7 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
     {
         var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
         var config = GivenConfiguration(route);
-        config.GlobalConfiguration.RateLimitOptions = new FileRateLimitOptions()
+        config.GlobalConfiguration.RateLimitOptions = new FileGlobalRateLimitByHeaderRule()
         {
             EnableHeaders = enableHeaders,
             QuotaExceededMessage = "",
@@ -173,10 +184,9 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
     {
         Task MapOK(HttpContext context)
         {
-            _counterOne++;
+            int count = Interlocked.Increment(ref _counterOne); // _counterOne++;
             context.Response.StatusCode = OK;
-            context.Response.WriteAsync(_counterOne.ToString());
-            return Task.CompletedTask;
+            return context.Response.WriteAsync(count.ToString());
         }
         handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
     }
@@ -192,10 +202,10 @@ public sealed class ClientRateLimitingTests : RateLimitingSteps
         UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
         UpstreamHttpMethod = [HttpMethods.Get],
         RequestIdKey = "Oc-RequestId",
-        RateLimitOptions = new FileRateLimitByHeaderRule
+        RateLimitOptions = new()
         {
             EnableRateLimiting = true,
-            ClientWhitelist = whitelist ?? new() { "ocelotclient1" },
+            ClientWhitelist = whitelist ?? ["ocelotclient1"],
             Limit = limit,
             Period = period ?? "1s",
             PeriodTimespan = periodTimespan,

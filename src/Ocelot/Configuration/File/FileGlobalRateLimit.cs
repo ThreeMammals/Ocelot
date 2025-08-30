@@ -1,7 +1,7 @@
 ﻿namespace Ocelot.Configuration.File;
 
 public sealed class FileGlobalRateLimit :
-    FileRateLimitOptions, // TODO This is temporarily solution to inherit from RL by Header feature model, an extraction of props is required
+    FileGlobalRateLimitByHeaderRule, // TODO This is temporarily solution to inherit from RL by Header feature model, an extraction of props is required
     IRouteGroup
 {
     //public bool EnableHeaders { get; set; }

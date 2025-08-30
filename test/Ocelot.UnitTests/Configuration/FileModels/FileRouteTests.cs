@@ -59,7 +59,7 @@ public class FileRouteTests
         expected.Metadata.Add("key18", "value18");
         expected.Priority = 19;
         expected.QoSOptions.DurationOfBreak = 20;
-        expected.RateLimitOptions.Period = "value21";
+        expected.RateLimitOptions ??= new() { Period = "value21" };
         expected.RequestIdKey = "value22";
         expected.RouteClaimsRequirement.Add("key23", "value23");
         expected.RouteIsCaseSensitive = true;

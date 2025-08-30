@@ -1,14 +1,29 @@
-﻿namespace Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
+
+namespace Ocelot.Configuration;
 
 /// <summary>
 /// RateLimit Options.
 /// </summary>
 public class RateLimitOptions
 {
+    public const string DefaultClientHeader = "Oc-Client";
+    public const string DefaultCounterPrefix = "ocelot";
+    public const int DefaultStatus429 = StatusCodes.Status429TooManyRequests;
+    public const string DefaultQuotaMessage = "API calls quota exceeded! Maximum admitted {0} per {1}.";
+
     public RateLimitOptions()
     {
-        EnableRateLimiting = true;
+        ClientIdHeader = DefaultClientHeader;
+        ClientWhitelist = [];
         EnableHeaders = true;
+        EnableRateLimiting = true;
+        HttpStatusCode = DefaultStatus429;
+        QuotaExceededMessage = DefaultQuotaMessage;
+        RateLimitCounterPrefix = DefaultCounterPrefix;
+        RateLimitRule = RateLimitRule.Empty;
     }
 
     public RateLimitOptions(bool enableRateLimiting) : this()
@@ -19,14 +34,32 @@ public class RateLimitOptions
     public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, IList<string> clientWhitelist, bool enableHeaders,
         string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
     {
-        EnableRateLimiting = enableRateLimiting;
-        ClientIdHeader = clientIdHeader;
-        ClientWhitelist = clientWhitelist;
+        ClientIdHeader = clientIdHeader.IfEmpty(DefaultClientHeader);
+        ClientWhitelist = clientWhitelist ?? [];
         EnableHeaders = enableHeaders;
-        QuotaExceededMessage = quotaExceededMessage;
-        RateLimitCounterPrefix = rateLimitCounterPrefix;
-        RateLimitRule = rateLimitRule;
+        EnableRateLimiting = enableRateLimiting;
         HttpStatusCode = httpStatusCode;
+        QuotaExceededMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
+        RateLimitCounterPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
+        RateLimitRule = rateLimitRule;
+    }
+
+    public RateLimitOptions(FileRateLimitByHeaderRule from)
+    {
+        ArgumentNullException.ThrowIfNull(from);
+
+        ClientIdHeader = from.ClientIdHeader.IfEmpty(DefaultClientHeader);
+        ClientWhitelist = from.ClientWhitelist ?? [];
+        EnableHeaders = from.DisableRateLimitHeaders.HasValue ? !from.DisableRateLimitHeaders.Value
+            : from.EnableHeaders ?? true;
+        EnableRateLimiting = from.EnableRateLimiting ?? true;
+        HttpStatusCode = from.HttpStatusCode ?? DefaultStatus429;
+        QuotaExceededMessage = from.QuotaExceededMessage.IfEmpty(DefaultQuotaMessage);
+        RateLimitCounterPrefix = from.RateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
+        RateLimitRule = new(
+            from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
+            from.PeriodTimespan ?? RateLimitRule.ZeroPeriodTimespan,
+            from.Limit ?? RateLimitRule.ZeroLimit);
     }
 
     /// <summary>

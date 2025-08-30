@@ -1,9 +1,9 @@
-﻿namespace Ocelot.Configuration.File;
+﻿using Ocelot.RateLimiting;
+
+namespace Ocelot.Configuration.File;
 
 public class FileRateLimitByHeaderRule : FileRateLimitRule
 {
-    public const string OcClientHeader = "Oc-Client";
-
     public FileRateLimitByHeaderRule() : base()
     { }
 
@@ -16,15 +16,17 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
     public FileRateLimitByHeaderRule(FileRateLimitByHeaderRule from)
         : base(from)
     {
-        ClientIdHeader = string.IsNullOrWhiteSpace(from.ClientIdHeader) ? OcClientHeader
-            : from.ClientIdHeader;
-        ClientWhitelist = from.ClientWhitelist == null ? default
-            : new List<string>(from.ClientWhitelist);
+        ClientIdHeader = from.ClientIdHeader;
+        ClientWhitelist = from.ClientWhitelist;
+        DisableRateLimitHeaders = from.DisableRateLimitHeaders;
+        HttpStatusCode = from.HttpStatusCode;
+        QuotaExceededMessage = from.QuotaExceededMessage;
+        RateLimitCounterPrefix = from.RateLimitCounterPrefix;
     }
 
     /// <summary>Gets or sets the HTTP header used to store the client identifier, which defaults to <c>Oc-Client</c>.</summary>
     /// <value>A <see cref="string"/> representing the name of the HTTP header.</value>
-    public string ClientIdHeader { get; set; } = OcClientHeader;
+    public string ClientIdHeader { get; set; }
 
     /// <summary>A list of approved clients aka whitelisted ones.</summary>
     /// <value>An <see cref="IList{T}"/> collection of allowed clients.</value>
@@ -35,6 +37,28 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
     /// </summary>
     /// <remarks>Format: <c>Limit:{limit},Period:{period},PeriodTimespan:{period_timespan},ClientIdHeader:{client_id_header},ClientWhitelist:[{c1,c2,...}]</c>.</remarks>
     /// <returns>A <see cref="string"/> object.</returns>
-    public override string ToString() => !EnableRateLimiting ? string.Empty
+    public override string ToString() => EnableRateLimiting == false ? string.Empty
         : base.ToString() + $",{nameof(ClientIdHeader)}:{ClientIdHeader},{nameof(ClientWhitelist)}:[{string.Join(',', ClientWhitelist ?? [])}]";
+
+    /// <summary>Disables or enables <c>X-Rate-Limit-*</c> and <c>Retry-After</c> headers.</summary>
+    /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="bool"/>.</value>
+    [Obsolete("Use EnableHeaders instead of DisableRateLimitHeaders! Note that DisableRateLimitHeaders will be removed in version 25.0.")]
+    public bool? DisableRateLimitHeaders { get; set; }
+
+    /// <summary>Gets or sets the HTTP status code returned during the Quota Exceeded period (aka <see cref="FileRateLimitRule.PeriodTimespan"/>), with a default value of 429 (Too Many Requests).
+    /// <para>Default value: 429 (Too Many Requests).</para></summary>
+    /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="int"/>.</value>
+    public int? HttpStatusCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value to be used as the formatter for the Quota Exceeded response message.
+    /// <para>If none specified the default will be: <see cref="RateLimitOptions.DefaultQuotaMessage"/>.</para>
+    /// </summary>
+    /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
+    public string QuotaExceededMessage { get; set; }
+
+    /// <summary>Gets or sets the counter prefix, used to compose the rate limit counter cache key to be used by the <see cref="IRateLimitStorage"/> service.</summary>
+    /// <remarks>The consumer is the <see cref="IRateLimiting.GetStorageKey(ClientRequestIdentity, RateLimitOptions)"/> method.</remarks>
+    /// <value>A <see cref="string"/> object which value defaults to "ocelot".</value>
+    public string RateLimitCounterPrefix { get; set; }
 }

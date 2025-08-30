@@ -263,7 +263,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                     Host = "localhost",
                     Port = consulPort,
                 },
-                RateLimitOptions = new FileRateLimitOptions
+                RateLimitOptions = new()
                 {
                     ClientIdHeader = "ClientId",
                     QuotaExceededMessage = string.Empty,
@@ -293,11 +293,11 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 1))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 2))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 1))
         .Then(x => ThenTheStatusCodeShouldBe(428))
         .BDDfy();
     }

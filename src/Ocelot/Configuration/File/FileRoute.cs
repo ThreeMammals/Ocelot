@@ -27,7 +27,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         Metadata = new Dictionary<string, string>();
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
-        RateLimitOptions = new FileRateLimitByHeaderRule();
+        RateLimitOptions = default;
         RequestIdKey = default; // to be reviewed
         RouteClaimsRequirement = new Dictionary<string, string>();
         RouteIsCaseSensitive = default; // to be reviewed

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Globalization;
@@ -125,12 +126,10 @@ public class RateLimitingMiddleware : OcelotMiddleware
         return new DownstreamResponse(http);
     }
 
-    private static string GetResponseMessage(RateLimitOptions option)
+    protected virtual string GetResponseMessage(RateLimitOptions option)
     {
-        var message = string.IsNullOrEmpty(option.QuotaExceededMessage)
-            ? $"API calls quota exceeded! maximum admitted {option.RateLimitRule.Limit} per {option.RateLimitRule.Period}."
-            : option.QuotaExceededMessage;
-        return message;
+        var format = option.QuotaExceededMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage);
+        return string.Format(format, option.RateLimitRule.Limit, option.RateLimitRule.Period);
     }
 
     /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>

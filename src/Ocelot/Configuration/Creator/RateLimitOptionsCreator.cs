@@ -1,4 +1,6 @@
-﻿using Ocelot.Configuration.File;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
 
 namespace Ocelot.Configuration.Creator;
@@ -17,21 +19,61 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(globalConfiguration);
 
-        var rule = route.RateLimitOptions ?? new();
-        var global = globalConfiguration.RateLimitOptions ?? new();
-        return rule.EnableRateLimiting ?
-            new()
-            {
-                ClientIdHeader = global.ClientIdHeader,
-                ClientWhitelist = rule.ClientWhitelist ?? global.ClientWhitelist ?? GlobalClientWhitelist(),
-                EnableHeaders = global.DisableRateLimitHeaders.HasValue ? !global.DisableRateLimitHeaders.Value : global.EnableHeaders,
-                EnableRateLimiting = rule.EnableRateLimiting,
-                HttpStatusCode = global.HttpStatusCode,
-                QuotaExceededMessage = global.QuotaExceededMessage,
-                RateLimitCounterPrefix = global.RateLimitCounterPrefix,
-                RateLimitRule = new(rule.Period, rule.PeriodTimespan, rule.Limit),
-            }
-            : CreatePatternRules(route, globalConfiguration);
+        var rule = route.RateLimitOptions;
+        var global = globalConfiguration.RateLimitOptions;
+        bool isGlobal = global?.RouteKeys?.Contains(route.Key) ?? true;
+        if (rule?.EnableRateLimiting == false || (isGlobal && global?.EnableRateLimiting == false))
+        {
+            return new(false);
+        }
+
+        if (globalConfiguration.RateLimitingRules?.Count > 0)
+        {
+            return CreatePatternRules(route, globalConfiguration);
+        }
+
+        if (rule != null && global == null)
+        {
+            return new(rule);
+        }
+        else if (rule == null && global != null && isGlobal)
+        {
+            return new(global);
+        }
+        else if (rule != null && global != null && !isGlobal)
+        {
+            return new(rule);
+        }
+        else if (rule != null && global != null && isGlobal)
+        {
+            return MergeRateLimitByHeaderRules(rule, global);
+        }
+        else
+        {
+            return new(false);
+        }
+    }
+
+    protected virtual RateLimitOptions MergeRateLimitByHeaderRules(FileRateLimitByHeaderRule rule, FileGlobalRateLimitByHeaderRule global)
+    {
+        ArgumentNullException.ThrowIfNull(rule);
+        ArgumentNullException.ThrowIfNull(global);
+
+        rule.ClientIdHeader = rule.ClientIdHeader.IfEmpty(global.ClientIdHeader.IfEmpty(RateLimitOptions.DefaultClientHeader));
+        rule.ClientWhitelist ??= global.ClientWhitelist ?? [];
+
+        // Final merging of EnableHeaders is implemented in the constructor
+        rule.DisableRateLimitHeaders ??= global.DisableRateLimitHeaders;
+        rule.EnableHeaders ??= global.EnableHeaders;
+
+        rule.EnableRateLimiting ??= global.EnableRateLimiting ?? true;
+        rule.HttpStatusCode ??= global.HttpStatusCode ?? RateLimitOptions.DefaultStatus429;
+        rule.QuotaExceededMessage = rule.QuotaExceededMessage.IfEmpty(global.QuotaExceededMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage));
+        rule.RateLimitCounterPrefix = rule.RateLimitCounterPrefix.IfEmpty(global.RateLimitCounterPrefix.IfEmpty(RateLimitOptions.DefaultCounterPrefix));
+        rule.Period = rule.Period.IfEmpty(global.Period.IfEmpty(RateLimitRule.DefaultPeriod));
+        rule.PeriodTimespan ??= global.PeriodTimespan ?? RateLimitRule.ZeroPeriodTimespan;
+        rule.Limit ??= global.Limit ?? RateLimitRule.ZeroLimit;
+        return new(rule);
     }
 
     public RateLimitOptions CreatePatternRules(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)
@@ -47,9 +89,9 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         {
             return new RateLimitOptions()
             {
-                EnableHeaders = globalRule.DisableRateLimitHeaders.HasValue ? !globalRule.DisableRateLimitHeaders.Value : globalRule.EnableHeaders,
+                EnableHeaders = globalRule.DisableRateLimitHeaders.HasValue ? !globalRule.DisableRateLimitHeaders.Value : globalRule.EnableHeaders ?? true,
                 EnableRateLimiting = globalRule.EnableRateLimiting,
-                HttpStatusCode = globalRule.HttpStatusCode,
+                HttpStatusCode = globalRule.HttpStatusCode ?? StatusCodes.Status429TooManyRequests,
                 QuotaExceededMessage = globalRule.QuotaExceededMessage,
                 RateLimitRule = new(globalRule.Period, globalRule.PeriodTimespan, globalRule.Limit),
                 ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),
@@ -60,4 +102,6 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
     }
 
     protected virtual List<string> GlobalClientWhitelist() => new();
+
+    protected static string Empty(string str, string def) => str.IfEmpty(def);
 }
