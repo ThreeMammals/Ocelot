@@ -6,15 +6,14 @@ using Ocelot.RateLimiting;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
-public sealed class ClientRateLimitingTests : RateLimitingSteps
+public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 {
     const int OK = (int)HttpStatusCode.OK;
     const int TooManyRequests = (int)HttpStatusCode.TooManyRequests;
     private int _counterOne;
 
-    public ClientRateLimitingTests()
-    {
-    }
+    public ClientHeaderRateLimitingTests()
+    { }
 
     [Fact]
     [Trait("Feat", "37")]
