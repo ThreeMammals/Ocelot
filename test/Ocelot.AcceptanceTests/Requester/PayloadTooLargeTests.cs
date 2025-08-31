@@ -29,9 +29,8 @@ public sealed class PayloadTooLargeTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
+        GivenThereIsAServiceRunningOn(port);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(1024))
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
             .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
@@ -46,9 +45,8 @@ public sealed class PayloadTooLargeTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
+        GivenThereIsAServiceRunningOn(port);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnHttpSysWithCustomBodyMaxSize(1024))
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
             .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
@@ -66,14 +64,6 @@ public sealed class PayloadTooLargeTests : Steps
         UpstreamPathTemplate = "/",
         UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
-
-    private void GivenThereIsAServiceRunningOn(int port)
-        => handler.GivenThereIsAServiceRunningOn(port, MapOK);
-    private static Task MapOK(HttpContext context)
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.OK;
-        return context.Response.WriteAsync(string.Empty);
-    }
 
     private async Task GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(long customBodyMaxSize)
     {

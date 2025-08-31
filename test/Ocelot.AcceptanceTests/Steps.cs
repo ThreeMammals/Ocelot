@@ -37,14 +37,34 @@ public class Steps : AcceptanceSteps
     protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
         => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
 
+    private HttpStatusCode pMapStatus_StatusCode = HttpStatusCode.OK;
+    private Func<string> pMapStatus_ResponseBody;
+    protected virtual Task MapStatus(HttpContext context)
+    {
+        context.Response.StatusCode = (int)pMapStatus_StatusCode;
+        return context.Response.WriteAsync(pMapStatus_ResponseBody?.Invoke() ?? string.Empty);
+    }
     protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
     {
-        Task MapStatus(HttpContext context)
-        {
-            context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(responseBody);
-        }
+        pMapStatus_StatusCode = statusCode;
+        pMapStatus_ResponseBody = () => responseBody;
         handler.GivenThereIsAServiceRunningOn(port, MapStatus);
+    }
+
+    protected Func<string> pMapOK_ResponseBody;
+    protected virtual Task MapOK(HttpContext context)
+    {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        return context.Response.WriteAsync(pMapOK_ResponseBody?.Invoke() ?? string.Empty);
+    }
+    public virtual void GivenThereIsAServiceRunningOnPath(int port, string basePath, [CallerMemberName] string responseBody = "")
+    {
+        pMapOK_ResponseBody = () => responseBody;
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
+    }
+    public virtual void GivenThereIsAServiceRunningOn(int port, string basePath, RequestDelegate requestDelegate)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, basePath, requestDelegate);
     }
 
     protected override FileHostAndPort Localhost(int port) => base.Localhost(port) as FileHostAndPort;

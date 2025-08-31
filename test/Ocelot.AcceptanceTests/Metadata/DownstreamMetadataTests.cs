@@ -179,19 +179,12 @@ public sealed class DownstreamMetadataTests : Steps
                 },
             },
         };
-
-        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
-            .And(x => GivenThereIsAConfiguration(configuration))
+        GivenThereIsAServiceRunningOn(port);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
             .When(x => WhenIGetUrlOnTheApiGateway($"/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .BDDfy();
-    }
-
-    private static Task MapOK(HttpContext context)
-    {
-        context.Response.StatusCode = 200;
-        return Task.CompletedTask;
     }
 
     /// <summary>
