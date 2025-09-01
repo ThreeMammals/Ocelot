@@ -1,23 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.RateLimiting;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using _RateLimiting_ = Ocelot.RateLimiting.RateLimiting;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
-public sealed class RateLimitingTests
+public class RateLimitingTests : RateLimitingTestsBase
 {
-    private readonly Mock<IRateLimitStorage> _storage;
-    private readonly _RateLimiting_ _sut;
-
-    public RateLimitingTests()
-    {
-        _storage = new();
-        _sut = new(_storage.Object);
-    }
-
     [Theory]
     [Trait("Feat", "37")]
     [InlineData(null)]
@@ -195,7 +186,76 @@ public sealed class RateLimitingTests
         Assert.Equal(TimeSpan.FromSeconds(3), expiration);
     }
 
-    private (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, double periodTimespan, long limit,
+    [Collection(nameof(SequentialTests))]
+    public class Sequential : RateLimitingTestsBase
+    {
+        [SkippableFact]
+        [Trait("Bug", "1590")]
+        public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
+        {
+            // The test is stable in Linux and Windows only
+            Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
+
+            // Arrange: user scenario
+            const string period = "1s";
+            const double periodTimespan = 30.0D; // seconds
+            const long limit = 100L, requestsPerSecond = 20L;
+
+            // Arrange: setup
+            DateTime? startedAt = null;
+            TimeSpan expiration = TimeSpan.Zero;
+            long total = 1L, count = requestsPerSecond;
+            RateLimitCounter? current = null;
+            var (identity, options) = SetupProcessRequest(period, periodTimespan, limit,
+                () => current,
+                (value) => expiration = value);
+
+            // Arrange 20 requests per period (1 sec)
+            var periodSeconds = TimeSpan.FromSeconds(double.Parse(period[0].ToString()));
+            var periodMilliseconds = periodSeconds.TotalMilliseconds;
+            int delay = (int)((periodMilliseconds - 200) / requestsPerSecond); // 20 requests per 1 second
+
+            while (count > 0L)
+            {
+                // Act
+                var actual = _sut.ProcessRequest(identity, options);
+
+                // life hack for the 1st request
+                if (count == requestsPerSecond)
+                {
+                    startedAt = actual.StartedAt; // for the 1st request get expected value
+                }
+
+                // Assert
+                Assert.True(actual.TotalRequests < limit);
+                actual.TotalRequests.ShouldBe(total++, $"Count is {count}");
+                Assert.Equal(startedAt, actual.StartedAt); // starting point is not changed
+                Assert.Null(actual.ExceededAt); // no exceeding at all
+                Assert.Equal(periodSeconds, expiration); // expiration in the period
+
+                // Arrange: next micro test
+                current = actual;
+                Thread.Sleep(delay);
+                count--;
+            }
+
+            Assert.NotEqual(TimeSpan.FromSeconds(periodTimespan), expiration); // Not ban period expiration
+            Assert.Equal(periodSeconds, expiration); // last 20th request was in counting period
+        }
+    }
+}
+
+public class RateLimitingTestsBase
+{
+    protected readonly Mock<IRateLimitStorage> _storage;
+    protected readonly _RateLimiting_ _sut;
+    public RateLimitingTestsBase()
+    {
+        _storage = new();
+        _sut = new(_storage.Object);
+    }
+
+    protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, double periodTimespan, long limit,
         Func<RateLimitCounter?> counterFactory, Action<TimeSpan> expirationAction, [CallerMemberName] string testName = "")
     {
         ClientRequestIdentity identity = new(nameof(RateLimitingTests), "/" + testName, HttpMethods.Get);
@@ -214,56 +274,5 @@ public sealed class RateLimitingTests
             .Callback<string, RateLimitCounter, TimeSpan>((id, counter, expirationTime) => expirationAction?.Invoke(expirationTime))
             .Verifiable();
         return (identity, options);
-    }
-
-    [Fact(Skip = nameof(SequentialTests) + ": It is unstable and should be tested in sequential mode")]
-    [Trait("Bug", "1590")]
-    public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
-    {
-        // Arrange: user scenario
-        const string period = "1s";
-        const double periodTimespan = 30.0D; // seconds
-        const long limit = 100L, requestsPerSecond = 20L;
-
-        // Arrange: setup
-        DateTime? startedAt = null;
-        TimeSpan expiration = TimeSpan.Zero;
-        long total = 1L, count = requestsPerSecond;
-        RateLimitCounter? current = null;
-        var (identity, options) = SetupProcessRequest(period, periodTimespan, limit,
-            () => current,
-            (value) => expiration = value);
-
-        // Arrange 20 requests per period (1 sec)
-        var periodSeconds = TimeSpan.FromSeconds(double.Parse(period[0].ToString()));
-        var periodMilliseconds = periodSeconds.TotalMilliseconds;
-        int delay = (int)((periodMilliseconds - 200) / requestsPerSecond); // 20 requests per 1 second
-
-        while (count > 0L)
-        {
-            // Act
-            var actual = _sut.ProcessRequest(identity, options);
-
-            // life hack for the 1st request
-            if (count == requestsPerSecond)
-            {
-                startedAt = actual.StartedAt; // for the 1st request get expected value
-            }
-
-            // Assert
-            Assert.True(actual.TotalRequests < limit);
-            actual.TotalRequests.ShouldBe(total++, $"Count is {count}");
-            Assert.Equal(startedAt, actual.StartedAt); // starting point is not changed
-            Assert.Null(actual.ExceededAt); // no exceeding at all
-            Assert.Equal(periodSeconds, expiration); // expiration in the period
-
-            // Arrange: next micro test
-            current = actual;
-            Thread.Sleep(delay);
-            count--;
-        }
-        
-        Assert.NotEqual(TimeSpan.FromSeconds(periodTimespan), expiration); // Not ban period expiration
-        Assert.Equal(periodSeconds, expiration); // last 20th request was in counting period
     }
 }
