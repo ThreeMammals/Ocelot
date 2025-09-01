@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -71,7 +72,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
             }
         }
 
-        // Set X-Rate-Limit headers for the longest period
+        // Set X-Rate-Limit-* headers for the longest period
         if (options.EnableHeaders)
         {
             var originalContext = _contextAccessor?.HttpContext;
@@ -135,14 +136,14 @@ public class RateLimitingMiddleware : OcelotMiddleware
     /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>
     /// <remarks>More details in <see cref="RateLimitingHeaders"/> docs.</remarks>
     /// <param name="state">Captured state as a <see cref="RateLimitHeaders"/> object.</param>
-    /// <returns>The <see cref="Task.CompletedTask"/> object.</returns>
-    private static Task SetRateLimitHeaders(object state)
+    /// <returns>A <see cref="Task.CompletedTask"/> object.</returns>
+    protected virtual Task SetRateLimitHeaders(object state)
     {
         var limitHeaders = (RateLimitHeaders)state;
         var headers = limitHeaders.Context.Response.Headers;
-        headers[RateLimitingHeaders.X_Rate_Limit_Limit] = limitHeaders.Limit;
-        headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = limitHeaders.Remaining;
-        headers[RateLimitingHeaders.X_Rate_Limit_Reset] = limitHeaders.Reset;
+        headers[RateLimitingHeaders.X_Rate_Limit_Limit] = new StringValues(limitHeaders.Limit.ToString());
+        headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = new StringValues(limitHeaders.Remaining.ToString());
+        headers[RateLimitingHeaders.X_Rate_Limit_Reset] = new StringValues(limitHeaders.Reset.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
         return Task.CompletedTask;
     }
 }

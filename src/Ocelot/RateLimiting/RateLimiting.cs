@@ -103,17 +103,15 @@ public class RateLimiting : IRateLimiting
         var rule = options.RateLimitRule;
         if (entry.HasValue)
         {
-            headers = new RateLimitHeaders(context,
-                limit: rule.Period,
-                remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
-                reset: (entry.Value.StartedAt + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+            headers = new RateLimitHeaders(context, rule.Limit,
+                remaining: rule.Limit - entry.Value.TotalRequests,
+                reset: entry.Value.StartedAt + ToTimespan(rule.Period));
         }
         else
         {
-            headers = new RateLimitHeaders(context,
-                limit: rule.Period, // TODO Double check
-                remaining: rule.Limit.ToString(), // TODO Double check
-                reset: (DateTime.UtcNow + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+            headers = new RateLimitHeaders(context, rule.Limit,
+                remaining: rule.Limit,
+                reset: DateTime.UtcNow + ToTimespan(rule.Period));
         }
 
         return headers;
