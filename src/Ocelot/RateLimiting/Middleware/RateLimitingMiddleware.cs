@@ -88,17 +88,16 @@ public class RateLimitingMiddleware : OcelotMiddleware
 
     public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext, RateLimitOptions option)
     {
-        var clientId = "client";
-        if (httpContext.Request.Headers.Keys.Contains(option.ClientIdHeader))
+        var clientId = RateLimitOptions.DefaultClientHeader;
+        if (httpContext.Request.Headers.TryGetValue(option.ClientIdHeader, out var headerValue))
         {
-            clientId = httpContext.Request.Headers[option.ClientIdHeader].First();
+            clientId = headerValue.First();
         }
 
-        return new ClientRequestIdentity(
-            clientId,
-            httpContext.Request.Path.ToString().ToLowerInvariant(),
-            httpContext.Request.Method.ToLowerInvariant()
-            );
+        var req = httpContext.Request;
+        return new ClientRequestIdentity(clientId,
+            req.Path.ToString().ToLowerInvariant(),
+            req.Method.ToUpperInvariant());
     }
 
     public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)

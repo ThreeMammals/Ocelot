@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using System.Globalization;
 using System.Security.Cryptography;
 
 namespace Ocelot.RateLimiting;
@@ -33,7 +32,7 @@ public class RateLimiting : IRateLimiting
         {
             var entry = _storage.Get(counterId);
             counter = Count(entry, rule);
-            var expiration = ToTimespan(rule.Period); // default expiration is set for the Period value
+            var expiration = rule.PeriodSpan; // default expiration is set for the Period value
             if (counter.TotalRequests > rule.Limit)
             {
                 var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
@@ -76,7 +75,7 @@ public class RateLimiting : IRateLimiting
         var startedAt = counter.StartedAt;
 
         // Counting Period is active
-        if (startedAt + ToTimespan(rule.Period) >= now)
+        if (startedAt + rule.PeriodSpan >= now)
         {
             var exceededAt = total >= rule.Limit && !counter.ExceededAt.HasValue // current request number equals to the limit
                 ? now // the exceeding moment is now, the next request will fail but the current one doesn't
@@ -105,13 +104,13 @@ public class RateLimiting : IRateLimiting
         {
             headers = new RateLimitHeaders(context, rule.Limit,
                 remaining: rule.Limit - entry.Value.TotalRequests,
-                reset: entry.Value.StartedAt + ToTimespan(rule.Period));
+                reset: entry.Value.StartedAt + rule.PeriodSpan);
         }
         else
         {
             headers = new RateLimitHeaders(context, rule.Limit,
                 remaining: rule.Limit,
-                reset: DateTime.UtcNow + ToTimespan(rule.Period));
+                reset: DateTime.UtcNow + rule.PeriodSpan);
         }
 
         return headers;
@@ -147,7 +146,7 @@ public class RateLimiting : IRateLimiting
         var now = DateTime.UtcNow;
 
         // Counting Period is active
-        if (counter.StartedAt + ToTimespan(rule.Period) >= now)
+        if (counter.StartedAt + rule.PeriodSpan >= now)
         {
             return counter.TotalRequests < rule.Limit
                 ? 0.0D // happy path, no need to retry, current request is valid
@@ -169,29 +168,10 @@ public class RateLimiting : IRateLimiting
     }
 
     /// <summary>
-    /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
+    /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".
     /// </summary>
-    /// <param name="timespan">The string value with dimentions: '1s', '1m', '1h', '1d'.</param>
+    /// <param name="timespan">The string value with units: '1ms', '1s', '1m', '1h', '1d'.</param>
     /// <returns>A <see cref="TimeSpan"/> value.</returns>
-    /// <exception cref="FormatException">By default if the value dimension can't be detected.</exception>
-    public virtual TimeSpan ToTimespan(string timespan)
-    {
-        if (string.IsNullOrEmpty(timespan))
-        {
-            return TimeSpan.Zero;
-        }
-
-        var len = timespan.Length - 1;
-        var value = timespan.Substring(0, len);
-        var type = timespan.Substring(len, 1);
-
-        return type switch
-        {
-            "d" => TimeSpan.FromDays(double.Parse(value)),
-            "h" => TimeSpan.FromHours(double.Parse(value)),
-            "m" => TimeSpan.FromMinutes(double.Parse(value)),
-            "s" => TimeSpan.FromSeconds(double.Parse(value)),
-            _ => throw new FormatException($"{timespan} can't be converted to TimeSpan, unknown type {type}"),
-        };
-    }
+    /// <exception cref="FormatException">See more in the <see cref="RateLimitRule.ParseTimespan(string)"/> method docs.</exception>
+    public virtual TimeSpan ToTimespan(string timespan) => RateLimitRule.ParseTimespan(timespan);
 }

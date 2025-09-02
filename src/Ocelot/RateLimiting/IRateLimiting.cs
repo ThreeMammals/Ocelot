@@ -51,9 +51,9 @@ public interface IRateLimiting
     double RetryAfter(RateLimitCounter counter, RateLimitRule rule);
 
     /// <summary>
-    /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
+    /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".
     /// </summary>
-    /// <param name="timespan">The string value with dimentions: '1s', '1m', '1h', '1d'.</param>
+    /// <param name="timespan">The string value with units: '1ms', '1s', '1m', '1h', '1d'.</param>
     /// <returns>A <see cref="TimeSpan"/> value.</returns>
     TimeSpan ToTimespan(string timespan);
 }
