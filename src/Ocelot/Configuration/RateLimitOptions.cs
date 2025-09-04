@@ -58,7 +58,7 @@ public class RateLimitOptions
         RateLimitCounterPrefix = from.RateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = new(
             from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
-            from.PeriodTimespan ?? RateLimitRule.ZeroPeriodTimespan,
+            from.PeriodTimespan.HasValue ? $"{from.PeriodTimespan.Value}s" : from.Wait,
             from.Limit ?? RateLimitRule.ZeroLimit);
     }
 

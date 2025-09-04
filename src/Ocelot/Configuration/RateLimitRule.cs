@@ -1,25 +1,26 @@
-﻿using System.Globalization;
+﻿using Ocelot.Infrastructure.Extensions;
+using System.Globalization;
 
 namespace Ocelot.Configuration;
 
 public class RateLimitRule
 {
     public const string DefaultPeriod = "1s";
-    public const double ZeroPeriodTimespan = 0.0D;
+    public const string ZeroWait = "0ms";
     public const long ZeroLimit = 0L;
-    public static RateLimitRule Empty = new(DefaultPeriod, ZeroPeriodTimespan, ZeroLimit);
+    public static RateLimitRule Empty = new(DefaultPeriod, ZeroWait, ZeroLimit);
 
-    public RateLimitRule(string period, double periodTimespan, long limit)
+    public RateLimitRule(string period, string wait, long limit)
     {
-        Period = string.IsNullOrWhiteSpace(period) ? DefaultPeriod : period;
-        PeriodTimespan = Math.Abs(periodTimespan);
+        Period = period.IfEmpty(DefaultPeriod);
+        Wait = wait.IfEmpty(ZeroWait);
         Limit = Math.Abs(limit);
     }
 
-    public override string ToString() => $"{Limit}/{Period}/w{PeriodTimespan:F}s";
+    public override string ToString() => $"{Limit}/{Period}/w{Wait}";
 
     /// <summary>
-    /// Rate limit durations can be set using units like '1ms' (1 millisecond), '1s' (1 second), '1m' (1 minute), '1h' (1 hour), or '1d (1 day).
+    /// Rate limiting durations can be set using units like 'ms' (milliseconds), 's' (seconds), 'm' (minutes), 'h' (hours), or 'd' (days).
     /// </summary>
     /// <value>A <see cref="string"/> object with the period (fixed window).</value>
     public string Period { get; }
@@ -30,19 +31,20 @@ public class RateLimitRule
     private TimeSpan? _periodSpan;
 
     /// <summary>
-    /// Timespan to wait after reaching the rate limit, in seconds.
+    /// Wait window after exceeding the rate limit, which has 'ms', 's', 'm', 'h', 'd' units.
     /// </summary>
-    /// <value>
-    /// A double floating-point integer with timespan, in seconds.
-    /// </value>
-    public double PeriodTimespan { get; }
+    /// <value>A <see cref="string"/> object with the waiting window.</value>
+    public string Wait { get; }
+
+    /// <summary>A processed form of the <see cref="Wait"/> property optimized for quick algorithm computations.</summary>
+    /// <value>A <see cref="TimeSpan"/> value.</value>
+    public TimeSpan WaitSpan { get => _waitSpan ??= ParseTimespan(Wait); }
+    private TimeSpan? _waitSpan;
 
     /// <summary>
     /// Maximum number of requests that a client can make in a defined period.
     /// </summary>
-    /// <value>
-    /// A long integer with maximum number of requests.
-    /// </value>
+    /// <value>A <see cref="long"/> value with maximum number of requests.</value>
     public long Limit { get; }
 
     /// <summary>
@@ -72,14 +74,14 @@ public class RateLimitRule
 
         string floating = val[..++pos], unit = val[pos..];
         double value = Math.Abs(double.Parse(floating)); // negative values should be disallowed as they could cause everything to malfunction
-        return unit switch
+        return unit.ToLower() switch
         {
             "d" => TimeSpan.FromDays(value),
             "h" => TimeSpan.FromHours(value),
             "m" => TimeSpan.FromMinutes(value),
             "s" => TimeSpan.FromSeconds(value),
             "ms" => TimeSpan.FromMilliseconds(value),
-            _ when string.IsNullOrEmpty(unit) => TimeSpan.FromMilliseconds(value),
+            "" => TimeSpan.FromMilliseconds(value), // an unknown unit defaults to milliseconds as the ms unit
             _ => throw new FormatException($"The '{timespan}' timespan cannot be converted to {nameof(TimeSpan)} due to an unknown '{unit}' unit!"),
         };
     }

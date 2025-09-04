@@ -56,7 +56,7 @@ public class RateLimitingMiddlewareTests : UnitTest
                 enableHeaders: true,
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
-                new RateLimitRule("1s", 100.0D, limit),
+                new RateLimitRule("1s", "100s", limit),
                 (int)HttpStatusCode.TooManyRequests))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)
@@ -97,7 +97,7 @@ public class RateLimitingMiddlewareTests : UnitTest
                     enableHeaders: true,
                     quotaExceededMessage: "Exceeding!",
                     rateLimitCounterPrefix: string.Empty,
-                    new RateLimitRule("1s", 100.0D, 3),
+                    new RateLimitRule("1s", "100s", 3),
                     (int)HttpStatusCode.TooManyRequests))
                 .WithUpstreamHttpMethod(new() { "Get" })
                 .Build())
@@ -128,7 +128,7 @@ public class RateLimitingMiddlewareTests : UnitTest
                 enableHeaders: true,
                 quotaExceededMessage: "Exceeding!",
                 rateLimitCounterPrefix: string.Empty,
-                new RateLimitRule("1s", 30.0D, limit), // bug scenario
+                new RateLimitRule("1s", "30s", limit), // bug scenario
                 (int)HttpStatusCode.TooManyRequests))
             .WithUpstreamHttpMethod(new() { "Get" })
             .WithUpstreamPathTemplate(upstreamTemplate)

@@ -39,7 +39,7 @@ public class RateLimiting : IRateLimiting
                 if (retryAfter > 0)
                 {
                     // Rate Limit exceeded, ban period is active
-                    expiration = TimeSpan.FromSeconds(rule.PeriodTimespan); // current state should expire in the storage after ban period
+                    expiration = rule.WaitSpan; // current state should expire in the storage after ban period
                 }
                 else
                 {
@@ -84,9 +84,9 @@ public class RateLimiting : IRateLimiting
         }
 
         var wasExceededAt = counter.ExceededAt;
-        return wasExceededAt + TimeSpan.FromSeconds(rule.PeriodTimespan) >= now // ban PeriodTimespan is active
+        return wasExceededAt + rule.WaitSpan >= now // ban Wait is active
             ? new RateLimitCounter(startedAt, wasExceededAt, total) // still count
-            : new RateLimitCounter(now, null, 1); // Ban PeriodTimespan elapsed, start counting NOW!
+            : new RateLimitCounter(now, null, 1); // Ban Wait elapsed, start counting NOW!
     }
 
     public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
@@ -139,10 +139,9 @@ public class RateLimiting : IRateLimiting
     /// <returns>An <see cref="int"/> value of seconds.</returns>
     public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule)
     {
-        const double defaultSeconds = 1.0D; // one second
-        var periodTimespan = rule.PeriodTimespan < defaultSeconds
-            ? defaultSeconds // allow values which are greater or equal to 1 second
-            : rule.PeriodTimespan; // good value
+        var waitWindow = rule.WaitSpan < OneMillisecond
+            ? OneMillisecond // allow values which are greater or equal to 1 second
+            : rule.WaitSpan; // good value
         var now = DateTime.UtcNow;
 
         // Counting Period is active
@@ -151,21 +150,23 @@ public class RateLimiting : IRateLimiting
             return counter.TotalRequests < rule.Limit
                 ? 0.0D // happy path, no need to retry, current request is valid
                 : counter.ExceededAt.HasValue
-                    ? periodTimespan - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
-                    : periodTimespan; // exceeding not yet detected -> let's ban for whole period
+                    ? waitWindow.TotalSeconds - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
+                    : waitWindow.TotalSeconds; // exceeding not yet detected -> let's ban for whole period
         }
 
-        // Limit exceeding was happen && ban PeriodTimespan is active
-        if (counter.ExceededAt.HasValue && counter.ExceededAt + TimeSpan.FromSeconds(periodTimespan) >= now)
+        // Limit exceeding was happen && ban Wait is active
+        if (counter.ExceededAt.HasValue && counter.ExceededAt + waitWindow >= now)
         {
             var startedAt = counter.ExceededAt.Value; // ban period was started at
-            double secondsPast = (now - startedAt).TotalSeconds;
-            double retryAfter = periodTimespan - secondsPast;
-            return retryAfter; // it can be negative, which means the wait in PeriodTimespan seconds has ended
+            var timePast = now - startedAt;
+            var retryAfter = waitWindow - timePast;
+            return retryAfter.TotalSeconds; // it can be negative, which means the wait in PeriodTimespan seconds has ended
         }
 
         return 0.0D; // ban period elapsed, no need to retry, current request is valid
     }
+
+    private static readonly TimeSpan OneMillisecond = TimeSpan.FromMilliseconds(1.0D);
 
     /// <summary>
     /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".

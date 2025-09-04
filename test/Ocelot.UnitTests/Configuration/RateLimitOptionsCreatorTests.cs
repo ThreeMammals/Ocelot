@@ -20,7 +20,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
                 ClientWhitelist = new List<string>(),
                 Period = "Period",
                 Limit = 1,
-                PeriodTimespan = 1,
+                Wait = "OneSecond",
                 EnableRateLimiting = true,
             },
         };
@@ -44,7 +44,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             HttpStatusCode = 200,
             QuotaExceededMessage = "QuotaExceededMessage",
             RateLimitCounterPrefix = "RateLimitCounterPrefix",
-            RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.PeriodTimespan.Value, fileRoute.RateLimitOptions.Limit.Value),
+            RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.Wait, fileRoute.RateLimitOptions.Limit.Value),
         };
         bool enabled = true;
 
@@ -62,6 +62,6 @@ public class RateLimitOptionsCreatorTests : UnitTest
         result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
         result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
         result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);
-        TimeSpan.FromSeconds(result.RateLimitRule.PeriodTimespan).Ticks.ShouldBe(TimeSpan.FromSeconds(expected.RateLimitRule.PeriodTimespan).Ticks);
+        result.RateLimitRule.Wait.ShouldBe(expected.RateLimitRule.Wait);
     }
 }

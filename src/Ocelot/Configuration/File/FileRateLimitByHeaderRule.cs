@@ -35,10 +35,10 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
     /// <summary>
     /// Returns a string that represents the current rule in the format, which defaults to empty string if rate limiting is disabled (<see cref="FileRateLimitRule.EnableRateLimiting"/> is <see langword="false"/>).
     /// </summary>
-    /// <remarks>Format: <c>Limit:{limit},Period:{period},PeriodTimespan:{period_timespan},ClientIdHeader:{client_id_header},ClientWhitelist:[{c1,c2,...}]</c>.</remarks>
+    /// <remarks>Format: <c>H{+,-}:{limit}:{period}:w{wait}/HDR:{client_id_header}/WL[{c1,c2,...}]</c>.</remarks>
     /// <returns>A <see cref="string"/> object.</returns>
     public override string ToString() => EnableRateLimiting == false ? string.Empty
-        : base.ToString() + $",{nameof(ClientIdHeader)}:{ClientIdHeader},{nameof(ClientWhitelist)}:[{string.Join(',', ClientWhitelist ?? [])}]";
+        : base.ToString() + $"/HDR:{ClientIdHeader}/WL[{string.Join(',', ClientWhitelist ?? [])}]";
 
     /// <summary>Disables or enables <c>X-Rate-Limit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="bool"/>.</value>

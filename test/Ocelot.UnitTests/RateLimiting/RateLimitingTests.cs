@@ -74,7 +74,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Arrange
         long total = 2;
         RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow, null, total); // entry has not expired
-        RateLimitRule arg2 = new("1s", 1.0D, total + 1); // with not exceeding limit
+        RateLimitRule arg2 = new("1s", "1s", total + 1); // with not exceeding limit
 
         // Act
         RateLimitCounter actual = _sut.Count(arg1, arg2);
@@ -91,7 +91,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Arrange
         long total = 2;
         RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow, null, total); // entry has not expired
-        RateLimitRule arg2 = new("1s", 1.0D, 1L);
+        RateLimitRule arg2 = new("1s", "1s", 1L);
 
         // Act
         RateLimitCounter actual = _sut.Count(arg1, arg2);
@@ -107,11 +107,11 @@ public class RateLimitingTests : RateLimitingTestsBase
     {
         // Arrange
         long total = 3, limit = total - 1;
-        TimeSpan periodTimespan = TimeSpan.FromSeconds(1.0D);
+        TimeSpan wait = TimeSpan.FromSeconds(1.0D);
         DateTime startedAt = DateTime.UtcNow.AddSeconds(-2.0), // 2 secs ago
-            exceededAt = startedAt + periodTimespan; // 1 second ago
+            exceededAt = startedAt + wait; // 1 second ago
         RateLimitCounter? arg1 = new RateLimitCounter(startedAt, exceededAt, total); // Entry has expired
-        RateLimitRule arg2 = new("1s", periodTimespan.TotalSeconds, limit); // rate limit exceeded
+        RateLimitRule arg2 = new("1s", $"{wait.TotalSeconds}s", limit); // rate limit exceeded
 
         // Act
         RateLimitCounter actual = _sut.Count(arg1, arg2);
@@ -128,7 +128,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Arrange
         long total = 3, limit = 3;
         RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow.AddSeconds(-2.0), null, total); // Entry has expired
-        RateLimitRule arg2 = new("1s", 1.0D, limit); // Rate limit not exceeded
+        RateLimitRule arg2 = new("1s", "1s", limit); // Rate limit not exceeded
 
         // Act
         RateLimitCounter actual = _sut.Count(arg1, arg2);
@@ -143,7 +143,7 @@ public class RateLimitingTests : RateLimitingTestsBase
     public void ProcessRequest_RateLimitExceededAndBanPeriodElapsed_StartedCounting()
     {
         // Arrange
-        const double periodTimespan = 2.0D;
+        const string waitWindow = "2s";
         const int millisecondsBeforeAfterEnding = 100; // current processing time of unit test should not take more 100 ms
         DateTime now = DateTime.UtcNow,
             startedAt = now.AddSeconds(-3).AddMilliseconds(millisecondsBeforeAfterEnding);
@@ -151,7 +151,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         long totalRequests = 2L;
         TimeSpan expiration = TimeSpan.Zero;
 
-        var (identity, options) = SetupProcessRequest("3s", periodTimespan, totalRequests,
+        var (identity, options) = SetupProcessRequest("3s", waitWindow, totalRequests,
             () => new RateLimitCounter(startedAt, exceededAt, totalRequests),
             (value) => expiration = value);
 
@@ -165,7 +165,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         Assert.Equal(DateTime.UtcNow.Second, counter.ExceededAt.Value.Second); // exceeded now, in the same second
 
         // Arrange 2
-        TimeSpan shift = TimeSpan.FromSeconds(periodTimespan); // don't wait, just move to future
+        TimeSpan shift = RateLimitRule.ParseTimespan(waitWindow); // don't wait, just move to future
         startedAt = counter.StartedAt - shift; // move to past
         exceededAt = counter.ExceededAt - shift; // move to past
         totalRequests = counter.TotalRequests; // 3
@@ -197,8 +197,7 @@ public class RateLimitingTests : RateLimitingTestsBase
             Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
 
             // Arrange: user scenario
-            const string period = "1s";
-            const double periodTimespan = 30.0D; // seconds
+            const string period = "1s", waitWindow = "30s"; // seconds
             const long limit = 100L, requestsPerSecond = 20L;
 
             // Arrange: setup
@@ -206,7 +205,7 @@ public class RateLimitingTests : RateLimitingTestsBase
             TimeSpan expiration = TimeSpan.Zero;
             long total = 1L, count = requestsPerSecond;
             RateLimitCounter? current = null;
-            var (identity, options) = SetupProcessRequest(period, periodTimespan, limit,
+            var (identity, options) = SetupProcessRequest(period, waitWindow, limit,
                 () => current,
                 (value) => expiration = value);
 
@@ -239,7 +238,7 @@ public class RateLimitingTests : RateLimitingTestsBase
                 count--;
             }
 
-            Assert.NotEqual(TimeSpan.FromSeconds(periodTimespan), expiration); // Not ban period expiration
+            Assert.NotEqual(RateLimitRule.ParseTimespan(waitWindow), expiration); // Not ban period expiration
             Assert.Equal(periodSeconds, expiration); // last 20th request was in counting period
         }
     }
@@ -255,7 +254,7 @@ public class RateLimitingTestsBase
         _sut = new(_storage.Object);
     }
 
-    protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, double periodTimespan, long limit,
+    protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, string waitWindow, long limit,
         Func<RateLimitCounter?> counterFactory, Action<TimeSpan> expirationAction, [CallerMemberName] string testName = "")
     {
         ClientRequestIdentity identity = new(nameof(RateLimitingTests), "/" + testName, HttpMethods.Get);
@@ -263,7 +262,7 @@ public class RateLimitingTestsBase
         {
             EnableRateLimiting = true,
             RateLimitCounterPrefix = nameof(_RateLimiting_.ProcessRequest),
-            RateLimitRule = new(period, periodTimespan, limit),
+            RateLimitRule = new(period, waitWindow, limit),
         };
         _storage.Setup(x => x.Get(It.IsAny<string>()))
             .Returns(counterFactory); // counter value factory
