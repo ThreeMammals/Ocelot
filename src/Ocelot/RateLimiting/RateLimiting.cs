@@ -134,7 +134,7 @@ public class RateLimiting : IRateLimiting
         var idBytes = Encoding.UTF8.GetBytes(key);
 
         byte[] hashBytes = SHA1.HashData(idBytes);
-        return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+        return Convert.ToHexString(hashBytes);
     }
 
     /// <summary>
