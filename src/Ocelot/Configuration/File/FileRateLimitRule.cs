@@ -17,6 +17,7 @@ public class FileRateLimitRule
         PeriodTimespan = from.PeriodTimespan;
         Wait = from.Wait;
         StatusCode = from.StatusCode;
+        QuotaMessage = from.QuotaMessage;
     }
 
     /// <summary>Enables or disables rate limiting. If undefined, it implicitly defaults to <see langword="true"/> (enabled).</summary>
@@ -38,7 +39,7 @@ public class FileRateLimitRule
 
     /// <summary>The time interval to wait before sending a new request, measured in seconds.</summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="double"/>.</value>
-    [Obsolete("Use Wait instead of PeriodTimespan! Note that PeriodTimespan will be removed in version 25.0.")]
+    [Obsolete("Use Wait instead of PeriodTimespan! Note that PeriodTimespan will be removed in version 25.0!")]
     public double? PeriodTimespan { get; set; }
 
     /// <summary>Rate limiting wait window (no servicing window) can be expressed as milliseconds (1ms), as seconds (1s), minutes (1m), hours (1h), or days (1d).</summary>
@@ -50,6 +51,13 @@ public class FileRateLimitRule
     /// <para>Default value: <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429">429 (Too Many Requests)</see>.</para></summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="int"/>.</value>
     public int? StatusCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value to be used as the formatter for the Quota Exceeded response message.
+    /// <para>If none specified the default will be: <see cref="RateLimitOptions.DefaultQuotaMessage"/>.</para>
+    /// </summary>
+    /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
+    public string QuotaMessage { get; set; }
 
     /// <summary>
     /// Returns a string that represents the current rule in the format, which defaults to empty string if rate limiting is disabled (<see cref="EnableRateLimiting"/> is <see langword="false"/>).

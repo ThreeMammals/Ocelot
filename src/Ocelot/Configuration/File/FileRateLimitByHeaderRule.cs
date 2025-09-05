@@ -58,6 +58,7 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
     /// <para>If none specified the default will be: <see cref="RateLimitOptions.DefaultQuotaMessage"/>.</para>
     /// </summary>
     /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
+    [Obsolete("Use QuotaMessage instead of QuotaExceededMessage! Note that QuotaExceededMessage will be removed in version 25.0!")]
     public string QuotaExceededMessage { get; set; }
 
     /// <summary>Gets or sets the counter prefix, used to compose the rate limit counter cache key to be used by the <see cref="IRateLimitStorage"/> service.</summary>

@@ -72,7 +72,10 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         rule.HttpStatusCode ??= global.HttpStatusCode;
         rule.StatusCode ??= global.StatusCode;
 
-        rule.QuotaExceededMessage = rule.QuotaExceededMessage.IfEmpty(global.QuotaExceededMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage));
+        // Final merging of QuotaMessage is implemented in the constructor
+        rule.QuotaExceededMessage = rule.QuotaExceededMessage.IfEmpty(global.QuotaExceededMessage);
+        rule.QuotaMessage = rule.QuotaMessage.IfEmpty(global.QuotaMessage);
+
         rule.RateLimitCounterPrefix = rule.RateLimitCounterPrefix.IfEmpty(global.RateLimitCounterPrefix.IfEmpty(RateLimitOptions.DefaultCounterPrefix));
         rule.Period = rule.Period.IfEmpty(global.Period.IfEmpty(RateLimitRule.DefaultPeriod));
 
@@ -100,7 +103,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 EnableHeaders = globalRule.DisableRateLimitHeaders.HasValue ? !globalRule.DisableRateLimitHeaders.Value : globalRule.EnableHeaders ?? true,
                 EnableRateLimiting = globalRule.EnableRateLimiting ?? true,
                 StatusCode = globalRule.HttpStatusCode ?? globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
-                QuotaExceededMessage = globalRule.QuotaExceededMessage,
+                QuotaMessage = globalRule.QuotaExceededMessage.IfEmpty(globalRule.QuotaMessage),
                 RateLimitRule = new(globalRule.Period,
                     globalRule.PeriodTimespan.HasValue ? $"{globalRule.PeriodTimespan.Value}s" : globalRule.Wait,
                     globalRule.Limit ?? RateLimitRule.ZeroLimit),

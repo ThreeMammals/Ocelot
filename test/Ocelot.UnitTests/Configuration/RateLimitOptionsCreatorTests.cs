@@ -30,7 +30,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             {
                 ClientIdHeader = "ClientIdHeader",
                 EnableHeaders = true,
-                QuotaExceededMessage = "QuotaExceededMessage",
+                QuotaExceededMessage = "QuotaMessage",
                 RateLimitCounterPrefix = "RateLimitCounterPrefix",
                 HttpStatusCode = 200,
             },
@@ -42,7 +42,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             EnableHeaders = true,
             EnableRateLimiting = true,
             StatusCode = 200,
-            QuotaExceededMessage = "QuotaExceededMessage",
+            QuotaMessage = "QuotaMessage",
             RateLimitCounterPrefix = "RateLimitCounterPrefix",
             RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.Wait, fileRoute.RateLimitOptions.Limit.Value),
         };
@@ -58,7 +58,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         result.EnableHeaders.ShouldBe(expected.EnableHeaders);
         result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         result.StatusCode.ShouldBe(expected.StatusCode);
-        result.QuotaExceededMessage.ShouldBe(expected.QuotaExceededMessage);
+        result.QuotaMessage.ShouldBe(expected.QuotaMessage);
         result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
         result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
         result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);

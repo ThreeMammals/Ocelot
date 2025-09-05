@@ -128,7 +128,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
 
     protected virtual string GetResponseMessage(RateLimitOptions option)
     {
-        var format = option.QuotaExceededMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage);
+        var format = option.QuotaMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage);
         return string.Format(format, option.RateLimitRule.Limit, option.RateLimitRule.Period);
     }
 

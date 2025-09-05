@@ -21,7 +21,7 @@ public class RateLimitOptions
         EnableHeaders = true;
         EnableRateLimiting = true;
         StatusCode = DefaultStatus429;
-        QuotaExceededMessage = DefaultQuotaMessage;
+        QuotaMessage = DefaultQuotaMessage;
         RateLimitCounterPrefix = DefaultCounterPrefix;
         RateLimitRule = RateLimitRule.Empty;
     }
@@ -39,7 +39,7 @@ public class RateLimitOptions
         EnableHeaders = enableHeaders;
         EnableRateLimiting = enableRateLimiting;
         StatusCode = httpStatusCode;
-        QuotaExceededMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
+        QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         RateLimitCounterPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = rateLimitRule;
     }
@@ -54,7 +54,7 @@ public class RateLimitOptions
             : from.EnableHeaders ?? true;
         EnableRateLimiting = from.EnableRateLimiting ?? true;
         StatusCode = from.HttpStatusCode ?? from.StatusCode ?? DefaultStatus429;
-        QuotaExceededMessage = from.QuotaExceededMessage.IfEmpty(DefaultQuotaMessage);
+        QuotaMessage = from.QuotaExceededMessage.IfEmpty(from.QuotaMessage.IfEmpty(DefaultQuotaMessage));
         RateLimitCounterPrefix = from.RateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = new(
             from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
@@ -96,14 +96,11 @@ public class RateLimitOptions
     public int StatusCode { get; init; }
 
     /// <summary>
-    /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
-    /// <para>If none specified the default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
+    /// Gets or sets a value to be used as the formatter for the Quota Exceeded response message.
+    /// <para>If none specified the default will be: <see cref="DefaultQuotaMessage"/>.</para>
     /// </summary>
-    /// <value>
-    /// A string value with a formatter for the QuotaExceeded response message.
-    /// <para>Default will be: "API calls quota exceeded! maximum admitted {0} per {1}".</para>
-    /// </value>
-    public string QuotaExceededMessage { get; init; }
+    /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
+    public string QuotaMessage { get; init; }
 
     /// <summary>
     /// Gets or sets the counter prefix, used to compose the rate limit counter cache key.
