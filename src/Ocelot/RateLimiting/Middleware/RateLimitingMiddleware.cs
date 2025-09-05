@@ -50,7 +50,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
             return;
         }
 
-        var rule = options.RateLimitRule;
+        var rule = options.Rule;
         if (rule.Limit > 0)
         {
             // increment counter
@@ -126,10 +126,10 @@ public class RateLimitingMiddleware : OcelotMiddleware
         return new DownstreamResponse(http);
     }
 
-    protected virtual string GetResponseMessage(RateLimitOptions option)
+    protected virtual string GetResponseMessage(RateLimitOptions options)
     {
-        var format = option.QuotaMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage);
-        return string.Format(format, option.RateLimitRule.Limit, option.RateLimitRule.Period);
+        var format = options.QuotaMessage.IfEmpty(RateLimitOptions.DefaultQuotaMessage);
+        return string.Format(format, options.Rule.Limit, options.Rule.Period);
     }
 
     /// <summary>TODO: Produced Ocelot's headers don't follow industry standards.</summary>

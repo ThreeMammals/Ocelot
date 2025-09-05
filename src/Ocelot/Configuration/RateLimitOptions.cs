@@ -26,7 +26,7 @@ public class RateLimitOptions
         StatusCode = DefaultStatus429;
         QuotaMessage = DefaultQuotaMessage;
         KeyPrefix = DefaultCounterPrefix;
-        RateLimitRule = RateLimitRule.Empty;
+        Rule = RateLimitRule.Empty;
     }
 
     public RateLimitOptions(bool enableRateLimiting) : this()
@@ -44,7 +44,7 @@ public class RateLimitOptions
         StatusCode = httpStatusCode;
         QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         KeyPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
-        RateLimitRule = rateLimitRule;
+        Rule = rateLimitRule;
     }
 
     public RateLimitOptions(FileRateLimitByHeaderRule from)
@@ -59,7 +59,7 @@ public class RateLimitOptions
         StatusCode = from.HttpStatusCode ?? from.StatusCode ?? DefaultStatus429;
         QuotaMessage = from.QuotaExceededMessage.IfEmpty(from.QuotaMessage.IfEmpty(DefaultQuotaMessage));
         KeyPrefix = from.RateLimitCounterPrefix.IfEmpty(from.KeyPrefix.IfEmpty(DefaultCounterPrefix));
-        RateLimitRule = new(
+        Rule = new(
             from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
             from.PeriodTimespan.HasValue ? $"{from.PeriodTimespan.Value}s" : from.Wait,
             from.Limit ?? RateLimitRule.ZeroLimit);
@@ -69,9 +69,9 @@ public class RateLimitOptions
     /// Gets a Rate Limit rule.
     /// </summary>
     /// <value>
-    /// A <see cref="Configuration.RateLimitRule"/> object that represents the rule.
+    /// A <see cref="RateLimitRule"/> object that represents the rule.
     /// </value>
-    public RateLimitRule RateLimitRule { get; init; }
+    public RateLimitRule Rule { get; init; }
 
     /// <summary>
     /// Gets the list of white listed clients.

@@ -108,7 +108,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 StatusCode = globalRule.HttpStatusCode ?? globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
                 QuotaMessage = globalRule.QuotaExceededMessage.IfEmpty(globalRule.QuotaMessage),
                 KeyPrefix = globalRule.RateLimitCounterPrefix.IfEmpty(globalRule.KeyPrefix),
-                RateLimitRule = new(globalRule.Period,
+                Rule = new(globalRule.Period,
                     globalRule.PeriodTimespan.HasValue ? $"{globalRule.PeriodTimespan.Value}s" : globalRule.Wait,
                     globalRule.Limit ?? RateLimitRule.ZeroLimit),
                 ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),

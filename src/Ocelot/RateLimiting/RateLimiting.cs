@@ -26,7 +26,7 @@ public class RateLimiting : IRateLimiting
     public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options)
     {
         RateLimitCounter counter;
-        var rule = options.RateLimitRule;
+        var rule = options.Rule;
         var counterId = GetStorageKey(identity, options);
 
         // Serial reads/writes from/to the storage which must be thread safe
@@ -101,7 +101,7 @@ public class RateLimiting : IRateLimiting
             entry = _storage.Get(counterId);
         }
 
-        var rule = options.RateLimitRule;
+        var rule = options.Rule;
         if (entry.HasValue)
         {
             headers = new RateLimitHeaders(context, rule.Limit,
@@ -130,7 +130,7 @@ public class RateLimiting : IRateLimiting
     /// <returns>Returns a SHA1-hashed <see cref="string"/> object as the caching key.</returns>
     public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var key = $"{options.KeyPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
+        var key = $"{options.KeyPrefix}_{identity.ClientId}_{options.Rule.Period}_{identity.HttpVerb}_{identity.Path}";
         var idBytes = Encoding.UTF8.GetBytes(key);
 
         byte[] hashBytes;

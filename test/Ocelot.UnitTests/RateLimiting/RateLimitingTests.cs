@@ -262,7 +262,7 @@ public class RateLimitingTestsBase
         {
             EnableRateLimiting = true,
             KeyPrefix = nameof(_RateLimiting_.ProcessRequest),
-            RateLimitRule = new(period, waitWindow, limit),
+            Rule = new(period, waitWindow, limit),
         };
         _storage.Setup(x => x.Get(It.IsAny<string>()))
             .Returns(counterFactory); // counter value factory
