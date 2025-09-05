@@ -43,7 +43,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             EnableRateLimiting = true,
             StatusCode = 200,
             QuotaMessage = "QuotaMessage",
-            RateLimitCounterPrefix = "RateLimitCounterPrefix",
+            KeyPrefix = "RateLimitCounterPrefix",
             RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.Wait, fileRoute.RateLimitOptions.Limit.Value),
         };
         bool enabled = true;
@@ -59,7 +59,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         result.StatusCode.ShouldBe(expected.StatusCode);
         result.QuotaMessage.ShouldBe(expected.QuotaMessage);
-        result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
+        result.KeyPrefix.ShouldBe(expected.KeyPrefix);
         result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);
         result.RateLimitRule.Period.ShouldBe(expected.RateLimitRule.Period);
         result.RateLimitRule.Wait.ShouldBe(expected.RateLimitRule.Wait);

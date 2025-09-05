@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.Configuration;
 
@@ -10,7 +13,7 @@ namespace Ocelot.Configuration;
 public class RateLimitOptions
 {
     public const string DefaultClientHeader = "Oc-Client";
-    public const string DefaultCounterPrefix = "ocelot";
+    public static readonly string DefaultCounterPrefix = typeof(RateLimiting.RateLimiting).Namespace;
     public const int DefaultStatus429 = StatusCodes.Status429TooManyRequests;
     public const string DefaultQuotaMessage = "API calls quota exceeded! Maximum admitted {0} per {1}.";
 
@@ -22,7 +25,7 @@ public class RateLimitOptions
         EnableRateLimiting = true;
         StatusCode = DefaultStatus429;
         QuotaMessage = DefaultQuotaMessage;
-        RateLimitCounterPrefix = DefaultCounterPrefix;
+        KeyPrefix = DefaultCounterPrefix;
         RateLimitRule = RateLimitRule.Empty;
     }
 
@@ -40,7 +43,7 @@ public class RateLimitOptions
         EnableRateLimiting = enableRateLimiting;
         StatusCode = httpStatusCode;
         QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
-        RateLimitCounterPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
+        KeyPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = rateLimitRule;
     }
 
@@ -55,7 +58,7 @@ public class RateLimitOptions
         EnableRateLimiting = from.EnableRateLimiting ?? true;
         StatusCode = from.HttpStatusCode ?? from.StatusCode ?? DefaultStatus429;
         QuotaMessage = from.QuotaExceededMessage.IfEmpty(from.QuotaMessage.IfEmpty(DefaultQuotaMessage));
-        RateLimitCounterPrefix = from.RateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
+        KeyPrefix = from.RateLimitCounterPrefix.IfEmpty(from.KeyPrefix.IfEmpty(DefaultCounterPrefix));
         RateLimitRule = new(
             from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
             from.PeriodTimespan.HasValue ? $"{from.PeriodTimespan.Value}s" : from.Wait,
@@ -102,13 +105,16 @@ public class RateLimitOptions
     /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
     public string QuotaMessage { get; init; }
 
-    /// <summary>
-    /// Gets or sets the counter prefix, used to compose the rate limit counter cache key.
-    /// </summary>
-    /// <value>
-    /// A string value with the counter prefix.
-    /// </value>
-    public string RateLimitCounterPrefix { get; init; }
+    /// <summary>Gets or sets the counter prefix, used to compose the rate limiting counter caching key to be used by the <see cref="IRateLimitStorage"/> service.</summary>
+    /// <remarks>Notes:
+    /// <list type="number">
+    /// <item>The consumer is the <see cref="IRateLimiting.GetStorageKey(ClientRequestIdentity, RateLimitOptions)"/> method.</item>
+    /// <item>The property is relevant for distributed storage systems, such as <see cref="IDistributedCache"/> services, to inform users about which objects are being cached for management purposes.
+    /// By default, each Ocelot instance uses its own <see cref="IMemoryCache"/> service without cross-instance synchronization.</item>
+    /// </list>
+    /// </remarks>
+    /// <value>A <see cref="string"/> object which value defaults to "Ocelot.RateLimiting", see the <see cref="DefaultCounterPrefix"/> property.</value>
+    public string KeyPrefix { get; init; }
 
     /// <summary>
     /// Enables endpoint rate limiting based URL path and HTTP verb.

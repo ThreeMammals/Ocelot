@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using System.Security.Cryptography;
 
@@ -116,9 +118,19 @@ public class RateLimiting : IRateLimiting
         return headers;
     }
 
+    /// <summary>
+    /// Gets the SHA1-hashed value of a unique key for caching, using the <see cref="IMemoryCache"/> service through the <see cref="IRateLimitStorage"/> service.
+    /// </summary>
+    /// <remarks>Notes:<list type="bullet">
+    /// <item>The generated identity key includes the <see cref="RateLimitOptions.KeyPrefix"/> as a prefix to ensure it is recognized in distributed storage systems, like <see cref="IDistributedCache"/> services, aiding users in managing cached objects.
+    /// By default, each Ocelot instance employs its own <see cref="IMemoryCache"/> service, without synchronization across instances.</item>
+    /// </list></remarks>
+    /// <param name="identity">Specifies the client's identity.</param>
+    /// <param name="options">Defines the current route rate-limiting options.</param>
+    /// <returns>Returns a SHA1-hashed <see cref="string"/> object as the caching key.</returns>
     public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var key = $"{options.RateLimitCounterPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
+        var key = $"{options.KeyPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
         var idBytes = Encoding.UTF8.GetBytes(key);
 
         byte[] hashBytes;

@@ -261,7 +261,7 @@ public class RateLimitingTestsBase
         RateLimitOptions options = new()
         {
             EnableRateLimiting = true,
-            RateLimitCounterPrefix = nameof(_RateLimiting_.ProcessRequest),
+            KeyPrefix = nameof(_RateLimiting_.ProcessRequest),
             RateLimitRule = new(period, waitWindow, limit),
         };
         _storage.Setup(x => x.Get(It.IsAny<string>()))

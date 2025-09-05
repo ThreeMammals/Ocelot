@@ -1,4 +1,7 @@
-﻿using Ocelot.Infrastructure.Extensions;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.RateLimiting;
 
 namespace Ocelot.Configuration.File;
 
@@ -18,6 +21,7 @@ public class FileRateLimitRule
         Wait = from.Wait;
         StatusCode = from.StatusCode;
         QuotaMessage = from.QuotaMessage;
+        KeyPrefix = from.KeyPrefix;
     }
 
     /// <summary>Enables or disables rate limiting. If undefined, it implicitly defaults to <see langword="true"/> (enabled).</summary>
@@ -58,6 +62,17 @@ public class FileRateLimitRule
     /// </summary>
     /// <value>A <see cref="string"/> value that will be used as a formatter.</value>
     public string QuotaMessage { get; set; }
+
+    /// <summary>Gets or sets the counter prefix, used to compose the rate limiting counter caching key to be used by the <see cref="IRateLimitStorage"/> service.</summary>
+    /// <remarks>Notes:
+    /// <list type="number">
+    /// <item>The consumer is the <see cref="IRateLimiting.GetStorageKey(ClientRequestIdentity, RateLimitOptions)"/> method.</item>
+    /// <item>The property is relevant for distributed storage systems, such as <see cref="IDistributedCache"/> services, to inform users about which objects are being cached for management purposes.
+    /// By default, each Ocelot instance uses its own <see cref="IMemoryCache"/> service without cross-instance synchronization.</item>
+    /// </list>
+    /// </remarks>
+    /// <value>A <see cref="string"/> object which value defaults to "Ocelot.RateLimiting", see the <see cref="RateLimitOptions.DefaultCounterPrefix"/> property.</value>
+    public string KeyPrefix { get; set; }
 
     /// <summary>
     /// Returns a string that represents the current rule in the format, which defaults to empty string if rate limiting is disabled (<see cref="EnableRateLimiting"/> is <see langword="false"/>).

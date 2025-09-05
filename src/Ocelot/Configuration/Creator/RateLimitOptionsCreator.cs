@@ -76,7 +76,10 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         rule.QuotaExceededMessage = rule.QuotaExceededMessage.IfEmpty(global.QuotaExceededMessage);
         rule.QuotaMessage = rule.QuotaMessage.IfEmpty(global.QuotaMessage);
 
-        rule.RateLimitCounterPrefix = rule.RateLimitCounterPrefix.IfEmpty(global.RateLimitCounterPrefix.IfEmpty(RateLimitOptions.DefaultCounterPrefix));
+        // Final merging of KeyPrefix is implemented in the constructor
+        rule.RateLimitCounterPrefix = rule.RateLimitCounterPrefix.IfEmpty(global.RateLimitCounterPrefix);
+        rule.KeyPrefix = rule.KeyPrefix.IfEmpty(global.KeyPrefix);
+
         rule.Period = rule.Period.IfEmpty(global.Period.IfEmpty(RateLimitRule.DefaultPeriod));
 
         // Final merging of Wait is implemented in the constructor
@@ -104,6 +107,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 EnableRateLimiting = globalRule.EnableRateLimiting ?? true,
                 StatusCode = globalRule.HttpStatusCode ?? globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
                 QuotaMessage = globalRule.QuotaExceededMessage.IfEmpty(globalRule.QuotaMessage),
+                KeyPrefix = globalRule.RateLimitCounterPrefix.IfEmpty(globalRule.KeyPrefix),
                 RateLimitRule = new(globalRule.Period,
                     globalRule.PeriodTimespan.HasValue ? $"{globalRule.PeriodTimespan.Value}s" : globalRule.Wait,
                     globalRule.Limit ?? RateLimitRule.ZeroLimit),
