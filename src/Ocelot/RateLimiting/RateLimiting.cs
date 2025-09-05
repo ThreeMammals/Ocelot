@@ -133,12 +133,7 @@ public class RateLimiting : IRateLimiting
         var key = $"{options.KeyPrefix}_{identity.ClientId}_{options.Rule.Period}_{identity.HttpVerb}_{identity.Path}";
         var idBytes = Encoding.UTF8.GetBytes(key);
 
-        byte[] hashBytes;
-        using (var algorithm = SHA1.Create())
-        {
-            hashBytes = algorithm.ComputeHash(idBytes);
-        }
-
+        byte[] hashBytes = SHA1.HashData(idBytes);
         return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
     }
 
