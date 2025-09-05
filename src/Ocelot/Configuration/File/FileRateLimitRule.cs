@@ -16,6 +16,7 @@ public class FileRateLimitRule
         Period = from.Period;
         PeriodTimespan = from.PeriodTimespan;
         Wait = from.Wait;
+        StatusCode = from.StatusCode;
     }
 
     /// <summary>Enables or disables rate limiting. If undefined, it implicitly defaults to <see langword="true"/> (enabled).</summary>
@@ -45,7 +46,18 @@ public class FileRateLimitRule
     /// <value>A <see cref="string"/> object.</value>
     public string Wait { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>Gets or sets the rejection status code returned during the Quota Exceeded period, aka the <see cref="Wait"/> window, or the remainder of the <see cref="Period"/> fixed window following the moment of exceeding.
+    /// <para>Default value: <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429">429 (Too Many Requests)</see>.</para></summary>
+    /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="int"/>.</value>
+    public int? StatusCode { get; set; }
+
+    /// <summary>
+    /// Returns a string that represents the current rule in the format, which defaults to empty string if rate limiting is disabled (<see cref="EnableRateLimiting"/> is <see langword="false"/>).
+    /// </summary>
+    /// <remarks>Format: <c>H{+,-}:{limit}:{period,-}:w{wait,-}</c>.</remarks>
+    /// <returns>A <see cref="string"/> object.</returns>
     public override string ToString() => EnableRateLimiting == false ? string.Empty
-        : $"H{(EnableHeaders == true ? '+' : '-')}:{Limit}:{Period}:w{(PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F") : Wait.IfEmpty("-"))}";
+        : $"H{(EnableHeaders == false ? '-' : '+')}:{Limit}:{Period.IfEmpty(None)}:w{(PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F") : Wait.IfEmpty(None))}";
+
+    public const string None = "-";
 }

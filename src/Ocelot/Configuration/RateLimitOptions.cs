@@ -20,7 +20,7 @@ public class RateLimitOptions
         ClientWhitelist = [];
         EnableHeaders = true;
         EnableRateLimiting = true;
-        HttpStatusCode = DefaultStatus429;
+        StatusCode = DefaultStatus429;
         QuotaExceededMessage = DefaultQuotaMessage;
         RateLimitCounterPrefix = DefaultCounterPrefix;
         RateLimitRule = RateLimitRule.Empty;
@@ -38,7 +38,7 @@ public class RateLimitOptions
         ClientWhitelist = clientWhitelist ?? [];
         EnableHeaders = enableHeaders;
         EnableRateLimiting = enableRateLimiting;
-        HttpStatusCode = httpStatusCode;
+        StatusCode = httpStatusCode;
         QuotaExceededMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         RateLimitCounterPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = rateLimitRule;
@@ -53,7 +53,7 @@ public class RateLimitOptions
         EnableHeaders = from.DisableRateLimitHeaders.HasValue ? !from.DisableRateLimitHeaders.Value
             : from.EnableHeaders ?? true;
         EnableRateLimiting = from.EnableRateLimiting ?? true;
-        HttpStatusCode = from.HttpStatusCode ?? DefaultStatus429;
+        StatusCode = from.HttpStatusCode ?? from.StatusCode ?? DefaultStatus429;
         QuotaExceededMessage = from.QuotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         RateLimitCounterPrefix = from.RateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
         RateLimitRule = new(
@@ -93,7 +93,7 @@ public class RateLimitOptions
     /// An integer value with the HTTP Status code.
     /// <para>Default value: 429 (Too Many Requests).</para>
     /// </value>
-    public int HttpStatusCode { get; init; }
+    public int StatusCode { get; init; }
 
     /// <summary>
     /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.

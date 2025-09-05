@@ -140,7 +140,7 @@ public class RateLimiting : IRateLimiting
     public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule)
     {
         var waitWindow = rule.WaitSpan < OneMillisecond
-            ? OneMillisecond // allow values which are greater or equal to 1 second
+            ? OneMillisecond // allow values which are greater or equal to 1 millisecond -> 0.001 aka header value precision, in seconds
             : rule.WaitSpan; // good value
         var now = DateTime.UtcNow;
 

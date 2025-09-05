@@ -41,7 +41,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
             ClientWhitelist = fileRoute.RateLimitOptions.ClientWhitelist,
             EnableHeaders = true,
             EnableRateLimiting = true,
-            HttpStatusCode = 200,
+            StatusCode = 200,
             QuotaExceededMessage = "QuotaExceededMessage",
             RateLimitCounterPrefix = "RateLimitCounterPrefix",
             RateLimitRule = new(fileRoute.RateLimitOptions.Period, fileRoute.RateLimitOptions.Wait, fileRoute.RateLimitOptions.Limit.Value),
@@ -57,7 +57,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         result.ClientWhitelist.ShouldBe(expected.ClientWhitelist);
         result.EnableHeaders.ShouldBe(expected.EnableHeaders);
         result.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
-        result.HttpStatusCode.ShouldBe(expected.HttpStatusCode);
+        result.StatusCode.ShouldBe(expected.StatusCode);
         result.QuotaExceededMessage.ShouldBe(expected.QuotaExceededMessage);
         result.RateLimitCounterPrefix.ShouldBe(expected.RateLimitCounterPrefix);
         result.RateLimitRule.Limit.ShouldBe(expected.RateLimitRule.Limit);

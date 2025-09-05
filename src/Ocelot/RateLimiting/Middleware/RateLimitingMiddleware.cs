@@ -67,7 +67,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
                 httpContext.Items.UpsertDownstreamResponse(ds);
 
                 // Set Error
-                httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.HttpStatusCode));
+                httpContext.Items.SetError(new QuotaExceededError(GetResponseMessage(options), options.StatusCode));
                 return;
             }
         }
@@ -112,7 +112,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
     public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitOptions option, string retryAfter)
     {
         var message = GetResponseMessage(option);
-        var http = new HttpResponseMessage((HttpStatusCode)option.HttpStatusCode)
+        var http = new HttpResponseMessage((HttpStatusCode)option.StatusCode)
         {
             Content = new StringContent(message),
         };
