@@ -12,4 +12,6 @@ public class ClientRequestIdentity
     public string ClientId { get; }
     public string Path { get; }
     public string HttpVerb { get; }
+
+    public override string ToString() => $"{ClientId}:{HttpVerb}:{Path}";
 }

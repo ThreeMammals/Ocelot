@@ -130,10 +130,9 @@ public class RateLimiting : IRateLimiting
     /// <returns>Returns a SHA1-hashed <see cref="string"/> object as the caching key.</returns>
     public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var key = $"{options.KeyPrefix}_{identity.ClientId}_{options.Rule.Period}_{identity.HttpVerb}_{identity.Path}";
+        var key = $"{options.KeyPrefix}_{identity}_{options.Rule}";
         var idBytes = Encoding.UTF8.GetBytes(key);
-
-        byte[] hashBytes = SHA1.HashData(idBytes);
+        var hashBytes = SHA1.HashData(idBytes);
         return Convert.ToHexString(hashBytes);
     }
 

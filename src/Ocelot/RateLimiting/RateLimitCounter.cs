@@ -26,4 +26,7 @@ public struct RateLimitCounter
     /// <summary>Total number of requests counted.</summary>
     /// <value>A <see langword="long"/> value of total number.</value>
     public long TotalRequests { get; set; }
+
+    public override readonly string ToString()
+        => $"{TotalRequests}->({StartedAt}){(ExceededAt.HasValue ? $"+{ExceededAt - StartedAt}" : string.Empty)}";
 }
