@@ -21,7 +21,10 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
     /// </remarks>
     public string DownstreamHttpVersionPolicy { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
+
+    [Obsolete("Use RateLimitOptions instead of RateLimitRule! Note that RateLimitRule will be removed in version 25.0!")]
     public FileRateLimitByHeaderRule RateLimitRule { get; set; }
+
     public string ServiceName { get; set; }
 
     public FileDynamicRoute()
@@ -30,6 +33,7 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
         DownstreamHttpVersionPolicy = default;
         Metadata = new Dictionary<string, string>();
         RateLimitRule = default;
+        RateLimitOptions = default;
         ServiceName = default;
     }
 
@@ -41,7 +45,7 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
     public string Key { get; set; }
 
     // IRouteRateLimiting vs IRouteUpstream
-    public FileRateLimitByHeaderRule RateLimitOptions => RateLimitRule;
+    public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // => RateLimitRule;
     public IDictionary<string, string> UpstreamHeaderTemplates => new Dictionary<string, string>();
     public string UpstreamPathTemplate { get => ServiceName; }
     public IList<string> UpstreamHttpMethod { get; set; }

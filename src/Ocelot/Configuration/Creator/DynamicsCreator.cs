@@ -38,13 +38,19 @@ public class DynamicsCreator : IDynamicsCreator
 
     private Route SetUpDynamicRoute(FileDynamicRoute dynamicRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var rateLimitOption = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
+        // The old RateLimitRule property takes precedence over the new RateLimitOptions property for backward compatibility, thus, override forcibly
+        if (dynamicRoute.RateLimitRule != null)
+        {
+            dynamicRoute.RateLimitOptions = dynamicRoute.RateLimitRule;
+        }
+
+        var rateLimitOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
         var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
 
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithRateLimitOptions(rateLimitOption)
+            .WithRateLimitOptions(rateLimitOptions)
             .WithServiceName(dynamicRoute.ServiceName)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
