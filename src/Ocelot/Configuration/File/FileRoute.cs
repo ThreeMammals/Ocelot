@@ -1,4 +1,10 @@
-﻿using Ocelot.Configuration.Creator;
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1133 // Do not combine attributes
+#pragma warning disable SA1134 // Attributes should not share line
+
+using Ocelot.Configuration.Creator;
+using System.Text.Json.Serialization;
+using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
@@ -27,6 +33,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         Metadata = new Dictionary<string, string>();
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
+        RateLimiting = default;
         RateLimitOptions = default;
         RequestIdKey = default; // to be reviewed
         RouteClaimsRequirement = new Dictionary<string, string>();
@@ -80,6 +87,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
     public int Priority { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; }
+    [NewtonsoftJsonIgnore, JsonIgnore] public FileRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
     public string RequestIdKey { get; set; }
     public Dictionary<string, string> RouteClaimsRequirement { get; set; }
     public bool RouteIsCaseSensitive { get; set; }
@@ -137,6 +145,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         to.Metadata = new Dictionary<string, string>(from.Metadata);
         to.Priority = from.Priority;
         to.QoSOptions = new(from.QoSOptions);
+        to.RateLimiting = from.RateLimiting; // new(from.RateLimiting)
         to.RateLimitOptions = new(from.RateLimitOptions);
         to.RequestIdKey = from.RequestIdKey;
         to.RouteClaimsRequirement = new(from.RouteClaimsRequirement);

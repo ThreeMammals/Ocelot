@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public class FileGlobalRateLimitByHeaderRule : FileRateLimitByHeaderRule, IRouteGroup
+public class FileGlobalRateLimitByMethodRule : FileRateLimitByMethodRule, IRouteGroup
 {
     /// <summary>Gets or sets the keys used to group routes, based on the already defined <see cref="FileRoute.Key"/> property.</summary>
     /// <remarks>If not empty, these options are applied specifically to the route with those keys; otherwise, they are applied to all routes.</remarks>

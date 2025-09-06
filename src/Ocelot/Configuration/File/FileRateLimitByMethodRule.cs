@@ -2,5 +2,5 @@
 
 public class FileRateLimitByMethodRule : FileRateLimitRule
 {
-    public IList<string> Methods { get; init; }
+    public HashSet<string> Methods { get; init; }
 }

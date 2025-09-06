@@ -36,7 +36,7 @@ public class AggregatesCreatorTests : UnitTest
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1"},
+                    RouteKeys = new(["key1"]),
                 },
             },
         };
@@ -63,7 +63,7 @@ public class AggregatesCreatorTests : UnitTest
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1", "key2"},
+                    RouteKeys = new(["key1", "key2"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",
@@ -71,7 +71,7 @@ public class AggregatesCreatorTests : UnitTest
                 },
                 new()
                 {
-                    RouteKeys = new List<string>{"key3", "key4"},
+                    RouteKeys = new(["key3", "key4"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",

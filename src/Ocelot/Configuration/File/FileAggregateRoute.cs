@@ -7,7 +7,7 @@ public class FileAggregateRoute : IRouteUpstream, IRouteGroup
     public string Aggregator { get; set; }
     public int Priority { get; set; } = 1;
     public bool RouteIsCaseSensitive { get; set; }
-    public IList<string> RouteKeys { get; set; }
+    public HashSet<string> RouteKeys { get; set; }
     public List<AggregateRouteConfig> RouteKeysConfig { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public string UpstreamHost { get; set; }
@@ -19,7 +19,7 @@ public class FileAggregateRoute : IRouteUpstream, IRouteGroup
         Aggregator = default;
         Priority = 1;
         RouteIsCaseSensitive = default;
-        RouteKeys = new List<string>();
+        RouteKeys = new();
         RouteKeysConfig = new();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHost = default;

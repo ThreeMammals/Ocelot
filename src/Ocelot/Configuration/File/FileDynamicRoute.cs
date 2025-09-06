@@ -1,4 +1,10 @@
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1133 // Do not combine attributes
+#pragma warning disable SA1134 // Attributes should not share line
+
 using Ocelot.Configuration.Creator;
+using System.Text.Json.Serialization;
+using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
@@ -24,6 +30,7 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
 
     [Obsolete("Use RateLimitOptions instead of RateLimitRule! Note that RateLimitRule will be removed in version 25.0!")]
     public FileRateLimitByHeaderRule RateLimitRule { get; set; }
+    [NewtonsoftJsonIgnore, JsonIgnore] public FileRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
 
     public string ServiceName { get; set; }
 
@@ -34,6 +41,7 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
         Metadata = new Dictionary<string, string>();
         RateLimitRule = default;
         RateLimitOptions = default;
+        RateLimiting = default;
         ServiceName = default;
     }
 

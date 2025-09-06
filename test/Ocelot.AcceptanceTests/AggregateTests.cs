@@ -789,7 +789,7 @@ public sealed class AggregateTests : Steps
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+                RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
             }
         );
         return obj;

@@ -27,10 +27,10 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
             return new(false);
         }
 
-        if (globalConfiguration.RateLimitingRules?.Count > 0)
+        /*if (globalConfiguration.RateLimiting?.Count > 0)
         {
             return CreatePatternRules(route, globalConfiguration);
-        }
+        }*/
 
         if (rule != null && global == null)
         {
@@ -97,21 +97,21 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
 
         var path = route.UpstreamPathTemplate ?? string.Empty;
         var methods = route.UpstreamHttpMethod ?? []; // limiting downstream HTTP verbs has no effect; only upstream methods are respected, also keep in mind Method Transformation feature
-        var globalRule = globalConfiguration.RateLimitingRules
+        var globalRule = globalConfiguration.RateLimiting?.ByMethod
             .FirstOrDefault(rule => Regex.IsMatch(path, '^' + Regex.Escape(rule.Pattern).Replace("\\*", ".*") + '$', RegexOptions.IgnoreCase | RegexOptions.Compiled));
         if (globalRule != null)
         {
             return new RateLimitOptions()
             {
-                EnableHeaders = globalRule.DisableRateLimitHeaders.HasValue ? !globalRule.DisableRateLimitHeaders.Value : globalRule.EnableHeaders ?? true,
+                EnableHeaders = globalRule.EnableHeaders ?? true,
                 EnableRateLimiting = globalRule.EnableRateLimiting ?? true,
-                StatusCode = globalRule.HttpStatusCode ?? globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
-                QuotaMessage = globalRule.QuotaExceededMessage.IfEmpty(globalRule.QuotaMessage),
-                KeyPrefix = globalRule.RateLimitCounterPrefix.IfEmpty(globalRule.KeyPrefix),
+                StatusCode = globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
+                QuotaMessage = globalRule.QuotaMessage,
+                KeyPrefix = globalRule.KeyPrefix,
                 Rule = new(globalRule.Period,
                     globalRule.PeriodTimespan.HasValue ? $"{globalRule.PeriodTimespan.Value}s" : globalRule.Wait,
                     globalRule.Limit ?? RateLimitRule.ZeroLimit),
-                ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),
+                /*ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),*/
             };
         }
 
