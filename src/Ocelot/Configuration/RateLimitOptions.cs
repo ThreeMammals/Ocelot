@@ -65,37 +65,21 @@ public class RateLimitOptions
             from.Limit ?? RateLimitRule.ZeroLimit);
     }
 
-    /// <summary>
-    /// Gets a Rate Limit rule.
-    /// </summary>
-    /// <value>
-    /// A <see cref="RateLimitRule"/> object that represents the rule.
-    /// </value>
+    /// <summary>Gets a Rate Limit rule.</summary>
+    /// <value>A <see cref="RateLimitRule"/> object that represents the rule.</value>
     public RateLimitRule Rule { get; init; }
 
-    /// <summary>
-    /// Gets the list of white listed clients.
-    /// </summary>
-    /// <value>
-    /// A <see cref="IList{T}"/> (where T is <see cref="string"/>) collection with white listed clients.
-    /// </value>
+    /// <summary>A list of approved clients aka whitelisted ones.</summary>
+    /// <value>An <see cref="IList{T}"/> collection of allowed clients.</value>
     public IList<string> ClientWhitelist { get; init; }
 
-    /// <summary>
-    /// Gets or sets the HTTP header that holds the client identifier, by default is X-ClientId.
-    /// </summary>
-    /// <value>
-    /// A string value with the HTTP header.
-    /// </value>
+    /// <summary>Gets or sets the HTTP header used to store the client identifier, which defaults to <c>Oc-Client</c>.</summary>
+    /// <value>A <see cref="string"/> representing the name of the HTTP header.</value>
     public string ClientIdHeader { get; init; }
 
-    /// <summary>
-    /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests).
-    /// </summary>
-    /// <value>
-    /// An integer value with the HTTP Status code.
-    /// <para>Default value: 429 (Too Many Requests).</para>
-    /// </value>
+    /// <summary>Gets or sets the rejection status code returned during the Quota Exceeded period, aka the <see cref="Wait"/> window, or the remainder of the <see cref="Period"/> fixed window following the moment of exceeding.
+    /// <para>Default value: <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429">429 (Too Many Requests)</see>.</para></summary>
+    /// <value>A <see cref="int"/> value.</value>
     public int StatusCode { get; init; }
 
     /// <summary>
@@ -116,15 +100,11 @@ public class RateLimitOptions
     /// <value>A <see cref="string"/> object which value defaults to "Ocelot.RateLimiting", see the <see cref="DefaultCounterPrefix"/> property.</value>
     public string KeyPrefix { get; init; }
 
-    /// <summary>
-    /// Enables endpoint rate limiting based URL path and HTTP verb.
-    /// </summary>
-    /// <value>
-    /// A boolean value for enabling endpoint rate limiting based URL path and HTTP verb.
-    /// </value>
+    /// <summary>Enables or disables rate limiting. Defaults to <see langword="true"/> (enabled).</summary>
+    /// <value>A <see langword="bool"/> value.</value>
     public bool EnableRateLimiting { get; init; }
 
-    /// <summary>Enables or disables <c>X-Rate-Limit</c> and <c>Retry-After</c> headers.</summary>
+    /// <summary>Enables or disables <c>X-RateLimit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="bool"/> value.</value>
     public bool EnableHeaders { get; init; }
 }

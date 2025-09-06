@@ -122,7 +122,7 @@ public class RateLimiting : IRateLimiting
     /// Gets the SHA1-hashed value of a unique key for caching, using the <see cref="IMemoryCache"/> service through the <see cref="IRateLimitStorage"/> service.
     /// </summary>
     /// <remarks>Notes:<list type="bullet">
-    /// <item>The generated identity key includes the <see cref="RateLimitOptions.KeyPrefix"/> as a prefix to ensure it is recognized in distributed storage systems, like <see cref="IDistributedCache"/> services, aiding users in managing cached objects.
+    /// <item>The generated identity key includes the <see cref="RateLimitOptions.KeyPrefix"/> as a prefix to ensure it is recognized in distributed storage systems, like <see cref="IDistributedCache"/> services, aiding users in observing/managing cached objects.
     /// By default, each Ocelot instance employs its own <see cref="IMemoryCache"/> service, without synchronization across instances.</item>
     /// </list></remarks>
     /// <param name="identity">Specifies the client's identity.</param>

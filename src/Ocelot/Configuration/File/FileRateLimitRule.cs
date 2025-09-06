@@ -28,7 +28,7 @@ public class FileRateLimitRule
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see langword="bool"/>.</value>
     public bool? EnableRateLimiting { get; set; }
 
-    /// <summary>Enables or disables <c>X-Rate-Limit-*</c> and <c>Retry-After</c> headers.</summary>
+    /// <summary>Enables or disables <c>X-RateLimit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see langword="bool"/>.</value>
     public bool? EnableHeaders { get; set; }
 

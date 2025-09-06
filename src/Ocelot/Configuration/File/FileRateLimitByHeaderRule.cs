@@ -44,7 +44,7 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
         : (DisableRateLimitHeaders.HasValue ? $"H{(DisableRateLimitHeaders == true ? '-' : '+')}" + base.ToString().TrimStart('H', '+', '-') : base.ToString())
             + $"/HDR:{ClientIdHeader.IfEmpty(None)}/WL{(ClientWhitelist is null ? None : '[' + string.Join(',', ClientWhitelist) + ']')}";
 
-    /// <summary>Disables or enables <c>X-Rate-Limit-*</c> and <c>Retry-After</c> headers.</summary>
+    /// <summary>Disables or enables <c>X-RateLimit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="bool"/>.</value>
     [Obsolete("Use EnableHeaders instead of DisableRateLimitHeaders! Note that DisableRateLimitHeaders will be removed in version 25.0!")]
     public bool? DisableRateLimitHeaders { get; set; }

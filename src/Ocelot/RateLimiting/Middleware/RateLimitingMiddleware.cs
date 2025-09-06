@@ -72,7 +72,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
             }
         }
 
-        // Set X-Rate-Limit-* headers for the longest period
+        // Set X-RateLimit-* headers for the longest period
         if (options.EnableHeaders)
         {
             var originalContext = _contextAccessor?.HttpContext;
@@ -140,9 +140,9 @@ public class RateLimitingMiddleware : OcelotMiddleware
     {
         var limitHeaders = (RateLimitHeaders)state;
         var headers = limitHeaders.Context.Response.Headers;
-        headers[RateLimitingHeaders.X_Rate_Limit_Limit] = new StringValues(limitHeaders.Limit.ToString());
-        headers[RateLimitingHeaders.X_Rate_Limit_Remaining] = new StringValues(limitHeaders.Remaining.ToString());
-        headers[RateLimitingHeaders.X_Rate_Limit_Reset] = new StringValues(limitHeaders.Reset.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
+        headers[RateLimitingHeaders.X_RateLimit_Limit] = new StringValues(limitHeaders.Limit.ToString());
+        headers[RateLimitingHeaders.X_RateLimit_Remaining] = new StringValues(limitHeaders.Remaining.ToString());
+        headers[RateLimitingHeaders.X_RateLimit_Reset] = new StringValues(limitHeaders.Reset.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
         return Task.CompletedTask;
     }
 }
