@@ -79,8 +79,17 @@ public class FileRateLimitRule
     /// </summary>
     /// <remarks>Format: <c>H{+,-}:{limit}:{period,-}:w{wait,-}</c>.</remarks>
     /// <returns>A <see cref="string"/> object.</returns>
-    public override string ToString() => EnableRateLimiting == false ? string.Empty
-        : $"H{(EnableHeaders == false ? '-' : '+')}:{Limit}:{Period.IfEmpty(None)}:w{(PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F") : Wait.IfEmpty(None))}";
+    public override string ToString()
+    {
+        if (EnableRateLimiting == false)
+        {
+            return string.Empty;
+        }
+
+        char hdrSign = EnableHeaders == false ? '-' : '+';
+        string waitWindow = PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F3") + 's' : Wait.IfEmpty(None);
+        return $"H{hdrSign}:{Limit}:{Period}:w{waitWindow}";
+    }
 
     public const string None = "-";
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Globalization;
 
 namespace Ocelot.RateLimiting;
 
@@ -28,5 +29,11 @@ public struct RateLimitCounter
     public long TotalRequests { get; set; }
 
     public override readonly string ToString()
-        => $"{TotalRequests}->({StartedAt}){(ExceededAt.HasValue ? $"+{ExceededAt - StartedAt}" : string.Empty)}";
+    {
+        string started = StartedAt.ToString("O", CultureInfo.InvariantCulture);
+        string exceeded = ExceededAt.HasValue
+            ? $"+{ExceededAt.Value - StartedAt}"
+            : string.Empty;
+        return $"{TotalRequests}->({started}){exceeded}";
+    }
 }
