@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
+using System;
+using YamlDotNet.Core.Tokens;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
@@ -20,16 +24,16 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
     public async Task Should_call_with_rate_limiting()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, null, null, new(), 3, "1s", 1); // periods are equal
+        var route = GivenRoute(port, limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s, so, periods are equal
         var configuration = GivenConfigurationWithRateLimitOptions(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 2);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 2);
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBe(TooManyRequests);
     }
 
@@ -38,7 +42,9 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
     public async Task Should_wait_for_period_timespan_to_elapse_before_making_next_request()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, "/api/ClientRateLimit?count={count}", "/ClientRateLimit/?{count}", new(), 3, "1s", 2);
+        var route = GivenRoute(port,
+            downstream: "/api/ClientRateLimit?count={count}", upstream: "/ClientRateLimit/?{count}",
+            limit: 3, period: "1s", periodTimespan: 2); // -> 3/1s/w2s
         var configuration = GivenConfigurationWithRateLimitOptions(route);
         _counter = 0;
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
@@ -79,13 +85,14 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         const int Limit = 3;
         const string ClientID = "ocelotclient1";
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, null, null, whitelist: [ClientID], Limit, "3s", 2); // main period is greater than ban one
+        var route = GivenRoute(port, whitelist: [ClientID],
+            limit: Limit, period: "3s", periodTimespan: 2); // main period is greater than wait window one
         var configuration = GivenConfigurationWithRateLimitOptions(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        var responses = await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader(
-                            "/api/ClientRateLimit", Limit + 1,
+        var responses = await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader("/ClientRateLimit",
+                            Limit + 1,
                             route.RateLimitOptions.ClientIdHeader.IfEmpty(configuration.GlobalConfiguration.RateLimitOptions.ClientIdHeader),
                             ClientID);
         ThenTheStatusCodeShouldBeOK();
@@ -124,7 +131,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         // extra scenario
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 101st request should fail
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        GivenIWait((int)TimeSpan.FromSeconds(periodTimespan).TotalMilliseconds); // in 3 secs PeriodTimespan will elapse
+        GivenIWait((int)TimeSpan.FromSeconds(periodTimespan).TotalMilliseconds); // in 3 secs Wait will elapse
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
         ThenTheStatusCodeShouldBeOK();
         ThenTheResponseBodyShouldBe("101"); // total 101 OK responses
@@ -137,39 +144,68 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
     public async Task Should_set_ratelimiting_headers_on_response_when_EnableHeaders_set_to(bool enableHeaders)
     {
         int port = PortFinder.GetRandomPort();
-        var configuration = CreateConfigurationForCheckingHeaders(port, enableHeaders);
+        var route = GivenRoute(port, limit: 3, period: "100s", periodTimespan: 1000.0D); // 3/100s/w1000.00s
+        route.RateLimitOptions.EnableHeaders = enableHeaders;
+        var configuration = GivenConfiguration(route);
+
+        //configuration.GlobalConfiguration.RateLimitOptions = new() { EnableHeaders = enableHeaders };
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBeOK();
         ThenRateLimitingHeadersExistInResponse(enableHeaders);
         ThenRetryAfterHeaderExistsInResponse(false);
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 2);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 2);
+        ThenTheStatusCodeShouldBeOK();
         ThenRateLimitingHeadersExistInResponse(enableHeaders);
         ThenRetryAfterHeaderExistsInResponse(false);
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/api/ClientRateLimit", 1);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBe(TooManyRequests);
         ThenRateLimitingHeadersExistInResponse(false);
         ThenRetryAfterHeaderExistsInResponse(enableHeaders);
     }
 
-    private FileConfiguration CreateConfigurationForCheckingHeaders(int port, bool enableHeaders)
+    [Fact(Skip = "TODO: To be developed")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "1915")] // https://github.com/ThreeMammals/Ocelot/issues/1915
+    public async Task ShouldApplyGlobalRateLimitingOptionsIfThereAreNoRouteOpts()
     {
-        var route = GivenRoute(port, null, null, new(), 3, "100s", 1000.0D);
-        var config = GivenConfiguration(route);
-        config.GlobalConfiguration.RateLimitOptions = new FileGlobalRateLimitByHeaderRule()
-        {
-            EnableHeaders = enableHeaders,
-            QuotaExceededMessage = "",
-            HttpStatusCode = TooManyRequests,
-        };
-        return config;
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        route.RateLimitOptions = null; // !!!
+        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var global = configuration.GlobalConfiguration.RateLimitOptions;
+        global.Limit = 3;
+        global.Period = "100.ms";
+        global.PeriodTimespan = 0.5D;
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBeOK();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 2);
+        ThenTheStatusCodeShouldBeOK();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        /*ThenTheStatusCodeShouldBe(TooManyRequests);*/
+        int halfOfWaitWindow = (int)(1000D * global.PeriodTimespan.Value / 2D);
+        await Task.Delay(halfOfWaitWindow);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        ThenTheResponseBodyShouldBe("Exceeding!");
+        response.Headers.Contains(HeaderNames.RetryAfter).ShouldBeTrue();
+        var ra = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "000");
+        await Task.Delay(halfOfWaitWindow + 50);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBeOK();
     }
 
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
-        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Limit).ShouldBe(headersExist);
-        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Remaining).ShouldBe(headersExist);
-        response.Headers.Contains(RateLimitingHeaders.X_Rate_Limit_Reset).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Limit).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Remaining).ShouldBe(headersExist);
+        response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Reset).ShouldBe(headersExist);
     }
 
     private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
@@ -182,23 +218,21 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         return context.Response.WriteAsync(count.ToString());
     }
 
-    private FileRoute GivenRoute(int port, string downstream, string upstream, List<string> whitelist, long limit, string period, double periodTimespan) => new()
+    private FileRoute GivenRoute(int port, string downstream = null, string upstream = null,
+        List<string> whitelist = null, long? limit = null, string period = null, double? periodTimespan = null)
     {
-        DownstreamPathTemplate = downstream ?? "/api/ClientRateLimit",
-        DownstreamHostAndPorts = [Localhost(port)],
-        DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = upstream ?? "/api/ClientRateLimit",
-        UpstreamHttpMethod = [HttpMethods.Get],
-        RequestIdKey = "Oc-RequestId",
-        RateLimitOptions = new()
+        var route = base.GivenRoute(port, upstream ?? "/ClientRateLimit", downstream ?? "/api/ClientRateLimit");
+        route.RequestIdKey = "Oc-RequestId";
+        route.RateLimitOptions = new()
         {
-            EnableRateLimiting = true,
-            ClientWhitelist = whitelist ?? ["ocelotclient1"],
-            Limit = limit,
-            Period = period ?? "1s",
-            PeriodTimespan = periodTimespan,
-        },
-    };
+            //EnableRateLimiting = true,
+            ClientWhitelist = whitelist, //?? ["ocelotclient1"],
+            Limit = limit ?? 3,
+            Period = period.IfEmpty("1s"),
+            PeriodTimespan = periodTimespan ?? 1D,
+        };
+        return route;
+    }
 
     private FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
     {
