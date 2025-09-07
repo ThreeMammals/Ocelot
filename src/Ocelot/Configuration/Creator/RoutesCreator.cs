@@ -4,7 +4,7 @@ using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
-public class RoutesCreator : IRoutesCreator
+public class RoutesCreator : IRoutesCreator // TODO: Rename to StaticRoutesCreator
 {
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IClaimsToThingCreator _claimsToThingCreator;
@@ -167,8 +167,8 @@ public class RoutesCreator : IRoutesCreator
 
     private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoute)
     {
-        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute);
+        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamPathTemplate
+        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamHeaders
         var upstreamHttpMethods = fileRoute.UpstreamHttpMethod.Count == 0 ? new List<HttpMethod>()
             : fileRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToList();
 
@@ -179,6 +179,6 @@ public class RoutesCreator : IRoutesCreator
             upstreamTemplatePattern,
             fileRoute.UpstreamHost,
             aggregator: default,
-            upstreamHeaderTemplates);
+            upstreamHeaderTemplates/*downstreamRoute.UpstreamHeaders*/);
     }
 }

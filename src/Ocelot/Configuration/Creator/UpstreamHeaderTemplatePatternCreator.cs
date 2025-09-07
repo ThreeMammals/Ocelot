@@ -13,11 +13,11 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
     [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegexPlaceholders();
 
-    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)
     {
         var result = new Dictionary<string, UpstreamHeaderTemplate>();
 
-        foreach (var headerTemplate in route.UpstreamHeaderTemplates)
+        foreach (var headerTemplate in upstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
             var matches = RegexPlaceholders().Matches(headerTemplateValue);
@@ -33,7 +33,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
                 }
             }
 
-            var template = route.RouteIsCaseSensitive
+            var template = routeIsCaseSensitive
                 ? $"^{headerTemplateValue}$"
                 : $"^(?i){headerTemplateValue}$"; // ignore case
 
@@ -42,4 +42,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
         return result;
     }
+
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
+        => Create(route.UpstreamHeaderTemplates, route.RouteIsCaseSensitive);
 }

@@ -8,6 +8,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
+using Ocelot.DependencyInjection;
 using Ocelot.DownstreamRouteFinder.Finder;
 
 public class DownstreamRouteProviderFactoryTests : UnitTest
@@ -28,6 +29,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
+        Features.AddHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         var provider = services.BuildServiceProvider(true);
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
