@@ -5,7 +5,6 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.RateLimiting;
-using Ocelot.RateLimiting.Middleware;
 using Ocelot.Request.Middleware;
 using System.Text;
 using _DownstreamRouteHolder_ = Ocelot.DownstreamRouteFinder.DownstreamRouteHolder;

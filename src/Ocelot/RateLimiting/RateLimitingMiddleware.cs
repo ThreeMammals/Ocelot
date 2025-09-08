@@ -7,7 +7,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Globalization;
 
-namespace Ocelot.RateLimiting.Middleware;
+namespace Ocelot.RateLimiting;
 
 public class RateLimitingMiddleware : OcelotMiddleware
 {
