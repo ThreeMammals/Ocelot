@@ -41,10 +41,10 @@ public class RateLimitOptions
         ClientWhitelist = clientWhitelist ?? [];
         EnableHeaders = enableHeaders;
         EnableRateLimiting = enableRateLimiting;
-        StatusCode = httpStatusCode;
-        QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         KeyPrefix = rateLimitCounterPrefix.IfEmpty(DefaultCounterPrefix);
+        QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         Rule = rateLimitRule;
+        StatusCode = httpStatusCode;
     }
 
     public RateLimitOptions(FileRateLimitByHeaderRule from)

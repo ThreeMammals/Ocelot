@@ -40,9 +40,24 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
     /// </summary>
     /// <remarks>Format: <c>H{+,-}:{limit}:{period}:w{wait}/HDR:{client_id_header}/WL[{c1,c2,...}]</c>.</remarks>
     /// <returns>A <see cref="string"/> object.</returns>
-    public override string ToString() => EnableRateLimiting == false ? string.Empty
-        : (DisableRateLimitHeaders.HasValue ? $"H{(DisableRateLimitHeaders == true ? '-' : '+')}" + base.ToString().TrimStart('H', '+', '-') : base.ToString())
-            + $"/HDR:{ClientIdHeader.IfEmpty(None)}/WL{(ClientWhitelist is null ? None : '[' + string.Join(',', ClientWhitelist) + ']')}";
+    public override string ToString()
+    {
+        if (EnableRateLimiting == false)
+        {
+            return string.Empty;
+        }
+
+        var baseArr = base.ToString().ToCharArray();
+        if (DisableRateLimitHeaders.HasValue)
+        {
+            baseArr[1] = DisableRateLimitHeaders.Value ? '-' : '+'; // replace hdr sign
+        }
+
+        string baseString = new(baseArr);
+        string clHdr = ClientIdHeader.IfEmpty(None);
+        string clLst = ClientWhitelist is null ? None : '[' + string.Join(',', ClientWhitelist) + ']';
+        return $"{baseString}/HDR:{clHdr}/WL{clLst}";
+    }
 
     /// <summary>Disables or enables <c>X-RateLimit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="Nullable{T}"/> value, where <c>T</c> is <see cref="bool"/>.</value>

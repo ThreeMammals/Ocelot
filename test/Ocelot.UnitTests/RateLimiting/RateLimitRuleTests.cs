@@ -1,6 +1,6 @@
 ﻿using Ocelot.Configuration;
 
-namespace Ocelot.UnitTests.Configuration;
+namespace Ocelot.UnitTests.RateLimiting;
 
 [Trait("PR", "2294")] // https://github.com/ThreeMammals/Ocelot/pull/2294
 public class RateLimitRuleTests
