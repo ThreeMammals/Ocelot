@@ -27,11 +27,12 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
             return new(false);
         }
 
-        /*if (globalConfiguration.RateLimiting?.Count > 0)
+        if (globalConfiguration.RateLimiting?.ByMethod != null)
         {
-            return CreatePatternRules(route, globalConfiguration);
-        }*/
+            return CreateMethodRules(route, globalConfiguration);
+        }
 
+        // TODO globalConfiguration.RateLimiting?.ByHeader
         if (rule != null && global == null)
         {
             return new(rule);
@@ -46,7 +47,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         }
         else if (rule != null && global != null && isGlobal)
         {
-            return MergeRateLimitByHeaderRules(rule, global);
+            return MergeHeaderRules(rule, global);
         }
         else
         {
@@ -54,7 +55,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         }
     }
 
-    protected virtual RateLimitOptions MergeRateLimitByHeaderRules(FileRateLimitByHeaderRule rule, FileGlobalRateLimitByHeaderRule global)
+    protected virtual RateLimitOptions MergeHeaderRules(FileRateLimitByHeaderRule rule, FileGlobalRateLimitByHeaderRule global)
     {
         ArgumentNullException.ThrowIfNull(rule);
         ArgumentNullException.ThrowIfNull(global);
@@ -90,7 +91,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         return new(rule);
     }
 
-    public RateLimitOptions CreatePatternRules(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)
+    public RateLimitOptions CreateMethodRules(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration)
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(globalConfiguration);

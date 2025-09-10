@@ -1,6 +1,4 @@
 ﻿using Ocelot.Configuration.File;
-using System;
-using YamlDotNet.Core.Tokens;
 
 namespace Ocelot.UnitTests.RateLimiting;
 

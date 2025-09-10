@@ -221,6 +221,26 @@ public class RoutesCreatorTests : UnitTest
     }
     #endregion
 
+    [Theory]
+    [Trait("PR", "2294")]
+    [InlineData("", 0)]
+    [InlineData("A", 1)]
+    [InlineData("A,B", 2)]
+    [InlineData(" X ", 1)]
+    public void SetUpRoute_FileRouteUpstreamHttpMethod(string methods, int count)
+    {
+        // Arrange
+        _fileConfig = new FileConfiguration();
+        _fileConfig.Routes.Add(new() { UpstreamHttpMethod = methods.Split(',').Where(m => !string.IsNullOrEmpty(m)).ToList() });
+        GivenTheDependenciesAreSetUpCorrectly();
+
+        // Act
+        _result = _creator.Create(_fileConfig);
+
+        // Assert
+        Assert.Equal(count, _result[0].UpstreamHttpMethod.Count);
+    }
+
     private void ThenTheDependenciesAreCalledCorrectly()
     {
         ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
