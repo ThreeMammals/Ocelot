@@ -71,14 +71,12 @@ public class RateLimitingMiddleware : OcelotMiddleware
         }
 
         // Set X-RateLimit-* headers for the longest period
-        if (options.EnableHeaders)
+        var originalContext = _contextAccessor.HttpContext;
+        if (options.EnableHeaders && originalContext != null)
         {
-            var originalContext = _contextAccessor?.HttpContext;
-            if (originalContext != null)
-            {
-                var headers = _limiter.GetHeaders(originalContext, identity, options);
-                originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
-            }
+            var headers = _limiter.GetHeaders(originalContext, identity, options);
+            originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+            Logger.LogInformation(() => $"Route '{downstreamRoute.Name()}' must return rate limiting headers with the following data: {headers}");
         }
 
         return _next.Invoke(context);

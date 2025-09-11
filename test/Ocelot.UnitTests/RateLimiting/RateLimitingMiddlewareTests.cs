@@ -6,6 +6,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.RateLimiting;
 using Ocelot.Request.Middleware;
+using System.Reflection;
 using System.Text;
 using _DownstreamRouteHolder_ = Ocelot.DownstreamRouteFinder.DownstreamRouteHolder;
 using _RateLimiting_ = Ocelot.RateLimiting.RateLimiting;
@@ -23,6 +24,7 @@ public class RateLimitingMiddlewareTests : UnitTest
     private readonly IRateLimiting _rateLimiting;
     private readonly List<DownstreamResponse> _downstreamResponses;
     private readonly string _url;
+    private Func<string> _loggerMessage;
 
     public RateLimitingMiddlewareTests()
     {
@@ -31,6 +33,8 @@ public class RateLimitingMiddlewareTests : UnitTest
         _storage = new MemoryCacheRateLimitStorage(new MemoryCache(cacheEntryOptions));
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
+        _logger.Setup(x => x.LogInformation(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => _loggerMessage = f);
         _loggerFactory.Setup(x => x.CreateLogger<RateLimitingMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
         _rateLimiting = new _RateLimiting_(_storage);
@@ -82,6 +86,32 @@ public class RateLimitingMiddlewareTests : UnitTest
         }
     }
 
+    [Theory]
+    [Trait("Feat", "37")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Should_not_call_middleware_with_disabled_ratelimiting(bool hasOptions)
+    {
+        // Arrange
+        RateLimitOptions options = hasOptions ? new(false) : null;
+        var route = new RouteBuilder()
+            .WithDownstreamRoute(new DownstreamRouteBuilder()
+                .WithRateLimitOptions(options)
+                .WithUpstreamHttpMethod(["Get"])
+                .Build())
+            .WithUpstreamHttpMethod(["Get"])
+            .Build();
+        var downstreamRoute = new _DownstreamRouteHolder_(new(), route);
+
+        // Act
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, downstreamRoute);
+
+        // Assert
+        _downstreamResponses.ShouldNotBeNull();
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
+        ShouldLogInformation("Rate limiting is disabled for route '?' via the EnableRateLimiting option.");
+    }
+
     [Fact]
     [Trait("Feat", "37")]
     public async Task Should_call_middleware_withWhitelistClient()
@@ -109,6 +139,94 @@ public class RateLimitingMiddlewareTests : UnitTest
 
         // Assert
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
+    }
+
+    [Fact]
+    [Trait("Bug", "1305 ")] // https://github.com/ThreeMammals/Ocelot/issues/1305
+    [Trait("PR", "1307 ")] // https://github.com/ThreeMammals/Ocelot/pull/1307
+    public async Task ShouldPopulateRateLimitingHeaders()
+    {
+        // Arrange
+        RateLimitOptions options = new()
+        {
+            EnableHeaders = true,
+            Rule = new("1s", "1s", 3),
+        };
+        var route = new RouteBuilder()
+            .WithDownstreamRoute(new DownstreamRouteBuilder()
+                .WithRateLimitOptions(options)
+                .Build())
+            .Build();
+        var downstreamRoute = new _DownstreamRouteHolder_(new(), route);
+        var originalContext = new DefaultHttpContext();
+        _contextAccessor.SetupGet(x => x.HttpContext).Returns(originalContext);
+
+        // Act
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, downstreamRoute, originalContext);
+
+        // Assert
+        originalContext.Response.ShouldNotBeNull();
+        _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Once);
+        var msg = _loggerMessage.ShouldNotBeNull().Invoke();
+        msg.ShouldStartWith("Route '?' must return rate limiting headers with the following data: 2/3 resets at "); // Route '?' must return rate limiting headers with the following data: 2/3 resets at 2025-09-11T13:37:13.7973731Z
+    }
+
+    [Theory]
+    [Trait("Bug", "1305 ")]
+    [Trait("PR", "1307 ")]
+    [InlineData(false, false, 0)]
+    [InlineData(false, true, 0)]
+    [InlineData(true, false, 0)]
+    [InlineData(true, true, 1)]
+    public async Task ShouldPopulateRateLimitingHeaders_Branches(bool enableHeaders, bool hasContext, int loggedTimes)
+    {
+        // Arrange
+        RateLimitOptions options = new()
+        {
+            EnableHeaders = enableHeaders,
+            Rule = new("1s", "1s", 3),
+        };
+        var route = new RouteBuilder()
+            .WithDownstreamRoute(new DownstreamRouteBuilder()
+                .WithRateLimitOptions(options)
+                .Build())
+            .Build();
+        var downstreamRoute = new _DownstreamRouteHolder_(new(), route);
+        var originalContext = hasContext ? new DefaultHttpContext() : null;
+        _contextAccessor.SetupGet(x => x.HttpContext).Returns(originalContext);
+
+        // Act
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, downstreamRoute, originalContext);
+
+        // Assert
+        _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Exactly(loggedTimes));
+    }
+
+    [Fact]
+    [Trait("Bug", "1305 ")]
+    [Trait("PR", "1307 ")]
+    public async Task SetRateLimitHeaders()
+    {
+        // Arrange
+        var today = new DateTime(2025, 9, 11, 3, 4, 5, 6, 7, DateTimeKind.Utc);
+        var context = new DefaultHttpContext();
+        var state = new RateLimitHeaders(context, 3, 2, today);
+        var method = _middleware.GetType().GetMethod("SetRateLimitHeaders", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        // Act
+        Task t = method.Invoke(_middleware, [state]) as Task;
+        await t;
+
+        // Assert
+        Assert.True(t.IsCompleted);
+        var headers = context.Response.Headers;
+        Assert.NotEmpty(headers);
+        Assert.True(headers.ContainsKey(RateLimitingHeaders.X_RateLimit_Limit));
+        Assert.True(headers.ContainsKey(RateLimitingHeaders.X_RateLimit_Remaining));
+        Assert.True(headers.ContainsKey(RateLimitingHeaders.X_RateLimit_Reset));
+        Assert.Equal("3", headers[RateLimitingHeaders.X_RateLimit_Limit]);
+        Assert.Equal("2", headers[RateLimitingHeaders.X_RateLimit_Remaining]);
+        Assert.Equal("2025-09-11T03:04:05.0060070Z", headers[RateLimitingHeaders.X_RateLimit_Reset]);
     }
 
     [Fact]
@@ -159,13 +277,13 @@ public class RateLimitingMiddlewareTests : UnitTest
         contexts[0].Items.Errors().Single().HttpStatusCode.ShouldBe((int)HttpStatusCode.TooManyRequests);
     }
 
-    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ holder)
+    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ holder, HttpContext originalContext = null)
     {
         var contexts = new List<HttpContext>();
         _downstreamResponses.Clear();
         for (var i = 0; i < times; i++)
         {
-            var context = new DefaultHttpContext();
+            var context = originalContext ?? new DefaultHttpContext();
             var stream = GetFakeStream($"{i}");
             context.Response.Body = stream;
             context.Response.RegisterForDispose(stream);
@@ -212,5 +330,12 @@ public class RateLimitingMiddlewareTests : UnitTest
 
             _downstreamResponses.Add(context.Items.DownstreamResponse());
         }
+    }
+
+    private void ShouldLogInformation(string expected)
+    {
+        _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Once);
+        var msg = _loggerMessage.ShouldNotBeNull().Invoke();
+        msg.ShouldBe(expected);
     }
 }

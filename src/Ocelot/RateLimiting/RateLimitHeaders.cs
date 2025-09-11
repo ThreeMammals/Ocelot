@@ -37,4 +37,6 @@ public class RateLimitHeaders
     /// </summary>
     /// <value>A <see cref="DateTime"/> value.</value>
     public DateTime Reset { get; }
+
+    public override string ToString() => $"{Remaining}/{Limit} resets at {Reset:O}";
 }
