@@ -56,15 +56,16 @@ public class RateLimitingTests : RateLimitingTestsBase
     public void Count_NoEntry_StartCounting()
     {
         // Arrange
+        DateTime now = DateTime.UtcNow;
         RateLimitCounter? arg1 = null; // No Entry
         RateLimitRule arg2 = null;
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2);
+        RateLimitCounter actual = _sut.Count(arg1, arg2, now);
 
         // Assert
-        Assert.Equal(1L, actual.TotalRequests);
-        Assert.True(DateTime.UtcNow - actual.StartedAt < TimeSpan.FromSeconds(1.0D));
+        Assert.Equal(1L, actual.Total);
+        Assert.True(now - actual.StartedAt < TimeSpan.FromSeconds(1.0D));
     }
 
     [Fact]
@@ -73,14 +74,15 @@ public class RateLimitingTests : RateLimitingTestsBase
     {
         // Arrange
         long total = 2;
-        RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow, null, total); // entry has not expired
+        DateTime now = DateTime.UtcNow;
+        RateLimitCounter? arg1 = new RateLimitCounter(now, null, total); // entry has not expired
         RateLimitRule arg2 = new("1s", "1s", total + 1); // with not exceeding limit
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2);
+        RateLimitCounter actual = _sut.Count(arg1, arg2, now);
 
         // Assert
-        Assert.Equal(total + 1, actual.TotalRequests); // incremented request count
+        Assert.Equal(total + 1, actual.Total); // incremented request count
         Assert.Equal(arg1.Value.StartedAt, actual.StartedAt); // starting point has not changed
     }
 
@@ -90,15 +92,16 @@ public class RateLimitingTests : RateLimitingTestsBase
     {
         // Arrange
         long total = 2;
-        RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow, null, total); // entry has not expired
+        DateTime now = DateTime.UtcNow;
+        RateLimitCounter? arg1 = new RateLimitCounter(now, null, total); // entry has not expired
         RateLimitRule arg2 = new("1s", "1s", 1L);
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2);
+        RateLimitCounter actual = _sut.Count(arg1, arg2, now);
 
         // Assert
-        Assert.Equal(total + 1, actual.TotalRequests); // incremented request count
-        Assert.InRange(actual.StartedAt, arg1.Value.StartedAt, DateTime.UtcNow); // starting point has renewed and it is between StartedAt and Now
+        Assert.Equal(total + 1, actual.Total); // incremented request count
+        Assert.InRange(actual.StartedAt, arg1.Value.StartedAt, now); // starting point has renewed and it is between StartedAt and Now
     }
 
     [Fact]
@@ -107,35 +110,40 @@ public class RateLimitingTests : RateLimitingTestsBase
     {
         // Arrange
         long total = 3, limit = total - 1;
+        DateTime now = DateTime.UtcNow;
         TimeSpan wait = TimeSpan.FromSeconds(1.0D);
-        DateTime startedAt = DateTime.UtcNow.AddSeconds(-2.0), // 2 secs ago
+        DateTime startedAt = now.AddSeconds(-2.0), // 2 secs ago
             exceededAt = startedAt + wait; // 1 second ago
         RateLimitCounter? arg1 = new RateLimitCounter(startedAt, exceededAt, total); // Entry has expired
         RateLimitRule arg2 = new("1s", $"{wait.TotalSeconds}s", limit); // rate limit exceeded
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2);
+        RateLimitCounter actual = _sut.Count(arg1, arg2, now);
 
         // Assert
-        Assert.Equal(1L, actual.TotalRequests); // started counting, the counter was changed
-        Assert.InRange(actual.StartedAt, arg1.Value.ExceededAt.Value, DateTime.UtcNow); // starting point has renewed and it is between exceededAt and Now
+        Assert.Equal(1L, actual.Total); // started counting, the counter was changed
+        Assert.InRange(actual.StartedAt, arg1.Value.ExceededAt.Value, now); // starting point has renewed and it is between exceededAt and Now
     }
 
     [Fact]
     [Trait("PR", "1592")]
-    public void Count_RateLimitNotExceededAndPeriodIsElapsed_StartedCountingByDefault()
+    public void Count_PeriodIsElapsedAndWaitPeriodIsElapsed_StartedNewCountingPeriod()
     {
         // Arrange
         long total = 3, limit = 3;
-        RateLimitCounter? arg1 = new RateLimitCounter(DateTime.UtcNow.AddSeconds(-2.0), null, total); // Entry has expired
-        RateLimitRule arg2 = new("1s", "1s", limit); // Rate limit not exceeded
+        DateTime now = DateTime.UtcNow;
+        RateLimitRule rule = new("1s", "1s", limit); // Rate limit not exceeded
+        RateLimitCounter? entry = new(
+            now.AddSeconds(-rule.PeriodSpan.TotalSeconds - rule.WaitSpan.TotalSeconds), // 2 seconds ago
+            now.AddSeconds(-rule.WaitSpan.TotalSeconds), // 1 second ago
+            total); // Entry is about to expire
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2);
+        RateLimitCounter actual = _sut.Count(entry, rule, now);
 
         // Assert
-        Assert.Equal(1L, actual.TotalRequests); // started counting
-        Assert.True(DateTime.UtcNow - actual.StartedAt < TimeSpan.FromSeconds(1.0D)); // started now
+        Assert.Equal(1L, actual.Total); // started counting
+        Assert.Equal(now, actual.StartedAt); // started now
     }
 
     [Fact]
@@ -156,10 +164,10 @@ public class RateLimitingTests : RateLimitingTestsBase
             (value) => expiration = value);
 
         // Act 1
-        var counter = _sut.ProcessRequest(identity, options);
+        var counter = _sut.ProcessRequest(identity, options, now);
 
         // Assert 1
-        Assert.Equal(3L, counter.TotalRequests); // old counting -> 3
+        Assert.Equal(3L, counter.Total); // old counting -> 3
         Assert.Equal(startedAt, counter.StartedAt); // starting point was not changed
         Assert.NotNull(counter.ExceededAt); // exceeded
         Assert.Equal(DateTime.UtcNow.Second, counter.ExceededAt.Value.Second); // exceeded now, in the same second
@@ -168,13 +176,13 @@ public class RateLimitingTests : RateLimitingTestsBase
         TimeSpan shift = RateLimitRule.ParseTimespan(waitWindow); // don't wait, just move to future
         startedAt = counter.StartedAt - shift; // move to past
         exceededAt = counter.ExceededAt - shift; // move to past
-        totalRequests = counter.TotalRequests; // 3
+        totalRequests = counter.Total; // 3
 
         // Act 2
-        var actual = _sut.ProcessRequest(identity, options);
+        var actual = _sut.ProcessRequest(identity, options, now);
 
         // Assert
-        Assert.Equal(1L, actual.TotalRequests); // started counting
+        Assert.Equal(1L, actual.Total); // started counting
         Assert.InRange(actual.StartedAt, now, DateTime.UtcNow); // starting point has renewed and it is between test starting and Now
         Assert.Null(actual.ExceededAt);
         _storage.Verify(x => x.Remove(It.IsAny<string>()),
@@ -201,10 +209,12 @@ public class RateLimitingTests : RateLimitingTestsBase
             const long limit = 100L, requestsPerSecond = 20L;
 
             // Arrange: setup
+            DateTime now = DateTime.UtcNow;
             DateTime? startedAt = null;
             TimeSpan expiration = TimeSpan.Zero;
             long total = 1L, count = requestsPerSecond;
             RateLimitCounter? current = null;
+            
             var (identity, options) = SetupProcessRequest(period, waitWindow, limit,
                 () => current,
                 (value) => expiration = value);
@@ -217,7 +227,7 @@ public class RateLimitingTests : RateLimitingTestsBase
             while (count > 0L)
             {
                 // Act
-                var actual = _sut.ProcessRequest(identity, options);
+                var actual = _sut.ProcessRequest(identity, options, now);
 
                 // life hack for the 1st request
                 if (count == requestsPerSecond)
@@ -226,8 +236,8 @@ public class RateLimitingTests : RateLimitingTestsBase
                 }
 
                 // Assert
-                Assert.True(actual.TotalRequests < limit);
-                actual.TotalRequests.ShouldBe(total++, $"Count is {count}");
+                Assert.True(actual.Total < limit);
+                actual.Total.ShouldBe(total++, $"Count is {count}");
                 Assert.Equal(startedAt, actual.StartedAt); // starting point is not changed
                 Assert.Null(actual.ExceededAt); // no exceeding at all
                 Assert.Equal(periodSeconds, expiration); // expiration in the period
@@ -257,7 +267,7 @@ public class RateLimitingTestsBase
     protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, string waitWindow, long limit,
         Func<RateLimitCounter?> counterFactory, Action<TimeSpan> expirationAction, [CallerMemberName] string testName = "")
     {
-        ClientRequestIdentity identity = new(nameof(RateLimitingTests), "/" + testName, HttpMethods.Get);
+        ClientRequestIdentity identity = new(nameof(RateLimitingTests) + "/" + testName, HttpMethods.Get);
         RateLimitOptions options = new()
         {
             EnableRateLimiting = true,

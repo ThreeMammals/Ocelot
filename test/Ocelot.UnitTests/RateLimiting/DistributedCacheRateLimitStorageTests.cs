@@ -1,14 +1,7 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-using Moq;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ocelot.RateLimiting;
-using System;
 using System.Text;
-using Xunit;
-using YamlDotNet.Core.Tokens;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
@@ -44,7 +37,7 @@ public class DistributedCacheRateLimitStorageTests
 
     [Theory]
     [InlineData("", false)]
-    [InlineData("{\"StartedAt\":\"2025-09-11T12:00:00Z\",\"TotalRequests\":1}", true)]
+    [InlineData("{\"StartedAt\":\"2025-09-11T12:00:00Z\",\"Total\":1}", true)]
     public void Exists_ShouldReturnCorrectBoolean(string storedValue, bool expected)
     {
         // Arrange
@@ -65,7 +58,7 @@ public class DistributedCacheRateLimitStorageTests
     {
         // Arrange
         var id = "get-id";
-        var counter = new RateLimitCounter (DateTime.UtcNow, null, 3);
+        var counter = new RateLimitCounter(DateTime.UtcNow, null, 3);
         var json = JsonConvert.SerializeObject(counter);
         var bytes = Encoding.UTF8.GetBytes(json);
         _cache.Setup(c => c.Get(id)).Returns(bytes);
@@ -77,7 +70,7 @@ public class DistributedCacheRateLimitStorageTests
         _cache.Verify(c => c.Get(id), Times.Once);
         Assert.NotNull(actual);
         Assert.Equal(counter.StartedAt, actual.Value.StartedAt);
-        Assert.Equal(counter.TotalRequests, actual.Value.TotalRequests);
+        Assert.Equal(counter.Total, actual.Value.Total);
     }
 
     [Fact]

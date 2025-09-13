@@ -65,6 +65,20 @@ public class RateLimitOptions
             from.Limit ?? RateLimitRule.ZeroLimit);
     }
 
+    public RateLimitOptions(RateLimitOptions from)
+    {
+        ArgumentNullException.ThrowIfNull(from);
+
+        ClientIdHeader = from.ClientIdHeader.IfEmpty(DefaultClientHeader);
+        ClientWhitelist = from.ClientWhitelist ?? [];
+        EnableHeaders = from.EnableHeaders;
+        EnableRateLimiting = from.EnableRateLimiting;
+        StatusCode = from.StatusCode;
+        QuotaMessage = from.QuotaMessage.IfEmpty(DefaultQuotaMessage);
+        KeyPrefix = from.KeyPrefix.IfEmpty(DefaultCounterPrefix);
+        Rule = from.Rule ?? RateLimitRule.Empty;
+    }
+
     /// <summary>Gets a Rate Limit rule.</summary>
     /// <value>A <see cref="RateLimitRule"/> object that represents the rule.</value>
     public RateLimitRule Rule { get; init; }

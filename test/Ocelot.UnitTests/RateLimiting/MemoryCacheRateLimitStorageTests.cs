@@ -85,7 +85,7 @@ public class MemoryCacheRateLimitStorageTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(counter.TotalRequests, result.Value.TotalRequests);
+        Assert.Equal(counter.Total, result.Value.Total);
         Assert.Equal(counter.StartedAt, result.Value.StartedAt);
         _cache.Verify(c => c.TryGetValue(id, out boxed), Times.Once);
     }

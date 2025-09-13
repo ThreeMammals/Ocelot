@@ -17,7 +17,7 @@ public class RateLimitCounterTests
         // Assert
         Assert.Equal(startedAt, actual.StartedAt);
         Assert.Equal(exceededAt, actual.ExceededAt);
-        Assert.Equal(3, actual.TotalRequests);
+        Assert.Equal(3, actual.Total);
     }
 
     [Fact]

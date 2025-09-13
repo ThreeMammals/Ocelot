@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
-using System;
-using YamlDotNet.Core.Tokens;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
 
@@ -44,7 +40,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port,
             downstream: "/api/ClientRateLimit?count={count}", upstream: "/ClientRateLimit/?{count}",
-            limit: 3, period: "1s", periodTimespan: 2); // -> 3/1s/w2s
+            limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s
         var configuration = GivenConfigurationWithRateLimitOptions(route);
         _counter = 0;
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
@@ -52,15 +48,20 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 2);
+        await Task.Delay(50);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 2
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
+        await Task.Delay(50);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 3
+        ThenTheStatusCodeShouldBeOK();
+        await Task.Delay(50);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 4, exceeded with 150ms shift
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        GivenIWait(1000);
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
+        await Task.Delay(500); // half of wait window
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 5
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        GivenIWait(1000);
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
+        await Task.Delay(500); // wait window has elapsed
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 6->1
         ThenTheStatusCodeShouldBeOK();
         ThenTheResponseBodyShouldBe("4"); // total 4 OK responses
     }

@@ -9,6 +9,8 @@ namespace Ocelot.RateLimiting;
 public class RateLimiting : IRateLimiting
 {
     private readonly IRateLimitStorage _storage;
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable IDE0330 // Prefer 'System.Threading.Lock'
     private static readonly object ProcessLocker = new();
 
     public RateLimiting(IRateLimitStorage storage)
@@ -22,8 +24,9 @@ public class RateLimiting : IRateLimiting
     /// <remarks>Warning! The method performs the storage operations which MUST BE thread safe.</remarks>
     /// <param name="identity">The representation of current request.</param>
     /// <param name="options">The current rate limiting options.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options)
+    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options, DateTime now)
     {
         RateLimitCounter counter;
         var rule = options.Rule;
@@ -33,11 +36,11 @@ public class RateLimiting : IRateLimiting
         lock (ProcessLocker)
         {
             var entry = _storage.Get(counterId);
-            counter = Count(entry, rule);
+            counter = Count(entry, rule, now);
             var expiration = rule.PeriodSpan; // default expiration is set for the Period value
-            if (counter.TotalRequests > rule.Limit)
+            if (counter.Total > rule.Limit)
             {
-                var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
+                var retryAfter = RetryAfter(counter, rule, now); // the calculation depends on the counter returned from CountRequests
                 if (retryAfter > 0)
                 {
                     // Rate Limit exceeded, ban period is active
@@ -45,9 +48,9 @@ public class RateLimiting : IRateLimiting
                 }
                 else
                 {
-                    // Ban period elapsed, start counting
+                    // Wait window period elapsed, start counting
                     _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
-                    counter = new RateLimitCounter(DateTime.UtcNow, null, 1);
+                    counter = new RateLimitCounter(now);
                 }
             }
 
@@ -62,57 +65,57 @@ public class RateLimiting : IRateLimiting
     /// </summary>
     /// <param name="entry">Old counter with starting moment inside.</param>
     /// <param name="rule">The limiting rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule)
+    public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule, DateTime now)
     {
-        var now = DateTime.UtcNow;
         if (!entry.HasValue)
         {
-            // no entry, start counting
-            return new RateLimitCounter(now, null, 1); // current request is the 1st one
+            return new RateLimitCounter(now); // no entry, start counting, and the current request is the 1st one
         }
 
         var counter = entry.Value;
-        var total = counter.TotalRequests + 1; // increment request count
-        var startedAt = counter.StartedAt;
-
-        // Counting Period is active
-        if (startedAt + rule.PeriodSpan >= now)
+        if (++counter.Total > rule.Limit && !counter.ExceededAt.HasValue) // current request exceeds the limit
         {
-            var exceededAt = total >= rule.Limit && !counter.ExceededAt.HasValue // current request number equals to the limit
-                ? now // the exceeding moment is now, the next request will fail but the current one doesn't
-                : counter.ExceededAt;
-            return new RateLimitCounter(startedAt, exceededAt, total); // deep copy
+            counter.ExceededAt = now; // the exceeding moment is now, this request should fail
         }
 
-        var wasExceededAt = counter.ExceededAt;
-        return wasExceededAt + rule.WaitSpan >= now // ban Wait is active
-            ? new RateLimitCounter(startedAt, wasExceededAt, total) // still count
-            : new RateLimitCounter(now, null, 1); // Ban Wait elapsed, start counting NOW!
+        bool isInFixedWindow = counter.StartedAt + rule.PeriodSpan >= now; // the fixed window counting period
+        bool isInWaitWindow = counter.ExceededAt.HasValue && counter.ExceededAt + rule.WaitSpan > now; // is greater than! Avoid including equality, treating the end of waiting as the starting point of the next fixed window
+        if (isInFixedWindow || isInWaitWindow)
+        {
+            return counter; // still count
+        }
+
+        return new RateLimitCounter(now); // Wait window period elapsed, start counting NOW!
     }
 
-    public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
+    public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options,
+        DateTime? now = null, RateLimitCounter? counter = null)
     {
         RateLimitHeaders headers;
-        RateLimitCounter? entry;
-        lock (ProcessLocker)
+        now ??= DateTime.UtcNow;
+        if (!counter.HasValue)
         {
-            var counterId = GetStorageKey(identity, options);
-            entry = _storage.Get(counterId);
+            lock (ProcessLocker)
+            {
+                var counterId = GetStorageKey(identity, options);
+                counter = _storage.Get(counterId);
+            }
         }
 
         var rule = options.Rule;
-        if (entry.HasValue)
+        if (counter.HasValue)
         {
             headers = new RateLimitHeaders(context, rule.Limit,
-                remaining: rule.Limit - entry.Value.TotalRequests,
-                reset: entry.Value.StartedAt + rule.PeriodSpan);
+                remaining: rule.Limit - counter.Value.Total,
+                reset: counter.Value.StartedAt + rule.PeriodSpan);
         }
         else
         {
             headers = new RateLimitHeaders(context, rule.Limit,
-                remaining: rule.Limit,
-                reset: DateTime.UtcNow + rule.PeriodSpan);
+                remaining: rule.Limit - 1, // the initial/1st request should reduce the remaining quota
+                reset: now.Value + rule.PeriodSpan);
         }
 
         return headers;
@@ -139,21 +142,21 @@ public class RateLimiting : IRateLimiting
     /// <summary>
     /// Gets the seconds to wait for the next retry by starting moment and the rule.
     /// </summary>
-    /// <remarks>The method must be called after the <see cref="Count(RateLimitCounter?, RateLimitRule)"/> one.</remarks>
+    /// <remarks>The method must be called after the <see cref="Count(RateLimitCounter?, RateLimitRule, DateTime)"/> one.</remarks>
     /// <param name="counter">The counter state.</param>
     /// <param name="rule">The current rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>An <see cref="int"/> value of seconds.</returns>
-    public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule)
+    public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule, DateTime now)
     {
         var waitWindow = rule.WaitSpan < OneMillisecond
             ? OneMillisecond // allow values which are greater or equal to 1 millisecond -> 0.001 aka header value precision, in seconds
             : rule.WaitSpan; // good value
-        var now = DateTime.UtcNow;
 
         // Counting Period is active
         if (counter.StartedAt + rule.PeriodSpan >= now)
         {
-            return counter.TotalRequests < rule.Limit
+            return counter.Total < rule.Limit
                 ? 0.0D // happy path, no need to retry, current request is valid
                 : counter.ExceededAt.HasValue
                     ? waitWindow.TotalSeconds - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
