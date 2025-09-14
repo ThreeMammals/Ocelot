@@ -19,13 +19,11 @@ public interface IRateLimiting
     /// Gets required information to create wanted headers in upper contexts (middleware, etc).
     /// </summary>
     /// <param name="context">The current context.</param>
-    /// <param name="identity">The current representation of the request.</param>
     /// <param name="options">The options of rate limiting.</param>
-    /// <param name="now">Optional processing moment.</param>
-    /// <param name="counter">Optional counter data.</param>
+    /// <param name="now">The processing moment.</param>
+    /// <param name="counter">The counter data.</param>
     /// <returns>A <see cref="RateLimitHeaders"/> value.</returns>
-    RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options,
-        DateTime? now = null, RateLimitCounter? counter = null);
+    RateLimitHeaders GetHeaders(HttpContext context, RateLimitOptions options, DateTime now, RateLimitCounter counter);
 
     /// <summary>
     /// Main entry point to process the current request and apply the limiting rule.

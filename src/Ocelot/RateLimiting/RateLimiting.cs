@@ -90,35 +90,13 @@ public class RateLimiting : IRateLimiting
         return new RateLimitCounter(now); // Wait window period elapsed, start counting NOW!
     }
 
-    public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options,
-        DateTime? now = null, RateLimitCounter? counter = null)
+    public virtual RateLimitHeaders GetHeaders(HttpContext context, RateLimitOptions options, DateTime now, RateLimitCounter counter)
     {
-        RateLimitHeaders headers;
-        now ??= DateTime.UtcNow;
-        if (!counter.HasValue)
-        {
-            lock (ProcessLocker)
-            {
-                var counterId = GetStorageKey(identity, options);
-                counter = _storage.Get(counterId);
-            }
-        }
-
         var rule = options.Rule;
-        if (counter.HasValue)
-        {
-            headers = new RateLimitHeaders(context, rule.Limit,
-                remaining: rule.Limit - counter.Value.Total,
-                reset: counter.Value.StartedAt + rule.PeriodSpan);
-        }
-        else
-        {
-            headers = new RateLimitHeaders(context, rule.Limit,
-                remaining: rule.Limit - 1, // the initial/1st request should reduce the remaining quota
-                reset: now.Value + rule.PeriodSpan);
-        }
-
-        return headers;
+        return new RateLimitHeaders(context,
+            limit: rule.Limit,
+            remaining: rule.Limit - counter.Total,
+            reset: counter.StartedAt + rule.PeriodSpan);
     }
 
     /// <summary>

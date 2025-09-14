@@ -46,32 +46,42 @@ public class RateLimitingMiddleware : OcelotMiddleware
             return _next.Invoke(context);
         }
 
+        // Log warnings and break execution
         var rule = options.Rule;
+        var warning = string.Empty;
         if (rule.Limit <= 0) // TODO: Move to File-model validator(s)
         {
-            var message = $"Rate limiting is misconfigured for the route '{downstreamRoute.Name()}' due to an invalid rule -> {rule}!";
-            Logger.LogWarning(message);
+            warning = $"Rate limiting is misconfigured for the route '{downstreamRoute.Name()}' due to an invalid rule -> {rule} !";
+        }
+        else if (identity.ClientId.IsEmpty()) // unknown client aka security check, so block unknown clients
+        {
+            warning = $"Rate limiting client could not be identified for the route '{downstreamRoute.Name()}' due to a missing or unknown client ID header required by rule '{rule}'!"; // and don't log the header name because of security
+        }
+
+        if (!warning.IsEmpty())
+        {
+            Logger.LogWarning(warning);
             RateLimitOptions errorOpts = new(options)
             {
-                QuotaMessage = message,
+                QuotaMessage = warning,
                 StatusCode = StatusCodes.Status503ServiceUnavailable,
             };
-            return BreakExecution(context, errorOpts, 999_999_999.999D);
+            return Break(context, errorOpts, -1.0);
         }
 
         var counter = _limiter.ProcessRequest(identity, options, now);
         if (counter.Total > rule.Limit)
         {
             var retryAfter = _limiter.RetryAfter(counter, rule, now); // compute retry after value based on counter state
-            LogBlockedRequest(context, identity, counter, rule, downstreamRoute); // log blocked request virtually
-            return BreakExecution(context, options, retryAfter);
+            LogBlockedRequest(context, identity, counter, options, downstreamRoute); // log blocked request virtually
+            return Break(context, options, retryAfter);
         }
 
         // Set X-RateLimit-* headers for the longest period
         var originalContext = _contextAccessor.HttpContext;
         if (options.EnableHeaders && originalContext != null)
         {
-            var headers = _limiter.GetHeaders(originalContext, identity, options, now, counter);
+            var headers = _limiter.GetHeaders(originalContext, options, now, counter);
             originalContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             Logger.LogInformation(() => $"Route '{downstreamRoute.Name()}' must return rate limiting headers with the following data: {headers}");
         }
@@ -79,7 +89,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
         return _next.Invoke(context);
     }
 
-    protected virtual Task BreakExecution(HttpContext context, RateLimitOptions options, double retryAfter)
+    protected virtual Task Break(HttpContext context, RateLimitOptions options, double retryAfter)
     {
         var retryAfterHeader = retryAfter.ToString(CultureInfo.InvariantCulture);
         var ds = ReturnQuotaExceededResponse(context, options, retryAfterHeader);
@@ -91,23 +101,25 @@ public class RateLimitingMiddleware : OcelotMiddleware
 
     protected virtual ClientRequestIdentity Identify(HttpContext context, RateLimitOptions options, DownstreamRoute route)
     {
-        var clientId = RateLimitOptions.DefaultClientHeader;
-        if (context.Request.Headers.TryGetValue(options.ClientIdHeader, out var headerValue))
+        var clientId = string.Empty;
+        var header = options.ClientIdHeader.IfEmpty(RateLimitOptions.DefaultClientHeader);
+        if (context.Request.Headers.TryGetValue(header, out var headerValue))
         {
-            clientId = headerValue.First();
+            clientId = headerValue;
         }
 
         return new ClientRequestIdentity(clientId, route.LoadBalancerKey);
     }
 
-    public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions option)
-        => option.ClientWhitelist.Contains(requestIdentity.ClientId);
+    public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions options)
+        => options.ClientWhitelist.Contains(requestIdentity.ClientId);
 
-    public virtual void LogBlockedRequest(HttpContext context, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule, DownstreamRoute route)
+    public virtual void LogBlockedRequest(HttpContext context, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitOptions options, DownstreamRoute route)
     {
         var req = context.Request;
-        Logger.LogInformation(
-            () => $"Request {req.Method} {req.Path} from ClientId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.Total}. Blocked by rule '{rule}' of the route '{route.Name()}' with {nameof(HttpContext.TraceIdentifier)}:{context.TraceIdentifier}.");
+        var rule = options.Rule;
+        Logger.LogWarning(() =>
+            $"Blocked request: {req.Method} {req.Path} from client with {options.ClientIdHeader}({identity.ClientId}) header, quota {rule.Limit}/{rule.Period} exceeded by {counter.Total}. Blocked by rate limiting rule '{rule}' of the route '{route.Name()}' with {nameof(HttpContext.TraceIdentifier)}:{context.TraceIdentifier}.");
     }
 
     public virtual DownstreamResponse ReturnQuotaExceededResponse(HttpContext context, RateLimitOptions options, string retryAfter)

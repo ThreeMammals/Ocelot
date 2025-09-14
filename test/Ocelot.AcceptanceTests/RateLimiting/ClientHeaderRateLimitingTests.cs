@@ -21,7 +21,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s, so, periods are equal
-        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -41,7 +41,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var route = GivenRoute(port,
             downstream: "/api/ClientRateLimit?count={count}", upstream: "/ClientRateLimit/?{count}",
             limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s
-        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var configuration = GivenConfiguration(route);
         _counter = 0;
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
@@ -88,7 +88,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, whitelist: [ClientID],
             limit: Limit, period: "3s", periodTimespan: 2); // main period is greater than wait window one
-        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -119,7 +119,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/api/ClientRateLimit?count={count}", "/ClientRateLimit/?{count}", new(),
             limit, period, periodTimespan); // bug scenario, adapted
-        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -148,8 +148,6 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var route = GivenRoute(port, limit: 3, period: "100s", periodTimespan: 1000.0D); // 3/100s/w1000.00s
         route.RateLimitOptions.EnableHeaders = enableHeaders;
         var configuration = GivenConfiguration(route);
-
-        //configuration.GlobalConfiguration.RateLimitOptions = new() { EnableHeaders = enableHeaders };
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -167,6 +165,25 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         ThenRetryAfterHeaderExistsInResponse(enableHeaders);
     }
 
+    [Fact]
+    [Trait("Feat", "37")]
+    [Trait("Feat", "585")]
+    [Trait("PR", "2294")]
+    public async Task Should_block_unknown_clients_by_writing_warning_to_body_with_503_status()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader("/ClientRateLimit", 1, "bla-bla-header", "spy");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        ThenTheResponseBodyShouldBe("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s'!");
+        ThenRetryAfterHeaderExistsInResponse(true);
+        ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "-1");
+    }
+
     [Fact(Skip = "TODO: To be developed")]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "1915")] // https://github.com/ThreeMammals/Ocelot/issues/1915
@@ -175,7 +192,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         route.RateLimitOptions = null; // !!!
-        var configuration = GivenConfigurationWithRateLimitOptions(route);
+        var configuration = GivenConfiguration(route);
         var global = configuration.GlobalConfiguration.RateLimitOptions;
         global.Limit = 3;
         global.Period = "100.ms";
@@ -235,9 +252,9 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         return route;
     }
 
-    private FileConfiguration GivenConfigurationWithRateLimitOptions(params FileRoute[] routes)
+    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
-        var config = GivenConfiguration(routes);
+        var config = base.GivenConfiguration(routes);
         config.GlobalConfiguration.RateLimitOptions = new()
         {
             ClientIdHeader = "ClientId",

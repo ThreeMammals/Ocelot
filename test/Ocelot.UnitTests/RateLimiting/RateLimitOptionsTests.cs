@@ -125,7 +125,7 @@ public class RateLimitOptionsTests
     [Fact]
     [Trait("Feat", "1229")]
     [Trait("PR", "2294")]
-    public void Ctor_CopyingFrom()
+    public void Ctor_CopyingFrom_FileRateLimitByHeaderRule()
     {
         // Arrange
         FileRateLimitByHeaderRule from = new()
@@ -164,10 +164,71 @@ public class RateLimitOptionsTests
     [Fact]
     [Trait("Feat", "1229")]
     [Trait("PR", "2294")]
-    public void Ctor_CopyingFrom_WithDefaults()
+    public void Ctor_CopyingFromFileRateLimitByHeaderRule_WithDefaults()
     {
         // Arrange
         FileRateLimitByHeaderRule from = new();
+
+        // Act
+        RateLimitOptions actual = new(from);
+
+        // Assert
+        Assert.Equal("Oc-Client", actual.ClientIdHeader);
+        Assert.Empty(actual.ClientWhitelist);
+        Assert.True(actual.EnableHeaders);
+        Assert.True(actual.EnableRateLimiting);
+        Assert.Equal(429, actual.StatusCode);
+        Assert.Equal("API calls quota exceeded! Maximum admitted {0} per {1}.", actual.QuotaMessage);
+        Assert.Equal("Ocelot.RateLimiting", actual.KeyPrefix);
+        Assert.Equal(RateLimitRule.Empty.ToString(), actual.Rule.ToString());
+    }
+
+    [Fact]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    public void Ctor_CopyingFrom_RateLimitOptions()
+    {
+        // Arrange
+        RateLimitOptions from = new()
+        {
+            ClientIdHeader = "1",
+            ClientWhitelist = ["2"],
+            EnableHeaders = true,
+            EnableRateLimiting = true,
+            StatusCode = 444,
+            QuotaMessage = "55",
+            KeyPrefix = "66",
+            Rule = new("7", "8",9),
+        };
+
+        // Act
+        RateLimitOptions actual = new(from);
+
+        // Assert
+        Assert.Equal("1", actual.ClientIdHeader);
+        Assert.Contains("2", actual.ClientWhitelist);
+        Assert.True(actual.EnableHeaders);
+        Assert.True(actual.EnableRateLimiting);
+        Assert.Equal(444, actual.StatusCode);
+        Assert.Equal("55", actual.QuotaMessage);
+        Assert.Equal("66", actual.KeyPrefix);
+        Assert.Equal("9/7/w8", actual.Rule.ToString());
+    }
+
+    [Fact]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    public void Ctor_CopyingFromRateLimitOptions_WithDefaults()
+    {
+        // Arrange
+        RateLimitOptions from = new()
+        {
+            ClientIdHeader = string.Empty,
+            ClientWhitelist = null,
+            QuotaMessage = string.Empty,
+            KeyPrefix = string.Empty,
+            Rule = null,
+        };
 
         // Act
         RateLimitOptions actual = new(from);
