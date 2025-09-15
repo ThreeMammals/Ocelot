@@ -111,8 +111,8 @@ public class RateLimitingMiddleware : OcelotMiddleware
         return new ClientRequestIdentity(clientId, route.LoadBalancerKey);
     }
 
-    public static bool IsWhitelisted(ClientRequestIdentity requestIdentity, RateLimitOptions options)
-        => options.ClientWhitelist.Contains(requestIdentity.ClientId);
+    public static bool IsWhitelisted(ClientRequestIdentity identity, RateLimitOptions options)
+        => options.ClientWhitelist.Contains(identity.ClientId);
 
     public virtual void LogBlockedRequest(HttpContext context, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitOptions options, DownstreamRoute route)
     {

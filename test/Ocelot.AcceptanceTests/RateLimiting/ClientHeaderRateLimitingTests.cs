@@ -48,19 +48,19 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
         ThenTheStatusCodeShouldBeOK();
-        await Task.Delay(50);
+        GivenIWait(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 2
         ThenTheStatusCodeShouldBeOK();
-        await Task.Delay(50);
+        GivenIWait(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 3
         ThenTheStatusCodeShouldBeOK();
-        await Task.Delay(50);
+        GivenIWait(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 4, exceeded with 150ms shift
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        await Task.Delay(500); // half of wait window
+        GivenIWait(500); // half of wait window
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 5
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        await Task.Delay(500); // wait window has elapsed
+        GivenIWait(500 + 5); // wait window has elapsed
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 6->1
         ThenTheStatusCodeShouldBeOK();
         ThenTheResponseBodyShouldBe("4"); // total 4 OK responses
