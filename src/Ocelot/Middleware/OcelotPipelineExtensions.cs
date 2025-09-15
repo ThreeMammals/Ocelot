@@ -34,16 +34,23 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
         // If the request is for websockets upgrade we fork into a different pipeline
-        app.MapWhen(httpContext => httpContext.WebSockets.IsWebSocketRequest,
+        app.MapWhen(
+            httpContext => httpContext.WebSockets.IsWebSocketRequest,
             ws =>
             {
                 ws.UseMiddleware<DownstreamRouteFinderMiddleware>();
                 ws.UseMiddleware<MultiplexingMiddleware>();
                 ws.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+                ws.UseIfNotNull(configuration.PreAuthenticationMiddleware);
+                ws.UseIfNotNull<AuthenticationMiddleware>(configuration.AuthenticationMiddleware);
+                ws.UseIfNotNull(configuration.PreAuthorizationMiddleware);
+                ws.UseIfNotNull<AuthorizationMiddleware>(configuration.AuthorizationMiddleware);
+                ws.UseIfNotNull(configuration.PreQueryStringBuilderMiddleware);
                 ws.UseMiddleware<LoadBalancingMiddleware>();
                 ws.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-                ws.UseMiddleware<WebSocketsProxyMiddleware>();
-            });
+                ws.UseMiddleware<WebSocketsProxyMiddleware>(); // websockets pipeline stops here.
+            }
+        );
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
