@@ -34,8 +34,7 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
         // If the request is for websockets upgrade we fork into a different pipeline
-        app.MapWhen(
-            httpContext => httpContext.WebSockets.IsWebSocketRequest,
+        app.MapWhen(httpContext => httpContext.WebSockets.IsWebSocketRequest,
             ws =>
             {
                 ws.UseMiddleware<DownstreamRouteFinderMiddleware>();
