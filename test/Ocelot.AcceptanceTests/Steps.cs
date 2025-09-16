@@ -74,4 +74,5 @@ public class Steps : AcceptanceSteps
     protected override FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
 
     protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
+    public virtual string Body([CallerMemberName] string responseBody = nameof(Steps)) => responseBody;
 }

@@ -184,10 +184,10 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "-1");
     }
 
-    [Fact(Skip = "TODO: To be developed")]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "1915")] // https://github.com/ThreeMammals/Ocelot/issues/1915
-    public async Task ShouldApplyGlobalRateLimitingOptionsIfThereAreNoRouteOpts()
+    public async Task Should_apply_global_options_when_there_are_no_route_opts()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
@@ -195,27 +195,115 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var configuration = GivenConfiguration(route);
         var global = configuration.GlobalConfiguration.RateLimitOptions;
         global.Limit = 3;
-        global.Period = "100.ms";
-        global.PeriodTimespan = 0.5D;
+        global.Period = "1s";
+        global.Wait = "500ms";
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3); // 3
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 2);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 4, exceeding
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        int halfOfWaitWindow = 250;
+        GivenIWait(halfOfWaitWindow);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 5
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        ThenTheResponseBodyShouldBe("Exceeding!");
+        var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        retryAfter.ShouldStartWith("0.2"); // 0.2xx
+        var seconds = double.Parse(retryAfter);
+        int theRestOfMilliseconds = (int)(1000 * seconds);
+        theRestOfMilliseconds.ShouldBeInRange(200, halfOfWaitWindow);
+        GivenIWait(halfOfWaitWindow); // the end of wait period
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
-        /*ThenTheStatusCodeShouldBe(TooManyRequests);*/
-        int halfOfWaitWindow = (int)(1000D * global.PeriodTimespan.Value / 2D);
-        await Task.Delay(halfOfWaitWindow);
+    }
+
+    [Fact]
+    [Trait("Feat", "1229")] // https://github.com/ThreeMammals/Ocelot/issues/1229
+    public async Task Should_apply_group_global_options_when_route_opts_has_a_key()
+    {
+        // 1st route
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstream: "/rateUnlimited");
+        route.RateLimitOptions = null; // 1st route is not limited
+        route.Key = null; // 1st route is not in the global group
+
+        // 2nd route
+        var port2 = PortFinder.GetRandomPort();
+        var route2 = GivenRoute(port2,
+            downstream: "/api/ClientRateLimit2?count={count}", upstream: "/rateLimited/?{count}");
+        route2.RateLimitOptions = null; // 2nd route opts will be applied from global ones
+        route2.Key = "R2"; // 2nd route is in the group
+
+        var configuration = GivenConfiguration(route, route2);
+        var global = configuration.GlobalConfiguration.RateLimitOptions;
+        global.RouteKeys = ["R2"];
+        global.Limit = 3;
+        global.Period = "1s";
+        global.Wait = "500ms";
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAServiceRunningOn(port2, "/api/ClientRateLimit2", MapOK);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        // Make requests to the 1st unlimited route
+        var responses = await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateUnlimited", (int)global.Limit + 1);
+        ThenTheStatusCodeShouldBeOK();
+        responses.Length.ShouldBe((int)global.Limit + 1);
+        responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.OK);
+        var bodies = responses.Select(r => r.Content.ReadAsStringAsync().Result).ToList();
+        bodies.ForEach(b => b.ShouldBe(Body()));
+
+        // Make requests to the 2nd rate-limited route
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 3); // 3
+        ThenTheStatusCodeShouldBeOK();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 4, exceeding
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        int halfOfWaitWindow = 250;
+        GivenIWait(halfOfWaitWindow);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 5
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        ThenTheResponseBodyShouldBe("Exceeding!");
+        var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        retryAfter.ShouldStartWith("0.2"); // 0.2xx
+        var seconds = double.Parse(retryAfter);
+        int theRestOfMilliseconds = (int)(1000 * seconds);
+        theRestOfMilliseconds.ShouldBeInRange(200, halfOfWaitWindow);
+        GivenIWait(halfOfWaitWindow); // the end of wait period
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 1, new counting period has started
+        ThenTheStatusCodeShouldBeOK();
+    }
+
+    [Fact]
+    [Trait("PR", "2294")]
+    public async Task Should_rate_limit_using_sliding_period_without_wait_period()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        route.RateLimitOptions = new(route.RateLimitOptions)
+        {
+            Limit = 3,
+            Period = "1s",
+            PeriodTimespan = null,
+            Wait = string.Empty, // No wait window -> sliding period in fixed window aka Period is 1s
+        }; // rule -> 3/1s/w0
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3);
+        ThenTheStatusCodeShouldBeOK();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBe(TooManyRequests);
         ThenTheResponseBodyShouldBe("Exceeding!");
-        response.Headers.Contains(HeaderNames.RetryAfter).ShouldBeTrue();
-        var ra = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
-        ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "000");
-        await Task.Delay(halfOfWaitWindow + 50);
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        retryAfter.ShouldStartWith("0.9"); // 0.9xx
+        int theRestOfMilliseconds = (int)(1000 * double.Parse(retryAfter));
+        theRestOfMilliseconds.ShouldBeGreaterThan(900);
+        GivenIWait(theRestOfMilliseconds); // the end of sliding period
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
         ThenTheStatusCodeShouldBeOK();
     }
 

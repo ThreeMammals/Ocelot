@@ -309,14 +309,16 @@ Ot-Route: ?");
         GivenOcelotIsRunning();
 
         await WhenIGetUrlOnTheApiGateway("/route1");
-        ThenTheResponseHeaderExists(Who).First().ShouldBe("Mark Mark Mark");
-        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
+        ThenTheResponseHeaderExists(Who);
+        ThenTheResponseHeaderIs(Who, "Mark Mark Mark");
+        ThenTheResponseHeaderExists(X_Forwarded_By);
+        ThenTheResponseHeaderIs(X_Forwarded_By, configuration.GlobalConfiguration.BaseUrl);
         await WhenIGetUrlOnTheApiGateway("/route2");
-        ThenTheResponseHeaderExists(Who).First().ShouldBe("Raman Raman Raman");
-        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
+        ThenTheResponseHeaderIs(Who, "Raman Raman Raman");
+        ThenTheResponseHeaderIs(X_Forwarded_By, configuration.GlobalConfiguration.BaseUrl);
         await WhenIGetUrlOnTheApiGateway("/route3");
-        ThenTheResponseHeaderExists(Who).First().ShouldBe("? Mark");
-        ThenTheResponseHeaderExists(X_Forwarded_By).First().ShouldBe(configuration.GlobalConfiguration.BaseUrl);
+        ThenTheResponseHeaderIs(Who, "? Mark");
+        ThenTheResponseHeaderIs(X_Forwarded_By, configuration.GlobalConfiguration.BaseUrl);
     }
 
     private int _count;
