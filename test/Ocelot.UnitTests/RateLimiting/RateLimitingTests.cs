@@ -111,18 +111,19 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Arrange
         long total = 3, limit = total - 1;
         DateTime now = DateTime.UtcNow;
-        TimeSpan wait = TimeSpan.FromSeconds(1.0D);
-        DateTime startedAt = now.AddSeconds(-2.0), // 2 secs ago
-            exceededAt = startedAt + wait; // 1 second ago
-        RateLimitCounter? arg1 = new RateLimitCounter(startedAt, exceededAt, total); // Entry has expired
-        RateLimitRule arg2 = new("1s", $"{wait.TotalSeconds}s", limit); // rate limit exceeded
+        RateLimitRule rule = new("1s", "2s", limit); // rate limit exceeded
+        var entry = new RateLimitCounter(
+            now.AddSeconds(-rule.PeriodSpan.TotalSeconds - rule.WaitSpan.TotalSeconds),
+            now.AddSeconds(-rule.WaitSpan.TotalSeconds),
+            total); // Entry has expired
 
         // Act
-        RateLimitCounter actual = _sut.Count(arg1, arg2, now);
+        var futureIsNow = now.AddMilliseconds(1); // let's move to the future to allow the waiting period to pass
+        RateLimitCounter actual = _sut.Count(entry, rule, futureIsNow);
 
         // Assert
         Assert.Equal(1L, actual.Total); // started counting, the counter was changed
-        Assert.InRange(actual.StartedAt, arg1.Value.ExceededAt.Value, now); // starting point has renewed and it is between exceededAt and Now
+        Assert.Equal(futureIsNow, actual.StartedAt); // started now
     }
 
     [Fact]
@@ -132,34 +133,37 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Arrange
         long total = 3, limit = 3;
         DateTime now = DateTime.UtcNow;
-        RateLimitRule rule = new("1s", "1s", limit); // Rate limit not exceeded
+        RateLimitRule rule = new("1s", "1s", limit);
         RateLimitCounter? entry = new(
             now.AddSeconds(-rule.PeriodSpan.TotalSeconds - rule.WaitSpan.TotalSeconds), // 2 seconds ago
             now.AddSeconds(-rule.WaitSpan.TotalSeconds), // 1 second ago
             total); // Entry is about to expire
 
-        // Act
-        RateLimitCounter actual = _sut.Count(entry, rule, now);
+        // Act, Assert 1
+        RateLimitCounter actual = _sut.Count(entry, rule, now); // at the moment of wait period elapsing, inclusively
+        Assert.Equal(4, actual.Total); // started counting
+        Assert.True(actual.ExceededAt.HasValue); // old counter is valid
 
-        // Assert
+        // Act, Assert 2
+        var futureIsNow = now.AddMilliseconds(1); // let's move to the future to allow the waiting period to pass
+        actual = _sut.Count(entry, rule, futureIsNow);
         Assert.Equal(1L, actual.Total); // started counting
-        Assert.Equal(now, actual.StartedAt); // started now
+        Assert.Equal(futureIsNow, actual.StartedAt); // started now
     }
 
     [Fact]
     [Trait("PR", "1592")]
-    public void ProcessRequest_RateLimitExceededAndBanPeriodElapsed_StartedCounting()
+    public void ProcessRequest_QuotaExceededAndWaitPeriodElapsed_StartedCountingViaResettingCounter()
     {
         // Arrange
-        const string waitWindow = "2s";
-        const int millisecondsBeforeAfterEnding = 100; // current processing time of unit test should not take more 100 ms
-        DateTime now = DateTime.UtcNow,
-            startedAt = now.AddSeconds(-3).AddMilliseconds(millisecondsBeforeAfterEnding);
+        const string fixedWindow = "3s", waitWindow = "2s";
+        RateLimitRule rule = new(fixedWindow, waitWindow, 2);
+        DateTime now = DateTime.UtcNow, startedAt = now.AddSeconds(-rule.PeriodSpan.TotalSeconds);
         DateTime? exceededAt = null;
         long totalRequests = 2L;
         TimeSpan expiration = TimeSpan.Zero;
 
-        var (identity, options) = SetupProcessRequest("3s", waitWindow, totalRequests,
+        var (identity, options) = SetupProcessRequest(fixedWindow, waitWindow, totalRequests,
             () => new RateLimitCounter(startedAt, exceededAt, totalRequests),
             (value) => expiration = value);
 
@@ -169,21 +173,21 @@ public class RateLimitingTests : RateLimitingTestsBase
         // Assert 1
         Assert.Equal(3L, counter.Total); // old counting -> 3
         Assert.Equal(startedAt, counter.StartedAt); // starting point was not changed
-        Assert.NotNull(counter.ExceededAt); // exceeded
-        Assert.Equal(DateTime.UtcNow.Second, counter.ExceededAt.Value.Second); // exceeded now, in the same second
+        Assert.True(counter.ExceededAt.HasValue); // exceeded
+        Assert.Equal(now, counter.ExceededAt.Value); // exceeded now, in the same second
 
         // Arrange 2
-        TimeSpan shift = RateLimitRule.ParseTimespan(waitWindow); // don't wait, just move to future
-        startedAt = counter.StartedAt - shift; // move to past
-        exceededAt = counter.ExceededAt - shift; // move to past
+        startedAt = counter.StartedAt; // move to past
+        exceededAt = counter.ExceededAt; // move to past
         totalRequests = counter.Total; // 3
+        now += rule.WaitSpan; // don't wait, just move to future
 
         // Act 2
         var actual = _sut.ProcessRequest(identity, options, now);
 
         // Assert
         Assert.Equal(1L, actual.Total); // started counting
-        Assert.InRange(actual.StartedAt, now, DateTime.UtcNow); // starting point has renewed and it is between test starting and Now
+        Assert.Equal(actual.StartedAt, now); // starting point has renewed and it is Now
         Assert.Null(actual.ExceededAt);
         _storage.Verify(x => x.Remove(It.IsAny<string>()),
             Times.Never()); // Once()? Seems Remove is never called because of renewing
@@ -191,7 +195,89 @@ public class RateLimitingTests : RateLimitingTestsBase
             Times.Exactly(2));
         _storage.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<RateLimitCounter>(), It.IsAny<TimeSpan>()),
             Times.Exactly(2));
-        Assert.Equal(TimeSpan.FromSeconds(3), expiration);
+        Assert.Equal(6, expiration.TotalSeconds);
+    }
+
+    [Fact]
+    [Trait("PR", "2294")]
+    public void RetryAfter_NoQuotaExceeding_NoNeedToRetry()
+    {
+        // Arrange
+        long total = 2, limit = 3;
+        DateTime now = DateTime.UtcNow;
+        RateLimitRule rule = new("1s", "1s", limit);
+        RateLimitCounter counter = new(
+            now.AddSeconds(-rule.PeriodSpan.TotalSeconds / 2),
+            null, total);
+
+        // Act
+        double actual = _sut.RetryAfter(counter, rule, now);
+
+        // Assert
+        Assert.Equal(0.0, actual);
+    }
+
+    [Theory]
+    [Trait("PR", "2294")]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(RateLimitRule.ZeroWait)]
+    public void RetryAfter_DoNotWait_RetryAfterTheHalfOfPeriod(string doNotWait)
+    {
+        // Arrange
+        long total = 4, limit = 3;
+        DateTime now = DateTime.UtcNow;
+        RateLimitRule rule = new("1s", doNotWait, limit);
+        RateLimitCounter counter = new(
+            startedAt: now.AddSeconds(-rule.PeriodSpan.TotalSeconds / 2),
+            exceededAt: now,
+            totalRequests: total);
+
+        // Act
+        double actual = _sut.RetryAfter(counter, rule, now);
+
+        // Assert
+        Assert.Equal(0.5, actual);
+    }
+
+    [Fact]
+    [Trait("PR", "2294")]
+    public void RetryAfter_ExceedingInWaitingWindow_RetryAfterTheQuarterOfWaitPeriod()
+    {
+        // Arrange
+        long total = 4, limit = 3;
+        DateTime now = DateTime.UtcNow;
+        RateLimitRule rule = new("1s", "1s", limit);
+        RateLimitCounter counter = new(
+            startedAt: now.AddSeconds(-(rule.PeriodSpan.TotalSeconds / 2) - (rule.WaitSpan.TotalSeconds / 4 * 3)),
+            exceededAt: now.AddSeconds(-(rule.WaitSpan.TotalSeconds / 4 * 3)),
+            totalRequests: total);
+
+        // Act
+        double actual = _sut.RetryAfter(counter, rule, now);
+
+        // Assert
+        Assert.Equal(0.25, actual);
+    }
+
+    [Fact]
+    [Trait("PR", "2294")]
+    public void RetryAfter_Exceeding_WaitingPeriodElapsed_NoNeedToRetry()
+    {
+        // Arrange
+        long total = 4, limit = 3;
+        DateTime now = DateTime.UtcNow;
+        RateLimitRule rule = new("1s", "1s", limit);
+        RateLimitCounter counter = new(
+            startedAt: now.AddSeconds(-rule.PeriodSpan.TotalSeconds - rule.WaitSpan.TotalSeconds),
+            exceededAt: now.AddSeconds(-rule.WaitSpan.TotalSeconds),
+            totalRequests: total);
+
+        // Act
+        double actual = _sut.RetryAfter(counter, rule, now);
+
+        // Assert
+        Assert.Equal(-1.0, actual);
     }
 
     [Collection(nameof(SequentialTests))]
@@ -205,8 +291,9 @@ public class RateLimitingTests : RateLimitingTestsBase
             Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
 
             // Arrange: user scenario
-            const string period = "1s", waitWindow = "30s"; // seconds
             const long limit = 100L, requestsPerSecond = 20L;
+            const string fixedWindow = "1s", waitWindow = "30s";
+            RateLimitRule rule = new(fixedWindow, waitWindow, 2);
 
             // Arrange: setup
             DateTime now = DateTime.UtcNow;
@@ -215,13 +302,12 @@ public class RateLimitingTests : RateLimitingTestsBase
             long total = 1L, count = requestsPerSecond;
             RateLimitCounter? current = null;
             
-            var (identity, options) = SetupProcessRequest(period, waitWindow, limit,
+            var (identity, options) = SetupProcessRequest(fixedWindow, waitWindow, limit,
                 () => current,
                 (value) => expiration = value);
 
             // Arrange 20 requests per period (1 sec)
-            var periodSeconds = TimeSpan.FromSeconds(double.Parse(period[0].ToString()));
-            var periodMilliseconds = periodSeconds.TotalMilliseconds;
+            var periodMilliseconds = rule.PeriodSpan.TotalMilliseconds;
             int delay = (int)((periodMilliseconds - 200) / requestsPerSecond); // 20 requests per 1 second
 
             while (count > 0L)
@@ -240,7 +326,7 @@ public class RateLimitingTests : RateLimitingTestsBase
                 actual.Total.ShouldBe(total++, $"Count is {count}");
                 Assert.Equal(startedAt, actual.StartedAt); // starting point is not changed
                 Assert.Null(actual.ExceededAt); // no exceeding at all
-                Assert.Equal(periodSeconds, expiration); // expiration in the period
+                Assert.Equal(32, expiration.TotalSeconds);
 
                 // Arrange: next micro test
                 current = actual;
@@ -248,8 +334,8 @@ public class RateLimitingTests : RateLimitingTestsBase
                 count--;
             }
 
-            Assert.NotEqual(RateLimitRule.ParseTimespan(waitWindow), expiration); // Not ban period expiration
-            Assert.Equal(periodSeconds, expiration); // last 20th request was in counting period
+            Assert.NotEqual(rule.WaitSpan, expiration); // Not Wait period expiration
+            Assert.Equal(32, expiration.TotalSeconds); // last 20th request was in counting period
         }
     }
 }
@@ -264,7 +350,7 @@ public class RateLimitingTestsBase
         _sut = new(_storage.Object);
     }
 
-    protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string period, string waitWindow, long limit,
+    protected (ClientRequestIdentity Identity, RateLimitOptions Options) SetupProcessRequest(string fixedWindow, string waitWindow, long limit,
         Func<RateLimitCounter?> counterFactory, Action<TimeSpan> expirationAction, [CallerMemberName] string testName = "")
     {
         ClientRequestIdentity identity = new(nameof(RateLimitingTests) + "/" + testName, HttpMethods.Get);
@@ -272,7 +358,7 @@ public class RateLimitingTestsBase
         {
             EnableRateLimiting = true,
             KeyPrefix = nameof(_RateLimiting_.ProcessRequest),
-            Rule = new(period, waitWindow, limit),
+            Rule = new(fixedWindow, waitWindow, limit),
         };
         _storage.Setup(x => x.Get(It.IsAny<string>()))
             .Returns(counterFactory); // counter value factory

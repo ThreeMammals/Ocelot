@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Extensions;
 using System.Security.Cryptography;
 
 namespace Ocelot.RateLimiting;
@@ -37,22 +38,22 @@ public class RateLimiting : IRateLimiting
         {
             var entry = _storage.Get(counterId);
             counter = Count(entry, rule, now);
-            var expiration = rule.PeriodSpan; // default expiration is set for the Period value
             if (counter.Total > rule.Limit)
             {
-                var retryAfter = RetryAfter(counter, rule, now); // the calculation depends on the counter returned from CountRequests
-                if (retryAfter > 0)
+                var retryAfter = RetryAfter(counter, rule, now); // the calculation depends on the counter returned from Count() method
+                if (retryAfter < 0)
                 {
-                    // Rate Limit exceeded, ban period is active
-                    expiration = rule.WaitSpan; // current state should expire in the storage after ban period
-                }
-                else
-                {
-                    // Wait window period elapsed, start counting
-                    _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
+                    // Wait window period elapsed, reset counter, and start the next counting period
                     counter = new RateLimitCounter(now);
                 }
             }
+
+            // TODO: The expiry approach doesn't make much sense in practice because
+            // if the counting period elapses or there are prolonged pending periods,
+            // the counter resets to a state of 1, with null values after expiry treated as a count of 1.
+            // It might make sense to consider request timeout periods as expiry periods.
+            var expiration = rule.PeriodSpan + rule.WaitSpan; // absolute max period of processing
+            expiration += TimeSpan.FromSeconds(1); // add an extra second as a shift to allow to synchronize concurrent threads
 
             _storage.Set(counterId, counter, expiration);
         }
@@ -81,13 +82,10 @@ public class RateLimiting : IRateLimiting
         }
 
         bool isInFixedWindow = counter.StartedAt + rule.PeriodSpan >= now; // the fixed window counting period
-        bool isInWaitWindow = counter.ExceededAt.HasValue && counter.ExceededAt + rule.WaitSpan > now; // is greater than! Avoid including equality, treating the end of waiting as the starting point of the next fixed window
-        if (isInFixedWindow || isInWaitWindow)
-        {
-            return counter; // still count
-        }
-
-        return new RateLimitCounter(now); // Wait window period elapsed, start counting NOW!
+        bool isInWaitWindow = counter.ExceededAt.HasValue && counter.ExceededAt.Value + rule.WaitSpan >= now; // with including equality, treating the end of waiting as the end of the wait window
+        return isInFixedWindow || isInWaitWindow
+            ? counter // still count
+            : new RateLimitCounter(now); // Wait window period elapsed, start counting NOW!
     }
 
     public virtual RateLimitHeaders GetHeaders(HttpContext context, RateLimitOptions options, DateTime now, RateLimitCounter counter)
@@ -127,30 +125,30 @@ public class RateLimiting : IRateLimiting
     /// <returns>An <see cref="int"/> value of seconds.</returns>
     public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule, DateTime now)
     {
-        var waitWindow = rule.WaitSpan < OneMillisecond
-            ? OneMillisecond // allow values which are greater or equal to 1 millisecond -> 0.001 aka header value precision, in seconds
-            : rule.WaitSpan; // good value
+        if (counter.Total <= rule.Limit || !counter.ExceededAt.HasValue)
+        {
+            return 0.0D; // happy path, no need to retry, current request is valid, continue counting
+        }
 
         // Counting Period is active
-        if (counter.StartedAt + rule.PeriodSpan >= now)
+        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsEmpty() || rule.Wait == RateLimitRule.ZeroWait;
+        if (doNotWait && counter.StartedAt + rule.PeriodSpan > now)
         {
-            return counter.Total < rule.Limit
-                ? 0.0D // happy path, no need to retry, current request is valid
-                : counter.ExceededAt.HasValue
-                    ? waitWindow.TotalSeconds - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
-                    : waitWindow.TotalSeconds; // exceeding not yet detected -> let's ban for whole period
+            //return waitWindow.TotalSeconds - (now - exceededAt).TotalSeconds; // minus seconds past
+            var retryAfter = counter.StartedAt + rule.PeriodSpan - now;
+            return retryAfter.TotalSeconds; // positive value of seconds until the end of the sliding period in fixed window
         }
 
-        // Limit exceeding was happen && ban Wait is active
-        if (counter.ExceededAt.HasValue && counter.ExceededAt + waitWindow >= now)
+        // Exceeding was happen && Wait period is active (no sliding)
+        var waitWindow = rule.WaitSpan; // good non-zero value
+        var exceededAt = counter.ExceededAt.Value;
+        if (exceededAt + waitWindow > now)
         {
-            var startedAt = counter.ExceededAt.Value; // ban period was started at
-            var timePast = now - startedAt;
-            var retryAfter = waitWindow - timePast;
-            return retryAfter.TotalSeconds; // it can be negative, which means the wait in PeriodTimespan seconds has ended
+            var retryAfter = exceededAt + waitWindow - now;
+            return retryAfter.TotalSeconds; // positive value of seconds until the end of the waiting period
         }
 
-        return 0.0D; // ban period elapsed, no need to retry, current request is valid
+        return -1.0D; // counting period vs wait period elapsed, no need to retry, reset the counter in upper calling context
     }
 
     private static readonly TimeSpan OneMillisecond = TimeSpan.FromMilliseconds(1.0D);
