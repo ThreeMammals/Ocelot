@@ -278,7 +278,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 
     [Fact]
     [Trait("PR", "2294")]
-    public async Task Should_rate_limit_using_sliding_period_without_wait_period()
+    public void Should_rate_limit_using_sliding_period_without_wait_period()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
@@ -292,19 +292,41 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3);
-        ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
-        ThenTheStatusCodeShouldBe(TooManyRequests);
-        ThenTheResponseBodyShouldBe("Exceeding!");
-        var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
-        retryAfter.ShouldStartWith("0.9"); // 0.9xx
-        int theRestOfMilliseconds = (int)(1000 * double.Parse(retryAfter));
-        theRestOfMilliseconds.ShouldBeGreaterThan(900);
-        GivenIWait(theRestOfMilliseconds); // the end of sliding period
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
-        ThenTheStatusCodeShouldBeOK();
+        //GivenOcelotIsRunning();
+        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3);
+        //ThenTheStatusCodeShouldBeOK();
+        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        //ThenTheStatusCodeShouldBe(TooManyRequests);
+        //ThenTheResponseBodyShouldBe("Exceeding!");
+        //var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        //retryAfter.ShouldStartWith("0.9"); // 0.9xx
+        //int theRestOfMilliseconds = (int)(1000 * double.Parse(retryAfter));
+        //theRestOfMilliseconds.ShouldBeGreaterThan(900);
+        //GivenIWait(theRestOfMilliseconds); // the end of sliding period
+        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
+        //ThenTheStatusCodeShouldBeOK();
+        this.Given(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1))
+            .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
+            .And(x => ThenTheResponseBodyShouldBe("Exceeding!"))
+            .And(x => ThenTheResponseHeaderExists(HeaderNames.RetryAfter))
+            .And(x => ThenRetryAfterIs())
+            .Given(x => GivenIWait(_theRestOfMilliseconds))
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .BDDfy();
+    }
+
+    private string _retryAfter;
+    private int _theRestOfMilliseconds;
+    void ThenRetryAfterIs()
+    {
+        _retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        _retryAfter.ShouldStartWith("0.9"); // 0.9xx
+        _theRestOfMilliseconds = (int)(1000 * double.Parse(_retryAfter));
+        _theRestOfMilliseconds.ShouldBeGreaterThan(900);
     }
 
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
