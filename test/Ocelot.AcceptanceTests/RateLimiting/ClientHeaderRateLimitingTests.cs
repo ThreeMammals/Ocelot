@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
@@ -154,15 +155,15 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBeOK();
         ThenRateLimitingHeadersExistInResponse(enableHeaders);
-        ThenRetryAfterHeaderExistsInResponse(false);
+        ThenTheResponseHeaderExists(HeaderNames.RetryAfter, false);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 2);
         ThenTheStatusCodeShouldBeOK();
         ThenRateLimitingHeadersExistInResponse(enableHeaders);
-        ThenRetryAfterHeaderExistsInResponse(false);
+        ThenTheResponseHeaderExists(HeaderNames.RetryAfter, false);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBe(TooManyRequests);
         ThenRateLimitingHeadersExistInResponse(false);
-        ThenRetryAfterHeaderExistsInResponse(enableHeaders);
+        ThenTheResponseHeaderExists(HeaderNames.RetryAfter, enableHeaders);
     }
 
     [Fact]
@@ -180,8 +181,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader("/ClientRateLimit", 1, "bla-bla-header", "spy");
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
         ThenTheResponseBodyShouldBe("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s'!");
-        ThenRetryAfterHeaderExistsInResponse(true);
-        ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "-1");
+        ThenTheResponseHeaderExists(HeaderNames.RetryAfter).ShouldBe("-1");
     }
 
     [Fact]
@@ -278,7 +278,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 
     [Fact]
     [Trait("PR", "2294")]
-    public void Should_rate_limit_using_sliding_period_without_wait_period()
+    public async Task Should_rate_limit_using_sliding_period_without_wait_period()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
@@ -292,19 +292,26 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
-        //GivenOcelotIsRunning();
-        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3);
-        //ThenTheStatusCodeShouldBeOK();
-        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
-        //ThenTheStatusCodeShouldBe(TooManyRequests);
-        //ThenTheResponseBodyShouldBe("Exceeding!");
-        //var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
-        //retryAfter.ShouldStartWith("0.9"); // 0.9xx
-        //int theRestOfMilliseconds = (int)(1000 * double.Parse(retryAfter));
-        //theRestOfMilliseconds.ShouldBeGreaterThan(900);
-        //GivenIWait(theRestOfMilliseconds); // the end of sliding period
-        //await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
-        //ThenTheStatusCodeShouldBeOK();
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3);
+        ThenTheStatusCodeShouldBeOK();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
+        ThenTheStatusCodeShouldBe(TooManyRequests);
+        ThenTheResponseBodyShouldBe("Exceeding!");
+        var retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+        retryAfter.ShouldStartWith("0.9"); // 0.9xx
+        int theRestOfMilliseconds = (int)(1000 * double.Parse(retryAfter));
+        theRestOfMilliseconds.ShouldBeGreaterThan(900);
+
+        // Mutual behavior arises from test instability, which is sensitive to consumed CPU resources and thread synchronization in CI/CD environments
+        int slidingPeriodEndsInMs = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true" // check GitHub CI-CD context
+            ? (int)RateLimitRule.ParseTimespan(route.RateLimitOptions.Period).TotalMilliseconds // not strict requirement for CI-CD, ensure the test is stable
+            : theRestOfMilliseconds; // otherwise it is strict in local dev env, but somethimes the test fails :D
+        GivenIWait(slidingPeriodEndsInMs); // the end of sliding period
+
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
+        ThenTheStatusCodeShouldBeOK();
+        /*
         this.Given(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3))
             .Then(x => ThenTheStatusCodeShouldBeOK())
@@ -317,27 +324,26 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
             .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1))
             .Then(x => ThenTheStatusCodeShouldBeOK())
             .BDDfy();
+        var isGitHubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        Assert.True(isGitHubActions, "This test should run inside GitHub Actions.");
+        */
     }
 
-    private string _retryAfter;
-    private int _theRestOfMilliseconds;
-    void ThenRetryAfterIs()
-    {
-        _retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
-        _retryAfter.ShouldStartWith("0.9"); // 0.9xx
-        _theRestOfMilliseconds = (int)(1000 * double.Parse(_retryAfter));
-        _theRestOfMilliseconds.ShouldBeGreaterThan(900);
-    }
-
+    //private string _retryAfter;
+    //private int _theRestOfMilliseconds;
+    //void ThenRetryAfterIs()
+    //{
+    //    _retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
+    //    _retryAfter.ShouldStartWith("0.9"); // 0.9xx
+    //    _theRestOfMilliseconds = (int)(1000 * double.Parse(_retryAfter));
+    //    _theRestOfMilliseconds.ShouldBeGreaterThan(900);
+    //}
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
         response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Limit).ShouldBe(headersExist);
         response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Remaining).ShouldBe(headersExist);
         response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Reset).ShouldBe(headersExist);
     }
-
-    private void ThenRetryAfterHeaderExistsInResponse(bool headersExist)
-        => response.Headers.Contains(HeaderNames.RetryAfter).ShouldBe(headersExist);
 
     protected override Task MapOK(HttpContext context)
     {
