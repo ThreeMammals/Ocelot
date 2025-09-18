@@ -51,11 +51,11 @@ public class RateLimitingMiddleware : OcelotMiddleware
         var warning = string.Empty;
         if (rule.Limit <= 0) // TODO: Move to File-model validator(s)
         {
-            warning = $"Rate limiting is misconfigured for the route '{downstreamRoute.Name()}' due to an invalid rule -> {rule} !";
+            warning = $"Rate limiting is misconfigured for the route '{downstreamRoute.Name(true)}' due to an invalid rule -> {rule} !";
         }
         else if (identity.ClientId.IsEmpty()) // unknown client aka security check, so block unknown clients
         {
-            warning = $"Rate limiting client could not be identified for the route '{downstreamRoute.Name()}' due to a missing or unknown client ID header required by rule '{rule}'!"; // and don't log the header name because of security
+            warning = $"Rate limiting client could not be identified for the route '{downstreamRoute.Name(true)}' due to a missing or unknown client ID header required by rule '{rule}'!"; // and don't log the header name because of security
         }
 
         if (!warning.IsEmpty())

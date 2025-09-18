@@ -144,15 +144,22 @@ public class DownstreamRoute
     public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
     private static int defaultTimeoutSeconds = DefTimeout;
 
+    public string Name() => Name(false);
+
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
     /// <returns>A <see cref="string"/> object with the name.</returns>
-    public string Name()
+    public string Name(bool escapePath)
     {
         var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
             ? UpstreamPathTemplate.OriginalValue
             : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
                 ? DownstreamPathTemplate.ToString()
                 : "?";
+        if (escapePath)
+        {
+            path = path.Replace("{", "{{").Replace("}", "}}");
+        }
+
         return UseServiceDiscovery || !string.IsNullOrEmpty(ServiceName)
             ? string.Join(':', ServiceNamespace, ServiceName, path)
             : path;

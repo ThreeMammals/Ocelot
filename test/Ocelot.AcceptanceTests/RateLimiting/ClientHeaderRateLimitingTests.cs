@@ -311,33 +311,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
         ThenTheStatusCodeShouldBeOK();
-        /*
-        this.Given(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 3))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1))
-            .Then(x => ThenTheStatusCodeShouldBe(TooManyRequests))
-            .And(x => ThenTheResponseBodyShouldBe("Exceeding!"))
-            .And(x => ThenTheResponseHeaderExists(HeaderNames.RetryAfter))
-            .And(x => ThenRetryAfterIs())
-            .Given(x => GivenIWait(_theRestOfMilliseconds))
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
-            .BDDfy();
-        var isGitHubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
-        Assert.True(isGitHubActions, "This test should run inside GitHub Actions.");
-        */
     }
 
-    //private string _retryAfter;
-    //private int _theRestOfMilliseconds;
-    //void ThenRetryAfterIs()
-    //{
-    //    _retryAfter = ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
-    //    _retryAfter.ShouldStartWith("0.9"); // 0.9xx
-    //    _theRestOfMilliseconds = (int)(1000 * double.Parse(_retryAfter));
-    //    _theRestOfMilliseconds.ShouldBeGreaterThan(900);
-    //}
     private void ThenRateLimitingHeadersExistInResponse(bool headersExist)
     {
         response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Limit).ShouldBe(headersExist);
@@ -359,8 +334,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         route.RequestIdKey = "Oc-RequestId";
         route.RateLimitOptions = new()
         {
-            //EnableRateLimiting = true,
-            ClientWhitelist = whitelist, //?? ["ocelotclient1"],
+            ClientWhitelist = whitelist,
             Limit = limit ?? 3,
             Period = period.IfEmpty("1s"),
             PeriodTimespan = periodTimespan ?? 1D,
