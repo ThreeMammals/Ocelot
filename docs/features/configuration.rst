@@ -120,12 +120,17 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
       "Metadata": {}, // dictionary
-      "RateLimitRule": {},
+      "RateLimitRule": {}, // deprecated! -> use RateLimitOptions
+      "RateLimitOptions": {},
       "ServiceName": "",
       "Timeout": 0 // nullable integer
     }
 
 The actual dynamic route schema with all the properties can be found in the C# `FileDynamicRoute`_ class.
+
+  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileDynamicRoute.cs>`_ ``RateLimitRule`` section is deprecated in version `24.1`_!
+  Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
+  For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
 .. _config-aggregate-route-schema:
 
@@ -917,3 +922,4 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12

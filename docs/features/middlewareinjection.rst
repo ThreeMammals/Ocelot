@@ -81,6 +81,8 @@ Obviously, you can add the mentioned Ocelot middleware overrides as normal befor
 They cannot be added afterward because Ocelot does not invoke subsequent middleware overrides based on the specified middleware configuration.
 As a result, the next-called middleware **will not** affect the Ocelot configuration.
 
+.. _mi-ocelot-pipeline-builder:
+
 Ocelot Pipeline Builder
 -----------------------
 
