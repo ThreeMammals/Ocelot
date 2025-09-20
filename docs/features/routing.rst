@@ -435,7 +435,7 @@ Dynamic Routing [#f8]_
 ----------------------
 
 The concept of dynamic *routing* allows you to use a :doc:`../features/servicediscovery` provider, eliminating the need to manually configure *route* settings.
-For more details, refer to the :ref:`sd-dynamic-routing` documentation if this feature interests you.
+For more details, refer to the :ref:`Dynamic Routing <sd-dynamic-routing>` complete reference in the ":doc:`../features/servicediscovery`" chapter.
 
 Errors and Gotchas
 ------------------
@@ -481,7 +481,8 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. [#f5] ":ref:`routing-upstream-headers`" feature was proposed in issue `360`_ (PR `1312`_), and released in version `23.3`_.
 .. [#f6] ":ref:`routing-security-options`" feature was requested as part of issue `628`_ (version `12.0.1`_), then redesigned and improved by issue `1400`_ (version `23.4.1`_), and published in version `20.0`_ docs.
 .. [#f7] Global ":ref:`routing-security-options`" feature was requested as part of issue `2165`_ , and released in version `23.4.1`_.
-.. [#f8] ":ref:`routing-dynamic`" feature was requested as part of issue `340`_, and released in version `7.0.1`_. Refer to complete reference: :ref:`sd-dynamic-routing`.
+.. [#f8] ":ref:`Dynamic Routing <routing-dynamic>`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
+  Refer to complete reference in the ":doc:`../features/servicediscovery`" chapter: :ref:`Dynamic Routing <sd-dynamic-routing>`.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings

@@ -61,6 +61,7 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
             .WithUpstreamPathTemplate(upstreamPathTemplate)
             .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>);
 
+        // TODO: Review this logic. Is this merging options for dynamic routes?
         var serviceDiscoveryDownstreamRoute = configuration.Routes?
             .SelectMany(x => x.DownstreamRoute)
             .FirstOrDefault(x => x.ServiceName == serviceName);

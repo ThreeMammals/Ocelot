@@ -260,7 +260,9 @@ Unsupported dynamic routes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Both route-level and global *QoS* options apply only to static routes, as defined by the :ref:`config-route-schema`.
-Since the :ref:`config-dynamic-route-schema` does not support *QoS* options, *Quality of Service* is not applied to dynamic routes in :ref:`routing-dynamic` mode.
+Since the :ref:`config-dynamic-route-schema` does not support *QoS* options, *Quality of Service* is not applied to dynamic routes in :ref:`Dynamic Routing <routing-dynamic>` mode.
+However, global configuration remains possible in :ref:`Dynamic Routing <routing-dynamic>` mode.
+Therefore, it is not possible to override global *QoS* options using dynamic route-level *QoS* settings.
 
 .. _qos-extensibility:
 
