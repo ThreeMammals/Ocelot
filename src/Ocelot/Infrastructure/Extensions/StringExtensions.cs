@@ -6,7 +6,7 @@ public static class StringExtensions
     /// <remarks>This is shortcut for the <see cref="string.IsNullOrWhiteSpace(string?)"/> method.</remarks>
     /// <param name="str">The string to test.</param>
     /// <returns><see langword="true"/> if the <paramref name="str"/> parameter is <see langword="null" /> or <see cref="string.Empty"/>, or if <paramref name="str"/> consists exclusively of white-space characters.</returns>
-    public static bool IsEmpty(this string str) => string.IsNullOrWhiteSpace(str);
+    public static bool IsNullOrEmpty(this string str) => string.IsNullOrWhiteSpace(str);
 
     /// <summary>Defaults to the default string if the current string is empty.</summary>
     /// <remarks>Based on the <see cref="string.IsNullOrWhiteSpace(string?)"/> method.</remarks>

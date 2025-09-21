@@ -126,7 +126,7 @@ public class RoutesCreator : IRoutesCreator // TODO: Rename to StaticRoutesCreat
         var route = new DownstreamRouteBuilder()
             .WithKey(fileRoute.Key)
             .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
-            .WithUpstreamHttpMethod(new(fileRoute.UpstreamHttpMethod))
+            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
             .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
             .WithAuthenticationOptions(authOptionsForRoute)

@@ -131,7 +131,7 @@ public class RateLimiting : IRateLimiting
         }
 
         // Counting Period is active
-        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsEmpty() || rule.Wait == RateLimitRule.ZeroWait;
+        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsNullOrEmpty() || rule.Wait == RateLimitRule.ZeroWait;
         if (doNotWait && counter.StartedAt + rule.PeriodSpan > now)
         {
             //return waitWindow.TotalSeconds - (now - exceededAt).TotalSeconds; // minus seconds past
@@ -150,8 +150,6 @@ public class RateLimiting : IRateLimiting
 
         return -1.0D; // counting period vs wait period elapsed, no need to retry, reset the counter in upper calling context
     }
-
-    private static readonly TimeSpan OneMillisecond = TimeSpan.FromMilliseconds(1.0D);
 
     /// <summary>
     /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".

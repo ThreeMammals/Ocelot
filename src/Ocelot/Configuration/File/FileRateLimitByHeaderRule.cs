@@ -12,9 +12,7 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
 
     public FileRateLimitByHeaderRule(FileRateLimitRule from)
         : base(from)
-    {
-        ClientWhitelist = default;
-    }
+    { }
 
     public FileRateLimitByHeaderRule(FileRateLimitByHeaderRule from)
         : base(from)

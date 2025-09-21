@@ -20,14 +20,14 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         ArgumentNullException.ThrowIfNull(globalConfiguration);
 
         var rule = route.RateLimitOptions;
-        var global = globalConfiguration.RateLimitOptions;
+        var globalOptions = globalConfiguration.RateLimitOptions;
 
-        // bool isGlobal = global?.RouteKeys?.Contains(route.Key) ?? true;
-        bool isGlobal = global?.RouteKeys is null || // undefined section or array option -> is global
-            global.RouteKeys.Count == 0 || // empty collection -> is global
-            global.RouteKeys.Contains(route.Key); // this route is in the group
+        // bool isGlobal = globalOptions?.RouteKeys?.Contains(route.Key) ?? true;
+        bool isGlobal = globalOptions?.RouteKeys is null || // undefined section or array option -> is global
+            globalOptions.RouteKeys.Count == 0 || // empty collection -> is global
+            globalOptions.RouteKeys.Contains(route.Key); // this route is in the group
 
-        if (rule?.EnableRateLimiting == false || (isGlobal && global?.EnableRateLimiting == false))
+        if (rule?.EnableRateLimiting == false || (isGlobal && globalOptions?.EnableRateLimiting == false))
         {
             return new(false);
         }
@@ -37,27 +37,23 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
             return CreateMethodRules(route, globalConfiguration);
         }
 
-        // TODO globalConfiguration.RateLimiting?.ByHeader
-        if (rule != null && global == null)
+        // By Client's Header rule merging
+        if (rule == null && globalOptions != null && isGlobal)
+        {
+            return new(globalOptions);
+        }
+
+        if (rule != null && (globalOptions == null || (globalOptions != null && !isGlobal)))
         {
             return new(rule);
         }
-        else if (rule == null && global != null && isGlobal)
+
+        if (rule != null && globalOptions != null && isGlobal)
         {
-            return new(global);
+            return MergeHeaderRules(rule, globalOptions);
         }
-        else if (rule != null && global != null && !isGlobal)
-        {
-            return new(rule);
-        }
-        else if (rule != null && global != null && isGlobal)
-        {
-            return MergeHeaderRules(rule, global);
-        }
-        else
-        {
-            return new(false);
-        }
+
+        return new(false);
     }
 
     protected virtual RateLimitOptions MergeHeaderRules(FileRateLimitByHeaderRule rule, FileGlobalRateLimitByHeaderRule global)
@@ -102,13 +98,13 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         ArgumentNullException.ThrowIfNull(globalConfiguration);
 
         var path = route.UpstreamPathTemplate ?? string.Empty;
-        var methods = route.UpstreamHttpMethod ?? []; // limiting downstream HTTP verbs has no effect; only upstream methods are respected, also keep in mind Method Transformation feature
         var globalRule = globalConfiguration.RateLimiting?.ByMethod
             .FirstOrDefault(rule => Regex.IsMatch(path, '^' + Regex.Escape(rule.Pattern).Replace("\\*", ".*") + '$', RegexOptions.IgnoreCase | RegexOptions.Compiled));
         if (globalRule != null)
         {
             return new RateLimitOptions()
             {
+                ClientWhitelist = /*globalRule.ClientWhitelist ??*/ GlobalClientWhitelist(),
                 EnableHeaders = globalRule.EnableHeaders ?? true,
                 EnableRateLimiting = globalRule.EnableRateLimiting ?? true,
                 StatusCode = globalRule.StatusCode ?? StatusCodes.Status429TooManyRequests,
@@ -117,7 +113,6 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
                 Rule = new(globalRule.Period,
                     globalRule.PeriodTimespan.HasValue ? $"{globalRule.PeriodTimespan.Value}s" : globalRule.Wait,
                     globalRule.Limit ?? RateLimitRule.ZeroLimit),
-                /*ClientWhitelist = globalRule.ClientWhitelist ?? GlobalClientWhitelist(),*/
             };
         }
 
@@ -125,6 +120,4 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
     }
 
     protected virtual List<string> GlobalClientWhitelist() => new();
-
-    protected static string Empty(string str, string def) => str.IfEmpty(def);
 }
