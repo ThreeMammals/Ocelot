@@ -81,14 +81,20 @@ public class FileRateLimitByHeaderRuleTests
     }
 
     [Theory]
-    [InlineData(null, "H+:3:2s:w1s/HDR:hdr/WL[client1]")]
-    [InlineData(false, "H+:3:2s:w1s/HDR:hdr/WL[client1]")]
-    [InlineData(true, "H-:3:2s:w1s/HDR:hdr/WL[client1]")]
-    public void ToString_DisableRateLimitHeaders(bool? disableRateLimitHeaders, string expected)
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    [InlineData(null, true, "H+:3:2s:w1s/HDR:hdr/WL[client1]")]
+    [InlineData(false, true, "H+:3:2s:w1s/HDR:hdr/WL[client1]")]
+    [InlineData(true, true, "H-:3:2s:w1s/HDR:hdr/WL[client1]")]
+    [InlineData(null, false, "H-:3:2s:w1s/HDR:hdr/WL[client1]")]
+    [InlineData(false, false, "H+:3:2s:w1s/HDR:hdr/WL[client1]")]
+    [InlineData(true, false, "H-:3:2s:w1s/HDR:hdr/WL[client1]")]
+    public void ToString_DisableRateLimitHeaders(bool? disableRateLimitHeaders, bool enableHeadersstring, string expected)
     {
         // Format: <c>H{+,-}:{limit}:{period}:w{wait}/HDR:{client_id_header}/WL[{c1,c2,...}]</c>.
         // Arrange
         var rule = GivenRule();
+        rule.EnableHeaders = enableHeadersstring;
         rule.DisableRateLimitHeaders = disableRateLimitHeaders;
 
         // Act
@@ -99,6 +105,8 @@ public class FileRateLimitByHeaderRuleTests
     }
 
     [Theory]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
     [InlineData(null, "H+:3:2s:w1s/HDR:hdr/WL-")]
     [InlineData(true, "H+:3:2s:w1s/HDR:hdr/WL[]")]
     [InlineData(false, "H+:3:2s:w1s/HDR:hdr/WL[cl1,cl2]")]

@@ -671,7 +671,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+        ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
     }
 
     [Fact]

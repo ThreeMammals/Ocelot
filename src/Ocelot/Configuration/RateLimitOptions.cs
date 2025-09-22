@@ -47,36 +47,36 @@ public class RateLimitOptions
         StatusCode = httpStatusCode;
     }
 
-    public RateLimitOptions(FileRateLimitByHeaderRule from)
+    public RateLimitOptions(FileRateLimitByHeaderRule fromRule)
     {
-        ArgumentNullException.ThrowIfNull(from);
+        ArgumentNullException.ThrowIfNull(fromRule);
 
-        ClientIdHeader = from.ClientIdHeader.IfEmpty(DefaultClientHeader);
-        ClientWhitelist = from.ClientWhitelist ?? [];
-        EnableHeaders = from.DisableRateLimitHeaders.HasValue ? !from.DisableRateLimitHeaders.Value
-            : from.EnableHeaders ?? true;
-        EnableRateLimiting = from.EnableRateLimiting ?? true;
-        StatusCode = from.HttpStatusCode ?? from.StatusCode ?? DefaultStatus429;
-        QuotaMessage = from.QuotaExceededMessage.IfEmpty(from.QuotaMessage.IfEmpty(DefaultQuotaMessage));
-        KeyPrefix = from.RateLimitCounterPrefix.IfEmpty(from.KeyPrefix.IfEmpty(DefaultCounterPrefix));
+        ClientIdHeader = fromRule.ClientIdHeader.IfEmpty(DefaultClientHeader);
+        ClientWhitelist = fromRule.ClientWhitelist ?? [];
+        EnableHeaders = fromRule.DisableRateLimitHeaders.HasValue ? !fromRule.DisableRateLimitHeaders.Value
+            : fromRule.EnableHeaders ?? true;
+        EnableRateLimiting = fromRule.EnableRateLimiting ?? true;
+        StatusCode = fromRule.HttpStatusCode ?? fromRule.StatusCode ?? DefaultStatus429;
+        QuotaMessage = fromRule.QuotaExceededMessage.IfEmpty(fromRule.QuotaMessage.IfEmpty(DefaultQuotaMessage));
+        KeyPrefix = fromRule.RateLimitCounterPrefix.IfEmpty(fromRule.KeyPrefix.IfEmpty(DefaultCounterPrefix));
         Rule = new(
-            from.Period.IfEmpty(RateLimitRule.DefaultPeriod),
-            from.PeriodTimespan.HasValue ? $"{from.PeriodTimespan.Value}s" : from.Wait,
-            from.Limit ?? RateLimitRule.ZeroLimit);
+            fromRule.Period.IfEmpty(RateLimitRule.DefaultPeriod),
+            fromRule.PeriodTimespan.HasValue ? $"{fromRule.PeriodTimespan.Value}s" : fromRule.Wait,
+            fromRule.Limit ?? RateLimitRule.ZeroLimit);
     }
 
-    public RateLimitOptions(RateLimitOptions from)
+    public RateLimitOptions(RateLimitOptions fromOptions)
     {
-        ArgumentNullException.ThrowIfNull(from);
+        ArgumentNullException.ThrowIfNull(fromOptions);
 
-        ClientIdHeader = from.ClientIdHeader.IfEmpty(DefaultClientHeader);
-        ClientWhitelist = from.ClientWhitelist ?? [];
-        EnableHeaders = from.EnableHeaders;
-        EnableRateLimiting = from.EnableRateLimiting;
-        StatusCode = from.StatusCode;
-        QuotaMessage = from.QuotaMessage.IfEmpty(DefaultQuotaMessage);
-        KeyPrefix = from.KeyPrefix.IfEmpty(DefaultCounterPrefix);
-        Rule = from.Rule ?? RateLimitRule.Empty;
+        ClientIdHeader = fromOptions.ClientIdHeader.IfEmpty(DefaultClientHeader);
+        ClientWhitelist = fromOptions.ClientWhitelist ?? [];
+        EnableHeaders = fromOptions.EnableHeaders;
+        EnableRateLimiting = fromOptions.EnableRateLimiting;
+        StatusCode = fromOptions.StatusCode;
+        QuotaMessage = fromOptions.QuotaMessage.IfEmpty(DefaultQuotaMessage);
+        KeyPrefix = fromOptions.KeyPrefix.IfEmpty(DefaultCounterPrefix);
+        Rule = fromOptions.Rule ?? RateLimitRule.Empty;
     }
 
     /// <summary>Gets a Rate Limit rule.</summary>

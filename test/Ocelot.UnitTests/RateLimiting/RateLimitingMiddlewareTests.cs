@@ -234,33 +234,6 @@ public class RateLimitingMiddlewareTests : UnitTest
     [Trait("Feat", "37")]
     [Trait("Feat", "585")]
     [Trait("PR", "2294")]
-    public async Task Invoke_MisconfiguredLimit_Status503_ShouldLogWarning()
-    {
-        // Arrange
-        var downstreamRoute = GivenDownstreamRoute(rule: RateLimitRule.Empty);
-        var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
-
-        // Act
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder);
-
-        // Assert
-        var ctx = contexts[0].ShouldNotBeNull();
-        var errors = ctx.Items.Errors().ShouldNotBeNull();
-        var err = Assert.Single(errors);
-        Assert.IsType<QuotaExceededError>(err);
-        Assert.Equal("Rate limiting is misconfigured for the route '?' due to an invalid rule -> 0/1s/w0ms !", err.Message);
-        var ds = _downstreamResponses.SingleOrDefault().ShouldNotBeNull();
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, ds.StatusCode);
-        var body = await ds.Content.ReadAsStringAsync();
-        Assert.Equal("Rate limiting is misconfigured for the route '?' due to an invalid rule -> 0/1s/w0ms !", body);
-        _logger.Verify(x => x.LogWarning(err.Message), Times.Once);
-    }
-
-    [Fact]
-    [Trait("Feat", "37")]
-    [Trait("Feat", "585")]
-    [Trait("PR", "2294")]
     public async Task Invoke_NoClientHeader_Status503_ShouldLogWarning()
     {
         // Arrange

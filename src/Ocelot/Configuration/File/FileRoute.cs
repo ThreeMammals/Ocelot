@@ -160,4 +160,19 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         to.UpstreamHttpMethod = new List<string>(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
     }
+
+    public override string ToString()
+    {
+        if (!string.IsNullOrWhiteSpace(Key))
+        {
+            return Key;
+        }
+
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate) ? UpstreamPathTemplate
+            : !string.IsNullOrEmpty(DownstreamPathTemplate) ? DownstreamPathTemplate
+            : "?";
+        return !string.IsNullOrWhiteSpace(ServiceName)
+            ? string.Join(':', ServiceNamespace, ServiceName, path)
+            : path;
+    }
 }

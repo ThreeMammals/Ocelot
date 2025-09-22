@@ -81,11 +81,11 @@ public class RateLimitOptionsTests
     public void Ctor_CopyingFrom_ArgChecks()
     {
         // Arrange
-        FileRateLimitByHeaderRule from = null;
+        FileRateLimitByHeaderRule fromRule = null;
 
         // Act, Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => new RateLimitOptions(from));
-        Assert.Equal("from", ex.ParamName);
+        var ex = Assert.Throws<ArgumentNullException>(() => new RateLimitOptions(fromRule));
+        Assert.Equal(nameof(fromRule), ex.ParamName);
     }
 
     [Fact]

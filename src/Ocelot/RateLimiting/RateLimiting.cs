@@ -13,6 +13,7 @@ public class RateLimiting : IRateLimiting
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0330 // Prefer 'System.Threading.Lock'
     private static readonly object ProcessLocker = new();
+    private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
     public RateLimiting(IRateLimitStorage storage)
     {
@@ -53,7 +54,7 @@ public class RateLimiting : IRateLimiting
             // the counter resets to a state of 1, with null values after expiry treated as a count of 1.
             // It might make sense to consider request timeout periods as expiry periods.
             var expiration = rule.PeriodSpan + rule.WaitSpan; // absolute max period of processing
-            expiration += TimeSpan.FromSeconds(1); // add an extra second as a shift to allow to synchronize concurrent threads
+            expiration += OneSecond; // add an extra second as a shift to allow to synchronize concurrent threads
 
             _storage.Set(counterId, counter, expiration);
         }

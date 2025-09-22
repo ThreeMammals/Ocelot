@@ -45,13 +45,28 @@ public class FileRateLimitByHeaderRule : FileRateLimitRule
             return string.Empty;
         }
 
-        var baseArr = base.ToString().ToCharArray();
-        if (DisableRateLimitHeaders.HasValue)
+        /*
+        string baseString = base.ToString();
+        char hdrSign = DisableRateLimitHeaders.HasValue
+            ? (DisableRateLimitHeaders.Value ? '-' : '+')
+            : baseString[1];
+        if (DisableRateLimitHeaders.HasValue && baseString[1] != hdrSign)
         {
-            baseArr[1] = DisableRateLimitHeaders.Value ? '-' : '+'; // replace hdr sign
+            Span<byte> span = stackalloc byte[Encoding.ASCII.GetByteCount(baseString)];
+            Encoding.ASCII.GetBytes(baseString, span);
+            span[1] = (byte)hdrSign; // replace hdr sign
+            baseString = Encoding.ASCII.GetString(span);
+        }*/
+        var baseString = base.ToString();
+        if (DisableRateLimitHeaders is bool disabled && baseString[1] != (disabled ? '-' : '+'))
+        {
+            baseString = string.Create(baseString.Length, (baseString, disabled), static (dstSpan, state) =>
+            {
+                state.baseString.AsSpan().CopyTo(dstSpan);
+                dstSpan[1] = state.disabled ? '-' : '+';
+            });
         }
 
-        string baseString = new(baseArr);
         string clHdr = ClientIdHeader.IfEmpty(None);
         string clLst = ClientWhitelist is null ? None : '[' + string.Join(',', ClientWhitelist) + ']';
         return $"{baseString}/HDR:{clHdr}/WL{clLst}";

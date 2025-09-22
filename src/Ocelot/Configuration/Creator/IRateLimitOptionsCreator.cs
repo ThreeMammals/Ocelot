@@ -5,5 +5,4 @@ namespace Ocelot.Configuration.Creator;
 public interface IRateLimitOptionsCreator
 {
     RateLimitOptions Create(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration);
-    RateLimitOptions CreateMethodRules(IRouteRateLimiting route, FileGlobalConfiguration globalConfiguration);
 }

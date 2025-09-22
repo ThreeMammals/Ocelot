@@ -1,14 +1,13 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.RateLimiting;
 using System.Reflection;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
 public class RateLimitOptionsCreatorTests : UnitTest
 {
-    private readonly RateLimitOptionsCreator _creator = new(Mock.Of<IRateLimiting>());
+    private readonly RateLimitOptionsCreator _creator = new();
 
     [Fact]
     [Trait("PR", "58")] // https://github.com/ThreeMammals/Ocelot/pull/58
@@ -156,7 +155,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
     [Trait("Feat", "1229")]
     [Trait("PR", "2294")]
     [InlineData(true, null, false, "rule")]
-    [InlineData(null, true, true, "global")]
+    [InlineData(null, true, true, "globalRule")]
     [InlineData(true, true, false, "rule")]
     [InlineData(true, true, true, "rule")]
     [InlineData(null, null, true, "Oc-Client")]
@@ -171,7 +170,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         FileGlobalConfiguration global = new()
         {
             RateLimitOptions = !hasGlobal.HasValue ? null :
-                new() { RouteKeys = [isGlobal ? "R1" : "?"], ClientIdHeader = "global" },
+                new() { RouteKeys = [isGlobal ? "R1" : "?"], ClientIdHeader = "globalRule" },
         };
 
         // Act
@@ -190,10 +189,10 @@ public class RateLimitOptionsCreatorTests : UnitTest
         // Arrange
         MethodInfo method = _creator.GetType().GetMethod("MergeHeaderRules", BindingFlags.Instance | BindingFlags.NonPublic);
         FileRateLimitByHeaderRule rule = new();
-        FileGlobalRateLimitByHeaderRule global = new();
+        FileGlobalRateLimitByHeaderRule globalRule = new();
 
         // Act
-        var ex1 = Assert.Throws<TargetInvocationException>(() => method?.Invoke(_creator, [null, global]));
+        var ex1 = Assert.Throws<TargetInvocationException>(() => method?.Invoke(_creator, [null, globalRule]));
         var ex2 = Assert.Throws<TargetInvocationException>(() => method?.Invoke(_creator, [rule, null]));
 
         // Assert
@@ -202,7 +201,7 @@ public class RateLimitOptionsCreatorTests : UnitTest
         Assert.Equal(nameof(rule), ((ArgumentNullException)ex1.InnerException).ParamName);
         Assert.NotNull(ex2.InnerException);
         Assert.True(ex2.InnerException is ArgumentNullException);
-        Assert.Equal(nameof(global), ((ArgumentNullException)ex2.InnerException).ParamName);
+        Assert.Equal(nameof(globalRule), ((ArgumentNullException)ex2.InnerException).ParamName);
     }
 
     [Fact]
@@ -245,30 +244,6 @@ public class RateLimitOptionsCreatorTests : UnitTest
         Assert.Equal("55", actual.QuotaMessage);
         Assert.Equal("77", actual.KeyPrefix);
         Assert.Equal("12/9s/w10s", actual.Rule.ToString());
-    }
-
-    [Fact]
-    public void Create_RateLimiting_ByMethod()
-    {
-        // Arrange, Act, Assert: scenario 1
-        FileRoute route = new();
-        FileGlobalConfiguration global = new()
-        {
-            RateLimiting = new() { ByMethod = [] },
-        };
-        var actual = _creator.Create(route, global);
-        Assert.NotNull(actual);
-        Assert.False(actual.EnableRateLimiting);
-
-        // Arrange, Act, Assert: scenario 2
-        route.UpstreamPathTemplate = "/MiladRivandi";
-        global.RateLimiting.ByMethod = new FileGlobalRateLimit[]
-        {
-            new() { Pattern = "/Milad*" },
-        };
-        actual = _creator.Create(route, global);
-        Assert.NotNull(actual);
-        Assert.True(actual.EnableRateLimiting);
     }
     #endregion
 }
