@@ -1,6 +1,9 @@
 ﻿namespace Ocelot.RateLimiting;
 
-public struct ClientRequestIdentity
+public readonly record struct ClientRequestIdentity(string ClientId, string LoadBalancerKey)
+{
+    public override string ToString() => $"{ClientId}:{LoadBalancerKey}";
+}
 {
     public ClientRequestIdentity(string clientId, string loadBalancerKey)
     {
