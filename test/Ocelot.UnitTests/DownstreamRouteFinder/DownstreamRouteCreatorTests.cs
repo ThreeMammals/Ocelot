@@ -1,9 +1,11 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
@@ -21,13 +23,15 @@ public class DownstreamRouteCreatorTests : UnitTest
     private IInternalConfiguration _configuration;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator;
 
     public DownstreamRouteCreatorTests()
     {
         _qoSOptions = new(new FileQoSOptions());
         _handlerOptions = new HttpHandlerOptionsBuilder().Build();
         _loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(NoLoadBalancer)).Build();
-        _creator = new DownstreamRouteCreator();
+        _upstreamHeaderTemplatePatternCreator = new();
+        _creator = new DownstreamRouteCreator(_upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
     }
 
@@ -59,10 +63,11 @@ public class DownstreamRouteCreatorTests : UnitTest
     public void Should_create_downstream_route_with_rate_limit_options()
     {
         // Arrange
-        var rateLimitOptions = new RateLimitOptionsBuilder()
-            .WithEnableRateLimiting(true)
-            .WithClientIdHeader("test")
-            .Build();
+        var rateLimitOptions = new RateLimitOptions()
+        {
+            EnableRateLimiting = true,
+            ClientIdHeader = "test",
+        };
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)
@@ -324,7 +329,7 @@ public class DownstreamRouteCreatorTests : UnitTest
 
     private void WithRateLimitOptions(RateLimitOptions expected)
     {
-        _result.Data.Route.DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+        _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeTrue();
         _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
         _result.Data.Route.DownstreamRoute[0].RateLimitOptions.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
     }
@@ -344,6 +349,11 @@ public class DownstreamRouteCreatorTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe("/auth/test|GET");
         _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
+        var kv = _upstreamHeaders.First();
+        _result.Data.Route.UpstreamHeaderTemplates.ShouldNotBeNull()
+            .FirstOrDefault(x => x.Key == kv.Key).Value.Template.ShouldBe(kv.Value);
+        _result.Data.Route.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull()
+            .FirstOrDefault(x => x.Key == kv.Key).Value.Template.ShouldBe(kv.Value);
     }
 
     private void ThenTheDownstreamPathIsForwardSlash()
@@ -385,16 +395,23 @@ public class DownstreamRouteCreatorTests : UnitTest
         _upstreamHost = "doesnt matter";
         _upstreamUrlPath = "/auth/test";
         _upstreamHttpMethod = "GET";
-        _upstreamHeaders = new Dictionary<string, string>();
+        _upstreamHeaders = new()
+        {
+            { "testHeader", "testHeaderValue" },
+        };
+        var kv = _upstreamHeaders.First();
         _configuration = config;
+        _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+            .Returns(new Dictionary<string, UpstreamHeaderTemplate>()
+            {
+                { kv.Key, new(kv.Value, kv.Value) },
+            });
     }
 
     private void GivenTheConfiguration(IInternalConfiguration config, string upstreamUrlPath)
     {
-        _upstreamHost = "doesnt matter";
+        GivenTheConfiguration(config);
         _upstreamUrlPath = upstreamUrlPath;
-        _upstreamHttpMethod = "GET";
-        _configuration = config;
     }
 
     private void WhenICreate()

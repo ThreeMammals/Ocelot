@@ -14,7 +14,7 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class PollyQoSTests : TimeoutTestsBase
 {
-    private static FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null)
+    private FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null)
     {
         var route = GivenRoute(port, upstream, null);
         route.UpstreamHttpMethod = [ httpMethod ?? HttpMethods.Get ];

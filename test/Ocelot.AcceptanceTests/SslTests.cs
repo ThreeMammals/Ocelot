@@ -38,7 +38,7 @@ public sealed class SslTests : Steps
             .BDDfy();
     }
 
-    private static FileRoute GivenSslRoute(int port, bool validatorEnabled)
+    private FileRoute GivenSslRoute(int port, bool validatorEnabled)
     {
         var route = GivenDefaultRoute(port);
         route.DownstreamScheme = Uri.UriSchemeHttps;

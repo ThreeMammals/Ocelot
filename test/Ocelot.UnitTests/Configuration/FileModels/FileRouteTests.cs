@@ -2,7 +2,7 @@
 
 namespace Ocelot.UnitTests.Configuration.FileModels;
 
-public class FileRouteTests
+public class FileRouteTests : UnitTest
 {
     [Fact]
     [Trait("PR", "1753")]
@@ -35,6 +35,80 @@ public class FileRouteTests
         AssertEquality(actual, expected);
     }
 
+    [Fact]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    public void ToString_NoKeyNoDiscovery_ShouldBeUpstreamPathTemplate()
+    {
+        // Arrange
+        var route = GivenFileRoute();
+        route.Key = null;
+        route.ServiceName = null;
+        route.UpstreamPathTemplate = "/upstream";
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.Equal("/upstream", actual);
+    }
+
+    [Theory]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    [InlineData(null, "?")]
+    [InlineData("/downstream", "/downstream")]
+    public void ToString_NoKeyNoUpstreamPathTemplate_ShouldBeDownstreamPathTemplate(string downstream, string expected)
+    {
+        // Arrange
+        var route = GivenFileRoute();
+        route.Key = null;
+        route.ServiceName = null;
+        route.UpstreamPathTemplate = null;
+        route.DownstreamPathTemplate = downstream;
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    public void ToString_NoKeyWithServiceDiscovery_ShouldContainServiceName()
+    {
+        // Arrange
+        var route = GivenFileRoute();
+        route.Key = null;
+        route.ServiceName = TestName();
+        route.UpstreamPathTemplate = "/upstream";
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.True(actual.Contains(route.ServiceName));
+        Assert.Equal("test-namespace:ToString_NoKeyWithServiceDiscovery_ShouldContainServiceName:/upstream", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    public void ToString_HasKey_ShouldBeKey()
+    {
+        // Arrange
+        var route = GivenFileRoute();
+        route.Key = TestName();
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.Equal(nameof(ToString_HasKey_ShouldBeKey), actual);
+    }
+
     private static FileRoute GivenFileRoute()
     {
         FileRoute expected = new();
@@ -59,13 +133,13 @@ public class FileRouteTests
         expected.Metadata.Add("key18", "value18");
         expected.Priority = 19;
         expected.QoSOptions.DurationOfBreak = 20;
-        expected.RateLimitOptions.Period = "value21";
+        expected.RateLimitOptions ??= new() { Period = "value21" };
         expected.RequestIdKey = "value22";
         expected.RouteClaimsRequirement.Add("key23", "value23");
         expected.RouteIsCaseSensitive = true;
         expected.SecurityOptions.IPAllowedList.Add("value24");
-        expected.ServiceName = "value25";
-        expected.ServiceNamespace = "value26";
+        expected.ServiceName = "test-service";
+        expected.ServiceNamespace = "test-namespace";
         expected.Timeout = 27;
         expected.UpstreamHeaderTemplates.Add("key28", "value28");
         expected.UpstreamHeaderTransform.Add("key29", "value29");
@@ -98,7 +172,7 @@ public class FileRouteTests
         Assert.Equal(expected.Metadata, actual.Metadata);
         Assert.Equal(expected.Priority, actual.Priority);
         Assert.Equivalent(expected.QoSOptions, actual.QoSOptions); // FileQoSOptions requires Equals overriding
-        Assert.Equivalent(expected.RateLimitOptions, actual.RateLimitOptions); // FileRateLimitRule requires Equals overriding
+        Assert.Equivalent(expected.RateLimitOptions, actual.RateLimitOptions); // FileRateLimitByHeaderRule requires Equals overriding
         Assert.Equal(expected.RequestIdKey, actual.RequestIdKey);
         Assert.Equal(expected.RouteClaimsRequirement, actual.RouteClaimsRequirement);
         Assert.Equal(expected.RouteIsCaseSensitive, actual.RouteIsCaseSensitive);

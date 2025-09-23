@@ -82,7 +82,7 @@ public sealed class StreamContentTests : Steps
             new("localhost", port),
         },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
 }
 

@@ -44,7 +44,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
             .BDDfy();
     }
 
-    private static FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
+    private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
     {
         UpstreamPathTemplate = "/",
         DownstreamPathTemplate = downstream ?? "/ws",

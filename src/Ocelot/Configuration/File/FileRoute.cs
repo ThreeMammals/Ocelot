@@ -1,8 +1,14 @@
-﻿using Ocelot.Configuration.Creator;
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1133 // Do not combine attributes
+#pragma warning disable SA1134 // Attributes should not share line
+
+using Ocelot.Configuration.Creator;
+using System.Text.Json.Serialization;
+using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
-public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
+public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
 {
     public FileRoute()
     {
@@ -27,7 +33,8 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
         Metadata = new Dictionary<string, string>();
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
-        RateLimitOptions = new FileRateLimitRule();
+        RateLimiting = default;
+        RateLimitOptions = default;
         RequestIdKey = default; // to be reviewed
         RouteClaimsRequirement = new Dictionary<string, string>();
         RouteIsCaseSensitive = default; // to be reviewed
@@ -74,12 +81,13 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
     public string DownstreamScheme { get; set; }
     public FileCacheOptions FileCacheOptions { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
-    public string Key { get; set; }
+    public string Key { get; set; } // IRouteGrouping
     public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
     public int Priority { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
-    public FileRateLimitRule RateLimitOptions { get; set; }
+    public FileRateLimitByHeaderRule RateLimitOptions { get; set; }
+    [NewtonsoftJsonIgnore, JsonIgnore] public FileRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
     public string RequestIdKey { get; set; }
     public Dictionary<string, string> RouteClaimsRequirement { get; set; }
     public bool RouteIsCaseSensitive { get; set; }
@@ -100,7 +108,7 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
-    public List<string> UpstreamHttpMethod { get; set; }
+    public IList<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     /// <summary>
@@ -137,6 +145,7 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
         to.Metadata = new Dictionary<string, string>(from.Metadata);
         to.Priority = from.Priority;
         to.QoSOptions = new(from.QoSOptions);
+        to.RateLimiting = from.RateLimiting; // new(from.RateLimiting)
         to.RateLimitOptions = new(from.RateLimitOptions);
         to.RequestIdKey = from.RequestIdKey;
         to.RouteClaimsRequirement = new(from.RouteClaimsRequirement);
@@ -148,7 +157,22 @@ public class FileRoute : IRoute, ICloneable // TODO: Inherit from FileDynamicRou
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
         to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;
-        to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
+        to.UpstreamHttpMethod = new List<string>(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
+    }
+
+    public override string ToString()
+    {
+        if (!string.IsNullOrWhiteSpace(Key))
+        {
+            return Key;
+        }
+
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate) ? UpstreamPathTemplate
+            : !string.IsNullOrEmpty(DownstreamPathTemplate) ? DownstreamPathTemplate
+            : "?";
+        return !string.IsNullOrWhiteSpace(ServiceName)
+            ? string.Join(':', ServiceNamespace, ServiceName, path)
+            : path;
     }
 }

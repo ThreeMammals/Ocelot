@@ -61,7 +61,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
         TtlSeconds = 10,
     };
 
-    private static FileRoute GivenRoute(string upstream = null, FileCacheOptions options = null) => new()
+    private FileRoute GivenRoute(string upstream = null, FileCacheOptions options = null) => new()
     {
         DownstreamHostAndPorts = [ Localhost(80) ],
         DownstreamScheme = Uri.UriSchemeHttps,

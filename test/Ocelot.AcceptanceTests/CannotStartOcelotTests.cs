@@ -97,7 +97,7 @@ public class CannotStartOcelotTests : Steps
                         new("localhost", 51878),
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
             },
@@ -142,7 +142,7 @@ public class CannotStartOcelotTests : Steps
                         new("localhost", 51878),
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                     QoSOptions = new()
                     {

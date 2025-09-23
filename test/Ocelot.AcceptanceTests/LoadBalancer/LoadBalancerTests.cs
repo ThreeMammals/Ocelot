@@ -122,7 +122,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         LoadBalancerOptions = new() { Type = loadBalancer ?? nameof(LeastConnection) },
         DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
     };

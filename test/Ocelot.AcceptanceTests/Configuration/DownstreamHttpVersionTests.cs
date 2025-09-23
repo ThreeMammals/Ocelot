@@ -101,7 +101,7 @@ public sealed class DownstreamHttpVersionTests : Steps
             .BDDfy();
     }
 
-    private static FileRoute GivenRoute(int port, string scheme, Version httpVersion) => new()
+    private FileRoute GivenRoute(int port, string scheme, Version httpVersion) => new()
     {
         DownstreamPathTemplate = "/{url}",
         DownstreamScheme = scheme ?? Uri.UriSchemeHttp,

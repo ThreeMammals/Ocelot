@@ -4,7 +4,7 @@ using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
-public class RoutesCreator : IRoutesCreator
+public class RoutesCreator : IRoutesCreator // TODO: Rename to StaticRoutesCreator
 {
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IClaimsToThingCreator _claimsToThingCreator;
@@ -83,7 +83,7 @@ public class RoutesCreator : IRoutesCreator
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration);
+        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration); // TODO Refactor this overhead service by moving options to native creators
 
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
@@ -103,7 +103,7 @@ public class RoutesCreator : IRoutesCreator
 
         var qosOptions = _qosOptionsCreator.Create(fileRoute, globalConfiguration);
 
-        var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute.RateLimitOptions, globalConfiguration);
+        var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
 
@@ -126,7 +126,7 @@ public class RoutesCreator : IRoutesCreator
         var route = new DownstreamRouteBuilder()
             .WithKey(fileRoute.Key)
             .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
+            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
             .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
             .WithAuthenticationOptions(authOptionsForRoute)
@@ -144,7 +144,6 @@ public class RoutesCreator : IRoutesCreator
             .WithDownstreamAddresses(downstreamAddresses)
             .WithLoadBalancerKey(routeKey)
             .WithQosOptions(qosOptions)
-            .WithEnableRateLimiting(fileRouteOptions.EnableRateLimiting)
             .WithRateLimitOptions(rateLimitOption)
             .WithHttpHandlerOptions(httpHandlerOptions)
             .WithServiceName(fileRoute.ServiceName)
@@ -166,19 +165,20 @@ public class RoutesCreator : IRoutesCreator
         return route;
     }
 
-    private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoutes)
+    private Route SetUpRoute(FileRoute fileRoute, DownstreamRoute downstreamRoute)
     {
-        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute);
+        var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamPathTemplate
+        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamHeaders
+        var upstreamHttpMethods = fileRoute.UpstreamHttpMethod.Count == 0 ? new List<HttpMethod>()
+            : fileRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToList();
 
-        var route = new RouteBuilder()
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithDownstreamRoute(downstreamRoutes)
-            .WithUpstreamHost(fileRoute.UpstreamHost)
-            .WithUpstreamHeaders(upstreamHeaderTemplates)
-            .Build();
-
-        return route;
+        return new Route(
+            [downstreamRoute],
+            new(),
+            upstreamHttpMethods,
+            upstreamTemplatePattern,
+            fileRoute.UpstreamHost,
+            aggregator: default,
+            upstreamHeaderTemplates/*downstreamRoute.UpstreamHeaders*/);
     }
 }

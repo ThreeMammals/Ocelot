@@ -154,8 +154,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_qos_options_specified_and_has_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/")
-            .WithKey("Laura");
+        var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         route.QoSOptions = new FileQoSOptions
         {
             TimeoutValue = 1,
@@ -175,8 +174,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_if_qos_options_specified_globally_and_has_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/")
-            .WithKey("Laura");
+        var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
         {
@@ -197,8 +195,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_qos_options_specified_but_no_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/")
-            .WithKey("Laura");
+        var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         route.QoSOptions = new FileQoSOptions
         {
             TimeoutValue = 1,
@@ -219,8 +216,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_invalid_if_qos_options_specified_globally_but_no_qos_handler()
     {
         // Arrange
-        var route = GivenDefaultRoute("/laura", "/")
-            .WithKey("Laura");
+        var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
         {
@@ -244,8 +240,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = GivenDefaultRoute("/tom", "/")
-            .WithKey("Tom");
+        var route2 = FileRouteBox.In(GivenDefaultRoute("/tom", "/"))
+            .Key("Tom").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -253,7 +249,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -271,9 +267,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = GivenDefaultRoute("/tom", "/")
-            .WithKey("Tom")
-            .WithUpstreamHost("localhost");
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
+            .Key("Tom").UpstreamHost("localhost").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -281,7 +276,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -300,8 +295,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = GivenDefaultRoute("/tom", "/")
-            .WithKey("Tom").WithMethods("Post");
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
+            .Key("Tom").Methods("Post").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -309,7 +304,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -327,8 +322,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = GivenDefaultRoute("/lol", "/")
-            .WithKey("Tom");
+        var route2 = Box(GivenDefaultRoute("/lol", "/"))
+            .Key("Tom").Out();
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
         {
@@ -336,13 +331,13 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
             new()
             {
                 UpstreamPathTemplate = "/tom",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -368,7 +363,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -387,8 +382,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/")
             .WithKey("Laura");
-        var route2 = GivenDefaultRoute("/tom", "/")
-            .WithKey("Tom");
+        var route2 = Box(GivenDefaultRoute("/tom", "/"))
+            .Key("Tom").Out();
         route2.RequestIdKey = "should_fail";
         var configuration = GivenAConfiguration(route, route2);
         configuration.Aggregates = new()
@@ -397,7 +392,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new() { "Tom", "Laura" },
+                RouteKeys = ["Tom", "Laura"],
             },
         };
         GivenAConfiguration(configuration);
@@ -559,8 +554,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute()
             .WithUpstreamHost("host1");
-        var duplicate = GivenDefaultRoute(null, "/www/test/")
-            .WithUpstreamHost("host2");
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
+            .UpstreamHost("host2").Unbox();
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -576,7 +571,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute();
         var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHttpMethod = new() { "Get" };
+        duplicate.UpstreamHttpMethod = [HttpMethods.Get];
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -593,7 +588,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute(); // "Get" verb is inside
         var duplicate = GivenDefaultRoute(null, "/www/test/");
-        duplicate.UpstreamHttpMethod = new() { "Post" };
+        duplicate.UpstreamHttpMethod = [HttpMethods.Post];
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -611,9 +606,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
             .WithMethods()
             .WithUpstreamHost("upstreamhost");
 
-        var duplicate = GivenDefaultRoute(null, "/www/test/")
-            .WithMethods()
-            .WithUpstreamHost("upstreamhost");
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
+            .Methods().UpstreamHost("upstreamhost").Unbox();
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -631,9 +625,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var route = GivenDefaultRoute()
             .WithMethods()
             .WithUpstreamHost("upstreamhost111");
-        var duplicate = GivenDefaultRoute(null, "/www/test/")
-            .WithMethods()
-            .WithUpstreamHost("upstreamhost222");
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
+            .Methods().UpstreamHost("upstreamhost222").Unbox();
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -650,8 +643,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var route = GivenDefaultRoute()
             .WithMethods()
             .WithUpstreamHost("upstreamhost");
-        var duplicate = GivenDefaultRoute(null, "/www/test/")
-            .WithMethods();
+        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
+            .Methods().Unbox();
         GivenAConfiguration(route, duplicate);
 
         // Act
@@ -666,7 +659,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.RateLimitOptions = new FileRateLimitRule
+        route.RateLimitOptions = new FileRateLimitByHeaderRule
         {
             Period = "1x",
             EnableRateLimiting = true,
@@ -678,7 +671,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+        ThenTheErrorMessageAtPositionIs(0, "RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
     }
 
     [Fact]
@@ -686,7 +679,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.RateLimitOptions = new FileRateLimitRule
+        route.RateLimitOptions = new FileRateLimitByHeaderRule
         {
             Period = "1d",
             EnableRateLimiting = true,
@@ -1088,7 +1081,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
     private static FileRoute GivenDefaultRoute(string upstream, string downstream, string host) => new()
     {
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         UpstreamPathTemplate = upstream ?? "/asdf/",
         DownstreamPathTemplate = downstream ?? "/api/products/",
         DownstreamHostAndPorts = new()
@@ -1100,7 +1093,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
     private static FileRoute GivenServiceDiscoveryRoute() => new()
     {
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         UpstreamPathTemplate = "/laura",
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
@@ -1115,7 +1108,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         {
             new("bbc.co.uk", 123),
         },
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         UpstreamHeaderTemplates = templates,
     };
 

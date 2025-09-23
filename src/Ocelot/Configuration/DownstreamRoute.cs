@@ -15,7 +15,6 @@ public class DownstreamRoute
         string serviceNamespace,
         HttpHandlerOptions httpHandlerOptions,
         bool useServiceDiscovery,
-        bool enableEndpointEndpointRateLimiting,
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
@@ -57,7 +56,6 @@ public class DownstreamRoute
         ServiceNamespace = serviceNamespace;
         HttpHandlerOptions = httpHandlerOptions;
         UseServiceDiscovery = useServiceDiscovery;
-        EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
@@ -93,7 +91,6 @@ public class DownstreamRoute
     public string ServiceName { get; }
     public string ServiceNamespace { get; }
     public HttpHandlerOptions HttpHandlerOptions { get; }
-    public bool EnableEndpointEndpointRateLimiting { get; } // TODO Naming mistyping
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }
@@ -147,15 +144,22 @@ public class DownstreamRoute
     public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
     private static int defaultTimeoutSeconds = DefTimeout;
 
+    public string Name() => Name(false);
+
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
     /// <returns>A <see cref="string"/> object with the name.</returns>
-    public string Name()
+    public string Name(bool escapePath)
     {
         var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
             ? UpstreamPathTemplate.OriginalValue
             : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
                 ? DownstreamPathTemplate.ToString()
                 : "?";
+        if (escapePath)
+        {
+            path = path.Replace("{", "{{").Replace("}", "}}");
+        }
+
         return UseServiceDiscovery || !string.IsNullOrEmpty(ServiceName)
             ? string.Join(':', ServiceNamespace, ServiceName, path)
             : path;

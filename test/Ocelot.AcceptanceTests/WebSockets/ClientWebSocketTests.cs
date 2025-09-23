@@ -77,7 +77,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     ///// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
+    /*[InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11CLient_OcelotInTheMiddle_ShouldConnect(string scheme, string host, int port, string path, string expected)
     {
@@ -141,7 +141,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [Trait("Bug", "930")]
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx")] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/
+    /*[InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11Client_ConnectionClosedPrematurely_ShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
     {

@@ -1,18 +1,25 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
 
+/// <summary>
+/// TODO: Rename to ServiceDiscoveryDownstreamRouteCreator or ServiceDiscoveryRoutesCreator or MultiplexingRoutesCreator (see DownstreamRouteHolder refs).
+/// </summary>
 public class DownstreamRouteCreator : IDownstreamRouteProvider
 {
     private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
+    private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
 
-    public DownstreamRouteCreator()
+    public DownstreamRouteCreator(IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
     {
         _cache = new();
+        _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
@@ -36,7 +43,10 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
         {
             Key = $"{downstreamPathForKeys}|{upstreamHttpMethod}",
         };
+
+        // TODO: Could it be that the static route functionality was possibly lost here? -> RoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
+        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? serviceDiscoveryDownstreamRoute.UpstreamHeaders
 
         var downstreamRouteBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)
@@ -48,24 +58,28 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
             .WithDownstreamScheme(configuration.DownstreamScheme)
             .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
-            .WithUpstreamPathTemplate(upstreamPathTemplate);
+            .WithUpstreamPathTemplate(upstreamPathTemplate)
+            .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>);
 
-        var rateLimitOptions = configuration.Routes?.SelectMany(x => x.DownstreamRoute)
+        // TODO: Review this logic. Is this merging options for dynamic routes?
+        var serviceDiscoveryDownstreamRoute = configuration.Routes?
+            .SelectMany(x => x.DownstreamRoute)
             .FirstOrDefault(x => x.ServiceName == serviceName);
-
-        if (rateLimitOptions != null)
+        if (serviceDiscoveryDownstreamRoute != null)
         {
             downstreamRouteBuilder
-                .WithRateLimitOptions(rateLimitOptions.RateLimitOptions)
-                .WithEnableRateLimiting(true);
+                .WithRateLimitOptions(serviceDiscoveryDownstreamRoute.RateLimitOptions);
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(downstreamRoute)
-            .WithUpstreamHttpMethod(new List<string> { upstreamHttpMethod })
-            .WithUpstreamPathTemplate(upstreamPathTemplate)
-            .Build();
+        var route = new Route(
+            new() { downstreamRoute },
+            new(),
+            new List<HttpMethod>() { new(upstreamHttpMethod.Trim()) },
+            upstreamPathTemplate,
+            upstreamHost,
+            aggregator: default,
+            upstreamHeaderTemplates);
 
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
         _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);

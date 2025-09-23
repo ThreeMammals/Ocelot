@@ -35,7 +35,7 @@ public class RouteKeyCreatorTests : UnitTest
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
-            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
             DownstreamHostAndPorts = new()
             {
                 new("localhost", 8080),
@@ -58,7 +58,7 @@ public class RouteKeyCreatorTests : UnitTest
         {
             UpstreamHost = "my-host",
             UpstreamPathTemplate = "/api/product",
-            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
             DownstreamHostAndPorts = new()
             {
                 new("localhost", 8080),
@@ -80,7 +80,7 @@ public class RouteKeyCreatorTests : UnitTest
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
-            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
             ServiceName = "products-service",
         };
 
@@ -98,7 +98,7 @@ public class RouteKeyCreatorTests : UnitTest
         var route = new FileRoute
         {
             UpstreamPathTemplate = "/api/product",
-            UpstreamHttpMethod = new() { "GET", "POST", "PUT" },
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
             ServiceName = "products-service",
             LoadBalancerOptions = new FileLoadBalancerOptions
             {

@@ -142,7 +142,7 @@ public sealed class ServiceFabricTests : Steps
                         DownstreamPathTemplate = downstream,
                         DownstreamScheme = Uri.UriSchemeHttp,
                         UpstreamPathTemplate = upstream,
-                        UpstreamHttpMethod = new() { HttpMethods.Get },
+                        UpstreamHttpMethod = [HttpMethods.Get],
                         ServiceName = serviceName,
                     },
                 },

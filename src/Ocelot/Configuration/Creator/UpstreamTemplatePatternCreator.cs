@@ -20,7 +20,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         _cache = cache;
     }
 
-    public UpstreamPathTemplate Create(IRoute route)
+    public UpstreamPathTemplate Create(IRouteUpstream route)
     {
         var upstreamTemplate = route.UpstreamPathTemplate;
         var placeholders = new List<string>();

@@ -108,7 +108,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
             new("localhost", port),
         },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
     };
 
     private void GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<THandler1, THandler2>()

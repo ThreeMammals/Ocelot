@@ -221,6 +221,26 @@ public class RoutesCreatorTests : UnitTest
     }
     #endregion
 
+    [Theory]
+    [Trait("PR", "2294")]
+    [InlineData("", 0)]
+    [InlineData("A", 1)]
+    [InlineData("A,B", 2)]
+    [InlineData(" X ", 1)]
+    public void SetUpRoute_FileRouteUpstreamHttpMethod(string methods, int count)
+    {
+        // Arrange
+        _fileConfig = new FileConfiguration();
+        _fileConfig.Routes.Add(new() { UpstreamHttpMethod = methods.Split(',').Where(m => !string.IsNullOrEmpty(m)).ToList() });
+        GivenTheDependenciesAreSetUpCorrectly();
+
+        // Act
+        _result = _creator.Create(_fileConfig);
+
+        // Assert
+        Assert.Equal(count, _result[0].UpstreamHttpMethod.Count);
+    }
+
     private void ThenTheDependenciesAreCalledCorrectly()
     {
         ThenTheDepsAreCalledFor(_fileConfig.Routes[0], _fileConfig.GlobalConfiguration);
@@ -231,14 +251,14 @@ public class RoutesCreatorTests : UnitTest
     {
         _expectedVersion = new Version("1.1");
         _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _rro = new RouteOptions(false, false, false, false, false);
+        _rro = new RouteOptions(false, false, false, false);
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
         _ao = new AuthenticationOptionsBuilder().Build();
         _ctt = new List<ClaimToThing>();
         _qoso = new QoSOptionsBuilder().Build();
-        _rlo = new RateLimitOptionsBuilder().Build();
+        _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
         _hho = new HttpHandlerOptionsBuilder().Build();
@@ -254,11 +274,11 @@ public class RoutesCreatorTests : UnitTest
         _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
-        _utpCreator.Setup(x => x.Create(It.IsAny<IRoute>())).Returns(_upt);
+        _utpCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>())).Returns(_upt);
         _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
-        _rloCreator.Setup(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
+        _rloCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
         _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
@@ -288,7 +308,6 @@ public class RoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
         _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
         _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
-        _result[routeIndex].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBe(_rro.EnableRateLimiting);
         _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
         _result[routeIndex].DownstreamRoute[0].UpstreamPathTemplate.ShouldBe(_upt);
@@ -341,7 +360,7 @@ public class RoutesCreatorTests : UnitTest
         _cthCreator.Verify(x => x.Create(fileRoute.AddClaimsToRequest), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
         _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
-        _rloCreator.Verify(x => x.Create(fileRoute.RateLimitOptions, globalConfig), Times.Once);
+        _rloCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
         _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);

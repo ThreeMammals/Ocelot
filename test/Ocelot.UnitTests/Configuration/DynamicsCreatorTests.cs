@@ -42,7 +42,7 @@ public class DynamicsCreatorTests : UnitTest
         _result.Count.ShouldBe(0);
 
         // Assert: then the RloCreator is not called
-        _rloCreator.Verify(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+        _rloCreator.Verify(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
 
         // Assert: then the metadata creator is not called
         _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
@@ -133,7 +133,7 @@ public class DynamicsCreatorTests : UnitTest
     private static FileDynamicRoute GivenDynamicRoute(string serviceName, bool enableRateLimiting, string downstreamHttpVersion, string key, string value) => new()
     {
         ServiceName = serviceName,
-        RateLimitRule = new FileRateLimitRule
+        RateLimitRule = new FileRateLimitByHeaderRule
         {
             EnableRateLimiting = enableRateLimiting,
         },
@@ -146,11 +146,10 @@ public class DynamicsCreatorTests : UnitTest
 
     private void ThenTheRloCreatorIsCalledCorrectly()
     {
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].RateLimitRule,
-            _fileConfig.GlobalConfiguration), Times.Once);
-
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].RateLimitRule,
-            _fileConfig.GlobalConfiguration), Times.Once);
+        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0], _fileConfig.GlobalConfiguration),
+            Times.Once);
+        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1], _fileConfig.GlobalConfiguration),
+            Times.Once);
     }
 
     private void ThenTheVersionCreatorIsCalledCorrectly()
@@ -171,13 +170,13 @@ public class DynamicsCreatorTests : UnitTest
     private void ThenTheRoutesAreReturned()
     {
         _result.Count.ShouldBe(2);
-        _result[0].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeFalse();
+        _result[0].DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeFalse();
         _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
         _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
         _result[0].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
         _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
 
-        _result[1].DownstreamRoute[0].EnableEndpointEndpointRateLimiting.ShouldBeTrue();
+        _result[1].DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeTrue();
         _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
         _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
         _result[1].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
@@ -208,11 +207,11 @@ public class DynamicsCreatorTests : UnitTest
 
     private void GivenTheRloCreatorReturns()
     {
-        _rlo1 = new RateLimitOptionsBuilder().Build();
-        _rlo2 = new RateLimitOptionsBuilder().WithEnableRateLimiting(true).Build();
+        _rlo1 = new() { EnableRateLimiting = false };
+        _rlo2 = new() { EnableRateLimiting = true };
 
         _rloCreator
-            .SetupSequence(x => x.Create(It.IsAny<FileRateLimitRule>(), It.IsAny<FileGlobalConfiguration>()))
+            .SetupSequence(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()))
             .Returns(_rlo1)
             .Returns(_rlo2);
     }

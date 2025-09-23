@@ -112,7 +112,7 @@ public sealed class ConfigurationMergeTests : Steps
         DownstreamPathTemplate = "/" + suffix,
         Key = testName + suffix,
         UpstreamPathTemplate = "/" + suffix,
-        UpstreamHttpMethod = new() { nameof(FileRoute.UpstreamHttpMethod) + suffix },
+        UpstreamHttpMethod = [ nameof(FileRoute.UpstreamHttpMethod) + suffix ],
         DownstreamHostAndPorts = new()
         {
             new(nameof(FileHostAndPort.Host) + suffix, 80),

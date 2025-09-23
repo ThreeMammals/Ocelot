@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
@@ -57,15 +56,18 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
                 .WithMessage("{PropertyName} {PropertyValue} contains scheme");
         });
 
-        When(route => route.RateLimitOptions.EnableRateLimiting, () =>
+        When(route => route.RateLimitOptions != null && route.RateLimitOptions.EnableRateLimiting != false, () =>
         {
+            RuleFor(route => route.RateLimitOptions.Limit)
+                .Must(limit => !limit.HasValue || (limit.HasValue && limit.Value > 0))
+                .WithMessage(route => $"RateLimitOptions.Limit is negative or zero for the route {route}");
             RuleFor(route => route.RateLimitOptions.Period)
                 .NotEmpty()
                 .WithMessage("RateLimitOptions.Period is empty");
 
             RuleFor(route => route.RateLimitOptions)
                 .Must(IsValidPeriod)
-                .WithMessage("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+                .WithMessage("RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
         });
 
         RuleFor(route => route.AuthenticationOptions)
@@ -94,19 +96,22 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
         });
     }
 
-    [GeneratedRegex("^[0-9]+s", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    [GeneratedRegex(@"^\d+(\.\d+)?ms", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    private static partial Regex MilliSecondsRegex();
+
+    [GeneratedRegex(@"^\d+(\.\d+)?s", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex SecondsRegex();
 
-    [GeneratedRegex("^[0-9]+m", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    [GeneratedRegex(@"^\d+(\.\d+)?m", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex MinutesRegex();
 
-    [GeneratedRegex("^[0-9]+h", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    [GeneratedRegex(@"^\d+(\.\d+)?h", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex HoursRegex();
 
-    [GeneratedRegex("^[0-9]+d", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
+    [GeneratedRegex(@"^\d+(\.\d+)?d", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex DaysRegex();
 
-    private static bool IsValidPeriod(FileRateLimitRule rateLimitOptions)
+    private static bool IsValidPeriod(FileRateLimitByHeaderRule rateLimitOptions)
     {
         if (string.IsNullOrEmpty(rateLimitOptions.Period))
         {
@@ -114,7 +119,8 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
         }
 
         var period = rateLimitOptions.Period.Trim();
-        return SecondsRegex().Match(period).Success
+        return MilliSecondsRegex().Match(period).Success
+               || SecondsRegex().Match(period).Success
                || MinutesRegex().Match(period).Success
                || HoursRegex().Match(period).Success
                || DaysRegex().Match(period).Success;
