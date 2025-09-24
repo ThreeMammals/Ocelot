@@ -79,6 +79,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         rule.Wait = rule.Wait.IfEmpty(globalRule.Wait.IfEmpty(RateLimitRule.ZeroWait));
 
         rule.Limit ??= globalRule.Limit ?? RateLimitRule.ZeroLimit;
+        rule.Policy = rule.Policy.IfEmpty(globalRule.Policy);
         return new(rule);
     }
 }

@@ -10,24 +10,27 @@ namespace Ocelot.AcceptanceTests.RateLimiting;
 
 public class AspNetRateLimitingTests: RateLimitingSteps
 {
-    private const string _rateLimitPolicyName = "RateLimitPolicy";
-    private const int _rateLimitLimit = 3;
-    private const int _rateLimitWindow = 1;
-    private const string _quotaExceededMessage = "woah!";
+    private const string FixedWindowPolicyName = "RateLimitPolicy";
+    private int _rateLimitLimit;
+    private int _rateLimitWindow;
+    private string _quotaExceededMessage;
     
     [Fact]
     [Trait("Feat", "2138")]
     public async Task Should_RateLimit()
     {
+        _rateLimitLimit = 3;
+        _rateLimitWindow = 1;
+        _quotaExceededMessage = "woah!";
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, _rateLimitPolicyName);
+        var route = GivenRoute(port, FixedWindowPolicyName);
         var configuration = GivenConfiguration(route);
         GivenThereIsAServiceRunningOnPath(port, "/");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithRateLimiter);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 1);
         ThenTheStatusCodeShouldBeOK();
-        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 2);
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", _rateLimitLimit - 1);
         ThenTheStatusCodeShouldBeOK();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 1);
         ThenTheStatusCodeShouldBe(HttpStatusCode.TooManyRequests);
@@ -62,7 +65,7 @@ public class AspNetRateLimitingTests: RateLimitingSteps
         .AddOcelot().Services
         .AddRateLimiter(op =>
         {
-            op.AddFixedWindowLimiter(_rateLimitPolicyName, options =>
+            op.AddFixedWindowLimiter(FixedWindowPolicyName, options =>
             {
                 options.PermitLimit = _rateLimitLimit;
                 options.Window = TimeSpan.FromSeconds(_rateLimitWindow);

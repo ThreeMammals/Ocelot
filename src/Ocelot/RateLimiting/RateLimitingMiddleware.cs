@@ -40,16 +40,15 @@ public class RateLimitingMiddleware : OcelotMiddleware
             return _next.Invoke(context);
         }
 
-#if NET7_0_OR_GREATER
-        if (!string.IsNullOrWhiteSpace(options.Policy))
+        if (!options.Policy.IsNullOrEmpty())
         {
-            //add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
+            // Add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
             var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.Policy));
             var endpoint = new Endpoint(null, metadata, "tempEndpoint");
             context.SetEndpoint(endpoint);
             return _next.Invoke(context);
         }
-#endif
+
         var identity = Identify(context, options, downstreamRoute);
         if (IsWhitelisted(identity, options))
         {

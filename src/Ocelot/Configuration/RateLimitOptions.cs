@@ -65,7 +65,7 @@ public class RateLimitOptions
             fromRule.Period.IfEmpty(RateLimitRule.DefaultPeriod),
             fromRule.PeriodTimespan.HasValue ? $"{fromRule.PeriodTimespan.Value}s" : fromRule.Wait,
             fromRule.Limit ?? RateLimitRule.ZeroLimit);
-        Policy = default;
+        Policy = fromRule.Policy;
     }
 
     public RateLimitOptions(RateLimitOptions fromOptions)
