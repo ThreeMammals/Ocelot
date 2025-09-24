@@ -260,51 +260,35 @@ public class RateLimitingMiddlewareTests : UnitTest
         _logger.Verify(x => x.LogWarning(err.Message), Times.Once);
     }
 
-#if NET7_0_OR_GREATER
     [Fact]
     [Trait("Feat", "2138")]
     public async Task Should_add_EnableRateLimittingAttribute_When_AspNetRateLimiting()
     {
         // Arrange
         const long limit = 3L;
-        var upstreamTemplate = new UpstreamPathTemplateBuilder()
-            .Build();
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithEnableRateLimiting(true)
-            .WithRateLimitOptions(new(
-                enableRateLimiting: true,
-                clientIdHeader: null,
-                getClientWhitelist: null,
-                disableRateLimitHeaders: false,
-                quotaExceededMessage: null,
-                rateLimitCounterPrefix: null,
-                null,
-                (int)HttpStatusCode.TooManyRequests,
-                "testPolicy"))
-            .WithUpstreamHttpMethod(new() { "Get" })
-            .WithUpstreamPathTemplate(upstreamTemplate)
-            .Build();
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(downstreamRoute)
-            .WithUpstreamHttpMethod(new() { "Get" })
-            .Build();
-        var downstreamRouteHolder = new _DownstreamRouteHolder_(new(), route);
+        RateLimitOptions options = new()
+        {
+            ClientIdHeader = "ClientId",
+            Rule = new("1s", "1s", limit),
+            Policy = "testPolicy",
+        };
+        var downstreamRoute = GivenDownstreamRoute(options);
+        var route = GivenRoute(downstreamRoute);
+        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
-        // Act, Assert
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit+1, downstreamRouteHolder);
+        // Act
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit+1, dsHolder);
+
+        // Assert
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
-        
         contexts.ForEach(ctx =>
         {
             var endpoint = ctx.GetEndpoint();
             endpoint.ShouldNotBeNull();
-            
             var rateLimitAttribute = endpoint.Metadata.GetMetadata<EnableRateLimitingAttribute>();
             rateLimitAttribute.PolicyName.ShouldBe("testPolicy");
         });
-        
     }
-#endif
 
     private static RateLimitOptions GivenRateLimitOptions(RateLimitRule rule = null, [CallerMemberName] string testName = null) => new(
             enableRateLimiting: true,
