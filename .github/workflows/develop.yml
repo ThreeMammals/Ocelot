@@ -1,0 +1,189 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+name: Develop
+on:
+  push:
+    branches:
+      - develop
+      - 'release/**'
+jobs:
+  #1 Official required job to run utilizing GitHub Actions infrastructure
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '8.0', '9.0' ]
+    steps:
+    - name: Setup .NET ${{ matrix.dotnet-version }}
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}.x
+    - name: .NET Version
+      run: dotnet --version
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Restore
+      run: dotnet restore ./Ocelot.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+    - name: Build
+      run: dotnet build --no-restore ./Ocelot.sln --framework net${{ matrix.dotnet-version }}
+    - name: Add threemammals.com DNS-record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
+    - name: Install mycert.pfx certificate
+      run: |
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        if [ -f "$pfx" ]; then
+          echo mycert.pfx file found
+        fi
+        echo Converting PFX to PEM format...
+        openssl version
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        echo Moving the certificate to the trusted CA store...
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        echo Updating the trusted certificates...
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        echo Verifying installation by listing in /etc/ssl/certs/ folder...
+        sudo ls /etc/ssl/certs/ | grep mycert
+        echo Verifying installation by openssl for $cert file...
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
+
+    - name: Unit Tests
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+    - name: Acceptance Tests
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
+#2 The build job to run in Docker container utilizing images from https://hub.docker.com/u/ocelot2
+# The main runnung script is build.cake, a cake-script which is hard to support because of slow and outdated integrated libs
+  # docker-build:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: node:18
+  #     env:
+  #       NODE_ENV: development
+  #     ports:
+  #       - 80
+  #     volumes:
+  #       - my_docker_volume:/volume_mount
+  #     options: --cpus 1
+  #   container:
+  #     image: ghcr.io/owner/image
+  #     credentials:
+  #       username: ${{ github.actor }}
+  #       password: ${{ secrets.github_token }}
+  #     steps:
+  #     - name: Check for dockerenv file
+  #       run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
+  build-cake:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: build.cake
+    env:
+      # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
+      # NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_REF: ${{ github.ref }}
+      GITHUB_REF_NAME: ${{ github.ref_name }}
+    steps:
+    - name: /usr/lib/dotnet
+      run: |
+        ls -ld /usr/lib/dotnet
+        sudo chmod -R 775 /usr/lib/dotnet
+        sudo chown -R $USER:$USER /usr/lib/dotnet
+        ls -ld /usr/lib/dotnet
+    - name: .NET Version 
+      run: dotnet --version
+    - name: .NET Info
+      run: dotnet --info
+    - name: Check .NET 8
+      id: check-dotnet8
+      run: |
+        DOTNET8_VERSION=$(dotnet --version)
+        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+          echo "dotnet8_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet8_installed=false" >> $GITHUB_ENV
+        fi
+    - name: Setup .NET 8
+      if: env.dotnet8_installed == 'false'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Check .NET 9
+      id: check-dotnet9
+      run: |
+        DOTNET9_VERSION=$(dotnet --version)
+        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+          echo "dotnet9_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet9_installed=false" >> $GITHUB_ENV
+        fi
+    - name: Setup .NET 9
+      if: env.dotnet9_installed == 'false'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 9.0.x
+    - name: .NET Info
+      run: dotnet --info
+    - name: Branch Name
+      run: echo "Branch name is ${{ github.ref_name }}"
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Add DNS-records & Install mycert.pfx certificate
+      run: |
+        sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+        ping -c 1 threemammals.com
+        # Install mycert.pfx certificate
+        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+        cert='/usr/local/share/ca-certificates/mycert.crt'
+        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        sudo ls /etc/ssl/certs/ | grep mycert
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
+    - name: Cake Build
+      uses: cake-build/cake-action@v3
+      with:
+        target: Build
+    - name: Prepare Coveralls
+      run: |
+        echo "GITHUB_REF is ${{ env.GITHUB_REF }}"
+        echo "GITHUB_REF_NAME is ${{ env.GITHUB_REF_NAME }}"
+        echo "GITHUB_SHA is ${{ env.GITHUB_SHA }}"
+        coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
+        echo "Detected first folder : $coverage_1st_folder"
+        coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
+        echo "Detecting file $coverage_file ..."
+        if [ -f "$coverage_file" ]; then
+          echo "Coverage file exists."
+          echo "COVERALLS_coverage_file_exists=true" >> $GITHUB_ENV
+          echo "COVERALLS_coverage_file=$coverage_file" >> $GITHUB_ENV
+        else
+          echo "Coverage file DOES NOT exist!"
+          echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
+        fi
+    - name: Coveralls
+      if: env.COVERALLS_coverage_file_exists == 'true'
+      uses: coverallsapp/github-action@v2
+      with:
+        file: ${{ env.COVERALLS_coverage_file }}
+        compare-ref: main

@@ -21,12 +21,12 @@ public static class RateLimitingHeaders
     /// <summary>Gets the <c>Retry-After</c> HTTP header name.</summary>
     public static readonly string Retry_After = HeaderNames.RetryAfter;
 
-    /// <summary>Gets the <c>X-Rate-Limit-Limit</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Limit = nameof(X_Rate_Limit_Limit).Replace(Underscore, Dash);
+    /// <summary>Gets the <c>X-RateLimit-Limit</c> Ocelot's header name.</summary>
+    public static readonly string X_RateLimit_Limit = nameof(X_RateLimit_Limit).Replace(Underscore, Dash);
 
-    /// <summary>Gets the <c>X-Rate-Limit-Remaining</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Remaining = nameof(X_Rate_Limit_Remaining).Replace(Underscore, Dash);
+    /// <summary>Gets the <c>X-RateLimit-Remaining</c> Ocelot's header name.</summary>
+    public static readonly string X_RateLimit_Remaining = nameof(X_RateLimit_Remaining).Replace(Underscore, Dash);
 
-    /// <summary>Gets the <c>X-Rate-Limit-Reset</c> Ocelot's header name.</summary>
-    public static readonly string X_Rate_Limit_Reset = nameof(X_Rate_Limit_Reset).Replace(Underscore, Dash);
+    /// <summary>Gets the <c>X-RateLimit-Reset</c> Ocelot's header name.</summary>
+    public static readonly string X_RateLimit_Reset = nameof(X_RateLimit_Reset).Replace(Underscore, Dash);
 }

@@ -10,7 +10,7 @@ using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
 
-public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
+public sealed class LoadBalancerTests : ConcurrentSteps
 {
     [Theory]
     [Trait("Feat", "211")]
@@ -32,7 +32,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
             => s.AddOcelot().AddCustomLoadBalancer<LeastConnectionAnalyzer>(getAnalyzer);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withLeastConnectionAnalyzer : WithAddOcelot))
+            .And(x => GivenOcelotIsRunning(withAnalyzer ? withLeastConnectionAnalyzer : WithAddOcelot))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
             .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
@@ -62,7 +62,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
             => s.AddOcelot().AddCustomLoadBalancer<RoundRobinAnalyzer>(getAnalyzer);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(withAnalyzer ? withRoundRobinAnalyzer : WithAddOcelot))
+            .And(x => GivenOcelotIsRunning(withAnalyzer ? withRoundRobinAnalyzer : WithAddOcelot))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
             .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
@@ -86,7 +86,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
             => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(loadBalancerFactoryFunc);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithServices(withCustomLoadBalancer))
+            .And(x => GivenOcelotIsRunning(withCustomLoadBalancer))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(50, ports.Length), Top(50, ports.Length)))
@@ -122,7 +122,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps, IDisposable
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         LoadBalancerOptions = new() { Type = loadBalancer ?? nameof(LeastConnection) },
         DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
     };

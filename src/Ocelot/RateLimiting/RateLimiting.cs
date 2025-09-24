@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
-using System.Globalization;
+using Ocelot.Infrastructure.Extensions;
 using System.Security.Cryptography;
 
 namespace Ocelot.RateLimiting;
@@ -8,7 +10,10 @@ namespace Ocelot.RateLimiting;
 public class RateLimiting : IRateLimiting
 {
     private readonly IRateLimitStorage _storage;
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable IDE0330 // Prefer 'System.Threading.Lock'
     private static readonly object ProcessLocker = new();
+    private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
     public RateLimiting(IRateLimitStorage storage)
     {
@@ -21,34 +26,35 @@ public class RateLimiting : IRateLimiting
     /// <remarks>Warning! The method performs the storage operations which MUST BE thread safe.</remarks>
     /// <param name="identity">The representation of current request.</param>
     /// <param name="options">The current rate limiting options.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options)
+    public virtual RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options, DateTime now)
     {
         RateLimitCounter counter;
-        var rule = options.RateLimitRule;
+        var rule = options.Rule;
         var counterId = GetStorageKey(identity, options);
 
         // Serial reads/writes from/to the storage which must be thread safe
         lock (ProcessLocker)
         {
             var entry = _storage.Get(counterId);
-            counter = Count(entry, rule);
-            var expiration = ToTimespan(rule.Period); // default expiration is set for the Period value
-            if (counter.TotalRequests > rule.Limit)
+            counter = Count(entry, rule, now);
+            if (counter.Total > rule.Limit)
             {
-                var retryAfter = RetryAfter(counter, rule); // the calculation depends on the counter returned from CountRequests
-                if (retryAfter > 0)
+                var retryAfter = RetryAfter(counter, rule, now); // the calculation depends on the counter returned from Count() method
+                if (retryAfter < 0)
                 {
-                    // Rate Limit exceeded, ban period is active
-                    expiration = TimeSpan.FromSeconds(rule.PeriodTimespan); // current state should expire in the storage after ban period
-                }
-                else
-                {
-                    // Ban period elapsed, start counting
-                    _storage.Remove(counterId); // the store can delete the element on its own using an expiration mechanism, but let's force the element to be deleted
-                    counter = new RateLimitCounter(DateTime.UtcNow, null, 1);
+                    // Wait window period elapsed, reset counter, and start the next counting period
+                    counter = new RateLimitCounter(now);
                 }
             }
+
+            // TODO: The expiry approach doesn't make much sense in practice because
+            // if the counting period elapses or there are prolonged pending periods,
+            // the counter resets to a state of 1, with null values after expiry treated as a count of 1.
+            // It might make sense to consider request timeout periods as expiry periods.
+            var expiration = rule.PeriodSpan + rule.WaitSpan; // absolute max period of processing
+            expiration += OneSecond; // add an extra second as a shift to allow to synchronize concurrent threads
 
             _storage.Set(counterId, counter, expiration);
         }
@@ -61,139 +67,96 @@ public class RateLimiting : IRateLimiting
     /// </summary>
     /// <param name="entry">Old counter with starting moment inside.</param>
     /// <param name="rule">The limiting rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule)
+    public virtual RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule, DateTime now)
     {
-        var now = DateTime.UtcNow;
         if (!entry.HasValue)
         {
-            // no entry, start counting
-            return new RateLimitCounter(now, null, 1); // current request is the 1st one
+            return new RateLimitCounter(now); // no entry, start counting, and the current request is the 1st one
         }
 
         var counter = entry.Value;
-        var total = counter.TotalRequests + 1; // increment request count
-        var startedAt = counter.StartedAt;
-
-        // Counting Period is active
-        if (startedAt + ToTimespan(rule.Period) >= now)
+        if (++counter.Total > rule.Limit && !counter.ExceededAt.HasValue) // current request exceeds the limit
         {
-            var exceededAt = total >= rule.Limit && !counter.ExceededAt.HasValue // current request number equals to the limit
-                ? now // the exceeding moment is now, the next request will fail but the current one doesn't
-                : counter.ExceededAt;
-            return new RateLimitCounter(startedAt, exceededAt, total); // deep copy
+            counter.ExceededAt = now; // the exceeding moment is now, this request should fail
         }
 
-        var wasExceededAt = counter.ExceededAt;
-        return wasExceededAt + TimeSpan.FromSeconds(rule.PeriodTimespan) >= now // ban PeriodTimespan is active
-            ? new RateLimitCounter(startedAt, wasExceededAt, total) // still count
-            : new RateLimitCounter(now, null, 1); // Ban PeriodTimespan elapsed, start counting NOW!
+        bool isInFixedWindow = counter.StartedAt + rule.PeriodSpan >= now; // the fixed window counting period
+        bool isInWaitWindow = counter.ExceededAt.HasValue && counter.ExceededAt.Value + rule.WaitSpan >= now; // with including equality, treating the end of waiting as the end of the wait window
+        return isInFixedWindow || isInWaitWindow
+            ? counter // still count
+            : new RateLimitCounter(now); // Wait window period elapsed, start counting NOW!
     }
 
-    public virtual RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options)
+    public virtual RateLimitHeaders GetHeaders(HttpContext context, RateLimitOptions options, DateTime now, RateLimitCounter counter)
     {
-        RateLimitHeaders headers;
-        RateLimitCounter? entry;
-        lock (ProcessLocker)
-        {
-            var counterId = GetStorageKey(identity, options);
-            entry = _storage.Get(counterId);
-        }
-
-        var rule = options.RateLimitRule;
-        if (entry.HasValue)
-        {
-            headers = new RateLimitHeaders(context,
-                limit: rule.Period,
-                remaining: (rule.Limit - entry.Value.TotalRequests).ToString(),
-                reset: (entry.Value.StartedAt + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
-        }
-        else
-        {
-            headers = new RateLimitHeaders(context,
-                limit: rule.Period, // TODO Double check
-                remaining: rule.Limit.ToString(), // TODO Double check
-                reset: (DateTime.UtcNow + ToTimespan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo));
-        }
-
-        return headers;
+        var rule = options.Rule;
+        return new RateLimitHeaders(context,
+            limit: rule.Limit,
+            remaining: rule.Limit - counter.Total,
+            reset: counter.StartedAt + rule.PeriodSpan);
     }
 
+    /// <summary>
+    /// Gets the SHA1-hashed value of a unique key for caching, using the <see cref="IMemoryCache"/> service through the <see cref="IRateLimitStorage"/> service.
+    /// </summary>
+    /// <remarks>Notes:<list type="bullet">
+    /// <item>The generated identity key includes the <see cref="RateLimitOptions.KeyPrefix"/> as a prefix to ensure it is recognized in distributed storage systems, like <see cref="IDistributedCache"/> services, aiding users in observing/managing cached objects.
+    /// By default, each Ocelot instance employs its own <see cref="IMemoryCache"/> service, without synchronization across instances.</item>
+    /// </list></remarks>
+    /// <param name="identity">Specifies the client's identity.</param>
+    /// <param name="options">Defines the current route rate-limiting options.</param>
+    /// <returns>Returns a SHA1-hashed <see cref="string"/> object as the caching key.</returns>
     public virtual string GetStorageKey(ClientRequestIdentity identity, RateLimitOptions options)
     {
-        var key = $"{options.RateLimitCounterPrefix}_{identity.ClientId}_{options.RateLimitRule.Period}_{identity.HttpVerb}_{identity.Path}";
+        var key = $"{options.KeyPrefix}_{identity}_{options.Rule}";
         var idBytes = Encoding.UTF8.GetBytes(key);
-
-        byte[] hashBytes;
-        using (var algorithm = SHA1.Create())
-        {
-            hashBytes = algorithm.ComputeHash(idBytes);
-        }
-
-        return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+        var hashBytes = SHA1.HashData(idBytes);
+        return Convert.ToHexString(hashBytes);
     }
 
     /// <summary>
     /// Gets the seconds to wait for the next retry by starting moment and the rule.
     /// </summary>
-    /// <remarks>The method must be called after the <see cref="Count(RateLimitCounter?, RateLimitRule)"/> one.</remarks>
+    /// <remarks>The method must be called after the <see cref="Count(RateLimitCounter?, RateLimitRule, DateTime)"/> one.</remarks>
     /// <param name="counter">The counter state.</param>
     /// <param name="rule">The current rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>An <see cref="int"/> value of seconds.</returns>
-    public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule)
+    public virtual double RetryAfter(RateLimitCounter counter, RateLimitRule rule, DateTime now)
     {
-        const double defaultSeconds = 1.0D; // one second
-        var periodTimespan = rule.PeriodTimespan < defaultSeconds
-            ? defaultSeconds // allow values which are greater or equal to 1 second
-            : rule.PeriodTimespan; // good value
-        var now = DateTime.UtcNow;
+        if (counter.Total <= rule.Limit || !counter.ExceededAt.HasValue)
+        {
+            return 0.0D; // happy path, no need to retry, current request is valid, continue counting
+        }
 
         // Counting Period is active
-        if (counter.StartedAt + ToTimespan(rule.Period) >= now)
+        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsNullOrEmpty() || rule.Wait == RateLimitRule.ZeroWait;
+        if (doNotWait && counter.StartedAt + rule.PeriodSpan > now)
         {
-            return counter.TotalRequests < rule.Limit
-                ? 0.0D // happy path, no need to retry, current request is valid
-                : counter.ExceededAt.HasValue
-                    ? periodTimespan - (now - counter.ExceededAt.Value).TotalSeconds // minus seconds past
-                    : periodTimespan; // exceeding not yet detected -> let's ban for whole period
+            //return waitWindow.TotalSeconds - (now - exceededAt).TotalSeconds; // minus seconds past
+            var retryAfter = counter.StartedAt + rule.PeriodSpan - now;
+            return retryAfter.TotalSeconds; // positive value of seconds until the end of the sliding period in fixed window
         }
 
-        // Limit exceeding was happen && ban PeriodTimespan is active
-        if (counter.ExceededAt.HasValue && counter.ExceededAt + TimeSpan.FromSeconds(periodTimespan) >= now)
+        // Exceeding was happen && Wait period is active (no sliding)
+        var waitWindow = rule.WaitSpan; // good non-zero value
+        var exceededAt = counter.ExceededAt.Value;
+        if (exceededAt + waitWindow > now)
         {
-            var startedAt = counter.ExceededAt.Value; // ban period was started at
-            double secondsPast = (now - startedAt).TotalSeconds;
-            double retryAfter = periodTimespan - secondsPast;
-            return retryAfter; // it can be negative, which means the wait in PeriodTimespan seconds has ended
+            var retryAfter = exceededAt + waitWindow - now;
+            return retryAfter.TotalSeconds; // positive value of seconds until the end of the waiting period
         }
 
-        return 0.0D; // ban period elapsed, no need to retry, current request is valid
+        return -1.0D; // counting period vs wait period elapsed, no need to retry, reset the counter in upper calling context
     }
 
     /// <summary>
-    /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
+    /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".
     /// </summary>
-    /// <param name="timespan">The string value with dimentions: '1s', '1m', '1h', '1d'.</param>
+    /// <param name="timespan">The string value with units: '1ms', '1s', '1m', '1h', '1d'.</param>
     /// <returns>A <see cref="TimeSpan"/> value.</returns>
-    /// <exception cref="FormatException">By default if the value dimension can't be detected.</exception>
-    public virtual TimeSpan ToTimespan(string timespan)
-    {
-        if (string.IsNullOrEmpty(timespan))
-        {
-            return TimeSpan.Zero;
-        }
-
-        var len = timespan.Length - 1;
-        var value = timespan.Substring(0, len);
-        var type = timespan.Substring(len, 1);
-
-        return type switch
-        {
-            "d" => TimeSpan.FromDays(double.Parse(value)),
-            "h" => TimeSpan.FromHours(double.Parse(value)),
-            "m" => TimeSpan.FromMinutes(double.Parse(value)),
-            "s" => TimeSpan.FromSeconds(double.Parse(value)),
-            _ => throw new FormatException($"{timespan} can't be converted to TimeSpan, unknown type {type}"),
-        };
-    }
+    /// <exception cref="FormatException">See more in the <see cref="RateLimitRule.ParseTimespan(string)"/> method docs.</exception>
+    public virtual TimeSpan ToTimespan(string timespan) => RateLimitRule.ParseTimespan(timespan);
 }

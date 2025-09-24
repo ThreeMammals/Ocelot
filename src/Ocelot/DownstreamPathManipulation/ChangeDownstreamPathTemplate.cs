@@ -6,45 +6,44 @@ using Ocelot.Responses;
 using Ocelot.Values;
 using System.Security.Claims;
 
-namespace Ocelot.PathManipulation
+namespace Ocelot.PathManipulation;
+
+public class ChangeDownstreamPathTemplate : IChangeDownstreamPathTemplate
 {
-    public class ChangeDownstreamPathTemplate : IChangeDownstreamPathTemplate
+    private readonly IClaimsParser _claimsParser;
+
+    public ChangeDownstreamPathTemplate(IClaimsParser claimsParser)
     {
-        private readonly IClaimsParser _claimsParser;
+        _claimsParser = claimsParser;
+    }
 
-        public ChangeDownstreamPathTemplate(IClaimsParser claimsParser)
+    public Response ChangeDownstreamPath(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims,
+        DownstreamPathTemplate downstreamPathTemplate, List<PlaceholderNameAndValue> placeholders)
+    {
+        foreach (var config in claimsToThings)
         {
-            _claimsParser = claimsParser;
-        }
+            var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
 
-        public Response ChangeDownstreamPath(List<ClaimToThing> claimsToThings, IEnumerable<Claim> claims,
-            DownstreamPathTemplate downstreamPathTemplate, List<PlaceholderNameAndValue> placeholders)
-        {
-            foreach (var config in claimsToThings)
+            if (value.IsError)
             {
-                var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
-
-                if (value.IsError)
-                {
-                    return new ErrorResponse(value.Errors);
-                }
-
-                var placeholderName = $"{{{config.ExistingKey}}}";
-
-                if (!downstreamPathTemplate.Value.Contains(placeholderName))
-                {
-                    return new ErrorResponse(new CouldNotFindPlaceholderError(placeholderName));
-                }
-
-                if (placeholders.Any(ph => ph.Name == placeholderName))
-                {
-                    placeholders.RemoveAll(ph => ph.Name == placeholderName);
-                }
-
-                placeholders.Add(new PlaceholderNameAndValue(placeholderName, value.Data));
+                return new ErrorResponse(value.Errors);
             }
 
-            return new OkResponse();
+            var placeholderName = $"{{{config.ExistingKey}}}";
+
+            if (!downstreamPathTemplate.Value.Contains(placeholderName))
+            {
+                return new ErrorResponse(new CouldNotFindPlaceholderError(placeholderName));
+            }
+
+            if (placeholders.Any(ph => ph.Name == placeholderName))
+            {
+                placeholders.RemoveAll(ph => ph.Name == placeholderName);
+            }
+
+            placeholders.Add(new PlaceholderNameAndValue(placeholderName, value.Data));
         }
+
+        return new OkResponse();
     }
 }

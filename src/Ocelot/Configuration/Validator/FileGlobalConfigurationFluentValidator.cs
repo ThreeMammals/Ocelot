@@ -1,14 +1,18 @@
 using FluentValidation;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Validator
+namespace Ocelot.Configuration.Validator;
+
+public class FileGlobalConfigurationFluentValidator : AbstractValidator<FileGlobalConfiguration>
 {
-    public class FileGlobalConfigurationFluentValidator : AbstractValidator<FileGlobalConfiguration>
+    public FileGlobalConfigurationFluentValidator(
+        FileQoSOptionsFluentValidator qosValidator,
+        FileAuthenticationOptionsValidator authValidator)
     {
-        public FileGlobalConfigurationFluentValidator(FileQoSOptionsFluentValidator fileQoSOptionsFluentValidator)
-        {
-            RuleFor(configuration => configuration.QoSOptions)
-                .SetValidator(fileQoSOptionsFluentValidator);
-        }
+        RuleFor(configuration => configuration.QoSOptions)
+            .SetValidator(qosValidator);
+
+        RuleFor(configuration => configuration.AuthenticationOptions)
+            .SetValidator(authValidator);
     }
 }

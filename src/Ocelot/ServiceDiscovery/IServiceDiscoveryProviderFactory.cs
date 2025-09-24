@@ -2,10 +2,9 @@ using Ocelot.Configuration;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.ServiceDiscovery
+namespace Ocelot.ServiceDiscovery;
+
+public interface IServiceDiscoveryProviderFactory
 {
-    public interface IServiceDiscoveryProviderFactory
-    {
-        Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route);
-    }
+    Response<IServiceDiscoveryProvider> Get(ServiceProviderConfiguration serviceConfig, DownstreamRoute route);
 }

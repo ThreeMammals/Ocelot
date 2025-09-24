@@ -1,48 +1,11 @@
-.. _Polly: https://github.com/App-vNext/Polly
-.. _Circuit Breaker: https://www.pollydocs.org/strategies/circuit-breaker.html
-.. _Timeout: https://www.pollydocs.org/strategies/timeout.html
-
-.. _@raman-m: https://github.com/raman-m
-.. _@RaynaldM: https://github.com/RaynaldM
-.. _@jlukawska: https://github.com/jlukawska
-.. _@ibnuda: https://github.com/ibnuda
-.. _@vantm: https://github.com/vantm
-.. _@sergio-str: https://github.com/sergio-str
-.. _@PaulARoy: https://github.com/PaulARoy
-.. _@thiagoloureiro: https://github.com/thiagoloureiro
-.. _@bbenameur: https://github.com/bbenameur
-
-.. _23.2.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
-.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
-.. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
-.. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
-.. _23.3.6: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
-.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
-
-.. _954: https://github.com/ThreeMammals/Ocelot/issues/954
-.. _957: https://github.com/ThreeMammals/Ocelot/issues/957
-.. _1026: https://github.com/ThreeMammals/Ocelot/issues/1026
-.. _1312: https://github.com/ThreeMammals/Ocelot/pull/1312
-.. _1590: https://github.com/ThreeMammals/Ocelot/issues/1590
-.. _1592: https://github.com/ThreeMammals/Ocelot/pull/1592
-.. _1673: https://github.com/ThreeMammals/Ocelot/pull/1673
-.. _1843: https://github.com/ThreeMammals/Ocelot/pull/1843
-.. _2002: https://github.com/ThreeMammals/Ocelot/issues/2002
-.. _2003: https://github.com/ThreeMammals/Ocelot/pull/2003
-.. _2034: https://github.com/ThreeMammals/Ocelot/issues/2034
-.. _2039: https://github.com/ThreeMammals/Ocelot/issues/2039
-.. _2045: https://github.com/ThreeMammals/Ocelot/pull/2045
-.. _2050: https://github.com/ThreeMammals/Ocelot/pull/2050
-.. _2052: https://github.com/ThreeMammals/Ocelot/pull/2052
-.. _2054: https://github.com/ThreeMammals/Ocelot/discussions/2054
-.. _2058: https://github.com/ThreeMammals/Ocelot/pull/2058
-.. _2059: https://github.com/ThreeMammals/Ocelot/issues/2059
-.. _2067: https://github.com/ThreeMammals/Ocelot/pull/2067
-.. _2079: https://github.com/ThreeMammals/Ocelot/pull/2079
-.. _2085: https://github.com/ThreeMammals/Ocelot/issues/2085
-.. _2086: https://github.com/ThreeMammals/Ocelot/pull/2086
-
+.. _2299: https://github.com/ThreeMammals/Ocelot/issues/2299
+.. _23.4.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.2
+.. _23.4.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3
+.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.1
+.. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+.. _Ocelot: https://www.nuget.org/packages/Ocelot
 .. role::  htm(raw)
     :format: html
 
@@ -52,137 +15,194 @@
 Welcome
 #######
 
-Welcome to the Ocelot `23.3`_ documentation!
+Welcome to the Ocelot `24.0`_ documentation!
 
-It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
+It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
-The major version `23.3.0`_ includes several patches, the history of which is provided below.
+The major version `24.0.0`_ includes several patches, the history of which is outlined below.
 
 .. admonition:: Patches
 
-  - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
-  - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release,
-    with codename decoding links:
-
-    - **for men**: naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
-    - **for women**: `not a well-dressed woman <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
-    - **for black men**: enjoy `Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_.
-      Be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
-
-  - `23.3.5`_, on Oct 12, 2024. Documentation patch: Html and Pdf doc layouts.
-  - `23.3.6`_, on Oct 31, 2024. Version `23.3.4`_ patch: DI-scopes validation, :doc:`../features/servicediscovery` feature update.
+  - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ extension package.
 
 .. _release-notes:
 
 Release Notes
 -------------
 
-| Release Tag: `23.3.0`_
-| Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_, with codename decoding links:
-  `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_,
-  `for women <https://www.goodreads.com/series/50439-twilight-texas>`_,
-  `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_.
+  | Release Tag: `24.0.0`_
+  | Release Codename: `.NET 9`_
 
-What's new?
-^^^^^^^^^^^
+On November 12th, 2024, the `.NET team <https://devblogs.microsoft.com/dotnet/author/dotnet/>`_ announced the release of the `.NET 9`_ framework:
 
-- :doc:`../features/servicediscovery`: Introducing a new feature for "*Customization of services creation*" in two primary service discovery providers: ``Consul`` (:ref:`sd-consul-service-builder`) and ``Kubernetes`` (:ref:`k8s-downstream-scheme-vs-port-names`), developed by `@raman-m`_.
+* `Announcing .NET 9 | .NET Blog <https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/>`_
 
-  The customization for both ``Consul`` and ``Kube`` providers in service creation is achieved through the overriding of virtual methods in default implementations. The recommendation was to separate the provider's logic and introduce ``public virtual`` and ``protected virtual`` methods in concrete classes, enabling:
+This major release upgrades `Ocelot`_ package `TFMs <https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions>`_ to ``net9.0`` in addition to the current ``net8.0``.
+Thus, the current Ocelot `supported frameworks <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ are .NET 8 LTS and .NET 9 STS.
+According to the `.NET Support Policy <https://dotnet.microsoft.com/en-us/platform/support/policy>`_, the Ocelot team has discontinued support of .NET 6 and .NET 7 by providing the version `23.4.3`_ which targets those .NET versions.
 
-  - The use of ``public virtual`` methods as dictated by interface definitions.
-  - The application of ``protected virtual`` methods to allow developers to customize atomic operations through inheritance from existing concrete classes.
-  - The injection of new interface objects into the provider's constructor.
-  - The overriding of the default behavior of classes.
+Official Notice to the Community Regarding CircleCI
+---------------------------------------------------
 
-  | Ultimately, customization relies on the virtual methods within the default implementation classes, providing developers the flexibility to override them as necessary for highly tailored Consul/K8s configurations in their specific environments.
-  | For further details, refer to the respective pull requests for both providers: ``Kube`` (PR `2052`_), ``Consul`` (PR `2067`_).
+Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
+But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
+This legal issue and technical incident were unforeseen on our part because Ocelot is *open-source software* (OSS), and forcibly stopping the project's build process and blocking accounts appears to be an unfortunate breach of OSS principles.
+We strongly believe that any developer or user, from any country, should be able to use software providers that support the OSS movement by offering free or other cost-free plans and serving the accounts of these users, OSS teams, and OSS projects 24/7, 365 days a year.
+We consider this legal issue and the resulting technical incidents involving CircleCI to be a serious breach of OSS principles and an act of discrimination against Ocelot users, developers, and customers who rely on Ocelot OSS, ultimately causing delays to the current release.
+As a team, **we do not recommend using CircleCI for OSS projects**, as there is no guarantee that these projects will not face discrimination from this U.S. company.
 
-- :doc:`../features/routing`: Introducing the new ":ref:`routing-upstream-headers`" feature by `@jlukawska`_.
+For all developers, team leads, architects, and managers of any OSS projects—at least on GitHub—we recommend utilizing the built-in GitHub Actions CI/CD infrastructure.
+Since its founding, GitHub has supported OSS projects. Today, GitHub provides 2,000 minutes of free CI/CD build time per month for OSS repositories (public repos).
+Also, we strongly believe that GitHub will never violate its OSS policies without a notice period, nor fail to inform owners and maintainers that certain policies must be met by Ocelot's owners.
+In addition, we want to acknowledge that we are monitoring U.S. government regulations.
+Unfortunately, we must state that some GitHub products are unavailable in certain countries, even if the project is OSS and GitHub claims these products are free for OSS.
+Since the Ocelot team does not utilize these non-critical products (we prefer to energize our brains rather than rely on AI-driven products), and since the Ocelot project is currently well-served by GitHub Co, the Ocelot team affirms that Ocelot will remain on GitHub as long as its OSS-friendly policies continue.
+As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
+Regardless, we remain on GitHub!
 
-  | In addition to routing via ``UpstreamPathTemplate``, you can now define an ``UpstreamHeaderTemplates`` options dictionary. For a route to match, all headers specified in this section are required to be present in the request headers.
-  | For more details, see PR `1312`_.
+What's New?
+-----------
 
-- :doc:`../features/configuration`: Introducing the ":ref:`config-version-policy`" feature by `@ibnuda`_.
+.. _@raman-m: https://github.com/raman-m
+.. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
 
-  The configurable ``HttpRequestMessage.VersionPolicy`` helps avoid HTTP protocol connection errors and stabilizes connections to downstream services, especially when you're not developing those services, documentation is scarce, or the deployed HTTP protocol version is uncertain.
-  For developers of downstream services, it's possible to ``ConfigureKestrel`` server and its endpoints with new protocol settings. However, attention to version policy is also required, and this feature provides precise version settings for HTTP connections.
+- `DevOps`_: The CI/CD infrastructure was migrated from CircleCI to GitHub Actions by `@raman-m`_.
 
-  | Essentially, this feature promotes the use of HTTP protocols beyond 1.0/1.1, such as HTTP/2 or even HTTP/3.
-  | For additional details, refer to PR `1673`_.
+  .. _PR: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/pr.yml
+  .. _Develop: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/develop.yml
+  .. _Release: https://github.com/ThreeMammals/Ocelot/blob/main/.github/workflows/release.yml
+  .. _three workflows: https://github.com/ThreeMammals/Ocelot/tree/main/.github/workflows
+  .. _documentation: https://docs.github.com/en/actions
+  .. _GitHub Actions: https://github.com/features/actions
+  .. _Coveralls: https://coveralls.io/
+  .. _ThreeMammals/Ocelot: https://coveralls.io/github/ThreeMammals/Ocelot
 
-- :doc:`../features/configuration`: Introducing the new ":ref:`config-route-metadata`" feature by `@vantm`_.
+  Starting from version `24.0`_, all pull requests, development commits, and releases will be built using `GitHub Actions`_ workflows (`documentation`_).
+  We currently have `three workflows`_: one for pull requests (`PR`_), one for the ``develop`` branch (`Develop`_), and one for the ``main`` branch (`Release`_).
+  All workflow runs are available on the `Actions dashboard <https://github.com/ThreeMammals/Ocelot/actions>`_.
 
-  Undoubtedly, this is the standout feature of the release! ⭐
+  The `PR`_ workflow will track code coverage using `Coveralls`_.
+  After opening a pull request or submitting a new commit to a pull request, `Coveralls`_ will publish a short message with the current code coverage once the top commit is built.
+  Considering that `Coveralls`_ retains the entire history but does not fail the build if coverage falls below the threshold, all workflows have a built-in 80% threshold,
+  applied internally within the ``build-cake`` job, particularly during the "Cake Build" step-action.
+  If the code coverage of a newly opened pull request drops below the 80% threshold, the ``build-cake`` job will fail, logging an appropriate message in the "Cake Build" step.
+  For your information, the current code coverage of the Ocelot project is around 85-86%. The coverage threshold is subject to change in upcoming releases.
+  All Coveralls builds can be viewed by navigating to the `ThreeMammals/Ocelot`_ project on Coveralls.io.
 
-  Route metadata enables Ocelot developers to incorporate custom functions that address specific needs or to create their own plugins/extensions.
+What's Updated?
+---------------
 
-  In versions of Ocelot prior to `23.3.0`_, the configuration was limited to predefined values that Ocelot used internally. This was sufficient for official extensions, but posed challenges for third-party developers who needed to implement configurations not included in the standard ``FileConfiguration``.
-  Applying an option to a specific route required knowledge of the array index and other details that might not be readily accessible using the standard ``IConfiguration`` or ``IOptions<FileConfiguration>`` models from ASP.NET.
+.. _1912: https://github.com/ThreeMammals/Ocelot/issues/1912
+.. _2218: https://github.com/ThreeMammals/Ocelot/issues/2218
+.. _2274: https://github.com/ThreeMammals/Ocelot/pull/2274
+.. _TargetFrameworks: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%3CTargetFrameworks%3E&type=code
+.. _reference: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%3CTargetFrameworks%3E&type=code
+.. _extension: https://www.nuget.org/profiles/ThreeMammals
+.. _vulnerabilities: https://github.com/ThreeMammals/Ocelot/security/dependabot
+.. _ASP.NET Core Identity: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity
+.. _acceptance testing: https://github.com/ThreeMammals/Ocelot/tree/develop/test/Ocelot.AcceptanceTests
+.. _Microsoft.AspNetCore.Authentication.JwtBearer: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer
+.. _IdentityServer4: https://github.com/DuendeArchive/IdentityServer4
 
-  | Now, :doc:`../features/metadata` can be directly accessed in the ``DownstreamRoute`` object. Furthermore, metadata can also be retrieved from the global JSON section via the ``FileConfiguration.GlobalConfiguration`` property.
-  | For more information, see the details in PR `1843`_ on this remarkable feature.
+.. - |Core|_:
 
-Updates of the features
-^^^^^^^^^^^^^^^^^^^^^^^
+- `Core <https://github.com/ThreeMammals/Ocelot/labels/Core>`_:
 
-- :doc:`../features/configuration`: New features are ":ref:`config-version-policy`" by `@ibnuda`_ and ":ref:`config-route-metadata`" by `@vantm`_.
-- :doc:`../features/servicediscovery`: New feature is "*Customization of services creation*" aka :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` by `@raman-m`_.
-- :doc:`../features/routing`: New feature is ":ref:`routing-upstream-headers`" by `@jlukawska`_.
-- :doc:`../features/qualityofservice`: The team has decided to remove the Polly V7 policies logic and the corresponding Ocelot ``AddPollyV7`` extensions (referenced in PR `2079`_).
+  The main `Ocelot`_ package and all `extension`_ packages `reference`_ ``net8.0`` and ``net9.0`` target framework monikers (TFMs).
+  Refer to `TargetFrameworks`_ to verify this.
+  The ``net6.0`` and ``net7.0`` TFMs have been removed.
+  If your project still relies on these outdated TFMs, please continue using version `23.4.3`_.
 
-  | Furthermore, the Polly V8 Circuit Breaker has been mandated as the primary strategy (as per PR `2086`_).
-  | See more detaild below in "**Ocelot extra packages**" paragraph.
+  .. |Core| replace:: **Core**
+  .. _Core: https://github.com/ThreeMammals/Ocelot/labels/Core
 
-Ocelot extra packages
-^^^^^^^^^^^^^^^^^^^^^
+- :doc:`../features/authentication`:
 
-- `Ocelot.Provider.Polly <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_
+  Testing of :ref:`authentication-identity-server` functionality was stopped due to `vulnerabilities`_ reported by Dependabot,
+  specifically the "`IdentityServer Open Redirect vulnerability <https://github.com/ThreeMammals/Ocelot/security/dependabot?q=is%3Aclosed+IdentityServer>`_" security issue.
+  More technical details were provided in the `23.4.2`_ release notes, where we notified the community.
+  Ultimately, issue `2218`_ was addressed via pull request `2274`_.
 
-  - Our team has resolved to eliminate the Polly V7 policies logic and the corresponding Ocelot ``AddPollyV7`` extensions entirely (refer to the "`Polly v7 vs v8 <https://ocelot.readthedocs.io/en/23.2.2/features/qualityofservice.html#polly-v7-vs-v8>`_" documentation).
-    In the previous `23.2.0`_ release, named `Lunar Eclipse <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_, we included these to maintain the legacy `Polly`_ behavior, allowing development teams to transition or retain the old Polly V7 functionality.
-    We are now confident that it is time to progress alongside `Polly`_, shifting our focus to the new `Polly V8 <https://www.thepollyproject.org/2023/09/28/polly-v8-officially-released/>`_ `resilience pipelines <https://www.pollydocs.org/pipelines/>`_.
-    For more details, see PR `2079`_.
-  - Additionally, we have implemented Polly v8 `Circuit Breaker <https://www.pollydocs.org/strategies/circuit-breaker.html>`_ as the primary strategy.
-    Our :doc:`../features/qualityofservice` (QoS) relies on two main strategies: :ref:`qos-circuit-breaker-strategy` and :ref:`qos-timeout-strategy`.
-    If both `Circuit Breaker`_ and `Timeout`_ have :ref:`qos-configuration` with their respective properties in the ``QoSOptions`` of the route JSON, then the :ref:`qos-circuit-breaker-strategy` will take precedence in the constructed resilience pipeline.
-    For more details, refer to PR `2086`_.
+    **Note**: In upcoming releases, we plan to utilize the `ASP.NET Core Identity`_ framework in our `acceptance testing`_ project to align with .NET industry standards.
+    As a result, we intend to replace the `IdentityServer4`_ library with `ASP.NET Core Identity`_, which also supports Bearer tokens, also known as ``JwtBearerHandler`` from the `Microsoft.AspNetCore.Authentication.JwtBearer`_ namespace.
 
-Stabilization (bug fixing)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+- :doc:`../features/administration`:
 
-- Fixed `2034`_ in PR `2045`_ by `@raman-m`_
-- Fixed `2039`_ in PR `2050`_ by `@PaulARoy`_
-- Fixed `1590`_ in PR `1592`_ by `@sergio-str`_
-- Fixed `2054`_ `2059`_ in PR `2058`_ by `@thiagoloureiro`_
-- Fixed `954`_ `957`_ `1026`_ in PR `2067`_ by `@raman-m`_
-- Fixed `2002`_ in PR `2003`_ by `@bbenameur`_
-- Fixed `2085`_ in PR `2086`_ by `@RaynaldM`_
+  The `Ocelot.Administration`_ extension package has been renamed to `Ocelot.Administration.IdentityServer4`_ (it is scheduled for deprecation) to address all `IdentityServer4`_-related `vulnerabilities`_ (issue `2218`_).
+  The `package's source code <https://github.com/ThreeMammals/Ocelot/tree/release/23.4/src/Ocelot.Administration>`_ has been moved out of the Ocelot repository (pull request `2274`_) and transferred to the newly created `Ocelot.Administration.IdentityServer4`_ repository.
 
-See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milestone%3ASpring%2724+is%3Aclosed+label%3Abug>`_ of the `Spring'24 <https://github.com/ThreeMammals/Ocelot/milestone/6>`_ milestone
+    **Note**: Currently, the :doc:`../features/administration` feature is solely based on the `IdentityServer4 package <https://github.com/ThreeMammals/Ocelot/blob/release/23.4/src/Ocelot.Administration/Ocelot.Administration.csproj#L38>`_, whose `repository <https://github.com/IdentityServer/IdentityServer4>`_ was archived by its owner on July 31, 2024.
+    The Ocelot team will deprecate the new `Ocelot.Administration.IdentityServer4`_ extension package after the current Ocelot release; however, the repository will not be archived, allowing for potential patches in the future.
+
+  .. _Ocelot.Administration: https://www.nuget.org/packages/Ocelot.Administration
+  .. _Ocelot.Administration.IdentityServer4: https://github.com/ThreeMammals/Ocelot.Administration.IdentityServer4
+
+- :doc:`../features/kubernetes`:
+
+  1. Answered question `2256`_ on "How to provide a host to the Kubernetes service discovery provider?"
+     Unfortunately, in the :doc:`../features/kubernetes` chapter, it was unclear to users how to define a K8s endpoint host in the :ref:`k8s-configuration` due to the implicit reuse of ``KubeClient``, which is created from the pod account during :ref:`k8s-install`-ation.
+     As a team, we decided to add the new :ref:`k8s-addkubernetes-action-method`, which handles different user scenarios.
+     It is now possible to provide manually configured ``KubeClientOptions`` in C# during :ref:`k8s-install`-ation, but users can also reuse ``ServiceDiscoveryProvider`` options from the global :ref:`k8s-configuration`, including the ``Host`` option to construct the :doc:`../features/kubernetes` endpoint address.
+     The new overloaded ``AddKubernetes(Action<KubeClientOptions>)`` method was implemented in pull request `2257`_.
+
+  2. In the `Ocelot.Provider.Kubernetes`_ extension package, the ``KubeClient`` dependency library version was upgraded to ``3.0.x``, which requires .NET 8.0 and .NET 9.0 TFMs for the current Ocelot version `24.0`_.
+     ``KubeClient`` v3 was internally reviewed and released specifically to meet Ocelot's needs for this release. Thanks to Adam Friedman (`@tintoy`_) for his collaboration!
+     This package upgrade was implemented in pull request `2266`_.
+
+  .. _2256: https://github.com/ThreeMammals/Ocelot/discussions/2256
+  .. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
+  .. _2266: https://github.com/ThreeMammals/Ocelot/pull/2266
+  .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
+  .. _@tintoy: https://github.com/tintoy
+
+- `Sample <https://github.com/ThreeMammals/Ocelot/labels/sample>`_:
+
+  The learning `Samples`_ projects were reviewed, rewritten, and refactored due to issue `1912`_.
+  The community brought to our attention that the documentation and `Samples`_ were outdated, as .NET 8 allows the ``Program.cs`` file to be minimized using the `Top-level statements`_ feature.
+  This was ultimately addressed in pull requests `2244`_ and `2258`_.
+
+  .. _2244: https://github.com/ThreeMammals/Ocelot/pull/2244
+  .. _2258: https://github.com/ThreeMammals/Ocelot/pull/2258
+  .. _Samples: https://github.com/ThreeMammals/Ocelot/tree/main/samples
+  .. _Top-level statements: https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/program-structure/top-level-statements
 
 Documentation Summary
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
-- :doc:`../features/caching`: New :ref:`cch-enablecontenthashing-option` and :ref:`cch-global-configuration` sections
-- :doc:`../features/configuration`: New :ref:`config-version-policy` and :ref:`config-route-metadata` sections
-- :doc:`../features/kubernetes`: New :ref:`k8s-downstream-scheme-vs-port-names` section
-- :doc:`../features/metadata`: This is new chapter for :ref:`config-route-metadata` feature
-- :doc:`../features/qualityofservice`
-- :doc:`../features/ratelimiting`
-- :doc:`../features/requestaggregation`
-- :doc:`../features/routing`: New :ref:`routing-upstream-headers` section
-- :doc:`../features/servicediscovery`: New :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` sections
+Due to the major version increase to v24, all documentation chapters were reviewed to improve readability, eliminate ambiguity, provide more useful tables and data schemas, update code snippets with the syntax of `Top-level statements`_, and add handy samples, among other enhancements.
+The entire documentation is designed to be truly professional for senior developers while remaining easy to read for junior developers and newcomers who are starting to use the Ocelot gateway.
+
+We believe that Ocelot students will ask fewer questions in 2025 🙂
+For students, we always recommend finding answers in `Q&A`_ category first.
+Honestly, it is advised to read existing discussions before opening a new question in repo `Discussions`_.
+For true Ocelot patriots, we have added a `README link`_ to the smart `Ocelot AI Guru`_ assistant, which is always ready to answer any of your questions.
+Feel free to explore and interact with it! 😊
+
+.. _Q&A: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
+.. _Discussions: https://github.com/ThreeMammals/Ocelot/discussions
+.. _README link: https://github.com/ThreeMammals/Ocelot?tab=readme-ov-file#documentation
+.. _Ocelot AI Guru: https://gurubase.io/g/ocelot
 
 Contributing
 ------------
 
-`Pull requests <https://github.com/ThreeMammals/Ocelot/pulls>`_, `issues <https://github.com/ThreeMammals/Ocelot/issues>`_, and commentary are welcome at the `Ocelot GitHub repository <https://github.com/ThreeMammals/Ocelot/>`_.
+.. |octocat| image:: images/octocat.png
+  :alt: octocat
+  :height: 25
+  :class: img-valign-middle
+  :target: https://github.com/ThreeMammals/Ocelot/
+.. _Pull requests: https://github.com/ThreeMammals/Ocelot/pulls
+.. _issues: https://github.com/ThreeMammals/Ocelot/issues
+.. _Ocelot GitHub: https://github.com/ThreeMammals/Ocelot/
+.. _Ocelot Discussions: https://github.com/ThreeMammals/Ocelot/discussions
+.. _ideas: https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas
+.. _questions: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
 
-For `ideas <https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas>`_ and `questions <https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a>`_, please post them in the `Ocelot Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space.
+`Pull requests`_, `issues`_, and commentary are welcome at the `Ocelot GitHub`_ repository.
+For `ideas`_ and `questions`_, please post them in the `Ocelot Discussions`_ space. |octocat|
 
 Our :doc:`../building/devprocess` is a part of successful :doc:`../building/releaseprocess`.
 If you are a new contributor, it is crucial to read :doc:`../building/devprocess` attentively to grasp our methods for efficient and swift feature delivery.
 We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
 
-We extend our best wishes for your successful contributions to the Ocelot product!
+We extend our best wishes for your successful contributions to the Ocelot product! |octocat|

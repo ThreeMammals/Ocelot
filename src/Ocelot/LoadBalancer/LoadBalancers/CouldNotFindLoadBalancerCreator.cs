@@ -1,12 +1,11 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.LoadBalancer.LoadBalancers;
+
+public class CouldNotFindLoadBalancerCreator : Error
 {
-    public class CouldNotFindLoadBalancerCreator : Error
+    public CouldNotFindLoadBalancerCreator(string message)
+        : base(message, OcelotErrorCode.CouldNotFindLoadBalancerCreator, 404)
     {
-        public CouldNotFindLoadBalancerCreator(string message)
-            : base(message, OcelotErrorCode.CouldNotFindLoadBalancerCreator, 404)
-        {
-        }
     }
 }

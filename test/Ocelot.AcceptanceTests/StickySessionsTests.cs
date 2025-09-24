@@ -5,26 +5,18 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class StickySessionsTests : Steps, IDisposable
+public sealed class StickySessionsTests : Steps
 {
     private readonly int[] _counters;
+#if NET9_0_OR_GREATER
+    private static readonly Lock SyncLock = new();
+#else
     private static readonly object SyncLock = new();
-    private readonly ServiceHandler[] _handlers;
+#endif
 
     public StickySessionsTests() : base()
     {
         _counters = new int[2];
-        _handlers = new ServiceHandler[2];
-    }
-
-    public override void Dispose()
-    {
-        foreach (var handler in _handlers)
-        {
-            handler?.Dispose();
-        }
-
-        base.Dispose();
     }
 
     [Fact]
@@ -38,8 +30,8 @@ public sealed class StickySessionsTests : Steps, IDisposable
         var cookieName = route.LoadBalancerOptions.Key;
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenProductServiceIsRunning(0, DownstreamUrl(port1)))
-            .Given(x => x.GivenProductServiceIsRunning(1, DownstreamUrl(port2)))
+        this.Given(x => x.GivenProductServiceIsRunning(0, port1))
+            .Given(x => x.GivenProductServiceIsRunning(1, port2))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning())
             .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10, cookieName, Guid.NewGuid().ToString()))
@@ -61,8 +53,8 @@ public sealed class StickySessionsTests : Steps, IDisposable
             .WithHosts(Localhost(port2), Localhost(port1));
         var configuration = GivenConfiguration(route1, route2);
 
-        this.Given(x => x.GivenProductServiceIsRunning(0, DownstreamUrl(port1)))
-            .Given(x => x.GivenProductServiceIsRunning(1, DownstreamUrl(port2)))
+        this.Given(x => x.GivenProductServiceIsRunning(0, port1))
+            .Given(x => x.GivenProductServiceIsRunning(1, port2))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning())
             .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123")) // both cookies should have different values
@@ -85,8 +77,8 @@ public sealed class StickySessionsTests : Steps, IDisposable
             .WithHosts(Localhost(port2), Localhost(port1));
         var configuration = GivenConfiguration(route1, route2);
 
-        this.Given(x => x.GivenProductServiceIsRunning(0, DownstreamUrl(port1)))
-            .Given(x => x.GivenProductServiceIsRunning(1, DownstreamUrl(port2)))
+        this.Given(x => x.GivenProductServiceIsRunning(0, port1))
+            .Given(x => x.GivenProductServiceIsRunning(1, port2))
             .And(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => GivenOcelotIsRunning())
             .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123"))
@@ -101,7 +93,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
         DownstreamPathTemplate = "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         LoadBalancerOptions = new()
         {
             Type = nameof(CookieStickySessions),
@@ -134,10 +126,9 @@ public sealed class StickySessionsTests : Steps, IDisposable
         _counters[index].ShouldBe(times);
     }
 
-    private void GivenProductServiceIsRunning(int index, string url)
+    private void GivenProductServiceIsRunning(int index, int port)
     {
-        _handlers[index] = new();
-        _handlers[index].GivenThereIsAServiceRunningOn(url, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, async context =>
         {
             try
             {
@@ -153,6 +144,7 @@ public sealed class StickySessionsTests : Steps, IDisposable
             }
             catch (Exception exception)
             {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 await context.Response.WriteAsync(exception.StackTrace);
             }
         });

@@ -1,6 +1,5 @@
-﻿namespace Ocelot.Requester
+﻿namespace Ocelot.Requester;
+
+public interface ITracingHandler
 {
-    public interface ITracingHandler
-    {
-    }
 }

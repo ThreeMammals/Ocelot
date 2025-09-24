@@ -5,20 +5,12 @@ namespace Ocelot.AcceptanceTests.Routing;
 
 [Trait("PR", "1312")]
 [Trait("Feat", "360")]
-public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
+public sealed class RoutingBasedOnHeadersTests : Steps
 {
     private string _downstreamPath;
-    private readonly ServiceHandler _serviceHandler;
 
     public RoutingBasedOnHeadersTests()
     {
-        _serviceHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -215,8 +207,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
         var port2 = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
-        var routeA = GivenRoute(port1, "/a", "Laura");
-        var routeB = GivenRoute(port2, "/b", "Tom");
+        var routeA = GivenRouteWithKey(port1, "/a", "Laura");
+        var routeB = GivenRouteWithKey(port2, "/b", "Tom");
         var route = GivenAggRouteWithUpstreamHeaderTemplates(new()
         {
             [headerName] = headerValue,
@@ -241,8 +233,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
         var port2 = PortFinder.GetRandomPort();
         var headerName = "country_code";
         var headerValue = "PL";
-        var routeA = GivenRoute(port1, "/a", "Laura");
-        var routeB = GivenRoute(port2, "/b", "Tom");
+        var routeA = GivenRouteWithKey(port1, "/a", "Laura");
+        var routeB = GivenRouteWithKey(port2, "/b", "Tom");
         var route = GivenAggRouteWithUpstreamHeaderTemplates(new()
         {
             [headerName] = headerValue,
@@ -405,11 +397,9 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
     {
         basePath ??= "/";
         responseBody ??= Hello();
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
             if (_downstreamPath != basePath)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -425,32 +415,20 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
 
     private void ThenTheDownstreamUrlPathShouldBe(string expected) => _downstreamPath.ShouldBe(expected);
 
-    private static FileRoute GivenRoute(int port, string path = null, string key = null) => new()
-    {
-        DownstreamPathTemplate = path ?? "/",
-        DownstreamScheme = "http",
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        UpstreamPathTemplate = path ?? "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
-        Key = key,
-    };
+    private FileRoute GivenRouteWithKey(int port, string path = null, string key = null)
+        => GivenRoute(port, path, path).WithKey(key);
 
-    private static FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, Dictionary<string, string> templates)
+    private FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, Dictionary<string, string> templates)
     {
-        var route = GivenRoute(port);
+        var route = GivenDefaultRoute(port);
         route.UpstreamHeaderTemplates = templates;
         return route;
     }
 
-    private static FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, string upstream, string downstream, Dictionary<string, string> templates)
+    private FileRoute GivenRouteWithUpstreamHeaderTemplates(int port, string upstream, string downstream, Dictionary<string, string> templates)
     {
-        var route = GivenRoute(port);
+        var route = GivenRoute(port, upstream, downstream);
         route.UpstreamHeaderTemplates = templates;
-        route.UpstreamPathTemplate = upstream ?? "/";
-        route.DownstreamPathTemplate = downstream ?? "/";
         return route;
     }
 
@@ -458,7 +436,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps, IDisposable
     {
         UpstreamPathTemplate = "/",
         UpstreamHost = "localhost",
-        RouteKeys = new() { "Laura", "Tom" },
+        RouteKeys = ["Laura", "Tom"],
         UpstreamHeaderTemplates = templates,
     };
 }

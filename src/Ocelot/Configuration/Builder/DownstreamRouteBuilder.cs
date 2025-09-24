@@ -24,7 +24,6 @@ public class DownstreamRouteBuilder
     private LoadBalancerOptions _loadBalancerOptions;
     private QoSOptions _qosOptions;
     private HttpHandlerOptions _httpHandlerOptions;
-    private bool _enableRateLimiting;
     private RateLimitOptions _rateLimitOptions;
     private bool _useServiceDiscovery;
     private string _serviceName;
@@ -43,6 +42,7 @@ public class DownstreamRouteBuilder
     private HttpVersionPolicy _downstreamHttpVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
+    private int? _timeout;
 
     public DownstreamRouteBuilder()
     {
@@ -174,12 +174,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithEnableRateLimiting(bool input)
-    {
-        _enableRateLimiting = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithRateLimitOptions(RateLimitOptions input)
     {
         _rateLimitOptions = input;
@@ -282,6 +276,12 @@ public class DownstreamRouteBuilder
         return this;
     }
 
+    public DownstreamRouteBuilder WithTimeout(int? timeout)
+    {
+        _timeout = timeout;
+        return this;
+    }
+
     public DownstreamRoute Build()
     {
         return new DownstreamRoute(
@@ -294,7 +294,6 @@ public class DownstreamRouteBuilder
             _serviceNamespace,
             _httpHandlerOptions,
             _useServiceDiscovery,
-            _enableRateLimiting,
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,
@@ -321,6 +320,7 @@ public class DownstreamRouteBuilder
             _downstreamHttpVersion,
             _downstreamHttpVersionPolicy,
             _upstreamHeaders,
-            _metadataOptions);
+            _metadataOptions,
+            _timeout);
     }
 }

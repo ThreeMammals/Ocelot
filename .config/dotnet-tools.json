@@ -13,6 +13,13 @@
       "commands": [
         "csmacnz.Coveralls"
       ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.4.7",
+      "commands": [
+        "reportgenerator"
+      ],
+      "rollForward": false
     }
   }
 }
