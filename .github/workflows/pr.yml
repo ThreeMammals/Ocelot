@@ -11,27 +11,14 @@ jobs:
       DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
     steps:
     - name: .NET Info
-      run: dotnet --info
-    - name: Add threemammals.com DNS-record
-      run: |
-        hosts='/etc/hosts'
-        echo Content of $hosts
-        echo ------------------------
-        cat $hosts
-        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
-        echo New content of $hosts
-        echo ------------------------
-        cat $hosts
-        echo ------------------------
-        ping -c 1 threemammals.com
-    - name: Check .NET 8
-      id: check-dotnet8
       run: |
         dotnet --version
         echo ------------------------
         dotnet --info
-        echo ------------------------
-        DOTNET8_VERSION=$(dotnet --version)
+    - name: Check .NET 8
+      id: check-dotnet8
+      run: |
+        DOTNET8_VERSION=$(dotnet --info)
         if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
         else
@@ -46,6 +33,18 @@ jobs:
       run: dotnet --info
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Add threemammals.com DNS-record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
     - name: Install mycert.pfx certificate
       run: |
         pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
@@ -86,11 +85,14 @@ jobs:
       GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Info
-      run: dotnet --info
+      run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
     - name: Check .NET 9
       id: check-dotnet9
       run: |
-        DOTNET9_VERSION=$(dotnet --version)
+        DOTNET9_VERSION=$(dotnet --info)
         if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
           echo "dotnet9_installed=true" >> $GITHUB_ENV
         else
