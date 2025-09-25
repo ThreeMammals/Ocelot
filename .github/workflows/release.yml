@@ -118,32 +118,14 @@ jobs:
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  # display-variables:
-  #   # name: ${{ vars.JOB_NAME }}
-  #   # You can use configuration variables with the `vars` context for dynamic jobs
-  #   if: true # ${{ vars.USE_VARIABLES == 'true' }}
-  #   runs-on: ubuntu-latest # ${{ vars.RUNNER }}
-  #   environment: build.cake
-  #   steps:
-  #   - name: Use variables
-  #     run: |
-  #       echo "CAKE_RELEASE_MYVAR variable : $CAKE_RELEASE_MYVAR"
-  #       echo "WORKFLOW_VAR : $WORKFLOW_VAR"
-  #     env:
-  #       ENV_CONTEXT_VAR: ${{ vars.ENV_CONTEXT_VAR }}
-  #       CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
-  #   - name: HELLO_WORLD
-  #     # if: ${{ vars.HELLO_WORLD_ENABLED == 'true' }}
-  #     uses: actions/hello-world-javascript-action@main
-  #     with:
-  #       who-to-greet: Raman # ${{ vars.GREET_NAME }}
+
   release-cake:
     needs: build-macos
     runs-on: ubuntu-latest
     environment: build.cake
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+      DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet 
       # NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
     - name: Env Variables
@@ -151,7 +133,7 @@ jobs:
         ENV_CONTEXT_VAR:  ${{ vars.ENV_CONTEXT_VAR }}
         CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
         TEMP_KEY: ${{ secrets.TEMP_KEY }} # leaked secret LoL
-        GITHUB_CONTEXT: ${{ toJson(github) }} 
+        GITHUB_CONTEXT: ${{ toJson(github) }} # see line 142
       run: |
         echo "ENV_CONTEXT_VAR : $ENV_CONTEXT_VAR"
         echo "CAKE_RELEASE_MYVAR : $CAKE_RELEASE_MYVAR"
@@ -165,15 +147,17 @@ jobs:
         sudo chmod -R 775 /usr/lib/dotnet
         sudo chown -R $USER:$USER /usr/lib/dotnet
         ls -ld /usr/lib/dotnet
-    - name: .NET Version 
-      run: dotnet --version
     - name: .NET Info
-      run: dotnet --info
+      run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
     - name: Check .NET 8
       id: check-dotnet8
       run: |
-        DOTNET8_VERSION=$(dotnet --version)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+        DOTNET8_INFO=$(dotnet --info)
+        echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet8_installed=false" >> $GITHUB_ENV
@@ -186,8 +170,9 @@ jobs:
     - name: Check .NET 9
       id: check-dotnet9
       run: |
-        DOTNET9_VERSION=$(dotnet --version)
-        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+        DOTNET9_INFO=$(dotnet --info)
+        echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet9_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet9_installed=false" >> $GITHUB_ENV
@@ -199,8 +184,6 @@ jobs:
         dotnet-version: 9.0.x
     - name: .NET Info
       run: dotnet --info
-    - name: Branch Name
-      run: echo "Branch name is ${{ github.ref_name }}"
     - name: Checkout
       uses: actions/checkout@v4
       with:
