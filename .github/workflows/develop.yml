@@ -65,27 +65,6 @@ jobs:
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
-#2 The build job to run in Docker container utilizing images from https://hub.docker.com/u/ocelot2
-# The main runnung script is build.cake, a cake-script which is hard to support because of slow and outdated integrated libs
-  # docker-build:
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: node:18
-  #     env:
-  #       NODE_ENV: development
-  #     ports:
-  #       - 80
-  #     volumes:
-  #       - my_docker_volume:/volume_mount
-  #     options: --cpus 1
-  #   container:
-  #     image: ghcr.io/owner/image
-  #     credentials:
-  #       username: ${{ github.actor }}
-  #       password: ${{ secrets.github_token }}
-  #     steps:
-  #     - name: Check for dockerenv file
-  #       run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
   build-cake:
     needs: build
     runs-on: ubuntu-latest
@@ -93,7 +72,7 @@ jobs:
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       # NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+      DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       GITHUB_SHA: ${{ github.sha }}
       GITHUB_REF: ${{ github.ref }}
@@ -105,15 +84,19 @@ jobs:
         sudo chmod -R 775 /usr/lib/dotnet
         sudo chown -R $USER:$USER /usr/lib/dotnet
         ls -ld /usr/lib/dotnet
-    - name: .NET Version 
-      run: dotnet --version
     - name: .NET Info
-      run: dotnet --info
+      run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
     - name: Check .NET 8
       id: check-dotnet8
       run: |
-        DOTNET8_VERSION=$(dotnet --version)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+        DOTNET8_INFO=$(dotnet --info)
+        echo "Checking for .NET 8 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet8_installed=false" >> $GITHUB_ENV
@@ -126,8 +109,11 @@ jobs:
     - name: Check .NET 9
       id: check-dotnet9
       run: |
-        DOTNET9_VERSION=$(dotnet --version)
-        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+        DOTNET9_INFO=$(dotnet --info)
+        echo "Checking for .NET 9 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet9_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet9_installed=false" >> $GITHUB_ENV
@@ -139,8 +125,6 @@ jobs:
         dotnet-version: 9.0.x
     - name: .NET Info
       run: dotnet --info
-    - name: Branch Name
-      run: echo "Branch name is ${{ github.ref_name }}"
     - name: Checkout
       uses: actions/checkout@v4
       with:

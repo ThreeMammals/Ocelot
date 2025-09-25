@@ -8,27 +8,23 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+      DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet 
     steps:
     - name: .NET Info
-      run: dotnet --info
-    - name: Add threemammals.com DNS-record
       run: |
-        hosts='/etc/hosts'
-        echo Content of $hosts
+        dotnet --version
         echo ------------------------
-        cat $hosts
-        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
-        echo New content of $hosts
-        echo ------------------------
-        cat $hosts
-        echo ------------------------
-        ping -c 1 threemammals.com
+        dotnet --info
     - name: Check .NET 8
       id: check-dotnet8
       run: |
-        DOTNET8_VERSION=$(dotnet --version)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+        DOTNET8_INFO=$(dotnet --info)
+        echo "Checking for .NET 8 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        # Print matching lines
+        echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        # Set environment variable based on match
+        if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet8_installed=false" >> $GITHUB_ENV
@@ -42,6 +38,18 @@ jobs:
       run: dotnet --info
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Add threemammals.com DNS-record
+      run: |
+        hosts='/etc/hosts'
+        echo Content of $hosts
+        echo ------------------------
+        cat $hosts
+        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
+        echo New content of $hosts
+        echo ------------------------
+        cat $hosts
+        echo ------------------------
+        ping -c 1 threemammals.com
     - name: Install mycert.pfx certificate
       run: |
         pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
@@ -82,12 +90,18 @@ jobs:
       GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Info
-      run: dotnet --info
+      run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
     - name: Check .NET 9
       id: check-dotnet9
       run: |
-        DOTNET9_VERSION=$(dotnet --version)
-        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+        DOTNET9_INFO=$(dotnet --info)
+        echo "Checking for .NET 9 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet9_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet9_installed=false" >> $GITHUB_ENV
