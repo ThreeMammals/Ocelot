@@ -141,12 +141,6 @@ jobs:
         echo "github context >>>" # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
         echo "$GITHUB_CONTEXT"
         echo "<<<"
-    - name: /usr/lib/dotnet
-      run: |
-        ls -ld /usr/lib/dotnet
-        sudo chmod -R 775 /usr/lib/dotnet
-        sudo chown -R $USER:$USER /usr/lib/dotnet
-        ls -ld /usr/lib/dotnet
     - name: .NET Info
       run: |
         dotnet --version

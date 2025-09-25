@@ -78,12 +78,6 @@ jobs:
       GITHUB_REF: ${{ github.ref }}
       GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
-    - name: /usr/lib/dotnet
-      run: |
-        ls -ld /usr/lib/dotnet
-        sudo chmod -R 775 /usr/lib/dotnet
-        sudo chown -R $USER:$USER /usr/lib/dotnet
-        ls -ld /usr/lib/dotnet
     - name: .NET Info
       run: |
         dotnet --version
