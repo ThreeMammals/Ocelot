@@ -99,7 +99,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
         Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
         Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-        Services.AddRateLimiting(); // Feature: Rate Limiting
         Services.TryAddSingleton<IRequestMapper, RequestMapper>();
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
@@ -111,7 +110,10 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotCache();
         Services.AddOcelotMetadata();
         Services.AddOcelotMessageInvokerPool();
-
+        Services.AddRateLimiting(); // Feature: Rate Limiting
+#if NET7_0_OR_GREATER
+        Services.AddAspNetRateLimiting(configurationRoot); // Feature: AspNet Rate Limiting
+#endif
         // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
         Services.AddHttpContextAccessor();
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();

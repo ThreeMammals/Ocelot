@@ -35,7 +35,8 @@ public class RateLimitOptions
     }
 
     public RateLimitOptions(bool enableRateLimiting, string clientIdHeader, IList<string> clientWhitelist, bool enableHeaders,
-        string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode)
+        string quotaExceededMessage, string rateLimitCounterPrefix, RateLimitRule rateLimitRule, int httpStatusCode,
+        string policy = null)
     {
         ClientIdHeader = clientIdHeader.IfEmpty(DefaultClientHeader);
         ClientWhitelist = clientWhitelist ?? [];
@@ -45,6 +46,7 @@ public class RateLimitOptions
         QuotaMessage = quotaExceededMessage.IfEmpty(DefaultQuotaMessage);
         Rule = rateLimitRule;
         StatusCode = httpStatusCode;
+        Policy = policy;
     }
 
     public RateLimitOptions(FileRateLimitByHeaderRule fromRule)
@@ -63,6 +65,7 @@ public class RateLimitOptions
             fromRule.Period.IfEmpty(RateLimitRule.DefaultPeriod),
             fromRule.PeriodTimespan.HasValue ? $"{fromRule.PeriodTimespan.Value}s" : fromRule.Wait,
             fromRule.Limit ?? RateLimitRule.ZeroLimit);
+        Policy = fromRule.Policy;
     }
 
     public RateLimitOptions(RateLimitOptions fromOptions)
@@ -77,6 +80,7 @@ public class RateLimitOptions
         QuotaMessage = fromOptions.QuotaMessage.IfEmpty(DefaultQuotaMessage);
         KeyPrefix = fromOptions.KeyPrefix.IfEmpty(DefaultCounterPrefix);
         Rule = fromOptions.Rule ?? RateLimitRule.Empty;
+        Policy = fromOptions.Policy;
     }
 
     /// <summary>Gets a Rate Limit rule.</summary>
@@ -121,4 +125,6 @@ public class RateLimitOptions
     /// <summary>Enables or disables <c>X-RateLimit-*</c> and <c>Retry-After</c> headers.</summary>
     /// <value>A <see cref="bool"/> value.</value>
     public bool EnableHeaders { get; init; }
+
+    public string Policy { get; init; }
 }

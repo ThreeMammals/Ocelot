@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
@@ -36,6 +37,15 @@ public class RateLimitingMiddleware : OcelotMiddleware
         if (!options.EnableRateLimiting)
         {
             Logger.LogInformation(() => $"Rate limiting is disabled for route '{downstreamRoute.Name()}' via the {nameof(RateLimitOptions.EnableRateLimiting)} option.");
+            return _next.Invoke(context);
+        }
+
+        if (!options.Policy.IsNullOrEmpty())
+        {
+            // Add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
+            var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.Policy));
+            var endpoint = new Endpoint(null, metadata, "tempEndpoint");
+            context.SetEndpoint(endpoint);
             return _next.Invoke(context);
         }
 

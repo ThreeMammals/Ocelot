@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Samples.Configuratio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Samples.Metadata", "Metadata\Ocelot.Samples.Metadata.csproj", "{80EE7EA9-BB02-4F2D-B7E3-BB6A42F50658}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Samples.RateLimiter", "RateLimiter\Ocelot.Samples.RateLimiter.csproj", "{C4B2D4B9-D568-42DA-A203-6C33BA2E055D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{80EE7EA9-BB02-4F2D-B7E3-BB6A42F50658}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80EE7EA9-BB02-4F2D-B7E3-BB6A42F50658}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80EE7EA9-BB02-4F2D-B7E3-BB6A42F50658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4B2D4B9-D568-42DA-A203-6C33BA2E055D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B2D4B9-D568-42DA-A203-6C33BA2E055D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B2D4B9-D568-42DA-A203-6C33BA2E055D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B2D4B9-D568-42DA-A203-6C33BA2E055D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
