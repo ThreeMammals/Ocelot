@@ -18,8 +18,13 @@ jobs:
     - name: Check .NET 8
       id: check-dotnet8
       run: |
-        DOTNET8_VERSION=$(dotnet --info)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
+        DOTNET8_INFO=$(dotnet --info)
+        echo "Checking for .NET 8 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        # Print matching lines
+        echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        # Set environment variable based on match
+        if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet8_installed=false" >> $GITHUB_ENV
