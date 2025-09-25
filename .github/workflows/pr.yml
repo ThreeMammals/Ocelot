@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
+      DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet 
     steps:
     - name: .NET Info
       run: |
@@ -97,8 +97,11 @@ jobs:
     - name: Check .NET 9
       id: check-dotnet9
       run: |
-        DOTNET9_VERSION=$(dotnet --info)
-        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
+        DOTNET9_INFO=$(dotnet --info)
+        echo "Checking for .NET 9 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
           echo "dotnet9_installed=true" >> $GITHUB_ENV
         else
           echo "dotnet9_installed=false" >> $GITHUB_ENV
