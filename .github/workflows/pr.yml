@@ -27,6 +27,10 @@ jobs:
     - name: Check .NET 8
       id: check-dotnet8
       run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
+        echo ------------------------
         DOTNET8_VERSION=$(dotnet --version)
         if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
           echo "dotnet8_installed=true" >> $GITHUB_ENV
