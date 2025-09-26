@@ -3,7 +3,7 @@ using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer;
 
 public class LoadBalancerHouse : ILoadBalancerHouse
 {
@@ -23,8 +23,8 @@ public class LoadBalancerHouse : ILoadBalancerHouse
         {
             lock (SyncRoot)
             {
-                return (_loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer) &&
-                        route.LoadBalancerOptions.Type == loadBalancer.Type) // TODO Case insensitive?
+                return _loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer) &&
+                        route.LoadBalancerOptions.Type == loadBalancer.Type // TODO Case insensitive?
                     ? new OkResponse<ILoadBalancer>(loadBalancer)
                     : GetResponse(route, config);
             }
