@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;

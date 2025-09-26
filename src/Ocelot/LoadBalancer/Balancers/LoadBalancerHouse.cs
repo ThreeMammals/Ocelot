@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 
 namespace Ocelot.LoadBalancer.Balancers;

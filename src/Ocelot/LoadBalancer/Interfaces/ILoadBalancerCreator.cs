@@ -2,7 +2,7 @@
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer.Interfaces;
 
 public interface ILoadBalancerCreator
 {

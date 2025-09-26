@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
