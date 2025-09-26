@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;

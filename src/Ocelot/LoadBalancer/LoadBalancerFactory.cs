@@ -1,10 +1,11 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer;
 
 public class LoadBalancerFactory : ILoadBalancerFactory
 {
