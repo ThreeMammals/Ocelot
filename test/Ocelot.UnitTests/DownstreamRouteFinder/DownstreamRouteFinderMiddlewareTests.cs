@@ -45,7 +45,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
             null,
             new ServiceProviderConfigurationBuilder().Build(),
             string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),

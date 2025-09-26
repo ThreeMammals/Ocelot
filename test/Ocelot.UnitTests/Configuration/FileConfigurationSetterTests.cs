@@ -38,7 +38,7 @@ public class FileConfigurationSetterTests : UnitTest
             string.Empty,
             serviceProviderConfig,
             "asdf",
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),

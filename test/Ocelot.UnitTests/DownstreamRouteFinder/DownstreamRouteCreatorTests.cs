@@ -29,7 +29,7 @@ public class DownstreamRouteCreatorTests : UnitTest
     {
         _qoSOptions = new(new FileQoSOptions());
         _handlerOptions = new HttpHandlerOptionsBuilder().Build();
-        _loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(NoLoadBalancer)).Build();
+        _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _upstreamHeaderTemplatePatternCreator = new();
         _creator = new DownstreamRouteCreator(_upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
@@ -253,7 +253,7 @@ public class DownstreamRouteCreatorTests : UnitTest
     public void Should_create_downstream_route_for_sticky_sessions()
     {
         // Arrange
-        var loadBalancerOptions = new LoadBalancerOptionsBuilder().WithType(nameof(CookieStickySessions)).WithKey("boom").WithExpiryInMs(1).Build();
+        var loadBalancerOptions = new LoadBalancerOptions(nameof(CookieStickySessions), "boom", 1);
         var configuration = new InternalConfiguration(
             null,
             "doesnt matter",

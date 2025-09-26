@@ -264,7 +264,7 @@ public class RoutesCreatorTests : UnitTest
         _hho = new HttpHandlerOptionsBuilder().Build();
         _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
         _dhp = new List<DownstreamHostAndPort>();
-        _lbo = new LoadBalancerOptionsBuilder().Build();
+        _lbo = new();
         _uht = new Dictionary<string, UpstreamHeaderTemplate>();
         _expectedMetadata = new Dictionary<string, string>()
         {

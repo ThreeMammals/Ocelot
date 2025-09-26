@@ -167,7 +167,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
             string.Empty,
             config,
             string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),

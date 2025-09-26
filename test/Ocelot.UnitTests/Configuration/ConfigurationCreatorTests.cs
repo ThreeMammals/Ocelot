@@ -112,7 +112,7 @@ public class ConfigurationCreatorTests : UnitTest
         };
         _routes = new List<Route>();
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
-        _lbo = new LoadBalancerOptionsBuilder().Build();
+        _lbo = new();
         _qoso = new QoSOptionsBuilder().Build();
         _hho = new HttpHandlerOptionsBuilder().Build();
 

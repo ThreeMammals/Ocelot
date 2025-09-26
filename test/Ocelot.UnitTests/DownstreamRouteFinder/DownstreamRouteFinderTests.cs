@@ -921,7 +921,7 @@ public class DownstreamRouteFinderTests : UnitTest
             adminPath,
             serviceProviderConfig,
             string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),
