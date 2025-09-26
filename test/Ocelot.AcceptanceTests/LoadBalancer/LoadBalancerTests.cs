@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Errors;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
 using System.Collections.Concurrent;

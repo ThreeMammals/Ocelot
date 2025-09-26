@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;

@@ -1,5 +1,5 @@
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 
 namespace Ocelot.Configuration.Creator;
 

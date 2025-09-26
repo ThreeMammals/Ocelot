@@ -18,7 +18,7 @@ using Ocelot.Headers;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing;

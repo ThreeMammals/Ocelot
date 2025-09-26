@@ -9,7 +9,7 @@ using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;

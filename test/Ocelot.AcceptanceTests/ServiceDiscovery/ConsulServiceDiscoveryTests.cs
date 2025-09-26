@@ -8,7 +8,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;

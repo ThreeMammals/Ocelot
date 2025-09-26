@@ -5,7 +5,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Errors;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;

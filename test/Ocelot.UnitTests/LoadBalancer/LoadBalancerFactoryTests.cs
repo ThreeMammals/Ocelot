@@ -3,7 +3,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.Errors;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;

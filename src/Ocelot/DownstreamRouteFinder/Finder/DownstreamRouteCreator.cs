@@ -2,7 +2,7 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
 

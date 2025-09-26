@@ -3,7 +3,7 @@ using Ocelot.LoadBalancer.Errors;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 public class LeastConnection : ILoadBalancer
 {

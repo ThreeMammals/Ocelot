@@ -3,7 +3,7 @@ using Ocelot.LoadBalancer.Errors;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 public class DelegateInvokingLoadBalancerCreator<T> : ILoadBalancerCreator
     where T : ILoadBalancer

@@ -2,7 +2,7 @@
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 public class LoadBalancerHouse : ILoadBalancerHouse
 {

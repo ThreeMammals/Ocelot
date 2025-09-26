@@ -3,7 +3,7 @@ using Ocelot.Responses;
 using Ocelot.Values;
 using System.Reflection;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 // TODO Add sync & async pairs
 public interface ILoadBalancer

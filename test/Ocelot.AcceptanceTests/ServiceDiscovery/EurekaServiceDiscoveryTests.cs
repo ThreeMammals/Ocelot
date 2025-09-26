@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Provider.Eureka;
 using Steeltoe.Common.Discovery;
 using System.Runtime.CompilerServices;

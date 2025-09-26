@@ -4,7 +4,7 @@ using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 public class CookieStickySessions : ILoadBalancer
 {

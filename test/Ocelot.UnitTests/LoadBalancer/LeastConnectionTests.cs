@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.Errors;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer;

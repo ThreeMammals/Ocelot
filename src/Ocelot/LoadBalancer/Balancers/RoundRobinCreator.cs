@@ -2,7 +2,7 @@
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.LoadBalancer.LoadBalancers;
+namespace Ocelot.LoadBalancer.Balancers;
 
 public class RoundRobinCreator : ILoadBalancerCreator
 {
