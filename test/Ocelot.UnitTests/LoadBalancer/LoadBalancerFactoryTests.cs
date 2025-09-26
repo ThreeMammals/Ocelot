@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -172,7 +173,8 @@ public class LoadBalancerFactoryTests : UnitTest
         where T : ILoadBalancer, new()
     {
         public BrokenLoadBalancerCreator() => Type = typeof(T).Name;
-        public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider) => new ErrorResponse<ILoadBalancer>(new ErrorInvokingLoadBalancerCreator(new Exception()));
+        public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
+            => new ErrorResponse<ILoadBalancer>(new InvokingLoadBalancerCreatorError(new Exception()));
         public string Type { get; }
     }
 

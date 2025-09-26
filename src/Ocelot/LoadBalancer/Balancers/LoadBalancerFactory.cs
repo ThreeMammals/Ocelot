@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.LoadBalancer.Errors;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 
@@ -30,7 +31,7 @@ public class LoadBalancerFactory : ILoadBalancerFactory
 
         if (applicableCreator == null)
         {
-            return new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreator($"Could not find load balancer creator for Type: {requestedType}, please check your config specified the correct load balancer and that you have registered a class with the same name."));
+            return new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreatorError($"Could not find load balancer creator for Type: {requestedType}, please check your config specified the correct load balancer and that you have registered a class with the same name."));
         }
 
         var createdLoadBalancerResponse = applicableCreator.Create(route, serviceProvider);

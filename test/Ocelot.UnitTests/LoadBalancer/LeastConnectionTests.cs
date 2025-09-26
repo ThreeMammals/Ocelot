@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Values;
 
