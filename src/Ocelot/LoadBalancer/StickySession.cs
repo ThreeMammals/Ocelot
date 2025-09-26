@@ -1,6 +1,6 @@
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer;
 
 public class StickySession
 {

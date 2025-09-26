@@ -1,5 +1,6 @@
 ﻿using Ocelot.Configuration.Builder;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.UnitTests.LoadBalancer;

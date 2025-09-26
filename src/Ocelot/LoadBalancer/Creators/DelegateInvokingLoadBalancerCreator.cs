@@ -4,7 +4,7 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer.Creators;
 
 public class DelegateInvokingLoadBalancerCreator<T> : ILoadBalancerCreator
     where T : ILoadBalancer

@@ -19,7 +19,7 @@ using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer;
-using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Middleware;

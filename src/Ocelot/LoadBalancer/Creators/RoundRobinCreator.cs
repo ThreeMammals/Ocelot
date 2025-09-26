@@ -1,15 +1,16 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.LoadBalancer.Balancers;
+namespace Ocelot.LoadBalancer.Creators;
 
-public class LeastConnectionCreator : ILoadBalancerCreator
+public class RoundRobinCreator : ILoadBalancerCreator
 {
     public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
     {
-        var loadBalancer = new LeastConnection(
+        var loadBalancer = new RoundRobin(
             serviceProvider.GetAsync,
             !string.IsNullOrEmpty(route.ServiceName)
                 ? route.ServiceName
@@ -17,5 +18,5 @@ public class LeastConnectionCreator : ILoadBalancerCreator
         return new OkResponse<ILoadBalancer>(loadBalancer);
     }
 
-    public string Type => nameof(LeastConnection);
+    public string Type => nameof(RoundRobin);
 }

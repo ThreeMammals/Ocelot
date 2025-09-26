@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
 using Ocelot.Requester;
