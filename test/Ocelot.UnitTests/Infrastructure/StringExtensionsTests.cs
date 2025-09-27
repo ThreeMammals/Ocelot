@@ -54,7 +54,7 @@ public class StringExtensionsTests
     [InlineData("x", false)]
     public void IsEmpty(string str, bool expected)
     {
-        bool actual = str.IsNullOrEmpty();
+        bool actual = str.IsEmpty();
         Assert.Equal(expected, actual);
     }
 

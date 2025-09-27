@@ -132,7 +132,7 @@ public class RateLimiting : IRateLimiting
         }
 
         // Counting Period is active
-        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsNullOrEmpty() || rule.Wait == RateLimitRule.ZeroWait;
+        bool doNotWait = rule.WaitSpan == TimeSpan.Zero || rule.Wait.IsEmpty() || rule.Wait == RateLimitRule.ZeroWait;
         if (doNotWait && counter.StartedAt + rule.PeriodSpan > now)
         {
             //return waitWindow.TotalSeconds - (now - exceededAt).TotalSeconds; // minus seconds past
