@@ -44,7 +44,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                             },
                         },
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -102,7 +102,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -162,7 +162,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -193,7 +193,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status/awesome",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration

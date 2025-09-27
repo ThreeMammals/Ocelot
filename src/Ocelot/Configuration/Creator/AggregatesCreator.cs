@@ -39,8 +39,8 @@ public class AggregatesCreator : IAggregatesCreator
 
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
         var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
-        var upstreamHttpMethod = (aggregateRoute.UpstreamHttpMethod.Count == 0) ? new List<HttpMethod>()
-            : aggregateRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToList();
+        var upstreamHttpMethod = (aggregateRoute.UpstreamHttpMethod.Count == 0) ? new HashSet<HttpMethod>()
+            : aggregateRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToHashSet();
 
         return new Route(
             applicableRoutes,

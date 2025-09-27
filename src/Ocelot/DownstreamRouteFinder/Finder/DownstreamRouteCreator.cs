@@ -75,7 +75,7 @@ public class DownstreamRouteCreator : IDownstreamRouteProvider
         var route = new Route(
             new() { downstreamRoute },
             new(),
-            new List<HttpMethod>() { new(upstreamHttpMethod.Trim()) },
+            new() { new(upstreamHttpMethod.Trim()) },
             upstreamPathTemplate,
             upstreamHost,
             aggregator: default,

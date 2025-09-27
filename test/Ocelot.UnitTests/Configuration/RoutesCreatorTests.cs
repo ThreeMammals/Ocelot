@@ -3,6 +3,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Linq;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -126,7 +127,7 @@ public class RoutesCreatorTests : UnitTest
                     {
                         { "e","f" },
                     },
-                    UpstreamHttpMethod = new List<string> { "GET", "POST" },
+                    UpstreamHttpMethod = ["GET", "POST"],
                     Metadata = new Dictionary<string, string>
                     {
                         ["foo"] = "bar",
@@ -148,7 +149,7 @@ public class RoutesCreatorTests : UnitTest
                     {
                         { "k","l" },
                     },
-                    UpstreamHttpMethod = new List<string> { "PUT", "DELETE" },
+                    UpstreamHttpMethod = ["PUT", "DELETE"],
                     Metadata = new Dictionary<string, string>
                     {
                         ["foo"] = "baz",
@@ -231,7 +232,7 @@ public class RoutesCreatorTests : UnitTest
     {
         // Arrange
         _fileConfig = new FileConfiguration();
-        _fileConfig.Routes.Add(new() { UpstreamHttpMethod = methods.Split(',').Where(m => !string.IsNullOrEmpty(m)).ToList() });
+        _fileConfig.Routes.Add(new() { UpstreamHttpMethod = methods.Split(',').Where(m => !string.IsNullOrEmpty(m)).ToHashSet() });
         GivenTheDependenciesAreSetUpCorrectly();
 
         // Act
@@ -279,7 +280,7 @@ public class RoutesCreatorTests : UnitTest
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
         _rloCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-        _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IList<string>>())).Returns(_cacheOptions);
+        _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IReadOnlyCollection<string>>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ht);
@@ -335,14 +336,8 @@ public class RoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
         _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
         _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
-        _result[routeIndex].UpstreamHttpMethod
-            .Select(x => x.Method)
-            .ToList()
-            .ShouldContain(x => x == expected.UpstreamHttpMethod[0]);
-        _result[routeIndex].UpstreamHttpMethod
-            .Select(x => x.Method)
-            .ToList()
-            .ShouldContain(x => x == expected.UpstreamHttpMethod[1]);
+        _result[routeIndex].UpstreamHttpMethod.Count.ShouldBe(2);
+        _result[routeIndex].UpstreamHttpMethod.ShouldAllBe(actual => expected.UpstreamHttpMethod.Contains(actual.Method));
         _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
         _result[routeIndex].DownstreamRoute.Count.ShouldBe(1);
         _result[routeIndex].UpstreamTemplatePattern.ShouldBe(_upt);

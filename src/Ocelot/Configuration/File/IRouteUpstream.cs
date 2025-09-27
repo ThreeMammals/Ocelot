@@ -4,7 +4,7 @@ public interface IRouteUpstream
 {
     IDictionary<string, string> UpstreamHeaderTemplates { get; }
     string UpstreamPathTemplate { get; }
-    IList<string> UpstreamHttpMethod { get; }
+    HashSet<string> UpstreamHttpMethod { get; }
     bool RouteIsCaseSensitive { get; }
     int Priority { get; }
 }

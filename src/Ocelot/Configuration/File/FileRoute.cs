@@ -8,7 +8,10 @@ using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
-public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
+/// <summary>
+/// Represents the JSON structure of a standard static route (no service discovery).
+/// </summary>
+public class FileRoute : FileDynamicRoute, IRouteGrouping, IRouteRateLimiting, ICloneable
 {
     public FileRoute()
     {
@@ -45,7 +48,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
         UpstreamHost = default; // to be reviewed
-        UpstreamHttpMethod = new List<string>();
+        UpstreamHttpMethod = new();
         UpstreamPathTemplate = default; // to be reviewed
     }
 
@@ -64,51 +67,55 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
     public string DownstreamHttpMethod { get; set; }
-    public string DownstreamHttpVersion { get; set; }
 
-    /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
-    /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
-    /// <remarks>
-    /// Related to the <see cref="DownstreamHttpVersion"/> property.
-    /// <list type="bullet">
-    ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
-    ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
-    ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
-    /// </list>
-    /// </remarks>
-    public string DownstreamHttpVersionPolicy { get; set; }
+    //x public string DownstreamHttpVersion { get; set; }
+    ///// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
+    ///// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
+    ///// <remarks>
+    ///// Related to the <see cref="DownstreamHttpVersion"/> property.
+    ///// <list type="bullet">
+    /////   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
+    /////   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
+    /////   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
+    ///// </list>
+    ///// </remarks>
+    //public string DownstreamHttpVersionPolicy { get; set; }
     public string DownstreamPathTemplate { get; set; }
     public string DownstreamScheme { get; set; }
     public FileCacheOptions FileCacheOptions { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     public string Key { get; set; } // IRouteGrouping
     public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
-    public IDictionary<string, string> Metadata { get; set; }
+
+    //public IDictionary<string, string> Metadata { get; set; }
     public int Priority { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
-    public FileRateLimitByHeaderRule RateLimitOptions { get; set; }
-    [NewtonsoftJsonIgnore, JsonIgnore] public FileRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
+
+    //public FileRateLimitByHeaderRule RateLimitOptions { get; set; }
+    //[NewtonsoftJsonIgnore, JsonIgnore] public FileRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
     public string RequestIdKey { get; set; }
     public Dictionary<string, string> RouteClaimsRequirement { get; set; }
-    public bool RouteIsCaseSensitive { get; set; }
-    public FileSecurityOptions SecurityOptions { get; set; }
-    public string ServiceName { get; set; }
-    public string ServiceNamespace { get; set; }
 
-    /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
-    /// <remarks>Notes:
-    /// <list type="bullet">
-    ///   <item><see cref="DownstreamRoute.Timeout"/> is the consumer of this property.</item>
-    ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/> implicitly overrides this property if not defined (null).</item>
-    ///   <item><see cref="QoSOptions.TimeoutValue"/> explicitly overrides this property if QoS is enabled.</item>
-    /// </list>
-    /// </remarks>
-    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
-    public int? Timeout { get; set; }
-    public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
+    //public bool RouteIsCaseSensitive { get; set; }
+    public FileSecurityOptions SecurityOptions { get; set; }
+
+    //public string ServiceName { get; set; }
+    //public string ServiceNamespace { get; set; }
+    ///// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
+    ///// <remarks>Notes:
+    ///// <list type="bullet">
+    /////   <item><see cref="DownstreamRoute.Timeout"/> is the consumer of this property.</item>
+    /////   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/> implicitly overrides this property if not defined (null).</item>
+    /////   <item><see cref="QoSOptions.TimeoutValue"/> explicitly overrides this property if QoS is enabled.</item>
+    ///// </list>
+    ///// </remarks>
+    ///// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
+    //public int? Timeout { get; set; }
+    //public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
-    public IList<string> UpstreamHttpMethod { get; set; }
+
+    //public IList<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     /// <summary>
@@ -157,7 +164,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
         to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;
-        to.UpstreamHttpMethod = new List<string>(from.UpstreamHttpMethod);
+        to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
     }
 

@@ -337,7 +337,7 @@ public class DownstreamRouteCreatorTests : UnitTest
     private void ThenTheDownstreamRouteIsCreated()
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
-        _result.Data.Route.UpstreamHttpMethod[0].ShouldBe(HttpMethod.Get);
+        _result.Data.Route.UpstreamHttpMethod.ShouldContain(HttpMethod.Get);
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
         _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
         _result.Data.Route.DownstreamRoute[0].UseServiceDiscovery.ShouldBeTrue();

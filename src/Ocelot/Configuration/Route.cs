@@ -7,7 +7,7 @@ public class Route
 {
     public Route(List<DownstreamRoute> downstreamRoute,
         List<AggregateRouteConfig> downstreamRouteConfig,
-        IList<HttpMethod> upstreamHttpMethod,
+        HashSet<HttpMethod> upstreamHttpMethod,
         UpstreamPathTemplate upstreamTemplatePattern,
         string upstreamHost,
         string aggregator,
@@ -24,7 +24,7 @@ public class Route
 
     public IDictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; }
     public UpstreamPathTemplate UpstreamTemplatePattern { get; }
-    public IList<HttpMethod> UpstreamHttpMethod { get; }
+    public HashSet<HttpMethod> UpstreamHttpMethod { get; }
     public string UpstreamHost { get; }
     public List<DownstreamRoute> DownstreamRoute { get; }
     public List<AggregateRouteConfig> DownstreamRouteConfig { get; }

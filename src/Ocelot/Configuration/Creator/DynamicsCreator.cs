@@ -61,7 +61,7 @@ public class DynamicsCreator : IDynamicsCreator
         return new Route(
             new() { downstreamRoute },
             new(),
-            new List<HttpMethod>(),
+            new(),
             upstreamTemplatePattern: default,
             upstreamHost: default,
             aggregator: default,

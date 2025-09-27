@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Builder;
 public class RouteBuilder
 {
     private UpstreamPathTemplate _upstreamTemplatePattern;
-    private IList<HttpMethod> _upstreamHttpMethod;
+    private HashSet<HttpMethod> _upstreamHttpMethod;
     private string _upstreamHost;
     private List<DownstreamRoute> _downstreamRoutes;
     private List<AggregateRouteConfig> _downstreamRoutesConfig;
@@ -45,7 +45,7 @@ public class RouteBuilder
 
     public RouteBuilder WithUpstreamHttpMethod(List<string> input)
     {
-        _upstreamHttpMethod = (input.Count == 0) ? new List<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToList();
+        _upstreamHttpMethod = (input.Count == 0) ? new HashSet<HttpMethod>() : input.Select(x => new HttpMethod(x.Trim())).ToHashSet();
         return this;
     }
 
