@@ -275,7 +275,7 @@ public class RoutesCreatorTests : UnitTest
         _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
-        _utpCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>())).Returns(_upt);
+        _utpCreator.Setup(x => x.Create(It.IsAny<IRouteUpstream>())).Returns(_upt);
         _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);

@@ -28,28 +28,6 @@ public class FileDynamicRouteTests
     }
 
     [Fact]
-    public void Ctor_IRouteUpstream_IsImplemented()
-    {
-        // Arrange, Act
-        FileDynamicRoute instance = new()
-        {
-            ServiceName = "1",
-            UpstreamHttpMethod = ["2"],
-        };
-
-        // Assert
-        Assert.IsAssignableFrom<IRouteUpstream>(instance);
-        IRouteUpstream obj = instance;
-        Assert.NotNull(obj.UpstreamHeaderTemplates);
-        Assert.Empty(obj.UpstreamHeaderTemplates);
-        Assert.Equal(instance.ServiceName, obj.UpstreamPathTemplate);
-        Assert.NotNull(obj.UpstreamHttpMethod);
-        Assert.Contains("2", obj.UpstreamHttpMethod);
-        Assert.False(obj.RouteIsCaseSensitive);
-        Assert.Equal(0, obj.Priority);
-    }
-
-    [Fact]
     public void Ctor_IRouteRateLimiting_IsImplemented()
     {
         // Arrange

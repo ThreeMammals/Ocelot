@@ -45,6 +45,7 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
         RateLimitOptions = default;
         RateLimiting = default;
         ServiceName = default;
+        ServiceNamespace = default;
     }
 
     /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
@@ -58,16 +59,5 @@ public class FileDynamicRoute : IRouteGrouping, IRouteRateLimiting
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
     public int? Timeout { get; set; }
 
-    // IRouteGrouping
-    public string Key { get; set; }
-
-    // IRouteUpstream
-    public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
-
-    //public string UpstreamPathTemplate { get; set; }
-    public string UpstreamPathTemplate { get => ServiceName; }
-    public HashSet<string> UpstreamHttpMethod { get; set; }
-
-    public bool RouteIsCaseSensitive { get; set; }
-    public int Priority => 0;
+    public string Key { get; set; } // IRouteGrouping
 }
