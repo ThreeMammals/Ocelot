@@ -16,11 +16,12 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
 
         var rule = route.RateLimitOptions;
         var globalOptions = globalConfiguration.RateLimitOptions;
+        var group = globalOptions as IRouteGroup;
 
         // bool isGlobal = globalOptions?.RouteKeys?.Contains(route.Key) ?? true;
-        bool isGlobal = globalOptions?.RouteKeys is null || // undefined section or array option -> is global
-            globalOptions.RouteKeys.Count == 0 || // empty collection -> is global
-            globalOptions.RouteKeys.Contains(route.Key); // this route is in the group
+        bool isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+            group.RouteKeys.Count == 0 || // empty collection -> is global
+            group.RouteKeys.Contains(route.Key); // this route is in the group
 
         if (rule?.EnableRateLimiting == false || (isGlobal && globalOptions?.EnableRateLimiting == false))
         {
@@ -46,7 +47,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         return new(false);
     }
 
-    protected virtual RateLimitOptions MergeHeaderRules(FileRateLimitByHeaderRule rule, FileGlobalRateLimitByHeaderRule globalRule)
+    protected virtual RateLimitOptions MergeHeaderRules(FileRateLimitByHeaderRule rule, FileRateLimitByHeaderRule globalRule)
     {
         ArgumentNullException.ThrowIfNull(rule);
         ArgumentNullException.ThrowIfNull(globalRule);
