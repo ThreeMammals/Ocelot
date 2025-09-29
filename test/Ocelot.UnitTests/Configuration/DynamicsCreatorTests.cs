@@ -202,7 +202,7 @@ public class DynamicsCreatorTests : UnitTest
             ["foo"] = "bar",
         };
         _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
-            .Returns(new MetadataOptions(new FileMetadataOptions{Metadata = _expectedMetadata}));
+            .Returns(new MetadataOptions() { Metadata = _expectedMetadata });
     }
 
     private void GivenTheRloCreatorReturns()

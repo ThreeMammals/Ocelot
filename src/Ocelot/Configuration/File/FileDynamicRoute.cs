@@ -5,8 +5,6 @@ namespace Ocelot.Configuration.File;
 /// </summary>
 public class FileDynamicRoute : FileGlobalDynamicRoute, IRouteGrouping, IRouteRateLimiting
 {
-    public IDictionary<string, string> Metadata { get; set; }
-
     [Obsolete("Use RateLimitOptions instead of RateLimitRule! Note that RateLimitRule will be removed in version 25.0!")]
     public FileRateLimitByHeaderRule RateLimitRule { get; set; }
 

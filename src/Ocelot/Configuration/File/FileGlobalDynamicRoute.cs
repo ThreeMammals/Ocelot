@@ -22,6 +22,8 @@ public class FileGlobalDynamicRoute
     public string DownstreamHttpVersionPolicy { get; set; }
     public string DownstreamHttpVersion { get; set; }
     public string DownstreamScheme { get; set; }
+    public IDictionary<string, string> Metadata { get; set; }
+
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting
     [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.0!
     public FileRateLimiting RateLimiting { get; set; }

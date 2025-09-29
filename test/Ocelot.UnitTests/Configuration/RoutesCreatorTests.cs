@@ -289,10 +289,8 @@ public class RoutesCreatorTests : UnitTest
         _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
         _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
         _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
-        _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>())).Returns(new MetadataOptions(new FileMetadataOptions
-        {
-            Metadata = _expectedMetadata,
-        }));
+        _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
+            .Returns(new MetadataOptions() { Metadata = _expectedMetadata });
     }
 
     private void ThenTheRoutesAreCreated()
