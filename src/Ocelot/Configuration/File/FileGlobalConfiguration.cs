@@ -1,11 +1,4 @@
-﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SA1133 // Do not combine attributes
-#pragma warning disable SA1134 // Attributes should not share line
-
-using System.Text.Json.Serialization;
-using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
-
-namespace Ocelot.Configuration.File;
+﻿namespace Ocelot.Configuration.File;
 
 public class FileGlobalConfiguration : FileGlobalDynamicRoute
 {
@@ -40,7 +33,6 @@ public class FileGlobalConfiguration : FileGlobalDynamicRoute
     public FileMetadataOptions MetadataOptions { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public new FileGlobalRateLimitByHeaderRule RateLimitOptions { get; set; }
-    [NewtonsoftJsonIgnore, JsonIgnore] public FileGlobalRateLimiting RateLimiting { get; set; } // publish the schema in version 25.0!
     public string RequestIdKey { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }
     public FileServiceDiscoveryProvider ServiceDiscoveryProvider { get; set; }

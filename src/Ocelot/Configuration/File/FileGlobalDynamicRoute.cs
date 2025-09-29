@@ -1,4 +1,9 @@
-﻿using Ocelot.Configuration.Creator;
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1133 // Do not combine attributes
+
+using Ocelot.Configuration.Creator;
+using System.Text.Json.Serialization;
+using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
@@ -18,6 +23,8 @@ public class FileGlobalDynamicRoute
     public string DownstreamHttpVersion { get; set; }
     public string DownstreamScheme { get; set; }
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting
+    [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.0!
+    public FileRateLimiting RateLimiting { get; set; }
 
     /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
     /// <remarks>Notes:
