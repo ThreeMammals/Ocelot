@@ -21,9 +21,9 @@ public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
         //an upstream path template which means they are dyanmic and service discovery is on...
         if ((!config.Routes.Any() || config.Routes.All(x => string.IsNullOrEmpty(x.UpstreamTemplatePattern?.OriginalValue))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
         {
-            _logger.LogInformation($"Selected {nameof(DownstreamRouteCreator)} as DownstreamRouteProvider for this request");
+            _logger.LogInformation($"Selected {nameof(DiscoveryDownstreamRouteFinder)} as {nameof(IDownstreamRouteProvider)} for this request");
 
-            return _providers[nameof(DownstreamRouteCreator)];
+            return _providers[nameof(DiscoveryDownstreamRouteFinder)];
         }
 
         return _providers[nameof(DownstreamRouteFinder)];

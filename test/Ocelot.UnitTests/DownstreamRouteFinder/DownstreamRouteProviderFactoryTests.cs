@@ -28,7 +28,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
         services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
-        services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
+        services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Features.AddHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         var provider = services.BuildServiceProvider(true);
         _logger = new Mock<IOcelotLogger>();
@@ -141,7 +141,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteCreator>();
+        _result.ShouldBeOfType<DiscoveryDownstreamRouteFinder>();
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteCreator>();
+        _result.ShouldBeOfType<DiscoveryDownstreamRouteFinder>();
     }
 
     private void GivenTheRoutes(Route route, ServiceProviderConfiguration config = null)
