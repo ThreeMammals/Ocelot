@@ -32,7 +32,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         int port1 = PortFinder.GetRandomPort();
         int port2 = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port1, port2);
-        route.LoadBalancerOptions.Type = nameof(RoundRobin);
+        route.LoadBalancerOptions = new(nameof(RoundRobin));
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
         this.Given(_ => GivenThereIsAConfiguration(configuration))

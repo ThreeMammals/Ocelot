@@ -12,7 +12,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRoute
         DownstreamHttpVersionPolicy = default;
         DownstreamScheme = default;
         HttpHandlerOptions = new();
-        LoadBalancerOptions = new();
+        LoadBalancerOptions = default;
         MetadataOptions = new();
         QoSOptions = new();
         RateLimitOptions = default;
@@ -29,7 +29,6 @@ public class FileGlobalConfiguration : FileGlobalDynamicRoute
     public FileCacheOptions CacheOptions { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
-    public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public new FileGlobalRateLimitByHeaderRule RateLimitOptions { get; set; }

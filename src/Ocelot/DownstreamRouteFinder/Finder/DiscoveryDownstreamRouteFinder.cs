@@ -61,7 +61,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         // TODO: Review this logic. Is this merging options for dynamic routes?
         var serviceDiscoveryDownstreamRoute = configuration.Routes?
             .SelectMany(x => x.DownstreamRoute)
-            .FirstOrDefault(x => x.ServiceName == serviceName);
+            .FirstOrDefault(x => x.ServiceName == serviceName); // TODO add support of ServiceNamespace
         if (serviceDiscoveryDownstreamRoute != null)
         {
             downstreamRouteBuilder

@@ -11,8 +11,10 @@ public class FileDynamicRouteTests
         FileDynamicRoute instance = new();
 
         // Assert
-        Assert.NotNull(instance.Metadata);
-        Assert.Empty(instance.Metadata);
+        Assert.Null(instance.Metadata);
+        Assert.Null(instance.Key);
+        Assert.Null(instance.RateLimitRule);
+        Assert.Null(instance.RateLimitOptions);
     }
 
     [Fact]

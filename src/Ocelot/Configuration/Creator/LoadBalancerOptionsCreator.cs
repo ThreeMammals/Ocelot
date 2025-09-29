@@ -6,6 +6,6 @@ public class LoadBalancerOptionsCreator : ILoadBalancerOptionsCreator
 {
     public LoadBalancerOptions Create(FileLoadBalancerOptions options)
     {
-        return new(options.Type, options.Key, options.Expiry);
+        return new(options?.Type, options?.Key, options?.Expiry ?? 0);
     }
 }

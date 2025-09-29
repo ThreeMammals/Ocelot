@@ -22,6 +22,7 @@ public class FileGlobalDynamicRoute
     public string DownstreamHttpVersionPolicy { get; set; }
     public string DownstreamHttpVersion { get; set; }
     public string DownstreamScheme { get; set; }
+    public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
 
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting

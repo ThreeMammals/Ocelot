@@ -1,4 +1,5 @@
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 
 namespace Ocelot.Configuration.Creator;
@@ -14,11 +15,11 @@ public class RouteKeyCreator : IRouteKeyCreator
     /// <item>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</item>
     /// </list>
     /// </remarks>
-    /// <param name="fileRoute">The route object.</param>
+    /// <param name="route">The route object.</param>
     /// <returns>A <see langword="string"/> object containing the key.</returns>
-    public string Create(FileRoute fileRoute)
+    public string Create(FileRoute route)
     {
-        var isStickySession = fileRoute.LoadBalancerOptions is
+        var isStickySession = route.LoadBalancerOptions is
         {
             Type: nameof(CookieStickySessions),
             Key.Length: > 0
@@ -26,44 +27,22 @@ public class RouteKeyCreator : IRouteKeyCreator
 
         if (isStickySession)
         {
-            return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
+            return $"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}";
         }
 
-        var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
-        var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
-
         var keyBuilder = new StringBuilder()
-
-            // UpstreamHttpMethod and UpstreamPathTemplate are required
-            .AppendNext(upstreamHttpMethods)
-            .AppendNext(fileRoute.UpstreamPathTemplate)
-
-            // Other properties are optional, replace undefined values with defaults to aid debugging
-            .AppendNext(Coalesce(fileRoute.UpstreamHost, "no-host"))
-
-            .AppendNext(Coalesce(downstreamHostAndPorts, "no-host-and-port"))
-            .AppendNext(Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"))
-            .AppendNext(Coalesce(fileRoute.ServiceName, "no-svc-name"))
-            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"))
-            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
-
+            .AppendNext(route.UpstreamHttpMethod.Csv()) // required
+            .AppendNext(route.UpstreamPathTemplate) // required
+            .AppendNext(route.UpstreamHost.IfEmpty("no-host")) // optional...
+            .AppendNext(route.DownstreamHostAndPorts.Select(AsString).Csv().IfEmpty("no-host-and-port"))
+            .AppendNext(route.ServiceNamespace.IfEmpty("no-svc-ns"))
+            .AppendNext(route.ServiceName.IfEmpty("no-svc-name"))
+            .AppendNext((route.LoadBalancerOptions?.Type).IfEmpty("no-lb-type"))
+            .AppendNext((route.LoadBalancerOptions?.Key).IfEmpty("no-lb-key"));
         return keyBuilder.ToString();
     }
 
-    /// <summary>
-    /// Helper function to convert multiple strings into a comma-separated string.
-    /// </summary>
-    /// <param name="values">The collection of strings to join by comma separator.</param>
-    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
-    private static string Csv(IEnumerable<string> values) => string.Join(',', values);
-
-    /// <summary>
-    /// Helper function to return the first non-null-or-whitespace string.
-    /// </summary>
-    /// <param name="first">The 1st string to check.</param>
-    /// <param name="second">The 2nd string to check.</param>
-    /// <returns>A <see langword="string"/> which is not empty.</returns>
-    private static string Coalesce(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
+    private static string AsString(FileHostAndPort host) => host?.ToString();
 }
 
 internal static class RouteKeyCreatorHelpers
@@ -83,4 +62,11 @@ internal static class RouteKeyCreatorHelpers
 
         return builder.Append(next);
     }
+
+    /// <summary>
+    /// Helper function to convert multiple strings into a comma-separated string.
+    /// </summary>
+    /// <param name="values">The collection of strings to join by comma separator.</param>
+    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
+    public static string Csv(this IEnumerable<string> values) => string.Join(',', values);
 }

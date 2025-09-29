@@ -24,32 +24,32 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
         DelegatingHandlers = new List<string>();
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHostAndPorts = new List<FileHostAndPort>();
-        DownstreamHttpMethod = default; // to be reviewed
-        DownstreamHttpVersion = default; // to be reviewed
-        DownstreamHttpVersionPolicy = default; // to be reviewed
-        DownstreamPathTemplate = default; // to be reviewed 
+        DownstreamHttpMethod = default;
+        DownstreamHttpVersion = default;
+        DownstreamHttpVersionPolicy = default;
+        DownstreamPathTemplate = default;
         DownstreamScheme = default; // to be reviewed 
         FileCacheOptions = new FileCacheOptions();
         HttpHandlerOptions = new FileHttpHandlerOptions();
-        Key = default; // to be reviewed
-        LoadBalancerOptions = new FileLoadBalancerOptions();
-        Metadata = new Dictionary<string, string>();
+        Key = default;
+        LoadBalancerOptions = default;
+        Metadata = default;
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
         RateLimiting = default;
         RateLimitOptions = default;
-        RequestIdKey = default; // to be reviewed
+        RequestIdKey = default;
         RouteClaimsRequirement = new Dictionary<string, string>();
-        RouteIsCaseSensitive = default; // to be reviewed
+        RouteIsCaseSensitive = default;
         SecurityOptions = new FileSecurityOptions();
-        ServiceName = default; // to be reviewed
-        ServiceNamespace = default; // to be reviewed
-        Timeout = default; // to be reviewed
+        ServiceName = default;
+        ServiceNamespace = default;
+        Timeout = default;
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
-        UpstreamHost = default; // to be reviewed
+        UpstreamHost = default;
         UpstreamHttpMethod = new();
-        UpstreamPathTemplate = default; // to be reviewed
+        UpstreamPathTemplate = default;
     }
 
     public FileRoute(FileRoute from)

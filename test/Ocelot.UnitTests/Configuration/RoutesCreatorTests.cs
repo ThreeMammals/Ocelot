@@ -132,6 +132,7 @@ public class RoutesCreatorTests : UnitTest
                     {
                         ["foo"] = "bar",
                     },
+                    LoadBalancerOptions = new("LB1"),
                 },
                 new()
                 {
@@ -154,6 +155,7 @@ public class RoutesCreatorTests : UnitTest
                     {
                         ["foo"] = "baz",
                     },
+                    LoadBalancerOptions = new("LB2"),
                 },
             },
         };

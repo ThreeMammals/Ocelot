@@ -9,6 +9,12 @@ public class FileLoadBalancerOptions
         Type = string.Empty;
     }
 
+    public FileLoadBalancerOptions(string type)
+        : this()
+    {
+        Type = type;
+    }
+
     public FileLoadBalancerOptions(FileLoadBalancerOptions from)
     {
         Expiry = from.Expiry;
