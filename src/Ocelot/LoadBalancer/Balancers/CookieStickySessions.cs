@@ -9,6 +9,27 @@ namespace Ocelot.LoadBalancer.Balancers;
 
 public class CookieStickySessions : ILoadBalancer
 {
+    /// <summary>
+    /// Track default ASP.NET Core session idle timeout here: <see href="https://github.com/dotnet/aspnetcore/blob/0585ae7d9f9361bed031ce01e4a2f6eeab7438c4/src/Middleware/Session/src/SessionOptions.cs#L38">SessionOptions.IdleTimeout</see>.
+    /// </summary>
+    public const int DefSessionExpiryMinutes = 20;
+    public static readonly int DefSessionExpiryMilliseconds;
+
+    /// <summary>
+    /// Track default ASP.NET Core session cookie name here: <see href="https://github.com/dotnet/aspnetcore/blob/main/src/Middleware/Session/src/SessionDefaults.cs#L14">SessionDefaults.CookieName</see>.
+    /// </summary>
+    public static readonly string DefSessionCookieName = Microsoft.AspNetCore.Session.SessionDefaults.CookieName;
+
+    static CookieStickySessions()
+    {
+#if NET9_0_OR_GREATER
+        DefSessionExpiryMilliseconds = DefSessionExpiryMinutes * (int)TimeSpan.MillisecondsPerMinute;
+#else
+        // TODO Migrate to TimeSpan.MillisecondsPerMinute after net8.0 deprecation
+        DefSessionExpiryMilliseconds = (int)TimeSpan.FromMinutes(DefSessionExpiryMinutes).TotalMilliseconds;
+#endif
+    }
+
     private readonly int _keyExpiryInMs;
     private readonly string _cookieName;
     private readonly ILoadBalancer _loadBalancer;

@@ -287,7 +287,7 @@ public class RoutesCreatorTests : UnitTest
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ht);
         _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
-        _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
+        _lboCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_lbo);
         _versionCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersion);
         _versionPolicyCreator.Setup(x => x.Create(It.IsAny<string>())).Returns(_expectedVersionPolicy);
         _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
@@ -361,7 +361,7 @@ public class RoutesCreatorTests : UnitTest
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);
         _hfarCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _daCreator.Verify(x => x.Create(fileRoute), Times.Once);
-        _lboCreator.Verify(x => x.Create(fileRoute.LoadBalancerOptions), Times.Once);
+        _lboCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);
         _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
     }

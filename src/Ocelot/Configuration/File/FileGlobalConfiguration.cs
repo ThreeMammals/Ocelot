@@ -31,6 +31,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRoute
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
+    public new FileGlobalLoadBalancerOptions LoadBalancerOptions { get; set; }
     public new FileGlobalRateLimitByHeaderRule RateLimitOptions { get; set; }
     public string RequestIdKey { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }

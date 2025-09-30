@@ -111,7 +111,7 @@ public class RoutesCreator : IRoutesCreator // TODO: Rename to StaticRoutesCreat
 
         var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute);
 
-        var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute.LoadBalancerOptions);
+        var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions, globalConfiguration);
 

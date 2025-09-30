@@ -8,6 +8,7 @@ namespace Ocelot.UnitTests.Configuration;
 public class DynamicsCreatorTests : UnitTest
 {
     private readonly DynamicsCreator _creator;
+    private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
     private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
     private readonly Mock<IVersionCreator> _versionCreator;
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
@@ -22,11 +23,12 @@ public class DynamicsCreatorTests : UnitTest
 
     public DynamicsCreatorTests()
     {
+        _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
         _versionCreator = new Mock<IVersionCreator>();
         _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
         _metadataCreator = new Mock<IMetadataCreator>();
         _rloCreator = new Mock<IRateLimitOptionsCreator>();
-        _creator = new DynamicsCreator(_rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object, _metadataCreator.Object);
+        _creator = new DynamicsCreator(_lboCreator.Object, _rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object, _metadataCreator.Object);
     }
 
     [Fact]

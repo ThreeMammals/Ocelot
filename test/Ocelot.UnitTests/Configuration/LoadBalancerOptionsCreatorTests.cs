@@ -24,6 +24,6 @@ public class LoadBalancerOptionsCreatorTests : UnitTest
         // Assert
         result.Type.ShouldBe(options.Type);
         result.Key.ShouldBe(options.Key);
-        result.ExpiryInMs.ShouldBe(options.Expiry);
+        result.ExpiryInMs.ShouldBe(options.Expiry.Value);
     }
 }

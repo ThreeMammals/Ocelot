@@ -6,17 +6,20 @@ namespace Ocelot.Configuration.Creator;
 
 public class DynamicsCreator : IDynamicsCreator
 {
+    private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
     private readonly IMetadataCreator _metadataCreator;
 
     public DynamicsCreator(
+        ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
         IMetadataCreator metadataCreator)
     {
+        _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
         _versionCreator = versionCreator;
         _versionPolicyCreator = versionPolicyCreator;
@@ -44,14 +47,16 @@ public class DynamicsCreator : IDynamicsCreator
             dynamicRoute.RateLimitOptions = dynamicRoute.RateLimitRule;
         }
 
+        var lbOptions = _loadBalancerOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var rateLimitOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
         var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
 
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithRateLimitOptions(rateLimitOptions)
             .WithServiceName(dynamicRoute.ServiceName)
+            .WithLoadBalancerOptions(lbOptions)
+            .WithRateLimitOptions(rateLimitOptions)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
             .WithMetadata(metadata)
@@ -61,7 +66,7 @@ public class DynamicsCreator : IDynamicsCreator
         return new Route(
             new() { downstreamRoute },
             new(),
-            new(),
+            upstreamHttpMethod: new(),
             upstreamTemplatePattern: default,
             upstreamHost: default,
             aggregator: default,
