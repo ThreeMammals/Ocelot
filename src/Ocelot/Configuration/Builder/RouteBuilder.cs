@@ -69,13 +69,15 @@ public class RouteBuilder
 
     public Route Build()
     {
-        return new Route(
-            _downstreamRoutes,
-            _downstreamRoutesConfig,
-            _upstreamHttpMethod,
-            _upstreamTemplatePattern,
-            _upstreamHost,
-            _aggregator,
-            _upstreamHeaders);
+        return new Route()
+        {
+            Aggregator = _aggregator,
+            DownstreamRoute = _downstreamRoutes,
+            DownstreamRouteConfig = _downstreamRoutesConfig,
+            UpstreamHeaderTemplates = _upstreamHeaders,
+            UpstreamHost = _upstreamHost,
+            UpstreamHttpMethod = _upstreamHttpMethod,
+            UpstreamTemplatePattern = _upstreamTemplatePattern,
+        };
     }
 }

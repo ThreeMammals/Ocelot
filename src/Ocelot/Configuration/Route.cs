@@ -5,28 +5,11 @@ namespace Ocelot.Configuration;
 
 public class Route
 {
-    public Route(List<DownstreamRoute> downstreamRoute,
-        List<AggregateRouteConfig> downstreamRouteConfig,
-        HashSet<HttpMethod> upstreamHttpMethod,
-        UpstreamPathTemplate upstreamTemplatePattern,
-        string upstreamHost,
-        string aggregator,
-        IDictionary<string, UpstreamHeaderTemplate> upstreamHeaderTemplates)
-    {
-        UpstreamHost = upstreamHost;
-        DownstreamRoute = downstreamRoute;
-        DownstreamRouteConfig = downstreamRouteConfig;
-        UpstreamHttpMethod = upstreamHttpMethod;
-        UpstreamTemplatePattern = upstreamTemplatePattern;
-        Aggregator = aggregator;
-        UpstreamHeaderTemplates = upstreamHeaderTemplates;
-    }
-
-    public IDictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; }
-    public UpstreamPathTemplate UpstreamTemplatePattern { get; }
-    public HashSet<HttpMethod> UpstreamHttpMethod { get; }
-    public string UpstreamHost { get; }
-    public List<DownstreamRoute> DownstreamRoute { get; }
-    public List<AggregateRouteConfig> DownstreamRouteConfig { get; }
-    public string Aggregator { get; }
+    public string Aggregator { get; init; }
+    public List<DownstreamRoute> DownstreamRoute { get; init; }
+    public List<AggregateRouteConfig> DownstreamRouteConfig { get; init; }
+    public IDictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; init; }
+    public string UpstreamHost { get; init; }
+    public HashSet<HttpMethod> UpstreamHttpMethod { get; init; }
+    public UpstreamPathTemplate UpstreamTemplatePattern { get; init; }
 }

@@ -171,14 +171,13 @@ public class RoutesCreator : IRoutesCreator // TODO: Rename to StaticRoutesCreat
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamHeaders
         var upstreamHttpMethods = fileRoute.UpstreamHttpMethod.Count == 0 ? new HashSet<HttpMethod>()
             : fileRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToHashSet();
-
-        return new Route(
-            [downstreamRoute],
-            new(),
-            upstreamHttpMethods,
-            upstreamTemplatePattern,
-            fileRoute.UpstreamHost,
-            aggregator: default,
-            upstreamHeaderTemplates/*downstreamRoute.UpstreamHeaders*/);
+        return new Route()
+        {
+            DownstreamRoute = [downstreamRoute],
+            UpstreamHeaderTemplates = upstreamHeaderTemplates, // downstreamRoute.UpstreamHeaders
+            UpstreamHost = fileRoute.UpstreamHost,
+            UpstreamHttpMethod = upstreamHttpMethods,
+            UpstreamTemplatePattern = upstreamTemplatePattern,
+        };
     }
 }

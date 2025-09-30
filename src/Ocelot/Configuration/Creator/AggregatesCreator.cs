@@ -42,13 +42,15 @@ public class AggregatesCreator : IAggregatesCreator
         var upstreamHttpMethod = (aggregateRoute.UpstreamHttpMethod.Count == 0) ? new HashSet<HttpMethod>()
             : aggregateRoute.UpstreamHttpMethod.Select(x => new HttpMethod(x.Trim())).ToHashSet();
 
-        return new Route(
-            applicableRoutes,
-            aggregateRoute.RouteKeysConfig,
-            upstreamHttpMethod,
-            upstreamTemplatePattern,
-            aggregateRoute.UpstreamHost,
-            aggregateRoute.Aggregator,
-            upstreamHeaderTemplates);
+        return new Route()
+        {
+            Aggregator = aggregateRoute.Aggregator,
+            DownstreamRoute = applicableRoutes,
+            DownstreamRouteConfig = aggregateRoute.RouteKeysConfig,
+            UpstreamHeaderTemplates = upstreamHeaderTemplates,
+            UpstreamHost = aggregateRoute.UpstreamHost,
+            UpstreamHttpMethod = upstreamHttpMethod,
+            UpstreamTemplatePattern = upstreamTemplatePattern,
+        };
     }
 }

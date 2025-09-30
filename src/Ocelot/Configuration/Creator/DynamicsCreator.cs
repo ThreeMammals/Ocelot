@@ -62,14 +62,9 @@ public class DynamicsCreator : IDynamicsCreator
             .WithMetadata(metadata)
             .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
             .Build();
-
-        return new Route(
-            new() { downstreamRoute },
-            new(),
-            upstreamHttpMethod: new(),
-            upstreamTemplatePattern: default,
-            upstreamHost: default,
-            aggregator: default,
-            upstreamHeaderTemplates: default);
+        return new Route()
+        {
+            DownstreamRoute = [downstreamRoute],
+        };
     }
 }

@@ -69,18 +69,16 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();
-        var route = new Route(
-            new() { downstreamRoute },
-            new(),
-            new() { new(upstreamHttpMethod.Trim()) },
-            upstreamPathTemplate,
-            upstreamHost,
-            aggregator: default,
-            upstreamHeaderTemplates);
-
+        var route = new Route()
+        {
+            DownstreamRoute = [downstreamRoute],
+            UpstreamHeaderTemplates = upstreamHeaderTemplates,
+            UpstreamHost = upstreamHost,
+            UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
+            UpstreamTemplatePattern = upstreamPathTemplate,
+        };
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
         _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);
-
         return downstreamRouteHolder;
     }
 
