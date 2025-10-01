@@ -43,9 +43,9 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
         // TODO: Could it be that the static route functionality was possibly lost here? -> StaticRoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? serviceDiscoveryDownstreamRoute.UpstreamHeaders
+        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
-        var downstreamRouteBuilder = new DownstreamRouteBuilder()
+        var routeBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)
             .WithLoadBalancerKey(loadBalancerKey)
             .WithDownstreamPathTemplate(downstreamPath)
@@ -59,16 +59,20 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>);
 
         // TODO: Review this logic. Is this merging options for dynamic routes?
-        var serviceDiscoveryDownstreamRoute = configuration.Routes?
+        var dynamicRoute = configuration.Routes?
             .SelectMany(x => x.DownstreamRoute)
-            .FirstOrDefault(x => x.ServiceName == serviceName); // TODO add support of ServiceNamespace
-        if (serviceDiscoveryDownstreamRoute != null)
+            .FirstOrDefault(x => x.ServiceName == serviceName); // TODO GetServiceName, add support of ServiceNamespace in request URL like this -> service_namespace$service_name
+
+        // Recreate the downstream route because of reconfiguration caused by the dynamic route
+        if (dynamicRoute != null)
         {
-            downstreamRouteBuilder
-                .WithRateLimitOptions(serviceDiscoveryDownstreamRoute.RateLimitOptions);
+            // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
+            routeBuilder
+                .WithRateLimitOptions(dynamicRoute.RateLimitOptions)
+                .WithLoadBalancerOptions(dynamicRoute.LoadBalancerOptions);
         }
 
-        var downstreamRoute = downstreamRouteBuilder.Build();
+        var downstreamRoute = routeBuilder.Build();
         var route = new Route(downstreamRoute)
         {
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
@@ -103,6 +107,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .Substring(upstreamUrlPath.IndexOf('/', 1));
     }
 
+    // TODO: Add support of ServiceNamespace in request URL like this -> service_namespace$service_name
     private static string GetServiceName(string upstreamUrlPath)
     {
         if (upstreamUrlPath.IndexOf('/', 1) == -1)
@@ -116,11 +121,11 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .TrimEnd('/');
     }
 
-    private static string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions loadBalancerOptions)
+    private static string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions options)
     {
-        if (!string.IsNullOrEmpty(loadBalancerOptions.Type) && !string.IsNullOrEmpty(loadBalancerOptions.Key) && loadBalancerOptions.Type == nameof(CookieStickySessions))
+        if (!string.IsNullOrEmpty(options.Type) && !string.IsNullOrEmpty(options.Key) && options.Type == nameof(CookieStickySessions))
         {
-            return $"{nameof(CookieStickySessions)}:{loadBalancerOptions.Key}";
+            return $"{nameof(CookieStickySessions)}:{options.Key}";
         }
 
         return CreateQoSKey(downstreamTemplatePath, httpMethod);

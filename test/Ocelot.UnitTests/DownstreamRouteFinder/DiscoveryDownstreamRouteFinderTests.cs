@@ -71,6 +71,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)
+            .WithLoadBalancerOptions(new())
             .Build();
         var route = new Route(downstreamRoute);
         var routes = new List<Route> { route };
