@@ -59,11 +59,11 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
         Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
-        Services.TryAddSingleton<IRoutesCreator, RoutesCreator>();
+        Services.TryAddSingleton<IRoutesCreator, StaticRoutesCreator>();
+        Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
         Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
         Services.TryAddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         Services.TryAddSingleton<IConfigurationCreator, ConfigurationCreator>();
-        Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
         Services.TryAddSingleton<ILoadBalancerOptionsCreator, LoadBalancerOptionsCreator>();
         Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
         Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
