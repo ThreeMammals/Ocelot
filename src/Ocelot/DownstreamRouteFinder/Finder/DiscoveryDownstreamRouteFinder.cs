@@ -69,9 +69,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         }
 
         var downstreamRoute = downstreamRouteBuilder.Build();
-        var route = new Route()
+        var route = new Route(downstreamRoute)
         {
-            DownstreamRoute = [downstreamRoute],
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
             UpstreamHost = upstreamHost,
             UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],

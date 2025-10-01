@@ -80,9 +80,9 @@ public class FileInternalConfigurationCreatorTests : UnitTest
 
     private void GivenTheDependenciesAreSetUp()
     {
-        _routes = new List<Route> { new RouteBuilder().Build() };
-        _aggregates = new List<Route> { new RouteBuilder().Build() };
-        _dynamics = new List<Route> { new RouteBuilder().Build() };
+        _routes = new List<Route> { new() };
+        _aggregates = new List<Route> { new() };
+        _dynamics = new List<Route> { new() };
         _internalConfig = new InternalConfiguration(null, string.Empty, null, string.Empty, null, string.Empty, null, null, null, null);
 
         _routesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_routes);

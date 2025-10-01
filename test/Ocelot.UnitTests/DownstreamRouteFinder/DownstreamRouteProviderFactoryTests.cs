@@ -41,7 +41,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     public void Should_return_downstream_route_finder()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         GivenTheRoutes(route);
 
         // Act
@@ -55,9 +55,10 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     public void Should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
     {
         // Arrange
-        var route = new RouteBuilder()
-            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build())
-            .Build();
+        var route = new Route()
+        {
+            UpstreamTemplatePattern = new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build(),
+        };
         var spConfig = new ServiceProviderConfigurationBuilder()
             .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
         GivenTheRoutes(route, spConfig);
@@ -148,7 +149,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     public void Should_return_downstream_route_creator_with_dynamic_re_route()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         var spConfig = new ServiceProviderConfigurationBuilder()
             .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
         GivenTheRoutes(route, spConfig);

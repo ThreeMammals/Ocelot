@@ -62,9 +62,6 @@ public class DynamicsCreator : IDynamicsCreator
             .WithMetadata(metadata)
             .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
             .Build();
-        return new Route()
-        {
-            DownstreamRoute = [downstreamRoute],
-        };
+        return new Route(downstreamRoute);
     }
 }

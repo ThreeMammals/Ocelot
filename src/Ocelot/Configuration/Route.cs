@@ -5,6 +5,14 @@ namespace Ocelot.Configuration;
 
 public class Route
 {
+    public Route() => DownstreamRoute = new();
+    public Route(DownstreamRoute route) => DownstreamRoute = [route];
+    public Route(DownstreamRoute route, HttpMethod method)
+    {
+        DownstreamRoute = [route];
+        UpstreamHttpMethod = [method];
+    }
+
     public string Aggregator { get; init; }
     public List<DownstreamRoute> DownstreamRoute { get; init; }
     public List<AggregateRouteConfig> DownstreamRouteConfig { get; init; }

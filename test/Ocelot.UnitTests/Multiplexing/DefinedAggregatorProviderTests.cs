@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.Builder;
+using Ocelot.Configuration;
 using Ocelot.Multiplexer;
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
@@ -13,9 +13,10 @@ public class DefinedAggregatorProviderTests : UnitTest
     public void Should_find_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder()
-            .WithAggregator("TestDefinedAggregator")
-            .Build();
+        var route = new Route()
+        {
+            Aggregator = "TestDefinedAggregator",
+        };
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
         var services = serviceCollection.BuildServiceProvider(true);
@@ -34,9 +35,10 @@ public class DefinedAggregatorProviderTests : UnitTest
     public void Should_not_find_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder()
-            .WithAggregator("TestDefinedAggregator")
-            .Build();
+        var route = new Route()
+        {
+            Aggregator = "TestDefinedAggregator",
+        };
 
         // Arrange: Given No Defined Aggregator
         var serviceCollection = new ServiceCollection();

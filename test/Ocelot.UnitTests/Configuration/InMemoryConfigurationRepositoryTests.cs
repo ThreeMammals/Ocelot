@@ -70,10 +70,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
 
                 return new List<Route>
                 {
-                    new RouteBuilder()
-                        .WithDownstreamRoute(downstreamRoute)
-                        .WithUpstreamHttpMethod(new List<string> {"Get"})
-                        .Build(),
+                    new(downstreamRoute, HttpMethod.Get),
                 };
             }
         }

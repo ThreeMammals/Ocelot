@@ -57,10 +57,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
             .Build();
         GivenTheDownStreamRouteFinderReturns(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheFollowingConfig(config);
 
         // Act
