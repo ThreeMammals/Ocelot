@@ -55,6 +55,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
 
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName(dynamicRoute.ServiceName)
+            .WithServiceNamespace(dynamicRoute.ServiceNamespace)
             .WithLoadBalancerOptions(lbOptions)
             .WithRateLimitOptions(rateLimitOptions)
             .WithDownstreamHttpVersion(version)

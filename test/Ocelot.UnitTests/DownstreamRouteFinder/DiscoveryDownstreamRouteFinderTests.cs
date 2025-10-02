@@ -6,6 +6,7 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
@@ -280,7 +281,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var qoSOptions = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(1)
             .WithTimeoutValue(1)
-            .WithKey("/auth/test|GET")
+            .WithKey("/.auth/test|GET")
             .Build();
         var configuration = new InternalConfiguration(
             null,
@@ -326,6 +327,29 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
     }
 
+    [Theory]
+    [Trait("PR", "2324")]
+    [InlineData("/service1", "service1", "")]
+    [InlineData("/service2/", "service2", "")]
+    [InlineData("/service3/bla", "service3", "")]
+    [InlineData("/namespace1.service1", "service1", "namespace1")]
+    [InlineData("/namespace2.service2/", "service2", "namespace2")]
+    [InlineData("/namespace3.service3/bla-bla", "service3", "namespace3")]
+    [InlineData("/namespace4.service.4/ha-a", "service.4", "namespace4")]
+    [InlineData("/name.space5.service5/ha-ha", "space5.service5", "name")]
+    public void GetServiceName(string urlPath, string expected, string expectedNamespace)
+    {
+        var method = _finder.GetType().GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic);
+        object[] parameters = [urlPath, null];
+
+        // Act
+        string actual = (string)method.Invoke(_finder, parameters);
+        string actualNamespace = (string)parameters[1];
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(expectedNamespace, actualNamespace);
+    }
+
     private void WithRateLimitOptions(RateLimitOptions expected)
     {
         _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeTrue();
@@ -338,14 +362,15 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
         _result.Data.Route.UpstreamHttpMethod.ShouldContain(HttpMethod.Get);
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
         _result.Data.Route.DownstreamRoute[0].UseServiceDiscovery.ShouldBeTrue();
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].DownstreamScheme.ShouldBe("http");
         _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(NoLoadBalancer));
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe("/auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe("/.auth/test|GET");
         _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
         var kv = _upstreamHeaders.First();
@@ -359,21 +384,24 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/");
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/auth/|GET");
+        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/|GET");
     }
 
     private void ThenThePathDoesNotHaveTrailingSlash()
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
     }
 
     private void ThenTheQueryStringIsRemoved()
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
     }
 
     private void ThenTheStickySessionLoadBalancerIsUsed(LoadBalancerOptions expected)

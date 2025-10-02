@@ -2,6 +2,7 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -10,6 +11,10 @@ namespace Ocelot.DownstreamRouteFinder.Finder;
 
 public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 {
+    public const char Dot = '.';
+    public const char Slash = '/';
+    public const char Question = '?';
+
     private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
 
@@ -22,14 +27,14 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
     {
-        var serviceName = GetServiceName(upstreamUrlPath);
+        var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
         if (HasQueryString(downstreamPath))
         {
             downstreamPath = RemoveQueryString(downstreamPath);
         }
 
-        var downstreamPathForKeys = $"/{serviceName}{downstreamPath}";
+        var downstreamPathForKeys = $"/{serviceNamespace}{Dot}{serviceName}{downstreamPath}";
         var loadBalancerKey = CreateLoadBalancerKey(downstreamPathForKeys, upstreamHttpMethod, configuration.LoadBalancerOptions);
         if (_cache.TryGetValue(loadBalancerKey, out var downstreamRouteHolder))
         {
@@ -47,6 +52,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
         var routeBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)
+            .WithServiceNamespace(serviceNamespace)
             .WithLoadBalancerKey(loadBalancerKey)
             .WithDownstreamPathTemplate(downstreamPath)
             .WithUseServiceDiscovery(true)
@@ -61,9 +67,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         // TODO: Review this logic. Is this merging options for dynamic routes?
         var dynamicRoute = configuration.Routes?
             .SelectMany(x => x.DownstreamRoute)
-            .FirstOrDefault(x => x.ServiceName == serviceName); // TODO GetServiceName, add support of ServiceNamespace in request URL like this -> service_namespace$service_name
-
-        // Recreate the downstream route because of reconfiguration caused by the dynamic route
+            .FirstOrDefault(x => x.ServiceName == serviceName && (serviceNamespace.IsEmpty() || x.ServiceNamespace == serviceNamespace));
         if (dynamicRoute != null)
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
@@ -87,38 +91,40 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
     private static string RemoveQueryString(string downstreamPath)
     {
-        return downstreamPath
-            .Substring(0, downstreamPath.IndexOf('?'));
+        int index = downstreamPath.IndexOf(Question);
+        return downstreamPath[..index];
     }
 
-    private static bool HasQueryString(string downstreamPath)
-    {
-        return downstreamPath.Contains('?');
-    }
+    private static bool HasQueryString(string downstreamPath) => downstreamPath.Contains(Question);
 
     private static string GetDownstreamPath(string upstreamUrlPath)
     {
-        if (upstreamUrlPath.IndexOf('/', 1) == -1)
-        {
-            return "/";
-        }
-
-        return upstreamUrlPath
-            .Substring(upstreamUrlPath.IndexOf('/', 1));
+        int index = upstreamUrlPath.IndexOf(Slash, 1);
+        return index != -1
+            ? upstreamUrlPath[index..]
+            : Slash.ToString();
     }
 
-    // TODO: Add support of ServiceNamespace in request URL like this -> service_namespace$service_name
-    private static string GetServiceName(string upstreamUrlPath)
+    /// <summary>Gets service name and its namespace of request URL.
+    /// <para>Note: A namespace and service name should be separated by a '.' (dot) character.</para></summary>
+    /// <remarks>Example: <c>http://ocelot.net/namespace.service-name/path</c> URL.</remarks>
+    /// <param name="upstreamUrlPath">The upstream path.</param>
+    /// <param name="serviceNamespace">Extracted namespace.</param>
+    /// <returns>A <see cref="string"/> object.</returns>
+    protected virtual string GetServiceName(string upstreamUrlPath, out string serviceNamespace)
     {
-        if (upstreamUrlPath.IndexOf('/', 1) == -1)
-        {
-            return upstreamUrlPath
-                .Substring(1);
-        }
+        var path = upstreamUrlPath.AsSpan();
+        int index = path[1..].IndexOf(Slash);
+        var name = index == -1
+            ? path[1..]
+            : path.Slice(1, index).TrimEnd(Slash);
 
-        return upstreamUrlPath
-            .Substring(1, upstreamUrlPath.IndexOf('/', 1))
-            .TrimEnd('/');
+        index = name.IndexOf(Dot);
+        serviceNamespace = index == -1
+            ? string.Empty
+            : name[..index].ToString();
+        var serviceName = index == -1 ? name : name[++index..];
+        return serviceName.ToString();
     }
 
     private static string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions options)
