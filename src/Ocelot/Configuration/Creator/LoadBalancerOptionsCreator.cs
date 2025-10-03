@@ -6,9 +6,7 @@ namespace Ocelot.Configuration.Creator;
 public class LoadBalancerOptionsCreator : ILoadBalancerOptionsCreator
 {
     public LoadBalancerOptions Create(FileLoadBalancerOptions options)
-    {
-        return new(options?.Type, options?.Key, options?.Expiry);
-    }
+        => new(options);
 
     public LoadBalancerOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
@@ -37,7 +35,11 @@ public class LoadBalancerOptionsCreator : ILoadBalancerOptionsCreator
             return new(globalOptions);
         }
 
-        if (options != null && (globalOptions == null || (globalOptions != null && !isGlobal)))
+        if (options != null && globalOptions == null)
+        {
+            return new(options);
+        }
+        else if (options != null && globalOptions != null && !isGlobal)
         {
             return new(options);
         }

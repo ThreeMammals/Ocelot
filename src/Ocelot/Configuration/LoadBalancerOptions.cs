@@ -11,19 +11,19 @@ public class LoadBalancerOptions
         Type = nameof(NoLoadBalancer);
     }
 
-    public LoadBalancerOptions(FileLoadBalancerOptions fromOptions)
-    {
-        ArgumentNullException.ThrowIfNull(fromOptions);
-        Type = fromOptions.Type.IfEmpty(nameof(NoLoadBalancer));
-        Key = fromOptions.Key.IfEmpty(CookieStickySessions.DefSessionCookieName);
-        ExpiryInMs = fromOptions.Expiry ?? CookieStickySessions.DefSessionExpiryMilliseconds;
-    }
+    public LoadBalancerOptions(FileLoadBalancerOptions options)
+        : this(options?.Type, options?.Key, options?.Expiry)
+    { }
 
     public LoadBalancerOptions(string type, string key, int? expiryInMs)
     {
         Type = type.IfEmpty(nameof(NoLoadBalancer));
-        Key = key.IfEmpty(CookieStickySessions.DefSessionCookieName);
-        ExpiryInMs = expiryInMs ?? CookieStickySessions.DefSessionExpiryMilliseconds;
+        Key = nameof(CookieStickySessions).Equals(type, StringComparison.InvariantCultureIgnoreCase)
+            ? key.IfEmpty(CookieStickySessions.DefSessionCookieName)
+            : key;
+        ExpiryInMs = nameof(CookieStickySessions).Equals(type, StringComparison.InvariantCultureIgnoreCase)
+            ? expiryInMs ?? CookieStickySessions.DefSessionExpiryMilliseconds
+            : expiryInMs ?? 0;
     }
 
     public string Type { get; init; }
