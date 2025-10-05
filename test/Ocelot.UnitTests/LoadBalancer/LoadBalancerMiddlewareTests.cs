@@ -25,7 +25,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
     private LoadBalancingMiddleware _middleware;
-    private readonly RequestDelegate _next;
+    private RequestDelegate _next;
     private readonly DefaultHttpContext _httpContext;
 
     public LoadBalancerMiddlewareTests()
@@ -43,10 +43,8 @@ public class LoadBalancerMiddlewareTests : UnitTest
             .Returns(new OkResponse<ILoadBalancer>(_loadBalancer.Object));
     }
 
-    [Fact]
-    public async Task Should_call_scoped_data_repository_correctly()
+    private void Arrange()
     {
-        // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod(new() { HttpMethods.Get })
             .Build();
@@ -55,6 +53,12 @@ public class LoadBalancerMiddlewareTests : UnitTest
         GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
         GivenTheConfigurationIs(serviceProviderConfig);
         GivenTheDownStreamRouteIs(downstreamRoute, new List<PlaceholderNameAndValue>());
+    }
+
+    [Fact]
+    public async Task Should_call_scoped_data_repository_correctly()
+    {
+        Arrange();
 
         // Arrange: Given The Load Balancer Returns
         _hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
@@ -72,15 +76,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     [Fact]
     public async Task Should_set_pipeline_error_if_cannot_get_load_balancer()
     {
-        // Arrange
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-            .Build();
-        var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-            .Build();
-        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
-        GivenTheConfigurationIs(serviceProviderConfig);
-        GivenTheDownStreamRouteIs(downstreamRoute, new List<PlaceholderNameAndValue>());
+        Arrange();
 
         // Arrange: Given The Load Balancer House Returns An Error
         _getLoadBalancerHouseError = new ErrorResponse<ILoadBalancer>(new List<Error>
@@ -102,15 +98,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     [Fact]
     public async Task Should_set_pipeline_error_if_cannot_get_least()
     {
-        // Arrange
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-            .Build();
-        var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-           .Build();
-        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
-        GivenTheConfigurationIs(serviceProviderConfig);
-        GivenTheDownStreamRouteIs(downstreamRoute, new List<PlaceholderNameAndValue>());
+        Arrange();
 
         // Arrange: Given The Load Balancer Returns An Error
         _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error> { new ServicesAreNullError("services were null for bah") });
@@ -129,15 +117,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     [Fact]
     public async Task Should_set_scheme()
     {
-        // Arrange
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-            .Build();
-        var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
-            .Build();
-        GivenTheDownStreamUrlIs("http://my.url/abc?q=123");
-        GivenTheConfigurationIs(serviceProviderConfig);
-        GivenTheDownStreamRouteIs(downstreamRoute, new List<PlaceholderNameAndValue>());
+        Arrange();
 
         // Arrange: Given The Load Balancer Returns Ok
         _loadBalancer.Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
@@ -151,6 +131,25 @@ public class LoadBalancerMiddlewareTests : UnitTest
         _httpContext.Items.DownstreamRequest().Host.ShouldBeEquivalentTo("abc");
         _httpContext.Items.DownstreamRequest().Port.ShouldBeEquivalentTo(123);
         _httpContext.Items.DownstreamRequest().Scheme.ShouldBeEquivalentTo("https");
+    }
+
+    [Fact]
+    public async Task Should_LogDebug_WhenNextMiddlewareThrownException()
+    {
+        Arrange();
+        _next = (context) => throw new NotImplementedException("NextMiddleware");
+
+        // Arrange: Given The Load Balancer Returns Ok
+        _loadBalancer.Setup(x => x.LeaseAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(new OkResponse<ServiceHostAndPort>(new ServiceHostAndPort("abc", 123, "https")));
+        _logger.Setup(x => x.LogDebug(It.IsAny<string>())).Verifiable();
+
+        // Act
+        _middleware = new LoadBalancingMiddleware(_next, _loggerFactory.Object, _loadBalancerHouse.Object);
+        var action = () => _middleware.Invoke(_httpContext);
+        var ex = await action.ShouldThrowAsync<NotImplementedException>();
+        ex.Message.ShouldBe("NextMiddleware");
+        _logger.Verify(x => x.LogDebug("Exception calling next middleware, exception will be thrown to global handler"), Times.Once);
     }
 
     private void GivenTheConfigurationIs(ServiceProviderConfiguration config)

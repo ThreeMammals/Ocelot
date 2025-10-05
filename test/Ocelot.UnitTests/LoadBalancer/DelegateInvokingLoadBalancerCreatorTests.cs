@@ -64,6 +64,13 @@ public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
         loadBalancer.IsError.ShouldBeTrue();
     }
 
+    [Fact]
+    public void Type()
+    {
+        // Arrange, Act, Assert
+        Assert.Equal(nameof(FakeLoadBalancer), _creator.Type);
+    }
+
     private class FakeLoadBalancer : ILoadBalancer
     {
         public FakeLoadBalancer(DownstreamRoute downstreamRoute, IServiceDiscoveryProvider serviceDiscoveryProvider)

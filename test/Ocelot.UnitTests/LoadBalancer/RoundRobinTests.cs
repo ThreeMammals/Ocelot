@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.Values;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.LoadBalancer;
@@ -104,6 +107,114 @@ public class RoundRobinTests : UnitTest
         counters.ShouldAllBe(counter => bottom <= counter && counter <= top, message);
     }
 
+    [Fact]
+    public async Task OnLeased()
+    {
+        // Arrange
+        const string ServiceName = "products";
+        var availableServices = new List<Service>
+        {
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        var roundRobin = new TestRoundRobin(() => Task.FromResult(availableServices), ServiceName);
+
+        // Act
+        var result = await roundRobin.LeaseAsync(_httpContext);
+
+        // Assert
+        Assert.NotEmpty(roundRobin.Events);
+        var args = roundRobin.Events[0];
+        Assert.NotNull(args);
+        Assert.Equal(ServiceName, args.Service.Name);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LeaseAsync_ServicesAreEmpty_ServicesAreEmptyError(bool isNull)
+    {
+        // Arrange
+        List<Service> services = isNull ? null : GivenServices(0);
+        var roundRobin = GivenLoadBalancer(services);
+
+        // Act
+        var actual = await roundRobin.LeaseAsync(_httpContext);
+
+        // Assert
+        Assert.True(actual.IsError);
+        var error = actual.Errors[0];
+        Assert.IsType<ServicesAreEmptyError>(error);
+        Assert.Equal("There were no services in RoundRobin for 'LeaseAsync_ServicesAreEmpty_ServicesAreEmptyError' during LeaseAsync operation!", error.Message);
+    }
+
+    [Fact]
+    public async Task Release()
+    {
+        // Arrange
+        const string ServiceName = nameof(Release);
+        var availableServices = new List<Service>
+        {
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        var roundRobin = new RoundRobin(() => Task.FromResult(availableServices), ServiceName);
+        var response = await roundRobin.LeaseAsync(_httpContext);
+
+        // Act, Assert
+        roundRobin.Release(response.Data);
+    }
+
+    [Fact]
+    public void TryScanNext()
+    {
+        // Arrange
+        const int lastIndex = 3;
+        var method = typeof(RoundRobin).GetMethod(nameof(TryScanNext), BindingFlags.Instance | BindingFlags.NonPublic);
+        var field = typeof(RoundRobin).GetField("LastIndices", BindingFlags.Static | BindingFlags.NonPublic);
+        List<Service> services = GivenServices(lastIndex);
+        var roundRobin = GivenLoadBalancer(services);
+        var lastIndices = field.GetValue(roundRobin) as Dictionary<string, int>;
+        lastIndices[nameof(TryScanNext)] = lastIndex;
+
+        // Act
+        // TryScanNext(Service[] readme, out Service next, out int index)
+        var readme = services.ToArray();
+        Service next = null;
+        int index = -1;
+        object[] parameters = [readme, next, index];
+        bool success = (bool)method.Invoke(roundRobin, parameters);
+
+        // Assert
+        Assert.True(success);
+        Assert.Equal(0, parameters[2]);
+        Assert.Equal(readme[0], parameters[1]);
+        Assert.Equal(1, lastIndices[nameof(TryScanNext)]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Update_CanIncreaseConnections(bool increase)
+    {
+        var method = typeof(RoundRobin).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
+        var field = typeof(RoundRobin).GetField("_leasing", BindingFlags.Instance | BindingFlags.NonPublic);
+        List<Service> services = GivenServices(1);
+        var roundRobin = GivenLoadBalancer(services);
+        Lease item = new(
+            services[0].HostAndPort,
+            increase ? 0 : 1);
+        var leasing = field.GetValue(roundRobin) as List<Lease>;
+        leasing.Add(item);
+
+        // Act
+        // int Update(ref Lease item, bool increase)
+        object[] parameters = [item, increase];
+        int index = (int)method.Invoke(roundRobin, parameters);
+
+        Lease actual = (Lease)parameters[0];
+        Assert.Equal(0, index);
+        Assert.Equal(increase ? 1 : 0, actual.Connections);
+    }
+
     private static int[] CountServices(List<Service> services, Response<ServiceHostAndPort>[] responses)
     {
         var counters = new int[services.Count];
@@ -157,4 +268,12 @@ public class RoundRobinTests : UnitTest
             },
             serviceName);
     }
+}
+
+internal sealed class TestRoundRobin : RoundRobin, ILoadBalancer
+{
+    public readonly List<LeaseEventArgs> Events = new();
+    public TestRoundRobin(Func<Task<List<Service>>> services, string serviceName)
+        : base(services, serviceName) => Leased += Me_Leased;
+    private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 }

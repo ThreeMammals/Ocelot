@@ -78,4 +78,20 @@ public class NoLoadBalancerTests : UnitTest
         // Assert
         _result.IsError.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task Release()
+    {
+        // Arrange
+        var hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
+        var services = new List<Service>
+        {
+            new("product", hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        _services.AddRange(services);
+        _result = await _loadBalancer.LeaseAsync(new DefaultHttpContext());
+
+        // Act
+        _loadBalancer.Release(hostAndPort);
+    }
 }

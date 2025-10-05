@@ -72,7 +72,7 @@ public class CookieStickySessions : ILoadBalancer
         var key = $"{serviceName}:{cookie}"; // strong key name because of static store
         lock (Locker)
         {
-            if (!string.IsNullOrEmpty(key) && Stored.TryGetValue(key, out StickySession cached))
+            if (Stored.TryGetValue(key, out StickySession cached))
             {
                 var updated = new StickySession(cached.HostAndPort, DateTime.UtcNow.AddMilliseconds(_keyExpiryInMs), key);
                 Update(key, updated);

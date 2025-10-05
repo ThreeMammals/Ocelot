@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Values;
+using Ocelot.LoadBalancer.Interfaces;
+using Ocelot.LoadBalancer;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 
@@ -222,7 +224,6 @@ public class LeastConnectionTests : UnitTest
     {
         // Arrange
         const string ServiceName = "products";
-        var hostAndPort = new ServiceHostAndPort("localhost", 80);
         _leastConnection = new LeastConnection(() => Task.FromResult(new List<Service>()), ServiceName);
 
         // Act
@@ -232,4 +233,32 @@ public class LeastConnectionTests : UnitTest
         result.IsError.ShouldBeTrue();
         result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
     }
+
+    [Fact]
+    public async Task OnLeased()
+    {
+        // Arrange
+        const string ServiceName = "products";
+        var availableServices = new List<Service>
+        {
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        var leastConnection = new TestLeastConnection(() => Task.FromResult(availableServices), ServiceName);
+
+        // Act
+        var result = await leastConnection.LeaseAsync(_httpContext);
+
+        // Assert
+        leastConnection.Events.ShouldNotBeEmpty();
+        var args = leastConnection.Events[0].ShouldNotBeNull();
+        args.Service.Name.ShouldBe(ServiceName);
+    }
+}
+
+internal sealed class TestLeastConnection : LeastConnection, ILoadBalancer
+{
+    public readonly List<LeaseEventArgs> Events = new();
+    public TestLeastConnection(Func<Task<List<Service>>> services, string serviceName)
+        : base(services, serviceName) => Leased += Me_Leased;
+    private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 }
