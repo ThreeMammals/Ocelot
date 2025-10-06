@@ -3,7 +3,7 @@ namespace Ocelot.Configuration.File;
 /// <summary>
 /// Represents the JSON structure of a dynamic route in dynamic routing mode using service discovery.
 /// </summary>
-public class FileDynamicRoute : FileGlobalDynamicRoute, IRouteGrouping, IRouteRateLimiting
+public class FileDynamicRoute : FileGlobalDynamicRouting, IRouteGrouping, IRouteRateLimiting
 {
     public string Key { get; set; } // IRouteGrouping
 

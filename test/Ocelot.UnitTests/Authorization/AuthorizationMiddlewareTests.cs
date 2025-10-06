@@ -42,7 +42,7 @@ public class AuthorizationMiddlewareTests : UnitTest
             new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                 .WithIsAuthorized(true)
-                .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+                .WithUpstreamHttpMethod([HttpMethods.Get])
                 .Build());
         GivenTheAuthServiceReturns(new OkResponse<bool>(true));
 

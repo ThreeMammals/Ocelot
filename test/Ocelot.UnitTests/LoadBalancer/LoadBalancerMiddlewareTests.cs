@@ -46,7 +46,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     private void Arrange()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder()
             .Build();

@@ -66,7 +66,7 @@ public class AuthenticationMiddlewareTests : UnitTest
     {
         // Arrange
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build());
 
         // Act
@@ -81,7 +81,7 @@ public class AuthenticationMiddlewareTests : UnitTest
     {
         // Arrange
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Options })
+            .WithUpstreamHttpMethod([HttpMethods.Options])
             .WithIsAuthenticated(true)
             .Build());
         GivenTheRequestIsUsingMethod(HttpMethods.Options);

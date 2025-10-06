@@ -158,7 +158,6 @@ public class LoadBalancerHouseTests : UnitTest
             .Build();
         var loadBalancer = new FakeLoadBalancer();
         _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
-        //var result = _house.Get(route, _serviceProviderConfig);
 
         // Other route has the same LoadBalancerKey but types are different
         var route2 = new DownstreamRouteBuilder()

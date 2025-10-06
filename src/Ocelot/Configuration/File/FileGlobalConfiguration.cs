@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public class FileGlobalConfiguration : FileGlobalDynamicRoute
+public class FileGlobalConfiguration : FileGlobalDynamicRouting
 {
     public FileGlobalConfiguration()
     {

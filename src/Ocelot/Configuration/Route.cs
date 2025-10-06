@@ -6,6 +6,8 @@ namespace Ocelot.Configuration;
 public class Route
 {
     public Route() => DownstreamRoute = new();
+    public Route(bool isDynamic) : this() => IsDynamic = isDynamic;
+    public Route(bool isDynamic, DownstreamRoute route) : this(route) => IsDynamic = isDynamic;
     public Route(DownstreamRoute route) => DownstreamRoute = [route];
     public Route(DownstreamRoute route, HttpMethod method)
     {
@@ -13,6 +15,7 @@ public class Route
         UpstreamHttpMethod = [method];
     }
 
+    public bool IsDynamic { get; }
     public string Aggregator { get; init; }
     public List<DownstreamRoute> DownstreamRoute { get; init; }
     public List<AggregateRouteConfig> DownstreamRouteConfig { get; init; }

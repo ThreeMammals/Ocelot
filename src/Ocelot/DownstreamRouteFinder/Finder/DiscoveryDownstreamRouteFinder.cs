@@ -66,8 +66,9 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
         // TODO: Review this logic. Is this merging options for dynamic routes?
         var dynamicRoute = configuration.Routes?
-            .SelectMany(x => x.DownstreamRoute)
-            .FirstOrDefault(x => x.ServiceName == serviceName && (serviceNamespace.IsEmpty() || x.ServiceNamespace == serviceNamespace));
+            .Where(r => r.IsDynamic) // process dynamic routes only
+            .SelectMany(r => r.DownstreamRoute)
+            .FirstOrDefault(dr => dr.ServiceName == serviceName && (serviceNamespace.IsEmpty() || dr.ServiceNamespace == serviceNamespace));
         if (dynamicRoute != null)
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route

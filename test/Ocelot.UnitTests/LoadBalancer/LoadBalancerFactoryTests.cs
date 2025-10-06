@@ -39,7 +39,7 @@ public class LoadBalancerFactoryTests : UnitTest
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryReturns();
@@ -57,7 +57,7 @@ public class LoadBalancerFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerTwo), string.Empty, 0))
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryReturns();
@@ -75,7 +75,7 @@ public class LoadBalancerFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("DoesntExistLoadBalancer", string.Empty, 0))
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryReturns();
@@ -94,7 +94,7 @@ public class LoadBalancerFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(BrokenLoadBalancer), string.Empty, 0))
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryReturns();
@@ -112,7 +112,7 @@ public class LoadBalancerFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerOne), string.Empty, 0))
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryReturns();
@@ -130,7 +130,7 @@ public class LoadBalancerFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerOne), string.Empty, 0))
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var config = new ServiceProviderConfigurationBuilder().Build();
         GivenTheServiceProviderFactoryFails();

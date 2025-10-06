@@ -63,6 +63,6 @@ public class DynamicRoutesCreator : IDynamicsCreator
             .WithMetadata(metadata)
             .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
             .Build();
-        return new Route(downstreamRoute);
+        return new Route(true, downstreamRoute); // IsDynamic -> true
     }
 }

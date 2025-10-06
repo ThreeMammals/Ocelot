@@ -41,7 +41,7 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
             {
                 new("sub", "UserType", "|", 0),
             })
-            .WithUpstreamHttpMethod(new() { HttpMethods.Get })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
         var downstreamRoute = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
