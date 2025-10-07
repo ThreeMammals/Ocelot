@@ -20,7 +20,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
     public void ShouldLoadBalanceRequestWithLeastConnection(bool withAnalyzer)
     {
         var ports = PortFinder.GetPorts(2);
-        var route = GivenRoute(withAnalyzer ? nameof(LeastConnectionAnalyzer) : nameof(LeastConnection), ports);
+        var route = GivenLbRoute(ports, withAnalyzer ? nameof(LeastConnectionAnalyzer) : nameof(LeastConnection));
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         LeastConnectionAnalyzer lbAnalyzer = null;
@@ -50,7 +50,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
     public void ShouldLoadBalanceRequestWithRoundRobin(bool withAnalyzer)
     {
         var ports = PortFinder.GetPorts(2);
-        var route = GivenRoute(withAnalyzer ? nameof(RoundRobinAnalyzer) : nameof(RoundRobin), ports);
+        var route = GivenLbRoute(ports, withAnalyzer ? nameof(RoundRobinAnalyzer) : nameof(RoundRobin));
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         RoundRobinAnalyzer lbAnalyzer = null;
@@ -80,7 +80,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc =
             (serviceProvider, route, discoveryProvider) => new CustomLoadBalancer(discoveryProvider.GetAsync);
         var ports = PortFinder.GetPorts(2);
-        var route = GivenRoute(nameof(CustomLoadBalancer), ports);
+        var route = GivenLbRoute(ports, nameof(CustomLoadBalancer));
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         Action<IServiceCollection> withCustomLoadBalancer = (s)
@@ -93,6 +93,41 @@ public sealed class LoadBalancerTests : ConcurrentSteps
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(50, ports.Length), Top(50, ports.Length)))
             .And(x => ThenServicesShouldHaveBeenCalledTimes(25, 25)) // strict assertion
             .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public void ShouldUseGlobalOptions_ForStaticRoutes()
+    {
+        var ports1 = PortFinder.GetPorts(2);
+        var route1 = GivenLbRoute(ports1, upstream: "/route1");
+        route1.LoadBalancerOptions = new(); // no load balancing -> use global opts
+        var ports2 = PortFinder.GetPorts(2);
+        var route2 = GivenLbRoute(ports2, nameof(LeastConnection), "/route2");
+        var ports3 = PortFinder.GetPorts(2);
+        var route3 = GivenLbRoute(ports3, nameof(NoLoadBalancer), "/noLoadBalancing");
+
+        var configuration = GivenConfiguration(route1, route2, route3); // static routes come to Routes collection
+        configuration.GlobalConfiguration.LoadBalancerOptions = new() { Type = nameof(RoundRobin) };
+
+        var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 5);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 7);
+
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 2, 7, 0); // main assertion, explanation is below
+        ThenServiceShouldHaveBeenCalledTimes(0, 1); // RoundRobin for 2
+        ThenServiceShouldHaveBeenCalledTimes(1, 1); // RoundRobin for 2
+        ThenServiceShouldHaveBeenCalledTimes(2, 3); // LeastConnection for 5
+        ThenServiceShouldHaveBeenCalledTimes(3, 2); // LeastConnection for 5
+        ThenServiceShouldHaveBeenCalledTimes(4, 7); // NoLoadBalancer for 7
+        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 7
     }
 
     private sealed class CustomLoadBalancer : ILoadBalancer
@@ -118,13 +153,11 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         public void Release(ServiceHostAndPort hostAndPort) { }
     }
 
-    private FileRoute GivenRoute(string loadBalancer, params int[] ports) => new()
+    private FileRoute GivenLbRoute(int[] ports, string loadBalancer = null, string upstream = null)
     {
-        DownstreamPathTemplate = "/",
-        DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [HttpMethods.Get],
-        LoadBalancerOptions = new() { Type = loadBalancer ?? nameof(LeastConnection) },
-        DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
-    };
+        var route = GivenRoute(ports[0], upstream: upstream);
+        route.DownstreamHostAndPorts = ports.Select(Localhost).ToList();
+        route.LoadBalancerOptions = new(loadBalancer ?? nameof(LeastConnection));
+        return route;
+    }
 }

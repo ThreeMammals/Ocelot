@@ -8,7 +8,7 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 [Trait("Feat", "336")] // https://github.com/ThreeMammals/Ocelot/pull/336
 public sealed class CookieStickySessionsTests : Steps
 {
-    private readonly int[] _counters;
+    private int[] _counters;
 #if NET9_0_OR_GREATER
     private static readonly Lock SyncLock = new();
 #else
@@ -80,6 +80,51 @@ public sealed class CookieStickySessionsTests : Steps
             .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 0))
             .BDDfy();
     }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public async Task ShouldUseGlobalOptions_ForStaticRoutes()
+    {
+        _counters = new int[5];
+        var ports = PortFinder.GetPorts(2);
+        var route1 = GivenStickySessionsRoute(ports);
+        route1.LoadBalancerOptions = new(); // no load balancing -> use global opts
+        var route2 = GivenStickySessionsRoute(ports.Reverse().ToArray(), "/test");
+        route1.LoadBalancerOptions = new(); // no load balancing -> use global opts
+        var ports2 = PortFinder.GetPorts(2);
+        var route3 = GivenStickySessionsRoute(ports2, "/nextSticky", CookieName() + "-nextSticky");
+        var port5 = PortFinder.GetRandomPort();
+        var route4 = GivenStickySessionsRoute([port5], "/noLoadBalancing"); // this route should not be overwritten by global LB opts
+        route4.LoadBalancerOptions.Type = nameof(NoLoadBalancer);
+
+        var configuration = GivenConfiguration(route1, route2, route3, route4); // static routes come to Routes collection
+        configuration.GlobalConfiguration.LoadBalancerOptions = new()
+        {
+            Type = nameof(CookieStickySessions),
+            Key = CookieName(), // !!!
+        };
+        GivenProductServiceIsRunning(0, ports[0]);
+        GivenProductServiceIsRunning(1, ports[1]);
+        GivenProductServiceIsRunning(2, ports2[0]);
+        GivenProductServiceIsRunning(3, ports2[1]);
+        GivenProductServiceIsRunning(4, port5);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/", CookieName(), "123");
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/test", CookieName(), "123");
+        //await WhenIGetUrlOnTheApiGatewayWithCookie("/nextSticky", CookieName() + "/nextSticky", "333");
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/nextSticky", 5, CookieName() + "-nextSticky", "333");
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/noLoadBalancing", 7, "bla-bla-cookie", "bla-bla-value");
+        ThenServiceShouldHaveBeenCalledTimes(0, 2);
+        ThenServiceShouldHaveBeenCalledTimes(1, 0);
+        ThenServiceShouldHaveBeenCalledTimes(2, 5);
+        ThenServiceShouldHaveBeenCalledTimes(3, 0);
+        ThenServiceShouldHaveBeenCalledTimes(4, 7);
+    }
+
+    private static string CookieName([CallerMemberName] string cookieName = nameof(CookieStickySessionsTests)) => cookieName;
 
     private FileRoute GivenStickySessionsRoute(int[] ports, string upstream = null, [CallerMemberName] string cookieName = null)
     {
