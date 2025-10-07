@@ -275,7 +275,7 @@ public class StaticRoutesCreatorTests : UnitTest
 
         _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
-        _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_rrk);
+        _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<LoadBalancerOptions>())).Returns(_rrk);
         _utpCreator.Setup(x => x.Create(It.IsAny<IRouteUpstream>())).Returns(_upt);
         _aoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ao);
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
@@ -347,7 +347,7 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _rroCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
-        _rrkCreator.Verify(x => x.Create(fileRoute), Times.Once);
+        _rrkCreator.Verify(x => x.Create(fileRoute, It.IsAny<LoadBalancerOptions>()), Times.Once);
         _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));
         _aoCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _cthCreator.Verify(x => x.Create(fileRoute.AddHeadersToRequest), Times.Once);

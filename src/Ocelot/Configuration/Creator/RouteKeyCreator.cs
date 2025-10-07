@@ -10,24 +10,18 @@ public class RouteKeyCreator : IRouteKeyCreator
     /// Creates the unique <see langword="string"/> key based on the route properties for load balancing etc.
     /// </summary>
     /// <remarks>
-    /// Key template:
-    /// <list type="bullet">
-    /// <item>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</item>
-    /// </list>
+    /// Key template: <c>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</c>.
     /// </remarks>
     /// <param name="route">The route object.</param>
+    /// <param name="loadBalancing">Final options for load balancing.</param>
     /// <returns>A <see langword="string"/> object containing the key.</returns>
-    public string Create(FileRoute route)
+    public string Create(FileRoute route, LoadBalancerOptions loadBalancing)
     {
-        var isStickySession = route.LoadBalancerOptions is
-        {
-            Type: nameof(CookieStickySessions),
-            Key.Length: > 0
-        };
-
+        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.InvariantCultureIgnoreCase)
+            && loadBalancing.Key.Length > 0;
         if (isStickySession)
         {
-            return $"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}";
+            return $"{nameof(CookieStickySessions)}:{loadBalancing.Key}";
         }
 
         var keyBuilder = new StringBuilder()

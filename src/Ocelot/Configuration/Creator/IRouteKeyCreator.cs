@@ -4,5 +4,5 @@ namespace Ocelot.Configuration.Creator;
 
 public interface IRouteKeyCreator
 {
-    string Create(FileRoute fileRoute);
+    string Create(FileRoute route, LoadBalancerOptions loadBalancing);
 }

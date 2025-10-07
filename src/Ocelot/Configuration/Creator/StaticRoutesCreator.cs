@@ -87,8 +87,6 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
-        var routeKey = _routeKeyCreator.Create(fileRoute);
-
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
         var authOptionsForRoute = _authOptionsCreator.Create(fileRoute, globalConfiguration);
@@ -112,6 +110,7 @@ public class StaticRoutesCreator : IRoutesCreator
         var downstreamAddresses = _downstreamAddressesCreator.Create(fileRoute);
 
         var lbOptions = _loadBalancerOptionsCreator.Create(fileRoute, globalConfiguration);
+        var lbKey = _routeKeyCreator.Create(fileRoute, lbOptions);
 
         var securityOptions = _securityOptionsCreator.Create(fileRoute.SecurityOptions, globalConfiguration);
 
@@ -140,9 +139,9 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithIsCached(fileRouteOptions.IsCached)
             .WithCacheOptions(cacheOptions)
             .WithDownstreamScheme(fileRoute.DownstreamScheme)
+            .WithLoadBalancerKey(lbKey)
             .WithLoadBalancerOptions(lbOptions)
             .WithDownstreamAddresses(downstreamAddresses)
-            .WithLoadBalancerKey(routeKey)
             .WithQosOptions(qosOptions)
             .WithRateLimitOptions(rateLimitOption)
             .WithHttpHandlerOptions(httpHandlerOptions)
