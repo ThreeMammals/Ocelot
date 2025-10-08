@@ -43,7 +43,7 @@ public class RouteKeyCreatorTests : UnitTest
         var result = _creator.Create(route, options);
 
         // Assert
-        result.ShouldBe("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|NoLoadBalancer|no-lb-key");
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class RouteKeyCreatorTests : UnitTest
         var result = _creator.Create(route, options);
 
         // Assert
-        result.ShouldBe("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|no-lb-type|no-lb-key");
+        result.ShouldBe("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|NoLoadBalancer|no-lb-key");
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class RouteKeyCreatorTests : UnitTest
         var result = _creator.Create(route, options);
 
         // Assert
-        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|no-lb-type|no-lb-key");
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|NoLoadBalancer|no-lb-key");
     }
 
     [Fact]
