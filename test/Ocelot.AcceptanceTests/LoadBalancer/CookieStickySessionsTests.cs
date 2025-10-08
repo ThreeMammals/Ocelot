@@ -114,7 +114,6 @@ public sealed class CookieStickySessionsTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGatewayWithCookie("/", CookieName(), "123");
         await WhenIGetUrlOnTheApiGatewayWithCookie("/test", CookieName(), "123");
-        //await WhenIGetUrlOnTheApiGatewayWithCookie("/nextSticky", CookieName() + "/nextSticky", "333");
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/nextSticky", 5, CookieName() + "-nextSticky", "333");
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/noLoadBalancing", 7, "bla-bla-cookie", "bla-bla-value");
         ThenServiceShouldHaveBeenCalledTimes(0, 2);

@@ -31,8 +31,8 @@ public class RouteKeyCreator : IRouteKeyCreator
             .AppendNext(route.DownstreamHostAndPorts.Select(AsString).Csv().IfEmpty("no-host-and-port"))
             .AppendNext(route.ServiceNamespace.IfEmpty("no-svc-ns"))
             .AppendNext(route.ServiceName.IfEmpty("no-svc-name"))
-            .AppendNext((route.LoadBalancerOptions?.Type).IfEmpty("no-lb-type"))
-            .AppendNext((route.LoadBalancerOptions?.Key).IfEmpty("no-lb-key"));
+            .AppendNext(loadBalancing.Type.IfEmpty("no-lb-type"))
+            .AppendNext(loadBalancing.Key.IfEmpty("no-lb-key"));
         return keyBuilder.ToString();
     }
 

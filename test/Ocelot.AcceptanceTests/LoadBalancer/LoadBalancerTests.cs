@@ -99,7 +99,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
     [Trait("Feat", "585")]
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void ShouldUseGlobalOptions_ForStaticRoutes()
+    public void ShouldApplyGlobalOptions_ForStaticRoutes()
     {
         var ports1 = PortFinder.GetPorts(2);
         var route1 = GivenLbRoute(ports1, upstream: "/route1");
@@ -110,7 +110,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         var route3 = GivenLbRoute(ports3, nameof(NoLoadBalancer), "/noLoadBalancing");
 
         var configuration = GivenConfiguration(route1, route2, route3); // static routes come to Routes collection
-        configuration.GlobalConfiguration.LoadBalancerOptions = new() { Type = nameof(RoundRobin) };
+        configuration.GlobalConfiguration.LoadBalancerOptions = new(nameof(RoundRobin));
 
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
         GivenMultipleServiceInstancesAreRunning(downstreamUrls);
@@ -128,6 +128,52 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         ThenServiceShouldHaveBeenCalledTimes(3, 2); // LeastConnection for 5
         ThenServiceShouldHaveBeenCalledTimes(4, 7); // NoLoadBalancer for 7
         ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 7
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public void ShouldApplyGlobalGroupOptions_ForStaticRoutes_WhenRouteOptsHasAKey()
+    {
+        // 1st route
+        var ports1 = PortFinder.GetPorts(2);
+        var route1 = GivenLbRoute(ports1, upstream: "/route1");
+        route1.LoadBalancerOptions = null; // 1st route is not balanced
+        route1.Key = null; // 1st route is not in the global group
+
+        // 2nd route
+        var ports2 = PortFinder.GetPorts(2);
+        var route2 = GivenLbRoute(ports2, upstream: "/route2");
+        route2.LoadBalancerOptions = null; // 2nd route opts will be applied from global ones
+        route2.Key = "R2"; // 2nd route is in the group
+
+        // 3rd route
+        var ports3 = PortFinder.GetPorts(2);
+        var route3 = GivenLbRoute(ports3, nameof(NoLoadBalancer), "/noLoadBalancing");
+
+        var configuration = GivenConfiguration(route1, route2, route3);
+        configuration.GlobalConfiguration.LoadBalancerOptions = new()
+        {
+            RouteKeys = ["R2"],
+            Type = nameof(RoundRobin),
+        };
+
+        var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 4);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 5);
+        ThenServicesShouldHaveBeenCalledTimes(2, 0, 2, 2, 5, 0); // main assertion, explanation is below
+        ThenServiceShouldHaveBeenCalledTimes(0, 2); // NoLoadBalancer for 2
+        ThenServiceShouldHaveBeenCalledTimes(1, 0); // NoLoadBalancer for 2
+        ThenServiceShouldHaveBeenCalledTimes(2, 2); // RoundRobin for 4
+        ThenServiceShouldHaveBeenCalledTimes(3, 2); // RoundRobin for 4
+        ThenServiceShouldHaveBeenCalledTimes(4, 5); // NoLoadBalancer for 5
+        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 5
     }
 
     private sealed class CustomLoadBalancer : ILoadBalancer
