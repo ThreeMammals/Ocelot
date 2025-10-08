@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Ocelot.Infrastructure.Extensions;
+﻿namespace Ocelot.Infrastructure.Extensions;
 
 public static class IEnumerableExtensions
 {
@@ -20,4 +18,11 @@ public static class IEnumerableExtensions
         collection ??= Enumerable.Empty<string>();
         return collection.Select(verb => new HttpMethod(verb.Trim())).ToHashSet();
     }
+
+    /// <summary>
+    /// Helper function to convert multiple strings into a comma-separated string aka CSV.
+    /// </summary>
+    /// <param name="values">The collection of strings to join by comma separator.</param>
+    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
+    public static string Csv(this IEnumerable<string> values) => string.Join(',', values);
 }

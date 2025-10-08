@@ -41,9 +41,7 @@ public class RouteKeyCreator : IRouteKeyCreator
 
 internal static class RouteKeyCreatorHelpers
 {
-    /// <summary>
-    /// Helper function to append a string to the key builder, separated by a pipe.
-    /// </summary>
+    /// <summary>Helper function to append a string to the key builder, separated by a pipe.</summary>
     /// <param name="builder">The builder of the key.</param>
     /// <param name="next">The next word to add.</param>
     /// <returns>The reference to the builder.</returns>
@@ -56,11 +54,4 @@ internal static class RouteKeyCreatorHelpers
 
         return builder.Append(next);
     }
-
-    /// <summary>
-    /// Helper function to convert multiple strings into a comma-separated string.
-    /// </summary>
-    /// <param name="values">The collection of strings to join by comma separator.</param>
-    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
-    public static string Csv(this IEnumerable<string> values) => string.Join(',', values);
 }
