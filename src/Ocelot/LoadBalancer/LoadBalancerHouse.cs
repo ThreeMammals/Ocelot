@@ -9,7 +9,11 @@ public class LoadBalancerHouse : ILoadBalancerHouse
 {
     private readonly ILoadBalancerFactory _factory;
     private readonly Dictionary<string, ILoadBalancer> _loadBalancers;
+#if NET9_0_OR_GREATER
+    private static readonly Lock SyncRoot = new();
+#else
     private static readonly object SyncRoot = new();
+#endif
 
     public LoadBalancerHouse(ILoadBalancerFactory factory)
     {

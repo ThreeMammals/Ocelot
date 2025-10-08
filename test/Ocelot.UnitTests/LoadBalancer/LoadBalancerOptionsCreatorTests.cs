@@ -67,10 +67,7 @@ public class LoadBalancerOptionsCreatorTests : UnitTest
         };
         FileGlobalConfiguration globalConfiguration = new()
         {
-            LoadBalancerOptions = new()
-            {
-                Type = "global",
-            },
+            LoadBalancerOptions = new("global"),
         };
 
         // Act
@@ -115,10 +112,7 @@ public class LoadBalancerOptionsCreatorTests : UnitTest
         };
         FileGlobalConfiguration globalConfiguration = new()
         {
-            LoadBalancerOptions = new()
-            {
-                Type = "global",
-            },
+            LoadBalancerOptions = new("global"),
         };
 
         // Act
@@ -276,9 +270,8 @@ public class LoadBalancerOptionsCreatorTests : UnitTest
             Key = isDef ? string.Empty : "route",
             Expiry = isDef ? null : 1,
         };
-        FileLoadBalancerOptions globalOptions = new()
+        FileLoadBalancerOptions globalOptions = new("global")
         {
-            Type = "global",
             Key = "global",
             Expiry = 3,
         };

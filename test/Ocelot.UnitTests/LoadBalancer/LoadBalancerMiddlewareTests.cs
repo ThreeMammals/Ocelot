@@ -134,7 +134,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public async Task Should_LogDebug_WhenNextMiddlewareThrownException()
+    public async Task ShouldNot_LogDebug_WhenNextMiddlewareThrownException()
     {
         Arrange();
         _next = (context) => throw new NotImplementedException("NextMiddleware");
@@ -149,7 +149,7 @@ public class LoadBalancerMiddlewareTests : UnitTest
         var action = () => _middleware.Invoke(_httpContext);
         var ex = await action.ShouldThrowAsync<NotImplementedException>();
         ex.Message.ShouldBe("NextMiddleware");
-        _logger.Verify(x => x.LogDebug("Exception calling next middleware, exception will be thrown to global handler"), Times.Once);
+        _logger.Verify(x => x.LogDebug(It.IsAny<string>()), Times.Never);
     }
 
     private void GivenTheConfigurationIs(ServiceProviderConfiguration config)

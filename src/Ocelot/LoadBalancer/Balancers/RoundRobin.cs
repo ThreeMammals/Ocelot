@@ -23,7 +23,11 @@ public class RoundRobin : ILoadBalancer
     }
 
     private static readonly Dictionary<string, int> LastIndices = new();
-    protected static readonly object SyncRoot = new();
+#if NET9_0_OR_GREATER
+    private static readonly Lock SyncRoot = new();
+#else
+    private static readonly object SyncRoot = new();
+#endif
 
     public event EventHandler<LeaseEventArgs> Leased;
     protected virtual void OnLeased(LeaseEventArgs e) => Leased?.Invoke(this, e);

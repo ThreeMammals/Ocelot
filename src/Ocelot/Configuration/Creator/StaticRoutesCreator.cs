@@ -72,7 +72,7 @@ public class StaticRoutesCreator : IRoutesCreator
             => SetUpRoute(route, SetUpDownstreamRoute(route, fileConfiguration.GlobalConfiguration));
         return fileConfiguration.Routes
             .Select(CreateRoute)
-            .ToList();
+            .ToArray();
     }
 
     public virtual int CreateTimeout(FileRoute route, FileGlobalConfiguration global)

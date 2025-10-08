@@ -11,7 +11,11 @@ public class LeastConnection : ILoadBalancer
     private readonly Func<Task<List<Service>>> _services;
     private readonly List<Lease> _leases;
     private readonly string _serviceName;
+#if NET9_0_OR_GREATER
+    private static readonly Lock SyncRoot = new();
+#else
     private static readonly object SyncRoot = new();
+#endif
 
     public string Type => nameof(LeastConnection);
 

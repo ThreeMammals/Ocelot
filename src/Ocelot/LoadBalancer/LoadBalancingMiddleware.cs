@@ -13,7 +13,7 @@ public class LoadBalancingMiddleware : OcelotMiddleware
     public LoadBalancingMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
         ILoadBalancerHouse loadBalancerHouse)
-            : base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
+        : base(loggerFactory.CreateLogger<LoadBalancingMiddleware>())
     {
         _next = next;
         _loadBalancerHouse = loadBalancerHouse;
@@ -29,7 +29,6 @@ public class LoadBalancingMiddleware : OcelotMiddleware
 
         if (loadBalancer.IsError)
         {
-            Logger.LogDebug("there was an error retriving the loadbalancer, setting pipeline error");
             httpContext.Items.UpsertErrors(loadBalancer.Errors);
             return;
         }
@@ -37,7 +36,6 @@ public class LoadBalancingMiddleware : OcelotMiddleware
         var hostAndPort = await loadBalancer.Data.LeaseAsync(httpContext);
         if (hostAndPort.IsError)
         {
-            Logger.LogDebug("there was an error leasing the loadbalancer, setting pipeline error");
             httpContext.Items.UpsertErrors(hostAndPort.Errors);
             return;
         }
@@ -59,12 +57,8 @@ public class LoadBalancingMiddleware : OcelotMiddleware
 
         try
         {
+            // If an exception occurs, the object will be handled by the global exception handler
             await _next.Invoke(httpContext);
-        }
-        catch (Exception)
-        {
-            Logger.LogDebug("Exception calling next middleware, exception will be thrown to global handler");
-            throw;
         }
         finally
         {

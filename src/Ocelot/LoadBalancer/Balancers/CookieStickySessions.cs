@@ -35,7 +35,11 @@ public class CookieStickySessions : ILoadBalancer
     private readonly ILoadBalancer _loadBalancer;
     private readonly IBus<StickySession> _bus;
 
+#if NET9_0_OR_GREATER
+    private static readonly Lock Locker = new();
+#else
     private static readonly object Locker = new();
+#endif
     private static readonly Dictionary<string, StickySession> Stored = new(); // TODO Inject instead of static sharing
 
     public string Type => nameof(CookieStickySessions);

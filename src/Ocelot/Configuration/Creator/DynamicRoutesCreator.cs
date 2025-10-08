@@ -30,7 +30,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
     {
         return fileConfiguration.DynamicRoutes
             .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))
-            .ToList();
+            .ToArray();
     }
 
     public virtual int CreateTimeout(FileDynamicRoute route, FileGlobalConfiguration global)

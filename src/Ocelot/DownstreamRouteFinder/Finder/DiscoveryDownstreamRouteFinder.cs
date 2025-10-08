@@ -139,8 +139,5 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     }
 
     private static string CreateQoSKey(string downstreamTemplatePath, string httpMethod)
-    {
-        var loadBalancerKey = $"{downstreamTemplatePath}|{httpMethod}";
-        return loadBalancerKey;
-    }
+        => $"{downstreamTemplatePath}|{httpMethod}";
 }
