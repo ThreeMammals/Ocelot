@@ -118,19 +118,44 @@ public sealed class DefaultConsulServiceBuilderTests
     {
         Arrange();
 
-        // Arrange, Act, Assert: node branch
+        // Arrange, Act, Assert: entry.Service.Address is not empty, should return it regardless of node
         ServiceEntry entry = new()
         {
             Service = new() { Address = nameof(GetDownstreamHost_BothBranches_NameOrAddress) },
         };
-        var node = new Node { Name = "test1" };
+        var node = new Node { Name = "test1", Address = "test-address" };
         var actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
+        actual.ShouldNotBeNull().ShouldBe(nameof(GetDownstreamHost_BothBranches_NameOrAddress));
+
+        // Arrange, Act, Assert: entry.Service.Address is empty, node.Address is not empty, should return node.Address
+        Arrange();
+        entry = new()
+        {
+            Service = new() { Address = string.Empty },
+        };
+        node = new Node { Name = "test1", Address = "test-address" };
+        actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
+        actual.ShouldNotBeNull().ShouldBe("test-address");
+
+        // Arrange, Act, Assert: entry.Service.Address is empty, node.Address is empty, should return node.Name
+        Arrange();
+        entry = new()
+        {
+            Service = new() { Address = string.Empty },
+        };
+        node = new Node { Name = "test1", Address = string.Empty };
+        actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
         actual.ShouldNotBeNull().ShouldBe("test1");
 
-        // Arrange, Act, Assert: entry branch
+        // Arrange, Act, Assert: entry.Service.Address is empty, node is null
+        Arrange();
+        entry = new()
+        {
+            Service = new() { Address = string.Empty },
+        };
         node = null;
         actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
-        actual.ShouldNotBeNull().ShouldBe(nameof(GetDownstreamHost_BothBranches_NameOrAddress));
+        actual.ShouldBeNull();
     }
 
     private static MethodInfo GetServiceVersion { get; } = Me.GetMethod("GetServiceVersion", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -150,7 +175,12 @@ public sealed class DefaultConsulServiceBuilderTests
         actual.ShouldBe(string.Empty);
 
         // Arrange, Act, Assert: collection has no version tag
-        entry.Service.Tags = new[] { "test" };
+        Arrange();
+        entry = new()
+        {
+            Service = new() { Tags = new[] { "test" } },
+        };
+        node = null;
         actual = GetServiceVersion.Invoke(sut, new object[] { entry, node }) as string;
         actual.ShouldBe(string.Empty);
     }
@@ -192,7 +222,12 @@ public sealed class DefaultConsulServiceBuilderTests
         actual.ShouldNotBeNull().ShouldBeEmpty();
 
         // Arrange, Act, Assert: happy path
-        entry.Service.Tags = new string[] { "1", "2", "3" };
+        Arrange();
+        entry = new()
+        {
+            Service = new() { Tags = new string[] { "1", "2", "3" } },
+        };
+        node = null;
         actual = GetServiceTags.Invoke(sut, new object[] { entry, node }) as IEnumerable<string>;
         actual.ShouldNotBeNull().ShouldNotBeEmpty();
         actual.Count().ShouldBe(3);
