@@ -7,27 +7,28 @@ namespace Ocelot.UnitTests.Configuration;
 public class DynamicRoutesCreatorTests : UnitTest
 {
     private readonly DynamicRoutesCreator _creator;
-    private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
-    private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
-    private readonly Mock<IVersionCreator> _versionCreator;
-    private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
-    private readonly Mock<IMetadataCreator> _metadataCreator;
+    private readonly Mock<IRouteKeyCreator> _lbKeyCreator = new();
+    private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator = new();
+    private readonly Mock<IRateLimitOptionsCreator> _rloCreator = new();
+    private readonly Mock<IVersionCreator> _versionCreator = new();
+    private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator = new();
+    private readonly Mock<IMetadataCreator> _metadataCreator = new();
     private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
-    private RateLimitOptions _rlo1;
-    private RateLimitOptions _rlo2;
+    private RateLimitOptions[] _rlo;
     private Version _version;
     private HttpVersionPolicy _versionPolicy;
     private Dictionary<string, string> _expectedMetadata;
 
     public DynamicRoutesCreatorTests()
     {
-        _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
-        _versionCreator = new Mock<IVersionCreator>();
-        _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
-        _metadataCreator = new Mock<IMetadataCreator>();
-        _rloCreator = new Mock<IRateLimitOptionsCreator>();
-        _creator = new DynamicRoutesCreator(_lboCreator.Object, _rloCreator.Object, _versionCreator.Object, _versionPolicyCreator.Object, _metadataCreator.Object);
+        _creator = new DynamicRoutesCreator(
+            _lbKeyCreator.Object,
+            _lboCreator.Object,
+            _rloCreator.Object,
+            _versionCreator.Object,
+            _versionPolicyCreator.Object,
+            _metadataCreator.Object);
     }
 
     [Fact]
@@ -43,6 +44,8 @@ public class DynamicRoutesCreatorTests : UnitTest
         _result.Count.ShouldBe(0);
 
         // Assert: then the RloCreator is not called
+        _lbKeyCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<LoadBalancerOptions>()), Times.Never);
+        _lboCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
         _rloCreator.Verify(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
 
         // Assert: then the metadata creator is not called
@@ -71,7 +74,7 @@ public class DynamicRoutesCreatorTests : UnitTest
 
         // Assert
         ThenTheRoutesAreReturned();
-        ThenTheRloCreatorIsCalledCorrectly();
+        ThenTheBasicCreatorsAreCalledCorrectly();
         ThenTheVersionCreatorIsCalledCorrectly();
         ThenTheMetadataCreatorIsCalledCorrectly();
     }
@@ -145,43 +148,43 @@ public class DynamicRoutesCreatorTests : UnitTest
         },
     };
 
-    private void ThenTheRloCreatorIsCalledCorrectly()
+    private void ThenTheBasicCreatorsAreCalledCorrectly()
     {
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0], _fileConfig.GlobalConfiguration),
-            Times.Once);
-        _rloCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1], _fileConfig.GlobalConfiguration),
-            Times.Once);
+        _fileConfig.DynamicRoutes.ForEach(dynamicRoute =>
+        {
+            _lbKeyCreator.Verify(x => x.Create(dynamicRoute, It.IsAny<LoadBalancerOptions>()), Times.Once);
+            _lboCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
+            _rloCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
+        });
     }
 
     private void ThenTheVersionCreatorIsCalledCorrectly()
     {
-        _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersion), Times.Once);
-        _versionCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersion), Times.Once);
-
-        _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].DownstreamHttpVersionPolicy), Times.Exactly(2));
-        _versionPolicyCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].DownstreamHttpVersionPolicy), Times.Exactly(2));
+        _fileConfig.DynamicRoutes.ForEach(dynamicRoute =>
+        {
+            _versionCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersion), Times.Once);
+            _versionPolicyCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersionPolicy), Times.Exactly(2));
+        });
     }
 
     private void ThenTheMetadataCreatorIsCalledCorrectly()
     {
-        _metadataCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[0].Metadata, It.IsAny<FileGlobalConfiguration>()), Times.Once);
-        _metadataCreator.Verify(x => x.Create(_fileConfig.DynamicRoutes[1].Metadata, It.IsAny<FileGlobalConfiguration>()), Times.Once);
+        _fileConfig.DynamicRoutes.ForEach(dynamicRoute
+            => _metadataCreator.Verify(x => x.Create(dynamicRoute.Metadata, _fileConfig.GlobalConfiguration), Times.Once));
     }
 
     private void ThenTheRoutesAreReturned()
     {
         _result.Count.ShouldBe(2);
-        _result[0].DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeFalse();
-        _result[0].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo1);
-        _result[0].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-        _result[0].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
-        _result[0].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[0].ServiceName);
-
-        _result[1].DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeTrue();
-        _result[1].DownstreamRoute[0].RateLimitOptions.ShouldBe(_rlo2);
-        _result[1].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_version);
-        _result[1].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
-        _result[1].DownstreamRoute[0].ServiceName.ShouldBe(_fileConfig.DynamicRoutes[1].ServiceName);
+        for (int i = 0; i < _result.Count; i++)
+        {
+            DownstreamRoute dr = _result[i].DownstreamRoute[0];
+            dr.RateLimitOptions.EnableRateLimiting.ShouldBe(_rlo[i].EnableRateLimiting);
+            dr.RateLimitOptions.ShouldBe(_rlo[i]);
+            dr.DownstreamHttpVersion.ShouldBe(_version);
+            dr.DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
+            dr.ServiceName.ShouldBe(_fileConfig.DynamicRoutes[i].ServiceName);
+        }
     }
 
     private void GivenTheVersionCreatorReturns()
@@ -208,12 +211,13 @@ public class DynamicRoutesCreatorTests : UnitTest
 
     private void GivenTheRloCreatorReturns()
     {
-        _rlo1 = new() { EnableRateLimiting = false };
-        _rlo2 = new() { EnableRateLimiting = true };
-
+        _rlo = [
+            new() { EnableRateLimiting = false },
+            new() { EnableRateLimiting = true },
+        ];
         _rloCreator
             .SetupSequence(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()))
-            .Returns(_rlo1)
-            .Returns(_rlo2);
+            .Returns(_rlo[0])
+            .Returns(_rlo[1]);
     }
 }

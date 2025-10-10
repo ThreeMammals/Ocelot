@@ -27,6 +27,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
         services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
         services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+        services.AddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
         services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Features.AddHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()

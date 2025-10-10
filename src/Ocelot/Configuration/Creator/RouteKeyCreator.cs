@@ -6,6 +6,8 @@ namespace Ocelot.Configuration.Creator;
 
 public class RouteKeyCreator : IRouteKeyCreator
 {
+    public const char Separator = '|';
+
     /// <summary>
     /// Creates the unique <see langword="string"/> key based on the route properties for load balancing etc.
     /// </summary>
@@ -17,11 +19,9 @@ public class RouteKeyCreator : IRouteKeyCreator
     /// <returns>A <see langword="string"/> object containing the key.</returns>
     public string Create(FileRoute route, LoadBalancerOptions loadBalancing)
     {
-        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.InvariantCultureIgnoreCase)
-            && loadBalancing.Key.Length > 0;
-        if (isStickySession)
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
         {
-            return $"{nameof(CookieStickySessions)}:{loadBalancing.Key}";
+            return stickySessionKey;
         }
 
         var keyBuilder = new StringBuilder()
@@ -34,6 +34,39 @@ public class RouteKeyCreator : IRouteKeyCreator
             .AppendNext(loadBalancing.Type.IfEmpty("no-lb-type"))
             .AppendNext(loadBalancing.Key.IfEmpty("no-lb-key"));
         return keyBuilder.ToString();
+    }
+
+    public string Create(FileDynamicRoute route, LoadBalancerOptions loadBalancing)
+    {
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
+        {
+            return stickySessionKey;
+        }
+
+        // it should be constructed in upper contexts
+        return !loadBalancing.Key.IsEmpty() ? loadBalancing.Key
+            : Create(route.ServiceNamespace, route.ServiceName, loadBalancing);
+    }
+
+    public string Create(string serviceNamespace, string serviceName, LoadBalancerOptions loadBalancing)
+    {
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
+        {
+            return stickySessionKey;
+        }
+
+        return !loadBalancing.Key.IsEmpty() ? loadBalancing.Key
+            : string.Join(Separator, serviceNamespace, serviceName); // upstreamHttpMethod ?
+    }
+
+    protected virtual bool TryStickySession(LoadBalancerOptions loadBalancing, out string stickySessionKey)
+    {
+        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.InvariantCultureIgnoreCase)
+            && loadBalancing.Key.Length > 0;
+        stickySessionKey = isStickySession
+            ? $"{nameof(CookieStickySessions)}:{loadBalancing.Key}"
+            : string.Empty;
+        return isStickySession;
     }
 
     private static string AsString(FileHostAndPort host) => host?.ToString();
@@ -49,7 +82,7 @@ internal static class RouteKeyCreatorHelpers
     {
         if (builder.Length > 0)
         {
-            builder.Append('|');
+            builder.Append(RouteKeyCreator.Separator);
         }
 
         return builder.Append(next);

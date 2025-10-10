@@ -24,15 +24,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private IInternalConfiguration _configuration;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
-    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator;
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator = new();
 
     public DiscoveryDownstreamRouteFinderTests()
     {
         _qoSOptions = new(new FileQoSOptions());
         _handlerOptions = new HttpHandlerOptionsBuilder().Build();
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
-        _upstreamHeaderTemplatePatternCreator = new();
-        _finder = new(_upstreamHeaderTemplatePatternCreator.Object);
+        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
     }
 
@@ -74,6 +73,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)
+            .WithLoadBalancerKey("|auth")
             .WithLoadBalancerOptions(new())
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
@@ -95,7 +95,12 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
         // Assert
         ThenTheDownstreamRouteIsCreated();
-        WithRateLimitOptions(rateLimitOptions);
+
+        // Assert: With RateLimitOptions
+        var actual = _result.Data.Route.DownstreamRoute[0].RateLimitOptions;
+        actual.EnableRateLimiting.ShouldBeTrue();
+        actual.EnableRateLimiting.ShouldBe(rateLimitOptions.EnableRateLimiting);
+        actual.ClientIdHeader.ShouldBe(rateLimitOptions.ClientIdHeader);
     }
 
     [Fact]
@@ -108,6 +113,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")
             .WithLoadBalancerOptions(lbOptions)
+            .WithLoadBalancerKey("|auth")
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
         var configuration = new InternalConfiguration(
@@ -258,8 +264,12 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Act
         WhenICreate();
 
-        // Assert
-        ThenThePathDoesNotHaveTrailingSlash();
+        // Assert: Then the path does not have trailing slash
+        var actual = _result.Data.Route.DownstreamRoute[0];
+        actual.DownstreamPathTemplate.Value.ShouldBe("/test");
+        actual.ServiceName.ShouldBe("auth");
+        actual.ServiceNamespace.ShouldBeEmpty();
+        actual.LoadBalancerKey.ShouldBe("|auth");
     }
 
     [Fact]
@@ -283,8 +293,12 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Act
         WhenICreate();
 
-        // Assert
-        ThenTheQueryStringIsRemoved();
+        // Assert: Then the query string is removed
+        var actual = _result.Data.Route.DownstreamRoute[0];
+        actual.DownstreamPathTemplate.Value.ShouldBe("/test");
+        actual.ServiceName.ShouldBe("auth");
+        actual.ServiceNamespace.ShouldBeEmpty();
+        actual.LoadBalancerKey.ShouldBe("|auth");
     }
 
     [Fact]
@@ -309,7 +323,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreate();
 
         // Assert
-        ThenTheStickySessionLoadBalancerIsUsed(loadBalancerOptions);
+        var actual = _result.Data.Route.DownstreamRoute[0];
+        actual.LoadBalancerKey.ShouldBe("CookieStickySessions:boom");
+        actual.LoadBalancerOptions.Type.ShouldBe("CookieStickySessions");
+        actual.LoadBalancerOptions.ShouldBe(loadBalancerOptions);
     }
 
     [Fact]
@@ -337,8 +354,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Act
         WhenICreate();
 
-        // Assert
-        ThenTheQosOptionsAreSet(qoSOptions);
+        // Assert: Then the Qos options are set
+        var actual = _result.Data.Route.DownstreamRoute[0];
+        actual.QosOptions.ShouldNotBeNull().Key.ShouldBe(qoSOptions.Key);
+        actual.QosOptions.UseQos.ShouldBeTrue();
     }
 
     [Fact]
@@ -388,20 +407,13 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         Assert.Equal(expectedNamespace, actualNamespace);
     }
 
-    private void WithRateLimitOptions(RateLimitOptions expected)
-    {
-        _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBeTrue();
-        _result.Data.Route.DownstreamRoute[0].RateLimitOptions.EnableRateLimiting.ShouldBe(expected.EnableRateLimiting);
-        _result.Data.Route.DownstreamRoute[0].RateLimitOptions.ClientIdHeader.ShouldBe(expected.ClientIdHeader);
-    }
-
     private void ThenTheDownstreamRouteIsCreated(string loadBalancerType = null)
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
         _result.Data.Route.UpstreamHttpMethod.ShouldContain(HttpMethod.Get);
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
         _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("|auth");
         _result.Data.Route.DownstreamRoute[0].UseServiceDiscovery.ShouldBeTrue();
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull();
@@ -423,36 +435,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/");
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
         _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/|GET");
-    }
-
-    private void ThenThePathDoesNotHaveTrailingSlash()
-    {
-        _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
-        _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
-    }
-
-    private void ThenTheQueryStringIsRemoved()
-    {
-        _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
-        _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("/.auth/test|GET");
-    }
-
-    private void ThenTheStickySessionLoadBalancerIsUsed(LoadBalancerOptions expected)
-    {
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe($"{nameof(CookieStickySessions)}:boom");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(nameof(CookieStickySessions));
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.ShouldBe(expected);
-    }
-
-    private void ThenTheQosOptionsAreSet(QoSOptions expected)
-    {
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe(expected.Key);
-        _result.Data.Route.DownstreamRoute[0].QosOptions.UseQos.ShouldBeTrue();
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("|auth");
     }
 
     private void GivenTheConfiguration(IInternalConfiguration config)

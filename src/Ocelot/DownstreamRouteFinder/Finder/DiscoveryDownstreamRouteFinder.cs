@@ -3,7 +3,6 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
-using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
 
@@ -16,11 +15,15 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     public const char Question = '?';
 
     private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
+    private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
 
-    public DiscoveryDownstreamRouteFinder(IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
+    public DiscoveryDownstreamRouteFinder(
+        IRouteKeyCreator routeKeyCreator,
+        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
     {
         _cache = new();
+        _routeKeyCreator = routeKeyCreator;
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
     }
 
@@ -29,13 +32,20 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
-        if (HasQueryString(downstreamPath))
+        if (downstreamPath.Contains(Question)) // has query string
         {
             downstreamPath = RemoveQueryString(downstreamPath);
         }
 
         var downstreamPathForKeys = $"/{serviceNamespace}{Dot}{serviceName}{downstreamPath}";
-        var loadBalancerKey = CreateLoadBalancerKey(downstreamPathForKeys, upstreamHttpMethod, configuration.LoadBalancerOptions);
+
+        var dynamicRoute = configuration.Routes?
+            .Where(r => r.IsDynamic) // process dynamic routes only
+            .SelectMany(r => r.DownstreamRoute)
+            .FirstOrDefault(dr => dr.ServiceName == serviceName && (serviceNamespace.IsEmpty() || dr.ServiceNamespace == serviceNamespace));
+        var loadBalancerKey = dynamicRoute != null
+            ? dynamicRoute.LoadBalancerKey
+            : _routeKeyCreator.Create(serviceNamespace, serviceName, configuration.LoadBalancerOptions);
         if (_cache.TryGetValue(loadBalancerKey, out var downstreamRouteHolder))
         {
             return downstreamRouteHolder;
@@ -53,22 +63,16 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var routeBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)
             .WithServiceNamespace(serviceNamespace)
-            .WithLoadBalancerKey(loadBalancerKey)
             .WithDownstreamPathTemplate(downstreamPath)
             .WithUseServiceDiscovery(true)
             .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
             .WithQosOptions(qosOptions)
             .WithDownstreamScheme(configuration.DownstreamScheme)
+            .WithLoadBalancerKey(loadBalancerKey)
             .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
             .WithUpstreamPathTemplate(upstreamPathTemplate)
             .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>);
-
-        // TODO: Review this logic. Is this merging options for dynamic routes?
-        var dynamicRoute = configuration.Routes?
-            .Where(r => r.IsDynamic) // process dynamic routes only
-            .SelectMany(r => r.DownstreamRoute)
-            .FirstOrDefault(dr => dr.ServiceName == serviceName && (serviceNamespace.IsEmpty() || dr.ServiceNamespace == serviceNamespace));
         if (dynamicRoute != null)
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
@@ -78,7 +82,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         }
 
         var downstreamRoute = routeBuilder.Build();
-        var route = new Route(downstreamRoute)
+        var route = new Route(true, downstreamRoute) // IsDynamic -> true
         {
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
             UpstreamHost = upstreamHost,
@@ -95,8 +99,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         int index = downstreamPath.IndexOf(Question);
         return downstreamPath[..index];
     }
-
-    private static bool HasQueryString(string downstreamPath) => downstreamPath.Contains(Question);
 
     private static string GetDownstreamPath(string upstreamUrlPath)
     {
@@ -127,17 +129,4 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var serviceName = index == -1 ? name : name[++index..];
         return serviceName.ToString();
     }
-
-    private static string CreateLoadBalancerKey(string downstreamTemplatePath, string httpMethod, LoadBalancerOptions options)
-    {
-        if (!string.IsNullOrEmpty(options.Type) && !string.IsNullOrEmpty(options.Key) && options.Type == nameof(CookieStickySessions))
-        {
-            return $"{nameof(CookieStickySessions)}:{options.Key}";
-        }
-
-        return CreateQoSKey(downstreamTemplatePath, httpMethod);
-    }
-
-    private static string CreateQoSKey(string downstreamTemplatePath, string httpMethod)
-        => $"{downstreamTemplatePath}|{httpMethod}";
 }

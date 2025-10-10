@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Creator;
 
 public class DynamicRoutesCreator : IDynamicsCreator
 {
+    private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
     private readonly IVersionCreator _versionCreator;
@@ -13,12 +14,14 @@ public class DynamicRoutesCreator : IDynamicsCreator
     private readonly IMetadataCreator _metadataCreator;
 
     public DynamicRoutesCreator(
+        IRouteKeyCreator routeKeyCreator,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
         IMetadataCreator metadataCreator)
     {
+        _routeKeyCreator = routeKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
         _versionCreator = versionCreator;
@@ -28,8 +31,10 @@ public class DynamicRoutesCreator : IDynamicsCreator
 
     public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
     {
+        Route CreateRoute(FileDynamicRoute route)
+            => SetUpDynamicRoute(route, fileConfiguration.GlobalConfiguration);
         return fileConfiguration.DynamicRoutes
-            .Select(dynamic => SetUpDynamicRoute(dynamic, fileConfiguration.GlobalConfiguration))
+            .Select(CreateRoute)
             .ToArray();
     }
 
@@ -48,6 +53,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         }
 
         var lbOptions = _loadBalancerOptionsCreator.Create(dynamicRoute, globalConfiguration);
+        var lbKey = _routeKeyCreator.Create(dynamicRoute, lbOptions);
         var rateLimitOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
         var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
@@ -56,6 +62,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName(dynamicRoute.ServiceName)
             .WithServiceNamespace(dynamicRoute.ServiceNamespace)
+            .WithLoadBalancerKey(lbKey)
             .WithLoadBalancerOptions(lbOptions)
             .WithRateLimitOptions(rateLimitOptions)
             .WithDownstreamHttpVersion(version)
