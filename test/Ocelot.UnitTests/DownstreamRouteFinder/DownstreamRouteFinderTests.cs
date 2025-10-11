@@ -561,7 +561,40 @@ public class DownstreamRouteFinderTests : UnitTest
         _result.IsError.ShouldBeTrue();
     }
 
-    private static Route GivenRoute(string downstream = null,
+    [Theory]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_filter_static_routes(bool isDynamic)
+    {
+        // Arrange
+        var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamQuery = string.Empty;
+        GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
+        GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
+        _routesConfig = new()
+        {
+            GivenRoute(priority: 1),
+            GivenRoute(isDynamic: isDynamic, priority: 1),
+        };
+        GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
+        GivenTheHeadersMatcherReturns(true);
+        _upstreamHttpMethod = "Get";
+
+        // Act, Assert
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result.Data.Route.IsDynamic.ShouldBeFalse();
+
+        // Act, Assert 2
+        _routesConfig.RemoveAll(r => !r.IsDynamic); // remove all static routes
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result.IsError.ShouldBeTrue();
+    }
+
+    private static Route GivenRoute(bool? isDynamic = null, string downstream = null,
         List<string> upstreamMethods = null, string method = null,
         UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null,
         string host = null,
@@ -571,7 +604,7 @@ public class DownstreamRouteFinderTests : UnitTest
         upstream ??= "someUpstreamPath";
         upTemplate ??= new(upstream, priority ?? 1, false, upstream);
         upstreamMethods ??= [method ?? HttpMethods.Get];
-        return new()
+        return new(isDynamic ?? false)
         {
             DownstreamRoute = [route],
             UpstreamHttpMethod = upstreamMethods.Select(m => new HttpMethod(m)).ToHashSet(),

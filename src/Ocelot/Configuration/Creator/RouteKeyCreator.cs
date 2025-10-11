@@ -1,4 +1,5 @@
 using Ocelot.Configuration.File;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 
@@ -7,6 +8,7 @@ namespace Ocelot.Configuration.Creator;
 public class RouteKeyCreator : IRouteKeyCreator
 {
     public const char Separator = '|';
+    public const char Dot = DiscoveryDownstreamRouteFinder.Dot;
 
     /// <summary>
     /// Creates the unique <see langword="string"/> key based on the route properties for load balancing etc.
@@ -56,7 +58,7 @@ public class RouteKeyCreator : IRouteKeyCreator
         }
 
         return !loadBalancing.Key.IsEmpty() ? loadBalancing.Key
-            : string.Join(Separator, serviceNamespace, serviceName); // upstreamHttpMethod ?
+            : string.Join(Dot, serviceNamespace, serviceName); // upstreamHttpMethod ?
     }
 
     protected virtual bool TryStickySession(LoadBalancerOptions loadBalancing, out string stickySessionKey)
@@ -69,7 +71,7 @@ public class RouteKeyCreator : IRouteKeyCreator
         return isStickySession;
     }
 
-    private static string AsString(FileHostAndPort host) => host?.ToString();
+    public static string AsString(FileHostAndPort host) => host?.ToString();
 }
 
 internal static class RouteKeyCreatorHelpers

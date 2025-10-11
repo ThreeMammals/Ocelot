@@ -3,6 +3,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
 using Ocelot.Values;
@@ -13,9 +14,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder;
 public class DiscoveryDownstreamRouteFinderTests : UnitTest
 {
     private readonly DiscoveryDownstreamRouteFinder _finder;
-    private readonly QoSOptions _qoSOptions;
+    private QoSOptions _qoSOptions;
     private readonly HttpHandlerOptions _handlerOptions;
-    private readonly LoadBalancerOptions _loadBalancerOptions;
+    private LoadBalancerOptions _loadBalancerOptions;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _result;
     private string _upstreamHost;
     private string _upstreamUrlPath;
@@ -39,18 +40,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route()
     {
         // Arrange
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
 
         // Act
         WhenICreate();
@@ -77,24 +68,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithLoadBalancerOptions(new())
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
-        var configuration = new InternalConfiguration(
-            [route],
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
+        GivenInternalConfiguration(route);
+        GivenTheConfiguration();
 
         // Act
         WhenICreate();
 
         // Assert
-        ThenTheDownstreamRouteIsCreated();
+        ThenTheDownstreamRouteIsCreated(lbKey: downstreamRoute.LoadBalancerKey);
 
         // Assert: With RateLimitOptions
         var actual = _result.Data.Route.DownstreamRoute[0].RateLimitOptions;
@@ -104,63 +85,17 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void Should_create_downstream_route_with_load_balancer_options()
-    {
-        // Arrange
-        var lbOptions = new LoadBalancerOptions("testBalancer", "test", 3);
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithServiceName("auth")
-            .WithLoadBalancerOptions(lbOptions)
-            .WithLoadBalancerKey("|auth")
-            .Build();
-        var route = new Route(true, downstreamRoute); // create dynamic route
-        var configuration = new InternalConfiguration(
-            [route],
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
-
-        // Act
-        WhenICreate();
-
-        // Assert
-        ThenTheDownstreamRouteIsCreated("testBalancer");
-        var downstream = _result.Data.Route.DownstreamRoute[0];
-        downstream.LoadBalancerOptions.ShouldNotBeNull();
-        downstream.LoadBalancerOptions.Type.ShouldBe("testBalancer");
-        downstream.LoadBalancerOptions.Key.ShouldBe("test");
-        downstream.LoadBalancerOptions.ExpiryInMs.ShouldBe(3);
-    }
-
-    [Fact]
     public void Should_cache_downstream_route()
     {
         // Arrange
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration, "/geoffisthebest/");
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/geoffisthebest/";
 
         // Act
         WhenICreate();
-        GivenTheConfiguration(configuration, "/geoffisthebest/");
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/geoffisthebest/";
         WhenICreateAgain();
 
         // Assert
@@ -171,22 +106,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_not_cache_downstream_route()
     {
         // Arrange
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration, "/geoffistheworst/");
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/geoffistheworst/";
 
         // Act
         WhenICreate();
-        GivenTheConfiguration(configuration, "/geoffisthebest/");
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/geoffisthebest/";
         WhenICreateAgain();
 
         // Assert
@@ -197,19 +124,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route_with_no_path()
     {
         // Arrange
-        var upstreamUrlPath = "/auth/";
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration, upstreamUrlPath);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/auth/";
 
         // Act
         WhenICreate();
@@ -222,19 +139,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route_with_only_first_segment_no_traling_slash()
     {
         // Arrange
-        var upstreamUrlPath = "/auth";
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration, upstreamUrlPath);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/auth";
 
         // Act
         WhenICreate();
@@ -247,19 +154,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route_with_segments_no_traling_slash()
     {
         // Arrange
-        var upstreamUrlPath = "/auth/test";
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrHigher);
-        GivenTheConfiguration(configuration, upstreamUrlPath);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/auth/test";
 
         // Act
         WhenICreate();
@@ -269,26 +166,16 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         actual.DownstreamPathTemplate.Value.ShouldBe("/test");
         actual.ServiceName.ShouldBe("auth");
         actual.ServiceNamespace.ShouldBeEmpty();
-        actual.LoadBalancerKey.ShouldBe("|auth");
+        actual.LoadBalancerKey.ShouldBe(".auth");
     }
 
     [Fact]
     public void Should_create_downstream_route_and_remove_query_string()
     {
         // Arrange
-        var upstreamUrlPath = "/auth/test?test=1&best=2";
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration, upstreamUrlPath);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamUrlPath = "/auth/test?test=1&best=2";
 
         // Act
         WhenICreate();
@@ -298,26 +185,16 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         actual.DownstreamPathTemplate.Value.ShouldBe("/test");
         actual.ServiceName.ShouldBe("auth");
         actual.ServiceNamespace.ShouldBeEmpty();
-        actual.LoadBalancerKey.ShouldBe("|auth");
+        actual.LoadBalancerKey.ShouldBe(".auth");
     }
 
     [Fact]
     public void Should_create_downstream_route_for_sticky_sessions()
     {
         // Arrange
-        var loadBalancerOptions = new LoadBalancerOptions(nameof(CookieStickySessions), "boom", 1);
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
+        _loadBalancerOptions = new LoadBalancerOptions(nameof(CookieStickySessions), "boom", 1);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
 
         // Act
         WhenICreate();
@@ -326,37 +203,27 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var actual = _result.Data.Route.DownstreamRoute[0];
         actual.LoadBalancerKey.ShouldBe("CookieStickySessions:boom");
         actual.LoadBalancerOptions.Type.ShouldBe("CookieStickySessions");
-        actual.LoadBalancerOptions.ShouldBe(loadBalancerOptions);
+        actual.LoadBalancerOptions.ShouldBe(_loadBalancerOptions);
     }
 
     [Fact]
     public void Should_create_downstream_route_with_qos()
     {
         // Arrange
-        var qoSOptions = new QoSOptionsBuilder()
+        _qoSOptions = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(1)
             .WithTimeoutValue(1)
             .WithKey("/.auth/test|GET")
             .Build();
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
 
         // Act
         WhenICreate();
 
         // Assert: Then the Qos options are set
         var actual = _result.Data.Route.DownstreamRoute[0];
-        actual.QosOptions.ShouldNotBeNull().Key.ShouldBe(qoSOptions.Key);
+        actual.QosOptions.ShouldNotBeNull().Key.ShouldBe(_qoSOptions.Key);
         actual.QosOptions.UseQos.ShouldBeTrue();
     }
 
@@ -364,18 +231,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route_with_handler_options()
     {
         // Arrange
-        var configuration = new InternalConfiguration(
-            null,
-            "doesnt matter",
-            null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
-        GivenTheConfiguration(configuration);
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
 
         // Act
         WhenICreate();
@@ -407,20 +264,89 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         Assert.Equal(expectedNamespace, actualNamespace);
     }
 
-    private void ThenTheDownstreamRouteIsCreated(string loadBalancerType = null)
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public void Should_create_downstream_route_with_load_balancer_options()
+    {
+        // Arrange
+        var lbOptions = new LoadBalancerOptions("testBalancer", "testKey", 3);
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithServiceName("auth")
+            .WithLoadBalancerOptions(lbOptions)
+            .WithLoadBalancerKey("|auth")
+            .Build();
+        var route = new Route(true, downstreamRoute); // create dynamic route
+        GivenInternalConfiguration(route);
+        GivenTheConfiguration();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamRouteIsCreated(lbType: "testBalancer", lbKey: "|auth");
+        var downstream = _result.Data.Route.DownstreamRoute[0];
+        downstream.LoadBalancerOptions.ShouldNotBeNull();
+        downstream.LoadBalancerOptions.Type.ShouldBe("testBalancer");
+        downstream.LoadBalancerOptions.Key.ShouldBe("testKey");
+        downstream.LoadBalancerOptions.ExpiryInMs.ShouldBe(3);
+    }
+
+    [Theory]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShouldFindFirstOrDefaultDownstreamRoute_WithOrWithoutServiceNamespace(bool hasNamespace)
+    {
+        // Arrange
+        var lbOptions = new LoadBalancerOptions("testBalancer", "testKey", 3);
+        var dRoute1 = new DownstreamRouteBuilder()
+            .WithServiceName("service1")
+            .Build();
+        var dRoute2 = new DownstreamRouteBuilder()
+            .WithServiceName("service2")
+            .WithServiceNamespace(hasNamespace ? "namespace2" : string.Empty)
+            .WithLoadBalancerKey("namespace2-service2")
+            .WithLoadBalancerOptions(lbOptions)
+            .Build();
+        var route = new Route(true)
+        {
+            DownstreamRoute = [dRoute1, dRoute2],
+        };
+        GivenInternalConfiguration(route);
+        GivenTheConfiguration();
+        _upstreamUrlPath = hasNamespace
+            ? $"/{dRoute2.ServiceNamespace}.{dRoute2.ServiceName}/test"
+            : $"/{dRoute2.ServiceName}/test";
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDownstreamRouteIsCreated("service2", hasNamespace ? "namespace2" : "", "testBalancer", "namespace2-service2");
+        var downstream = _result.Data.Route.DownstreamRoute[0];
+        downstream.LoadBalancerOptions.ShouldNotBeNull();
+        downstream.LoadBalancerOptions.Type.ShouldBe("testBalancer");
+        downstream.LoadBalancerOptions.Key.ShouldBe("testKey");
+        downstream.LoadBalancerOptions.ExpiryInMs.ShouldBe(3);
+    }
+
+    private void ThenTheDownstreamRouteIsCreated(string serviceName = null, string serviceNamespace = null, string lbType = null, string lbKey = null)
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
         _result.Data.Route.UpstreamHttpMethod.ShouldContain(HttpMethod.Get);
-        _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
-        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("|auth");
+        _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe(serviceName ?? "auth");
+        _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBe(serviceNamespace ?? string.Empty);
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe(lbKey ?? ".auth");
         _result.Data.Route.DownstreamRoute[0].UseServiceDiscovery.ShouldBeTrue();
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].DownstreamScheme.ShouldBe("http");
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(loadBalancerType ?? nameof(NoLoadBalancer));
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(lbType ?? nameof(NoLoadBalancer));
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull().Key.ShouldBe("/.auth/test|GET");
+        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull()
+            .Key.ShouldBe(serviceName.IsEmpty() && serviceNamespace.IsEmpty() ? "/.auth/test|GET" : $"/{serviceNamespace}.{serviceName}/test|GET");
         _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
         var kv = _upstreamHeaders.First();
@@ -435,10 +361,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/");
         _result.Data.Route.DownstreamRoute[0].ServiceName.ShouldBe("auth");
         _result.Data.Route.DownstreamRoute[0].ServiceNamespace.ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe("|auth");
+        _result.Data.Route.DownstreamRoute[0].LoadBalancerKey.ShouldBe(".auth");
     }
 
-    private void GivenTheConfiguration(IInternalConfiguration config)
+    private void GivenTheConfiguration()
     {
         _upstreamHost = "doesnt matter";
         _upstreamUrlPath = "/auth/test";
@@ -448,7 +374,6 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "testHeader", "testHeaderValue" },
         };
         var kv = _upstreamHeaders.First();
-        _configuration = config;
         _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
             .Returns(new Dictionary<string, UpstreamHeaderTemplate>()
             {
@@ -456,10 +381,20 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             });
     }
 
-    private void GivenTheConfiguration(IInternalConfiguration config, string upstreamUrlPath)
+    private void GivenInternalConfiguration(Route route = null)
     {
-        GivenTheConfiguration(config);
-        _upstreamUrlPath = upstreamUrlPath;
+        _configuration = new InternalConfiguration(
+            route is null ? null : new() { route },
+            "doesnt matter",
+            null,
+            "doesnt matter",
+            _loadBalancerOptions,
+            "http",
+            _qoSOptions,
+            _handlerOptions,
+            new Version("1.1"),
+            HttpVersionPolicy.RequestVersionOrLower
+        );
     }
 
     private void WhenICreate()

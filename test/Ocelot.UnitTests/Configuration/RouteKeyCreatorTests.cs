@@ -112,4 +112,117 @@ public class RouteKeyCreatorTests : UnitTest
         // Assert
         result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy");
     }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_TryStickySession()
+    {
+        // Arrange
+        FileDynamicRoute route = new();
+        LoadBalancerOptions options = new(nameof(CookieStickySessions), "TestKey", null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("CookieStickySessions:TestKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_HasLoadBalancingKey()
+    {
+        // Arrange
+        FileDynamicRoute route = new();
+        LoadBalancerOptions options = new(nameof(RoundRobin), "LBKey", null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("LBKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_NoLBKey()
+    {
+        // Arrange
+        FileDynamicRoute route = new()
+        {
+            ServiceName = "test",
+            ServiceNamespace = "namespace",
+        };
+        LoadBalancerOptions options = new(nameof(RoundRobin), null, null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("namespace.test", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_TryStickySession()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(CookieStickySessions), "TestKey", null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("CookieStickySessions:TestKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_HasLoadBalancingKey()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(RoundRobin), "LBKey", null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("LBKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_NoLBKey()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(RoundRobin), null, null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("namespace.service", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void AsString()
+    {
+        // Arrange, Act, Assert
+        FileHostAndPort host = null;
+        var actual = RouteKeyCreator.AsString(host);
+        Assert.Null(actual);
+
+        // Arrange, Act, Assert
+        host = new("test.host", 123);
+        actual = RouteKeyCreator.AsString(host);
+        Assert.Equal("test.host:123", actual);
+    }
 }
