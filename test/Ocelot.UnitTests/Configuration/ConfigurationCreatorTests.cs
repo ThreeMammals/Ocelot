@@ -16,7 +16,9 @@ public class ConfigurationCreatorTests : UnitTest
     private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
     private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
     private readonly Mock<IVersionCreator> _vCreator;
-    private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
+    private readonly Mock<IVersionPolicyCreator> _vpCreator;
+    private readonly Mock<IMetadataCreator> _mdCreator;
+    private readonly Mock<IRateLimitOptionsCreator> _rlCreator;
     private FileConfiguration _fileConfig;
     private List<Route> _routes;
     private ServiceProviderConfiguration _spc;
@@ -29,11 +31,13 @@ public class ConfigurationCreatorTests : UnitTest
     public ConfigurationCreatorTests()
     {
         _vCreator = new Mock<IVersionCreator>();
-        _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
+        _vpCreator = new Mock<IVersionPolicyCreator>();
         _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
         _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
         _qosCreator = new Mock<IQoSOptionsCreator>();
         _spcCreator = new Mock<IServiceProviderConfigurationCreator>();
+        _mdCreator = new Mock<IMetadataCreator>();
+        _rlCreator = new Mock<IRateLimitOptionsCreator>();
         _serviceCollection = new ServiceCollection();
     }
 
@@ -125,7 +129,7 @@ public class ConfigurationCreatorTests : UnitTest
     private void WhenICreate()
     {
         var serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _versionPolicyCreator.Object);
+        _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _vpCreator.Object, _mdCreator.Object, _rlCreator.Object);
         _result = _creator.Create(_fileConfig, _routes);
     }
 }

@@ -4,6 +4,8 @@ namespace Ocelot.Configuration;
 
 public class InternalConfiguration : IInternalConfiguration
 {
+    public InternalConfiguration() => Routes = new();
+
     public InternalConfiguration(
         List<Route> routes,
         string administrationPath,
@@ -14,7 +16,10 @@ public class InternalConfiguration : IInternalConfiguration
         QoSOptions qoSOptions,
         HttpHandlerOptions httpHandlerOptions,
         Version downstreamHttpVersion,
-        HttpVersionPolicy? downstreamHttpVersionPolicy)
+        HttpVersionPolicy downstreamHttpVersionPolicy,
+        MetadataOptions metadataOptions,
+        RateLimitOptions rateLimitOptions,
+        int? timeout)
     {
         Routes = routes;
         AdministrationPath = administrationPath;
@@ -26,20 +31,25 @@ public class InternalConfiguration : IInternalConfiguration
         HttpHandlerOptions = httpHandlerOptions;
         DownstreamHttpVersion = downstreamHttpVersion;
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
+        MetadataOptions = metadataOptions;
+        RateLimitOptions = rateLimitOptions;
+        Timeout = timeout;
     }
 
-    public List<Route> Routes { get; }
-    public string AdministrationPath { get; }
-    public ServiceProviderConfiguration ServiceProviderConfiguration { get; }
-    public string RequestId { get; }
-    public LoadBalancerOptions LoadBalancerOptions { get; }
-    public string DownstreamScheme { get; }
-    public QoSOptions QoSOptions { get; }
-    public HttpHandlerOptions HttpHandlerOptions { get; }
-
-    public Version DownstreamHttpVersion { get; }
+    public List<Route> Routes { get; init; }
+    public string AdministrationPath { get; init; }
+    public ServiceProviderConfiguration ServiceProviderConfiguration { get; init; }
+    public string RequestId { get; init; }
+    public LoadBalancerOptions LoadBalancerOptions { get; init; }
+    public string DownstreamScheme { get; init; }
+    public QoSOptions QoSOptions { get; init; }
+    public HttpHandlerOptions HttpHandlerOptions { get; init; }
 
     /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamHttpVersionPolicy"/> property.</summary>
     /// <value>An <see cref="HttpVersionPolicy"/> enumeration value.</value>
-    public HttpVersionPolicy? DownstreamHttpVersionPolicy { get; }
+    public HttpVersionPolicy DownstreamHttpVersionPolicy { get; init; }
+    public Version DownstreamHttpVersion { get; init; }
+    public MetadataOptions MetadataOptions { get; init; }
+    public RateLimitOptions RateLimitOptions { get; init; }
+    public int? Timeout { get; init; }
 }

@@ -612,7 +612,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
     {
-        var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null, null);
+        var configuration = new InternalConfiguration()
+        {
+            ServiceProviderConfiguration = config,
+        };
         _httpContext.Items.SetIInternalConfiguration(configuration);
     }
 

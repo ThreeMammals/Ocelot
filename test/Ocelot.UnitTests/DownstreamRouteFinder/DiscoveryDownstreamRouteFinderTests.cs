@@ -26,12 +26,16 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
     private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator = new();
+    private readonly MetadataOptions _metadataOptions;
+    private readonly RateLimitOptions _rateLimitOptions;
 
     public DiscoveryDownstreamRouteFinderTests()
     {
         _qoSOptions = new(new FileQoSOptions());
         _handlerOptions = new HttpHandlerOptionsBuilder().Build();
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
+        _metadataOptions = new MetadataOptions();
+        _rateLimitOptions = new RateLimitOptions();
         _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
     }
@@ -65,7 +69,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithServiceName("auth")
             .WithRateLimitOptions(rateLimitOptions)
             .WithLoadBalancerKey("|auth")
-            .WithLoadBalancerOptions(new())
+            .WithLoadBalancerOptions(_loadBalancerOptions)
+            .WithQosOptions(_qoSOptions)
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
@@ -213,7 +219,6 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _qoSOptions = new QoSOptionsBuilder()
             .WithExceptionsAllowedBeforeBreaking(1)
             .WithTimeoutValue(1)
-            .WithKey("/.auth/test|GET")
             .Build();
         GivenInternalConfiguration();
         GivenTheConfiguration();
@@ -223,7 +228,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
         // Assert: Then the Qos options are set
         var actual = _result.Data.Route.DownstreamRoute[0];
-        actual.QosOptions.ShouldNotBeNull().Key.ShouldBe(_qoSOptions.Key);
+        actual.QosOptions.ShouldNotBeNull();
         actual.QosOptions.UseQos.ShouldBeTrue();
     }
 
@@ -275,6 +280,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithServiceName("auth")
             .WithLoadBalancerOptions(lbOptions)
             .WithLoadBalancerKey("|auth")
+            .WithMetadata(_metadataOptions)
+            .WithRateLimitOptions(_rateLimitOptions)
+            .WithQosOptions(_qoSOptions)
+            .WithDownstreamScheme("http")
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
@@ -309,12 +318,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithServiceNamespace(hasNamespace ? "namespace2" : string.Empty)
             .WithLoadBalancerKey("namespace2-service2")
             .WithLoadBalancerOptions(lbOptions)
+            .WithQosOptions(_qoSOptions)
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var route = new Route(true)
         {
             DownstreamRoute = [dRoute1, dRoute2],
         };
-        GivenInternalConfiguration(route);
+        GivenInternalConfiguration(route, 1);
         GivenTheConfiguration();
         _upstreamUrlPath = hasNamespace
             ? $"/{dRoute2.ServiceNamespace}.{dRoute2.ServiceName}/test"
@@ -345,8 +356,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].DownstreamScheme.ShouldBe("http");
         _result.Data.Route.DownstreamRoute[0].LoadBalancerOptions.Type.ShouldBe(lbType ?? nameof(NoLoadBalancer));
         _result.Data.Route.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
-        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull()
-            .Key.ShouldBe(serviceName.IsEmpty() && serviceNamespace.IsEmpty() ? "/.auth/test|GET" : $"/{serviceNamespace}.{serviceName}/test|GET");
+        _result.Data.Route.DownstreamRoute[0].QosOptions.ShouldNotBeNull();
         _result.Data.Route.UpstreamTemplatePattern.ShouldNotBeNull();
         _result.Data.Route.DownstreamRoute[0].UpstreamPathTemplate.ShouldNotBeNull();
         var kv = _upstreamHeaders.First();
@@ -381,20 +391,23 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             });
     }
 
-    private void GivenInternalConfiguration(Route route = null)
+    private void GivenInternalConfiguration(Route route = null, int index = 0)
     {
+        var dr = route?.DownstreamRoute[index];
         _configuration = new InternalConfiguration(
             route is null ? null : new() { route },
-            "doesnt matter",
+            "/AdminPath",
             null,
-            "doesnt matter",
-            _loadBalancerOptions,
-            "http",
-            _qoSOptions,
-            _handlerOptions,
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower
-        );
+            "requestID",
+            dr?.LoadBalancerOptions ?? _loadBalancerOptions,
+            (dr?.DownstreamScheme).IfEmpty(Uri.UriSchemeHttp),
+            dr?.QosOptions ?? _qoSOptions,
+            dr?.HttpHandlerOptions ?? _handlerOptions,
+            dr?.DownstreamHttpVersion ?? new Version("1.1"),
+            dr?.DownstreamHttpVersionPolicy ?? HttpVersionPolicy.RequestVersionOrLower,
+            dr?.MetadataOptions ?? _metadataOptions,
+            dr?.RateLimitOptions ?? _rateLimitOptions,
+            dr?.Timeout ?? 111);
     }
 
     private void WhenICreate()

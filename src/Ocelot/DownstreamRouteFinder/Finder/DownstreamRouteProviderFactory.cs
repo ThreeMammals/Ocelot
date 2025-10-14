@@ -31,6 +31,6 @@ public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
 
     private static bool IsServiceDiscovery(ServiceProviderConfiguration config)
     {
-        return !string.IsNullOrEmpty(config?.Host) && config?.Port > 0 && !string.IsNullOrEmpty(config.Type);
+        return !string.IsNullOrEmpty(config?.Host) && config?.Port > 0 && !string.IsNullOrEmpty(config?.Type);
     }
 }

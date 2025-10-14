@@ -174,6 +174,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),
             new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+            HttpVersionPolicy.RequestVersionOrLower,
+            default, default, default);
     }
 }

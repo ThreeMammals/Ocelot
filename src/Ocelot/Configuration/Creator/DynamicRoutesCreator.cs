@@ -6,27 +6,30 @@ namespace Ocelot.Configuration.Creator;
 
 public class DynamicRoutesCreator : IDynamicsCreator
 {
-    private readonly IRouteKeyCreator _routeKeyCreator;
+    private readonly IRouteKeyCreator _loadBalancerKeyCreator;
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
+    private readonly IMetadataCreator _metadataCreator;
+    private readonly IQoSOptionsCreator _qosOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
-    private readonly IMetadataCreator _metadataCreator;
 
     public DynamicRoutesCreator(
-        IRouteKeyCreator routeKeyCreator,
+        IRouteKeyCreator loadBalancerKeyCreator,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
+        IMetadataCreator metadataCreator,
+        IQoSOptionsCreator qosOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
         IVersionCreator versionCreator,
-        IVersionPolicyCreator versionPolicyCreator,
-        IMetadataCreator metadataCreator)
+        IVersionPolicyCreator versionPolicyCreator)
     {
-        _routeKeyCreator = routeKeyCreator;
+        _loadBalancerKeyCreator = loadBalancerKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
+        _metadataCreator = metadataCreator;
+        _qosOptionsCreator = qosOptionsCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
         _versionCreator = versionCreator;
         _versionPolicyCreator = versionPolicyCreator;
-        _metadataCreator = metadataCreator;
     }
 
     public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
@@ -52,23 +55,27 @@ public class DynamicRoutesCreator : IDynamicsCreator
             dynamicRoute.RateLimitOptions = dynamicRoute.RateLimitRule;
         }
 
+        var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion.IfEmpty(globalConfiguration.DownstreamHttpVersion));
+        var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy.IfEmpty(globalConfiguration.DownstreamHttpVersionPolicy));
+        var scheme = dynamicRoute.DownstreamScheme.IfEmpty(globalConfiguration.DownstreamScheme);
         var lbOptions = _loadBalancerOptionsCreator.Create(dynamicRoute, globalConfiguration);
-        var lbKey = _routeKeyCreator.Create(dynamicRoute, lbOptions);
-        var rateLimitOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
-        var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion);
-        var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy);
+        var lbKey = _loadBalancerKeyCreator.Create(dynamicRoute, lbOptions);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
-
+        var qosOptions = _qosOptionsCreator.Create(dynamicRoute, globalConfiguration);
+        var rlOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
+        var timeout = CreateTimeout(dynamicRoute, globalConfiguration);
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithServiceName(dynamicRoute.ServiceName)
-            .WithServiceNamespace(dynamicRoute.ServiceNamespace)
-            .WithLoadBalancerKey(lbKey)
-            .WithLoadBalancerOptions(lbOptions)
-            .WithRateLimitOptions(rateLimitOptions)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
+            .WithDownstreamScheme(scheme)
+            .WithLoadBalancerKey(lbKey)
+            .WithLoadBalancerOptions(lbOptions)
             .WithMetadata(metadata)
-            .WithTimeout(CreateTimeout(dynamicRoute, globalConfiguration))
+            .WithQosOptions(qosOptions)
+            .WithRateLimitOptions(rlOptions)
+            .WithServiceName(dynamicRoute.ServiceName)
+            .WithServiceNamespace(dynamicRoute.ServiceNamespace)
+            .WithTimeout(timeout)
             .Build();
         return new Route(true, downstreamRoute); // IsDynamic -> true
     }

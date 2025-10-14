@@ -24,7 +24,7 @@ public class FileGlobalDynamicRouting
     public string DownstreamScheme { get; set; }
     public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
-
+    public FileQoSOptions QoSOptions { get; set; }
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting
     [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.0!
     public FileRateLimiting RateLimiting { get; set; }

@@ -56,24 +56,37 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
+            .WithUseServiceDiscovery(true)
             .WithServiceName(serviceName)
             .WithServiceNamespace(serviceNamespace)
+            .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
+            .WithDownstreamHttpVersionPolicy(configuration.DownstreamHttpVersionPolicy)
             .WithDownstreamPathTemplate(downstreamPath)
-            .WithUseServiceDiscovery(true)
-            .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
-            .WithQosOptions(qosOptions)
             .WithDownstreamScheme(configuration.DownstreamScheme)
+            .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
             .WithLoadBalancerKey(loadBalancerKey)
             .WithLoadBalancerOptions(configuration.LoadBalancerOptions)
-            .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
+            .WithMetadata(configuration.MetadataOptions)
+            .WithQosOptions(configuration.QoSOptions)
+            .WithRateLimitOptions(configuration.RateLimitOptions)
+            .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>)
             .WithUpstreamPathTemplate(upstreamPathTemplate)
-            .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>);
+            .WithTimeout(configuration.Timeout);
         if (dynamicRoute != null)
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
             routeBuilder
+                .WithDownstreamHttpVersion(dynamicRoute.DownstreamHttpVersion)
+                .WithDownstreamHttpVersionPolicy(dynamicRoute.DownstreamHttpVersionPolicy)
+                .WithDownstreamScheme(dynamicRoute.DownstreamScheme)
+                .WithLoadBalancerKey(loadBalancerKey/*dynamicRoute.LoadBalancerKey*/)
+                .WithLoadBalancerOptions(dynamicRoute.LoadBalancerOptions)
+                .WithMetadata(dynamicRoute.MetadataOptions)
+                .WithQosOptions(dynamicRoute.QosOptions)
                 .WithRateLimitOptions(dynamicRoute.RateLimitOptions)
-                .WithLoadBalancerOptions(dynamicRoute.LoadBalancerOptions);
+                .WithServiceName(serviceName/*dynamicRoute.ServiceName*/)
+                .WithServiceNamespace(serviceNamespace/*dynamicRoute.ServiceNamespace*/)
+                .WithTimeout(dynamicRoute.Timeout);
         }
 
         var downstreamRoute = routeBuilder.Build();
