@@ -176,19 +176,23 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
-    public void Should_create_downstream_route_and_remove_query_string()
+    [Trait("Feat", "351")]
+    [Trait("PR", "2324")] // This PR resolves the issue of forwarding the query string to the downstream when service discovery (dynamic routing), fixing a bug in the QoS Key construction for caching within the ResiliencePipelineRegistry<T>. It now reuses the load balancing key to address the problem.
+    public void Should_create_downstream_route_and_forward_query_string()
     {
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/test?test=1&best=2";
+        const string queryString = "?test=1&best=2";
+        _upstreamUrlPath = "/auth/test" + queryString;
 
         // Act
         WhenICreate();
 
         // Assert: Then the query string is removed
         var actual = _result.Data.Route.DownstreamRoute[0];
-        actual.DownstreamPathTemplate.Value.ShouldBe("/test");
+        actual.DownstreamPathTemplate.Value.ShouldContain(queryString); // !!!
+        actual.DownstreamPathTemplate.Value.ShouldBe("/test?test=1&best=2");
         actual.ServiceName.ShouldBe("auth");
         actual.ServiceNamespace.ShouldBeEmpty();
         actual.LoadBalancerKey.ShouldBe(".auth");

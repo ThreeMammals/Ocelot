@@ -32,13 +32,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
-        if (downstreamPath.Contains(Question)) // has query string
-        {
-            downstreamPath = RemoveQueryString(downstreamPath);
-        }
-
-        var downstreamPathForKeys = $"/{serviceNamespace}{Dot}{serviceName}{downstreamPath}";
-
         var dynamicRoute = configuration.Routes?
             .Where(r => r.IsDynamic) // process dynamic routes only
             .SelectMany(r => r.DownstreamRoute)
@@ -100,12 +93,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
         _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);
         return downstreamRouteHolder;
-    }
-
-    private static string RemoveQueryString(string downstreamPath)
-    {
-        int index = downstreamPath.IndexOf(Question);
-        return downstreamPath[..index];
     }
 
     private static string GetDownstreamPath(string upstreamUrlPath)
