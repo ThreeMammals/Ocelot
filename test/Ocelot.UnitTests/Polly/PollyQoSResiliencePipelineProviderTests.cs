@@ -668,6 +668,7 @@ public class PollyQoSResiliencePipelineProviderTests
         return new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .WithUpstreamPathTemplate(upstreamPath)
+            .WithLoadBalancerKey($"{routeTemplate}|no-host|localhost:20005,localhost:20007|no-svc-ns|no-svc-name|LeastConnection|no-lb-key")
             .Build();
     }
 }

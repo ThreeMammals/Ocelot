@@ -56,7 +56,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         }
 
         return _registry.GetOrAddPipeline<HttpResponseMessage>(
-            key: new OcelotResiliencePipelineKey(GetRouteName(route)),
+            key: new OcelotResiliencePipelineKey(route.LoadBalancerKey),
             configure: (builder) => ConfigureStrategies(builder, route));
     }
 

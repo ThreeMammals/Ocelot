@@ -51,11 +51,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             return downstreamRouteHolder;
         }
 
-        var qosOptions = new QoSOptions(configuration.QoSOptions)
-        {
-            Key = $"{downstreamPathForKeys}|{upstreamHttpMethod}",
-        };
-
         // TODO: Could it be that the static route functionality was possibly lost here? -> StaticRoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
