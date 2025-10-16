@@ -62,7 +62,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         using var handler = new HttpClientHandler
         {
             // ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true,
-            PreAuthenticate = true,
+            PreAuthenticate = false,
             Credentials = new NetworkCredential("tom@threemammals.com", "password"),
         };
         using var invoker = new HttpMessageInvoker(handler);

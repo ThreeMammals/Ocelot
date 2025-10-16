@@ -240,7 +240,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
         var consulConfig = new FileConfiguration
         {
-            DynamicRoutes = new List<FileDynamicRoute>
+            DynamicRoutes = new()
             {
                 new()
                 {
@@ -255,9 +255,9 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                     },
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
@@ -276,9 +276,9 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
         var configuration = new FileConfiguration
         {
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
@@ -286,18 +286,18 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                 },
             },
         };
-
+        var upstreamPath = $"/{serviceName}/something";
         this.Given(x => x.GivenThereIsAServiceRunningOn(servicePort, "/something", HttpStatusCode.OK, "Hello from Laura"))
         .And(x => GivenTheConsulConfigurationIs(consulConfig))
         .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, serviceName))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 2))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 2))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(428))
         .BDDfy();
     }
