@@ -63,7 +63,7 @@ public class RouteKeyCreator : IRouteKeyCreator
 
     protected virtual bool TryStickySession(LoadBalancerOptions loadBalancing, out string stickySessionKey)
     {
-        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.InvariantCultureIgnoreCase)
+        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.OrdinalIgnoreCase)
             && loadBalancing.Key.Length > 0;
         stickySessionKey = isStickySession
             ? $"{nameof(CookieStickySessions)}:{loadBalancing.Key}"

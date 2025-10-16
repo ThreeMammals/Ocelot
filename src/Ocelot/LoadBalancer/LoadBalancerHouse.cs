@@ -28,7 +28,7 @@ public class LoadBalancerHouse : ILoadBalancerHouse
             lock (SyncRoot)
             {
                 return _loadBalancers.TryGetValue(route.LoadBalancerKey, out var loadBalancer) &&
-                        loadBalancer.Type.Equals(route.LoadBalancerOptions.Type, StringComparison.InvariantCultureIgnoreCase)
+                        loadBalancer.Type.Equals(route.LoadBalancerOptions.Type, StringComparison.OrdinalIgnoreCase)
                     ? new OkResponse<ILoadBalancer>(loadBalancer)
                     : GetResponse(route, config);
             }

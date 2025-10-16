@@ -40,7 +40,7 @@ public class KubeServiceCreator : IKubeServiceCreator
     protected virtual ServiceHostAndPort GetServiceHostAndPort(KubeRegistryConfiguration configuration, EndpointsV1 endpoint, EndpointSubsetV1 subset, EndpointAddressV1 address)
     {
         var ports = subset.Ports;
-        bool portNameToScheme(EndpointPortV1 p) => string.Equals(p.Name, configuration.Scheme, StringComparison.InvariantCultureIgnoreCase);
+        bool portNameToScheme(EndpointPortV1 p) => string.Equals(p.Name, configuration.Scheme, StringComparison.OrdinalIgnoreCase);
         var portV1 = string.IsNullOrEmpty(configuration.Scheme) || !ports.Any(portNameToScheme)
             ? ports.FirstOrDefault()
             : ports.FirstOrDefault(portNameToScheme);

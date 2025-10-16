@@ -18,10 +18,11 @@ public class LoadBalancerOptions
     public LoadBalancerOptions(string type, string key, int? expiryInMs)
     {
         Type = type.IfEmpty(nameof(NoLoadBalancer));
-        Key = nameof(CookieStickySessions).Equals(type, StringComparison.InvariantCultureIgnoreCase)
+        bool isStickySessions = nameof(CookieStickySessions).Equals(type, StringComparison.OrdinalIgnoreCase);
+        Key = isStickySessions
             ? key.IfEmpty(CookieStickySessions.DefSessionCookieName)
             : key;
-        ExpiryInMs = nameof(CookieStickySessions).Equals(type, StringComparison.InvariantCultureIgnoreCase)
+        ExpiryInMs = isStickySessions
             ? expiryInMs ?? CookieStickySessions.DefSessionExpiryMilliseconds
             : expiryInMs ?? 0;
     }
