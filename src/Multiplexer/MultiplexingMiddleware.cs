@@ -162,25 +162,21 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <summary>
     /// Processing a route with aggregation.
     /// </summary>
-    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(
-        AggregateRouteConfig matchAdvancedAgg,
-        JToken jObject,
-        HttpContext httpContext,
-        DownstreamRoute downstreamRoute)
+    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
+        JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
         var processing = new List<Task<HttpContext>>();
-        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct().ToList();
-
+        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
         foreach (var value in values)
         {
-            var tPnv = new List<PlaceholderNameAndValue>(httpContext.Items.TemplatePlaceholderNameAndValues())
-        {
-            new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value)
-        };
+            var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
+            tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
             processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
         }
+
         return processing;
     }
+
     /// <summary>
     /// Process a downstream route asynchronously.
     /// </summary>
@@ -257,16 +253,6 @@ public class MultiplexingMiddleware : OcelotMiddleware
         if (route.DownstreamRoute.Count == 1)
         {
             return Task.CompletedTask;
-        }
-
-        // ensure each context retains its correct aggregate key for proper response mapping
-        if (route.DownstreamRouteConfig != null && route.DownstreamRouteConfig.Count > 0)
-        {
-            for (int i = 0; i < contexts.Count && i < route.DownstreamRouteConfig.Count; i++)
-            {
-                var key = route.DownstreamRouteConfig[i].RouteKey;
-                contexts[i].Items["CurrentAggregateRouteKey"] = key;
-            }
         }
 
         var aggregator = _factory.Get(route);
