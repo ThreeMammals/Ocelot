@@ -685,6 +685,47 @@ public sealed class AggregateTests : Steps
             .BDDfy();
     }
 
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
+    public void Should_match_downstream_routes_using_route_keys_array()
+    {
+        var portUser = PortFinder.GetRandomPort();
+        var userRoute = GivenRoute(portUser, "/user", "/user");
+        userRoute.Key = "User";
+
+        var portProduct = PortFinder.GetRandomPort();
+        var productRoute = GivenRoute(portProduct, "/product", "/product");
+        productRoute.Key = "Product";
+
+        var aggregate = new FileAggregateRoute
+        {
+            RouteKeys = new() { "User", "Product" },
+            UpstreamPathTemplate = "/composite",
+            UpstreamHttpMethod = ["Get"],
+        };
+
+        var configuration = GivenConfiguration(userRoute, productRoute);
+        configuration.Aggregates = new() { aggregate };
+        this.Given(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenThereIsAServiceRunningOn(portUser, "/user", MapGetUser))
+            .And(_ => GivenThereIsAServiceRunningOn(portProduct, "/product", MapGetProduct))
+            .When(_ => WhenIGetUrlOnTheApiGateway("/composite"))
+            .Then(_ => ThenTheStatusCodeShouldBeOK())
+            .BDDfy();
+    }
+
+    Task MapGetUser(HttpContext ctx)
+    {
+        ctx.Response.StatusCode = 200;
+        return ctx.Response.WriteAsync("OK-user");
+    }
+    Task MapGetProduct(HttpContext ctx)
+    {
+        ctx.Response.StatusCode = 200;
+        return ctx.Response.WriteAsync("OK-product");
+    }
+
     private static string FormatFormCollection(IFormCollection reqForm)
     {
         var sb = new StringBuilder()
