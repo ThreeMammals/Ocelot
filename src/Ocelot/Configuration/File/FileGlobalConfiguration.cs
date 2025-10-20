@@ -26,11 +26,11 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
 
     public FileAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
-    public FileCacheOptions CacheOptions { get; set; }
+    /* public FileCacheOptions CacheOptions { get; set; } */
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }
-    /*public FileQoSOptions QoSOptions { get; set; }*/
+    /* public FileQoSOptions QoSOptions { get; set; } */
     public new FileGlobalLoadBalancerOptions LoadBalancerOptions { get; set; }
     public new FileGlobalRateLimitByHeaderRule RateLimitOptions { get; set; }
     public string RequestIdKey { get; set; }

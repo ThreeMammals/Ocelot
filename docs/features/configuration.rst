@@ -79,7 +79,8 @@ You do not need to set all of these things, but this is everything that is avail
       "DownstreamHttpVersionPolicy": "",
       "DownstreamPathTemplate": "",
       "DownstreamScheme": "",
-      "FileCacheOptions": {}, // object
+      "CacheOptions": {}, // object
+      "FileCacheOptions": {}, // deprecated! -> use CacheOptions
       "HttpHandlerOptions": {}, // object
       "Key": "",
       "LoadBalancerOptions": {}, // object
@@ -102,6 +103,10 @@ You do not need to set all of these things, but this is everything that is avail
     },
 
 The actual route schema with all the properties can be found in the C# `FileRoute`_ class.
+
+  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileRoute.cs#L75>`__ ``FileCacheOptions`` section is deprecated in version `24.1`_!
+  Use ``CacheOptions`` instead of ``FileCacheOptions``! Note that ``FileCacheOptions`` will be removed in version `25.0`_!
+  For backward compatibility in version `24.1`_, the ``FileCacheOptions`` section takes precedence over the ``CacheOptions`` section.
 
 .. _config-dynamic-route-schema:
 

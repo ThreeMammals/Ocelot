@@ -31,10 +31,17 @@ The second step is to add the following to your `Program`_:
 Configuration
 -------------
 
-Finally, in order to use caching on a route in your route configuration add this setting:
+Finally, in order to use caching on a route in your route configuration add these sections:
 
 .. code-block:: json
 
+    "CacheOptions": {
+      "TtlSeconds": 1, // nullable integer
+      "Region": "",
+      "Header": "",
+      "EnableContentHashing": false // nullable boolean
+    },
+    // Warning! FileCacheOptions section is deprecated! -> use CacheOptions
     "FileCacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
@@ -47,6 +54,15 @@ Finally, in order to use caching on a route in your route configuration add this
   The cache for a region can be cleared by calling Ocelot's :ref:`administration-api`.
 * If a header name is defined in the ``Header`` property, that header value is looked up by the key (header name) in the ``HttpRequest`` headers, and if the header is found, its value will be included in caching key.
   This causes the cache to become invalid due to the header value changing.
+
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. warning::
+  Static route ``FileCacheOptions`` section is deprecated!
+
+  The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileRoute.cs#L75>`_ ``FileCacheOptions`` section is deprecated in version `24.1`_!
+  Use ``CacheOptions`` instead of ``FileCacheOptions``! Note that ``FileCacheOptions`` will be removed in version `25.0`_!
+  For backward compatibility in version `24.1`_, the ``FileCacheOptions`` section takes precedence over the ``CacheOptions`` section.
 
 .. _caching-enablecontenthashing-option:
 

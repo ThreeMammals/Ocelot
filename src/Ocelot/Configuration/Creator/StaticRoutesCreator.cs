@@ -118,7 +118,7 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var downstreamHttpVersionPolicy = _versionPolicyCreator.Create(fileRoute.DownstreamHttpVersionPolicy);
 
-        var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
+        var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions ?? fileRoute.CacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
 
         var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
 

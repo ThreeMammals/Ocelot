@@ -153,6 +153,46 @@ public class RouteOptionsCreatorTests : UnitTest
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 
+    [Fact]
+    public void Create_MergeTtlSeconds()
+    {
+        // Arrange, Act
+        var route = new FileRoute();
+        var global = new FileGlobalConfiguration();
+        var actual = _creator.Create(route, global);
+        Assert.NotNull(actual);
+        Assert.False(actual.IsCached);
+
+        // Arrange, Act
+        route.CacheOptions = null;
+        route.FileCacheOptions = new() { TtlSeconds = 1 };
+        actual = _creator.Create(route, global);
+        Assert.True(actual.IsCached);
+
+        route.CacheOptions = new() { TtlSeconds = 1 };
+        route.FileCacheOptions = null;
+        actual = _creator.Create(route, global);
+        Assert.True(actual.IsCached);
+
+        route.CacheOptions = null;
+        route.FileCacheOptions = null;
+        global.CacheOptions = new() { TtlSeconds = 1 };
+        actual = _creator.Create(route, global);
+        Assert.True(actual.IsCached);
+
+        global.CacheOptions.TtlSeconds = 0;
+        actual = _creator.Create(route, global);
+        Assert.False(actual.IsCached);
+
+        global.CacheOptions.TtlSeconds = null;
+        actual = _creator.Create(route, global);
+        Assert.False(actual.IsCached);
+
+        global.CacheOptions = null;
+        actual = _creator.Create(route, global);
+        Assert.False(actual.IsCached);
+    }
+
     private static FileRoute CreateFileRoute(string authProviderKey, string[] authProviderKeys, bool allowAnonymous) => new()
         {
             RateLimitOptions = new FileRateLimitByHeaderRule

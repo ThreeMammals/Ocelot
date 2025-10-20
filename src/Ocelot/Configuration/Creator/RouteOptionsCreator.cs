@@ -20,8 +20,11 @@ public class RouteOptionsCreator : IRouteOptionsCreator
 
         bool isAuthorized = (route.RouteClaimsRequirement?.Count ?? 0) > 0;
 
-        // TODO: This sounds more like a hack, it might be better to refactor this at some point.
-        var isCached = route.FileCacheOptions.TtlSeconds > 0;
+        int? ttlSeconds = route.FileCacheOptions?.TtlSeconds; // FileCacheOptions have the priority over CacheOptions
+        ttlSeconds ??= route.CacheOptions?.TtlSeconds;
+        ttlSeconds ??= global.CacheOptions?.TtlSeconds;
+        var isCached = ttlSeconds.HasValue && ttlSeconds.Value > 0;
+
         var useServiceDiscovery = !string.IsNullOrEmpty(route.ServiceName);
 
         return new RouteOptionsBuilder()

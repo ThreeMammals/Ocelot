@@ -29,7 +29,8 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
         DownstreamHttpVersionPolicy = default;
         DownstreamPathTemplate = default;
         DownstreamScheme = default; // to be reviewed 
-        FileCacheOptions = new FileCacheOptions();
+        CacheOptions = default;
+        FileCacheOptions = default;
         HttpHandlerOptions = new FileHttpHandlerOptions();
         Key = default;
         LoadBalancerOptions = default;
@@ -82,6 +83,8 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
     public string DownstreamHttpVersionPolicy { get; set; }
     public string DownstreamPathTemplate { get; set; }
     public string DownstreamScheme { get; set; }
+    public FileCacheOptions CacheOptions { get; set; }
+    [Obsolete("Use CacheOptions instead of FileCacheOptions! Note that FileCacheOptions will be removed in version 25.0!")]
     public FileCacheOptions FileCacheOptions { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     public string Key { get; set; } // IRouteGrouping
@@ -141,6 +144,7 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
         to.DownstreamHttpVersionPolicy = from.DownstreamHttpVersionPolicy;
         to.DownstreamPathTemplate = from.DownstreamPathTemplate;
         to.DownstreamScheme = from.DownstreamScheme;
+        to.CacheOptions = new(from.CacheOptions);
         to.FileCacheOptions = new(from.FileCacheOptions);
         to.HttpHandlerOptions = new(from.HttpHandlerOptions);
         to.Key = from.Key;

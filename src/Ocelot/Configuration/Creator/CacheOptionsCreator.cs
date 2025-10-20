@@ -1,17 +1,20 @@
 ﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
 public class CacheOptionsCreator : ICacheOptionsCreator
 {
-    public CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration global, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethods)
+    public CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration globalConfiguration, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethods)
     {
-        var region = GetRegion(options.Region ?? global?.CacheOptions.Region, upstreamPathTemplate, upstreamHttpMethods);
-        var header = options.Header ?? global?.CacheOptions.Header;
-        var ttlSeconds = options.TtlSeconds ?? global?.CacheOptions.TtlSeconds;
-        var enableContentHashing = options.EnableContentHashing ?? global?.CacheOptions.EnableContentHashing;
+        options ??= new();
+        var global = globalConfiguration?.CacheOptions ?? new();
+        var region = GetRegion(options.Region.IfEmpty(global.Region), upstreamPathTemplate, upstreamHttpMethods);
+        var header = options.Header.IfEmpty(global.Header);
+        var ttlSeconds = options.TtlSeconds ?? global.TtlSeconds;
+        var enableHashing = options.EnableContentHashing ?? global.EnableContentHashing;
 
-        return new CacheOptions(ttlSeconds, region, header, enableContentHashing);
+        return new CacheOptions(ttlSeconds, region, header, enableHashing);
     }
 
     protected virtual string GetRegion(string region, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethod)
