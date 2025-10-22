@@ -104,7 +104,7 @@ You do not need to set all of these things, but this is everything that is avail
 
 The actual route schema with all the properties can be found in the C# `FileRoute`_ class.
 
-  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileRoute.cs#L75>`__ ``FileCacheOptions`` section is deprecated in version `24.1`_!
+  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.1.0/src/Ocelot/Configuration/File/FileRoute.cs#L86-L88>`__ ``FileCacheOptions`` section is deprecated in version `24.1`_!
   Use ``CacheOptions`` instead of ``FileCacheOptions``! Note that ``FileCacheOptions`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``FileCacheOptions`` section takes precedence over the ``CacheOptions`` section.
 
@@ -122,6 +122,7 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 .. code-block:: json
 
     {
+      "CacheOptions": {},
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
       "LoadBalancerOptions": {},
@@ -136,9 +137,12 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 
 The actual dynamic route schema with all the properties can be found in the C# `FileDynamicRoute`_ class.
 
-  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileDynamicRoute.cs>`_ ``RateLimitRule`` section is deprecated in version `24.1`_!
+  **Note 1**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.1.0/src/Ocelot/Configuration/File/FileDynamicRoute.cs#L10-L11>`_ ``RateLimitRule`` section is deprecated in version `24.1`_!
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
+
+  **Note 2**: ``CacheOptions`` were not supported in versions prior to `24.1`_.
+  Starting with version `24.1`_, both global and route-level ``CacheOptions`` for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
 
 .. _config-aggregate-route-schema:
 

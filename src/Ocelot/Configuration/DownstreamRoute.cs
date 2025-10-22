@@ -18,7 +18,6 @@ public class DownstreamRoute
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
-        bool isCached,
         CacheOptions cacheOptions,
         LoadBalancerOptions loadBalancerOptions,
         RateLimitOptions rateLimitOptions,
@@ -59,7 +58,6 @@ public class DownstreamRoute
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
-        IsCached = isCached;
         CacheOptions = cacheOptions;
         LoadBalancerOptions = loadBalancerOptions;
         RateLimitOptions = rateLimitOptions;
@@ -94,7 +92,6 @@ public class DownstreamRoute
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }
-    public bool IsCached { get; }
     public CacheOptions CacheOptions { get; }
     public LoadBalancerOptions LoadBalancerOptions { get; }
     public RateLimitOptions RateLimitOptions { get; }

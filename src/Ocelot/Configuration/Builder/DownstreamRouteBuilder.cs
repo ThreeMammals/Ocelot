@@ -19,7 +19,6 @@ public class DownstreamRouteBuilder
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
-    private bool _isCached;
     private CacheOptions _cacheOptions;
     private string _downstreamScheme;
     private LoadBalancerOptions _loadBalancerOptions;
@@ -140,12 +139,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithClaimsToDownstreamPath(List<ClaimToThing> input)
     {
         _claimToDownstreamPath = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsCached(bool input)
-    {
-        _isCached = input;
         return this;
     }
 
@@ -296,7 +289,6 @@ public class DownstreamRouteBuilder
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,
-            _isCached,
             _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,

@@ -5,26 +5,59 @@ namespace Ocelot.Configuration.Creator;
 
 public class CacheOptionsCreator : ICacheOptionsCreator
 {
-    public CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration globalConfiguration, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethods)
-    {
-        options ??= new();
-        var global = globalConfiguration?.CacheOptions ?? new();
-        var region = GetRegion(options.Region.IfEmpty(global.Region), upstreamPathTemplate, upstreamHttpMethods);
-        var header = options.Header.IfEmpty(global.Header);
-        var ttlSeconds = options.TtlSeconds ?? global.TtlSeconds;
-        var enableHashing = options.EnableContentHashing ?? global.EnableContentHashing;
+    public CacheOptions Create(FileCacheOptions options)
+        => new(options?.TtlSeconds, options?.Region, options?.Header, options?.EnableContentHashing);
 
-        return new CacheOptions(ttlSeconds, region, header, enableHashing);
+    public CacheOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration, string loadBalancingKey)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(globalConfiguration);
+        return Create(route, route.FileCacheOptions ?? route.CacheOptions, globalConfiguration.CacheOptions, loadBalancingKey);
     }
 
-    protected virtual string GetRegion(string region, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethod)
+    public CacheOptions Create(FileDynamicRoute route, FileGlobalConfiguration globalConfiguration, string loadBalancingKey)
     {
-        if (!string.IsNullOrEmpty(region))
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(globalConfiguration);
+        return Create(route, route.CacheOptions, globalConfiguration.CacheOptions, loadBalancingKey);
+    }
+
+    protected virtual CacheOptions Create(IRouteGrouping grouping, FileCacheOptions options, FileGlobalCacheOptions globalOptions, string loadBalancingKey)
+    {
+        ArgumentNullException.ThrowIfNull(grouping);
+        var group = globalOptions;
+        bool isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+            group.RouteKeys.Count == 0 || // empty collection -> is global
+            group.RouteKeys.Contains(grouping.Key); // this route is in the group
+
+        if (options == null && globalOptions != null && isGlobal)
         {
-            return region;
+            return new(globalOptions, loadBalancingKey);
         }
 
-        var methods = string.Join(string.Empty, upstreamHttpMethod);
-        return $"{methods}{upstreamPathTemplate.Replace("/", string.Empty)}";
+        if (options != null && globalOptions == null)
+        {
+            return new(options, loadBalancingKey);
+        }
+        else if (options != null && globalOptions != null && !isGlobal)
+        {
+            return new(options, loadBalancingKey);
+        }
+
+        if (options != null && globalOptions != null && isGlobal)
+        {
+            return Merge(options, globalOptions, loadBalancingKey);
+        }
+
+        return new();
+    }
+
+    protected virtual CacheOptions Merge(FileCacheOptions options, FileCacheOptions globalOptions, string defaultRegion)
+    {
+        var region = options.Region.IfEmpty(globalOptions.Region).IfEmpty(defaultRegion);
+        var header = options.Header.IfEmpty(globalOptions.Header);
+        var ttlSeconds = options.TtlSeconds ?? globalOptions.TtlSeconds;
+        var enableHashing = options.EnableContentHashing ?? globalOptions.EnableContentHashing;
+        return new CacheOptions(ttlSeconds, region, header, enableHashing);
     }
 }

@@ -118,7 +118,7 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var downstreamHttpVersionPolicy = _versionPolicyCreator.Create(fileRoute.DownstreamHttpVersionPolicy);
 
-        var cacheOptions = _cacheOptionsCreator.Create(fileRoute.FileCacheOptions ?? fileRoute.CacheOptions, globalConfiguration, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod);
+        var cacheOptions = _cacheOptionsCreator.Create(fileRoute, globalConfiguration, lbKey);
 
         var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
 
@@ -136,7 +136,6 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithClaimsToQueries(claimsToQueries)
             .WithClaimsToDownstreamPath(claimsToDownstreamPath)
             .WithRequestIdKey(requestIdKey)
-            .WithIsCached(fileRouteOptions.IsCached)
             .WithCacheOptions(cacheOptions)
             .WithDownstreamScheme(fileRoute.DownstreamScheme)
             .WithLoadBalancerKey(lbKey)

@@ -672,18 +672,16 @@ public class DownstreamRouteFinderTests : UnitTest
 
     private void GivenTheConfigurationIs(string adminPath, ServiceProviderConfiguration serviceProviderConfig)
     {
-        _config = new InternalConfiguration(
-            _routesConfig,
-            adminPath,
-            serviceProviderConfig,
-            string.Empty,
-            new LoadBalancerOptions(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower,
-            default, default, default);
+        _config = new InternalConfiguration(_routesConfig)
+        {
+            AdministrationPath = adminPath,
+            DownstreamHttpVersion = new Version("1.1"),
+            DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
+            HttpHandlerOptions = new HttpHandlerOptionsBuilder().Build(),
+            LoadBalancerOptions = new(),
+            QoSOptions = new QoSOptionsBuilder().Build(),
+            ServiceProviderConfiguration = serviceProviderConfig,
+        };
     }
 
     private void ThenTheFollowingIsReturned(DownstreamRouteHolder expected)

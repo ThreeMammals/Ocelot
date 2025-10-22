@@ -87,5 +87,6 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         public MetadataOptions MetadataOptions => throw new NotImplementedException();
         public RateLimitOptions RateLimitOptions => throw new NotImplementedException();
         public int? Timeout => throw new NotImplementedException();
+        public CacheOptions CacheOptions => throw new NotImplementedException();
     }
 }

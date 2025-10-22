@@ -1,10 +1,15 @@
-﻿using Ocelot.Request.Middleware;
+﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Request.Middleware;
 
 namespace Ocelot.Configuration;
 
 public class CacheOptions
 {
     internal CacheOptions() { }
+    public CacheOptions(FileCacheOptions from, string defaultRegion)
+        : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing)
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CacheOptions"/> class.
@@ -22,7 +27,7 @@ public class CacheOptions
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
     public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing)
     {
-        TtlSeconds = ttlSeconds ?? 0;
+        TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
         Header = header;
         EnableContentHashing = enableContentHashing ?? false;
@@ -39,4 +44,7 @@ public class CacheOptions
     /// <remarks>Default value is <see langword="false"/>. No hashing by default.</remarks>
     /// <value><see langword="true"/> if hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableContentHashing { get; }
+
+    public const int NoSeconds = 0;
+    public bool UseCache => TtlSeconds > NoSeconds;
 }

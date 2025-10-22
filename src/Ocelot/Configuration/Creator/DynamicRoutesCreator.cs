@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Creator;
 
 public class DynamicRoutesCreator : IDynamicsCreator
 {
+    private readonly ICacheOptionsCreator _cacheOptionsCreator;
     private readonly IRouteKeyCreator _loadBalancerKeyCreator;
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IMetadataCreator _metadataCreator;
@@ -15,6 +16,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
     private readonly IVersionPolicyCreator _versionPolicyCreator;
 
     public DynamicRoutesCreator(
+        ICacheOptionsCreator cacheOptionsCreator,
         IRouteKeyCreator loadBalancerKeyCreator,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IMetadataCreator metadataCreator,
@@ -23,6 +25,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator)
     {
+        _cacheOptionsCreator = cacheOptionsCreator;
         _loadBalancerKeyCreator = loadBalancerKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _metadataCreator = metadataCreator;
@@ -60,11 +63,13 @@ public class DynamicRoutesCreator : IDynamicsCreator
         var scheme = dynamicRoute.DownstreamScheme.IfEmpty(globalConfiguration.DownstreamScheme);
         var lbOptions = _loadBalancerOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var lbKey = _loadBalancerKeyCreator.Create(dynamicRoute, lbOptions);
+        var cacheOptions = _cacheOptionsCreator.Create(dynamicRoute, globalConfiguration, lbKey);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
         var qosOptions = _qosOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var rlOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var timeout = CreateTimeout(dynamicRoute, globalConfiguration);
         var downstreamRoute = new DownstreamRouteBuilder()
+            .WithCacheOptions(cacheOptions)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
             .WithDownstreamScheme(scheme)

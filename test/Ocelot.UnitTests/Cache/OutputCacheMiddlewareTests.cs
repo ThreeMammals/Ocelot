@@ -110,7 +110,6 @@ public class OutputCacheMiddlewareTests : UnitTest
     private void GivenTheDownstreamRouteIs()
     {
         var downRoute = new DownstreamRouteBuilder()
-            .WithIsCached(true)
             .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
             .WithUpstreamHttpMethod([ "Get" ])
             .Build();

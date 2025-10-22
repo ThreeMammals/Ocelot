@@ -15,6 +15,7 @@ public class ConfigurationCreator : IConfigurationCreator
     private readonly IVersionPolicyCreator _versionPolicyCreator;
     private readonly IMetadataCreator _metadataCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+    private readonly ICacheOptionsCreator _cacheOptionsCreator;
 
     public ConfigurationCreator(
         IServiceProviderConfigurationCreator serviceProviderConfigCreator,
@@ -25,7 +26,8 @@ public class ConfigurationCreator : IConfigurationCreator
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
         IMetadataCreator metadataCreator,
-        IRateLimitOptionsCreator rateLimitOptionsCreator)
+        IRateLimitOptionsCreator rateLimitOptionsCreator,
+        ICacheOptionsCreator cacheOptionsCreator)
     {
         _adminPath = serviceProvider.GetService<IAdministrationPath>();
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -36,6 +38,7 @@ public class ConfigurationCreator : IConfigurationCreator
         _versionPolicyCreator = versionPolicyCreator;
         _metadataCreator = metadataCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
+        _cacheOptionsCreator = cacheOptionsCreator;
     }
 
     public InternalConfiguration Create(FileConfiguration configuration, List<Route> routes)
@@ -50,19 +53,23 @@ public class ConfigurationCreator : IConfigurationCreator
         var versionPolicy = _versionPolicyCreator.Create(globalConfiguration.DownstreamHttpVersionPolicy);
         var metadataOptions = _metadataCreator.Create(null, globalConfiguration);
         var rateLimitOptions = _rateLimitOptionsCreator.Create(globalConfiguration);
+        var cacheOptions = _cacheOptionsCreator.Create(globalConfiguration.CacheOptions);
 
-        return new InternalConfiguration(routes,
-            adminPath,
-            serviceProviderConfiguration,
-            globalConfiguration.RequestIdKey,
-            lbOptions,
-            globalConfiguration.DownstreamScheme,
-            qosOptions,
-            httpHandlerOptions,
-            version,
-            versionPolicy,
-            metadataOptions,
-            rateLimitOptions,
-            globalConfiguration.Timeout);
+        return new InternalConfiguration(routes)
+        {
+            AdministrationPath = adminPath,
+            CacheOptions = cacheOptions,
+            DownstreamHttpVersion = version,
+            DownstreamHttpVersionPolicy = versionPolicy,
+            DownstreamScheme = globalConfiguration.DownstreamScheme,
+            HttpHandlerOptions = httpHandlerOptions,
+            LoadBalancerOptions = lbOptions,
+            MetadataOptions = metadataOptions,
+            QoSOptions = qosOptions,
+            RateLimitOptions = rateLimitOptions,
+            RequestId = globalConfiguration.RequestIdKey,
+            ServiceProviderConfiguration = serviceProviderConfiguration,
+            Timeout = globalConfiguration.Timeout,
+        };
     }
 }

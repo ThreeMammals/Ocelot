@@ -24,8 +24,8 @@ public class OutputCacheMiddleware : OcelotMiddleware
     public async Task Invoke(HttpContext httpContext)
     {
         var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-        if (!downstreamRoute.IsCached)
+        var options = downstreamRoute.CacheOptions;
+        if (!options.UseCache)
         {
             await _next.Invoke(httpContext);
             return;
@@ -36,7 +36,7 @@ public class OutputCacheMiddleware : OcelotMiddleware
         var downStreamRequestCacheKey = await _cacheGenerator.GenerateRequestCacheKey(downstreamRequest, downstreamRoute);
 
         Logger.LogDebug(() => $"Started checking cache for the '{downstreamUrlKey}' key.");
-        var cached = _outputCache.Get(downStreamRequestCacheKey, downstreamRoute.CacheOptions.Region);
+        var cached = _outputCache.Get(downStreamRequestCacheKey, options.Region);
         if (cached != null)
         {
             Logger.LogDebug(() => $"Cache entry exists for the '{downstreamUrlKey}' key.");
@@ -59,7 +59,7 @@ public class OutputCacheMiddleware : OcelotMiddleware
         var downstreamResponse = httpContext.Items.DownstreamResponse();
         cached = await CreateCachedResponse(downstreamResponse);
 
-        _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(downstreamRoute.CacheOptions.TtlSeconds), downstreamRoute.CacheOptions.Region);
+        _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(options.TtlSeconds), options.Region);
         Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
     }
 

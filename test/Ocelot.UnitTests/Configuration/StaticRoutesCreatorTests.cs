@@ -132,6 +132,7 @@ public class StaticRoutesCreatorTests : UnitTest
                         ["foo"] = "bar",
                     },
                     LoadBalancerOptions = new("LB1"),
+                    CacheOptions = new() { Region = "dave" },
                 },
                 new()
                 {
@@ -155,6 +156,7 @@ public class StaticRoutesCreatorTests : UnitTest
                         ["foo"] = "baz",
                     },
                     LoadBalancerOptions = new("LB2"),
+                    CacheOptions = new() { Region = "wave" },
                 },
             },
         };
@@ -253,7 +255,7 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _expectedVersion = new Version("1.1");
         _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _rro = new RouteOptions(false, false, false, false);
+        _rro = new RouteOptions(false, false, false);
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
@@ -281,7 +283,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _cthCreator.Setup(x => x.Create(It.IsAny<Dictionary<string, string>>())).Returns(_ctt);
         _qosoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_qoso);
         _rloCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
-        _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>(), It.IsAny<IReadOnlyCollection<string>>())).Returns(_cacheOptions);
+        _coCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ht);
@@ -307,7 +309,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
         _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
         _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
-        _result[routeIndex].DownstreamRoute[0].IsCached.ShouldBe(_rro.IsCached);
+        _result[routeIndex].DownstreamRoute[0].CacheOptions.UseCache.ShouldBeFalse();
         _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
         _result[routeIndex].DownstreamRoute[0].UpstreamPathTemplate.ShouldBe(_upt);
@@ -355,7 +357,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _cthCreator.Verify(x => x.Create(fileRoute.AddQueriesToRequest), Times.Once);
         _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
         _rloCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
-        _coCreator.Verify(x => x.Create(fileRoute.FileCacheOptions, globalConfig, fileRoute.UpstreamPathTemplate, fileRoute.UpstreamHttpMethod), Times.Once);
+        _coCreator.Verify(x => x.Create(fileRoute, globalConfig, _rrk), Times.Once);
         _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);
         _hfarCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);

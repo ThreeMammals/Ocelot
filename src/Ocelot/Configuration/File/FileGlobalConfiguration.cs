@@ -6,7 +6,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
     {
         AuthenticationOptions = new();
         BaseUrl = default;
-        CacheOptions = new();
+        CacheOptions = default;
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHttpVersion = default;
         DownstreamHttpVersionPolicy = default;
@@ -26,7 +26,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
 
     public FileAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
-    /* public FileCacheOptions CacheOptions { get; set; } */
+    public new FileGlobalCacheOptions CacheOptions { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }

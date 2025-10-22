@@ -396,13 +396,13 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .When(x => WhenIGetUrlOnTheApiGateway("/projects/api/projects"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 1))
-            .And(x => x.ThenTheResponseBodyShouldBe($"1:{Bug2119ServiceNames[0]}")) // !
+            .And(x => x.ThenTheResponseBodyShouldBe($"1^:^{Bug2119ServiceNames[0]}")) // !
 
             // Step 2
             .When(x => WhenIGetUrlOnTheApiGateway("/customers/api/customers"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 1))
-            .And(x => x.ThenTheResponseBodyShouldBe($"1:{Bug2119ServiceNames[1]}")) // !!
+            .And(x => x.ThenTheResponseBodyShouldBe($"1^:^{Bug2119ServiceNames[1]}")) // !!
 
             // Finally
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
@@ -436,14 +436,14 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             await WhenIGetUrlOnTheApiGateway("/projects/api/projects");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(0, count);
-            ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[0]}", $"i is {i}");
+            ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[0]}", $"i is {i}");
             _responses[2 * i] = response;
 
             // Step 2
             await WhenIGetUrlOnTheApiGateway("/customers/api/customers");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(1, count);
-            ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[1]}", $"i is {i}");
+            ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[1]}", $"i is {i}");
             _responses[(2 * i) + 1] = response;
         };
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
@@ -553,7 +553,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
             headers.TryGetValues(HeaderNames.Counter, out var counterValues).ShouldBeTrue();
             var counter = counterValues.ShouldNotBeNull().FirstOrDefault().ShouldNotBeNull();
-            body.ShouldBe($"{counter}:{serviceName}");
+            body.ShouldBe($"{counter}^:^{serviceName}");
         }
     }
 

@@ -3,7 +3,10 @@
 Caching
 =======
 
-Ocelot supports some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project.
+Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache.
+Users can also clear the cache for a specific region by using Ocelot's :ref:`administration-api`.
+
+Ocelot utilizes some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project.
 This is an amazing project that is solving a lot of caching problems. We would recommend using this package to cache with Ocelot. 
 
 The following example shows how to add *CacheManager* to Ocelot so that you can do output caching. 
@@ -58,9 +61,9 @@ Finally, in order to use caching on a route in your route configuration add thes
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
 .. warning::
-  Static route ``FileCacheOptions`` section is deprecated!
+  According to the static :ref:`config-route-schema`, the ``FileCacheOptions`` section has been deprecated!
 
-  The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileRoute.cs#L75>`_ ``FileCacheOptions`` section is deprecated in version `24.1`_!
+  The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.1.0/src/Ocelot/Configuration/File/FileRoute.cs#L86-L88>`_ ``FileCacheOptions`` section is deprecated in version `24.1`_!
   Use ``CacheOptions`` instead of ``FileCacheOptions``! Note that ``FileCacheOptions`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``FileCacheOptions`` section takes precedence over the ``CacheOptions`` section.
 
@@ -90,6 +93,48 @@ Global Configuration
 The positive update is that copying route-level properties for each route is no longer necessary, as version `23.3`_ allows for setting their values in the ``GlobalConfiguration``.
 This convenience extends to ``Header`` and ``Region`` as well.
 However, an alternative is still being sought for ``TtlSeconds``, which must be explicitly set for each route to enable caching.
+Therefore, the final configuration for static routes might look like:
+
+.. code-block:: json
+
+  {
+    "Routes": [
+      {
+        "CacheOptions": {
+          "TtlSeconds": 60 // 1-minute short-term caching
+        },
+        // ...
+      }
+    ],
+    "GlobalConfiguration": {
+      "CacheOptions": {
+        "TtlSeconds": 300 // enable global caching for a duration of 5 minutes
+      },
+      // ...
+    }
+  }
+
+Dynamic routes were not supported in versions prior to `24.1`_.
+Starting with version `24.1`_, global *cache options* for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+These global options may also be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
+
+.. code-block:: json
+
+  {
+    "DynamicRoutes": [
+      {
+        "ServiceName": "my-service",
+        "CacheOptions": {
+          // ...
+        }
+      }
+    ],
+    "GlobalConfiguration": {
+      "CacheOptions": {
+        // ...
+      }
+    }
+  }
 
 .. Sample
 .. -----
@@ -97,14 +142,8 @@ However, an alternative is still being sought for ``TtlSeconds``, which must be 
 .. If you look at the example `here <https://github.com/ThreeMammals/Ocelot/blob/main/test/Ocelot.ManualTest/Program.cs>`_ you can see how the cache manager is setup and then passed into the Ocelot ``AddCacheManager`` configuration method.
 .. You can use any settings supported by the **CacheManager** package and just pass them in.
 
-Notes
------
-
-Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache.
-You can also clear the cache for a region by calling Ocelot's :ref:`administration-api`.
-
-Your Own Caching
-----------------
+Custom Caching
+--------------
 
 If you want to add your own caching method, implement the following interfaces and register them in DI e.g.
 
@@ -116,8 +155,8 @@ If you want to add your own caching method, implement the following interfaces a
 * ``IOcelotCache<CachedResponse>`` this is for output caching.
 * ``IOcelotCache<FileConfiguration>`` this is for caching the file configuration if you are calling something remote to get your config such as Consul.
 
-Future
-------
+Roadmap
+-------
 
 Please dig into the Ocelot source code to find more.
 We would really appreciate it if anyone wants to implement `Redis <https://redis.io/>`_, `Memcached <http://www.memcached.org/>`_ etc.
