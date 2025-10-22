@@ -51,10 +51,7 @@ Additionally, the :ref:`config-global-configuration-schema` allows configuring g
   If the ``RouteKeys`` option is not defined in the global ``RateLimitOptions``, the global settings will apply to all routes.
 
   **Note 2**: You do not need to set all of these options due to default values, but the following rule options are required: ``Limit`` and ``Period``.
-  If these required options are undefined and no global configuration is present, the route will be blocked by default: using a zero-limit over the default period ('1s', one second).
-  An undefined or misconfigured zero limit results in a `503 Service Unavailable`_ status code, along with a logged warning and the following message in the response body:
-  *"Rate limiting is misconfigured for the route '/{route_name}' due to an invalid rule -> {rule} !"*
-  Required and optional options are explained in the :ref:`rl-configuration` table below.
+  If these required options are undefined and no global configuration is present, Ocelot will fail to start due to an internally generated validation error, which will be visible in the logs.
 
   **Note 3**: Several :ref:`deprecated options <rl-deprecated-options>` originating from version `24.0`_ and earlier (see `old schema`_) are retained for one release cycle.
   Both introduced and :ref:`deprecated options <rl-deprecated-options>` are detailed in the :ref:`rl-configuration` table below.
@@ -146,7 +143,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
   **Note 2**: The string values for the ``Period`` and ``Wait`` options must contain a floating-point number followed by one of the supported time units: 'ms', 's', 'm', 'h', or 'd'.
   If no unit is specified, the value defaults to milliseconds. For example, "333.5" is interpreted as 333 milliseconds and 500 microseconds (equivalent to "333.5ms").
   The floating-point component may be omitted; for example, "10.0s" is equivalent to "10s".
-  These values are parsed dynamically at runtime, so there is no early fluent validation of the options in `ocelot.json`_ when the Ocelot app starts.
+  These values are parsed dynamically at runtime, so the required ``Period`` option in `ocelot.json`_ is validated early through fluent validation when the Ocelot app starts.
   If an invalid value is provided, the *Rate Limiting* middleware will throw a ``FormatException``, which is logged accordingly.
 
 .. _rl-deprecated-options:

@@ -119,10 +119,13 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
     {
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
+      "LoadBalancerOptions": {},
       "Metadata": {}, // dictionary
+      "QoSOptions": {},
       "RateLimitRule": {}, // deprecated! -> use RateLimitOptions
       "RateLimitOptions": {},
       "ServiceName": "",
+      "ServiceNamespace": "",
       "Timeout": 0 // nullable integer
     }
 
@@ -181,6 +184,7 @@ Here is the complete global configuration, also known as the *"global configurat
       "DownstreamScheme": "",
       "HttpHandlerOptions": {},
       "LoadBalancerOptions": {},
+      "Metadata": {}, // dictionary
       "MetadataOptions": {},
       "QoSOptions": {},
       "RateLimitOptions": {},
@@ -731,7 +735,7 @@ The ``Metadata`` options can store any arbitrary data that users can access in m
 By using the *metadata*, users can implement their own logic and extend the functionality of Ocelot.
 
 The :doc:`../features/metadata` feature is designed to extend both the static :ref:`config-route-schema` and :ref:`config-dynamic-route-schema`.
-Global *metadata* must be defined inside the ``MetadataOptions`` section.
+Global *metadata* must be defined in the ``Metadata`` section, while parsing options should be placed in the ``MetadataOptions`` section.
 
 The following example demonstrates practical usage of this feature:
 
@@ -754,12 +758,12 @@ The following example demonstrates practical usage of this feature:
     ],
     "GlobalConfiguration": {
       // other opts...
+      "Metadata": {
+        "instance_name": "dc-1-54abcz",
+        "my-extension/param1": "default-value"
+      },
       "MetadataOptions": {
-        // other metadata opts...
-        "Metadata": {
-          "instance_name": "dc-1-54abcz",
-          "my-extension/param1": "default-value"
-        }
+        // parsing metadata opts...
       }
     }
   }
