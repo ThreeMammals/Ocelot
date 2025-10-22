@@ -389,11 +389,11 @@ Ocelot will append any query string to the downstream URL as usual.
   Currently, dynamic routes and static routes cannot be mixed.
   Additionally, you need to specify the details of the *service discovery* provider as outlined above, along with the downstream ``http(s)`` scheme under ``DownstreamScheme``.
 
-  In addition to the global ``ServiceDiscoveryProvider`` section, the :ref:`config-global-configuration-schema` includes configurable options such as ``RateLimitOptions``, ``QoSOptions``, ``LoadBalancerOptions``, ``HttpHandlerOptions``, and ``DownstreamScheme``.
+  In addition to the global ``ServiceDiscoveryProvider`` section, the :ref:`config-global-configuration-schema` includes configurable options such as ``CacheOptions``, ``RateLimitOptions``, ``QoSOptions``, ``LoadBalancerOptions``, ``HttpHandlerOptions``, and ``DownstreamScheme``.
   These options are applicable to all dynamic routes, globally.
-  However, since the :ref:`config-dynamic-route-schema` does not support these options (except for ``RateLimitOptions``), they are not applied in *dynamic routing* mode.
+  However, since the :ref:`config-dynamic-route-schema` does not support these options (except for ``LoadBalancerOptions`` and ``RateLimitOptions``), they are not applied in *dynamic routing* mode.
   Therefore, it is not possible to override global options using dynamic route-level settings.
-  To reiterate, the only options fully supported by both static and dynamic routes are ``RateLimitOptions``.
+  To reiterate, the only options fully supported by both static and dynamic routes are ``LoadBalancerOptions`` and ``RateLimitOptions``.
 
 For instance, when exposing Ocelot publicly over HTTPS while routing to internal services over HTTP, your configuration may resemble the following:
 
@@ -410,7 +410,8 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
         "ServiceDiscoveryProvider": {
           "Host": "localhost", // if Consul is hosted on the same machine as Ocelot
           "Port": 8500,
-          "Type": "Consul"
+          "Type": "Consul",
+          "Namespace": "" // not supported for Consul, but supported for Kubernetes
         },
         "RateLimitOptions": {
           "ClientIdHeader": "Oc-DynamicRouting-Client",
@@ -433,6 +434,11 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
       }
     }
 
+.. _sd-dynamic-routing-configuration:
+
+Configuration
+^^^^^^^^^^^^^
+
 Ocelot also allows configuration of a ``DynamicRoutes`` collection consisting of :ref:`config-dynamic-route-schema` objects.
 This enables overriding ``RateLimitOptions`` for each downstream service, along with other schema-level overrides.
 Dynamic route options are particularly useful when there are multiple services—such as a 'product' service and a 'search' service—and stricter rate limits need to be applied to one over the other.
@@ -444,6 +450,7 @@ The final configuration looks like:
       "DynamicRoutes": [
         {
           "ServiceName": "product",
+          "ServiceNamespace": "", // not supported for Consul, but supported for Kubernetes
           "RateLimitOptions": {
             "Limit": 5,
             "Period": "1s",
@@ -454,6 +461,9 @@ The final configuration looks like:
           "ServiceName": "notification",
           "RateLimitOptions": {
             "EnableRateLimiting": false // notification service is unlimited!
+          },
+          "LoadBalancerOptions": {
+            "Type": "LeastConnection" // switch from RoundRobin to LeastConnection
           }
         }
       ],
@@ -463,7 +473,8 @@ The final configuration looks like:
         "ServiceDiscoveryProvider": {
           "Host": "localhost",
           "Port": 8500,
-          "Type": "Consul"
+          "Type": "Consul",
+          "Namespace": "" // not supported for Consul, but supported for Kubernetes
         },
         "RateLimitOptions": {
           "ClientIdHeader": "Oc-DynamicRouting-Client",
@@ -472,6 +483,9 @@ The final configuration looks like:
           "Period": "10s", // fixed window
           "QuotaExceededMessage": "No Quota!",
           "HttpStatusCode": 499 // special shared status
+        },
+        "LoadBalancerOptions": {
+          "Type": "RoundRobin"
         }
       }
     }
@@ -485,6 +499,11 @@ The 'notification' service is unlimited because rate limiting is disabled. All o
   The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Configuration/File/FileDynamicRoute.cs>`_ ``RateLimitRule`` section is deprecated in version `24.1`_!
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
+
+.. _break: http://break.do
+
+  **Note**: The ``ServiceNamespace`` option was introduced in version `24.1`_ to enable precise overrides for the :doc:`../features/kubernetes` providers.
+  If ``ServiceNamespace`` is left empty or undefined, only one dynamic route with the same ``ServiceName`` may be defined in the ``DynamicRoutes`` collection.
 
 .. _sd-custom-providers:
 
@@ -542,8 +561,7 @@ Finally, in the `Program`_, register a ``ServiceDiscoveryFinderDelegate`` to ini
 Sample
 ------
 
-In order to introduce a basic template for a custom Service Discovery provider, we've prepared a good sample:
-To provide a basic template for a custom *Service Discovery* provider, we have prepared a sample:
+To offer a basic template for a :ref:`sd-custom-providers`, we have created a sample:
 
   | Project: `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ / `ServiceDiscovery <https://github.com/ThreeMammals/Ocelot/tree/main/samples/ServiceDiscovery>`_
   | Solution: `Ocelot.Samples.ServiceDiscovery.sln <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/Ocelot.Samples.ServiceDiscovery.sln>`_

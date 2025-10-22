@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.LoadBalancer.Middleware;
+using Ocelot.LoadBalancer;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.WebSockets;

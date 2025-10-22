@@ -4,7 +4,6 @@ using Ocelot.Cache.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -110,19 +109,17 @@ public class OutputCacheMiddlewareTests : UnitTest
 
     private void GivenTheDownstreamRouteIs()
     {
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder()
-                .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+        var downRoute = new DownstreamRouteBuilder()
+            .WithIsCached(true)
+            .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
+            .WithUpstreamHttpMethod([ "Get" ])
             .Build();
-
+        var route = new Route(downRoute)
+        {
+            UpstreamHttpMethod = [HttpMethod.Get],
+        };
         var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
-
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
     }
 

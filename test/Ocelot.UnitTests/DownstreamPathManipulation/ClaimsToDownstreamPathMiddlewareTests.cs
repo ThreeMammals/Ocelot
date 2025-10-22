@@ -38,18 +38,17 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToDownstreamPath(new List<ClaimToThing>
                     {
                         new("UserId", "Subject", string.Empty, 0),
                     })
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .Build();
+        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         // Arrange: Given The Down Stream Route Is
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);

@@ -8,7 +8,10 @@ using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
-public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO: Inherit from FileDynamicRoute (FileRouteBase) or an interface with FileDynamicRoute props
+/// <summary>
+/// Represents the JSON structure of a standard static route (no service discovery).
+/// </summary>
+public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICloneable
 {
     public FileRoute()
     {
@@ -21,32 +24,32 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         DelegatingHandlers = new List<string>();
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHostAndPorts = new List<FileHostAndPort>();
-        DownstreamHttpMethod = default; // to be reviewed
-        DownstreamHttpVersion = default; // to be reviewed
-        DownstreamHttpVersionPolicy = default; // to be reviewed
-        DownstreamPathTemplate = default; // to be reviewed 
+        DownstreamHttpMethod = default;
+        DownstreamHttpVersion = default;
+        DownstreamHttpVersionPolicy = default;
+        DownstreamPathTemplate = default;
         DownstreamScheme = default; // to be reviewed 
         FileCacheOptions = new FileCacheOptions();
         HttpHandlerOptions = new FileHttpHandlerOptions();
-        Key = default; // to be reviewed
-        LoadBalancerOptions = new FileLoadBalancerOptions();
-        Metadata = new Dictionary<string, string>();
+        Key = default;
+        LoadBalancerOptions = default;
+        Metadata = default;
         Priority = 1; // to be reviewed WTF?
         QoSOptions = new FileQoSOptions();
         RateLimiting = default;
         RateLimitOptions = default;
-        RequestIdKey = default; // to be reviewed
+        RequestIdKey = default;
         RouteClaimsRequirement = new Dictionary<string, string>();
-        RouteIsCaseSensitive = default; // to be reviewed
+        RouteIsCaseSensitive = default;
         SecurityOptions = new FileSecurityOptions();
-        ServiceName = default; // to be reviewed
-        ServiceNamespace = default; // to be reviewed
-        Timeout = default; // to be reviewed
+        ServiceName = default;
+        ServiceNamespace = default;
+        Timeout = default;
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
-        UpstreamHost = default; // to be reviewed
-        UpstreamHttpMethod = new List<string>();
-        UpstreamPathTemplate = default; // to be reviewed
+        UpstreamHost = default;
+        UpstreamHttpMethod = new();
+        UpstreamPathTemplate = default;
     }
 
     public FileRoute(FileRoute from)
@@ -108,7 +111,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
-    public IList<string> UpstreamHttpMethod { get; set; }
+    public HashSet<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     /// <summary>
@@ -157,7 +160,7 @@ public class FileRoute : IRouteGrouping, IRouteRateLimiting, ICloneable // TODO:
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
         to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;
-        to.UpstreamHttpMethod = new List<string>(from.UpstreamHttpMethod);
+        to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
     }
 

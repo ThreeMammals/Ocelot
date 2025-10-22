@@ -15,5 +15,5 @@ public interface ICacheOptionsCreator
     /// <param name="upstreamPathTemplate">The upstream path template as string.</param>
     /// <param name="upstreamHttpMethods">The upstream http methods as a list of strings.</param>
     /// <returns>The generated cache options.</returns>
-    CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration global, string upstreamPathTemplate, IList<string> upstreamHttpMethods);
+    CacheOptions Create(FileCacheOptions options, FileGlobalConfiguration global, string upstreamPathTemplate, IReadOnlyCollection<string> upstreamHttpMethods);
 }

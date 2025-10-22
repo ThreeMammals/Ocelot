@@ -8,7 +8,9 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
@@ -94,7 +96,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Bug", "213")]
-    [Trait("Feat", "201 340")]
+    [Trait("Feat", "201")]
+    [Trait("Feat", "340")]
     public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequestWhenDynamicRoutingWithNoRoutes()
     {
         const string serviceName = "web";
@@ -250,8 +253,9 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     }
 
     [Theory]
+    [Trait("Bug", "849")]
+    [Trait("Bug", "1496")]
     [Trait("PR", "1944")]
-    [Trait("Bugs", "849 1496")]
     [InlineData(nameof(NoLoadBalancer))]
     [InlineData(nameof(RoundRobin))]
     [InlineData(nameof(LeastConnection))]
@@ -379,7 +383,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
         var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
         var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
-        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new List<string>() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames))
@@ -422,7 +426,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
         var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
         var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
-        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new List<string>() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
         Func<int, Task> requestToProjectsAndThenRequestToCustomersAndAssert = async (i) =>
@@ -472,7 +476,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
         var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
         var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
-        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new List<string>() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+        route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
@@ -488,6 +492,35 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => ThenServiceCountersShouldMatchLeasingCounters((ILoadBalancerAnalyzer)_lbAnalyzers[1], ports, 50)) // CustomersService
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(total, ports.Length), Top(total, ports.Length)))
             .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 50)) // strict assertion
+            .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes()
+    {
+        var ports = PortFinder.GetPorts(5);
+        var serviceName = ServiceName();
+        var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
+        var consulPort = PortFinder.GetRandomPort();
+        var configuration = GivenServiceDiscovery(consulPort);
+        configuration.GlobalConfiguration.LoadBalancerOptions = new(nameof(RoundRobin));
+        configuration.GlobalConfiguration.DownstreamScheme = Uri.UriSchemeHttp;
+        configuration.Routes = []; // dynamic routing
+        configuration.DynamicRoutes = []; // no dynamic routes, for ALL dynamic routes
+
+        var urls = ports.Select(DownstreamUrl).ToArray();
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntries))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithConsul))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(9, 11)) // soft assertion
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(10, 10, 10, 10, 10)) // distribution by RoundRobin algorithm, aka strict assertion
             .BDDfy();
     }
 
@@ -555,7 +588,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/",
-        UpstreamHttpMethod = httpMethods != null ? new List<string>(httpMethods) : [HttpMethods.Get],
+        UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : [HttpMethods.Get],
         UpstreamHost = upstreamHost,
         ServiceName = serviceName,
         LoadBalancerOptions = new()

@@ -30,7 +30,7 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
         var downstreamRoutes = new List<DownstreamRouteHolder>();
 
         var applicableRoutes = configuration.Routes
-            .Where(r => RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost))
+            .Where(r => !r.IsDynamic && RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost)) // process static routes only
             .OrderByDescending(x => x.UpstreamTemplatePattern.Priority);
 
         foreach (var route in applicableRoutes)
@@ -55,7 +55,9 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
 
     private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
     {
-        return (route.UpstreamHttpMethod.Count == 0 || route.UpstreamHttpMethod.Select(x => x.Method.ToLower()).Contains(httpMethod.ToLower())) &&
+        var method = new HttpMethod(httpMethod.Trim());
+        return (route.UpstreamHttpMethod.Count == 0 || route.UpstreamHttpMethod.Contains(method))
+                &&
                (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
     }
 

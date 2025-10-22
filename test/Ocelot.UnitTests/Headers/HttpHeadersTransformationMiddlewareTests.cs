@@ -82,11 +82,11 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
     private void GivenTheRouteHasPreFindAndReplaceSetUp()
     {
         var fAndRs = new List<HeaderFindAndReplace>();
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs)
-                .WithDownstreamHeaderFindAndReplace(fAndRs).Build())
+        var dRoute = new DownstreamRouteBuilder()
+            .WithUpstreamHeaderFindAndReplace(fAndRs)
+            .WithDownstreamHeaderFindAndReplace(fAndRs)
             .Build();
-
+        var route = new Route(dRoute);
         var dR = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(null, route);
 
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);

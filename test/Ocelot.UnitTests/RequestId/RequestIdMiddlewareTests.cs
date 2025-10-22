@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -41,15 +42,14 @@ public class RequestIdMiddlewareTests : UnitTest
     public async Task Should_pass_down_request_id_from_upstream_request()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .Build());
+                    .WithUpstreamHttpMethod(["Get"])
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         var requestId = Guid.NewGuid().ToString();
 
@@ -68,15 +68,14 @@ public class RequestIdMiddlewareTests : UnitTest
     public async Task Should_add_request_id_when_not_on_upstream_request()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithUpstreamHttpMethod(["Get"])
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         GivenTheDownStreamRouteIs(downstreamRoute);
         GivenThereIsNoGlobalRequestId();
@@ -93,15 +92,14 @@ public class RequestIdMiddlewareTests : UnitTest
     public async Task Should_add_request_id_scoped_repo_for_logging_later()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         var requestId = Guid.NewGuid().ToString();
 
@@ -121,15 +119,14 @@ public class RequestIdMiddlewareTests : UnitTest
     public async Task Should_update_request_id_scoped_repo_for_logging_later()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .WithUpstreamHttpMethod(["Get"])
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         var requestId = Guid.NewGuid().ToString();
 
@@ -149,15 +146,14 @@ public class RequestIdMiddlewareTests : UnitTest
     public async Task Should_not_update_if_global_request_id_is_same_as_re_route_request_id()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         var requestId = "alreadyset";
 

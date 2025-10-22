@@ -65,7 +65,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     AuthenticationOptions = new FileAuthenticationOptions
                     {
                         AuthenticationProviderKey = "Test",
@@ -130,7 +130,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthenticationSteps
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     AuthenticationOptions = new FileAuthenticationOptions
                     {
                         AuthenticationProviderKey = "Test",

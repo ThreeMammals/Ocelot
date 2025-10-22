@@ -37,19 +37,17 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("any old string")
+            .WithClaimsToQueries(new List<ClaimToThing>
+            {
+                new("UserId", "Subject", string.Empty, 0),
+            })
+            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .Build();
         var downstreamRoute = new DownstreamRouteHolder(
             new(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToQueries(new List<ClaimToThing>
-                    {
-                        new("UserId", "Subject", string.Empty, 0),
-                    })
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+            new Route(route, HttpMethod.Get));
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         _addQueries.Setup(x => x.SetQueriesOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), It.IsAny<DownstreamRequest>()))

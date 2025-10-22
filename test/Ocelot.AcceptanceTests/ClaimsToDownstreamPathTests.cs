@@ -55,7 +55,7 @@ public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
                        },
                        DownstreamScheme = "http",
                        UpstreamPathTemplate = "/users/{userId}",
-                       UpstreamHttpMethod = new List<string> { "Get" },
+                       UpstreamHttpMethod = ["Get"],
                        AuthenticationOptions = new FileAuthenticationOptions
                        {
                            AuthenticationProviderKeys = ["Test"],

@@ -38,12 +38,15 @@ public class FileConfigurationSetterTests : UnitTest
             string.Empty,
             serviceProviderConfig,
             "asdf",
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),
             new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+            HttpVersionPolicy.RequestVersionOrLower,
+            new MetadataOptions(),
+            new RateLimitOptions(),
+            111);
         GivenTheRepoReturns(new OkResponse());
         GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config));
 

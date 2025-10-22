@@ -275,10 +275,11 @@ public class RateLimitingMiddlewareTests : UnitTest
         .WithLoadBalancerKey(testName)
         .Build();
 
-    private static Route GivenRoute(DownstreamRoute dr) => new RouteBuilder()
-        .WithDownstreamRoute(dr)
-        .WithUpstreamHttpMethod([HttpMethods.Get])
-        .Build();
+    private static Route GivenRoute(DownstreamRoute dr) => new()
+    {
+        DownstreamRoute = [dr],
+        UpstreamHttpMethod = [HttpMethod.Get],
+    };
 
     private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ holder, string header = null, HttpContext originalContext = null)
     {

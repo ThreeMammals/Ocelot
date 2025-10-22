@@ -129,8 +129,8 @@ public class FileRouteTests : UnitTest
         expected.FileCacheOptions.Header = "value14";
         expected.HttpHandlerOptions.MaxConnectionsPerServer = 15;
         expected.Key = "value16";
-        expected.LoadBalancerOptions.Key = "value17";
-        expected.Metadata.Add("key18", "value18");
+        expected.LoadBalancerOptions ??= new("value17");
+        expected.Metadata ??= new Dictionary<string, string>() { { "key18", "value18" } };
         expected.Priority = 19;
         expected.QoSOptions.DurationOfBreak = 20;
         expected.RateLimitOptions ??= new() { Period = "value21" };

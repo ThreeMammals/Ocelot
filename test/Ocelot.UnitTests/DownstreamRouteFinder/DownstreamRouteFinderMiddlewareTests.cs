@@ -45,22 +45,20 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
             null,
             new ServiceProviderConfigurationBuilder().Build(),
             string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
+            new LoadBalancerOptions(),
             string.Empty,
             new QoSOptionsBuilder().Build(),
             new HttpHandlerOptionsBuilder().Build(),
             new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+            HttpVersionPolicy.RequestVersionOrLower,
+            default, default, default);
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
         GivenTheDownStreamRouteFinderReturns(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheFollowingConfig(config);
 
         // Act

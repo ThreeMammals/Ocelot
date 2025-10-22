@@ -40,7 +40,7 @@ public sealed class ButterflyTracingTests : Steps
                             },
                         },
                         UpstreamPathTemplate = "/api001/values",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
                             UseTracing = true,
@@ -59,7 +59,7 @@ public sealed class ButterflyTracingTests : Steps
                             },
                         },
                         UpstreamPathTemplate = "/api002/values",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
                             UseTracing = true,
@@ -107,7 +107,7 @@ public sealed class ButterflyTracingTests : Steps
                             },
                         },
                         UpstreamPathTemplate = "/api001/values",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                         HttpHandlerOptions = new FileHttpHandlerOptions
                         {
                             UseTracing = true,

@@ -102,6 +102,7 @@ public class ConcurrentSteps : Steps
         public const string Host = nameof(Uri.Host);
         public const string Port = nameof(Uri.Port);
         public const string Counter = nameof(Counter);
+        public const string Path = nameof(Path);
     }
 
     protected RequestDelegate MapGet(int index, string body) => MapGet(index, body, HttpStatusCode.OK);
@@ -126,6 +127,7 @@ public class ConcurrentSteps : Steps
             response.Headers.Append(HeaderNames.Host, new StringValues(request.Host.Host));
             response.Headers.Append(HeaderNames.Port, new StringValues(request.Host.Port.ToString()));
             response.Headers.Append(HeaderNames.Counter, new StringValues(count.ToString()));
+            response.Headers.Append(HeaderNames.Path, new StringValues(request.Path + request.QueryString));
             await response.WriteAsync(responseBody);
         }
         catch (Exception exception)
@@ -266,4 +268,18 @@ public class ConcurrentSteps : Steps
             }
         }
     }
+
+    protected IEnumerable<string> ThenAllResponsesHeaderExists(string key)
+    {
+        foreach (var kv in _responses)
+        {
+            var response = kv.Value.ShouldNotBeNull();
+            response.Headers.Contains(key).ShouldBeTrue();
+            var header = response.Headers.GetValues(key);
+            yield return string.Join(';', header);
+        }
+    }
+
+    protected virtual string ServiceName([CallerMemberName] string serviceName = null) => serviceName ?? GetType().Name;
+    protected virtual string ServiceNamespace() => GetType().Namespace;
 }
