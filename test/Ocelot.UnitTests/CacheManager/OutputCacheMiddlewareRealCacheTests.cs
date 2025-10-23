@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Cache;
 using Ocelot.Cache.CacheManager;
-using Ocelot.Cache.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;

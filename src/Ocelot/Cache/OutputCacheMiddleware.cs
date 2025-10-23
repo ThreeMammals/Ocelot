@@ -2,7 +2,7 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Cache.Middleware;
+namespace Ocelot.Cache;
 
 public class OutputCacheMiddleware : OcelotMiddleware
 {
