@@ -75,6 +75,12 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
 
         // Assert
         generatedCacheKey.ShouldBe(cachekey);
+
+        // Scenario 2: No header
+        _request.Headers.Clear();
+        cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-");
+        generatedCacheKey = await WhenGenerateRequestCacheKey(route);
+        Assert.Equal(cachekey, generatedCacheKey);
     }
 
     [Fact]

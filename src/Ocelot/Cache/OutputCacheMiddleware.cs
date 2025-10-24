@@ -59,23 +59,18 @@ public class OutputCacheMiddleware : OcelotMiddleware
         var downstreamResponse = httpContext.Items.DownstreamResponse();
         cached = await CreateCachedResponse(downstreamResponse);
 
-        _outputCache.Add(downStreamRequestCacheKey, cached, TimeSpan.FromSeconds(options.TtlSeconds), options.Region);
+        var ttl = TimeSpan.FromSeconds(options.TtlSeconds);
+        _outputCache.Add(downStreamRequestCacheKey, cached, options.Region, ttl);
         Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
     }
 
     private static void SetHttpResponseMessageThisRequest(HttpContext context, DownstreamResponse response)
         => context.Items.UpsertDownstreamResponse(response);
 
-    internal DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)
+    private static DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)
     {
-        if (cached == null)
-        {
-            return null;
-        }
-
         var content = new MemoryStream(Convert.FromBase64String(cached.Body));
         var streamContent = new StreamContent(content);
-
         foreach (var header in cached.ContentHeaders)
         {
             streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
@@ -84,7 +79,7 @@ public class OutputCacheMiddleware : OcelotMiddleware
         return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList(), cached.ReasonPhrase);
     }
 
-    internal async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
+    private static async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
     {
         if (response == null)
         {
