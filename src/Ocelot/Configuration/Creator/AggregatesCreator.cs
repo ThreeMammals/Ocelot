@@ -26,8 +26,7 @@ public class AggregatesCreator : IAggregatesCreator
     {
         var applicableRoutes = new List<DownstreamRoute>();
         var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
-        var orderedKeys = aggregateRoute.RouteKeys.ToList();
-        foreach (var key in orderedKeys)
+        foreach (var key in aggregateRoute.RouteKeys)
         {
             var match = allRoutes.FirstOrDefault(r => r.Key == key);
             if (match is null)
