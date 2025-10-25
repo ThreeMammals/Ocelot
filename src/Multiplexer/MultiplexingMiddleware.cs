@@ -166,7 +166,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
     {
         var processing = new List<Task<HttpContext>>();
-        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct().ToList();
+        var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
         foreach (var value in values)
         {
             var tPnv = new List<PlaceholderNameAndValue>(httpContext.Items.TemplatePlaceholderNameAndValues())
