@@ -4,8 +4,8 @@ namespace Ocelot.Configuration;
 
 public class InternalConfiguration : IInternalConfiguration
 {
-    public InternalConfiguration() => Routes = new();
-    public InternalConfiguration(List<Route> routes) => Routes = routes ?? new();
+    public InternalConfiguration() => Routes = [];
+    public InternalConfiguration(Route[] routes) => Routes = routes ?? [];
 
     public string AdministrationPath { get; init; }
     public CacheOptions CacheOptions { get; set; }
@@ -21,7 +21,7 @@ public class InternalConfiguration : IInternalConfiguration
     public QoSOptions QoSOptions { get; init; }
     public RateLimitOptions RateLimitOptions { get; init; }
     public string RequestId { get; init; }
-    public List<Route> Routes { get; init; }
+    public Route[] Routes { get; init; }
     public ServiceProviderConfiguration ServiceProviderConfiguration { get; init; }
     public int? Timeout { get; init; }
 }

@@ -59,7 +59,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
             AdministrationPath = administrationPath;
         }
 
-        public List<Route> Routes
+        public Route[] Routes
         {
             get
             {
@@ -68,7 +68,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
-                return new List<Route>
+                return new Route[]
                 {
                     new(downstreamRoute, HttpMethod.Get),
                 };

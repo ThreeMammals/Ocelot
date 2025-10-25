@@ -398,7 +398,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private void GivenInternalConfiguration(Route route = null, int index = 0)
     {
         var dr = route?.DownstreamRoute[index];
-        _configuration = new InternalConfiguration(route is null ? null : new() { route })
+        _configuration = new InternalConfiguration(route is null ? null : [route])
         {
             AdministrationPath = "/AdminPath",
             RequestId = "requestID",

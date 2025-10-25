@@ -164,7 +164,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
 
     private void GivenTheRoutes(Route route, ServiceProviderConfiguration config = null)
     {
-        List<Route> routes = route == null ? new() : new() { route };
+        Route[] routes = route == null ? Array.Empty<Route>() : [route];
         _config = new InternalConfiguration(routes)
         {
             ServiceProviderConfiguration = config,

@@ -41,7 +41,7 @@ public class ConfigurationCreator : IConfigurationCreator
         _cacheOptionsCreator = cacheOptionsCreator;
     }
 
-    public InternalConfiguration Create(FileConfiguration configuration, List<Route> routes)
+    public InternalConfiguration Create(FileConfiguration configuration, Route[] routes)
     {
         var adminPath = _adminPath?.Path;
         var globalConfiguration = configuration.GlobalConfiguration ?? new();

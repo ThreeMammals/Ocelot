@@ -590,6 +590,7 @@ public class DownstreamRouteFinderTests : UnitTest
 
         // Act, Assert 2
         _routesConfig.RemoveAll(r => !r.IsDynamic); // remove all static routes
+        GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
         _result.IsError.ShouldBeTrue();
     }
@@ -672,7 +673,7 @@ public class DownstreamRouteFinderTests : UnitTest
 
     private void GivenTheConfigurationIs(string adminPath, ServiceProviderConfiguration serviceProviderConfig)
     {
-        _config = new InternalConfiguration(_routesConfig)
+        _config = new InternalConfiguration(_routesConfig.ToArray())
         {
             AdministrationPath = adminPath,
             DownstreamHttpVersion = new Version("1.1"),

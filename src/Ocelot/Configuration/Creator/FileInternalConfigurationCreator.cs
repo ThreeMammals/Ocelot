@@ -45,7 +45,7 @@ public class FileInternalConfigurationCreator : IInternalConfigurationCreator
         var mergedRoutes = routes
             .Union(aggregates)
             .Union(dynamicRoute)
-            .ToList();
+            .ToArray();
 
         var config = _configCreator.Create(fileConfiguration, mergedRoutes);
 

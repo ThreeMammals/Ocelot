@@ -21,7 +21,7 @@ public class ConfigurationCreatorTests : UnitTest
     private readonly Mock<IRateLimitOptionsCreator> _rlCreator;
     private readonly Mock<ICacheOptionsCreator> _coCreator;
     private FileConfiguration _fileConfig;
-    private List<Route> _routes;
+    private Route[] _routes;
     private ServiceProviderConfiguration _spc;
     private LoadBalancerOptions _lbo;
     private QoSOptions _qoso;
@@ -132,7 +132,7 @@ public class ConfigurationCreatorTests : UnitTest
         {
             GlobalConfiguration = new FileGlobalConfiguration(),
         };
-        _routes = new List<Route>();
+        _routes = Array.Empty<Route>();
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
         _lbo = new();
         _qoso = new QoSOptionsBuilder().Build();

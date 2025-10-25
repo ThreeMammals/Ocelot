@@ -13,7 +13,7 @@ public interface IInternalConfiguration
     QoSOptions QoSOptions { get; }
     RateLimitOptions RateLimitOptions { get; }
     string RequestId { get; }
-    List<Route> Routes { get; }
+    Route[] Routes { get; }
     ServiceProviderConfiguration ServiceProviderConfiguration { get; }
     int? Timeout { get; }
 }
