@@ -55,7 +55,7 @@ public class CacheOptionsCreator : ICacheOptionsCreator
     protected virtual CacheOptions Merge(FileCacheOptions options, FileCacheOptions globalOptions, string defaultRegion)
     {
         var region = options.Region.IfEmpty(globalOptions.Region).IfEmpty(defaultRegion);
-        var header = options.Header.IfEmpty(globalOptions.Header);
+        var header = options.Header.IfEmpty(globalOptions.Header).IfEmpty(CacheOptions.Oc_Cache_Control);
         var ttlSeconds = options.TtlSeconds ?? globalOptions.TtlSeconds;
         var enableHashing = options.EnableContentHashing ?? globalOptions.EnableContentHashing;
         return new CacheOptions(ttlSeconds, region, header, enableHashing);

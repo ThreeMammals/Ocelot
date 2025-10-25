@@ -63,7 +63,7 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
 
     private void ThenTheContentTypeHeaderIsCached()
     {
-        var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+        var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123-"); // absent header -> '-' dash char is added at the end
         var result = _cacheManager.Get(cacheKey, "kanken");
         var header = result.ContentHeaders["Content-Type"];
         header.First().ShouldBe("application/json");

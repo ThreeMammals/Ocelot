@@ -6,6 +6,13 @@ namespace Ocelot.Configuration;
 
 public class CacheOptions
 {
+    public const int NoSeconds = 0;
+
+    /// <summary>
+    /// Separation of concerns between Ocelot's native caching control and the industry-standard <c>Cache-Control</c> header, which governs downstream caching behavior.
+    /// </summary>
+    public const string Oc_Cache_Control = "OC-Cache-Control";
+
     internal CacheOptions() { }
     public CacheOptions(FileCacheOptions from, string defaultRegion)
         : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing)
@@ -29,7 +36,7 @@ public class CacheOptions
     {
         TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
-        Header = header;
+        Header = header.IfEmpty(Oc_Cache_Control);
         EnableContentHashing = enableContentHashing ?? false;
     }
 
@@ -45,6 +52,5 @@ public class CacheOptions
     /// <value><see langword="true"/> if hashing is enabled, otherwise it is <see langword="false"/>.</value>
     public bool EnableContentHashing { get; }
 
-    public const int NoSeconds = 0;
     public bool UseCache => TtlSeconds > NoSeconds;
 }

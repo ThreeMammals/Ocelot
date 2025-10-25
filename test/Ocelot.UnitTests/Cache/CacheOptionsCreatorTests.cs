@@ -121,7 +121,7 @@ public class CacheOptionsCreatorTests : UnitTest
         // Assert
         result.TtlSeconds.ShouldBe(0);
         result.Region.ShouldBe("testLbKey");
-        result.Header.ShouldBe(null);
+        result.Header.ShouldBe("OC-Cache-Control");
         result.EnableContentHashing.ShouldBe(false);
     }
 
@@ -212,7 +212,7 @@ public class CacheOptionsCreatorTests : UnitTest
         var actual = _creator.Create(route, globalConfiguration, "lbKey");
         Assert.Equal(1, actual.TtlSeconds);
         Assert.Equal("route", actual.Region);
-        Assert.Null(actual.Header);
+        Assert.Equal("OC-Cache-Control", actual.Header);
         Assert.False(actual.EnableContentHashing);
 
         // Arrange : from CacheOptions
@@ -245,7 +245,7 @@ public class CacheOptionsCreatorTests : UnitTest
         actual = _creator.Create(route, globalConfiguration, "lbKey");
         Assert.Equal(33, actual.TtlSeconds);
         Assert.Equal("global", actual.Region);
-        Assert.Null(actual.Header);
+        Assert.Equal("OC-Cache-Control", actual.Header);
         Assert.False(actual.EnableContentHashing);
     }
 
