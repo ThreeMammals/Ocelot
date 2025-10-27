@@ -50,6 +50,7 @@ The following shows how to set up multiple downstream services for a static rout
 This is the simplest way to configure load balancing without using service discovery.
 
 .. code-block:: json
+  :emphasize-lines: 10-12
 
   {
     "UpstreamPathTemplate": "/posts/{postId}",
@@ -90,6 +91,7 @@ A complete configuration consists of both route-level and global *load balancing
 You can configure the following options in the ``GlobalConfiguration`` section of `ocelot.json`_:
 
 .. code-block:: json
+  :emphasize-lines: 4-8, 12, 17-20
 
   "Routes": [
     {
@@ -102,7 +104,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
     },
     {
       "Key": "R1", // this route is part of a group
-      "LoadBalancerOptions": {} // optional because of grouping
+      "LoadBalancerOptions": {} // optional due to grouping
     }
   ],
   "GlobalConfiguration": {
@@ -116,6 +118,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
 :doc:`../features/servicediscovery` dynamic routes intentionally override the global :ref:`dynamic routing <sd-dynamic-routing>` configuration:
 
 .. code-block:: json
+  :emphasize-lines: 5-7, 16-19
 
   "DynamicRoutes": [
     {

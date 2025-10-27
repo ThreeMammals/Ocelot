@@ -3,7 +3,7 @@
 Caching
 =======
 
-Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache.
+[#f1]_ Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache.
 Users can also clear the cache for a specific region by using Ocelot's :ref:`administration-api`.
 
 Ocelot utilizes some very rudimentary caching at the moment provider by the `CacheManager <https://github.com/MichaCo/CacheManager>`_ project.
@@ -71,7 +71,7 @@ Not all of these options need to be configured; however, the ``TtlSeconds`` opti
     - Toggles inclusion of request body hashing in the cache key.
       Disabled by default (``false``) due to potential performance impact.
       Recommended for POST/PUT routes where request body affects response.
-      Refer to the :ref:`caching-enablecontenthashing-option` section.
+      Refer to the :ref:`EnableContentHashing option <caching-enablecontenthashing-option>` section.
 
 The actual ``CacheOptions`` schema with all the properties can be found in the C# `FileCacheOptions`_ class.
 
@@ -85,14 +85,14 @@ Finally, in order to use caching on a route in your route configuration add thes
     "CacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
-      "Header": "OC-Caching-Control",
+      "Header": "OC-Cache-Control",
       "EnableContentHashing": false // my route has GET verb only, assigning 'true' for requests with body: POST, PUT etc.
     },
     // Warning! FileCacheOptions section is deprecated! -> use CacheOptions
     "FileCacheOptions": {
       "TtlSeconds": 15,
       "Region": "europe-central",
-      "Header": "OC-Caching-Control",
+      "Header": "OC-Cache-Control",
       "EnableContentHashing": false // my route has GET verb only, assigning 'true' for requests with body: POST, PUT etc.
     }
 
@@ -114,14 +114,13 @@ Finally, in order to use caching on a route in your route configuration add thes
 
 .. _caching-enablecontenthashing-option:
 
-``EnableContentHashing`` option
--------------------------------
+``EnableContentHashing`` option [#f2]_
+--------------------------------------
 
-In version `23.0`_, the new property ``EnableContentHashing`` has been introduced.
-Previously, the request body was utilized to compute the cache key.
+Previously, in versions prior to `23.0`_, the request body was used to compute the cache key.
 However, due to potential performance issues arising from request body hashing, it has been disabled by default.
 Clearly, this constitutes a breaking change and presents challenges for users who require cache key calculations that consider the request body (e.g., for the POST method).
-To address this issue, it is recommended to enable the option either at the route level or globally in the :ref:`caching-global-configuration` section:
+To address this issue, it is recommended to enable the option either at the route level or globally in the ":ref:`Global Configuration <caching-global-configuration>`" section:
 
 .. code-block:: json
 
@@ -130,10 +129,19 @@ To address this issue, it is recommended to enable the option either at the rout
       "EnableContentHashing": true
     }
 
+.. rubric:: Ocelot Team Recommendation
+
+Although the community raised concerns about backward compatibility in issue `2234`_, Ocelot team maintains that *caching* performance takes precedence over backward compatibility when migrating from versions prior to `23.0`_.
+The proposed option clarifies that ``POST`` requests should **not** be cached; only ``GET`` requests are eligible for caching.
+Therefore, ``POST`` and ``GET`` verbs must be separated into distinct routes:
+
+* POST routes with *caching* disabled
+* GET routes with *caching* enabled
+
 .. _caching-global-configuration:
 
-Global Configuration
---------------------
+Global Configuration [#f3]_
+---------------------------
 
 Copying route-level properties for each static route is no longer necessary, as version `23.3`_ allows these values to be set in the ``GlobalConfiguration`` section.
 This convenience applies to ``Header`` and ``Region`` as well.
@@ -141,18 +149,27 @@ However, if no global ``TtlSeconds`` value is defined, this option must still be
 As a result, the final configuration for static routes might look like:
 
 .. code-block:: json
+  :emphasize-lines: 5-7, 12, 18-21
 
   {
     "Routes": [
       {
+        "Key": "R0", // optional
         "CacheOptions": {
           "TtlSeconds": 60 // 1-minute short-term caching
         },
         // ...
+      },
+      {
+        "Key": "R1", // this route is part of a group
+        "CacheOptions": {}, // optional due to grouping
+        // ...
       }
     ],
     "GlobalConfiguration": {
+      "BaseUrl": "https://ocelot.net",
       "CacheOptions": {
+        "RouteKeys": ["R1",], // if undefined or empty array, opts will apply to all routes
         "TtlSeconds": 300 // enable global caching for a duration of 5 minutes
       },
       // ...
@@ -164,22 +181,42 @@ Starting with version `24.1`_, global *cache options* for :ref:`Dynamic Routing 
 These global options may also be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
 
 .. code-block:: json
+  :emphasize-lines: 6-8, 17-20
 
   {
     "DynamicRoutes": [
       {
+        "Key": "", // optional
         "ServiceName": "my-service",
         "CacheOptions": {
-          // ...
+          "TtlSeconds": 60 // 1-minute short-term caching
         }
       }
     ],
     "GlobalConfiguration": {
+      "BaseUrl": "https://ocelot.net",
+      "DownstreamScheme": "http",
+      "ServiceDiscoveryProvider": {
+        // required section for dynamic routing
+      },
       "CacheOptions": {
-        // ...
+        "RouteKeys": [], // or null, no grouping, thus opts apply to all dynamic routes
+        "TtlSeconds": 300 // enable global caching for a duration of 5 minutes
       }
     }
   }
+
+In this configuration, a 5-minute *caching* duration is applied to all implicit dynamic routes.
+However, for the "my-service" service, the *caching* TTL has been explicitly reduced from 5 minutes to 1 minute.
+
+.. note::
+
+  1. If the ``RouteKeys`` option is not defined or the array is empty in the global ``CacheOptions``, the global options will apply to all routes.
+  If the array contains route keys, it defines a single group of routes to which the global options apply.
+  Routes excluded from this group must specify their own route-level ``CacheOptions``.
+
+  2. Prior to version `23.3`_, global ``CacheOptions`` were not available.
+  Starting with version `24.1`_, global configuration is supported for both static and dynamic routes.
 
 .. Sample
 .. -----
@@ -207,5 +244,22 @@ Please dig into the Ocelot source code to find more.
 We would really appreciate it if anyone wants to implement `Redis <https://redis.io/>`_, `Memcached <http://www.memcached.org/>`_ etc.
 Please, open a new `Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell>`_ thread in `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository.
 
+""""
+
+.. [#f1] Historically, *Caching* is one of Ocelot's earliest features, first introduced in version `1.1`_ on February 2, 2017, the initial release of Ocelot.
+  The "Clear cache region via :ref:`administration-api`" feature was first delivered in pull request `109`_ and released in version `1.4.8`_.
+.. [#f2] The ":ref:`EnableContentHashing option <caching-enablecontenthashing-option>`" feature was requested in issue `2059`_ and released in version `23.3`_.
+.. [#f3] :ref:`Global Configuration <caching-global-configuration>` for static routes was first introduced in pull request `2058`_ and released in version `23.3`_.
+  Support for dynamic routes was added in pull request `2331`_ and delivered in version `24.1`_.
+
+.. _109: https://github.com/ThreeMammals/Ocelot/pull/109
+.. _2058: https://github.com/ThreeMammals/Ocelot/pull/2058
+.. _2059: https://github.com/ThreeMammals/Ocelot/issues/2059
+.. _2234: https://github.com/ThreeMammals/Ocelot/issues/2234
+.. _2331: https://github.com/ThreeMammals/Ocelot/pull/2331
+
+.. _1.1: https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
+.. _1.4.8: https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.8
 .. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
